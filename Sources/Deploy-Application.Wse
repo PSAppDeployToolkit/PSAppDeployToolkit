@@ -1,0 +1,251 @@
+Document Type: WSE
+item: Global
+  Version=9.02
+  Title=Deploy-Application
+  Flags=11010100
+  Languages=65 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+  Copy Default=1
+  Japanese Font Name=MS Gothic
+  Japanese Font Size=10
+  Start Gradient=0 0 0
+  End Gradient=46 46 46
+  Windows Flags=00100100000000000010010000000010
+  Log Pathname=%WIN%\CEDE\Logs\%INST_TITLE_PATH%_WiseScript.LOG
+  Message Font=Arial
+  Font Size=8
+  Pages Modified=00111000001000100000000000000000
+  Extra Pages=00000000000000000000000000100000
+  Disk Filename=SETUP
+  Patch Flags=0000000000000001
+  Patch Threshold=85
+  Patch Memory=4000
+  MIF PDF Version=1.0
+  MIF SMS Version=2.0
+  FTP Cluster Size=20
+  Per-User Version ID=1
+  Dialogs Version=6
+  Version File=2.0.0
+  Version Description=Deploy Application Invoker
+  Version Copyright=(C) Sean Lillis & Dan Cunningham
+  Version Company=Sean Lillis & Dan Cunningham
+  Crystal Format=10111100101100000010001001001001
+  Step View=&Properties
+  Variable Name1=_INIT_WINDOW_
+  Variable Default1=HIDE
+  Variable Flags1=00001000
+  Variable Name2=_SYS_
+  Variable Default2=C:\Windows\system32
+  Variable Flags2=00001000
+  Variable Name3=_WIN_
+  Variable Default3=C:\Windows
+  Variable Flags3=00001000
+  Variable Name4=_WISE_
+  Variable Default4=C:\Program Files (x86)\Symantec\Wise Package Studio\WiseScript Editor
+  Variable Flags4=00001000
+  Requested Execution Level=asInvoker
+end
+item: Remark
+  Text=Set Default Variable Values
+end
+item: Set Variable
+  Variable=PROCEXITCODE
+  Value=0
+end
+item: Set Variable
+  Variable=OSDMODE
+  Value=False
+end
+item: Remark
+end
+item: Remark
+  Text=Get Environment Variables
+end
+item: Get Environment Variable
+  Variable=ENV_USERNAME
+  Environment=USERNAME
+end
+item: Get Environment Variable
+  Variable=ENV_COMPUTERNAME
+  Environment=COMPUTERNAME
+end
+item: Set Variable
+  Variable=ENV_USERNAME
+  Value=%ENV_USERNAME%
+  Flags=00011000
+end
+item: Set Variable
+  Variable=ENV_COMPUTERNAME
+  Value=%ENV_COMPUTERNAME%
+  Flags=00011000
+end
+item: Get System Information
+  Variable=ENV_OS64BIT
+  Flags=00011000
+end
+item: Remark
+end
+item: Remark
+  Text=Test if running in an SCCM Task Sequence
+end
+item: If/While Statement
+  Variable=ENV_USERNAME
+end
+item: Set Variable
+  Variable=OSDMODE
+  Value=True
+end
+item: ElseIf Statement
+  Variable=ENV_USERNAME
+  Value=LocalSystem
+  Flags=00000010
+end
+item: Set Variable
+  Variable=OSDMODE
+  Value=True
+end
+item: ElseIf Statement
+  Variable=ENV_USERNAME
+  Value=SYSTEM
+  Flags=00000100
+end
+item: Set Variable
+  Variable=OSDMODE
+  Value=True
+end
+item: ElseIf Statement
+  Variable=ENV_USERNAME
+  Value=%ENV_COMPUTERNAME%
+  Flags=00000010
+end
+item: Set Variable
+  Variable=OSDMODE
+  Value=True
+end
+item: End Block
+end
+item: Remark
+end
+item: Remark
+  Text=x86 OS
+end
+item: If/While Statement
+  Variable=ENV_OS64BIT
+  Value=0
+end
+item: Remark
+  Text=Check for /32 command-line parameter and remove
+end
+item: Parse String
+  Source=%CMDLINE%
+  Pattern=/32
+  Variable1=JUNK
+  Variable2=CMDLINE
+  Flags=00000001
+end
+item: Remark
+  Text=Check if OSDMode is specified
+end
+item: If/While Statement
+  Variable=OSDMODE
+  Value=True
+  Flags=00000100
+end
+item: Execute Program
+  Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Else Statement
+end
+item: Execute Program
+  Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
+end
+item: Remark
+  Text=x64 OS
+end
+item: Else Statement
+end
+item: Remark
+  Text=Check for /32 command-line parameter
+end
+item: If/While Statement
+  Variable=CMDLINE
+  Value=/32
+  Flags=00000010
+end
+item: Parse String
+  Source=%CMDLINE%
+  Pattern=/32
+  Variable1=JUNK
+  Variable2=CMDLINE
+  Flags=00000001
+end
+item: Remark
+  Text=Check if OSDMode is specified
+end
+item: If/While Statement
+  Variable=OSDMODE
+  Value=True
+  Flags=00000100
+end
+item: Execute Program
+  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Else Statement
+end
+item: Execute Program
+  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
+end
+item: Else Statement
+end
+item: Remark
+  Text=Check if OSDMode is specified
+end
+item: If/While Statement
+  Variable=OSDMODE
+  Value=True
+  Flags=00000100
+end
+item: Execute Program
+  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Else Statement
+end
+item: Execute Program
+  Pathname=%WIN%\SysNative\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
+end
+item: End Block
+end
+item: End Block
+end
+item: Remark
+end
+item: Remark
+  Text=Pass the Exit Code back
+end
+item: Exit Installation
+  Variable=2
+  Value=%PROCEXITCODE%
+end

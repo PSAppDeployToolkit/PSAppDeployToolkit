@@ -1,0 +1,11 @@
+Add Features:
+
+- Possible to trigger invocation of the scheduled task when the PowerShell process exits?
+
+Bug Fixes:
+
+- Fix balloon tips not disappearing in a timely manner
+- Install-SCCMSoftwareUpdates: Check for SCCM client installation
+
+Documentation:
+
