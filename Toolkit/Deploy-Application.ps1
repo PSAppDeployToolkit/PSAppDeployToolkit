@@ -31,10 +31,10 @@
 "#>
 Param (
 	[ValidateSet("Install","Uninstall")] 
-	[string]$DeploymentType = "Install", # Default deployment type is Install	 
+	[string]$DeploymentType = "Install",	 
 	[ValidateSet("Interactive","Silent","NonInteractive")]
-	[string]$DeployMode = "Interactive",  # Interactive=Default,Silent=No dialogs,NonInteractive=VerySilent,no blocking apps(automatically set in SCCM task sequence or session 0).
-	[switch]$AllowRebootPassThru = $false # Allow the 3010 return code to be passed back to the parent process, e.g. if passed back to SCCM a reboot prompt will be triggered.
+	[string]$DeployMode = "Interactive",
+	[switch]$AllowRebootPassThru = $false
 )
 
 #*===============================================
@@ -59,8 +59,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "2.0.0"
-$deployAppScriptDate = "08/07/2013"
+$deployAppScriptVersion = "2.0.1"
+$deployAppScriptDate = "08/16/2013"
 
 # Variables: Environment
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition

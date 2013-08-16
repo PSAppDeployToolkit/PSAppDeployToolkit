@@ -8,7 +8,7 @@
 	Clean up the blocked applications.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
 .PARAMETER ShowBlockedAppDialog
-	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation.
+	Display a dialog box showing that the application execution is blocked
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
 .PARAMETER BlockedAppInstallName
 	Name of the application installation that blocked the apps initially.
@@ -20,8 +20,8 @@
 Param (	
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
 	[switch]$CleanupBlockedApps = $false, 
-	[switch]$ShowBlockedAppDialog = $false, # Display a dialog box showing that the application execution is blocked
-	[string]$BlockedAppInstallName # Name of the application installation that blocked the apps initially
+	[switch]$ShowBlockedAppDialog = $false,
+	[string]$BlockedAppInstallName
 )
 
 #*=============================================
@@ -30,8 +30,8 @@ Param (
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "2.0.0"
-$appDeployMainScriptDate = "08/07/2013"
+$appDeployMainScriptVersion = "2.0.1"
+$appDeployMainScriptDate = "08/15/2013"
 
 # Variables: Environment
 $currentDate = (Get-Date -UFormat "%d-%m-%Y")
@@ -98,34 +98,36 @@ If (!(Test-Path $AppDeployConfigFile)) {
 $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
 # Get MSI Options
-$xmlConfigMSI = $xmlConfig.MSI_Options
-$configMSILoggingOptions = $xmlConfigMSI.MSI_LoggingOptions
-$configMSIInstallParams = $xmlConfigMSI.MSI_InstallParams
-$configMSISilentParams = $xmlConfigMSI.MSI_SilentParams
-$configMSIUninstallParams = $xmlConfigMSI.MSI_UninstallParams
-$configDirLogs = $xmlConfigMSI.MSI_LogPath
-
+$xmlConfigMSIOptions = $xmlConfig.MSI_Options
+$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
+$configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
+$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
+$configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
+$configDirLogs = $xmlConfigMSIOptions.MSI_LogPath
+# Get UI Options
+$xmlConfigUIOptions = $xmlConfig.UI_Options
+$configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 # Get Message UI Language Options (default for English if no localization found)
-$xmlMessageUILanguage = "UI_Messages" + "_" + $currentLanguage
-$xmlMessagesUI = $xmlConfig.$xmlMessageUILanguage
-If ($xmlMessagesUI -eq $null) { 
-	$xmlMessageUILanguage = "UI_Messages" + "_EN"
-	$xmlMessagesUI = $xmlConfig.$xmlMessageUILanguage
+$xmlUIMessageLanguage = "UI_Messages" + "_" + $currentLanguage
+$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
+If ($xmlUIMessages -eq $null) { 
+	$xmlUIMessageLanguage = "UI_Messages" + "_EN"
+	$xmlUIMessages = $xmlConfig.$xmlMessageUILanguage
 }
-$configBalloonTextStart = $xmlMessagesUI.BalloonText_Start
-$configBalloonTextComplete = $xmlMessagesUI.BalloonText_Complete
-$configBalloonTextRestartRequired = $xmlMessagesUI.BalloonText_RestartRequired
-$configBalloonTextFastRetry = $xmlMessagesUI.BalloonText_FastRetry
-$configBalloonTextError = $xmlMessagesUI.BalloonText_Error
-$configProgressMessage = $xmlMessagesUI.Progress_Message
-$configClosePromptConfirm = $xmlMessagesUI.ClosePrompt_Confirm
-$configClosePromptMessage = $xmlMessagesUI.ClosePrompt_Message
-$configClosePromptButtonClose = $xmlMessagesUI.ClosePrompt_ButtonClose
-$configClosePromptButtonContinue = $xmlMessagesUI.ClosePrompt_ButtonContinue
-$configClosePromptButtonDefer = $xmlMessagesUI.ClosePrompt_ButtonDefer
-$configBlockExecutionMessage = $xmlMessagesUI.BlockExecution_Message
-$configDeploymentTypeInstall = $xmlMessagesUI.DeploymentType_Install
-$configDeploymentTypeUnInstall = $xmlMessagesUI.DeploymentType_UnInstall
+$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
+$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
+$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
+$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
+$configBalloonTextError = $xmlUIMessages.BalloonText_Error
+$configProgressMessage = $xmlUIMessages.Progress_Message
+$configClosePromptConfirm = $xmlUIMessages.ClosePrompt_Confirm
+$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
+$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
+$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
+$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
+$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
+$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
+$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
 
 # Variables: Executables
 $exeWusa = "wusa.exe"
@@ -143,15 +145,18 @@ $BlockExecution = $false
 $installationStarted = $false
 
 # Assemblies: Load
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName Microsoft.VisualBasic
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName PresentationCore
-Add-Type -AssemblyName WindowsBase
+# Reset Assembly Errors & Warnings
+$AssemblyError = $AssemblyWarning = $null
+Add-Type -AssemblyName System.Windows.Forms -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Add-Type -AssemblyName PresentationFramework -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Add-Type -AssemblyName Microsoft.VisualBasic -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Add-Type -AssemblyName System.Drawing -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Add-Type -AssemblyName PresentationCore -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Add-Type -AssemblyName WindowsBase -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
 
 # COM Objects: Initialize
-$shell = New-Object -ComObject WScript.Shell 
+$shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
+$shellApp = New-Object -ComObject Shell.Application -ErrorAction SilentlyContinue			
 
 # Variables: Registry Keys
 # Registry keys for native and WOW64 applications
@@ -165,11 +170,13 @@ Else {
 $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
 
 # Set up sample variables if Dot Sourcing the script or app details have not been specified
-If ($appVendor -eq "" -and $appName -eq "" -and $appVersion -eq "") {
-	$appVendor = "Test"
+If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
+	$appVendor = "PS"
 	$appName = $appDeployMainScriptFriendlyName
 	$appVersion = $appDeployMainScriptVersion
-	$installPhase = "Dot Sourcing"
+	$appLang = $currentLanguage
+	$appRevision = "01"
+	$appArch = ""
 }
 
 # Build the Application Title and Name
@@ -223,9 +230,9 @@ Function Write-Log {
 	$currentTime = (Get-Date -UFormat "%T")
 	Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
 	# Create the Log directory if it doesn't already exist
-	If (!(Test-Path -path $configDirLogs -ErrorAction SilentlyContinue )) { New-Item $configDirLogs -type directory | Out-Null }
+	If (!(Test-Path -path $configDirLogs -ErrorAction SilentlyContinue )) { New-Item $configDirLogs -Type directory -ErrorAction SilentlyContinue | Out-Null }
 	# Create the Log directory if it doesn't already exist
-	If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -type file | Out-Null }
+	If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
 	Try {
 		"[$currentDate $currentTime] [$installPhase] $Text" | Out-File $logFile -Append -ErrorAction SilentlyContinue
 	}
@@ -318,7 +325,7 @@ Function Show-DialogBox {
 .EXAMPLE
 	Show-DialogBox -Title "Installed Complete" -Text "Installation has completed. Please click OK and restart your computer." -Icon "Information"
 .EXAMPLE
-	Show-DialogBox -Title "Installation Notice" -Text "Installation will take approximately 30 mintues. Do you wish to proceed?" -Buttons "OKCancel" -Icon "Exclamation" -Timeout 600
+	Show-DialogBox -Title "Installation Notice" -Text "Installation will take approximately 30 mintues. Do you wish to proceed?" -Buttons "OKCancel" -DefaultButton "Second" -Icon "Exclamation" -Timeout 600
 .PARAMETER Text
 	Text in the message dialog box
 .PARAMETER Title
@@ -332,11 +339,18 @@ Function Show-DialogBox {
 	"YesNo"
 	"RetryCancel"
 	"CancelTryAgainContinue"
+.PARAMETER DefaultButton
+	The Default button that is selected [Default is "First"]
+    "First"
+    "Second"
+    "Third"
 .PARAMETER Icon
 	Icon to display on the dialog box [Default is "None"]
 	Acceptable valures are: "None",	"Stop", "Question", "Exclamation", "Information", 
 .PARAMETER Timeout
-	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout" [Default is None]
+	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout" [Default is None
+.PARAMETER TopMost
+	Specifies whether the message box is a system modal message box and appears in a topmost window. [Default is True]
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -347,9 +361,11 @@ Function Show-DialogBox {
 	[string]$Text,
 	[string]$Title = $installTitle,	
 	[string]$Buttons = "OK",
+    [string]$DefaultButton = "First",
 	[string]$Icon = "None",
-	[string]$Timeout = 0 # Never times out
-	)
+	[string]$Timeout = 0, # Never times out
+    [switch]$TopMost = $true
+ 	)
 
 	# Bypass if in totall silent mode
 	If ($deployModeNonInteractive -eq $true) { 
@@ -357,7 +373,7 @@ Function Show-DialogBox {
 		Return 
 	}
 
-	Write-Log "Displaying Dialog Box... $Taxt"
+	Write-Log "Displaying Dialog Box with message: [$Text]..."
 
 	$dialogButtons = @{ 
 		"OK" = 0
@@ -377,8 +393,19 @@ Function Show-DialogBox {
 		"Information" = 64
 	} 
 
+    $dialogDefaultButton = @{ 
+		"First" = 0
+		"Second" = 256
+		"Third" = 512
+	}
+
+    Switch ($TopMost) {
+        $true { $dialogTopMost = 4096 }
+        $false { $dialogTopMost = 0 }        
+    }
+
 	$wshell = New-Object -COMObject WScript.Shell
-	$response = $wshell.Popup($Text,$Timeout,$Title,$dialogButtons[$Buttons]+$dialogIcons[$Icon])
+	$response = $wshell.Popup($Text,$Timeout,$Title,$dialogButtons[$Buttons]+$dialogIcons[$Icon]+$dialogDefaultButton[$DefaultButton]+$dialogTopMost)
 
 	Switch ($response) { 
 		1 {	
@@ -408,6 +435,14 @@ Function Show-DialogBox {
 		7 {	
 			Write-Log "Dialog Box Response: No"
 			Return "No"
+		} 
+        10 {	
+			Write-Log "Dialog Box Response: Try Again"
+			Return "Try Again"
+		} 
+        11 {	
+			Write-Log "Dialog Box Response: Continue"
+			Return "Copnt"
 		} 
 		-1 {	
 			Write-Log "Dialog Box timed out..."
@@ -497,7 +532,7 @@ Function Get-InstalledApplication {
 							InstallLocation =	$regKeyApp.InstallLocation
 							InstallDate =		$regKeyApp.InstallDate
 							Publisher =			$regKeyApp.Publisher
-						}   
+						}
 					}
 				}				
 				If ($name -ne "") {
@@ -521,7 +556,7 @@ Function Get-InstalledApplication {
 			}
 		}
 	}
-	Return $installedApplication
+	Return ($installedApplication | Select -Unique)
 }
 
 Function Execute-MSI {
@@ -534,9 +569,17 @@ Function Execute-MSI {
 	Automatically generates a log file name and creates a verbose log file for all msiexec operations.
 	NB: Expects the MSI or MSP file to be located in the "Files" sub directory of the App Deploy Toolkit. Expects transform files to be in the same directory as the MSI file.
 .EXAMPLE
-	Give an example of how to use it
+    Execute-MSI -Action Install -Path "Adobe_FlashPlayer_11.2.202.233_x64_EN.msi"
+    Installs an MSI
 .EXAMPLE
-	Give another example of how to use it
+    Execute-MSI -Action Install -Path "Adobe_FlashPlayer_11.2.202.233_x64_EN.msi" -Transform "Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst" -Parameters "/QN" 
+    Installs an MSI, applying a transform and overriding the default MSI toolkit parameters
+.EXAMPLE
+	Execute-MSI -Action Uninstall -Path "{26923b43-4d38-484f-9b9e-de460746276c}"
+    Uninstalls an MSI using a product code
+.EXAMPLE
+    Execute-MSI -Action Patch -Path "Adobe_Reader_11.0.3_EN.msp" 
+    Installs an MSP
 .PARAMETER Action
 	The action to perform ["Install","Uninstall","Patch","Repair","ActiveSetup"]
 .PARAMETER Path
@@ -573,9 +616,9 @@ Function Execute-MSI {
 		# If the path matches a product code, resolve the product code to an application name and version
 		If ($path -match "^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$") {
 			Write-Log "Execute-MSI: Product code specified, attempting to resolve product code to an application name and version..."
-			$productCodeNameVersion = (Get-InstalledApplication -ProductCode $path | Select DisplayName,DisplayVersion -ErrorAction SilentlyContinue)
+			$productCodeNameVersion = (Get-InstalledApplication -ProductCode $path | Select DisplayName,DisplayVersion -First 1 -ErrorAction SilentlyContinue)
 			If ($productCodeNameVersion -ne $null) {
-				If ($($productCodeNameVersion.Publisher) -ne "" -and $($productCodeNameVersion.Publisher) -ne $null) {
+				If ($($productCodeNameVersion.Publisher) -ne $null) {
 					$logName = ($productCodeNameVersion.Publisher + "_" + $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ",""
 				}
 				Else {
@@ -1495,7 +1538,7 @@ Function Stop-RunningApplications {
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
 
 	# Force the processes to close silently, without prompting the user
-	If ($Silent -eq $true) {		
+	If ($Silent -eq $true) {
 		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","" -replace "\*","") -match $processNames }
 		If ($runningProcesses -ne $null) {
 			Write-Log "Force closing application(s) [$processNames] without prompting user..."
@@ -1529,8 +1572,7 @@ Function Stop-RunningApplications {
 			}
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join ","
 
-			# Minimize all open Windows (bring the script to the foreground)
-			$shellApp = New-Object -ComObject "Shell.Application"
+			# Minimize all open Windows (bring the script to the foreground)			
 			$shellApp.MinimizeAll()
 
 			Write-Log "Prompting user to close application(s) [$runningProcessDescriptions]"
@@ -1833,7 +1875,7 @@ Function Show-CloseProgramPrompt {
 #endregion
 
 # Function to display a balloon tip notification
-Function Show-BalloonTip  {
+Function Show-BalloonTip {
 <# 
 .SYNOPSIS
 	Displays a balloon tip notification in the system tray
@@ -1869,33 +1911,44 @@ Function Show-BalloonTip  {
 	[int]$BalloonTipTime = 500
 	)
 	
-	If ($deployModeSilent -ne $true) {
+    # Skip balloon if in silent mode
+	If ($deployModeSilent -eq $true -or $configShowBalloonNotifications -eq $false) {
+        Return
+    }
 
-		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-		$NotifyIcon = New-Object Windows.Forms.NotifyIcon -Property @{
-			BalloonTipIcon = $BalloonTipIcon
-			BalloonTipText = $BalloonTipText
-			BalloonTipTitle = $BalloonTipTitle
-			Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)
-			Text = -join $BalloonTipText[0..62]
-			Visible = $true
-		}
+    # Dispose of any previous balloon tip notifications
+    If ($notifyIcon -ne $null) {
+        Try {
+            $NotifyIcon.Dispose()
+        }
+        Catch {}
+    }
 
-		$NotifyIcon.ShowBalloonTip($BalloonTipTime)
+	[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
+	$NotifyIcon = New-Object Windows.Forms.NotifyIcon -Property @{
+		BalloonTipIcon = $BalloonTipIcon
+		BalloonTipText = $BalloonTipText
+		BalloonTipTitle = $BalloonTipTitle
+		Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)
+		Text = -join $BalloonTipText[0..62]
+		Visible = $true
+	}
+    
+    Set-Variable -Name NotifyIcon -Value $NotifyIcon -Scope Global
+	$NotifyIcon.ShowBalloonTip($BalloonTipTime)
 
-		Switch ($Host.Runspace.ApartmentState) {
-			STA {
-				# Register a click event with action to take based on event for balloon message clicked
-				Register-ObjectEvent $NotifyIcon -EventName BalloonTipClicked -Action {$sender.Visible = $False; Unregister-Event $EventSubscriber.SourceIdentifier; Remove-Job $EventSubscriber.Action; $sender.Dispose()} | Out-Null
-				# Register a click event with action to take based on event for balloon message closed
-				Register-ObjectEvent $NotifyIcon -EventName BalloonTipClosed  -Action {$sender.Visible = $False; Unregister-Event $EventSubscriber.SourceIdentifier; Remove-Job $EventSubscriber.Action; $sender.Dispose()} | Out-Null
-				}
-			Default {
-				Continue
+	Switch ($Host.Runspace.ApartmentState) {
+		STA {
+			# Register a click event with action to take based on event for balloon message clicked
+			Register-ObjectEvent $NotifyIcon -EventName BalloonTipClicked -Action {$sender.Visible = $False; $NotifyIcon.Dispose(); Unregister-Event $EventSubscriber.SourceIdentifier; Remove-Job $EventSubscriber.Action;  $sender.Dispose();} | Out-Null
+			# Register a click event with action to take based on event for balloon message closed
+			Register-ObjectEvent $NotifyIcon -EventName BalloonTipClosed  -Action {$sender.Visible = $False; $NotifyIcon.Dispose(); Unregister-Event $EventSubscriber.SourceIdentifier; Remove-Job $EventSubscriber.Action; $sender.Dispose()} | Out-Null
 			}
+		Default {
+			Continue
 		}
 	}
-} 
+}
 
 Function Show-InstallationProgress {
 <# 
@@ -1921,37 +1974,40 @@ Function Show-InstallationProgress {
 	Param (
 		[string]$StatusMessage = $configProgressMessage
 	)
-	If ($deployModeSilent -ne $true) {
-		If ($envhost.Name -match "PowerGUI") {
-			Write-Log "Warning: $($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed."
-			Return
-		}
-		# Check if the progress thread is running before invoking methods on it
-		If ($Global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne "Running") {
-			# Notify user that the software installation has started
-			$balloonText = "$deploymentTypeName $configBalloonTextStart"
-			Show-BalloonTip -BalloonTipIcon "Info" -BalloonTipText "$balloonText"			   
-			# Calculate the position on the screen to place the progress dialog			
-			$screenBounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds	
-			# Create a synchronized hashtable to share objects between runspaces
-			$Global:ProgressSyncHash = [hashtable]::Synchronized(@{})
-			# Create a new runspace for the progress bar
-			$Global:ProgressRunspace =[runspacefactory]::CreateRunspace()
-			$Global:ProgressRunspace.ApartmentState = "STA"
-			$Global:ProgressRunspace.ThreadOptions = "ReuseThread"		  
-			$Global:ProgressRunspace.Open()
-			# Add the sync hash to the runspace
-			$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressSyncHash",$Global:ProgressSyncHash)   
-			# Add other variables from the parent thread required in the progress runspace
-			$Global:ProgressRunspace.SessionStateProxy.SetVariable("installTitle",$installTitle) 
-			$Global:ProgressRunspace.SessionStateProxy.SetVariable("screenBounds",$screenBounds)  
-			$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressStatusMessage",$statusMessage)   
-			$Global:ProgressRunspace.SessionStateProxy.SetVariable("AppDeployLogoIcon",$AppDeployLogoIcon)	  
+	If ($deployModeSilent -eq $true) { 
+		Return 
+	}
+	
+	If ($envhost.Name -match "PowerGUI") {
+		Write-Log "Warning: $($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed."
+		Return
+	}
+	# Check if the progress thread is running before invoking methods on it
+	If ($Global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne "Running") {
+		# Notify user that the software installation has started
+		$balloonText = "$deploymentTypeName $configBalloonTextStart"
+		Show-BalloonTip -BalloonTipIcon "Info" -BalloonTipText "$balloonText"			   
+        # Calculate the position on the screen to place the progress dialog			
+		$screenBounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds	
+		# Create a synchronized hashtable to share objects between runspaces
+		$Global:ProgressSyncHash = [hashtable]::Synchronized(@{})
+		# Create a new runspace for the progress bar
+		$Global:ProgressRunspace =[runspacefactory]::CreateRunspace()
+		$Global:ProgressRunspace.ApartmentState = "STA"
+		$Global:ProgressRunspace.ThreadOptions = "ReuseThread"		  
+		$Global:ProgressRunspace.Open()
+		# Add the sync hash to the runspace
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressSyncHash",$Global:ProgressSyncHash)   
+		# Add other variables from the parent thread required in the progress runspace
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("installTitle",$installTitle) 
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("screenBounds",$screenBounds)  
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressStatusMessage",$statusMessage)   
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("AppDeployLogoIcon",$AppDeployLogoIcon)	  
 
-			# Add the script block to be execution in the progress runspace		  
-			$progressCmd = [PowerShell]::Create().AddScript({   
+		# Add the script block to be execution in the progress runspace		  
+		$progressCmd = [PowerShell]::Create().AddScript({   
 
-			[xml]$xamlProgress = @"
+			[xml]$xamlProgress = @'
 			<Window
 			xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
@@ -2000,50 +2056,55 @@ Function Show-InstallationProgress {
 				</Ellipse>
 				</Grid>
 			</Window>
-"@
+'@
 
-				## Set the configurable values based using variables addded to the runspace from the parent thread   
-				# Select the screen heigth and width   
-				$screenWidth = $screenBounds | Select Width -ExpandProperty Width	
-				$screenHeight = $screenBounds | Select Height -ExpandProperty Height	
-				# Set the start position of the Window based on the screen size
-				$xamlProgress.Window.Left =  [string](($screenWidth / 2) - ($xamlProgress.Window.Width /2))
-				$xamlProgress.Window.Top = [string]($screenHeight / 10)
-				$xamlProgress.Window.Icon = $AppDeployLogoIcon 
-				$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage  
-				$xamlProgress.Window.Title = $installTitle
-				# Parse the XAML
-				$progressReader = (New-Object System.Xml.XmlNodeReader $xamlProgress)
-				$Global:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load( $progressReader )
-				$Global:ProgressSyncHash.ProgressText = $Global:ProgressSyncHash.Window.FindName("ProgressText")		   
-				# Add an action to the Window.Closing event handler to disable the close button				
-				$Global:ProgressSyncHash.Window.Add_Closing({$_.Cancel = $true}) 
-				# Allow the window to be dragged by clicking on it anywhere
-				$Global:ProgressSyncHash.Window.Add_MouseLeftButtonDown({$Global:ProgressSyncHash.Window.DragMove()})  
-				# Add a tooltip  
-				$Global:ProgressSyncHash.Window.ToolTip = $installTitle
-				$Global:ProgressSyncHash.Window.ShowDialog() | Out-Null
-				$Global:ProgressSyncHash.Error = $Error
-			})
+			## Set the configurable values based using variables addded to the runspace from the parent thread   
+			# Select the screen heigth and width   
+			$screenWidth = $screenBounds | Select Width -ExpandProperty Width	
+			$screenHeight = $screenBounds | Select Height -ExpandProperty Height	
+			# Set the start position of the Window based on the screen size
+			$xamlProgress.Window.Left =  [string](($screenWidth / 2) - ($xamlProgress.Window.Width /2))
+			$xamlProgress.Window.Top = [string]($screenHeight / 10)
+			$xamlProgress.Window.Icon = $AppDeployLogoIcon 
+			$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage  
+			$xamlProgress.Window.Title = $installTitle
+			# Parse the XAML
+			$progressReader = (New-Object System.Xml.XmlNodeReader $xamlProgress)
+			$Global:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load( $progressReader )
+			$Global:ProgressSyncHash.ProgressText = $Global:ProgressSyncHash.Window.FindName("ProgressText")		   
+			# Add an action to the Window.Closing event handler to disable the close button				
+			$Global:ProgressSyncHash.Window.Add_Closing({$_.Cancel = $true}) 
+			# Allow the window to be dragged by clicking on it anywhere
+			$Global:ProgressSyncHash.Window.Add_MouseLeftButtonDown({$Global:ProgressSyncHash.Window.DragMove()})  
+			# Add a tooltip  
+			$Global:ProgressSyncHash.Window.ToolTip = $installTitle
+			$Global:ProgressSyncHash.Window.ShowDialog() | Out-Null
+			$Global:ProgressSyncHash.Error = $Error
+		})
 
-			$progressCmd.Runspace = $Global:ProgressRunspace
-			Write-Log "Spinning up Progress Dialog in a separate thread with message: [$statusMessage]"
-			# Invoke the progress runspace
-			$progressData = $progressCmd.BeginInvoke()
-			# Allow the thread to be spin up safely before invoking actions against it.
-			Sleep -Seconds 1
-			If ($Global:ProgressSyncHash.Error -ne $null) {
-				Write-Log "Show-InstallationProgress Error: $($Global:ProgressSyncHash.Error)"
-			}
+		$progressCmd.Runspace = $Global:ProgressRunspace
+		Write-Log "Spinning up Progress Dialog in a separate thread with message: [$statusMessage]"
+		# Invoke the progress runspace
+		$progressData = $progressCmd.BeginInvoke()
+		# Allow the thread to be spin up safely before invoking actions against it.
+		Sleep -Seconds 1
+		If ($Global:ProgressSyncHash.Error -ne $null) {
+			Write-Log "Show-InstallationProgress Error: $($Global:ProgressSyncHash.Error)"
 		}
-		ElseIf ($Global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq "Running") {
-			# Allow time between updating the thread
-			Sleep -Seconds 1 			
-			# Check if the progress thread is running before invoking methods on it					  
-			Write-Log "Displaying Progress Message: [$statusMessage]"
-			# Update the progress text
-			$Global:ProgressSyncHash.Window.Dispatcher.Invoke("Normal",[action]{$Global:ProgressSyncHash.ProgressText.Text =$statusMessage})		   
-		}
+	}
+    # Check if the progress thread is running before invoking methods on it
+	ElseIf ($Global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq "Running") {
+		# Allow time between updating the thread
+		Sleep -Seconds 1 							  
+		Write-Log "Updating Progress Message: [$statusMessage]"
+		# Update the progress text
+		Try {
+            $Global:ProgressSyncHash.Window.Dispatcher.Invoke([System.Action]{$Global:ProgressSyncHash.ProgressText.Text = $statusMessage},[System.Windows.Threading.DispatcherPriority]"Normal")		   
+        }
+        Catch {
+            $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
+		    Write-Log "Warning: $exceptionMessage" 	       
+        }
 	}
 }
 
@@ -2104,8 +2165,7 @@ Function Set-PinnedApplication {
 		Param([string]$FilePath,$verb)
 		$verb = $verb.Replace("&","")
 		$path = Split-Path $FilePath -ErrorAction SilentlyContinue
-		$shell = New-Object -Com "Shell.Application" -ErrorAction SilentlyContinue
-		$folder = $shell.Namespace($path)	   
+		$folder = $shellApp.Namespace($path)	   
 		$item = $folder.Parsename((Split-Path $FilePath -leaf -ErrorAction SilentlyContinue))
 		$itemVerb = $item.Verbs() | ? {$_.Name.Replace("&","") -eq $verb} -ErrorAction SilentlyContinue
 		If ($itemVerb -eq $null) {
@@ -2621,6 +2681,15 @@ Else {
 # Dot Source script extensions
 If ($appDeployToolkitDotSources -ne "") { 
 	Get-ChildItem "$scriptRoot\*.*" -Include $appDeployToolkitDotSources -ErrorAction SilentlyContinue | Sort Name -Descending | Select FullName -ExpandProperty FullName -ErrorAction Stop | % { .$_ }
+}
+
+# Check for errors or warnings loading assemblies.
+If ($AssemblyError -ne $null) {
+    Write-Log "Errors detected loading assemblies."
+    $AssemblyError | Where { $_.Exception.Message -ne $null } | % { Write-Log "$($_.Exception.Message) $($_.ScriptStackTrace)"}
+}
+If ($AssemblyWarning -ne $null) {  
+    Write-Log "Warnings detected loading assemblies."
 }
 
 Write-Log "$installName setup started."

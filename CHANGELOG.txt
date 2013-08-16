@@ -1,3 +1,9 @@
+Version 2.0.1
+08/16/2013	SL	New Show-DialogBox parameters: TopMost and DefaultButton. Specify whether dialog box is topmost (new default) and specify default selected button.
+		DC	Fixed issue with long file names when removing certain types of software using Remove-MSIApplications.
+		SL	Added ability to turn automatic balloon notifications on or off in the XML config file.
+		SL	Attempted to fix issue with stale balloon notifications.
+		SL	Attempted to fix issue with installation progress not updating or hanging.
 Version 2.0.0	
-08/07/2013	SL/DC	Initial Public Release	
+08/07/2013	SL/DC	Initial Public Release.	
 
