@@ -23,15 +23,65 @@
 #*=============================================
 
 # Variables: Script
-$appDeployExtScriptFriendlyName = "App Deploy Toolkit Extensions"
-$appDeployExtScriptVersion = "1.0.0"
-$appDeployExtScriptDate = "08/07/2013"
+$appDeployExtScriptFriendlyName = "App Deploy Toolkit Extensions (PwC)"
+$appDeployExtScriptVersion = "2.1.0"
+$appDeployExtScriptDate = "08/16/2013"
+$appDeployExtScriptParameters = $psBoundParameters
 
 #*=============================================
 #* FUNCTION LISTINGS
 #*=============================================
 
-### Place your custom functions here ###
+# Determines whether a database exists in the system.
+Function Test-Database {
+	Param (
+	[string] $SQLServer,
+	[string] $DBName)
+
+	Write-Log "Checking for existence of database [$SQLServer - $DBName]..."
+
+	$dbExists = $false
+	Try {
+		# we set this to null so that nothing is displayed
+		$null = [Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Smo")
+		# Get reference to database instance
+		$server = new-object ("Microsoft.SqlServer.Management.Smo.Server") $SQLServer
+		ForEach($db in $server.databases) { 
+			If ($db.name -eq $DBName) { 
+				$dbExists = $true 
+			}
+		}
+	}
+	Catch { $dbExists = $false }
+
+	If ($dbExists -eq $true) { Write-Log "Database [$SQLServer - $DBName] exists" } Else { Write-Log "Database [$SQLServer - $DBName] does not exist" }
+
+	Return $dbExists
+}
+
+Function Get-SQLVersion {
+
+	Write-Log "Getting SQL version information"
+	
+	$sqlVersion = New-Object PSObject
+
+	$sqlInstances = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server" -ErrorAction SilentlyContinue | Get-ItemProperty | Select "InstalledInstances" -ExpandProperty "InstalledInstances"
+	ForEach ($sqlInstance In $sqlInstances) {
+		$sqlInstancePath = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL" -ErrorAction SilentlyContinue | Get-ItemProperty | Select "$sqlInstance" -ExpandProperty "$sqlInstance"
+		$sqlEdition = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstancePath\Setup" -ErrorAction SilentlyContinue | Get-ItemProperty | Select "Edition" -ExpandProperty "Edition"
+		$sqlVersion = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstancePath\Setup" -ErrorAction SilentlyContinue | Get-ItemProperty | Select "Version" -ExpandProperty "Version"
+		$sqlPatchLevel = Get-Item "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$sqlInstancePath\Setup" -ErrorAction SilentlyContinue | Get-ItemProperty | Select "PatchLevel" -ExpandProperty "PatchLevel"
+	}
+
+	Write-Log "SQL Edition: $sqlEdition. Version: $sqlVersion. Patch Level: $sqlPatchLevel"
+
+	$sqlVersion | Add-Member -MemberType NoteProperty -Name Edition -Value $sqlEdition
+	$sqlVersion | Add-Member -MemberType NoteProperty -Name Version -Value $sqlVersion
+	$sqlVersion | Add-Member -MemberType NoteProperty -Name PatchLevel -Value $sqlPatchLevel
+	
+	Return $sqlVersion.Version
+	
+}
 
 #*=============================================
 #* END FUNCTION LISTINGS

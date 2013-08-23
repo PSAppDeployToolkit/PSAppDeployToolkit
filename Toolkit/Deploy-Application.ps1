@@ -31,10 +31,10 @@
 "#>
 Param (
 	[ValidateSet("Install","Uninstall")] 
-	[string]$DeploymentType = "Install",	 
+	[string] $DeploymentType = "Install",
 	[ValidateSet("Interactive","Silent","NonInteractive")]
-	[string]$DeployMode = "Interactive",
-	[switch]$AllowRebootPassThru = $false
+	[string] $DeployMode = "Interactive",
+	[switch] $AllowRebootPassThru = $false
 )
 
 #*===============================================
@@ -59,8 +59,9 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "2.0.1"
-$deployAppScriptDate = "08/16/2013"
+$deployAppScriptVersion = "3.0.0"
+$deployAppScriptDate = "08/21/2013"
+$deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -76,30 +77,43 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
-	# Show Progress Message (with the default message)
-	Show-InstallationProgress 
+	# Show Welcome Message, close Internet Explorer if required, and allow up to 3 deferrals
+	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3
 
+	# Show Progress Message (with the default message)
+	Show-InstallationProgress
+
+	# Perform pre-installation tasks here
 
 #*===============================================
 #* INSTALLATION 
 $installPhase = "Installation"
 #*===============================================
 
+	# Perform installation tasks here
 
 #*===============================================
 #* POST-INSTALLATION
 $installPhase = "Post-Installation"
 #*===============================================
 
+	# Perform post-installation tasks here
+
+	# Display a message at the end of the install
+	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok"
 
 #*===============================================
 #* UNINSTALLATION
 } ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"
 #*===============================================
 
+	# Show Welcome Message, close Internet Explorer if required with a 60 second countdown before automatically closing
+	Show-InstallationWelcome -CloseApps "iexplore" -CloseAppsCountdown "60"
+
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
+	# Perform uninstallation tasks here
 
 #*===============================================
 #* END SCRIPT BODY
