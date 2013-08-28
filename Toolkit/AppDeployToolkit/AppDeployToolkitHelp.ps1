@@ -22,7 +22,7 @@ $appDeployHelpScriptDate = "08/07/2013"
 # Variables: Environment
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 # Dot source the App Deploy Toolkit Functions
-."$scriptDirectory\AppDeployToolkitMain.ps1"
+."$scriptDirectory\AppDeployToolkitMain.ps1" -DisableLogging
 
 #*=============================================
 #* END VARIABLE DECLARATION
@@ -84,7 +84,7 @@ $HelpListBox.add_SelectedIndexChanged(
 	}
 )
 
-$helpFunctions = Get-Command -CommandType Function | Where {$_.HelpUri -match "psappdeploytoolkit" -and ($_.Definition -notmatch "internal script function" -or $_.Definition -notmatch "deprecated")} | Select Name -ExpandProperty Name
+$helpFunctions = Get-Command -CommandType Function | Where {$_.HelpUri -match "psappdeploytoolkit" -and $_.Definition -notmatch "internal script function"} | Select Name -ExpandProperty Name
 Foreach ($helpFunction in $helpFunctions) {
 	$HelpListBox.Items.Add($helpFunction) | Out-Null 
 }

@@ -12,7 +12,7 @@
 .EXAMPLE
 	Deploy-Application.ps1 -DeploymentType "Silent"
 .EXAMPLE
-	Deploy-Application.ps1 -AllowSCCMReboot -AllowDefer
+	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
 	Deploy-Application.ps1 -Uninstall 
 .PARAMETER DeploymentType
@@ -59,8 +59,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.0"
-$deployAppScriptDate = "08/21/2013"
+$deployAppScriptVersion = "3.0.1"
+$deployAppScriptDate = "08/28/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment

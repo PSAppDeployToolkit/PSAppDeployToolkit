@@ -1,41 +1,52 @@
-Version 3.0.0
-		Each UI element now has a customizable banner
-		Show-InstallationWelcome function
-			Replaces Stop-RunningApplications (deprecated) and presents a unified welcome screen
-			Deferral system. Ability to defer installation x number of times / days / until deadline date
-			Ability to force closing applications after a countdown period
-		Show-InstallationPrompt function
-			Replaces Show-DialogBox (deprecated)
-			Standardised UI with the rest of the toolkit
-			Customisable text and 3 buttons
-		Show-InstallationRestartPrompt function
-			Displays a restart prompt with a countdown to a forced restart, independant of SCCM restart mechanism
-		Invoke-SCCMTask function
-			Replaces Update-SCCMInventory and Update-SCCMDeployments (deprecated)
-			No longer reliant on COM object which could cause issues on x64 machines
-		Get-UniversalDate function
-		Write-Log now works with the PowerShell Pipeline and -PassThru
-		Set-RegistryKey now accepts arrays
-		Improved error handling: ContinueOnError switch allows to to control the error action for functions that fail. ContinueOnErrorGlobalPreference allows you to debug the script to detect errors in functions.
-		Fixed issue with BlockExecution failing under PowerShell v2
-		Fixed issue with Show-InstallationProgress failing on .NET Framework versions prior to 4.5
-		Fixed issue with command-line parameters not being passed through Deploy-Application.exe on x86 operating systems
-		Test-MSUpdates KB regex matching is now case insensitive
-		Parameters passed to scripts are now logged.
+Version 3.0.1 - 08/28/2013
+	Fixed issue where using NonInteractive DeployMode would cause a bluescreen (!!!)
+	Fixed issue where Remove-MSIApplications would only remove the first application if multiple matches were made
+	Fixed issue where automatic timeout of Welcome screen was not triggered
+	Fixed issue where automatic timeout of installation prompt caused a .NET exception
+	Fixed help system to work with Standard User rights
+	Fixed text cutoff issue with non-English languages
+	Minor fixes to the help information and default template
+	Updated French translation
 
-Backwards Compatibility Considerations:
+Version 3.0.0 - 08/23/2013
+	Each UI element now has a customizable banner
+	Show-InstallationWelcome function
+		Replaces Stop-RunningApplications (deprecated) and presents a unified welcome screen
+		Deferral system. Ability to defer installation x number of times / days / until deadline date
+		Ability to force closing applications after a countdown period
+	Show-InstallationPrompt function
+		Replaces Show-DialogBox (deprecated)
+		Standardised UI with the rest of the toolkit
+		Customisable text and 3 buttons
+	Show-InstallationRestartPrompt function
+		Displays a restart prompt with a countdown to a forced restart, independant of SCCM restart mechanism
+	Invoke-SCCMTask function
+		Replaces Update-SCCMInventory and Update-SCCMDeployments (deprecated)
+		No longer reliant on COM object which could cause issues on x64 machines
+	Get-UniversalDate function
+	Write-Log now works with the PowerShell Pipeline and -PassThru
+	Set-RegistryKey now accepts arrays
+	Improved error handling: ContinueOnError switch allows to to control the error action for functions that fail. ContinueOnErrorGlobalPreference allows you to debug the script to detect errors in functions.
+	Fixed issue with BlockExecution failing under PowerShell v2
+	Fixed issue with Show-InstallationProgress failing on .NET Framework versions prior to 4.5
+	Fixed issue with command-line parameters not being passed through Deploy-Application.exe on x86 operating systems
+	Test-MSUpdates KB regex matching is now case insensitive
+	Parameters passed to scripts are now logged.
+
+	Backwards Compatibility Considerations:
 
 		The following functions have been deprecated and are no longer supported:
 		Stop-RunningApplications
 		Update-SCCMInventory
 		Update-SCCMDeployments
 
-Version 2.0.1
-08/15/2013	SL	New Show-DialogBox parameters: TopMost and DefaultButton. Specify whether dialog box is topmost (new default) and specify default selected button.
-		DC			Fixed issue with long file names when removing certain types of software using Remove-MSIApplications.
-		SL	Added ability to turn automatic balloon notifications on or off in the XML config file.
-		SL	Attempted to fix issue with stale balloon notifications.
-		SL	Attempted to fix issue with installation progress not updating or hanging.
-Version 2.0.0	
-08/07/2013	SL/DC	Initial Public Release.	
+Version 2.0.1 - 08/15/201
+	New Show-DialogBox parameters: TopMost and DefaultButton. Specify whether dialog box is topmost (new default) and specify default selected button.
+	Fixed issue with long file names when removing certain types of software using Remove-MSIApplications.
+	Added ability to turn automatic balloon notifications on or off in the XML config file.
+	Attempted to fix issue with stale balloon notifications.
+	Attempted to fix issue with installation progress not updating or hanging.
+
+Version 2.0.0 - 08/07/2013
+	Initial Public Release.	
 
