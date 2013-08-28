@@ -56,7 +56,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.1"
+$appDeployMainScriptVersion = "3.0.2"
 $appDeployMainScriptDate = "08/28/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
@@ -389,17 +389,25 @@ Function Show-InstallationPrompt {
 	Show-InstallationPrompt -Message "Do you want to proceed with the installation?" -buttonRightText "Yes" -buttonLeftText "No"
 .EXAMPLE
 	Show-InstallationPrompt -Title "Funny Prompt" -Message "How are you feeling today?" -ButtonRightText "Good" -ButtonLeftText "Bad" -ButtonMiddleText "Indifferent"
+.EXAMPLE
+	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -Icon Information -NoWait
 .PARAMETER Title
 	Title of the prompt
 	[Default is the application installation name]
 .PARAMETER Message
-	Message text to be included in the prompt 
+	Message text to be included in the prompt
+.PARAMETER MessageAlignment
+	Alignment of the message text (Left,Center,Right) [Default is Center]
 .PARAMETER ButtonLeftText
 	Show a button on the left of the prompt with the specified text
 .PARAMETER ButtonRightText
-	Show a button on the right of the prompt with the specified text
+	Show a button on the right of the prompt with the specified text [Default is OK]
 .PARAMETER ButtonMiddleText
 	Show a button in the middle of the prompt with the specified text
+.PARAMETER Icon
+	Show a system icon in the prompt ("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo") [Default is "None"]
+.PARAMETER NoWait
+	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response) [Default is $false]
 .NOTES	
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -407,20 +415,29 @@ Function Show-InstallationPrompt {
 	Param (
 		$Title = $installTitle,
 		$Message = $null,
-		$ButtonRightText = $null,
+        [ValidateSet("Left","Center","Right")]
+        $MessageAlignment = "Center",
+		$ButtonRightText = "OK",
 		$ButtonLeftText = $null,
-		$ButtonMiddleText = $null
+		$ButtonMiddleText = $null,
+        [ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
+        [string] $Icon = "None",
+        [switch] $NoWait = $false
 	)	
+
+    # Get parameters for calling function asynchronously
+    $installPromptParameters = $psBoundParameters
 
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	$formInstallationPrompt = New-Object System.Windows.Forms.Form
 	$pictureBanner = New-Object System.Windows.Forms.PictureBox
+	$pictureIcon = New-Object System.Windows.Forms.PictureBox
 	$labelText = New-Object System.Windows.Forms.Label
 	$buttonRight = New-Object System.Windows.Forms.Button
 	$buttonMiddle = New-Object System.Windows.Forms.Button
 	$buttonLeft = New-Object System.Windows.Forms.Button
 	$buttonAbort = New-Object System.Windows.Forms.Button
-	$InitialInstallWelcomeFormWindowState = New-Object System.Windows.Forms.FormWindowState
+	$InitialFormInstallationPromptWindowState = New-Object System.Windows.Forms.FormWindowState
 	
 	$Form_Cleanup_FormClosed=
 	{
@@ -442,8 +459,8 @@ Function Show-InstallationPrompt {
 
 	$Form_StateCorrection_Load=
 	{
-		#Correct the initial state of the form to prevent the .Net maximized form issue
-		$formInstallationPrompt.WindowState = $InitialFormWindowState
+		# Correct the initial state of the form to prevent the .Net maximized form issue
+		$formInstallationPrompt.WindowState = 'Normal'
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.TopMost = $true
 		$formInstallationPrompt.BringToFront()
@@ -492,22 +509,40 @@ Function Show-InstallationPrompt {
 	$pictureBanner.TabIndex = 0
 	$pictureBanner.TabStop = $False
 
+    # Picture Icon
+	$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
+    If ($icon -ne "None") {
+	    $pictureIcon.Image = ([System.Drawing.SystemIcons]::$Icon).ToBitmap()
+    }
+	$System_Drawing_Point = New-Object System.Drawing.Point
+	$System_Drawing_Point.X = 10
+	$System_Drawing_Point.Y = 105
+	$pictureIcon.Location = $System_Drawing_Point
+	$pictureIcon.Name = "pictureIcon"
+	$System_Drawing_Size = New-Object System.Drawing.Size
+	$System_Drawing_Size.Height = 32
+	$System_Drawing_Size.Width = 32
+	$pictureIcon.Size = $System_Drawing_Size
+	$pictureIcon.Margin = $paddingNone   
+	$pictureIcon.TabIndex = 0
+	$pictureIcon.TabStop = $False
+    
 	# Label Text
 	$labelText.DataBindings.DefaultDataSourceUpdateMode = 0
 	$labelText.Name = "labelText"
 	$System_Drawing_Size = New-Object System.Drawing.Size
-	$System_Drawing_Size.Height = 152	
-	$System_Drawing_Size.Width = 430
+	$System_Drawing_Size.Height = 148	
+	$System_Drawing_Size.Width = 390
 	$labelText.Size = $System_Drawing_Size
 	$System_Drawing_Point = New-Object System.Drawing.Point
-	$System_Drawing_Point.X = 0
-	$System_Drawing_Point.Y = 30  
+	$System_Drawing_Point.X = 20
+	$System_Drawing_Point.Y = 50  
 	$labelText.Location = $System_Drawing_Point
 	$labelText.Margin = "0,0,0,0"
 	$labelText.Padding = $labelPadding
 	$labelText.TabIndex = 1   
 	$labelText.Text = $message
-	$labelText.TextAlign = 'MiddleCenter'
+	$labelText.TextAlign = "Middle$($MessageAlignment)"
 	$labelText.Anchor = "Top"
 	$labelText.add_Click($handler_labelText_Click)
 
@@ -556,9 +591,9 @@ Function Show-InstallationPrompt {
 	$buttonAbort.UseVisualStyleBackColor = $True
 	$buttonAbort.add_Click($buttonAbort_OnClick)
 
-	# Form Welcome
+	# Form Installation Prompt
 	$System_Drawing_Size = New-Object System.Drawing.Size
-	$System_Drawing_Size.Height = 200
+	$System_Drawing_Size.Height = 270
 	$System_Drawing_Size.Width = 450
 	$formInstallationPrompt.Size = $System_Drawing_Size
 	$formInstallationPrompt.Padding = "0,0,0,10"
@@ -568,10 +603,13 @@ Function Show-InstallationPrompt {
 	$formInstallationPrompt.Text = $title
 	$formInstallationPrompt.StartPosition = 'CenterScreen'
 	$formInstallationPrompt.FormBorderStyle = 'FixedDialog'
+    $formInstallationPrompt.MaximizeBox = $false
+    $formInstallationPrompt.MinimizeBox = $false
 	$formInstallationPrompt.TopMost = $True
 	$formInstallationPrompt.TopLevel = $True 
 	$formInstallationPrompt.Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)	
 	$formInstallationPrompt.Controls.Add($pictureBanner)
+    $formInstallationPrompt.Controls.Add($pictureIcon)
 	$formInstallationPrompt.Controls.Add($labelText)   
 	$formInstallationPrompt.Controls.Add($buttonAbort)
 	If ($buttonLeftText) {
@@ -593,7 +631,7 @@ Function Show-InstallationPrompt {
 	})
 
 	# Save the initial state of the form
-	$InitialFormWindowState = $formInstallationPrompt.WindowState
+	$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 	# Init the OnLoad event to correct the initial state of the form
 	$formInstallationPrompt.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
@@ -604,23 +642,39 @@ Function Show-InstallationPrompt {
 
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
+    
+    $installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " " 
+    Write-Log "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]..."
 
-	# Keep showing the dialog if the user cancels it
-	$showDialog = $true
-	While ($showDialog -eq $true) {
-		# Show the Form 
-		$result = $formInstallationPrompt.ShowDialog()  
-		If ($result -eq "Yes" -or $result -eq "No" -or $result -eq "Ignore" -or $result -eq "Abort") { 
-			$showDialog = $false
-		}
-	}
+    # If the NoWait parameter is specified, show the prompt asynchronously
+	If ($NoWait -eq $true) {
+        $installationPromptJob = [PowerShell]::Create().AddScript({
+            Param($scriptPath,$installPromptParameters)
+            .$scriptPath        
+            $installPromptParameters.Remove("NoWait")
+            Show-InstallationPrompt @installPromptParameters
+        }).AddArgument($scriptPath).AddArgument($installPromptParameters)
+        # Show the form asynchronously
+        $installationPromptJobResult = $installationPromptJob.BeginInvoke()
+    }
+    # Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
+    Else {
+	    $showDialog = $true
+	    While ($showDialog -eq $true) {
+		    # Show the Form 
+		    $result = $formInstallationPrompt.ShowDialog()  
+		    If ($result -eq "Yes" -or $result -eq "No" -or $result -eq "Ignore" -or $result -eq "Abort") { 
+			    $showDialog = $false
+		    }
+	    }
 	
-	Switch ($result) {
-		"Yes" { Return $buttonRightText}
-		"No" { Return $buttonLeftText}
-		"Ignore" { Return $buttonMiddleText}
-		"Abort" { Exit-Script 1618 }
-	}
+	    Switch ($result) {
+		    "Yes" { Return $buttonRightText}
+		    "No" { Return $buttonLeftText}
+		    "Ignore" { Return $buttonMiddleText}
+		    "Abort" { Exit-Script 1618 }
+	    }
+    }
   
 } #End Function
 
@@ -667,10 +721,13 @@ Function Show-DialogBox {
 	[ValidateNotNullorEmpty()]
 	[Parameter(Position=0,Mandatory=$True,HelpMessage="Enter a message for the dialog box")]
 	[string] $Text,
-	[string] $Title = $installTitle,	
+	[string] $Title = $installTitle,
+    [ValidateSet("OK","OKCancel","AbortRetryIgnore","YesNoCancel","YesNo","RetryCancel","CancelTryAgainContinue")] 	
 	[string] $Buttons = "OK",
+    [ValidateSet("First","Second","Third")] 
 	[string] $DefaultButton = "First",
-	[string] $Icon = "None",
+    [ValidateSet("Exclamation","Information","None","Stop","Question")] 
+    [string] $Icon = "None",
 	[string] $Timeout = $configInstallationUITimeout,
 	[switch] $TopMost = $true
  	)
@@ -2342,7 +2399,7 @@ Function Show-WelcomePrompt {
 	$buttonDefer = New-Object System.Windows.Forms.Button
 	$buttonCloseApps = New-Object System.Windows.Forms.Button
 	$buttonAbort = New-Object System.Windows.Forms.Button
-	$InitialInstallWelcomeFormWindowState = New-Object System.Windows.Forms.FormWindowState
+	$formWelcomeWindowState = New-Object System.Windows.Forms.FormWindowState
 	$flowLayoutPanel = New-Object System.Windows.Forms.FlowLayoutPanel
 	$panelButtons = New-Object System.Windows.Forms.Panel
 
@@ -2368,7 +2425,7 @@ Function Show-WelcomePrompt {
 	$Form_StateCorrection_Load=
 	{
 		#Correct the initial state of the form to prevent the .Net maximized form issue
-		$formWelcome.WindowState = $InitialFormWindowState
+		$formWelcome.WindowState = 'Normal'
 		$formWelcome.AutoSize = $true
 		$formWelcome.TopMost = $true
 		$formWelcome.BringToFront()
@@ -2621,6 +2678,8 @@ Function Show-WelcomePrompt {
 	$formWelcome.Text = $installTitle
 	$formWelcome.StartPosition = 'CenterScreen'
 	$formWelcome.FormBorderStyle = 'FixedDialog'
+	$formWelcome.MaximizeBox = $False
+	$formWelcome.MinimizeBox = $False
 	$formWelcome.TopMost = $True
 	$formWelcome.TopLevel = $True 
 	$formWelcome.Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)
@@ -2661,7 +2720,7 @@ Function Show-WelcomePrompt {
 	$timer.add_Tick($timer_Tick)
 
 	# Save the initial state of the form
-	$InitialFormWindowState = $formWelcome.WindowState
+	$formWelcomeWindowState = $formWelcome.WindowState
 	# Init the OnLoad event to correct the initial state of the form
 	$formWelcome.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
@@ -3074,7 +3133,7 @@ Function Show-InstallationProgress {
 			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
 			x:Name="Window" Title=""
 			MaxHeight="200" MinHeight="180" Height="180" 
-			MaxWidth="456" MinWidth="456" Width="456"
+			MaxWidth="456" MinWidth="456" Width="456" Padding="0,0,0,0" Margin="0,0,0,0"
 			WindowStartupLocation = "Manual"
 			Top=""
 			Left=""
@@ -3104,7 +3163,7 @@ Function Show-InstallationProgress {
 					<ColumnDefinition Width="*"></ColumnDefinition>
 				</Grid.ColumnDefinitions>
 				<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source=""></Image>
-				<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,45,10" Text="" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="15" TextWrapping="Wrap"></TextBlock>
+				<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,5,45,10" Text="" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="15" TextWrapping="Wrap"></TextBlock>
 				<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
 					<Ellipse.RenderTransform>
 						<TransformGroup>
@@ -3663,6 +3722,7 @@ Function Invoke-SCCMTask {
 #>
 	[CmdletBinding()]
 	Param(
+        [ValidateSet("HardwareInventory","SoftwareInventory","HeartbeatDiscovery","SoftwareInventoryFileCollection","RequestMachinePolicy","EvaluateMachinePolicy","LocationServicesCleanup","SoftwareMeteringReport","SourceUpdate","PolicyAgentCleanup","RequestMachinePolicy2","CertificateMaintenance","PeerDistributionPointStatus","PeerDistributionPointProvisioning","ComplianceIntervalEnforcement","SoftwareUpdatesAgentAssignmentEvaluation","UploadStateMessage","StateMessageManager","SoftwareUpdatesScan","AMTProvisionCycle")]
 		[string] $ScheduleID,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
@@ -3910,3 +3970,4 @@ If (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]
 #*=============================================
 #* END SCRIPT BODY
 #*=============================================
+
