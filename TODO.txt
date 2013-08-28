@@ -1,11 +1,11 @@
 Add Features:
 
+- Option to match exact process name for CloseApps.
 - Possible to trigger invocation of the scheduled task when the PowerShell process exits?
+- Self-elevation option?
 
 Bug Fixes:
 
-- Fix balloon tips not disappearing in a timely manner
-- Install-SCCMSoftwareUpdates: Check for SCCM client installation
 
 Documentation:
 

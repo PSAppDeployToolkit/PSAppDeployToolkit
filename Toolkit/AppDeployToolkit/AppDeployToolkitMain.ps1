@@ -3853,7 +3853,7 @@ If ($showBlockedAppDialog -eq $true) {
 		$deployModeSilent = $true
 		$installName = $ReferringApplication
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
-		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -ButtonRightText "OK"
+		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning
 		Exit-Script -ExitCode 0
 	} 
 	Catch {

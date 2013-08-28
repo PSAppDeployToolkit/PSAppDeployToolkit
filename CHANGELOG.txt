@@ -1,3 +1,13 @@
+Version 3.0.2 08/28/2013
+
+	Show-InstallationPrompt enhancements
+		MessageAlignment - align message text on the prompt 
+		Icon - display a system icon on the prompt
+		NoWait - display the prompt asynchronously and continue the script without waiting for user response
+		Costmetic improvements
+	Added parameter validation to Invoke-SCCMTask
+	Costmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
+
 Version 3.0.1 - 08/28/2013
 	Fixed issue where using NonInteractive DeployMode would cause a bluescreen (!!!)
 	Fixed issue where Remove-MSIApplications would only remove the first application if multiple matches were made

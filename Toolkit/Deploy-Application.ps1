@@ -59,7 +59,7 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.1"
+$deployAppScriptVersion = "3.0.2"
 $deployAppScriptDate = "08/28/2013"
 $deployAppScriptParameters = $psBoundParameters
 
@@ -100,7 +100,7 @@ $installPhase = "Post-Installation"
 	# Perform post-installation tasks here
 
 	# Display a message at the end of the install
-	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok"
+	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
 
 #*===============================================
 #* UNINSTALLATION
