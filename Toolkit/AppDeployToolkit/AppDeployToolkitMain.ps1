@@ -501,7 +501,7 @@ Function Show-InstallationPrompt {
 	    $pictureIcon.Image = ([System.Drawing.SystemIcons]::$Icon).ToBitmap()
     }
 	$System_Drawing_Point = New-Object System.Drawing.Point
-	$System_Drawing_Point.X = 10
+	$System_Drawing_Point.X = 15
 	$System_Drawing_Point.Y = 105
 	$pictureIcon.Location = $System_Drawing_Point
 	$pictureIcon.Name = "pictureIcon"
@@ -518,10 +518,10 @@ Function Show-InstallationPrompt {
 	$labelText.Name = "labelText"
 	$System_Drawing_Size = New-Object System.Drawing.Size
 	$System_Drawing_Size.Height = 148	
-	$System_Drawing_Size.Width = 390
+	$System_Drawing_Size.Width = 385
 	$labelText.Size = $System_Drawing_Size
 	$System_Drawing_Point = New-Object System.Drawing.Point
-	$System_Drawing_Point.X = 20
+	$System_Drawing_Point.X = 25
 	$System_Drawing_Point.Y = 50  
 	$labelText.Location = $System_Drawing_Point
 	$labelText.Margin = "0,0,0,0"
@@ -2177,13 +2177,19 @@ Function Show-InstallationWelcome {
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
 
+    # Check disk space requirements if specified
 	If ($CheckDiskSpace -eq $true) {
         Write-Log "Evaluating disk space requirements..."
         $freeDiskSpace = Get-FreeDiskSpace
-		If ($RequiredDiskSpace -eq 0) {
-			# Determine the size of the Files folder
-			$fso = New-Object -COM Scripting.FileSystemObject -ErrorAction SilentlyContinue
-			$RequiredDiskSpace = [Math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
+		If (!($RequiredDiskSpace)) {
+            Try {
+			    # Determine the size of the Files folder
+			    $fso = New-Object -COM Scripting.FileSystemObject -ErrorAction SilentlyContinue
+			    $RequiredDiskSpace = [Math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
+            }
+            Catch {
+                Write-Log "Error calculating required disk space from source files."
+            }
 		}
 		If (($freeDiskSpace) -lt $RequiredDiskSpace) {
 			Write-Log "Minimum hard disk space requirement not met. Space Required [$($RequiredDiskSpace)MB], Space Available [$($freeDiskSpace)MB]."
@@ -2214,7 +2220,7 @@ Function Show-InstallationWelcome {
 		$deferHistoryTimes = $deferHistory | Select DeferTimesRemaining -ExpandProperty DeferTimesRemaining -ErrorAction SilentlyContinue
 		$deferHistoryDeadline = $deferHistory | Select DeferDeadline -ExpandProperty DeferDeadline -ErrorAction SilentlyContinue  
 		# Reset Switches 
-		$checkDeferDays = $checkDeferDeadline = $false
+        $checkDeferDays = $checkDeferDeadline = $false
 		If ($DeferDays) {$checkDeferDays = $true}
 		If ($DeferDeadline) {$checkDeferDeadline = $true} 
 		If ($DeferTimes) {
@@ -2263,7 +2269,7 @@ Function Show-InstallationWelcome {
 			} 
 		}
 	}
-	If (!($deferTimes) -and !($deferDeadlineUniversal)) {
+	If (($deferTimes -lt 0) -and !($deferDeadlineUniversal)) {
 		$AllowDefer = $false
 	}
 

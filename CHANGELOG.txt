@@ -1,8 +1,7 @@
 Version 3.0.2 08/29/2013
 
 	Added CheckDiskSpace and RequiredDiskSpace parameters to Show-InstallationWelcome
-		If CheckDiskSpace is set to $true, disk space will be evaluated before showing the Welcome screen. If not, an error message will be displayed and a Fast Retry (1618) exit code generated
-		Specify required disk space in MB using RequiredDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
+		If CheckDiskSpace parameter is used, disk space will be evaluated before showing the Welcome screen. If disk space requirements are not met, an error message will be displayed and a Fast Retry (1618) exit code generated. The disk space requirements are calculated automatically based on the size of the source files or by specifying the required space in MB using the RequiredDiskSpace parameter. 
 	Added Get-FreeDiskSpace function (returns value in MB)
 	Show-InstallationPrompt enhancements
 		MessageAlignment - align message text on the prompt 
