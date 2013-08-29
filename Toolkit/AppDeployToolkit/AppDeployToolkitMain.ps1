@@ -41,7 +41,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.2"
-$appDeployMainScriptDate = "08/28/2013"
+$appDeployMainScriptDate = "08/29/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -61,6 +61,7 @@ $envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction SilentlyContinu
 $envProgramFilesx86 = "${env:ProgramFiles(x86)}"
 $envProgramData = $env:PROGRAMDATA
 $envPublic = $env:PUBLIC
+$envSystemDrive = $env:SYSTEMDRIVE
 $envTemp = $env:TEMP
 $envUserDNSDomain = $env:USERDNSDOMAIN
 $envUserDomain = $env:USERDOMAIN
@@ -131,6 +132,7 @@ If ($xmlUIMessages -eq $null) {
 	$xmlUIMessageLanguage = "UI_Messages_EN"
 	$xmlUIMessages = $xmlConfig.$xmlMessageUILanguage
 }
+$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 $configBalloonTextStart = $xmlUIMessages.BalloonText_Start
 $configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
 $configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
@@ -346,13 +348,13 @@ Function Exit-Script {
 		Show-BalloonTip -BalloonTipIcon "Info" -BalloonTipText "$balloonText"
 	} 
 	ElseIf ($installSuccess -eq $false) {
-		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."		
+		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."
 		If ($exitCode -eq 1618) {
-			$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"			   
+			$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
 			Show-BalloonTip -BalloonTipIcon "Warning" -BalloonTipText "$balloonText"
 		}
 		Else {
-			$balloonText = "$deploymentTypeName $configBalloonTextError"			
+			$balloonText = "$deploymentTypeName $configBalloonTextError"
 			Show-BalloonTip -BalloonTipIcon "Error" -BalloonTipText "$balloonText"
 		}
 	}
@@ -836,6 +838,39 @@ Function Get-HardwarePlatform {
 	ElseIf ($hwMakeModel.model -like "*Virtual*") {$hwType = "Virtual"}
 	Else {$hwType = "Physical"}
 	Return $hwType
+}
+
+Function Get-FreeDiskSpace {
+<# 
+.SYNOPSIS
+	Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+.DESCRIPTION
+	Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+.PARAMETER Drive
+	Drive to check free disk space on
+.PARAMETER ContinueOnError
+	Continue if an error is encountered
+.EXAMPLE
+	Get-FreeDiskSpace -Drive "C:"
+.NOTES
+.LINK 
+	Http://psappdeploytoolkit.codeplex.com 
+#>
+	Param (
+		[string] $Drive = $envSystemDrive,
+		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+	)
+
+	Try {
+		$disk = Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='$Drive'" -ErrorAction SilentlyContinue
+		$freeDiskSpace = [Math]::Round($disk.Freespace / 1MB)
+	}
+	Catch {
+		Write-Log "Error retrieving free disk space for drive $Drive."
+		If ($ContinueOnError -eq $false) { Throw "Error retrieving free disk space for drive $Drive." }
+	}
+
+	Return $freeDiskSpace
 }
 
 Function Get-InstalledApplication {
@@ -2117,24 +2152,45 @@ Function Show-InstallationWelcome {
 	If the script is intended to run on EN-US machines, specify the date in the format "08/25/2013" or "08-25-2013" or "08-25-2013 18:00:00".
 	If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. "2013-08-22 11:51:52Z"
 	The deadline date will be displayed to the user in the format of their culture.
+.PARAMETER CheckDiskSpace
+	Specify whether to check if there is enough disk space for the installation to proceed. 
+.PARAMETER RequiredDiskSpace
+	Specify required disk space in MB, used in combination with CheckDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param(
-	[string]$CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word" 
-	[switch]$Silent = $false, # Specify whether to prompt user or force close the applications
-	[int]$CloseAppsCountdown = $null, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
-	[switch]$BlockExecution = $false, # Specify whether to block execution of the processes during installation	
-	[switch]$AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
-	[int]$DeferTimes = $null, # Specify the number of times the deferral is allowed
-	[int]$DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
-	[string]$DeferDeadline = $null # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
+	[string] $CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word" 
+	[switch] $Silent = $false, # Specify whether to prompt user or force close the applications
+	[int] $CloseAppsCountdown = $null, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
+	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
+	[switch] $AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
+	[int] $DeferTimes = $null, # Specify the number of times the deferral is allowed
+	[int] $DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
+	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
+	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. 
+	[int] $RequiredDiskSpace = $null # Specify required disk space in MB, used in combination with $CheckDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
 	)
 
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
-	
+
+	If ($CheckDiskSpace -eq $true) {
+		If ($RequiredDiskSpace -eq 0) {
+			# Determine the size of the Files folder
+			$fso = New-Object -COM Scripting.FileSystemObject -ErrorAction SilentlyContinue
+			$RequiredDiskSpace = [Math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
+		}
+		If ((Get-FreeDiskSpace) -lt $RequiredDiskSpace) {
+			Write-Log "Minimum hard disk space requirement not met. Space Required [$RequiredDiskSpaceMB], Space Available [$(Get-FreeDiskSpace)MB]."
+			If ($Silent -eq $false) {
+				Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle,$RequiredDiskSpace,(Get-FreeDiskSpace)) -ButtonRightText "Ok" -Icon "Error"
+			}
+			Exit-Script 1618
+		}
+	}
+
 	If ($CloseApps -ne "") {
 		# Create a Process object with custom descriptions where they are provided (split on a "=" sign)
 		$processObjects = @()

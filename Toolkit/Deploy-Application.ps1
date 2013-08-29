@@ -60,7 +60,7 @@ $appScriptAuthor = "<author name>"
 
 $deployAppScriptFriendlyName = "Deploy Application"
 $deployAppScriptVersion = "3.0.2"
-$deployAppScriptDate = "08/28/2013"
+$deployAppScriptDate = "08/29/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -77,10 +77,10 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
-	# Show Welcome Message, close Internet Explorer if required, and allow up to 3 deferrals
-	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3
+	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, and verify there is enough disk space to complete the install
+	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace
 
-  	# Show Progress Message (with the default message)
+	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
 	# Perform pre-installation tasks here

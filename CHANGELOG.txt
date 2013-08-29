@@ -1,12 +1,16 @@
-Version 3.0.2 08/28/2013
+Version 3.0.2 08/29/2013
 
+	Added CheckDiskSpace and RequiredDiskSpace parameters to Show-InstallationWelcome
+		If CheckDiskSpace is set to $true, disk space will be evaluated before showing the Welcome screen. If not, an error message will be displayed and a Fast Retry (1618) exit code generated
+		Specify required disk space in MB using RequiredDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
+	Added Get-FreeDiskSpace function (returns value in MB)
 	Show-InstallationPrompt enhancements
 		MessageAlignment - align message text on the prompt 
 		Icon - display a system icon on the prompt
 		NoWait - display the prompt asynchronously and continue the script without waiting for user response
 		Costmetic improvements
 	Added parameter validation to Invoke-SCCMTask
-	Costmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
+	Cosmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
 
 Version 3.0.1 - 08/28/2013
 	Fixed issue where using NonInteractive DeployMode would cause a bluescreen (!!!)
