@@ -40,7 +40,7 @@ item: Global
   Variable Default3=C:\Windows
   Variable Flags3=00001000
   Variable Name4=_WISE_
-  Variable Default4=C:\Program Files (x86)\Symantec\Wise Package Studio\WiseScript Editor
+  Variable Default4=C:\Program Files (x86)\AdminStudio\11.5\WiseScript Package Editor
   Variable Flags4=00001000
   Requested Execution Level=asInvoker
 end
@@ -133,7 +133,12 @@ item: If/While Statement
   Value=0
 end
 item: Remark
-  Text=Check for /32 command-line parameter and remove
+  Text=Check for /32 command-line parameter and remove it (not required on x86)
+end
+item: If/While Statement
+  Variable=CMDLINE
+  Value=/32
+  Flags=00000010
 end
 item: Parse String
   Source=%CMDLINE%
@@ -141,6 +146,8 @@ item: Parse String
   Variable1=JUNK
   Variable2=CMDLINE
   Flags=00000001
+end
+item: End Block
 end
 item: Remark
   Text=Check if OSDMode is specified
@@ -221,7 +228,7 @@ item: If/While Statement
   Flags=00000100
 end
 item: Execute Program
-  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
+  Pathname=%WIN%\SysNative\WindowsPowerShell\v1.0\PowerShell.exe
   Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
   Default Directory=%INST%
   Flags=00001010
