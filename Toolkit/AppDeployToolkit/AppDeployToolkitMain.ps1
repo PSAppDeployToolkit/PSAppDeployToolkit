@@ -2153,9 +2153,10 @@ Function Show-InstallationWelcome {
 	If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. "2013-08-22 11:51:52Z"
 	The deadline date will be displayed to the user in the format of their culture.
 .PARAMETER CheckDiskSpace
-	Specify whether to check if there is enough disk space for the installation to proceed. 
+    Specify whether to check if there is enough disk space for the installation to proceed. 
+    If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 .PARAMETER RequiredDiskSpace
-	Specify required disk space in MB, used in combination with CheckDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
+	Specify required disk space in MB, used in combination with CheckDiskSpace.
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -2169,26 +2170,31 @@ Function Show-InstallationWelcome {
 	[int] $DeferTimes = $null, # Specify the number of times the deferral is allowed
 	[int] $DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
-	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. 
-	[int] $RequiredDiskSpace = $null # Specify required disk space in MB, used in combination with $CheckDiskSpace. If no value is specified, the disk space required is calculated automatically based on the size of the script source and associated files.
+	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
+	[int] $RequiredDiskSpace = $null # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
 	)
 
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
 
 	If ($CheckDiskSpace -eq $true) {
+        Write-Log "Evaluating disk space requirements..."
+        $freeDiskSpace = Get-FreeDiskSpace
 		If ($RequiredDiskSpace -eq 0) {
 			# Determine the size of the Files folder
 			$fso = New-Object -COM Scripting.FileSystemObject -ErrorAction SilentlyContinue
 			$RequiredDiskSpace = [Math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
 		}
-		If ((Get-FreeDiskSpace) -lt $RequiredDiskSpace) {
-			Write-Log "Minimum hard disk space requirement not met. Space Required [$RequiredDiskSpaceMB], Space Available [$(Get-FreeDiskSpace)MB]."
+		If (($freeDiskSpace) -lt $RequiredDiskSpace) {
+			Write-Log "Minimum hard disk space requirement not met. Space Required [$($RequiredDiskSpace)MB], Space Available [$($freeDiskSpace)MB]."
 			If ($Silent -eq $false) {
-				Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle,$RequiredDiskSpace,(Get-FreeDiskSpace)) -ButtonRightText "Ok" -Icon "Error"
+				Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle,$RequiredDiskSpace,($freeDiskSpace)) -ButtonRightText "Ok" -Icon "Error"
 			}
 			Exit-Script 1618
 		}
+        Else {
+                Write-Log "Disk space requirements are met."
+            }
 	}
 
 	If ($CloseApps -ne "") {
