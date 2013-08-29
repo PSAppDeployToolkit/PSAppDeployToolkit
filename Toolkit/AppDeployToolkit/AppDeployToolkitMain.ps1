@@ -15,21 +15,9 @@
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
-.PARAMETER ShowRestartPrompt
-	Specifies whether to show a restart prompt.
-	This parameter is passed to the script when it is called externally.
 .PARAMETER ReferringApplication
 	Name of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
-.PARAMETER CountdownSeconds
-	Specifies the number of seconds to countdown to the system restart
-	This parameter is passed to the script when it is called externally.
-.PARAMETER CountdownNoHideSeconds
-	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
-	This parameter is passed to the script when it is called externally.
-.PARAMETER InvokedExternally
-	Indicates that the Show-RestartPrompt function was invoked externally
-	This parameter is passed to the script when it is called externally.
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
@@ -38,13 +26,9 @@ Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
 	[switch] $ContinueOnErrorGlobalPreference = $true,
 	[switch] $CleanupBlockedApps = $false, 
-	[switch] $ShowBlockedAppDialog = $false,
-	[switch] $ShowRestartPrompt = $false,  
+	[switch] $ShowBlockedAppDialog = $false, 
 	[switch] $DisableLogging = $false,  
-	[string] $ReferringApplication = $Null,  
-	[string] $CountdownSeconds = $null,
-	[string] $CountdownNoHideSeconds = $null,
-	[switch] $InvokedExternally = $null
+	[string] $ReferringApplication = $Null
 )
 
 #*=============================================
@@ -2758,40 +2742,25 @@ Function Show-InstallationRestartPrompt {
 	Specifies the number of seconds to countdown to the system restart.
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
-.PARAMETER InvokedExternally
-	Indicates that the Show-InstallationRestartPrompt function was invoked externally. Do not modify this parameter - it is an internal script parameter.
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
 		[int] $CountdownSeconds = 60,
-		[int] $CountdownNoHideSeconds = 30,
-		[switch] $Script:AllowRebootPassThru = $false,
-		[switch] $InvokedExternally = $false
+		[int] $CountdownNoHideSeconds = 30
 	)
+
+    # Get the parameters passed to the function for invoking the function asynchronously
+    $installRestartPromptParameters = $psBoundParameters
 
 	# Check if we are already displaying a restart prompt
 	If (Get-Process | Where { $_.MainWindowTitle -match $configRestartPromptTitle }) {
 		Write-Log "Show-InstallationRestartPrompt invoked, but an existing restart prompt was detected. Cancelling restart prompt..."
 		Return
 	}
-	   
-	If ($invokedExternally -ne $true) {  
-		Write-Log "Show-InstallationRestartPrompt invoked internally."
-		Try {
-			Start-Process -FilePath "Powershell.exe" -ArgumentList "-WindowStyle Hidden -NoProfile -File `"$scriptPath`" -ShowRestartPrompt -CountdownSeconds $CountdownSeconds -CountdownNoHideSeconds $CountdownNoHideSeconds -ReferringApplication `"$installTitle`" -InvokedExternally" -NoNewWindow	  
-		}
-		Catch {
-			$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
-			Write-Log $exceptionMessage
-		}
-		Exit-Script
-	}
-
-	Write-Log "Show-InstallationRestartPrompt invoked externally. Restart Prompt will now be displayed with countdown [$countDownSeconds] seconds."   
-
-	$startTime = $countdownTime = Get-Date
+        
+   	$startTime = $countdownTime = Get-Date
 
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	$formRestart = New-Object 'System.Windows.Forms.Form'
@@ -2984,12 +2953,28 @@ Function Show-InstallationRestartPrompt {
 	$formRestart.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-	# Show the Form
-	Return $formRestart.ShowDialog()
 
-	# Activate the Window
-	$powershellProcess = Get-Process | Where { $_.MainWindowTitle -match $installTitle }
-	[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
+
+    # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously   
+	If ($deployAppScriptFriendlyName) {
+        Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
+        $installationRestartPromptJob = [PowerShell]::Create().AddScript({
+            Param($scriptPath,$installRestartPromptParameters)
+            .$scriptPath        
+            Show-InstallationRestartPrompt @installRestartPromptParameters
+        }).AddArgument($scriptPath).AddArgument($installRestartPromptParameters)
+        # Show the form asynchronously
+        $installationRestartPromptJobResult = $installationRestartPromptJob.BeginInvoke()
+    }
+    Else {	
+	    Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."   
+	    # Show the Form
+	    Return $formRestart.ShowDialog()
+
+	    # Activate the Window
+	    $powershellProcess = Get-Process | Where { $_.MainWindowTitle -match $installTitle }
+	    [Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
+    }
 
 } #End Function
 
@@ -3856,22 +3841,6 @@ If ($showBlockedAppDialog -eq $true) {
 		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning
 		Exit-Script -ExitCode 0
 	} 
-	Catch {
-		$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
-		Write-Log "$exceptionMessage" 
-		Show-DialogBox -Text $exceptionMessage -Icon "Stop"
-		Exit-Script -ExitCode 1
-	}
-}
-
-# If the showRestartPrompt parameter is specified, only call that function
-If ($showRestartPrompt -eq $true) {
-	Try { 
-		$deployModeSilent = $true   
-		$installName = $ReferringApplication
-		Show-InstallationRestartPrompt -CountdownSeconds $CountdownSeconds -CountdownNoHideSeconds $CountdownNoHideSeconds -InvokedExternally
-		Exit-Script -ExitCode 0
-	}
 	Catch {
 		$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
 		Write-Log "$exceptionMessage" 

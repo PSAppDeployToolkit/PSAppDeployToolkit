@@ -2,7 +2,6 @@ Add Features:
 
 - Option to match exact process name for CloseApps.
 - Possible to trigger invocation of the scheduled task when the PowerShell process exits?
-- Self-elevation option?
 
 Bug Fixes:
 

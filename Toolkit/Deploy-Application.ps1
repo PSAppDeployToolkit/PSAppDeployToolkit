@@ -80,7 +80,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 	# Show Welcome Message, close Internet Explorer if required, and allow up to 3 deferrals
 	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3
 
-	# Show Progress Message (with the default message)
+  	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
 	# Perform pre-installation tasks here
