@@ -40,8 +40,8 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.2"
-$appDeployMainScriptDate = "08/29/2013"
+$appDeployMainScriptVersion = "3.0.3"
+$appDeployMainScriptDate = "08/30/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -229,7 +229,7 @@ $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image 
 $regKeyDeferHistory = "HKLM:\SOFTWARE\$appDeployToolkitName\DeferHistory\$installName"
 
 # Variables: 
-$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -file $scriptRoot\$scriptFileName -ShowBlockedAppDialog -ReferringApplication `"$installName`""
+$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptRoot\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 
 # Variables: Log Files
 $logFile = Join-Path $configDirLogs ("$installName" + "_$appDeployToolkitName.log")
@@ -1869,7 +1869,7 @@ Function Block-AppExecution {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
-		$schTaskCreation = Execute-Process -FilePath "schtasks.exe" -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -file $dirAppDeployTemp\$scriptFileName -CleanupBlockedApps -ReferringApplication $installName`" " -PassThru
+		$schTaskCreation = Execute-Process -FilePath "schtasks.exe" -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication $installName`"" -PassThru
 	}
 
 	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).

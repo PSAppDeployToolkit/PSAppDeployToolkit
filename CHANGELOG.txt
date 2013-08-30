@@ -1,3 +1,6 @@
+Version 3.0.3 08/30/2013
+	Fixed issue where spaces in the file path would cause block execution prompt not to work
+
 Version 3.0.2 08/29/2013
 
 	Added CheckDiskSpace and RequiredDiskSpace parameters to Show-InstallationWelcome
@@ -10,6 +13,7 @@ Version 3.0.2 08/29/2013
 		Costmetic improvements
 	Added parameter validation to Invoke-SCCMTask
 	Cosmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
+	Fixed issue where user would not be granted their last deferral.
 
 Version 3.0.1 - 08/28/2013
 	Fixed issue where using NonInteractive DeployMode would cause a bluescreen (!!!)

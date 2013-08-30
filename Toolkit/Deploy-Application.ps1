@@ -78,7 +78,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
 	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, and verify there is enough disk space to complete the install
-	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace
+	Show-InstallationWelcome -CloseApps "notepad" -AllowDefer -DeferTimes 3 -CheckDiskSpace
 
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
