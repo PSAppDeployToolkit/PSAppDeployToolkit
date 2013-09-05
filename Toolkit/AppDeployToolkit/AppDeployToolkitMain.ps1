@@ -40,7 +40,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.3"
+$appDeployMainScriptVersion = "3.0.4"
 $appDeployMainScriptDate = "09/05/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
@@ -127,10 +127,11 @@ $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 $configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
-If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
-	$xmlUIMessageLanguage = "UI_Messages_EN"
-}
 $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
+If ($xmlUIMessages -eq $null) { 
+	$xmlUIMessageLanguage = "UI_Messages_EN"
+	$xmlUIMessages = $xmlConfig.$xmlMessageUILanguage
+}
 $configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 $configBalloonTextStart = $xmlUIMessages.BalloonText_Start
 $configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
@@ -386,7 +387,7 @@ Function Show-InstallationPrompt {
 .PARAMETER ButtonLeftText
 	Show a button on the left of the prompt with the specified text
 .PARAMETER ButtonRightText
-	Show a button on the right of the prompt with the specified text [Default is OK]
+	Show a button on the right of the prompt with the specified text
 .PARAMETER ButtonMiddleText
 	Show a button in the middle of the prompt with the specified text
 .PARAMETER Icon
@@ -402,7 +403,7 @@ Function Show-InstallationPrompt {
 		$Message = $null,
         [ValidateSet("Left","Center","Right")]
         $MessageAlignment = "Center",
-		$ButtonRightText = "OK",
+		$ButtonRightText = $null,
 		$ButtonLeftText = $null,
 		$ButtonMiddleText = $null,
         [ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
@@ -633,14 +634,23 @@ Function Show-InstallationPrompt {
 
     # If the NoWait parameter is specified, show the prompt asynchronously
 	If ($NoWait -eq $true) {
-        $installationPromptJob = [PowerShell]::Create().AddScript({
-            Param($scriptPath,$installPromptParameters)
-            .$scriptPath        
-            $installPromptParameters.Remove("NoWait")
-            Show-InstallationPrompt @installPromptParameters
-        }).AddArgument($scriptPath).AddArgument($installPromptParameters)
-        # Show the form asynchronously
-        $installationPromptJobResult = $installationPromptJob.BeginInvoke()
+        Try {
+            # Create a separate runspace to show the prompt asynchronously
+            $installationPromptJob = [PowerShell]::Create().AddScript({
+                Param($scriptPath,$installPromptParameters,$ReferringApplication)
+                # Dot-source the toolkit in the other runspace
+                .$scriptPath -ReferringApplication $ReferringApplication
+                # Remove the NoWait parameter when we call the function in another runspace so the other runspace knows not to invoke another new runspace in an infinite loop.       
+                $installPromptParameters.Remove("NoWait")
+                Show-InstallationPrompt @installPromptParameters
+            }).AddArgument($scriptPath).AddArgument($installPromptParameters).AddArgument($installName)
+            # Show the form asynchronously
+            $installationPromptJobResult = $installationPromptJob.BeginInvoke()
+        }
+        Catch {
+            $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
+			Write-Log "Warning: $exceptionMessage"
+        }
     }
     # Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
     Else {
@@ -907,33 +917,21 @@ Function Get-InstalledApplication {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
 		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object {Get-ItemProperty $_.PsPath}
 			Foreach ($regKeyApp in $regKeyApplication) {
-				$appDisplayName = $null
-				$appDisplayVersion = $null
-				$appPublisher = $null
-				# Bypass any updates or hotfixes
-				If ([RegEx]::Match($regKeyApp.DisplayName, "(?i)kb\d+") -eq $true) { Continue }
-				If ($regKeyApp.DisplayName -match "Cumulative Update") { Continue }
-				If ($regKeyApp.DisplayName -match "Security Update") { Continue }
-				If ($regKeyApp.DisplayName -match "Hotfix") { Continue }
-				# Remove any non-standard characters from the name / version which may interfere with logging
-				$appDisplayName = [RegEx]::Replace($regKeyApp.DisplayName, "[^\u001F-\u007F]", "")
-				$appDisplayVersion = [RegEx]::Replace($regKeyApp.DisplayVersion, "[^\u001F-\u007F]", "")
-				$appPublisher = [RegEx]::Replace($regKeyApp.Publisher, "[^\u001F-\u007F]", "")
 				If ($ProductCode -ne "") {
 					# Replace special characters in product code that interfere with regex match
 					$regKeyProductCode = $($regKeyApp.PSChildName) -replace "}","" -replace "{",""
 					# Verify if there is a match with the product code passed to the script
 					If ($regKeyProductCode -match $productCode) {
-						Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching product code [$productCode]"
+						Write-Log "Found installed application [$($regKeyApp.DisplayName)] version [$($regKeyApp.DisplayVersion))] matching product code [$productCode]"
 						$installedApplication += New-Object PSObject -Property @{
 							ProductCode	=		$regKeyApp.PSChildName
-							DisplayName	= 		$appDisplayName
-							DisplayVersion =	$appDisplayVersion
+							DisplayName	= 		$regKeyApp.DisplayName
+							DisplayVersion =	$regKeyApp.DisplayVersion
 							UninstallString =	$regKeyApp.UninstallString
 							InstallSource =		$regKeyApp.InstallSource
 							InstallLocation =	$regKeyApp.InstallLocation
 							InstallDate =		$regKeyApp.InstallDate
-							Publisher =			$appPublisher
+							Publisher =			$regKeyApp.Publisher
 						}
 					}
 				}
@@ -941,16 +939,21 @@ Function Get-InstalledApplication {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
 						If ($regKeyApp.DisplayName -match $application ) {
-							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
+							# Bypass any updates or hotfixes
+							If ([regex]::match($regKeyApp.DisplayName, "(?i)kb\d+") -eq $true) { Continue }
+							If ($regKeyApp.DisplayName -match "Cumulative Update") { Continue }
+							If ($regKeyApp.DisplayName -match "Security Update") { Continue }
+							If ($regKeyApp.DisplayName -match "Hotfix") { Continue }
+							Write-Log "Found installed application [$($regKeyApp.DisplayName)] version [$($regKeyApp.DisplayVersion))] matching application name [$application]"
 							$installedApplication += New-Object PSObject -Property @{
-								ProductCode =		$regKeyApp.PSChildName
-								DisplayName =		$appDisplayName
-								DisplayVersion =	$appDisplayVersion
+								ProductCode	=		$regKeyApp.PSChildName
+								DisplayName	= 		$regKeyApp.DisplayName
+								DisplayVersion =	$regKeyApp.DisplayVersion
 								UninstallString =	$regKeyApp.UninstallString
 								InstallSource =		$regKeyApp.InstallSource
 								InstallLocation =	$regKeyApp.InstallLocation
 								InstallDate =		$regKeyApp.InstallDate
-								Publisher =			$appPublisher
+								Publisher =			$regKeyApp.Publisher
 							}
 						}
 					}
@@ -2119,22 +2122,22 @@ Function Show-InstallationWelcome {
 	The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 	The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "iexplore,winword,excel"
+	Show-InstallationWelcome -CloseApps "iexplore,winword,excel"
 	Prompt the user to close Internet Explorer, Word and Excel.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -Silent
+	Show-InstallationWelcome -CloseApps "winword,excel" -Silent
 	Close Word and Excel without prompting the user.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -BlockExecution
+	Show-InstallationWelcome -CloseApps "winword,excel" -BlockExecution
 	Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
+	Show-InstallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
 	Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 .EXAMPLE
-	Show-IntallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
+	Show-InstallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
 	Allow the user to defer the installation until the deadline is reached. 
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -BlockExecution -AllowDefer -DeferTimes "10" -DeferDeadline "25/08/2013" -CloseAppsCountdown "600"
+	Show-InstallationWelcome -CloseApps "winword,excel" -BlockExecution -AllowDefer -DeferTimes "10" -DeferDeadline "25/08/2013" -CloseAppsCountdown "600"
 	Close Word and Excel and prevent the user from launching the applications while the installation is in progress. 
 	Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first. 
 	When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes. 
@@ -3897,22 +3900,25 @@ Function Update-GroupPolicy {
 #* SCRIPT BODY
 #*=============================================
 
+# Set the install name if the referring application parameter was specified
+If ($ReferringApplication -ne "") {	
+    $installName = $ReferringApplication
+}
+
 # If the cleanupBlockedApps Parameter is specified, only call that function.
 If ($cleanupBlockedApps -eq $true) {
 	$deployModeSilent = $true
-	$installName = $ReferringApplication
+    $installPhase = "CleanupBlockedApps"
 	Write-Log "$appDeployMainScriptFriendlyName called with switch CleanupBlockedApps"
 	Unblock-AppExecution
 	Exit-Script -ExitCode 0
 }
-
 # If the showBlockedAppDialog Parameter is specified, only call that function.
-If ($showBlockedAppDialog -eq $true) {
+ElseIf ($showBlockedAppDialog -eq $true) {
 	Try {
 		$deployModeSilent = $true
-		$installName = $ReferringApplication
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
-		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning
+		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText OK
 		Exit-Script -ExitCode 0
 	} 
 	Catch {
