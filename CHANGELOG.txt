@@ -1,5 +1,7 @@
-Version 3.0.3 08/30/2013
+Version 3.0.3 09/05/2013
 	Fixed issue where spaces in the file path would cause block execution prompt not to work
+	Fixed issue where non-English UIs which were not already localized would fail to fall back on English as a default
+	Fixed issue with uninstalling applications with non-ascii characters in the name or version
 
 Version 3.0.2 08/29/2013
 
