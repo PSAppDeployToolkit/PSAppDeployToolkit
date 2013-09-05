@@ -41,7 +41,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.3"
-$appDeployMainScriptDate = "08/30/2013"
+$appDeployMainScriptDate = "09/05/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -127,11 +127,10 @@ $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 $configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
-$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
-If ($xmlUIMessages -eq $null) { 
+If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
 	$xmlUIMessageLanguage = "UI_Messages_EN"
-	$xmlUIMessages = $xmlConfig.$xmlMessageUILanguage
 }
+$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 $configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 $configBalloonTextStart = $xmlUIMessages.BalloonText_Start
 $configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
@@ -908,21 +907,33 @@ Function Get-InstalledApplication {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
 		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object {Get-ItemProperty $_.PsPath}
 			Foreach ($regKeyApp in $regKeyApplication) {
+				$appDisplayName = $null
+				$appDisplayVersion = $null
+				$appPublisher = $null
+				# Bypass any updates or hotfixes
+				If ([RegEx]::Match($regKeyApp.DisplayName, "(?i)kb\d+") -eq $true) { Continue }
+				If ($regKeyApp.DisplayName -match "Cumulative Update") { Continue }
+				If ($regKeyApp.DisplayName -match "Security Update") { Continue }
+				If ($regKeyApp.DisplayName -match "Hotfix") { Continue }
+				# Remove any non-standard characters from the name / version which may interfere with logging
+				$appDisplayName = [RegEx]::Replace($regKeyApp.DisplayName, "[^\u001F-\u007F]", "")
+				$appDisplayVersion = [RegEx]::Replace($regKeyApp.DisplayVersion, "[^\u001F-\u007F]", "")
+				$appPublisher = [RegEx]::Replace($regKeyApp.Publisher, "[^\u001F-\u007F]", "")
 				If ($ProductCode -ne "") {
 					# Replace special characters in product code that interfere with regex match
 					$regKeyProductCode = $($regKeyApp.PSChildName) -replace "}","" -replace "{",""
 					# Verify if there is a match with the product code passed to the script
 					If ($regKeyProductCode -match $productCode) {
-						Write-Log "Found installed application [$($regKeyApp.DisplayName)] version [$($regKeyApp.DisplayVersion))] matching product code [$productCode]"
+						Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching product code [$productCode]"
 						$installedApplication += New-Object PSObject -Property @{
 							ProductCode	=		$regKeyApp.PSChildName
-							DisplayName	= 		$regKeyApp.DisplayName
-							DisplayVersion =	$regKeyApp.DisplayVersion
+							DisplayName	= 		$appDisplayName
+							DisplayVersion =	$appDisplayVersion
 							UninstallString =	$regKeyApp.UninstallString
 							InstallSource =		$regKeyApp.InstallSource
 							InstallLocation =	$regKeyApp.InstallLocation
 							InstallDate =		$regKeyApp.InstallDate
-							Publisher =			$regKeyApp.Publisher
+							Publisher =			$appPublisher
 						}
 					}
 				}
@@ -930,21 +941,16 @@ Function Get-InstalledApplication {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
 						If ($regKeyApp.DisplayName -match $application ) {
-							# Bypass any updates or hotfixes
-							If ([regex]::match($regKeyApp.DisplayName, "(?i)kb\d+") -eq $true) { Continue }
-							If ($regKeyApp.DisplayName -match "Cumulative Update") { Continue }
-							If ($regKeyApp.DisplayName -match "Security Update") { Continue }
-							If ($regKeyApp.DisplayName -match "Hotfix") { Continue }
-							Write-Log "Found installed application [$($regKeyApp.DisplayName)] version [$($regKeyApp.DisplayVersion))] matching application name [$application]"
+							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
 							$installedApplication += New-Object PSObject -Property @{
-								ProductCode	=		$regKeyApp.PSChildName
-								DisplayName	= 		$regKeyApp.DisplayName
-								DisplayVersion =	$regKeyApp.DisplayVersion
+								ProductCode =		$regKeyApp.PSChildName
+								DisplayName =		$appDisplayName
+								DisplayVersion =	$appDisplayVersion
 								UninstallString =	$regKeyApp.UninstallString
 								InstallSource =		$regKeyApp.InstallSource
 								InstallLocation =	$regKeyApp.InstallLocation
 								InstallDate =		$regKeyApp.InstallDate
-								Publisher =			$regKeyApp.Publisher
+								Publisher =			$appPublisher
 							}
 						}
 					}
