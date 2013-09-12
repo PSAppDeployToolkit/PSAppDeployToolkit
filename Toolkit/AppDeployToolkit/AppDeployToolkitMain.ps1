@@ -41,7 +41,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.4"
-$appDeployMainScriptDate = "09/12/2013"
+$appDeployMainScriptDate = "09/05/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -633,15 +633,15 @@ Function Show-InstallationPrompt {
 
     # If the NoWait parameter is specified, show the prompt asynchronously
 	If ($NoWait -eq $true) {
-        $installationPromptJob = [PowerShell]::Create().AddScript({
+            $installationPromptJob = [PowerShell]::Create().AddScript({
             Param($scriptPath,$installPromptParameters)
             .$scriptPath        
-            $installPromptParameters.Remove("NoWait")
-            Show-InstallationPrompt @installPromptParameters
+                $installPromptParameters.Remove("NoWait")
+                Show-InstallationPrompt @installPromptParameters
         }).AddArgument($scriptPath).AddArgument($installPromptParameters)
-        # Show the form asynchronously
-        $installationPromptJobResult = $installationPromptJob.BeginInvoke()
-    }
+            # Show the form asynchronously
+            $installationPromptJobResult = $installationPromptJob.BeginInvoke()
+        }
     # Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
     Else {
 	    $showDialog = $true
@@ -943,7 +943,7 @@ Function Get-InstalledApplication {
 						If ($regKeyApp.DisplayName -match $application ) {
 							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
 							$installedApplication += New-Object PSObject -Property @{
-								ProductCode =		$regKeyApp.PSChildName
+								ProductCode	=		$regKeyApp.PSChildName
 								DisplayName =		$appDisplayName
 								DisplayVersion =	$appDisplayVersion
 								UninstallString =	$regKeyApp.UninstallString
@@ -2119,22 +2119,22 @@ Function Show-InstallationWelcome {
 	The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 	The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "iexplore,winword,excel"
+	Show-InstallationWelcome -CloseApps "iexplore,winword,excel"
 	Prompt the user to close Internet Explorer, Word and Excel.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -Silent
+	Show-InstallationWelcome -CloseApps "winword,excel" -Silent
 	Close Word and Excel without prompting the user.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -BlockExecution
+	Show-InstallationWelcome -CloseApps "winword,excel" -BlockExecution
 	Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
+	Show-InstallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
 	Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 .EXAMPLE
-	Show-IntallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
+	Show-InstallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
 	Allow the user to defer the installation until the deadline is reached. 
 .EXAMPLE
-	Show-IntallationWelcome -CloseApps "winword,excel" -BlockExecution -AllowDefer -DeferTimes "10" -DeferDeadline "25/08/2013" -CloseAppsCountdown "600"
+	Show-InstallationWelcome -CloseApps "winword,excel" -BlockExecution -AllowDefer -DeferTimes "10" -DeferDeadline "25/08/2013" -CloseAppsCountdown "600"
 	Close Word and Excel and prevent the user from launching the applications while the installation is in progress. 
 	Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first. 
 	When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes. 

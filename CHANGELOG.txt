@@ -1,9 +1,10 @@
-Version 3.0.4 xx/xx/2013
+Version 3.0.4 09/12/2013
 	Added Danish translations
 	Added Japanese translations
 	Changes to French translations
 	Fixed issue where Test-MSUpdates function could fail with an exception calling QueryHistory
 	Fixed issue where Install-MSUpdates function could fail with an "argument is null or empty" exception
+	Removed default ButtonRightText "OK" value on Show-InstallationPrompt to allow prompts with only the middle button.
 
 Version 3.0.3 09/05/2013
 	Fixed issue where spaces in the file path would cause block execution prompt not to work
