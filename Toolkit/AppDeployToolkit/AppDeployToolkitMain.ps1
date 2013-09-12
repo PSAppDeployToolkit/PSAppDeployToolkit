@@ -40,8 +40,8 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.3"
-$appDeployMainScriptDate = "09/05/2013"
+$appDeployMainScriptVersion = "3.0.4"
+$appDeployMainScriptDate = "09/12/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3610,7 +3610,10 @@ Function Test-MSUpdates {
 	$Collection = New-Object -ComObject Microsoft.Update.UpdateColl
 	$Installer = $Session.CreateUpdateInstaller()
 	$Searcher = $Session.CreateUpdateSearcher()
-	$Searcher.QueryHistory(0, $Searcher.GetTotalHistoryCount()) | Where-Object { $_.Title -match $kbNumber } | ForEach-Object { $kbFound = $true }
+	$updateCount = $Searcher.GetTotalHistoryCount()
+	If ($updateCount -gt 0) {
+    $Searcher.QueryHistory(0, $updateCount) | Where-Object { $_.Title -match $kbNumber } | ForEach-Object { $kbFound = $true }
+  }
 	
 	# Check using standard method
 	If ($kbFound -eq $false) { Get-Hotfix -id $kbNumber -ErrorAction SilentlyContinue | ForEach-Object { $kbFound = $true } }
@@ -3652,6 +3655,7 @@ Function Install-MSUpdates ($Directory) {
 	ForEach ($file in $files) {
 		# Get the KB number of the file
 		$kbNumber = [regex]::match($file, $kbPattern).ToString()
+		If ($kbNumber -eq "" -or $kbNumber -eq $null) { Continue }
 		# Check to see whether the KB is already installed
 		If ((Test-MSUpdates -kbNumber $kbNumber) -eq $false) {
 			Write-Log "$kbNumber was not detected and will be installed."

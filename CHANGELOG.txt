@@ -1,3 +1,10 @@
+Version 3.0.4 xx/xx/2013
+	Added Danish translations
+	Added Japanese translations
+	Changes to French translations
+	Fixed issue where Test-MSUpdates function could fail with an exception calling QueryHistory
+	Fixed issue where Install-MSUpdates function could fail with an "argument is null or empty" exception
+
 Version 3.0.3 09/05/2013
 	Fixed issue where spaces in the file path would cause block execution prompt not to work
 	Fixed issue where non-English UIs which were not already localized would fail to fall back on English as a default
