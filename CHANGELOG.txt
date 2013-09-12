@@ -1,10 +1,14 @@
 Version 3.0.4 09/12/2013
+	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.
+	Added ability to configure the timeout period for Show-InstallationPrompt
+	Added option to position progress window in bottom right of screen (above task bar) and specify whether it is topmost.
 	Added Danish translations
 	Added Japanese translations
 	Changes to French translations
 	Fixed issue where Test-MSUpdates function could fail with an exception calling QueryHistory
 	Fixed issue where Install-MSUpdates function could fail with an "argument is null or empty" exception
 	Removed default ButtonRightText "OK" value on Show-InstallationPrompt to allow prompts with only the middle button.
+	The exit code used for UI timeouts or deferrals can now be configured in XML (default is 1618).
 
 Version 3.0.3 09/05/2013
 	Fixed issue where spaces in the file path would cause block execution prompt not to work

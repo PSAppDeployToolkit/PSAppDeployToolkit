@@ -125,6 +125,7 @@ $configDirLogs = $xmlConfigMSIOptions.MSI_LogPath
 $xmlConfigUIOptions = $xmlConfig.UI_Options
 $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 $configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
+$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
 If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
@@ -326,7 +327,7 @@ Function Exit-Script {
 
 	# Determine action based on exit code
 	Switch ($exitCode) {
-		1618 { $installSuccess = $false ; }
+		$configInstallationUIExitCode { $installSuccess = $false ; }
 		3010 { $installSuccess = $true; }
 		0 { $installSuccess = $true}
 		Default { $installSuccess = $false }
@@ -348,7 +349,7 @@ Function Exit-Script {
 	} 
 	ElseIf ($installSuccess -eq $false) {
 		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."
-		If ($exitCode -eq 1618) {
+		If ($exitCode -eq $configInstallationUIExitCode) {
 			$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
 			Show-BalloonTip -BalloonTipIcon "Warning" -BalloonTipText "$balloonText"
 		}
@@ -386,13 +387,15 @@ Function Show-InstallationPrompt {
 .PARAMETER ButtonLeftText
 	Show a button on the left of the prompt with the specified text
 .PARAMETER ButtonRightText
-	Show a button on the right of the prompt with the specified text [Default is OK]
+	Show a button on the right of the prompt with the specified text
 .PARAMETER ButtonMiddleText
 	Show a button in the middle of the prompt with the specified text
 .PARAMETER Icon
 	Show a system icon in the prompt ("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo") [Default is "None"]
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response) [Default is $false]
+.PARAMETER Timeout
+	Specifies the period in seconds after which the prompt should timeout [Default is the UI timeout value set in the config XML file]
 .NOTES	
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -402,12 +405,13 @@ Function Show-InstallationPrompt {
 		$Message = $null,
         [ValidateSet("Left","Center","Right")]
         $MessageAlignment = "Center",
-		$ButtonRightText = "OK",
+		$ButtonRightText = $null,
 		$ButtonLeftText = $null,
 		$ButtonMiddleText = $null,
         [ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
         [string] $Icon = "None",
-        [switch] $NoWait = $false
+        [switch] $NoWait = $false,
+        $timeout = $configInstallationUITimeout
 	)	
 
     # Get parameters for calling function asynchronously
@@ -609,7 +613,7 @@ Function Show-InstallationPrompt {
 
 	# Timer 
 	$timer = New-Object 'System.Windows.Forms.Timer'
-	$timer.Interval = $configInstallationUITimeout
+	$timer.Interval = $timeout
 	$timer.Add_Tick({
 		Write-Log "Installation not actioned within a reasonable amount of time."
 		$buttonAbort.PerformClick()
@@ -633,15 +637,24 @@ Function Show-InstallationPrompt {
 
     # If the NoWait parameter is specified, show the prompt asynchronously
 	If ($NoWait -eq $true) {
+        Try {
+            # Create a separate runspace to show the prompt asynchronously
             $installationPromptJob = [PowerShell]::Create().AddScript({
-            Param($scriptPath,$installPromptParameters)
-            .$scriptPath        
+                Param($scriptPath,$installPromptParameters,$ReferringApplication)
+                # Dot-source the toolkit in the other runspace
+                .$scriptPath -ReferringApplication $ReferringApplication
+                # Remove the NoWait parameter when we call the function in another runspace so the other runspace knows not to invoke another new runspace in an infinite loop.       
                 $installPromptParameters.Remove("NoWait")
                 Show-InstallationPrompt @installPromptParameters
-        }).AddArgument($scriptPath).AddArgument($installPromptParameters)
+            }).AddArgument($scriptPath).AddArgument($installPromptParameters).AddArgument($installName)
             # Show the form asynchronously
             $installationPromptJobResult = $installationPromptJob.BeginInvoke()
         }
+        Catch {
+            $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
+			Write-Log "Warning: $exceptionMessage"
+        }
+    }
     # Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
     Else {
 	    $showDialog = $true
@@ -657,7 +670,7 @@ Function Show-InstallationPrompt {
 		    "Yes" { Return $buttonRightText}
 		    "No" { Return $buttonLeftText}
 		    "Ignore" { Return $buttonMiddleText}
-		    "Abort" { Exit-Script 1618 }
+		    "Abort" { Exit-Script $configInstallationUIExitCode }
 	    }
     }
   
@@ -695,7 +708,7 @@ Function Show-DialogBox {
 	Icon to display on the dialog box [Default is "None"]
 	Acceptable valures are: "None",	"Stop", "Question", "Exclamation", "Information", 
 .PARAMETER Timeout
-	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout" [Default the UI timeout value set in the config XML file]
+	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout" [Default is the UI timeout value set in the config XML file]
 .PARAMETER TopMost
 	Specifies whether the message box is a system modal message box and appears in a topmost window. [Default is True]
 .NOTES
@@ -2146,8 +2159,6 @@ Function Show-InstallationWelcome {
 	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is now allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation
-.PARAMETER AllowDefer
-	Enables an optional defer button to allow the user to defer the installation if they do not want to close running applications.
 .PARAMETER DeferTimes
 	Specify the number of times the installation can be deferred
 .PARAMETER DeferDays
@@ -2173,6 +2184,7 @@ Function Show-InstallationWelcome {
 	[int] $CloseAppsCountdown = $null, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
 	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
 	[switch] $AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
+	[switch] $AllowDeferCloseApps = $false, # Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed
 	[int] $DeferTimes = $null, # Specify the number of times the deferral is allowed
 	[int] $DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
@@ -2202,7 +2214,7 @@ Function Show-InstallationWelcome {
 			If ($Silent -eq $false) {
 				Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle,$RequiredDiskSpace,($freeDiskSpace)) -ButtonRightText "Ok" -Icon "Error"
 			}
-			Exit-Script 1618
+			Exit-Script $configInstallationUIExitCode
 		}
         Else {
                 Write-Log "Disk space requirements are met."
@@ -2221,8 +2233,11 @@ Function Show-InstallationWelcome {
 		}
 	}
 	# Check Deferral history and calculate deferrals remaining
-	If ($allowDefer -eq $true) {
-		$deferHistory = Get-DeferHistory
+	If ($allowDefer -eq $true -or $AllowDeferCloseApps -eq $true) {
+        # Set the allowDefer to true if AllowDeferCloseApps is true
+        $allowDefer = $true
+		# Get the deferral history from the registry
+        $deferHistory = Get-DeferHistory
 		$deferHistoryTimes = $deferHistory | Select DeferTimesRemaining -ExpandProperty DeferTimesRemaining -ErrorAction SilentlyContinue
 		$deferHistoryDeadline = $deferHistory | Select DeferDeadline -ExpandProperty DeferDeadline -ErrorAction SilentlyContinue  
 		# Reset Switches 
@@ -2283,11 +2298,18 @@ Function Show-InstallationWelcome {
 	If (!($deployModeSilent) -and !($silent)) { 
 		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
-            # Prompt the user to close running processes with deferral option
-			If ($allowDefer -and ((!($promptResult -eq "Close")) -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue"))) { 
-				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal	
-			}
-			# Prompt the user to close running processes with no deferral option
+            # Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
+			If ($allowDefer) {
+                # If there is deferral but only for apps to be closed and there are no apps to be closed, break the while loop
+			    If ($AllowDeferCloseApps -and $runningProcessDescriptions -eq "") {
+				    Break
+                }
+                # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
+                ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) { 
+				    $promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal	
+    			}
+            }
+			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 			ElseIf ($runningProcessDescriptions -ne "") {
 				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown   
 			}
@@ -2318,7 +2340,7 @@ Function Show-InstallationWelcome {
 				If ($deferTimes -or $deferDeadlineUniversal) {
 					Set-DeferHistory -deferTimesRemaining $DeferTimes -deferDeadline $deferDeadlineUniversal
 				}
-				Exit-Script 1618
+				Exit-Script $configInstallationUIExitCode
 			}
 			# Force the application to close (user chose to defer)
 			ElseIf ($promptResult -eq "Defer") {
@@ -2327,7 +2349,7 @@ Function Show-InstallationWelcome {
 				Set-DeferHistory -deferTimesRemaining $DeferTimes -deferDeadline $deferDeadlineUniversal
 				# Restore minimized windows
 				$shellApp.UndoMinimizeAll()
-				Exit-Script 1618
+				Exit-Script $configInstallationUIExitCode
 			}
 		}
 	}
@@ -3143,14 +3165,23 @@ Function Show-InstallationProgress {
 	Show-InstallationProgress "Installation in Progress..."
 .EXAMPLE
 	Show-InstallationProgress "Installation in Progress...`nThe installation may take 20 minutes to complete."
+.EXAMPLE
+	Show-InstallationProgress "Installation in Progress..." -WindowLocation "BottomRight" -TopMost $false
 .PARAMETER StatusMessage
 	The Status Message to be displayed. The default status message is taken from the XML configuration file.
+.PARAMETER WindowLocation
+    The location of the progress window [default is just below top, centered]
+.PARAMETER TopMost
+    Specificies whether the progress window should be topmost [default is true]
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-		[string] $StatusMessage = $configProgressMessage
+		[string] $StatusMessage = $configProgressMessage,
+        [ValidateSet("Default","BottomRight")]
+        [string] $WindowLocation = "Default",
+        [boolean] $TopMost = $true
 	)
 	If ($deployModeSilent -eq $true) { 
 		Return 
@@ -3165,8 +3196,6 @@ Function Show-InstallationProgress {
 		# Notify user that the software installation has started
 		$balloonText = "$deploymentTypeName $configBalloonTextStart"
 		Show-BalloonTip -BalloonTipIcon "Info" -BalloonTipText "$balloonText"			   
-		# Calculate the position on the screen to place the progress dialog			
-		$screenBounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds	
 		# Create a synchronized hashtable to share objects between runspaces
 		$Global:ProgressSyncHash = [hashtable]::Synchronized(@{})
 		# Create a new runspace for the progress bar
@@ -3178,7 +3207,8 @@ Function Show-InstallationProgress {
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressSyncHash",$Global:ProgressSyncHash)   
 		# Add other variables from the parent thread required in the progress runspace
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("installTitle",$installTitle) 
-		$Global:ProgressRunspace.SessionStateProxy.SetVariable("screenBounds",$screenBounds)		  
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("windowLocation",$windowLocation)
+        $Global:ProgressRunspace.SessionStateProxy.SetVariable("topMost",[string]$topMost)			  
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("appDeployLogoBanner",$appDeployLogoBanner)   
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressStatusMessage",$statusMessage)   
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("AppDeployLogoIcon",$AppDeployLogoIcon)	  
@@ -3196,7 +3226,7 @@ Function Show-InstallationProgress {
 			WindowStartupLocation = "Manual"
 			Top=""
 			Left=""
-			Topmost="True"   
+			Topmost=""   
 			ResizeMode="NoResize"  
 			Icon=""
 			ShowInTaskbar="True" >
@@ -3243,13 +3273,23 @@ Function Show-InstallationProgress {
 '@
 
 			## Set the configurable values based using variables addded to the runspace from the parent thread   
-			# Select the screen heigth and width   
-			$screenWidth = $screenBounds | Select Width -ExpandProperty Width
-			$screenHeight = $screenBounds | Select Height -ExpandProperty Height
+			# Calculate the position on the screen to place the progress dialog
+            $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+            $screenWorkingArea = $screen.WorkingArea			
+			$screenWidth = $screenWorkingArea | Select Width -ExpandProperty Width
+			$screenHeight = $screenWorkingArea | Select Height -ExpandProperty Height
 			# Set the start position of the Window based on the screen size
-			$xamlProgress.Window.Left =  [string](($screenWidth / 2) - ($xamlProgress.Window.Width /2))
-			$xamlProgress.Window.Top = [string]($screenHeight / 10)
-			$xamlProgress.Window.Icon = $AppDeployLogoIcon
+            If ($windowLocation -eq "BottomRight"){
+                $xamlProgress.Window.Left =  [string]($screenWidth - $xamlProgress.Window.Width - 10)
+			    $xamlProgress.Window.Top = [string]($screenHeight - $xamlProgress.Window.Height - 10)
+            }
+            # Show the default location (Top center)
+            Else {
+			    $xamlProgress.Window.Left =  [string](($screenWidth / 2) - ($xamlProgress.Window.Width /2))
+			    $xamlProgress.Window.Top = [string]($screenHeight / 9.5)
+			}
+            $xamlProgress.Window.TopMost = $topMost
+            $xamlProgress.Window.Icon = $AppDeployLogoIcon
 			$xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner 
 			$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage  
 			$xamlProgress.Window.Title = $installTitle
@@ -3901,10 +3941,14 @@ Function Update-GroupPolicy {
 #* SCRIPT BODY
 #*=============================================
 
+# Set the install name if the referring application parameter was specified
+If ($ReferringApplication -ne "") {	
+    $installName = $ReferringApplication
+}
+
 # If the cleanupBlockedApps Parameter is specified, only call that function.
 If ($cleanupBlockedApps -eq $true) {
 	$deployModeSilent = $true
-	$installName = $ReferringApplication
 	Write-Log "$appDeployMainScriptFriendlyName called with switch CleanupBlockedApps"
 	Unblock-AppExecution
 	Exit-Script -ExitCode 0
@@ -3914,9 +3958,8 @@ If ($cleanupBlockedApps -eq $true) {
 If ($showBlockedAppDialog -eq $true) {
 	Try {
 		$deployModeSilent = $true
-		$installName = $ReferringApplication
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
-		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning
+		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText "OK"
 		Exit-Script -ExitCode 0
 	} 
 	Catch {
@@ -4017,4 +4060,3 @@ If (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]
 #*=============================================
 #* END SCRIPT BODY
 #*=============================================
-

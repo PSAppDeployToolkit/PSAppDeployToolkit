@@ -1,7 +1,16 @@
 Add Features:
 
-- Option to match exact process name for CloseApps.
-- Possible to trigger invocation of the scheduled task when the PowerShell process exits?
+Proposal: Optimization of Execute-MSI Function 
+
+If I'm right the function does not check if an msi is already installed. In some situations this may cause an corrupted installation when the installers tries to install an already installed msi again. As this should not happen with well engineered msi's, it happens though with some lousy engineered vendor msi's (we had this problem with Java JRE for example). 
+
+With our old wrapper we use an option to check if the product code is already installed before executing the msi with msiexec. However, we have to pass the ProductCode manually to this function. As the Product Code is not configured in the Deploy-Application.ps1, maybe it would be possible to extend Execute-MSI in the following way: 
+
+- Read out Product Code from msi file (maybe like that: https://gist.github.com/jstangroome/913062) 
+- Check if this Product Code is already installed 
+- Write to Logfile if Product Code is already installed  
+
+* Possible to trigger invocation of the scheduled task when the PowerShell process exits?
 
 Bug Fixes:
 
