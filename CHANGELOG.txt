@@ -1,8 +1,9 @@
-Version 3.0.4 09/12/2013
+Version 3.0.4 09/13/2013
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.
 	Added ability to configure the timeout period for Show-InstallationPrompt
 	Added option to position progress window in bottom right of screen (above task bar) and specify whether it is topmost.
 	Added Danish translations
+	Added Italian translations
 	Added Japanese translations
 	Changes to French translations
 	Fixed issue where Test-MSUpdates function could fail with an exception calling QueryHistory
