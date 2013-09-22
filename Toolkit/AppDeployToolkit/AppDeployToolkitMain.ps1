@@ -40,7 +40,8 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.4"
+$appDeployMainScriptVersion = "3.0.5"
+$appDeployMainScriptMinimumConfigVersion = "3.0.5"
 $appDeployMainScriptDate = "09/13/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
@@ -114,6 +115,11 @@ If (!(Test-Path $AppDeployConfigFile)) {
 [xml]$xmlConfigFile = Get-Content $AppDeployConfigFile
 $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
+# Get Config File Details
+$xmlConfigDetails = $xmlConfig.Config_File
+$xmlConfigVersion = $xmlConfigDetails.Config_Version
+$xmlConfigDate = $xmlConfigDetails.Config_Date
+
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 $configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
@@ -126,6 +132,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 $configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
 $configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
+$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
 If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
@@ -417,6 +424,11 @@ Function Show-InstallationPrompt {
     # Get parameters for calling function asynchronously
     $installPromptParameters = $psBoundParameters
 
+    # Check if the countdown was specified
+	If ($timeout -gt $configInstallationUITimeout) {
+			Throw "Error: The Show-InstallationPrompt timeout can not be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout."
+	}
+	
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	$formInstallationPrompt = New-Object System.Windows.Forms.Form
 	$pictureBanner = New-Object System.Windows.Forms.PictureBox
@@ -915,6 +927,8 @@ Function Get-InstalledApplication {
 	# Replace special characters in product code that interfere with regex match
 	$productCode = $productCode -replace "}","" -replace "{",""
 	$applications = $name -split (",")
+    # Replace special characters in application name that interfere with regex match
+    $applications = $applications -replace "\.","" -replace "\*","" -replace "\(","" -replace "\)",""
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
@@ -953,9 +967,10 @@ Function Get-InstalledApplication {
 				If ($name -ne "") {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
-						If ($regKeyApp.DisplayName -match $application ) {
+						If (($regKeyApp.DisplayName -replace "\.","" -replace "\*","" -replace "\(","" -replace "\)","") -match $application ) {
 							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
-							$installedApplication += New-Object PSObject -Property @{
+	    					$regKeyApp.DisplayName = $regKeyApp.DisplayName 
+                            $installedApplication += New-Object PSObject -Property @{
 								ProductCode	=		$regKeyApp.PSChildName
 								DisplayName =		$appDisplayName
 								DisplayVersion =	$appDisplayVersion
@@ -2296,7 +2311,7 @@ Function Show-InstallationWelcome {
 
 	# Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) { 
-		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer")) {
+		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
             # Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
 			If ($allowDefer) {
@@ -2333,7 +2348,7 @@ Function Show-InstallationWelcome {
 				Stop-Process ($runningProcesses | Select ID -ExpandProperty ID) -Force -ErrorAction SilentlyContinue
 				Sleep -Seconds 2
 			}
-			# Force the application to close (not actioned within a reasonable amount of time)
+			# Stop the script (not actioned within a reasonable amount of time)
 			ElseIf ($promptResult -eq "Timeout") {
 				Write-Log "Installation not actioned within a reasonable amount of time."
 				$BlockExecution = $false
@@ -2342,14 +2357,14 @@ Function Show-InstallationWelcome {
 				}
 				Exit-Script $configInstallationUIExitCode
 			}
-			# Force the application to close (user chose to defer)
+			# Stop the script (user chose to defer)
 			ElseIf ($promptResult -eq "Defer") {
 				Write-Log "Installation deferred by the user."
 				$BlockExecution = $false
 				Set-DeferHistory -deferTimesRemaining $DeferTimes -deferDeadline $deferDeadlineUniversal
 				# Restore minimized windows
 				$shellApp.UndoMinimizeAll()
-				Exit-Script $configInstallationUIExitCode
+				Exit-Script $configInstallationDeferExitCode
 			}
 		}
 	}
@@ -4003,6 +4018,11 @@ If ($AssemblyWarning -ne $null) {
 If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
+
+# Check the XMl config file version 
+If ($xmlConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
+    Throw "The XML configuration file version [$xmlConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
+}
 
 Write-Log "$installName setup started."
 If ($appScriptVersion -ne $null ) { Write-Log "$installName script version is [$appScriptVersion]" }

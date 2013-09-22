@@ -1,3 +1,9 @@
+Version 3.0.5 09/22/2013
+	Added minimum supported version check for the XMl config file.
+	Added ability to configure deferral exit code in the XML config file.
+	Fixed issue matching application names with brackets in Remove-MSIApplications.	
+	Fixed exception after clicking "Close Programs" button on Show-InstallationWelcomePrompt (only known to affect v3.0.4)
+
 Version 3.0.4 09/13/2013
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.
 	Added ability to configure the timeout period for Show-InstallationPrompt
