@@ -25,10 +25,21 @@
 Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
 	[switch] $ContinueOnErrorGlobalPreference = $true,
+    [switch] $ShowInstallationPrompt = $false,
+    [switch] $ShowInstallationRestartPrompt = $false,
 	[switch] $CleanupBlockedApps = $false, 
 	[switch] $ShowBlockedAppDialog = $false, 
 	[switch] $DisableLogging = $false,  
-	[string] $ReferringApplication = $Null
+	[string] $ReferringApplication = $Null,
+    [string] $Message = $null,
+    [string] $MessageAlignment = $null,
+	[string] $ButtonRightText = $null,
+	[string] $ButtonLeftText = $null,
+	[string] $ButtonMiddleText = $null, 
+    [string] $Icon = $null,
+    [string] $timeout = $null,
+    [int] $CountdownSeconds,
+	[int] $CountdownNoHideSeconds
 )
 
 #*=============================================
@@ -116,9 +127,14 @@ If (!(Test-Path $AppDeployConfigFile)) {
 $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
 # Get Config File Details
-$xmlConfigDetails = $xmlConfig.Config_File
-$xmlConfigVersion = $xmlConfigDetails.Config_Version
-$xmlConfigDate = $xmlConfigDetails.Config_Date
+$configConfigDetails = $xmlConfig.Config_File
+$configConfigVersion = $xmlConfigDetails.Config_Version
+$configConfigDate = $xmlConfigDetails.Config_Date
+
+# Get Config File Details
+$xmlToolkitOptions = $xmlConfig.Toolkit_Options
+$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
+$configToolkitRequireAdmin = $xmlToolkitOptions.Toolkit_RequireAdmin
 
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
@@ -126,7 +142,7 @@ $configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
 $configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
 $configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
 $configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
-$configDirLogs = $xmlConfigMSIOptions.MSI_LogPath
+$configMSILogDir = $xmlConfigMSIOptions.MSI_LogPath
 # Get UI Options
 $xmlConfigUIOptions = $xmlConfig.UI_Options
 $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
@@ -239,7 +255,7 @@ $regKeyDeferHistory = "HKLM:\SOFTWARE\$appDeployToolkitName\DeferHistory\$instal
 $debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptRoot\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 
 # Variables: Log Files
-$logFile = Join-Path $configDirLogs ("$installName" + "_$appDeployToolkitName.log")
+$logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
 
 #*=============================================
 #* END VARIABLE DECLARATION
@@ -278,8 +294,8 @@ Function Write-Log {
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
 		If ($DisableLogging -eq $false) {
 			# Create the Log directory if it doesn't already exist
-			If (!(Test-Path -path $configDirLogs -ErrorAction SilentlyContinue )) { New-Item $configDirLogs -Type directory -ErrorAction SilentlyContinue | Out-Null }
-			# Create the Log directory if it doesn't already exist
+			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
+			# Create the Log file if it doesn't already exist
 			If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
 			Try {
 				"[$currentDate $currentTime] [$installPhase] $Text" | Out-File $logFile -Append -ErrorAction SilentlyContinue
@@ -644,28 +660,16 @@ Function Show-InstallationPrompt {
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
     
-    $installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " " 
+    $installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " "    
     Write-Log "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]..."
 
-    # If the NoWait parameter is specified, show the prompt asynchronously
+    # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
 	If ($NoWait -eq $true) {
-        Try {
-            # Create a separate runspace to show the prompt asynchronously
-            $installationPromptJob = [PowerShell]::Create().AddScript({
-                Param($scriptPath,$installPromptParameters,$ReferringApplication)
-                # Dot-source the toolkit in the other runspace
-                .$scriptPath -ReferringApplication $ReferringApplication
-                # Remove the NoWait parameter when we call the function in another runspace so the other runspace knows not to invoke another new runspace in an infinite loop.       
-                $installPromptParameters.Remove("NoWait")
-                Show-InstallationPrompt @installPromptParameters
-            }).AddArgument($scriptPath).AddArgument($installPromptParameters).AddArgument($installName)
-            # Show the form asynchronously
-            $installationPromptJobResult = $installationPromptJob.BeginInvoke()
-        }
-        Catch {
-            $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
-			Write-Log "Warning: $exceptionMessage"
-        }
+        # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
+        $installPromptParameters.Remove("NoWait")
+        # Format the parameters as a string
+        $installPromptParameters = ($installPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
+        Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $scriptPath -ReferringApplication $installName -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
     }
     # Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
     Else {
@@ -1064,8 +1068,10 @@ Function Execute-MSI {
 		}
 	}
 
+    # Create the Log directory if it doesn't already exist
+	If (!(Test-Path -path $configMSILogDir -ErrorAction SilentlyContinue )) { New-Item $configMSILogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
 	# Build the log file path
-	$logPath = Join-Path $configDirLogs $logName
+	$logPath = Join-Path $configMSILogDir $logName
 	
 	# Set the installation Parameters
 	$msiUninstallDefaultParams = $configMSISilentParams
@@ -2994,7 +3000,7 @@ Function Show-InstallationRestartPrompt {
 	$formRestart.MinimizeBox = $False
 	$formRestart.Name = "formRestart"
 	$formRestart.StartPosition = 'CenterScreen'
-	$formRestart.Text = "$configRestartPromptTitle"
+	$formRestart.Text = "$configRestartPromptTitle" + ": " + "$installTitle"
 	$formRestart.add_Load($FormEvent_Load)
 	$formRestart.add_Resize($formRestart_Resize)
 
@@ -3069,13 +3075,8 @@ Function Show-InstallationRestartPrompt {
     # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously   
 	If ($deployAppScriptFriendlyName) {
         Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
-        $installationRestartPromptJob = [PowerShell]::Create().AddScript({
-            Param($scriptPath,$installRestartPromptParameters)
-            .$scriptPath        
-            Show-InstallationRestartPrompt @installRestartPromptParameters
-        }).AddArgument($scriptPath).AddArgument($installRestartPromptParameters)
-        # Show the form asynchronously
-        $installationRestartPromptJobResult = $installationRestartPromptJob.BeginInvoke()
+        $installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
+        Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $scriptPath -ReferringApplication $installName -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
     }
     Else {	
 	    Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."   
@@ -3959,6 +3960,29 @@ Function Update-GroupPolicy {
 # Set the install name if the referring application parameter was specified
 If ($ReferringApplication -ne "") {	
     $installName = $ReferringApplication
+    $installTitle = $ReferringApplication
+}
+
+# If the ShowInstallationPrompt Parameter is specified, only call that function.
+If ($showInstallationPrompt -eq $true) {
+	$deployModeSilent = $true
+	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationPrompt"
+	$appDeployMainScriptParameters.Remove("ShowInstallationPrompt")
+    $appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")    
+    $appDeployMainScriptParameters.Remove("ReferringApplication")
+    Show-InstallationPrompt @appDeployMainScriptParameters
+	Exit-Script -ExitCode 0
+}
+
+# If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
+If ($showInstallationRestartPrompt -eq $true) {
+	$deployModeSilent = $true
+	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationRestartPrompt"
+	$appDeployMainScriptParameters.Remove("ShowInstallationRestartPrompt")
+    $appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")    
+    $appDeployMainScriptParameters.Remove("ReferringApplication")
+    Show-InstallationRestartPrompt @appDeployMainScriptParameters
+	Exit-Script -ExitCode 0
 }
 
 # If the cleanupBlockedApps Parameter is specified, only call that function.
@@ -4020,8 +4044,8 @@ If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeplo
 If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 
 # Check the XMl config file version 
-If ($xmlConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
-    Throw "The XML configuration file version [$xmlConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
+If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
+    Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
 }
 
 Write-Log "$installName setup started."
@@ -4071,10 +4095,12 @@ Switch ($deployMode) {
 }
 
 # Check current permissions and exit if not running with Administrator rights
-If (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-	If ($ShowBlockedAppDialog -ne $true) {
-		Throw "$appDeployMainScriptFriendlyName requires Administrator rights to function. Please re-run the deployment script as an Administrator."
-	}
+If ($configToolkitRequireAdmin) {
+    If (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+	    If ($ShowBlockedAppDialog -ne $true) {
+		    Throw "$appDeployMainScriptFriendlyName requires Administrator rights to function. Please re-run the deployment script as an Administrator."
+	    }
+    }
 }
 
 #*=============================================

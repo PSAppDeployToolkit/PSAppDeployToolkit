@@ -1,8 +1,13 @@
-Version 3.0.5 09/22/2013
-	Added minimum supported version check for the XMl config file.
-	Added ability to configure deferral exit code in the XML config file.
+Version 3.0.5 09/25/2013
+	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.
+	Fixed issues with Show-InstallationRestartPrompt closing with the parent process.
 	Fixed issue matching application names with brackets in Remove-MSIApplications.	
-	Fixed exception after clicking "Close Programs" button on Show-InstallationWelcomePrompt (only known to affect v3.0.4)
+	Fixed exception after clicking "Close Programs" button on Show-InstallationWelcomePrompt (only known to affect v3.0.4).
+	Added additional XML configuration items:
+		- Specify separate toolkit and msi log directories 	
+		- Minimum supported version check for the XMl config file
+		- Configure deferral exit code
+		- Specify whether administrator rights are required
 
 Version 3.0.4 09/13/2013
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.
