@@ -7,14 +7,15 @@ Version 3.0.5 09/27/2013
 	Deferral history is now reset on successful installation	
 	Added ExitOnTimeout parameter to Show-InstallationPrompt (default is true)
 	Added MinimizeWindows parameter to Show-InstallationPrompt (default is false)
-	Added MinimizeWindows parameter to Show-InstallationWelcome (default is true)	
+	Added MinimizeWindows parameter to Show-InstallationWelcome (default is true)
+	Added extra space for the <DeferPrompt_WelcomeMessage> message	
 	Added additional XML configuration items:
 		- Specify separate toolkit and msi log directories
 		- Specify whether administrator rights are required	
 		- Minimum supported version check for the XMl config file
 		- Configure deferral exit code
 		- Configure temporary path for caching toolkit files
-		- Cofigure registry path for storing deferall information
+		- Configure registry path for storing deferral information
 
 Version 3.0.4 09/13/2013
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.

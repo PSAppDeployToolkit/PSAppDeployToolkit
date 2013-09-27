@@ -2651,13 +2651,13 @@ Function Show-WelcomePrompt {
 	$labelAppName.Name = "labelAppName"
 	$System_Drawing_Size = New-Object System.Drawing.Size
 	If ($showCloseApps -ne $true) {
-		$System_Drawing_Size.Height = 30
+		$System_Drawing_Size.Height = 40
 	}
 	Else {
 		$System_Drawing_Size.Height = 65
 	}
 	$System_Drawing_Size.Width = 450
-	$labelAppName.Size = $System_Drawing_Size   
+	$labelAppName.Size = $System_Drawing_Size
 	$labelAppName.Margin = "0,15,0,15"
 	$labelAppName.Padding = $labelPadding
 	$labelAppName.TabIndex = 1

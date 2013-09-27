@@ -12,6 +12,8 @@ With our old wrapper we use an option to check if the product code is already in
 
 * Possible to trigger invocation of the scheduled task when the PowerShell process exits?
 
+* Show prompt after restart to indicate success.
+
 Bug Fixes:
 
 
