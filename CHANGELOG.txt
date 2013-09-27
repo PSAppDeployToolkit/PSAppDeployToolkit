@@ -1,13 +1,20 @@
-Version 3.0.5 09/25/2013
+Version 3.0.5 09/27/2013
 	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.
-	Fixed issues with Show-InstallationRestartPrompt closing with the parent process.
+	Fixed issue with Show-InstallationRestartPrompt closing with the parent process.
 	Fixed issue matching application names with brackets in Remove-MSIApplications.	
 	Fixed exception after clicking "Close Programs" button on Show-InstallationWelcomePrompt (only known to affect v3.0.4).
+	Fixed issue with one deferral more showing than is remaining (cosmetic only)
+	Deferral history is now reset on successful installation	
+	Added ExitOnTimeout parameter to Show-InstallationPrompt (default is true)
+	Added MinimizeWindows parameter to Show-InstallationPrompt (default is false)
+	Added MinimizeWindows parameter to Show-InstallationWelcome (default is true)	
 	Added additional XML configuration items:
-		- Specify separate toolkit and msi log directories 	
+		- Specify separate toolkit and msi log directories
+		- Specify whether administrator rights are required	
 		- Minimum supported version check for the XMl config file
 		- Configure deferral exit code
-		- Specify whether administrator rights are required
+		- Configure temporary path for caching toolkit files
+		- Cofigure registry path for storing deferall information
 
 Version 3.0.4 09/13/2013
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.

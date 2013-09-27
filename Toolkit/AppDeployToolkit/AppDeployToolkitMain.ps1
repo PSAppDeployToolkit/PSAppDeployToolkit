@@ -37,7 +37,9 @@ Param (
 	[string] $ButtonLeftText = $null,
 	[string] $ButtonMiddleText = $null, 
     [string] $Icon = $null,
-    [string] $timeout = $null,
+    [string] $Timeout = $null,    
+    [switch] $ExitOnTimeout = $null,
+    [switch] $MinimizeWindows = $null, 
     [int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds
 )
@@ -53,7 +55,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.5"
 $appDeployMainScriptMinimumConfigVersion = "3.0.5"
-$appDeployMainScriptDate = "09/13/2013"
+$appDeployMainScriptDate = "09/27/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -94,14 +96,6 @@ Else {
 	$scriptParentPath = (Get-Item $scriptRoot).Parent.FullName
 }
 
-# Variables: Directories
-$dirSystemRoot = $env:SystemRoot
-$dirAppDeployFiles = Join-Path $scriptParentPath "AppDeployToolkitFiles" # The AppDeployFiles directory should be relative to the parent invoking script
-$dirFiles = Join-Path $scriptParentPath "Files" # The Files directory should be relative to the parent invoking script
-$dirSupportFiles = Join-Path $scriptParentPath "SupportFiles"
-$dirAppDeployTemp = Join-Path $env:PUBLIC ($appDeployToolkitName)
-$dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps" 
-
 # Variables: App Deploy Dependency Files
 $appDeployLogoIcon = Join-Path $scriptRoot "AppDeployToolkitLogo.ico"
 $appDeployLogoBanner = Join-Path $scriptRoot "AppDeployToolkitBanner.png"
@@ -128,13 +122,15 @@ $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
 # Get Config File Details
 $configConfigDetails = $xmlConfig.Config_File
-$configConfigVersion = $xmlConfigDetails.Config_Version
-$configConfigDate = $xmlConfigDetails.Config_Date
+$configConfigVersion = $configConfigDetails.Config_Version
+$configConfigDate = $configConfigDetails.Config_Date
 
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
-$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
 $configToolkitRequireAdmin = $xmlToolkitOptions.Toolkit_RequireAdmin
+$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
+$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
+$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
 
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
@@ -183,6 +179,14 @@ $configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
 $configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
 $configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
 $configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
+
+# Variables: Directories
+$dirSystemRoot = $env:SystemRoot
+$dirAppDeployFiles = Join-Path $scriptParentPath "AppDeployToolkitFiles" # The AppDeployFiles directory should be relative to the parent invoking script
+$dirFiles = Join-Path $scriptParentPath "Files" # The Files directory should be relative to the parent invoking script
+$dirSupportFiles = Join-Path $scriptParentPath "SupportFiles"
+$dirAppDeployTemp = Join-Path $configToolkitTempPath ($appDeployToolkitName)
+$dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps" 
 
 # Variables: Executables
 $exeWusa = "wusa.exe"
@@ -249,7 +253,7 @@ Else {
 	$regKeyLotusNotes = "HKLM:\Software\Lotus\Notes"
 }
 $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
-$regKeyDeferHistory = "HKLM:\SOFTWARE\$appDeployToolkitName\DeferHistory\$installName"
+$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 # Variables: 
 $debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptRoot\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
@@ -357,6 +361,7 @@ Function Exit-Script {
 	}	
 
 	If ($installSuccess -eq $true) {
+        Remove-RegistryKey -Key $regKeyDeferHistory
 		$balloonText = "$deploymentTypeName $configBalloonTextComplete"
 		# Handle reboot prompts on successful script completion
 		If ($msiRebootDetected -eq $true -and $AllowRebootPassThru -eq $true) { 
@@ -417,8 +422,12 @@ Function Show-InstallationPrompt {
 	Show a system icon in the prompt ("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo") [Default is "None"]
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response) [Default is $false]
+.PARAMETER MinimizeWindows 
+    Specifies whether to minimize other windows when displaying prompt [Default is false]
 .PARAMETER Timeout
 	Specifies the period in seconds after which the prompt should timeout [Default is the UI timeout value set in the config XML file]
+.PARAMETER ExitOnTimeout
+	Specifies whether to exit the script if the UI times out [Default True]
 .NOTES	
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -434,7 +443,10 @@ Function Show-InstallationPrompt {
         [ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
         [string] $Icon = "None",
         [switch] $NoWait = $false,
-        $timeout = $configInstallationUITimeout
+        [switch] $MinimizeWindows = $false, 
+        $Timeout = $configInstallationUITimeout,
+        $ExitOnTimeout = $true
+
 	)	
 
     # Get parameters for calling function asynchronously
@@ -642,9 +654,9 @@ Function Show-InstallationPrompt {
 	# Timer 
 	$timer = New-Object 'System.Windows.Forms.Timer'
 	$timer.Interval = $timeout
-	$timer.Add_Tick({
-		Write-Log "Installation not actioned within a reasonable amount of time."
-		$buttonAbort.PerformClick()
+	$timer.Add_Tick({     
+	    Write-Log "Installation not actioned within a reasonable amount of time."
+        $buttonAbort.PerformClick()
 	})
 
 	# Save the initial state of the form
@@ -675,6 +687,10 @@ Function Show-InstallationPrompt {
     Else {
 	    $showDialog = $true
 	    While ($showDialog -eq $true) {
+            If ($minimizeWindows -eq $true) { 
+	            # Minimize all other windows
+	            $shellApp.MinimizeAll()
+            }            
 		    # Show the Form 
 		    $result = $formInstallationPrompt.ShowDialog()  
 		    If ($result -eq "Yes" -or $result -eq "No" -or $result -eq "Ignore" -or $result -eq "Abort") { 
@@ -686,7 +702,16 @@ Function Show-InstallationPrompt {
 		    "Yes" { Return $buttonRightText}
 		    "No" { Return $buttonLeftText}
 		    "Ignore" { Return $buttonMiddleText}
-		    "Abort" { Exit-Script $configInstallationUIExitCode }
+		    "Abort" {
+                # Restore minimized windows
+                $shellApp.UndoMinimizeAll()   
+                If ($ExitOnTimeout -eq $true) {
+                    Exit-Script $configInstallationUIExitCode
+                } 
+                Else { 
+                    Write-Log "UI timed out but ExitOnTimeout set to false. Continuing..."
+                }
+            }
 	    }
     }
   
@@ -2195,6 +2220,8 @@ Function Show-InstallationWelcome {
     If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 .PARAMETER RequiredDiskSpace
 	Specify required disk space in MB, used in combination with CheckDiskSpace.
+.PARAMETER MinimizeWindows 
+    Specifies whether to minimize other windows when displaying prompt [Default is true]
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
@@ -2210,8 +2237,9 @@ Function Show-InstallationWelcome {
 	[int] $DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
 	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
-	[int] $RequiredDiskSpace = $null # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
-	)
+	[int] $RequiredDiskSpace = $null, # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
+	[switch] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
+    )
 
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
@@ -2327,7 +2355,7 @@ Function Show-InstallationWelcome {
                 }
                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
                 ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) { 
-				    $promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal	
+				    $promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows	
     			}
             }
 			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
@@ -2361,6 +2389,8 @@ Function Show-InstallationWelcome {
 				If ($deferTimes -or $deferDeadlineUniversal) {
 					Set-DeferHistory -deferTimesRemaining $DeferTimes -deferDeadline $deferDeadlineUniversal
 				}
+                # Restore minimized windows
+                $shellApp.UndoMinimizeAll()
 				Exit-Script $configInstallationUIExitCode
 			}
 			# Stop the script (user chose to defer)
@@ -2445,6 +2475,8 @@ Function Show-WelcomePrompt {
 	Specify the number of times the user is allowed to defer
 .PARAMETER DeferDeadline
 	Specify the deadline date before the user is allowed to defer
+.PARAMETER MinimizeWindows 
+    Specifies whether to minimize other windows when displaying prompt [Default is true]
 .NOTES
 	This is an internal script function and should typically not be called directly. It is used by the Show-InstallationWelcome prompt to display a custom prompt.
 .LINK 
@@ -2455,7 +2487,8 @@ Function Show-WelcomePrompt {
 	[int] $CloseAppsCountdown = $null,
 	[switch] $AllowDefer = $false,
 	$DeferTimes = $null,
-	$DeferDeadline = $null
+	$DeferDeadline = $null,
+    [switch]$minimizeWindows = $true
 	)
 	# Reset switches
 	$showCloseApps = $showDefer = $false 
@@ -2669,7 +2702,7 @@ Function Show-WelcomePrompt {
 	$labelDefer.TabIndex = 4   
 	$deferralText = "$configDeferPromptExpiryMessage`n"
 	If ($deferTimes -ge 0) {
-		$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $deferTimes"
+		$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $($deferTimes + 1)"
 	} 
 	If ($DeferDeadline) {
 		$deferralText = "$deferralText `n$configDeferPromptDeadline $deferDeadline"
@@ -2830,8 +2863,10 @@ Function Show-WelcomePrompt {
 	# Start the timer
 	$timer.Start()
 
-	# Minimize all other windows
-	$shellApp.MinimizeAll()
+    If ($minimizeWindows -eq $true) { 
+	    # Minimize all other windows
+	    $shellApp.MinimizeAll()
+    }
 
 	# Show the form
 	$result = $formWelcome.ShowDialog()  
