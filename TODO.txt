@@ -11,8 +11,8 @@ With our old wrapper we use an option to check if the product code is already in
 - Write to Logfile if Product Code is already installed  
 
 * Possible to trigger invocation of the scheduled task when the PowerShell process exits?
-
 * Show prompt after restart to indicate success.
+* Add CM12 example to documentation
 
 Bug Fixes:
 
