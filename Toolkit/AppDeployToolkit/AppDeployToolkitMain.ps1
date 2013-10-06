@@ -39,7 +39,8 @@ Param (
     [string] $Icon = $null,
     [string] $Timeout = $null,    
     [switch] $ExitOnTimeout = $null,
-    [switch] $MinimizeWindows = $null, 
+    [switch] $MinimizeWindows = $null,
+    [switch] $PersistPrompt = $false, 
     [int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds
 )
@@ -53,9 +54,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.5"
-$appDeployMainScriptMinimumConfigVersion = "3.0.5"
-$appDeployMainScriptDate = "09/27/2013"
+$appDeployMainScriptVersion = "3.0.6"
+$appDeployMainScriptMinimumConfigVersion = "3.0.6"
+$appDeployMainScriptDate = "10/07/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -145,6 +146,7 @@ $configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
 $configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
 $configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
 $configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
+$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
 If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
@@ -361,7 +363,10 @@ Function Exit-Script {
 	}	
 
 	If ($installSuccess -eq $true) {
-        Remove-RegistryKey -Key $regKeyDeferHistory
+        If (Test-Path $regKeyDeferHistory -ErrorAction SilentlyContinue) {
+            Write-Log "Removing deferral history..."
+            Remove-RegistryKey -Key $regKeyDeferHistory
+        }
 		$balloonText = "$deploymentTypeName $configBalloonTextComplete"
 		# Handle reboot prompts on successful script completion
 		If ($msiRebootDetected -eq $true -and $AllowRebootPassThru -eq $true) { 
@@ -422,6 +427,8 @@ Function Show-InstallationPrompt {
 	Show a system icon in the prompt ("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo") [Default is "None"]
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response) [Default is $false]
+.PARAMETER PersistPrompt 
+    Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile!
 .PARAMETER MinimizeWindows 
     Specifies whether to minimize other windows when displaying prompt [Default is false]
 .PARAMETER Timeout
@@ -443,6 +450,7 @@ Function Show-InstallationPrompt {
         [ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
         [string] $Icon = "None",
         [switch] $NoWait = $false,
+        [switch] $PersistPrompt = $false,
         [switch] $MinimizeWindows = $false, 
         $Timeout = $configInstallationUITimeout,
         $ExitOnTimeout = $true
@@ -478,7 +486,8 @@ Function Show-InstallationPrompt {
 			$buttonRight.remove_Click($buttonRight_OnClick)
 			$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
-			$timer.remove_Tick($timer_Tick)
+			$timer.remove_Tick($timer_Tick)            
+            $persistTimer.remove_Tick($persistTimer_Tick)
 			$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 			$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
 		}
@@ -493,6 +502,8 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.TopMost = $true
 		$formInstallationPrompt.BringToFront()
+        # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+        Set-Variable -Name formInstallationPromptStartPosition -Value $($formInstallationPrompt.Location) -Scope Script
 	}
 	
 	# Form
@@ -659,6 +670,17 @@ Function Show-InstallationPrompt {
         $buttonAbort.PerformClick()
 	})
 
+     # Persistence Timer
+    If ($persistPrompt) {
+	    $persistTimer = New-Object 'System.Windows.Forms.Timer'
+        $persistTimer.Interval = $configInstallationPersistInterval
+		$persistTimer_Tick = {
+            Refresh-InstallationPrompt
+        }        
+        $persistTimer.add_Tick($persistTimer_Tick)
+        $persistTimer.Start()
+    }
+
 	# Save the initial state of the form
 	$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 	# Init the OnLoad event to correct the initial state of the form
@@ -668,6 +690,12 @@ Function Show-InstallationPrompt {
 
 	# Start the timer
 	$timer.Start()
+
+    Function Refresh-InstallationPrompt {
+        $formInstallationPrompt.BringToFront()
+        $formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
+        $formInstallationPrompt.Refresh()
+    }
 
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
@@ -1514,7 +1542,7 @@ Function Get-RegistryKey {
 		}
 	}
 	Else {
-		Write-Host "Registry key does not exist: [$key]"
+		Write-Log "Registry key does not exist: [$key]"
 	}
 }
 
@@ -1840,7 +1868,7 @@ Function Get-ScheduledTask {
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-	SchTasks.exe /Query /FO CSV | ConvertFrom-Csv
+	SchTasks.exe /Query /FO CSV | ConvertFrom-Csv –Header “TaskName”
 }
 
 Function Block-AppExecution {
@@ -2202,7 +2230,9 @@ Function Show-InstallationWelcome {
 .PARAMETER Silent
 	Stop processes without prompting the user.
 .PARAMETER CloseAppsCountdown
-	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is now allowed or has expired.
+	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
+.PARAMETER PersistPrompt 
+    Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile! This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation
 .PARAMETER DeferTimes
@@ -2230,7 +2260,8 @@ Function Show-InstallationWelcome {
 	[string] $CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word" 
 	[switch] $Silent = $false, # Specify whether to prompt user or force close the applications
 	[int] $CloseAppsCountdown = $null, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
-	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
+	[switch] $PersistPrompt = $false, # Specify whether to make the prompt persist in the center of the screen every 10 seconds.
+    [switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
 	[switch] $AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
 	[switch] $AllowDeferCloseApps = $false, # Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed
 	[int] $DeferTimes = $null, # Specify the number of times the deferral is allowed
@@ -2281,6 +2312,7 @@ Function Show-InstallationWelcome {
 			}
 		}
 	}
+
 	# Check Deferral history and calculate deferrals remaining
 	If ($allowDefer -eq $true -or $AllowDeferCloseApps -eq $true) {
         # Set the allowDefer to true if AllowDeferCloseApps is true
@@ -2343,7 +2375,7 @@ Function Show-InstallationWelcome {
 		$AllowDefer = $false
 	}
 
-	# Prompt the user to close running applications and optionally defer if enabled
+    # Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) { 
 		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
@@ -2355,12 +2387,12 @@ Function Show-InstallationWelcome {
                 }
                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
                 ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) { 
-				    $promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows	
+				    $promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows	
     			}
             }
 			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 			ElseIf ($runningProcessDescriptions -ne "") {
-				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown   
+				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt   
 			}
 			# If there is no deferral and no processes running, break the while loop
 			Else {
@@ -2469,6 +2501,8 @@ Function Show-WelcomePrompt {
 	The descriptive names of the applications that are running and need to be closed.
 .PARAMETER CloseAppsCountdown
 	Specify the countdown time in seconds before running applications are automatically closed.
+.PARAMETER PersistPrompt
+    Specify whether to make the prompt persist in the center of the screen every 10 seconds
 .PARAMETER AllowDefer
 	Specify whether to provide an option to defer the installation
 .PARAMETER DeferTimes
@@ -2479,19 +2513,20 @@ Function Show-WelcomePrompt {
     Specifies whether to minimize other windows when displaying prompt [Default is true]
 .NOTES
 	This is an internal script function and should typically not be called directly. It is used by the Show-InstallationWelcome prompt to display a custom prompt.
-.LINK 
+.LINK
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
 	[string] $ProcessDescriptions = $null,
 	[int] $CloseAppsCountdown = $null,
-	[switch] $AllowDefer = $false,
+	[boolean] $PersistPrompt = $false,
+    [switch] $AllowDefer = $false,
 	$DeferTimes = $null,
 	$DeferDeadline = $null,
     [switch]$minimizeWindows = $true
 	)
 	# Reset switches
-	$showCloseApps = $showDefer = $false 
+	$showCloseApps = $showDefer = $persistWindow = $false 
 	# Reset times
 	$startTime = $countdownTime = Get-Date	
 
@@ -2515,10 +2550,17 @@ Function Show-WelcomePrompt {
 			[string]$DeferDeadline = Get-Date $DeferDeadline | Out-String -Stream
 		}
 	}
-	ElseIf ($CloseAppsCountdown -gt 0) {
-		Write-Log "Displaying alose applications countdown with [$CloseAppsCountdown] seconds."
-		$showCountdown = $true
-	}
+
+    # If deferral is not being showed and close apps countdown or persist prompt was specified, enable those features.
+	If ($showDefer -ne $true) {
+        If ($CloseAppsCountdown -gt 0) {
+	    	Write-Log "Displaying close applications countdown with [$CloseAppsCountdown] seconds."
+		    $showCountdown = $true
+	    }
+        If ($PersistPrompt) {
+            $persistWindow = $true
+        }        
+    }
 
 	[Array]$ProcessDescriptions = $ProcessDescriptions.split(",")
 	[System.Windows.Forms.Application]::EnableVisualStyles()
@@ -2549,6 +2591,7 @@ Function Show-WelcomePrompt {
 			$buttonDefer.remove_Click($buttonDefer_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
 			$timer.remove_Tick($timer_Tick)
+            $persistTimer.remove_Tick($persistTimer_Tick)
 			$formWelcome.remove_Load($Form_StateCorrection_Load)
 			$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
 		}
@@ -2558,17 +2601,19 @@ Function Show-WelcomePrompt {
 
 	$Form_StateCorrection_Load=
 	{
-		#Correct the initial state of the form to prevent the .Net maximized form issue
+		# Correct the initial state of the form to prevent the .Net maximized form issue
 		$formWelcome.WindowState = 'Normal'
 		$formWelcome.AutoSize = $true
 		$formWelcome.TopMost = $true
-		$formWelcome.BringToFront()
+        $formWelcome.BringToFront()
+        # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+        Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
 
 		# Initialize the countdown timer
 		$currentTime = Get-Date
 		$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
 		$timer.Start()
-		# Set up the form
+        # Set up the form
 		$remainingTime = $countdownTime.Subtract($currentTime)
 		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"		
@@ -2601,6 +2646,17 @@ Function Show-WelcomePrompt {
 			$buttonAbort.PerformClick()
 		}
 	}
+
+    # Persistence Timer
+    If ($persistWindow) {
+	    $persistTimer = New-Object 'System.Windows.Forms.Timer'
+        $persistTimer.Interval = $configInstallationPersistInterval
+		$persistTimer_Tick = {
+            Refresh-InstallationWelcome
+        }        
+        $persistTimer.add_Tick($persistTimer_Tick)
+        $persistTimer.Start()
+    }
 
 	# Form
 	$formWelcome.Controls.Add($pictureBanner)
@@ -2811,7 +2867,7 @@ Function Show-WelcomePrompt {
 	$formWelcome.Name = "WelcomeForm"
 	$formWelcome.Text = $installTitle
 	$formWelcome.StartPosition = 'CenterScreen'
-	$formWelcome.FormBorderStyle = 'FixedDialog'
+    $formWelcome.FormBorderStyle = 'FixedDialog'
 	$formWelcome.MaximizeBox = $False
 	$formWelcome.MinimizeBox = $False
 	$formWelcome.TopMost = $True
@@ -2821,7 +2877,7 @@ Function Show-WelcomePrompt {
 	$formWelcome.Controls.Add($pictureBanner)
 	$formWelcome.Controls.Add($flowLayoutPanel)
 
-	# Panel Button
+    # Panel Button
 	$System_Drawing_Point = New-Object System.Drawing.Point
 	$System_Drawing_Point.X = 0
 	# Calculate the position of the panel relative to the size of the form
@@ -2863,9 +2919,23 @@ Function Show-WelcomePrompt {
 	# Start the timer
 	$timer.Start()
 
+    Function Refresh-InstallationWelcome {
+        $formWelcome.BringToFront()
+        $formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
+        $formWelcome.Refresh()
+    }
+
     If ($minimizeWindows -eq $true) { 
 	    # Minimize all other windows
 	    $shellApp.MinimizeAll()
+    }
+
+    Function Refresh-Form {
+    		$formWelcome.BringToFront()
+        $formWelcome.Location.X = 0              
+            $formWelcome.Location.Y = 0  
+            Write-Host "persisting prompt..."
+            $formWelcome.Refresh()
     }
 
 	# Show the form
@@ -3996,6 +4066,8 @@ Function Update-GroupPolicy {
 If ($ReferringApplication -ne "") {	
     $installName = $ReferringApplication
     $installTitle = $ReferringApplication
+    $installPhase = "Asynchronous"
+    $logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
 }
 
 # If the ShowInstallationPrompt Parameter is specified, only call that function.

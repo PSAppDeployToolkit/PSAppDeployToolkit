@@ -1,3 +1,8 @@
+Version 3.0.6 07/10/2013
+	Added PersistPrompt parameter to Show-InstallationWelcome and Show-InstallationPrompt. Prompt window is persistently returned to center screen after interval specified in config file (default 10 seconds). For Show-InstallationWelcome, this only takes effect if deferral is not available to user. The user will have no option but to respond to the prompt - resistance is futile!
+	Asynchronous actions now write to the same log file as synchronous actions.
+	Fixed Get-ScheduledTask not running on non-English system.
+
 Version 3.0.5 09/27/2013
 	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.
 	Fixed issue with Show-InstallationRestartPrompt closing with the parent process.
