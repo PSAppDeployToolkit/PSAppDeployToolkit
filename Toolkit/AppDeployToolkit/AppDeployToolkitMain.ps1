@@ -356,9 +356,10 @@ Function Exit-Script {
 
 	# Determine action based on exit code
 	Switch ($exitCode) {
-		$configInstallationUIExitCode { $installSuccess = $false ; }
-		3010 { $installSuccess = $true; }
-		0 { $installSuccess = $true}
+		$configInstallationUIExitCode { $installSuccess = $false }
+		$configInstallationDeferExitCode { $installSuccess = $false }
+		3010 { $installSuccess = $true }
+		0 { $installSuccess = $true }
 		Default { $installSuccess = $false }
 	}	
 
@@ -382,7 +383,7 @@ Function Exit-Script {
 	} 
 	ElseIf ($installSuccess -eq $false) {
 		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."
-		If ($exitCode -eq $configInstallationUIExitCode) {
+		If ($exitCode -eq $configInstallationUIExitCode -or $exitCode -eq $configInstallationDeferExitCode) {
 			$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
 			Show-BalloonTip -BalloonTipIcon "Warning" -BalloonTipText "$balloonText"
 		}
