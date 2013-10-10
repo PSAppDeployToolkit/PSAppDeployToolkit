@@ -19,6 +19,7 @@
 	Name of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
 .NOTES
+    The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously 
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
 "#>
@@ -2236,6 +2237,10 @@ Function Show-InstallationWelcome {
     Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile! This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation
+.PARAMETER AllowDefer
+	Enables an optional defer button to allow the user to defer the installation.
+.PARAMETER AllowDeferCloseApps
+	Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed.
 .PARAMETER DeferTimes
 	Specify the number of times the installation can be deferred
 .PARAMETER DeferDays

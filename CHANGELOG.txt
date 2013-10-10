@@ -4,6 +4,7 @@ Version 3.0.6 10/10/2013
 	Asynchronous actions now write to the same log file as synchronous actions
 	Changed Defer Exit Code default to 5000. In CM07, deployments with deferrals should be set on a recurring schedule (ie, every 4 hours, not just As Soon As Possible). In CM12, the Application Model evaluates once a day by default (can be changed in Client Settings)
 	Fixed Get-ScheduledTask not running on non-English system
+	Fixed error deleting deferral history in registry on successful installation.
 	Fixed non default Defer Exit Code from displaying error - should display a warning
 	Updated documentation with information on how to build and deploy Adobe Acrobat using SCCM 2007 / 2012 packages, and SCCM 2012 application model
 	Updated documentation with information on how to use advanced Office 2010 deployment script
