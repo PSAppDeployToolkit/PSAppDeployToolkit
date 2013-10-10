@@ -1,9 +1,13 @@
-Version 3.0.6 07/10/2013
+Version 3.0.6 10/10/2013
 	Added PersistPrompt parameter to Show-InstallationWelcome and Show-InstallationPrompt. Prompt window is persistently returned to center screen after interval specified in config file (default 10 seconds). For Show-InstallationWelcome, this only takes effect if deferral is not available to user. The user will have no option but to respond to the prompt - resistance is futile!
-	Asynchronous actions now write to the same log file as synchronous actions.
+	Added example advanced Office 2010 deployment script
+	Asynchronous actions now write to the same log file as synchronous actions
 	Changed Defer Exit Code default to 5000. In CM07, deployments with deferrals should be set on a recurring schedule (ie, every 4 hours, not just As Soon As Possible). In CM12, the Application Model evaluates once a day by default (can be changed in Client Settings)
-	Fixed Get-ScheduledTask not running on non-English system.
+	Fixed Get-ScheduledTask not running on non-English system
 	Fixed non default Defer Exit Code from displaying error - should display a warning
+	Updated documentation with information on how to build and deploy Adobe Acrobat using SCCM 2007 / 2012 packages, and SCCM 2012 application model
+	Updated documentation with information on how to use advanced Office 2010 deployment script
+	Updated documentation with important information on how deferrals work with SCCM 2007 and differences with SCCM 2012
 
 Version 3.0.5 09/27/2013
 	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.

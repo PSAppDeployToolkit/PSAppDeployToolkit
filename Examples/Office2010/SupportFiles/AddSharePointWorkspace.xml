@@ -1,0 +1,6 @@
+<Configuration Product="ProPlus">
+	<Display Level="none" CompletionNotice="no" SuppressModal="yes" NoCancel="yes" AcceptEula="yes" />
+	<Logging Type="standard" Path="C:\Windows\logs\MSI\" Template="MicrosoftSharePointWorkspaceSetup(*).txt" />
+	<Setting Id="SETUP_REBOOT" Value="Never" />
+	<OptionState Id="GrooveFiles" State="Local" Children="force" />
+</Configuration>

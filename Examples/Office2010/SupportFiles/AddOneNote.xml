@@ -1,0 +1,6 @@
+<Configuration Product="ProPlus">
+	<Display Level="none" CompletionNotice="no" SuppressModal="yes" NoCancel="yes" AcceptEula="yes" />
+	<Logging Type="standard" Path="C:\Windows\logs\MSI\" Template="MicrosoftOneNoteSetup(*).txt" />
+	<Setting Id="SETUP_REBOOT" Value="Never" />
+	<OptionState Id="OneNoteFiles" State="Local" Children="force" />
+</Configuration>
