@@ -467,6 +467,12 @@ Function Show-InstallationPrompt {
 
 	)	
 
+	# Bypass if in non-interactive mode
+	If ($deployModeNonInteractive -eq $true) { 
+		Write-Log "Bypassing Installation Prompt [Mode: $deployMode]... $Message"
+		Return 
+	}
+
     # Get parameters for calling function asynchronously
     $installPromptParameters = $psBoundParameters
 
@@ -809,7 +815,7 @@ Function Show-DialogBox {
 	[switch] $TopMost = $true
  	)
 
-	# Bypass if in totall silent mode
+	# Bypass if in non-interactive mode
 	If ($deployModeNonInteractive -eq $true) { 
 		Write-Log "Bypassing Dialog Box [Mode: $deployMode]... $Text"
 		Return 
@@ -2986,6 +2992,12 @@ Function Show-InstallationRestartPrompt {
 		[int] $CountdownSeconds = 60,
 		[int] $CountdownNoHideSeconds = 30
 	)
+
+	# Bypass if in non-interactive mode
+	If ($deployModeNonInteractive -eq $true) { 
+		Write-Log "Bypassing Installation Restart Prompt [Mode: $deployMode]..."
+		Return 
+	}
 
     # Get the parameters passed to the function for invoking the function asynchronously
     $installRestartPromptParameters = $psBoundParameters
