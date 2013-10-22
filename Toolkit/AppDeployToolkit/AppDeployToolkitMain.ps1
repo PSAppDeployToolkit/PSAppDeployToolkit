@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.6"
-$appDeployMainScriptMinimumConfigVersion = "3.0.6"
-$appDeployMainScriptDate = "10/07/2013"
+$appDeployMainScriptVersion = "3.0.7"
+$appDeployMainScriptMinimumConfigVersion = "3.0.7"
+$appDeployMainScriptDate = "10/22/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -89,6 +89,7 @@ $scriptName = [System.IO.Path]::GetFileNameWithoutExtension($MyInvocation.MyComm
 $scriptPath = $MyInvocation.MyCommand.Definition
 $scriptFileName = Split-Path -Leaf $MyInvocation.MyCommand.Definition
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+
 # Get the invoking script directory
 If (((Get-Variable MyInvocation).Value).ScriptName) { 
 	$scriptParentPath = Split-Path -Parent ((Get-Variable MyInvocation).Value).ScriptName
@@ -235,10 +236,17 @@ If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 
 # Build the Application Title and Name
 $installTitle = "$appVendor $appName $appVersion"
-# Remove spaces in the application vendor/name/version, as they can cause issues in the script
-$appVendor = $appVendor -replace " ",""
-$appName = $appName -replace " ",""
-$appVersion = $appVersion -replace " ",""
+
+# Sanitize the application details, as they can cause issues in the script
+$invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars() 
+$appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
+$appName = $appName -replace "[$invalidFileNameChars]","" -replace " ",""
+$appVersion = $appVersion -replace "[$invalidFileNameChars]","" -replace " ",""
+$appArch = $appArch -replace "[$invalidFileNameChars]","" -replace " ",""
+$appLang = $appLang -replace "[$invalidFileNameChars]","" -replace " ",""
+$appRevision = $appRevision -replace "[$invalidFileNameChars]","" -replace " ",""
+
+# Build the Installation Name
 If ($appArch -ne "") {
 	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision"
 }
@@ -3861,14 +3869,14 @@ Function Test-Battery {
 	If ($batteryStatus) {
 		$power = $batteryStatus.PowerOnLine
 		If ($power) {
-			Write-Log "Power connection found."
+			Write-Log "AC Power connection found."
 			$onPower = $true
-			Return $true
+			Return $false
 		}
 	}
 
-	Write-Log "Power connection not found"
-	Return $false
+	Write-Log "AC Power connection not found"
+	Return $true
 } 
 
 Function Test-NetworkConnection {
