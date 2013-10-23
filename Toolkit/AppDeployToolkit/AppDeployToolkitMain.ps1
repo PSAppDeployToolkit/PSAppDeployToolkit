@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.7"
 $appDeployMainScriptMinimumConfigVersion = "3.0.7"
-$appDeployMainScriptDate = "10/22/2013"
+$appDeployMainScriptDate = "10/23/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -195,7 +195,7 @@ $dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps"
 # Variables: Executables
 $exeWusa = "wusa.exe"
 $exeMsiexec = "msiexec.exe"
-$exeSchTasks = "schtasks.exe"
+$exeSchTasks = "$envWinDir\System32\schtasks.exe"
 
 $psArchitecture = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture
 $is64Bit = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture -eq '64-bit'
@@ -265,9 +265,6 @@ Else {
 }
 $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
 $regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
-
-# Variables: 
-$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptRoot\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 
 # Variables: Log Files
 $logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
@@ -1880,11 +1877,26 @@ Function Get-ScheduledTask {
 	Retrieves a list of the scheduled tasks on the local computer and returns them as an array
 .EXAMPLE
 	Get-ScheduledTask
+.PARAMETER ContinueOnError
+	Continue if an error is encountered [Default is false]
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-	SchTasks.exe /Query /FO CSV | ConvertFrom-Csv –Header “TaskName”
+
+	Param (
+		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+	)
+
+    Write-Log "Retrieving Scheduled Tasks..."
+	Try {
+        &$exeSchTasks /Query /FO CSV | ConvertFrom-Csv –Header “TaskName”
+    }
+    Catch {
+        If ($ContinueOnError -eq $false) {			   
+			Throw "Error retrieving scheduled tasks."
+		} 
+    }
 }
 
 Function Block-AppExecution {
@@ -1925,7 +1937,7 @@ Function Block-AppExecution {
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml") 
 	# If there is an existing scheduled task from a failed installation for this application, run that now to restore the original IFEO keys before we back them up again.
-	If ((Get-ScheduledTask | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) -ne $null) {
+	If ((Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) -ne $null) {
 		Write-Log "Existing Scheduled Task detected [$schTaskBlockedAppsName]. UnBlock-AppExecution will be called." 
 		Unblock-AppExecution
 	}
@@ -1972,13 +1984,15 @@ Function Block-AppExecution {
 	# Copy Script to Temporary directory so it can be called by scheduled task later if required
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Force -Recurse -ErrorAction SilentlyContinue
 
+    $debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
+
 	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
-	If (Get-ScheduledTask | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
+	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
-		$schTaskCreation = Execute-Process -FilePath "schtasks.exe" -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication $installName`"" -PassThru
+		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication $installName`"" -PassThru
 	}
 
 	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).
@@ -2064,9 +2078,9 @@ Function UnBlock-AppExecution {
 	}
 
 	# Remove the scheduled task if it exists
-	If (Get-ScheduledTask | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
+	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Deleting Scheduled Task [$schTaskBlockedAppsName] ..."
-		Execute-Process -FilePath "schtasks.exe" -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
+		Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
 	}
 }
 
@@ -2419,7 +2433,7 @@ Function Show-InstallationWelcome {
 				Break
 			}
 			
-			# If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again
+            # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again
 			If ($promptResult -eq "Continue") {
 				Write-Log "User selected to continue..."
 				Sleep -Seconds 2
@@ -2763,7 +2777,8 @@ Function Show-WelcomePrompt {
 	$listBoxCloseApps.Margin = "75,0,0,0"
 	$listBoxCloseApps.TabIndex = 3
 	Foreach ($processDescription in $ProcessDescriptions) {
-		$listboxCloseApps.Items.Add("$processDescription")
+        # Assign the return values to a variable to suppress them from being returned from the function, which can cause issues
+        $listboxCloseAppsDescriptions = $listboxCloseApps.Items.Add("$processDescription")
 	}
 
 	# Label Defer
@@ -2950,15 +2965,7 @@ Function Show-WelcomePrompt {
 	    $shellApp.MinimizeAll()
     }
 
-    Function Refresh-Form {
-    		$formWelcome.BringToFront()
-        $formWelcome.Location.X = 0              
-            $formWelcome.Location.Y = 0  
-            Write-Host "persisting prompt..."
-            $formWelcome.Refresh()
-    }
-
-	# Show the form
+  	# Show the form
 	$result = $formWelcome.ShowDialog()  
 
 	Switch ($result) {
@@ -3183,10 +3190,10 @@ Function Show-InstallationRestartPrompt {
 	# Label Restart Now
 	$buttonRestartNow.Anchor = 'Bottom, Right'
 	$buttonRestartNow.Location = '265, 216'
-	$buttonRestartNow.Name = $configRestartPromptButtonRestartNow
+	$buttonRestartNow.Name = "buttonRestartNow"
 	$buttonRestartNow.Size = '159, 23'
 	$buttonRestartNow.TabIndex = 0
-	$buttonRestartNow.Text = "Restart &Now"
+	$buttonRestartNow.Text = $configRestartPromptButtonRestartNow 
 	$buttonRestartNow.UseVisualStyleBackColor = $True
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
