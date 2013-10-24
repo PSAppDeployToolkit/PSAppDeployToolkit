@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.7"
 $appDeployMainScriptMinimumConfigVersion = "3.0.7"
-$appDeployMainScriptDate = "10/23/2013"
+$appDeployMainScriptDate = "10/24/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3032,7 +3032,6 @@ Function Show-InstallationRestartPrompt {
 		# Show the Restart Popup
 		$formRestart.WindowState = 'Normal'
 		$formRestart.TopMost = $true
-		$formRestart.TopMost = $false
 		$formRestart.BringToFront()
 		[System.Windows.Forms.Application]::DoEvents()
 	}
