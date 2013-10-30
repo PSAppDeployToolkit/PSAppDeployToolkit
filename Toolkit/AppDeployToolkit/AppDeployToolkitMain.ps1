@@ -272,7 +272,7 @@ $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image 
 $regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 # Variables: Log Files
-$logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
+$logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName.log")
 
 #*=============================================
 #* END VARIABLE DECLARATION
@@ -4109,7 +4109,7 @@ Function Update-GroupPolicy {
 # Set the install name if the referring application parameter was specified
 If ($ReferringApplication -ne "") {	
     $installName = $ReferringApplication
-    $installTitle = $ReferringApplication
+    $installTitle = $ReferringApplication -replace "_"," "
     $installPhase = "Asynchronous"
     $logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
 }
@@ -4119,7 +4119,7 @@ If ($showInstallationPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationPrompt")
-    $appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")    
+    $appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
     $appDeployMainScriptParameters.Remove("ReferringApplication")
     Show-InstallationPrompt @appDeployMainScriptParameters
 	Exit-Script -ExitCode 0
@@ -4149,7 +4149,7 @@ If ($showBlockedAppDialog -eq $true) {
 	Try {
 		$deployModeSilent = $true
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
-		Show-InstallationPrompt -Title $ReferringApplication -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText "OK"
+		Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText "OK"
 		Exit-Script -ExitCode 0
 	} 
 	Catch {
