@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.7"
-$appDeployMainScriptMinimumConfigVersion = "3.0.7"
-$appDeployMainScriptDate = "10/24/2013"
+$appDeployMainScriptVersion = "3.0.8"
+$appDeployMainScriptMinimumConfigVersion = "3.0.8"
+$appDeployMainScriptDate = "10/30/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -68,16 +68,21 @@ $envHost = $host
 $envAllUsersProfile = $env:ALLUSERSPROFILE
 $envAppData = $env:APPDATA
 $envArchitecture = $env:PROCESSOR_ARCHITECTURE
+$envCommonProgramFiles = $env:CommonProgramFiles
+$envCommonProgramFilesX86 = "${env:CommonProgramFiles(x86)}"
 $envComputerName = $env:COMPUTERNAME
 $envHomeDrive = $env:HOMEDRIVE
 $envHomePath = $env:HOMEPATH
+$envHomeShare = $env:HOMESHARE
 $envLocalAppData = $env:LOCALAPPDATA
 $envLogonServer = $env:LOGONSERVER
 $envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction SilentlyContinue
+$envProgramFiles = $env:PROGRAMFILES
 $envProgramFilesx86 = "${env:ProgramFiles(x86)}"
 $envProgramData = $env:PROGRAMDATA
 $envPublic = $env:PUBLIC
 $envSystemDrive = $env:SYSTEMDRIVE
+$envSystemRoot = $env:SYSTEMROOT
 $envTemp = $env:TEMP
 $envUserDNSDomain = $env:USERDNSDOMAIN
 $envUserDomain = $env:USERDOMAIN
@@ -125,64 +130,64 @@ $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
 # Get Config File Details
 $configConfigDetails = $xmlConfig.Config_File
-$configConfigVersion = $configConfigDetails.Config_Version
-$configConfigDate = $configConfigDetails.Config_Date
+[string]$configConfigVersion = $configConfigDetails.Config_Version
+[string]$configConfigDate = $configConfigDetails.Config_Date
 
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
-$configToolkitRequireAdmin = $xmlToolkitOptions.Toolkit_RequireAdmin
-$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
-$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
-$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
+[bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
+[string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
+[string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
+[string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
 
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
-$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
-$configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
-$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
-$configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
-$configMSILogDir = $xmlConfigMSIOptions.MSI_LogPath
+[string]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
+[string]$configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
+[string]$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
+[string]$configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
+[string]$configMSILogDir = $xmlConfigMSIOptions.MSI_LogPath
 # Get UI Options
 $xmlConfigUIOptions = $xmlConfig.UI_Options
-$configShowBalloonNotifications = $xmlConfigUIOptions.ShowBalloonNotifications
-$configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
-$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
-$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
-$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
+[bool]$configShowBalloonNotifications = [boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
+[int]$configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
+[int]$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
+[int]$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
+[int]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
 If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
 	$xmlUIMessageLanguage = "UI_Messages_EN"
 }
 $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
-$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
-$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
-$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
-$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
-$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
-$configBalloonTextError = $xmlUIMessages.BalloonText_Error
-$configProgressMessage = $xmlUIMessages.Progress_Message
-$configClosePromptConfirm = $xmlUIMessages.ClosePrompt_Confirm
-$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
-$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
-$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
-$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
-$configClosePromptCountdownMessage = $xmlUIMessages.ClosePrompt_CountdownMessage
-$configDeferPromptWelcomeMessage = $xmlUIMessages.DeferPrompt_WelcomeMessage
-$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
-$configDeferPromptWarningMessage = $xmlUIMessages.DeferPrompt_WarningMessage
-$configDeferPromptRemainingDeferrals = $xmlUIMessages.DeferPrompt_RemainingDeferrals
-$configDeferPromptRemainingDays = $xmlUIMessages.DeferPrompt_RemainingDays
-$configDeferPromptDeadline = $xmlUIMessages.DeferPrompt_Deadline
-$configDeferPromptNoDeadline = $xmlUIMessages.DeferPrompt_NoDeadline
-$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
-$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
-$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
-$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
-$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
-$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
-$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
-$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
+[string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
+[string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
+[string]$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
+[string]$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
+[string]$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
+[string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
+[string]$configProgressMessage = $xmlUIMessages.Progress_Message
+[string]$configClosePromptConfirm = $xmlUIMessages.ClosePrompt_Confirm
+[string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
+[string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
+[string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
+[string]$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
+[string]$configClosePromptCountdownMessage = $xmlUIMessages.ClosePrompt_CountdownMessage
+[string]$configDeferPromptWelcomeMessage = $xmlUIMessages.DeferPrompt_WelcomeMessage
+[string]$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
+[string]$configDeferPromptWarningMessage = $xmlUIMessages.DeferPrompt_WarningMessage
+[string]$configDeferPromptRemainingDeferrals = $xmlUIMessages.DeferPrompt_RemainingDeferrals
+[string]$configDeferPromptRemainingDays = $xmlUIMessages.DeferPrompt_RemainingDays
+[string]$configDeferPromptDeadline = $xmlUIMessages.DeferPrompt_Deadline
+[string]$configDeferPromptNoDeadline = $xmlUIMessages.DeferPrompt_NoDeadline
+[string]$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
+[string]$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
+[string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
+[string]$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
+[string]$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
+[string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
+[string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
+[string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
 
 # Variables: Directories
 $dirSystemRoot = $env:SystemRoot
@@ -677,7 +682,7 @@ Function Show-InstallationPrompt {
 
 	# Timer 
 	$timer = New-Object 'System.Windows.Forms.Timer'
-	$timer.Interval = $timeout
+	$timer.Interval = ($timeout * 1000)
 	$timer.Add_Tick({     
 	    Write-Log "Installation not actioned within a reasonable amount of time."
         $buttonAbort.PerformClick()
@@ -686,7 +691,7 @@ Function Show-InstallationPrompt {
      # Persistence Timer
     If ($persistPrompt) {
 	    $persistTimer = New-Object 'System.Windows.Forms.Timer'
-        $persistTimer.Interval = $configInstallationPersistInterval
+        $persistTimer.Interval = ($configInstallationPersistInterval * 1000)
 		$persistTimer_Tick = {
             Refresh-InstallationPrompt
         }        
@@ -1324,8 +1329,8 @@ Function Execute-Process {
 	If($stdOut.length -gt 0) { Write-Log $stdOut}
 	If($stdErr.length -gt 0) { Write-Log $stdErr}
 
+	$process.WaitForExit()
 	$returnCode = $process.ExitCode
-	$process.WaitForExit()	
 
 	# Re-enable Zone checking
 	Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
@@ -2445,7 +2450,10 @@ Function Show-InstallationWelcome {
 			# Force the applications to close
 			ElseIf ($promptResult -eq "Close") {
 				Write-Log "User selected to force the applications to close..."
-				Stop-Process ($runningProcesses | Select ID -ExpandProperty ID) -Force -ErrorAction SilentlyContinue
+				ForEach ($runningProcess in $runningProcesses) {
+					Write-Log "Stopping Process $($runningProcess.Name)..."
+					Stop-Process ($runningProcess | Select ID -ExpandProperty ID) -Force -ErrorAction SilentlyContinue
+				}
 				Sleep -Seconds 2
 			}
 			# Stop the script (not actioned within a reasonable amount of time)
@@ -2491,7 +2499,11 @@ Function Show-InstallationWelcome {
 			Try {
 				If (Test-Path $notesNSDExecutable) {
 					Write-Log "Executing $notesNSDExecutable with the -kill argument..."
-					$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList "-kill" -WindowStyle Hidden -Wait -PassThru
+					$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList "-kill" -WindowStyle Hidden -PassThru
+					If (!$notesNSDProcess.WaitForExit(10000)) {
+						Write-Log "$notesNSDExecutable did not end in a timely manner. Terminating process..."
+						Stop-Process -Name "NSD" -Force -ErrorAction SilentlyContinue
+					}
 				}
 			}
 			Catch {
@@ -2675,7 +2687,7 @@ Function Show-WelcomePrompt {
 		}
 	}
 	Else {
-		$timer.Interval = $configInstallationUITimeout
+		$timer.Interval = ($configInstallationUITimeout * 1000)
 		$timer_Tick={
 			$buttonAbort.PerformClick()
 		}
@@ -2684,7 +2696,7 @@ Function Show-WelcomePrompt {
     # Persistence Timer
     If ($persistWindow) {
 	    $persistTimer = New-Object 'System.Windows.Forms.Timer'
-        $persistTimer.Interval = $configInstallationPersistInterval
+        $persistTimer.Interval = ($configInstallationPersistInterval * 1000)
 		$persistTimer_Tick = {
             Refresh-InstallationWelcome
         }        

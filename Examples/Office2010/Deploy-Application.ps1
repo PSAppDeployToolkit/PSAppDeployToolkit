@@ -231,7 +231,7 @@ $installPhase = "Post-Installation"
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
-	Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden	
+	Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
 
 #*===============================================
 #* END SCRIPT BODY
