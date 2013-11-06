@@ -1,3 +1,7 @@
+Version 3.1.0 11/06/2013
+	When running as SYSTEM, the toolkit will automatically attempt to break out of Session 0 to the current user context in order to display user interaction. If no user is logged in, the toolkit will run silently
+	Added DebugMode parameter, which outputs all logging information to a trace window while the script runs. Errors and Warnings will be colour coded for easy identification
+
 Version 3.0.8 30/10/2013
 	Modified application name on block app execution prompt (costmetic)
 	Fixed Toolkit logpath not reading config file value.

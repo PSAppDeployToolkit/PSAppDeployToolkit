@@ -34,6 +34,7 @@ Param (
 	[string] $DeploymentType = "Install",
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string] $DeployMode = "Interactive",
+	[switch] $DebugMode = $false,
 	[switch] $AllowRebootPassThru = $false
 )
 
@@ -59,8 +60,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.8"
-$deployAppScriptDate = "10/30/2013"
+$deployAppScriptVersion = "3.1.0"
+$deployAppScriptDate = "11/06/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment

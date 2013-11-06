@@ -30,7 +30,7 @@ Param (
 	[switch] $ShowInstallationRestartPrompt = $false,
 	[switch] $CleanupBlockedApps = $false, 
 	[switch] $ShowBlockedAppDialog = $false, 
-	[switch] $DisableLogging = $false,  
+	[switch] $DisableLogging = $false,
 	[string] $ReferringApplication = $Null,
 	[string] $Message = $null,
 	[string] $MessageAlignment = $null,
@@ -38,28 +38,24 @@ Param (
 	[string] $ButtonLeftText = $null,
 	[string] $ButtonMiddleText = $null, 
 	[string] $Icon = $null,
-	[string] $Timeout = $null,	
+	[string] $Timeout = $null,
 	[switch] $ExitOnTimeout = $null,
 	[switch] $MinimizeWindows = $null,
 	[switch] $PersistPrompt = $false, 
 	[int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds
 )
-
 #*=============================================
 #* VARIABLE DECLARATION
 #*=============================================
-
 # Variables: Toolkit 
 $appDeployToolkitName = "PSAppDeployToolkit"
-
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.8"
-$appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "10/30/2013"
+$appDeployMainScriptVersion = "3.1.0"
+$appDeployMainScriptMinimumConfigVersion = "3.1.0"
+$appDeployMainScriptDate = "11/06/2013"
 $appDeployMainScriptParameters = $psBoundParameters
-
 # Variables: Environment
 $currentDate = (Get-Date -UFormat "%d-%m-%Y")
 $currentTime = (Get-Date -UFormat "%T")
@@ -94,7 +90,6 @@ $scriptName = [System.IO.Path]::GetFileNameWithoutExtension($MyInvocation.MyComm
 $scriptPath = $MyInvocation.MyCommand.Definition
 $scriptFileName = Split-Path -Leaf $MyInvocation.MyCommand.Definition
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
-
 # Get the invoking script directory
 If (((Get-Variable MyInvocation).Value).ScriptName) { 
 	$scriptParentPath = Split-Path -Parent ((Get-Variable MyInvocation).Value).ScriptName
@@ -103,16 +98,13 @@ If (((Get-Variable MyInvocation).Value).ScriptName) {
 Else {
 	$scriptParentPath = (Get-Item $scriptRoot).Parent.FullName
 }
-
 # Variables: App Deploy Dependency Files
 $appDeployLogoIcon = Join-Path $scriptRoot "AppDeployToolkitLogo.ico"
 $appDeployLogoBanner = Join-Path $scriptRoot "AppDeployToolkitBanner.png"
 $appDeployConfigFile = Join-Path $scriptRoot "AppDeployToolkitConfig.xml"
-
 # Variables: App Deploy Optional Files
 # Specify any additional PowerShell script files to be dot-sourced by this script, separated by commas.
 $appDeployToolkitDotSources = "AppDeployToolkitExtensions.ps1" 
-
 # Check that dependency files are present
 If (!(Test-Path $AppDeployLogoIcon)) {
 	Throw "Error: AppDeploy logo icon file required."
@@ -123,23 +115,19 @@ If (!(Test-Path $AppDeployLogoBanner)) {
 If (!(Test-Path $AppDeployConfigFile)) {
 	Throw "Error: AppDeploy xml configuration file not found."
 }
-
 # Import variables from XML configuration file
 [xml]$xmlConfigFile = Get-Content $AppDeployConfigFile
 $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
-
 # Get Config File Details
 $configConfigDetails = $xmlConfig.Config_File
 [string]$configConfigVersion = $configConfigDetails.Config_Version
 [string]$configConfigDate = $configConfigDetails.Config_Date
-
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
 [string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
 [string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
-
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [string]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
@@ -188,7 +176,6 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
 [string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
 [string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
-
 # Variables: Directories
 $dirSystemRoot = $env:SystemRoot
 $dirAppDeployFiles = Join-Path $scriptParentPath "AppDeployToolkitFiles" # The AppDeployFiles directory should be relative to the parent invoking script
@@ -196,24 +183,20 @@ $dirFiles = Join-Path $scriptParentPath "Files" # The Files directory should be 
 $dirSupportFiles = Join-Path $scriptParentPath "SupportFiles"
 $dirAppDeployTemp = Join-Path $configToolkitTempPath ($appDeployToolkitName)
 $dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps" 
-
 # Variables: Executables
 $exeWusa = "wusa.exe"
 $exeMsiexec = "msiexec.exe"
 $exeSchTasks = "$envWinDir\System32\schtasks.exe"
-
 $psArchitecture = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture
 $is64Bit = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture -eq '64-bit'
 $is64BitProcess = [System.IntPtr]::Size -eq 8
 $isServerOS =  (Get-WmiObject -Class Win32_operatingsystem -ErrorAction SilentlyContinue | Select Name -ExpandProperty Name) -match "Server"
-
 # Reset Switches to false
 $msiRebootDetected = $false
 $BlockExecution = $false
 $installationStarted = $false
 # Reset the deferral history
 $deferHistory = $deferTimes = $deferDays = $null
-
 # Assemblies: Load
 # Reset Assembly Errors & Warnings
 $AssemblyError = $AssemblyWarning = $null
@@ -224,11 +207,9 @@ Add-Type -AssemblyName System.Drawing -ErrorVariable +AssemblyError -WarningVari
 Add-Type -AssemblyName PresentationFramework -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
 Add-Type -AssemblyName PresentationCore -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
 Add-Type -AssemblyName WindowsBase -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-
 # COM Objects: Initialize
 $shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
 $shellApp = New-Object -ComObject Shell.Application -ErrorAction SilentlyContinue
-
 # Set up sample variables if Dot Sourcing the script or app details have not been specified
 If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 	$appVendor = "PS"
@@ -238,10 +219,8 @@ If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 	$appRevision = "01"
 	$appArch = ""
 }
-
 # Build the Application Title and Name
 $installTitle = "$appVendor $appName $appVersion"
-
 # Sanitize the application details, as they can cause issues in the script
 $invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars() 
 $appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
@@ -250,7 +229,6 @@ $appVersion = $appVersion -replace "[$invalidFileNameChars]","" -replace " ",""
 $appArch = $appArch -replace "[$invalidFileNameChars]","" -replace " ",""
 $appLang = $appLang -replace "[$invalidFileNameChars]","" -replace " ",""
 $appRevision = $appRevision -replace "[$invalidFileNameChars]","" -replace " ",""
-
 # Build the Installation Name
 If ($appArch -ne "") {
 	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision"
@@ -258,7 +236,6 @@ If ($appArch -ne "") {
 Else  {
 	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision"
 }
-
 # Variables: Registry Keys
 # Registry keys for native and WOW64 applications
 $regKeyApplications = @( "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" )
@@ -270,18 +247,14 @@ Else {
 }
 $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
 $regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
-
 # Variables: Log Files
 $logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName.log")
-
 #*=============================================
 #* END VARIABLE DECLARATION
 #*=============================================
-
 #*=============================================
 #* FUNCTION LISTINGS
 #*=============================================
-
 Function Write-Log { 
 <# 
 .SYNOPSIS
@@ -309,6 +282,9 @@ Function Write-Log {
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
+		If ($DebugMode -eq $true) {
+			Show-DebugMessage "[$currentDate $currentTime] [$installPhase] $Text"
+		}
 		If ($DisableLogging -eq $false) {
 			# Create the Log directory if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
@@ -327,7 +303,53 @@ Function Write-Log {
 		}
 	}
 }
-
+Function Show-DebugMessage {
+<#
+.Synopsis
+	Display script debug messages in an Internet Explorer window
+.Description
+	This command will launch an instance of Internet Explorer and display user defined trace messages. The trace message will automatically include a time stamp. After your script has completed, the window will remain open until you  manually close it. 
+.NOTES
+	This is an internal script function and should typically not be called directly. It is based off the Trace-Message function by Jeff Hicks
+.Link
+	http://jdhitsolutions.com/blog/2013/11/friday-fun-create-a-powershell-trace-window
+#>
+ 
+	Param (
+		[string]$Message,
+		[string]$Font="Verdana",
+		[int]$FontSize=2
+		)
+	# If there isn't an IE window object, create it
+	If (-Not $script:IEWindow) {
+		$script:IEWindow = New-Object -ComObject "InternetExplorer.Application" 
+		$script:IEWindow.navigate("about:blank")
+		$script:IEWindow.ToolBar = $False
+		$script:IEWindow.AddressBar = $False
+		$script:IEWindow.Visible = $True
+		$script:IEWindow.menubar = $False
+		$script:IEWindow.StatusBar = $False
+		$desktops = Get-WmiObject -Class Win32_DesktopMonitor
+		$script:IEWindow.Top = 100
+		$script:IEWindow.Left = 100
+		$script:IEWindow.Width = ($desktops[1].ScreenWidth - 200)
+		$script:IEWindow.Height = ($desktops[1].ScreenHeight - 200)
+		$script:IEWindow.Document.IHTMLDocument2_Title = $installTitle
+		$script:IEWindow.Document.IHTMLDocument2_bgColor = "#0000FF"
+	}
+	#write the message to the window
+	If ($Message -match "Error") {
+		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color='#FF0000' face=$Font size=$FontSize><b>$Message</b> <br>")
+	}
+	ElseIf ($Message -match "Warning") {
+		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color='#FFFF00' face=$Font size=$FontSize><b>$Message</b> <br>")
+	}
+	Else {
+		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color=`#FFFFFF' face=$Font size=$FontSize>$Message <br>")
+	}
+	$script:IEWindow.Document.IHTMLDocument2_Title = $installTitle
+	$script:IEWindow.document.IHTMLDocument2_bgColor = "#0000FF"
+}
 Function Exit-Script {
 <# 
 .SYNOPSIS
@@ -351,20 +373,16 @@ Function Exit-Script {
 	Param (
 		[string] $ExitCode = 0
 	)
-
 	# Stop the Close Program Dialog if running
 	If ($formCloseApps -ne $null) { 
 		$formCloseApps.Close 
 	}	 
-
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
-
 	# If block execution switch is true, call the function to unblock execution
 	If ($BlockExecution -eq $true) {
 		Unblock-AppExecution
 	}
-
 	# Determine action based on exit code
 	Switch ($exitCode) {
 		$configInstallationUIExitCode { $installSuccess = $false }
@@ -373,7 +391,6 @@ Function Exit-Script {
 		0 { $installSuccess = $true }
 		Default { $installSuccess = $false }
 	}	
-
 	If ($installSuccess -eq $true) {
 		If (Test-Path $regKeyDeferHistory -ErrorAction SilentlyContinue) {
 			Write-Log "Removing deferral history..."
@@ -403,13 +420,10 @@ Function Exit-Script {
 			Show-BalloonTip -BalloonTipIcon "Error" -BalloonTipText "$balloonText"
 		}
 	}
-
 	Write-Log "----------------------------------------------------------------------------------------------------------"
-
 	# Exit the script returning the exit code to SCCM
 	Exit $exitCode 
 }
-
 Function Show-InstallationPrompt {
 <#
 .SYNOPSIS
@@ -466,18 +480,14 @@ Function Show-InstallationPrompt {
 		[switch] $MinimizeWindows = $false, 
 		$Timeout = $configInstallationUITimeout,
 		$ExitOnTimeout = $true
-
 	)	
-
 	# Bypass if in non-interactive mode
 	If ($deployModeNonInteractive -eq $true) { 
 		Write-Log "Bypassing Installation Prompt [Mode: $deployMode]... $Message"
 		Return 
 	}
-
 	# Get parameters for calling function asynchronously
 	$installPromptParameters = $psBoundParameters
-
 	# Check if the countdown was specified
 	If ($timeout -gt $configInstallationUITimeout) {
 			Throw "Error: The Show-InstallationPrompt timeout can not be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout."
@@ -512,7 +522,6 @@ Function Show-InstallationPrompt {
 		Catch [Exception]
 		{ }
 	}
-
 	$Form_StateCorrection_Load=
 	{
 		# Correct the initial state of the form to prevent the .Net maximized form issue
@@ -526,7 +535,6 @@ Function Show-InstallationPrompt {
 	
 	# Form
 	$formInstallationPrompt.Controls.Add($pictureBanner)
-
 	#----------------------------------------------
 	# Create padding object
 	$paddingNone = New-Object System.Windows.Forms.Padding
@@ -534,10 +542,8 @@ Function Show-InstallationPrompt {
 	$paddingNone.Bottom = 0
 	$paddingNone.Left = 0
 	$paddingNone.Right = 0
-
 	# Generic Label properties
 	$labelPadding = "20,0,20,0"
-
 	# Generic Button properties
 	$buttonWidth = 110 
 	$buttonHeight = 23
@@ -550,7 +556,6 @@ Function Show-InstallationPrompt {
 	$buttonPadding.Bottom = 5
 	$buttonPadding.Left = 50
 	$buttonPadding.Right = 0
-
 	# Picture Banner
 	$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 	$pictureBanner.ImageLocation = $appDeployLogoBanner
@@ -566,7 +571,6 @@ Function Show-InstallationPrompt {
 	$pictureBanner.Margin = $paddingNone   
 	$pictureBanner.TabIndex = 0
 	$pictureBanner.TabStop = $False
-
 	# Picture Icon
 	$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
 	If ($icon -ne "None") {
@@ -603,7 +607,6 @@ Function Show-InstallationPrompt {
 	$labelText.TextAlign = "Middle$($MessageAlignment)"
 	$labelText.Anchor = "Top"
 	$labelText.add_Click($handler_labelText_Click)
-
   	# Button Left
 	$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonLeft.Location = "15,200"
@@ -615,7 +618,6 @@ Function Show-InstallationPrompt {
 	$buttonLeft.AutoSize = $false
 	$buttonLeft.UseVisualStyleBackColor = $True
 	$buttonLeft.add_Click($buttonLeft_OnClick)
-
 	# Button Middle
 	$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonMiddle.Location = "170,200"   
@@ -627,7 +629,6 @@ Function Show-InstallationPrompt {
 	$buttonMiddle.AutoSize = $true
 	$buttonMiddle.UseVisualStyleBackColor = $True
 	$buttonMiddle.add_Click($buttonMiddle_OnClick)
-
 	# Button Right
 	$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonRight.Location = "325,200"
@@ -639,7 +640,6 @@ Function Show-InstallationPrompt {
 	$buttonRight.AutoSize = $true
 	$buttonRight.UseVisualStyleBackColor = $True
 	$buttonRight.add_Click($buttonRight_OnClick)
-
 	# Button Abort (Hidden)
 	$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonAbort.Name = "buttonAbort"
@@ -648,7 +648,6 @@ Function Show-InstallationPrompt {
 	$buttonAbort.TabIndex = 5
 	$buttonAbort.UseVisualStyleBackColor = $True
 	$buttonAbort.add_Click($buttonAbort_OnClick)
-
 	# Form Installation Prompt
 	$System_Drawing_Size = New-Object System.Drawing.Size
 	$System_Drawing_Size.Height = 270
@@ -679,7 +678,6 @@ Function Show-InstallationPrompt {
 	If ($buttonRightText) {
 		$formInstallationPrompt.Controls.Add($buttonRight)
 	}
-
 	# Timer 
 	$timer = New-Object 'System.Windows.Forms.Timer'
 	$timer.Interval = ($timeout * 1000)
@@ -687,7 +685,6 @@ Function Show-InstallationPrompt {
 		Write-Log "Installation not actioned within a reasonable amount of time."
 		$buttonAbort.PerformClick()
 	})
-
 	 # Persistence Timer
 	If ($persistPrompt) {
 		$persistTimer = New-Object 'System.Windows.Forms.Timer'
@@ -698,29 +695,24 @@ Function Show-InstallationPrompt {
 		$persistTimer.add_Tick($persistTimer_Tick)
 		$persistTimer.Start()
 	}
-
 	# Save the initial state of the form
 	$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 	# Init the OnLoad event to correct the initial state of the form
 	$formInstallationPrompt.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formInstallationPrompt.add_FormClosed($Form_Cleanup_FormClosed)
-
 	# Start the timer
 	$timer.Start()
-
 	Function Refresh-InstallationPrompt {
 		$formInstallationPrompt.BringToFront()
 		$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 		$formInstallationPrompt.Refresh()
 	}
-
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
 	
 	$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " "	
 	Write-Log "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]..."
-
 	# If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
 	If ($NoWait -eq $true) {
 		# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
@@ -762,7 +754,6 @@ Function Show-InstallationPrompt {
 	}
   
 } #End Function
-
 Function Show-DialogBox {
 <# 
 .SYNOPSIS
@@ -816,15 +807,12 @@ Function Show-DialogBox {
 	[string] $Timeout = $configInstallationUITimeout,
 	[switch] $TopMost = $true
  	)
-
 	# Bypass if in non-interactive mode
 	If ($deployModeNonInteractive -eq $true) { 
 		Write-Log "Bypassing Dialog Box [Mode: $deployMode]... $Text"
 		Return 
 	}
-
 	Write-Log "Displaying Dialog Box with message: [$Text]..."
-
 	$dialogButtons = @{ 
 		"OK" = 0
 		"OKCancel" = 1
@@ -834,7 +822,6 @@ Function Show-DialogBox {
 		"RetryCancel" = 5
 		"CancelTryAgainContinue" = 6
 	}
-
 	$dialogIcons = @{ 
 		"None" = 0
 		"Stop" = 16
@@ -842,21 +829,17 @@ Function Show-DialogBox {
 		"Exclamation" = 48
 		"Information" = 64
 	} 
-
 	$dialogDefaultButton = @{ 
 		"First" = 0
 		"Second" = 256
 		"Third" = 512
 	}
-
 	Switch ($TopMost) {
 		$true { $dialogTopMost = 4096 }
 		$false { $dialogTopMost = 0 }		
 	}
-
 	$wshell = New-Object -COMObject WScript.Shell
 	$response = $wshell.Popup($Text,$Timeout,$Title,$dialogButtons[$Buttons]+$dialogIcons[$Icon]+$dialogDefaultButton[$DefaultButton]+$dialogTopMost)
-
 	Switch ($response) { 
 		1 {
 			Write-Log "Dialog Box Response: OK"
@@ -900,7 +883,6 @@ Function Show-DialogBox {
 		} 
 	}
 }
-
 Function Get-HardwarePlatform {
 <# 
 .SYNOPSIS
@@ -918,7 +900,6 @@ Function Get-HardwarePlatform {
 	Param (
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Try {
 		$hwBios = Get-WmiObject Win32_BIOS | Select-Object "Version","SerialNnumber"
 		$hwMakeModel = Get-WMIObject Win32_ComputerSystem | Select-Object "Model","Manufacturer"
@@ -927,7 +908,6 @@ Function Get-HardwarePlatform {
 		Write-Log "Error retrieving hardware platform information."
 		If ($ContinueOnError -eq $false) { Throw "Error retrieving hardware platform information." }
 	}
-
 	If ($hwBIOS.Version -match "VRTUAL") {$hwType = "Virtual:Hyper-V"}
 	ElseIf ($hwBIOS.Version -match "A M I") {$hwType = "Virtual:Virtual PC"}
 	ElseIf ($hwBIOS.Version -like "*Xen*") {$hwType = "Virtual:Xen"}
@@ -938,7 +918,6 @@ Function Get-HardwarePlatform {
 	Else {$hwType = "Physical"}
 	Return $hwType
 }
-
 Function Get-FreeDiskSpace {
 <# 
 .SYNOPSIS
@@ -959,7 +938,6 @@ Function Get-FreeDiskSpace {
 		[string] $Drive = $envSystemDrive,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Try {
 		$disk = Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='$Drive'" -ErrorAction SilentlyContinue
 		$freeDiskSpace = [Math]::Round($disk.Freespace / 1MB)
@@ -968,10 +946,8 @@ Function Get-FreeDiskSpace {
 		Write-Log "Error retrieving free disk space for drive $Drive."
 		If ($ContinueOnError -eq $false) { Throw "Error retrieving free disk space for drive $Drive." }
 	}
-
 	Return $freeDiskSpace
 }
-
 Function Get-InstalledApplication {
 <# 
 .SYNOPSIS
@@ -995,7 +971,6 @@ Function Get-InstalledApplication {
 		[array] $Name = "",
 		[string] $ProductCode = ""
 	)	
-
 	If ($name -ne "") { Write-Log "Getting information for installed Application Name [$name]..."}
 	If ($productCode -ne "") { Write-Log "Getting information for installed Product Code [$ProductCode]..."}
 	If ($name -eq "" -and $ProductCode -eq "") { Write-Log "Get-InstalledApplication Error: Please provide an Application Name or Product Code."; Return $null }
@@ -1063,7 +1038,6 @@ Function Get-InstalledApplication {
 	}
 	Return $installedApplication
 }
-
 Function Execute-MSI {
 <# 
 .SYNOPSIS
@@ -1115,7 +1089,6 @@ Function Execute-MSI {
 		[string] $WorkingDirectory,
 		[switch] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if an MSI fails to install
 	)
-
 	# Build the log file name
 	If (!($logName)) {
 		# If the path matches a product code, resolve the product code to an application name and version
@@ -1138,7 +1111,6 @@ Function Execute-MSI {
 			$logName = (([System.IO.FileInfo]$path).BaseName)
 		}
 	}
-
 	# Create the Log directory if it doesn't already exist
 	If (!(Test-Path -path $configMSILogDir -ErrorAction SilentlyContinue )) { New-Item $configMSILogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
 	# Build the log file path
@@ -1152,7 +1124,6 @@ Function Execute-MSI {
 	Else {
 		$msiInstallDefaultParams = $configMSIInstallParams
 	}
-
 	# Build the MSI Parameters
 	Switch ($action) {
 		"Install" 			{ $option = "/i"; $msiLogFile = $logPath + "_Install"; $msiDefaultParams = $msiInstallDefaultParams }
@@ -1161,13 +1132,11 @@ Function Execute-MSI {
 		"Repair"			{ $option = "/f"; $msiLogFile = $logPath + "_Repair"; $msiDefaultParams = $msiInstallDefaultParams }
 		"ActiveSetup"		{ $option = "/fups"; $msiLogFile = $logPath + "_ActiveSetup" }
 	}
-
 	# Append .log to the logfile path and enclose in quotes
 	If (([System.IO.FileInfo]$msiLogFile).Extension -ne "log") {
 		$msiLogFile = $msiLogFile + ".log"
 		$msiLogFile = "`"$msiLogFile`""
 	}
-
 	# If the MSI is in the Files directory, set the full path to the MSI
 	If (Test-Path (Join-Path $dirFiles $path -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
 		$msiFile = (Join-Path $dirFiles $path)
@@ -1175,15 +1144,12 @@ Function Execute-MSI {
 	Else { 
 		$msiFile = $Path
 	}
-
 	# Set the working directory of the MSI
 	$workingDirectory = Split-Path $msiFile -Parent
-
 	# Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
 	$msiFile = "`"$msiFile`""
 	# Enclose the MST file in quotes to avoid issues with spaces when running msiexec
 	$mstFile = "`"$transform`""
-
 	If ($transform -and $Parameters) {
 		$argsMSI = "$option $msiFile TRANSFORMS=$mstFile $Parameters $configMSILoggingOptions $msiLogFile"
 	}
@@ -1196,7 +1162,6 @@ Function Execute-MSI {
 	Else {
 		$argsMSI = "$option $msiFile $msiDefaultParams $configMSILoggingOptions $msiLogFile"
 	}
-
 	# Call the Execute-Process function
 	If ($ContinueOnError -eq $true) {
 		Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError
@@ -1205,7 +1170,6 @@ Function Execute-MSI {
 		Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
 	}
 }
-
 Function Remove-MSIApplications { 
 <# 
 .SYNOPSIS
@@ -1232,7 +1196,6 @@ Function Remove-MSIApplications {
 		[string] $Name,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$installedApplications = Get-InstalledApplication $name
 	If ($installedApplications -ne "") {
 		Foreach ($installedApplication in $installedApplications) {
@@ -1251,7 +1214,6 @@ Function Remove-MSIApplications {
 		}
 	}
 }
-
 Function Execute-Process {
 <# 
 .SYNOPSIS
@@ -1298,18 +1260,14 @@ Function Execute-Process {
 		[string] $IgnoreExitCodes = $false,
 		[switch] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if a process execution fails
 	)
-
 	# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
 	If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
 		$FilePath = (Join-Path $dirFiles $FilePath)
 	}
-
 	Write-Log "Executing [$FilePath $Arguments]..." 
 	If ($workingDirectory -ne "") { Write-Log "Working Directory is [$WorkingDirectory]" }
-
 	# Disable Zone checking to prevent warnings when running executables from a Distribution Point
 	$env:SEE_MASK_NOZONECHECKS = 1
-
 	$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
 	$processStartInfo.FileName = "$FilePath"
 	$processStartInfo.WorkingDirectory = "$WorkingDirectory"
@@ -1318,23 +1276,17 @@ Function Execute-Process {
 	$processStartInfo.RedirectStandardError = $true
 	If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
 	If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
-
 	$process = [System.Diagnostics.Process]::Start($processStartInfo)
 	
 	$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
 	$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
-
 	$processName = $process.ProcessName
-
 	If($stdOut.length -gt 0) { Write-Log $stdOut}
 	If($stdErr.length -gt 0) { Write-Log $stdErr}
-
 	$process.WaitForExit()
 	$returnCode = $process.ExitCode
-
 	# Re-enable Zone checking
 	Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
-
 	# Check to see whether we should ignore exit codes
 	$ignoreExitCodeMatch = $false
 	If ($ignoreExitCodes -ne "") {
@@ -1352,7 +1304,6 @@ Function Execute-Process {
 	If ($ContinueOnError -eq $true) {
 		$ignoreExitCodeMatch = $true 
 	}
-
 	# If the passthru switch is specified, return the exit code and any output from process
 	If ($PassThru -eq $true) {
 		New-Object PSObject -Property @{
@@ -1385,13 +1336,11 @@ Function Execute-Process {
 		Write-Log ("Execution failed with code: " + $returnCode)
 		Exit-Script $returnCode 
 	}
-
 	Trap [Exception] {
 	Write-Log ("Execution failed: " + $_.Exception.Message)
 	Exit-Script $returnCode
 	}   
 }
-
 Function Copy-File {
 <# 
 .SYNOPSIS
@@ -1416,11 +1365,8 @@ Function Copy-File {
 		[string]$Destination = $(throw "Destination param required"),
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Copying File [$path] to [$destination]..."
-
 	Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force | Out-Null
-
 	Trap [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Could not copy file [$path] to [$destination]:" + $_.Exception.Message)
@@ -1431,7 +1377,6 @@ Function Copy-File {
 		}
 	}
 }
-
 Function Remove-File {
 <# 
 .SYNOPSIS
@@ -1458,7 +1403,6 @@ Function Remove-File {
 		[switch] $Recurse,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Deleting File(s) [$path]..."
 	If ($Recurse) {
 		Remove-Item -Path "$path" -ErrorAction "STOP" -Force -Recurse | Out-Null
@@ -1476,7 +1420,6 @@ Function Remove-File {
 		}
 	}
 }
-
 Function Convert-RegistryPath {
 <# 
 .SYNOPSIS
@@ -1510,7 +1453,6 @@ Param (
 	$key = Join-Path "Registry::" $key
 	Return $key
 }
-
 Function Get-RegistryKey {
 <# 
 .SYNOPSIS
@@ -1535,11 +1477,8 @@ Function Get-RegistryKey {
 		$Key,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$key = Convert-RegistryPath -Key $key
-
 	Write-Log "Getting Registry key [$key] ..."
-
 	# Check if the registry key exists
 	If (Test-Path -Path $key -ErrorAction SilentlyContinue) {
 		$regKeyValue = Get-ItemProperty -Path $key 
@@ -1563,7 +1502,6 @@ Function Get-RegistryKey {
 		Write-Log "Registry key does not exist: [$key]"
 	}
 }
-
 Function Set-RegistryKey {
 <# 
 .SYNOPSIS
@@ -1598,9 +1536,7 @@ Function Set-RegistryKey {
 		[Microsoft.Win32.RegistryValueKind]$Type="String",
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$key = Convert-RegistryPath -Key $Key
-
 	# Create registry key if it doesn't exist
 	If (!(Test-Path $key -ErrorAction SilentlyContinue)) { 
 		Write-Log "Creating Registry key [$key]..."
@@ -1615,7 +1551,6 @@ Function Set-RegistryKey {
 			}
 		}
 	}
-
 	If ($Name) {
 		# Set registry value if it doesn't exist
 		If ((Get-ItemProperty -Path $key -Name $Name -ErrorAction SilentlyContinue) -eq $null) {
@@ -1638,7 +1573,6 @@ Function Set-RegistryKey {
 		}
 	}
 }
-
 Function Remove-RegistryKey {
 <# 
 .SYNOPSIS
@@ -1666,9 +1600,7 @@ Function Remove-RegistryKey {
 		[switch] $Recurse,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$key = Convert-RegistryPath -Key $key
-
 	If (!($name)) {
 		Write-Log "Deleting Registry Key [$key]..."
 		If ($Recurse) {
@@ -1701,7 +1633,6 @@ Function Remove-RegistryKey {
 		}
 	}
 }
-
 Function Get-FileVersion {
 <# 
 .SYNOPSIS
@@ -1723,9 +1654,7 @@ Function Get-FileVersion {
 		[string] $File,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Getting file version info for [$file]..."
-
 	If (Test-Path $File) {
 		Try {
 			$fileVersion = (Get-Command $file).FileVersionInfo.FileVersion
@@ -1756,7 +1685,6 @@ Function Get-FileVersion {
 		}
 	}
 }
-
 Function New-Shortcut {
 <# 
 .SYNOPSIS
@@ -1794,13 +1722,11 @@ Function New-Shortcut {
 		[string] $WorkingDirectory,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$PathDirectory = ([System.IO.FileInfo]$Path).DirectoryName
 	If (!(Test-Path -Path $PathDirectory)) {
 		Write-Log "Creating Shortcut Directory..."
 		New-Item -ItemType Directory -Path $PathDirectory -ErrorAction SilentlyContinue -Force | Out-Null
 	}
-
 	
 	Write-Log "Creating shortcut [$path]..."
 	$shortcut = $shell.CreateShortcut($path)
@@ -1810,7 +1736,6 @@ Function New-Shortcut {
 	$shortcut.Description = $description
 	$shortcut.WorkingDirectory = $workingDirectory
 	$shortcut.Save()
-
 	Trap [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Failed to create shortcut [$path]:" + $_.Exception.Message)
@@ -1820,9 +1745,7 @@ Function New-Shortcut {
 			Throw $("Failed to create shortcut [$path]:" + $_.Exception.Message)
 		}
 	}
-
 }
-
 # Function to refresh the Windows Explorer Desktop (forces icons to refresh)
 Function Refresh-Desktop {
 <# 
@@ -1842,9 +1765,7 @@ Function Refresh-Desktop {
 	Param (
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Refreshing Desktop..."
-
 	$refreshDesktopCode = @'
 private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff); 
 private const int WM_SETTINGCHANGE = 0x1a; 
@@ -1852,16 +1773,13 @@ private const int SMTO_ABORTIFHUNG = 0x0002;
 [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError=true, CharSet=CharSet.Auto)] static extern bool SendNotifyMessage(IntPtr hWnd, uint Msg, UIntPtr wParam, IntPtr lParam);
 [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)] private static extern IntPtr SendMessageTimeout ( IntPtr hWnd, int Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult ); 
 [System.Runtime.InteropServices.DllImport("Shell32.dll")] private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
-
 public static void Refresh()  {
 	SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
 	SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, null, SMTO_ABORTIFHUNG, 100, IntPtr.Zero); 
 }
 '@
-
 	Add-Type -MemberDefinition $refreshDesktopCode -Namespace MyWinAPI -Name Explorer 
 	[MyWinAPI.Explorer]::Refresh()
-
 	Trap [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Error refreshing Desktop:" + $_.Exception.Message)
@@ -1872,7 +1790,6 @@ public static void Refresh()  {
 		}
 	}
 }
-
 # Function to get scheduled task information
 Function Get-ScheduledTask { 
 <# 
@@ -1888,11 +1805,9 @@ Function Get-ScheduledTask {
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-
 	Param (
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Retrieving Scheduled Tasks..."
 	Try {
 		&$exeSchTasks /Query /FO CSV | ConvertFrom-Csv –Header “TaskName”
@@ -1903,7 +1818,6 @@ Function Get-ScheduledTask {
 		} 
 	}
 }
-
 Function Block-AppExecution {
 <# 
 .SYNOPSIS
@@ -1931,13 +1845,11 @@ Function Block-AppExecution {
 		[Parameter(Mandatory = $true)]
 		$ProcessName # Specify process names separated by commas 
 	)
-
 	# Bypass if in NonInteractive mode
 	If ($deployModeNonInteractive -eq $true) { 
 		Write-Log "Bypassing Block-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
-
 	Write-Log "Invoking Block-AppExecution Function..."
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml") 
@@ -1946,14 +1858,11 @@ Function Block-AppExecution {
 		Write-Log "Existing Scheduled Task detected [$schTaskBlockedAppsName]. UnBlock-AppExecution will be called." 
 		Unblock-AppExecution
 	}
-
 	# Create array to store the state of the registry keys we need to change so that we can restore them later
 	$blockedApps = @()
-
 	$blockProcessName = $processName
 	# Append .exe to match registry keys
 	$blockProcessName = $blockProcessName | Foreach-Object { $_ + ".exe" } -ErrorAction SilentlyContinue
-
 	# Enumerate the Image File Execution Options registry keys
 	$regKeyAppExePath = Get-ChildItem -Path $regKeyAppExecution -ErrorAction SilentlyContinue
 	# Enumerate each process we want to block
@@ -1985,12 +1894,9 @@ Function Block-AppExecution {
 	} 
 	Write-Log "Exporting original IFEO registry keys to XML [$xmlBlockedApps]..."
 	$blockedApps | Export-Clixml -Path $xmlBlockedApps -Force
-
 	# Copy Script to Temporary directory so it can be called by scheduled task later if required
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Force -Recurse -ErrorAction SilentlyContinue
-
 	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
-
 	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
 	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
@@ -1999,7 +1905,6 @@ Function Block-AppExecution {
 	Else { 
 		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication $installName`"" -PassThru
 	}
-
 	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).
 	# Then change the debugger value to block execution of the application.
 	Foreach ($blockedApp in $blockedApps) {	
@@ -2007,13 +1912,11 @@ Function Block-AppExecution {
 		$blockedAppPath = $blockedApp | Select Path -ExpandProperty Path -ErrorAction SilentlyContinue
 		$blockedAppKeyExists = $blockedApp | Select KeyExists -ExpandProperty KeyExists -ErrorAction SilentlyContinue
 		$blockedAppDebuggerValue = $blockedApp | Select DebuggerValue -Expand DebuggerValue -ErrorAction SilentlyContinue
-
 		# Set the debugger value to block application execution
 		Write-Log "Setting the Image File Execution Options registry keys to block execution of $blockedAppName..."	
 		Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $debuggerBlockValue -ContinueOnError
 	}
 }
-
 Function UnBlock-AppExecution {
 <# 
 .SYNOPSIS
@@ -2033,11 +1936,9 @@ Function UnBlock-AppExecution {
 		Write-Log "Bypassing UnBlock-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
-
 	# Set these variables here so the function can be called on its own
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml")
-
 	# If the CleanupBlockedApps Parameter is specified, import the XML file to get the list of processes and the previous state of the registry
 	If ($CleanupBlockedApps -eq $true) {
 		Write-Log "CleanupBlockedApps specified."		
@@ -2050,7 +1951,6 @@ Function UnBlock-AppExecution {
 			Return
 		}
 	}
-
 	Write-Log "Invoking UnBlock-AppExecution Function..."
 	# Restore the original state of the IFEO registry key then remove the RunOnce Key that was set previousl
 	Foreach ($blockedApp in $blockedApps) {	
@@ -2058,7 +1958,6 @@ Function UnBlock-AppExecution {
 		$blockedAppPath = $blockedApp | Select Path -ExpandProperty Path -ErrorAction SilentlyContinue
 		$blockedAppKeyExists = $blockedApp | Select KeyExists -ExpandProperty KeyExists -ErrorAction SilentlyContinue
 		$blockedAppDebuggerValue = $blockedApp | Select DebuggerValue -Expand DebuggerValue -ErrorAction SilentlyContinue
-
 		Write-Log "Restoring the original Image File Execution Options registry key for $blockedAppName..."
 		If ($blockedAppKeyExists -eq $true) {
 			# If the Debugger value was previously set, restore the original value
@@ -2075,20 +1974,17 @@ Function UnBlock-AppExecution {
 			Remove-RegistryKey -Key $blockedAppPath -ContinueOnError
 		}
 	}
-
 	# Remove the XML file if it exists
 	If (Test-Path $xmlBlockedApps) {
 		Write-Log "Removing CliXML [$xmlBlockedApps]..."
 		Remove-File -Path $xmlBlockedApps
 	}
-
 	# Remove the scheduled task if it exists
 	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Deleting Scheduled Task [$schTaskBlockedAppsName] ..."
 		Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
 	}
 }
-
 Function Get-DeferHistory {
 <# 
 .SYNOPSIS
@@ -2105,7 +2001,6 @@ Function Get-DeferHistory {
 	Write-Log "Getting deferral history..."	
 	Get-RegistryKey -Key $regKeyDeferHistory -ContinueOnError
 }
-
 Function Set-DeferHistory {
 <# 
 .SYNOPSIS
@@ -2123,7 +2018,6 @@ Function Set-DeferHistory {
 		[string] $deferTimesRemaining = $null,
 		[string] $deferDeadline = $null
 	)
-
 	If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
 		Write-Log "Setting deferral history...[DeferTimesRemaining = $deferTimes]"
 		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferTimesRemaining" -Value $deferTimesRemaining -ContinueOnError
@@ -2133,7 +2027,6 @@ Function Set-DeferHistory {
 		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferDeadline" -Value $deferDeadline -ContinueOnError
 	}
 }
-
 Function Get-UniversalDate {
 <# 
 .SYNOPSIS
@@ -2169,7 +2062,6 @@ Function Get-UniversalDate {
 		}
 	}
 }
-
 Function Get-RunningProcesses {
 <# 
 .SYNOPSIS
@@ -2189,16 +2081,13 @@ Function Get-RunningProcesses {
 		$processObjects,
 		[switch] $Exact = $false
 	)
-
 	If ($processObjects -ne $null) {
 		Write-Log "Checking for running applications [$(($processObjects | Select ProcessName -ExpandProperty ProcessName) -Join ",")]..."   
-
 		# Join the process names with the regex operator '|' to perform "or" match against multiple applications
 		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -Join ("|")  
  
 		# Replace escape characters that interfere with Regex and might cause false positive matches
 		$processNames = $processNames -replace "\.","" -replace "\*",""	
-
 		$runningProcesses = @()
 		ForEach ($currentProcess in Get-Process) {
 			If ($Exact -eq $true) {
@@ -2245,7 +2134,6 @@ Function Get-RunningProcesses {
 		Return $runningProcesses
 	}
 }
-
 Function Show-InstallationWelcome {
 <# 
 .SYNOPSIS
@@ -2329,10 +2217,8 @@ Function Show-InstallationWelcome {
 	[int] $RequiredDiskSpace = $null, # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
 	[switch] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
 	)
-
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
-
 	# Check disk space requirements if specified
 	If ($CheckDiskSpace -eq $true) {
 		Write-Log "Evaluating disk space requirements..."
@@ -2348,7 +2234,7 @@ Function Show-InstallationWelcome {
 			}
 		}
 		If (($freeDiskSpace) -lt $RequiredDiskSpace) {
-			Write-Log "Minimum hard disk space requirement not met. Space Required [$($RequiredDiskSpace)MB], Space Available [$($freeDiskSpace)MB]."
+			Write-Log "Error: Minimum hard disk space requirement not met. Space Required [$($RequiredDiskSpace)MB], Space Available [$($freeDiskSpace)MB]."
 			If ($Silent -eq $false) {
 				Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle,$RequiredDiskSpace,($freeDiskSpace)) -ButtonRightText "Ok" -Icon "Error"
 			}
@@ -2358,7 +2244,6 @@ Function Show-InstallationWelcome {
 				Write-Log "Disk space requirements are met."
 			}
 	}
-
 	If ($CloseApps -ne "") {
 		# Create a Process object with custom descriptions where they are provided (split on a "=" sign)
 		$processObjects = @()
@@ -2370,7 +2255,6 @@ Function Show-InstallationWelcome {
 			}
 		}
 	}
-
 	# Check Deferral history and calculate deferrals remaining
 	If ($allowDefer -eq $true -or $AllowDeferCloseApps -eq $true) {
 		# Set the allowDefer to true if AllowDeferCloseApps is true
@@ -2432,7 +2316,6 @@ Function Show-InstallationWelcome {
 	If (($deferTimes -lt 0) -and !($deferDeadlineUniversal)) {
 		$AllowDefer = $false
 	}
-
 	# Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) { 
 		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
@@ -2497,7 +2380,6 @@ Function Show-InstallationWelcome {
 			}
 		}
 	}
-
 	# Force the processes to close silently, without prompting the user	
 	If (($Silent -or $deployModeSilent) -and $CloseApps) {
 		$runningProcesses = $null
@@ -2509,7 +2391,6 @@ Function Show-InstallationWelcome {
 			Sleep -Seconds 2
 		}
 	}	
-
 	# Force nsd.exe to stop if Notes is one of the required applications to close
 	If (($processObjects | Select ProcessName -ExpandProperty ProcessName) -match "notes") {
 		$notesPath = Get-Item $regKeyLotusNotes -ErrorAction SilentlyContinue | Get-ItemProperty | Select "Path" -ExpandProperty "Path"
@@ -2532,14 +2413,12 @@ Function Show-InstallationWelcome {
 			# Force NSD process to stop in case the previous command was not successful
 			Stop-Process -Name "NSD" -Force -ErrorAction SilentlyContinue
 		}
-
 		# Get a list of all the executables in the Notes folder
 		$notesPathExes = Get-ChildItem $notesPath -Filter "*.exe" -Recurse | Select BaseName -ExpandProperty BaseName
 		# Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
 		$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select ProcessName -ExpandProperty ProcessName | Sort) -DifferenceObject ($notesPathExes | Sort) -IncludeEqual | Where {$_.SideIndicator -eq "<=" -or $_.InputObject -eq "notes" } | Select-Object InputObject -ExpandProperty InputObject		
 		$processObjects = $processObjects | Where { $processesIgnoringNotesExceptions -contains $_.ProcessName }	  
 	}	
-
 	# If block execution switch is true, call the function to block execution of these processes
 	If ($BlockExecution -eq $true) {
 		# Make this variable globally available so we can check whether we need to call Unblock-AppExecution 
@@ -2548,7 +2427,6 @@ Function Show-InstallationWelcome {
 		Block-AppExecution -ProcessName ($processObjects | Select ProcessName -ExpandProperty ProcessName)
 	}
 }
-
 Function Show-WelcomePrompt {
 <#
 .SYNOPSIS
@@ -2594,14 +2472,12 @@ Function Show-WelcomePrompt {
 	$showCloseApps = $showDefer = $persistWindow = $false 
 	# Reset times
 	$startTime = $countdownTime = Get-Date	
-
 	# Check if the countdown was specified
 	If ($CloseAppsCountdown) {
 		If ($CloseAppsCountdown -gt $configInstallationUITimeout) {
 			Throw "Error: The close applications countdown time can not be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout."
 		}
 	}
-
 	# Initial form layout: Close Applications / Allow Deferral
 	If ($ProcessDescriptions -ne "") {
 		Write-Log "Prompting user to close application(s) [$runningProcessDescriptions]..." 
@@ -2615,7 +2491,6 @@ Function Show-WelcomePrompt {
 			[string]$DeferDeadline = Get-Date $DeferDeadline | Out-String -Stream
 		}
 	}
-
 	# If deferral is not being showed and close apps countdown or persist prompt was specified, enable those features.
 	If ($showDefer -ne $true) {
 		If ($CloseAppsCountdown -gt 0) {
@@ -2626,10 +2501,8 @@ Function Show-WelcomePrompt {
 			$persistWindow = $true
 		}		
 	}
-
 	[Array]$ProcessDescriptions = $ProcessDescriptions.split(",")
 	[System.Windows.Forms.Application]::EnableVisualStyles()
-
 	$formWelcome = New-Object System.Windows.Forms.Form
 	$pictureBanner = New-Object System.Windows.Forms.PictureBox
 	$labelAppName = New-Object System.Windows.Forms.Label
@@ -2643,7 +2516,6 @@ Function Show-WelcomePrompt {
 	$formWelcomeWindowState = New-Object System.Windows.Forms.FormWindowState
 	$flowLayoutPanel = New-Object System.Windows.Forms.FlowLayoutPanel
 	$panelButtons = New-Object System.Windows.Forms.Panel
-
 	$Form_Cleanup_FormClosed=
 	{
 		# Remove all event handlers from the controls
@@ -2663,7 +2535,6 @@ Function Show-WelcomePrompt {
 		Catch [Exception]
 		{ }
 	}
-
 	$Form_StateCorrection_Load=
 	{
 		# Correct the initial state of the form to prevent the .Net maximized form issue
@@ -2673,7 +2544,6 @@ Function Show-WelcomePrompt {
 		$formWelcome.BringToFront()
 		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
-
 		# Initialize the countdown timer
 		$currentTime = Get-Date
 		$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
@@ -2683,7 +2553,6 @@ Function Show-WelcomePrompt {
 		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"		
 	}
-
 	# Timer
 	$timer = New-Object 'System.Windows.Forms.Timer'
 	If ($showCountdown -eq $true) {
@@ -2711,7 +2580,6 @@ Function Show-WelcomePrompt {
 			$buttonAbort.PerformClick()
 		}
 	}
-
 	# Persistence Timer
 	If ($persistWindow) {
 		$persistTimer = New-Object 'System.Windows.Forms.Timer'
@@ -2722,11 +2590,9 @@ Function Show-WelcomePrompt {
 		$persistTimer.add_Tick($persistTimer_Tick)
 		$persistTimer.Start()
 	}
-
 	# Form
 	$formWelcome.Controls.Add($pictureBanner)
 	$formWelcome.Controls.Add($buttonAbort)
-
 	#----------------------------------------------
 	# Create padding object
 	$paddingNone = New-Object System.Windows.Forms.Padding
@@ -2734,10 +2600,8 @@ Function Show-WelcomePrompt {
 	$paddingNone.Bottom = 0
 	$paddingNone.Left = 0
 	$paddingNone.Right = 0
-
 	# Generic Label properties
 	$labelPadding = "20,0,20,0"
-
 	# Generic Button properties
 	$buttonWidth = 110 
 	$buttonHeight = 23
@@ -2750,7 +2614,6 @@ Function Show-WelcomePrompt {
 	$buttonPadding.Bottom = 5
 	$buttonPadding.Left = 50
 	$buttonPadding.Right = 0
-
 	# Picture Banner
 	$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 	$pictureBanner.ImageLocation = $appDeployLogoBanner
@@ -2766,7 +2629,6 @@ Function Show-WelcomePrompt {
 	$pictureBanner.Margin = $paddingNone   
 	$pictureBanner.TabIndex = 0
 	$pictureBanner.TabStop = $False
-
 	# Label App Name
 	$labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
 	$labelAppName.Name = "labelAppName"
@@ -2782,7 +2644,6 @@ Function Show-WelcomePrompt {
 	$labelAppName.Margin = "0,15,0,15"
 	$labelAppName.Padding = $labelPadding
 	$labelAppName.TabIndex = 1
-
 	 # Initial form layout: Close Applications / Allow Deferral
 	If ($showCloseApps -eq $true) {
 		$labelAppNameText = "$configClosePromptMessage"
@@ -2790,13 +2651,11 @@ Function Show-WelcomePrompt {
 	ElseIf ($showDefer -eq $true) {
 		$labelAppNameText = "$configDeferPromptWelcomeMessage `n$installTitle"
 	}   
-
 	$labelAppName.Text = $labelAppNameText
 	$labelAppName.TextAlign = 'TopCenter'
 	$labelAppName.Anchor = "Top"
 	$labelAppName.AutoSize = $false	
 	$labelAppName.add_Click($handler_labelAppName_Click)
-
 	# Listbox Close Applications
 	$listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
 	$listBoxCloseApps.FormattingEnabled = $True
@@ -2811,7 +2670,6 @@ Function Show-WelcomePrompt {
 		# Assign the return values to a variable to suppress them from being returned from the function, which can cause issues
 		$listboxCloseAppsDescriptions = $listboxCloseApps.Items.Add("$processDescription")
 	}
-
 	# Label Defer
 	$labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 	$labelDefer.Name = "labelDefer"
@@ -2836,7 +2694,6 @@ Function Show-WelcomePrompt {
 	$labelDefer.Text = $deferralText
 	$labelDefer.TextAlign = 'MiddleCenter'
 	$labelDefer.add_Click($handler_labelDefer_Click)
-
 	# Label Countdown
 	$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
 	$labelCountdown.Name = "labelCountdown"
@@ -2851,7 +2708,6 @@ Function Show-WelcomePrompt {
 	$labelCountdown.Text = "00:00:00"
 	$labelCountdown.TextAlign = 'MiddleCenter'
 	$labelCountdown.add_Click($handler_labelDefer_Click)
-
 	# Panel Flow Layout
 	$System_Drawing_Point = New-Object System.Drawing.Point
 	$System_Drawing_Point.X = 0
@@ -2871,7 +2727,6 @@ Function Show-WelcomePrompt {
 	ElseIf ($showCountdown -eq $true) {
 		$flowLayoutPanel.Controls.Add($labelCountdown)
 	}
-
 	# Button Close For Me 
 	$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonCloseApps.Location = "15,0"
@@ -2883,7 +2738,6 @@ Function Show-WelcomePrompt {
 	$buttonCloseApps.AutoSize = $true
 	$buttonCloseApps.UseVisualStyleBackColor = $True
 	$buttonCloseApps.add_Click($buttonCloseApps_OnClick)
-
 	# Button Defer
 	$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 	If ($showCloseApps -ne $true) {
@@ -2900,7 +2754,6 @@ Function Show-WelcomePrompt {
 	$buttonDefer.AutoSize = $true
 	$buttonDefer.UseVisualStyleBackColor = $True
 	$buttonDefer.add_Click($buttonDefer_OnClick)
-
 	# Button Continue
 	$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonContinue.Location = "325,0"
@@ -2912,7 +2765,6 @@ Function Show-WelcomePrompt {
 	$buttonContinue.AutoSize = $true
 	$buttonContinue.UseVisualStyleBackColor = $True
 	$buttonContinue.add_Click($buttonContinue_OnClick)
-
 	# Button Abort (Hidden)
 	$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonAbort.Name = "buttonAbort"
@@ -2921,7 +2773,6 @@ Function Show-WelcomePrompt {
 	$buttonAbort.TabIndex = 5
 	$buttonAbort.UseVisualStyleBackColor = $True
 	$buttonAbort.add_Click($buttonAbort_OnClick)
-
 	# Form Welcome
 	$System_Drawing_Size = New-Object System.Drawing.Size
 	$System_Drawing_Size.Height = 0
@@ -2942,7 +2793,6 @@ Function Show-WelcomePrompt {
 	$formWelcome.AutoSize = $true
 	$formWelcome.Controls.Add($pictureBanner)
 	$formWelcome.Controls.Add($flowLayoutPanel)
-
 	# Panel Button
 	$System_Drawing_Point = New-Object System.Drawing.Point
 	$System_Drawing_Point.X = 0
@@ -2968,48 +2818,38 @@ Function Show-WelcomePrompt {
 		$panelButtons.Controls.Add($buttonDefer)
 	}
 	$panelButtons.Controls.Add($buttonContinue)
-
 	# Add the Buttons Panel to the form
 	$formWelcome.Controls.Add($panelButtons)
-
 	# Add the Timer Countdown
 	$timer.add_Tick($timer_Tick)
-
 	# Save the initial state of the form
 	$formWelcomeWindowState = $formWelcome.WindowState
 	# Init the OnLoad event to correct the initial state of the form
 	$formWelcome.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
-
 	# Start the timer
 	$timer.Start()
-
 	Function Refresh-InstallationWelcome {
 		$formWelcome.BringToFront()
 		$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 		$formWelcome.Refresh()
 	}
-
 	If ($minimizeWindows -eq $true) { 
 		# Minimize all other windows
 		$shellApp.MinimizeAll()
 	}
-
   	# Show the form
 	$result = $formWelcome.ShowDialog()  
-
 	Switch ($result) {
 		OK { $result = "Continue" }
 		No { $result = "Defer" }
 		Yes { $result = "Close" }
 		Abort { $result = "Timeout" }
 	}
-
 	Return $result
 	   
 } #End Function
-
 Function Show-InstallationRestartPrompt {
 <# 
 .SYNOPSIS
@@ -3030,16 +2870,13 @@ Function Show-InstallationRestartPrompt {
 		[int] $CountdownSeconds = 60,
 		[int] $CountdownNoHideSeconds = 30
 	)
-
 	# Bypass if in non-interactive mode
 	If ($deployModeNonInteractive -eq $true) { 
 		Write-Log "Bypassing Installation Restart Prompt [Mode: $deployMode]..."
 		Return 
 	}
-
 	# Get the parameters passed to the function for invoking the function asynchronously
 	$installRestartPromptParameters = $psBoundParameters
-
 	# Check if we are already displaying a restart prompt
 	If (Get-Process | Where { $_.MainWindowTitle -match $configRestartPromptTitle }) {
 		Write-Log "Show-InstallationRestartPrompt invoked, but an existing restart prompt was detected. Cancelling restart prompt..."
@@ -3047,7 +2884,6 @@ Function Show-InstallationRestartPrompt {
 	}
 		
    	$startTime = $countdownTime = Get-Date
-
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	$formRestart = New-Object 'System.Windows.Forms.Form'
 	$labelCountdown = New-Object 'System.Windows.Forms.Label'
@@ -3058,7 +2894,6 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow = New-Object 'System.Windows.Forms.Button'
 	$timerCountdown = New-Object 'System.Windows.Forms.Timer'
 	$InitialFormWindowState = New-Object 'System.Windows.Forms.FormWindowState'	
-
 	Function Show-RestartPopup {
 		# Show the Restart Popup
 		$formRestart.WindowState = 'Normal'
@@ -3066,13 +2901,11 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.BringToFront()
 		[System.Windows.Forms.Application]::DoEvents()
 	}
-
 	Function Perform-Restart {
 		Write-Log "Force restarting computer..."
 		Restart-Computer -Force
 	}
 	
-
 	$FormEvent_Load={
 		# Initialize the countdown timer
 		$currentTime = Get-Date
@@ -3088,24 +2921,20 @@ Function Show-InstallationRestartPrompt {
 		Show-RestartPopup
 	}
 	
-
 	$buttonRestartLater_Click={
 		# Minimize the form
 		$formRestart.WindowState = 'Minimized'
 	}
-
 	$buttonRestartNow_Click={
 		# Restart the computer
 		Perform-Restart
 	}
-
 	$formRestart_Resize={
 		# Hide the form if minimized
 		If ($formRestart.WindowState -eq 'Minimized') {
 			$formRestart.WindowState = 'Minimized'
 		}	
 	}
-
 	$timerCountdown_Tick={
 		# Get the time information	
 		$currentTime = Get-Date
@@ -3129,13 +2958,11 @@ Function Show-InstallationRestartPrompt {
 			[System.Windows.Forms.Application]::DoEvents()
 		}
 	}
-
 	$Form_StateCorrection_Load=
 	{
 		# Correct the initial state of the form to prevent the .Net maximized form issue
 		$formRestart.WindowState = $InitialFormWindowState
 	}
-
 	$Form_Cleanup_FormClosed=
 	{
 		# Remove all event handlers from the controls
@@ -3152,7 +2979,6 @@ Function Show-InstallationRestartPrompt {
 		Catch [Exception]
 		{ }
 	}
-
 	# Form
 	$formRestart.Controls.Add($labelCountdown)
 	$formRestart.Controls.Add($labelTimeRemaining)
@@ -3171,7 +2997,6 @@ Function Show-InstallationRestartPrompt {
 	$formRestart.Text = "$configRestartPromptTitle" + ": " + "$installTitle"
 	$formRestart.add_Load($FormEvent_Load)
 	$formRestart.add_Resize($formRestart_Resize)
-
 	# Banner
 	$picturebox.Anchor = 'Top'
 	$picturebox.Image = [System.Drawing.Image]::Fromfile($AppDeployLogoBanner)
@@ -3181,7 +3006,6 @@ Function Show-InstallationRestartPrompt {
 	$picturebox.SizeMode = 'AutoSize'
 	$picturebox.TabIndex = 1
 	$picturebox.TabStop = $False
-
 	# Label Message
 	$labelMessage.Location = '20, 58'
 	$labelMessage.Name = "labelMessage"
@@ -3189,7 +3013,6 @@ Function Show-InstallationRestartPrompt {
 	$labelMessage.TabIndex = 3
 	$labelMessage.Text = $configRestartPromptMessage
 	$labelMessage.TextAlign = 'MiddleCenter'
-
 	# Label Time Remaining
 	$labelTimeRemaining.Location = '20, 138'
 	$labelTimeRemaining.Name = "labelTimeRemaining"
@@ -3197,7 +3020,6 @@ Function Show-InstallationRestartPrompt {
 	$labelTimeRemaining.TabIndex = 4
 	$labelTimeRemaining.Text = $configRestartPromptTimeRemaining
 	$labelTimeRemaining.TextAlign = 'MiddleCenter'
-
 	# Label Countdown
 	$labelCountdown.Font = "Microsoft Sans Serif, 18pt, style=Bold"
 	$labelCountdown.Location = '20, 165'
@@ -3206,7 +3028,6 @@ Function Show-InstallationRestartPrompt {
 	$labelCountdown.TabIndex = 5
 	$labelCountdown.Text = "00:00:00"
 	$labelCountdown.TextAlign = 'MiddleCenter'
-
 	# Label Restart Later
 	$buttonRestartLater.Anchor = 'Bottom, Left'
 	$buttonRestartLater.Location = '20, 216'
@@ -3216,7 +3037,6 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartLater.Text = $configRestartPromptButtonRestartLater
 	$buttonRestartLater.UseVisualStyleBackColor = $True
 	$buttonRestartLater.add_Click($buttonRestartLater_Click)
-
 	# Label Restart Now
 	$buttonRestartNow.Anchor = 'Bottom, Right'
 	$buttonRestartNow.Location = '265, 216'
@@ -3226,20 +3046,15 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow.Text = $configRestartPromptButtonRestartNow 
 	$buttonRestartNow.UseVisualStyleBackColor = $True
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
-
 	# Timer Countdown
 	$timerCountdown.add_Tick($timerCountdown_Tick)
-
 	#----------------------------------------------
-
 	# Save the initial state of the form
 	$InitialFormWindowState = $formRestart.WindowState
 	# Init the OnLoad event to correct the initial state of the form
 	$formRestart.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-
-
 	# If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously   
 	If ($deployAppScriptFriendlyName) {
 		Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
@@ -3250,14 +3065,11 @@ Function Show-InstallationRestartPrompt {
 		Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."   
 		# Show the Form
 		Return $formRestart.ShowDialog()
-
 		# Activate the Window
 		$powershellProcess = Get-Process | Where { $_.MainWindowTitle -match $installTitle }
 		[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
 	}
-
 } #End Function
-
 # Function to display a balloon tip notification
 Function Show-BalloonTip {
 <# 
@@ -3299,7 +3111,6 @@ Function Show-BalloonTip {
 	If ($deployModeSilent -eq $true -or $configShowBalloonNotifications -eq $false) {
 		Return
 	}
-
 	# Dispose of any previous balloon tip notifications
 	If ($notifyIcon -ne $null) {
 		Try {
@@ -3307,7 +3118,6 @@ Function Show-BalloonTip {
 		}
 		Catch {}
 	}
-
 	[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 	$NotifyIcon = New-Object Windows.Forms.NotifyIcon -Property @{
 		BalloonTipIcon = $BalloonTipIcon
@@ -3320,7 +3130,6 @@ Function Show-BalloonTip {
 	
 	Set-Variable -Name NotifyIcon -Value $NotifyIcon -Scope Global
 	$NotifyIcon.ShowBalloonTip($BalloonTipTime)
-
 	Switch ($Host.Runspace.ApartmentState) {
 		STA {
 			# Register a click event with action to take based on event for balloon message clicked
@@ -3333,7 +3142,6 @@ Function Show-BalloonTip {
 		}
 	}
 }
-
 Function Show-InstallationProgress {
 <# 
 .SYNOPSIS
@@ -3396,10 +3204,8 @@ Function Show-InstallationProgress {
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("appDeployLogoBanner",$appDeployLogoBanner)   
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressStatusMessage",$statusMessage)   
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("AppDeployLogoIcon",$AppDeployLogoIcon)	  
-
 		# Add the script block to be execution in the progress runspace		  
 		$progressCmd = [PowerShell]::Create().AddScript({   
-
 			[xml]$xamlProgress = @'
 			<Window
 			xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -3455,7 +3261,6 @@ Function Show-InstallationProgress {
 				</Grid>
 			</Window>
 '@
-
 			## Set the configurable values based using variables addded to the runspace from the parent thread   
 			# Calculate the position on the screen to place the progress dialog
 			$screen = [System.Windows.Forms.Screen]::PrimaryScreen
@@ -3490,7 +3295,6 @@ Function Show-InstallationProgress {
 			$Global:ProgressSyncHash.Window.ShowDialog() | Out-Null
 			$Global:ProgressSyncHash.Error = $Error
 		})
-
 		$progressCmd.Runspace = $Global:ProgressRunspace
 		Write-Log "Spinning up Progress Dialog in a separate thread with message: [$statusMessage]"
 		# Invoke the progress runspace
@@ -3516,7 +3320,6 @@ Function Show-InstallationProgress {
 		}
 	}
 }
-
 Function Close-InstallationProgress {
 <# 
 .SYNOPSIS
@@ -3537,7 +3340,6 @@ Function Close-InstallationProgress {
 		$Global:ProgressSyncHash.Clear()		
 	}
 }
-
 Function Set-PinnedApplication {
 <# 
 .SYNOPSIS
@@ -3569,7 +3371,6 @@ Function Set-PinnedApplication {
 		Write-Log "Warning: Path [$filePath] does not exist. Action [$action] will not be performed."
 		Return
 	}
-
 	Function Invoke-Verb {
 		Param([string]$FilePath,$verb)
 		$verb = $verb.Replace("&","")
@@ -3606,20 +3407,17 @@ Function Set-PinnedApplication {
 		[void][CosmosKey.Util.MuiHelper]::LoadString($CosmosKey_Utils_MuiHelper_Shell32,$verbId,$verbBuilder,$maxVerbLength)
 		Return $verbBuilder.ToString()
 	}
-
 	$verbs = @{
 	"PintoStartMenu"=5381
 	"UnpinfromStartMenu"=5382
 	"PintoTaskbar"=5386
 	"UnpinfromTaskbar"=5387
 	}
-
 	If($verbs.$Action -eq $null){
 		Throw "Action $action not supported`nSupported actions are:`n`tPintoStartMenu`n`tUnpinfromStartMenu`n`tPintoTaskbar`n`tUnpinfromTaskbar"
 	}
 	Invoke-Verb -FilePath $FilePath -Verb $(Get-PinVerb -VerbId $verbs.$action)
 }
-
 Function Get-IniContent {
 <# 
 .SYNOPSIS
@@ -3668,7 +3466,6 @@ Function Get-IniContent {
 		}
 	}
 }
-
 Function Set-IniContent {
 <# 
 .SYNOPSIS
@@ -3718,7 +3515,6 @@ Function Set-IniContent {
 		}
 	}
 }
-
 Function Register-DLL {
 <# 
 .SYNOPSIS
@@ -3740,9 +3536,7 @@ Function Register-DLL {
 		[String] $FilePath,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Registering DLL file [$filePath]..."   
-
 	If (Test-Path $FilePath ) {
 		Execute-Process "regsvr32.exe" -Arguments "/s '$FilePath'" -WindowStyle Hidden -PassThru
 	}
@@ -3755,9 +3549,7 @@ Function Register-DLL {
 			Throw "File [$filePath] could not be found."
 		}
 	}
-
 }
-
 Function Unregister-DLL {
 <# 
 .SYNOPSIS
@@ -3779,9 +3571,7 @@ Function Unregister-DLL {
 		[String] $FilePath,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	Write-Log "Unregistering DLL file [$filePath]..." 
-
 	If (Test-Path $FilePath ) {
 		Try {
 			Execute-Process "regsvr32.exe" -Arguments "/s /u '$FilePath'" -WindowStyle Hidden -PassThru
@@ -3801,9 +3591,7 @@ Function Unregister-DLL {
 			Throw "File [$filePath] could not be found."
 		}
 	}
-
 }
-
 Function Test-MSUpdates {
 <# 
 .SYNOPSIS
@@ -3825,10 +3613,8 @@ Function Test-MSUpdates {
 	)
 	
 	Write-Log "Testing for Microsoft Update $kbNumber..."
-
 	# Default is not found
 	$kbFound = $false
-
 	# Check using Update method (to catch Office updates)
 	$Session = New-Object -ComObject Microsoft.Update.Session
 	$Collection = New-Object -ComObject Microsoft.Update.UpdateColl
@@ -3841,7 +3627,6 @@ Function Test-MSUpdates {
 	
 	# Check using standard method
 	If ($kbFound -eq $false) { Get-Hotfix -id $kbNumber -ErrorAction SilentlyContinue | ForEach-Object { $kbFound = $true } }
-
 	# Return Result
 	If ($kbFound -eq $false) { 
 		Write-Log "Update $kbNumber is not installed"
@@ -3851,9 +3636,7 @@ Function Test-MSUpdates {
 		Write-Log "Update $kbNumber is installed"
 		Return $true 
 	}
-
 }
-
 Function Install-MSUpdates ($Directory) {
 <# 
 .SYNOPSIS
@@ -3868,12 +3651,9 @@ Function Install-MSUpdates ($Directory) {
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-
 	Write-Log "Installing Microsoft Updates from directory [$Directory]"
-
 	# KB Number pattern match
 	$kbPattern = '(?i)kb\d{6,8}'
-
 	# Get all hotfixes and install if required
 	$files = Get-ChildItem $Directory -Recurse -Include @("*.exe", "*.msu", "*.msp")
 	ForEach ($file in $files) {
@@ -3897,7 +3677,6 @@ Function Install-MSUpdates ($Directory) {
 		}
 	}
 }
-
 # Function to test whether the laptop is on power or battery
 Function Test-Battery { 
 <# 
@@ -3913,7 +3692,6 @@ Function Test-Battery {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Write-Log "Testing power connection status..."
-
 	$batteryStatus = Get-WmiObject -Class BatteryStatus -Namespace root\wmi -ComputerName . -ErrorAction SilentlyContinue
 	If ($batteryStatus) {
 		$power = $batteryStatus.PowerOnLine
@@ -3923,11 +3701,9 @@ Function Test-Battery {
 			Return $false
 		}
 	}
-
 	Write-Log "AC Power connection not found"
 	Return $true
 } 
-
 Function Test-NetworkConnection {
 <# 
 .SYNOPSIS
@@ -3940,9 +3716,7 @@ Function Test-NetworkConnection {
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-
 	Write-Log "Testing Network connection status..."
-
 	$networkConnected = Get-WmiObject Win32_NetworkAdapter | Where { $_.NetConnectionStatus -eq "2" -and $_.NetConnectionID -match "Local" -and $_.NetConnectionID -notmatch "Wireless" -and $_.Name -notmatch "Virtual" } -ErrorAction SilentlyContinue
 	If ($networkConnected) {
 		Write-Log "Network connection found."
@@ -3953,7 +3727,6 @@ Function Test-NetworkConnection {
 	Write-Log "Network connection not found."
 	Return $false
 }
-
 Function Test-PowerPoint {
 <# 
 .SYNOPSIS
@@ -3966,9 +3739,7 @@ Function Test-PowerPoint {
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
-
 	Write-Log "Testing Powerpoint status..."
-
 	Try {
 		$powerPoint = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Powerpoint.Application")
 		$slideshow = $powerPoint.SlideShowWindows
@@ -3988,7 +3759,6 @@ Function Test-PowerPoint {
 		Return $false
 	}
 }
-
 Function Invoke-SCCMTask {
 <# 
 .SYNOPSIS
@@ -4013,7 +3783,6 @@ Function Invoke-SCCMTask {
 		[string] $ScheduleID,
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	$ScheduleIds = @{
 		HardwareInventory = "{00000000-0000-0000-0000-000000000001}";							# Hardware Inventory Collection Task
 		SoftwareInventory = "{00000000-0000-0000-0000-000000000002}"; 							# Software Inventory Collection Task
@@ -4040,7 +3809,6 @@ Function Invoke-SCCMTask {
 	}
 	
 	Write-Log "Invoking SCCM Task [$ScheduleId]..."
-
 	# Trigger SCCM task
 	Try {
 		$SmsClient = [wmiclass]"ROOT\ccm:SMS_Client"
@@ -4055,9 +3823,7 @@ Function Invoke-SCCMTask {
 			Throw "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId)"
 		}
 	}
-
 }
-
 Function Install-SCCMSoftwareUpdates {
 <# 
 .SYNOPSIS
@@ -4076,14 +3842,11 @@ Function Install-SCCMSoftwareUpdates {
 	Param (
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
-
 	# Scan for updates
 	Write-Log "Scanning for SCCM Software Updates..."
 	Invoke-SCCMTask -ScheduleId "SoftwareUpdatesScan"
-
 	Write-Log "Sleeping 180 seconds..."
 	Sleep -Seconds 180
-
 	Try {
 		Write-Log "Installing pending software updates..."
 		$SmsSoftwareUpdates = [wmiclass]"ROOT\ccm:SMS_Client"
@@ -4099,7 +3862,6 @@ Function Install-SCCMSoftwareUpdates {
 		}
 	}
 }
-
 Function Update-GroupPolicy {
 <# 
 .SYNOPSIS
@@ -4116,23 +3878,19 @@ Function Update-GroupPolicy {
 	$gpUpdatePath = Join-Path $env:SystemRoot "System32\gpupdate"
 	Execute-Process -FilePath $gpUpdatePath -WindowStyle Hidden
 }
-
 #*=============================================
 #* END FUNCTION LISTINGS
 #*=============================================
-
 #*=============================================
 #* SCRIPT BODY
 #*=============================================
-
 # Set the install name if the referring application parameter was specified
-If ($ReferringApplication -ne "") {	
+If ($ReferringApplication -ne "") {
 	$installName = $ReferringApplication
 	$installTitle = $ReferringApplication -replace "_"," "
 	$installPhase = "Asynchronous"
 	$logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
 }
-
 # If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt -eq $true) {
 	$deployModeSilent = $true
@@ -4143,7 +3901,6 @@ If ($showInstallationPrompt -eq $true) {
 	Show-InstallationPrompt @appDeployMainScriptParameters
 	Exit-Script -ExitCode 0
 }
-
 # If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt -eq $true) {
 	$deployModeSilent = $true
@@ -4154,7 +3911,6 @@ If ($showInstallationRestartPrompt -eq $true) {
 	Show-InstallationRestartPrompt @appDeployMainScriptParameters
 	Exit-Script -ExitCode 0
 }
-
 # If the cleanupBlockedApps Parameter is specified, only call that function.
 If ($cleanupBlockedApps -eq $true) {
 	$deployModeSilent = $true
@@ -4162,7 +3918,6 @@ If ($cleanupBlockedApps -eq $true) {
 	Unblock-AppExecution
 	Exit-Script -ExitCode 0
 }
-
 # If the showBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog -eq $true) {
 	Try {
@@ -4178,10 +3933,8 @@ If ($showBlockedAppDialog -eq $true) {
 		Exit-Script -ExitCode 1
 	}
 }
-
 # Initialization Logging
 $installPhase = "Initialization"
-
 # Check how the script was invoked
 If ($(((Get-Variable MyInvocation).Value).ScriptName) -ne "") {  
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable MyInvocation).Value).ScriptName)]" 
@@ -4193,12 +3946,10 @@ If ($(((Get-Variable MyInvocation).Value).ScriptName) -ne "") {
 Else {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
 }
-
 # Dot Source script extensions
 If ($appDeployToolkitDotSources -ne "") { 
 	Get-ChildItem "$scriptRoot\*.*" -Include $appDeployToolkitDotSources -ErrorAction SilentlyContinue | Sort Name -Descending | Select FullName -ExpandProperty FullName -ErrorAction Stop | % { .$_ }
 }
-
 # Check for errors or warnings loading assemblies.
 If ($AssemblyError -ne $null) {
 	Write-Log "Errors detected loading assemblies."
@@ -4207,17 +3958,14 @@ If ($AssemblyError -ne $null) {
 If ($AssemblyWarning -ne $null) {  
 	Write-Log "Warnings detected loading assemblies."
 }
-
 # Evaluate non-default parameters passed to the scripts
 If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-
 # Check the XMl config file version 
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
 }
-
 Write-Log "$installName setup started."
 If ($appScriptVersion -ne $null ) { Write-Log "$installName script version is [$appScriptVersion]" }
 If ($deployAppScriptFriendlyName -ne $null ) { Write-Log "$deployAppScriptFriendlyName script version is [$deployAppScriptVersion]" }
@@ -4233,7 +3981,6 @@ Write-Log "Hardware platform is [$(Get-HardwarePlatform)]"
 Write-Log "Computer name is [$envComputerName]"
 If ($envUserName -ne $null ) { Write-Log "Current user is [$envUserDomain\$envUserName]" }
 Write-Log "Current Culture is [$($culture | Select Name -ExpandProperty Name)] and UI language is [$currentLanguage]"
-
 # Check deployment type (install/uninstall)
 Switch ($deploymentType) {
 	"Install" { $deploymentTypeName = $configDeploymentTypeInstall }
@@ -4241,7 +3988,6 @@ Switch ($deploymentType) {
 	Default { $deploymentTypeName = $configDeploymentTypeInstall }
 }
 If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
-
 # Check if we are running a task sequence, and enable NonInteractive mode
 If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 	$deployMode = "NonInteractive"  
@@ -4252,27 +3998,23 @@ ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" 
 	$deployMode = "NonInteractive"  
 	Write-Log "Session 0 detected. Setting Mode to [$deployMode]."  
 }
-
 If ($deployMode -ne $null) {
 	Write-Log "Installation is running in [$deployMode] mode" 
 }
-
 # Set Deploy Mode switches
 Switch ($deployMode) {
 	"Silent" { $deployModeSilent = $true }
 	"NonInteractive" { $deployModeNonInteractive = $true; $deployModeSilent = $true }
 	Default {$deployModeNonInteractive = $false; $deployModeSilent = $false}
 }
-
 # Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {
 	If (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
 		If ($ShowBlockedAppDialog -ne $true) {
-			Throw "$appDeployMainScriptFriendlyName requires Administrator rights to function. Please re-run the deployment script as an Administrator."
+			Throw "Error: $appDeployMainScriptFriendlyName requires Administrator rights to function. Please re-run the deployment script as an Administrator."
 		}
 	}
 }
-
 #*=============================================
 #* END SCRIPT BODY
 #*=============================================

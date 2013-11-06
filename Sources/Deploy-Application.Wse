@@ -34,10 +34,10 @@ item: Global
   Variable Default1=HIDE
   Variable Flags1=00001000
   Variable Name2=_SYS_
-  Variable Default2=C:\Windows\system32
+  Variable Default2=C:\WINDOWS\system32
   Variable Flags2=00001000
   Variable Name3=_WIN_
-  Variable Default3=C:\Windows
+  Variable Default3=C:\WINDOWS
   Variable Flags3=00001000
   Variable Name4=_WISE_
   Variable Default4=C:\Program Files (x86)\AdminStudio\11.5\WiseScript Package Editor
@@ -52,7 +52,7 @@ item: Set Variable
   Value=0
 end
 item: Set Variable
-  Variable=OSDMODE
+  Variable=SYSTEMMODE
   Value=False
 end
 item: Remark
@@ -85,13 +85,13 @@ end
 item: Remark
 end
 item: Remark
-  Text=Test if running in an SCCM Task Sequence
+  Text=Test if running as System (No user logged in or running in Task Sequence)
 end
 item: If/While Statement
   Variable=ENV_USERNAME
 end
 item: Set Variable
-  Variable=OSDMODE
+  Variable=SYSTEMMODE
   Value=True
 end
 item: ElseIf Statement
@@ -100,7 +100,7 @@ item: ElseIf Statement
   Flags=00000010
 end
 item: Set Variable
-  Variable=OSDMODE
+  Variable=SYSTEMMODE
   Value=True
 end
 item: ElseIf Statement
@@ -109,7 +109,7 @@ item: ElseIf Statement
   Flags=00000100
 end
 item: Set Variable
-  Variable=OSDMODE
+  Variable=SYSTEMMODE
   Value=True
 end
 item: ElseIf Statement
@@ -118,10 +118,55 @@ item: ElseIf Statement
   Flags=00000010
 end
 item: Set Variable
-  Variable=OSDMODE
+  Variable=SYSTEMMODE
   Value=True
 end
 item: End Block
+end
+item: Remark
+end
+item: Remark
+  Text=Test if running in Session 0
+end
+item: If/While Statement
+  Variable=SYSTEMMODE
+  Value=True
+end
+item: Install File
+  Source=.\Get-SessionID.ps1
+  Destination=%TEMP%\Get-SessionID.ps1
+  Flags=0000000010100010
+end
+item: Execute Program
+  Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File "%TEMP%\Get-SessionID.ps1"
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: If/While Statement
+  Variable=PROCEXITCODE
+  Value=1
+  Flags=00000100
+end
+item: Set Variable
+  Variable=SESSION0MODE
+  Value=True
+end
+item: Delete File
+  Pathname=%TEMP%\Get-SessionID.ps1
+end
+item: End Block
+end
+item: End Block
+end
+item: Remark
+end
+item: Remark
+  Text=Set Default Variable Values
+end
+item: Set Variable
+  Variable=PROCEXITCODE
+  Value=0
 end
 item: Remark
 end
@@ -150,24 +195,64 @@ end
 item: End Block
 end
 item: Remark
-  Text=Check if OSDMode is specified
+  Text=Set PowerShell version to use
+end
+item: Set Variable
+  Variable=POSH
+  Value=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
+end
+item: Remark
+  Text=Check if Session 0 mode is specified
 end
 item: If/While Statement
-  Variable=OSDMODE
+  Variable=SESSION0MODE
   Value=True
   Flags=00000100
 end
+item: Install File
+  Source=.\ServiceUIx86.exe
+  Destination=%TEMP%\ServiceUIx86.exe
+  Flags=0000000010100010
+end
+item: Set Variable
+  Variable=POSHCMDLINE
+  Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+end
 item: Execute Program
-  Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%SYS32%\CMD.Exe
+  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%"
   Default Directory=%INST%
   Flags=00001010
+end
+remarked item: Execute Program
+  Pathname=%TEMP%\ServiceUIx86.exe
+  Command Line="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Delete File
+  Pathname=%TEMP%\ServiceUIx86.exe
+end
+item: Remark
+  Text=Fall back on standard method if ServiceUI fails
+end
+item: If/While Statement
+  Variable=PROCEXITCODE
+  Value=4294967295
+end
+item: Execute Program
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
 end
 item: Else Statement
 end
 item: Execute Program
-  Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -File "%INST%\Deploy-Application.ps1" %CMDLINE%
   Default Directory=%INST%
   Flags=00001010
 end
@@ -194,24 +279,64 @@ item: Parse String
   Flags=00000001
 end
 item: Remark
-  Text=Check if OSDMode is specified
+  Text=Set PowerShell version to use
+end
+item: Set Variable
+  Variable=POSH
+  Value=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
+end
+item: Remark
+  Text=Check if Session 0 mode is specified
 end
 item: If/While Statement
-  Variable=OSDMODE
+  Variable=SESSION0MODE
   Value=True
   Flags=00000100
 end
+item: Install File
+  Source=.\ServiceUIx86.exe
+  Destination=%TEMP%\ServiceUIx86.exe
+  Flags=0000000010100010
+end
+item: Set Variable
+  Variable=POSHCMDLINE
+  Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+end
 item: Execute Program
-  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%SYS32%\CMD.Exe
+  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%"
   Default Directory=%INST%
   Flags=00001010
+end
+remarked item: Execute Program
+  Pathname=%TEMP%\ServiceUIx86.exe
+  Command Line="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Delete File
+  Pathname=%TEMP%\ServiceUIx86.exe
+end
+item: Remark
+  Text=Fall back on standard method if ServiceUI fails
+end
+item: If/While Statement
+  Variable=PROCEXITCODE
+  Value=4294967295
+end
+item: Execute Program
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
 end
 item: Else Statement
 end
 item: Execute Program
-  Pathname=%WIN%\SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -File "%INST%\Deploy-Application.ps1" %CMDLINE%
   Default Directory=%INST%
   Flags=00001010
 end
@@ -220,24 +345,64 @@ end
 item: Else Statement
 end
 item: Remark
-  Text=Check if OSDMode is specified
+  Text=Set PowerShell version to use
+end
+item: Set Variable
+  Variable=POSH
+  Value=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
+end
+item: Remark
+  Text=Check if Session 0 mode is specified
 end
 item: If/While Statement
-  Variable=OSDMODE
+  Variable=SESSION0MODE
   Value=True
   Flags=00000100
 end
+item: Install File
+  Source=.\ServiceUIx64.exe
+  Destination=%TEMP%\ServiceUIx64.exe
+  Flags=0000000010100010
+end
+item: Set Variable
+  Variable=POSHCMDLINE
+  Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+end
 item: Execute Program
-  Pathname=%WIN%\SysNative\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -NoProfile -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%SYS32%\CMD.Exe
+  Command Line=/C "%TEMP%\ServiceUIx64.exe %POSHCMDLINE%"
   Default Directory=%INST%
   Flags=00001010
+end
+remarked item: Execute Program
+  Pathname=%TEMP%\ServiceUIx64.exe
+  Command Line="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00000010
+end
+item: Delete File
+  Pathname=%TEMP%\ServiceUIx64.exe
+end
+item: Remark
+  Text=Fall back on standard method if ServiceUI fails
+end
+item: If/While Statement
+  Variable=PROCEXITCODE
+  Value=4294967295
+end
+item: Execute Program
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: End Block
 end
 item: Else Statement
 end
 item: Execute Program
-  Pathname=%WIN%\SysNative\WindowsPowerShell\v1.0\PowerShell.exe
-  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Pathname=%POSH%
+  Command Line=-ExecutionPolicy Bypass -File "%INST%\Deploy-Application.ps1" %CMDLINE%
   Default Directory=%INST%
   Flags=00001010
 end
@@ -248,6 +413,11 @@ end
 item: End Block
 end
 item: Remark
+end
+item: Insert Line into Text File
+  Pathname=C:\Work\Progress.txt
+  New Text=Result %PROCEXITCODE%
+  Line Number=0
 end
 item: Remark
   Text=Pass the Exit Code back
