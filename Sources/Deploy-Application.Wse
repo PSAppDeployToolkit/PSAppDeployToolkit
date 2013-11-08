@@ -58,6 +58,20 @@ end
 item: Remark
 end
 item: Remark
+  Text=Clean up any previous startup log
+end
+item: Check if File/Dir Exists
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  Flags=00000100
+end
+item: Delete File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+end
+item: End Block
+end
+item: Remark
+end
+item: Remark
   Text=Get Environment Variables
 end
 item: Get Environment Variable
@@ -123,6 +137,11 @@ item: Set Variable
 end
 item: End Block
 end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=Running under SYSTEM context: %SYSTEMMODE%
+  Line Number=0
+end
 item: Remark
 end
 item: Remark
@@ -158,6 +177,13 @@ end
 item: End Block
 end
 item: End Block
+end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=Running under Session 0: %SESSION0MODE%
+  Line Number=0
+end
+item: Remark
 end
 item: Remark
 end
@@ -218,9 +244,14 @@ item: Set Variable
   Variable=POSHCMDLINE
   Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
 end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=ServiceUI: x86
+  Line Number=0
+end
 item: Execute Program
   Pathname=%SYS32%\CMD.Exe
-  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%"
+  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%" >> %TEMP%\AppDeployToolkitStartup.Log
   Default Directory=%INST%
   Flags=00001010
 end
@@ -239,6 +270,11 @@ end
 item: If/While Statement
   Variable=PROCEXITCODE
   Value=4294967295
+end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=Failed. Falling back on standard launch method
+  Line Number=0
 end
 item: Execute Program
   Pathname=%POSH%
@@ -302,9 +338,14 @@ item: Set Variable
   Variable=POSHCMDLINE
   Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
 end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=ServiceUI: x86
+  Line Number=0
+end
 item: Execute Program
   Pathname=%SYS32%\CMD.Exe
-  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%"
+  Command Line=/C "%TEMP%\ServiceUIx86.exe %POSHCMDLINE%"  >> %TEMP%\AppDeployToolkitStartup.Log
   Default Directory=%INST%
   Flags=00001010
 end
@@ -323,6 +364,11 @@ end
 item: If/While Statement
   Variable=PROCEXITCODE
   Value=4294967295
+end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=Failed. Falling back on standard launch method
+  Line Number=0
 end
 item: Execute Program
   Pathname=%POSH%
@@ -368,9 +414,14 @@ item: Set Variable
   Variable=POSHCMDLINE
   Value="%POSH%" -ExecutionPolicy Bypass -NoProfile -File "%INST%\Deploy-Application.ps1" %CMDLINE%
 end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=ServiceUI: x64
+  Line Number=0
+end
 item: Execute Program
   Pathname=%SYS32%\CMD.Exe
-  Command Line=/C "%TEMP%\ServiceUIx64.exe %POSHCMDLINE%"
+  Command Line=/C "%TEMP%\ServiceUIx64.exe %POSHCMDLINE%" >> %TEMP%\AppDeployToolkitStartup.Log
   Default Directory=%INST%
   Flags=00001010
 end
@@ -389,6 +440,11 @@ end
 item: If/While Statement
   Variable=PROCEXITCODE
   Value=4294967295
+end
+item: Insert Line into Text File
+  Pathname=%TEMP%\AppDeployToolkitStartup.Log
+  New Text=Failed. Falling back on standard launch method
+  Line Number=0
 end
 item: Execute Program
   Pathname=%POSH%
@@ -413,11 +469,6 @@ end
 item: End Block
 end
 item: Remark
-end
-item: Insert Line into Text File
-  Pathname=C:\Work\Progress.txt
-  New Text=Result %PROCEXITCODE%
-  Line Number=0
 end
 item: Remark
   Text=Pass the Exit Code back

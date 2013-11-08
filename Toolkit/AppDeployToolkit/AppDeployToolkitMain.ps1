@@ -54,7 +54,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.1.0"
 $appDeployMainScriptMinimumConfigVersion = "3.1.0"
-$appDeployMainScriptDate = "11/06/2013"
+$appDeployMainScriptDate = "11/08/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 # Variables: Environment
 $currentDate = (Get-Date -UFormat "%d-%m-%Y")
@@ -719,7 +719,7 @@ Function Show-InstallationPrompt {
 		$installPromptParameters.Remove("NoWait")
 		# Format the parameters as a string
 		$installPromptParameters = ($installPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $scriptPath -ReferringApplication $installName -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt `"$installPromptParameters`"" -WindowStyle Hidden -ErrorAction SilentlyContinue  
 	}
 	# Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
 	Else {
@@ -1903,7 +1903,7 @@ Function Block-AppExecution {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
-		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication $installName`"" -PassThru
+		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication `'$installName`'`"" -PassThru
 	}
 	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).
 	# Then change the debugger value to block execution of the application.
@@ -3059,7 +3059,7 @@ Function Show-InstallationRestartPrompt {
 	If ($deployAppScriptFriendlyName) {
 		Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
 		$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $scriptPath -ReferringApplication $installName -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt `"$installRestartPromptParameters`"" -WindowStyle Hidden -ErrorAction SilentlyContinue  
 	}
 	Else {	
 		Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."   
