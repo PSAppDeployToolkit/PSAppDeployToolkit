@@ -8,6 +8,8 @@ $envCommonProgramFilesX86 = "${env:CommonProgramFiles(x86)}"
 - Fix blank process issue
 - Fix cast issue with Remove-MSIApplications
 - Change welcome UI layout
+- Update documentation and Codeplex
+- Add German translation
 
 Add Features:
 
