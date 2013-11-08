@@ -815,7 +815,8 @@ Function Show-InstallationPrompt {
 Function Show-DialogBox {
 <# 
 .SYNOPSIS
-	This function displays a custom dialog box with optional title, buttons, icon and timeout.
+	This function displays a custom dialog box with optional title, buttons, icon and timeout. 
+    The Show-InstallationPrompt function is recommended over this as it provides more customization and uses consistent branding with the other UI components.
 .DESCRIPTION
 	This function displays a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None" and the default Timeout is none.
 .EXAMPLE
@@ -2227,44 +2228,26 @@ Function Get-RunningProcesses {
 	Gets the processes that are running from a custom list of process objects.
 .EXAMPLE
 	Get-RunningProcesses
-.PARAMETER Exact
-	Use exact matching on the process names
 .NOTES
 	This is an internal script function and should typically not be called directly.	
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-		$processObjects,
-		[switch] $Exact = $false
+		$processObjects
 	)
 
 	If ($processObjects -ne $null) {
 		Write-Log "Checking for running applications [$(($processObjects | Select ProcessName -ExpandProperty ProcessName) -Join ",")]..."   
 
 		# Join the process names with the regex operator '|' to perform "or" match against multiple applications
-		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -Join ("|")  
+		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -join ("|")  
  
 		# Replace escape characters that interfere with Regex and might cause false positive matches
-		$processNames = $processNames -replace "\.","" -replace "\*",""	
-
-		$runningProcesses = @()
-		ForEach ($currentProcess in Get-Process) {
-			If ($Exact -eq $true) {
-				ForEach ($process in $ProcessObjects) {
-					If (($currentProcess.ProcessName -replace "\.","" -replace "\*","") -eq ($process.ProcessName -replace "\.","" -replace "\*",""	)) {
-						$runningProcesses += $currentProcess
-					}
-				}
-			}
-			Else {
-				If (($currentProcess.ProcessName -replace "\.","" -replace "\*","") -match $processNames) {
-					$runningProcesses += $currentProcess
-				}
-			}
-		}
-		
-		# $runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","" -replace "\*","") -match $processNames } 
+		$processNames = $processNames -replace "\.","" -replace "\*",""	-replace "\+",""	
+	
+        # Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
+		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","" -replace "\*","" -replace "\+","" -replace "$","exe") -match $processNames } 
 		$runningProcesses = $runningProcesses | Select Name,Description,ID   
 		If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
@@ -2484,7 +2467,7 @@ Function Show-InstallationWelcome {
 
 	# Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) { 
-		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
+		While ((Get-RunningProcesses $processObjects -Exact | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
 			# Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
 			If ($allowDefer) {
@@ -3390,7 +3373,7 @@ Function Show-InstallationProgress {
 .DESCRIPTION
 	Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated.
 	The status message supports line breaks.
-	The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started.
+	The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
 .EXAMPLE
 	Show-InstallationProgress
 	Uses the default status message from the XML configuration file.
@@ -4245,7 +4228,7 @@ Else {
 
 # Dot Source script extensions
 If ($appDeployToolkitDotSources -ne "") { 
-	Get-ChildItem "$scriptRoot\*.*" -Include $appDeployToolkitDotSources -ErrorAction SilentlyContinue | Sort Name -Descending | Select FullName -ExpandProperty FullName -ErrorAction Stop | % { .$_ }
+	."$scriptRoot\$appDeployToolkitDotSources"
 }
 
 # Check for errors or warnings loading assemblies.

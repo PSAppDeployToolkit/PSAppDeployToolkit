@@ -1,3 +1,14 @@
+3.1
+- Detect toolkit log file location from XML for deploy-application.exe
+- Add Debug param to help section in deploy-application.ps1 script
+- Verify environment variables in XP:
+$envProgramFilesx86 = "${env:ProgramFiles(x86)}"
+$envCommonProgramFiles = $env:CommonProgramFiles
+$envCommonProgramFilesX86 = "${env:CommonProgramFiles(x86)}"
+- Fix blank process issue
+- Fix cast issue with Remove-MSIApplications
+- Change welcome UI layout
+
 Add Features:
 
 Proposal: Optimization of Execute-MSI Function 

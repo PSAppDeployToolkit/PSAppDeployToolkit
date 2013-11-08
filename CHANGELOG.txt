@@ -1,9 +1,11 @@
 Version 3.1.0 11/08/2013
 	When running as SYSTEM, the toolkit's Deploy-Application.exe will automatically attempt to break out of Session 0 to the current user context in order to display user interaction. If no user is logged in, the toolkit will run silently
+	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name
 	Added DebugMode parameter, which outputs all logging information to a trace window while the script runs. Errors and Warnings will be colour coded for easy identification
 	Added logging of Deploy-Application.exe functionality to %TEMP%\AppDeployToolkitStartup.log
 	Fixed parameter encapsulation in asynchronous prompts and scheduled task creation
-
+	Fixed extension script not dot-sourcing from UNC path
+	
 Version 3.0.8 30/10/2013
 	Modified application name on block app execution prompt (costmetic)
 	Fixed Toolkit logpath not reading config file value.
