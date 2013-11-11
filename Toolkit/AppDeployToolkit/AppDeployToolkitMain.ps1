@@ -136,6 +136,7 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
+[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)    
 [string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
 [string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
@@ -309,9 +310,6 @@ Function Write-Log {
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
-		If ($DebugMode -eq $true) {
-			Show-DebugMessage "[$currentDate $currentTime] [$installPhase] $Text"
-		}
 		If ($DisableLogging -eq $false) {
 			# Create the Log directory if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
@@ -330,53 +328,7 @@ Function Write-Log {
 		}
 	}
 }
-Function Show-DebugMessage {
-<#
-.Synopsis
-	Display script debug messages in an Internet Explorer window
-.Description
-	This command will launch an instance of Internet Explorer and display user defined trace messages. The trace message will automatically include a time stamp. After your script has completed, the window will remain open until you  manually close it. 
-.NOTES
-	This is an internal script function and should typically not be called directly. It is based off the Trace-Message function by Jeff Hicks
-.Link
-	http://jdhitsolutions.com/blog/2013/11/friday-fun-create-a-powershell-trace-window
-#>
- 
-	Param (
-		[string]$Message,
-		[string]$Font="Verdana",
-		[int]$FontSize=2
-		)
-	# If there isn't an IE window object, create it
-	If (-Not $script:IEWindow) {
-		$script:IEWindow = New-Object -ComObject "InternetExplorer.Application" 
-		$script:IEWindow.navigate("about:blank")
-		$script:IEWindow.ToolBar = $False
-		$script:IEWindow.AddressBar = $False
-		$script:IEWindow.Visible = $True
-		$script:IEWindow.menubar = $False
-		$script:IEWindow.StatusBar = $False
-		$desktops = Get-WmiObject -Class Win32_DesktopMonitor
-		$script:IEWindow.Top = 100
-		$script:IEWindow.Left = 100
-		$script:IEWindow.Width = ($desktops[1].ScreenWidth - 200)
-		$script:IEWindow.Height = ($desktops[1].ScreenHeight - 200)
-		$script:IEWindow.Document.IHTMLDocument2_Title = $installTitle
-		$script:IEWindow.Document.IHTMLDocument2_bgColor = "#0000FF"
-	}
-	#write the message to the window
-	If ($Message -match "Error") {
-		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color='#FF0000' face=$Font size=$FontSize><b>$Message</b> <br>")
-	}
-	ElseIf ($Message -match "Warning") {
-		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color='#FFFF00' face=$Font size=$FontSize><b>$Message</b> <br>")
-	}
-	Else {
-		$script:IEWindow.Document.IHTMLDocument2_writeln("<font color=`#FFFFFF' face=$Font size=$FontSize>$Message <br>")
-	}
-	$script:IEWindow.Document.IHTMLDocument2_Title = $installTitle
-	$script:IEWindow.document.IHTMLDocument2_bgColor = "#0000FF"
-}
+
 Function Exit-Script {
 <# 
 .SYNOPSIS
@@ -4214,10 +4166,51 @@ If ($showBlockedAppDialog -eq $true) {
 # Initialization Logging
 $installPhase = "Initialization"
 
+Write-Log "$installName setup started."
+
+# Evaluate non-default parameters passed to the scripts
+If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
+If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
+If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
+
+# Check deployment type (install/uninstall)
+Switch ($deploymentType) {
+	"Install" { $deploymentTypeName = $configDeploymentTypeInstall }
+	"Uninstall" { $deploymentTypeName = $configDeploymentTypeUnInstall }
+	Default { $deploymentTypeName = $configDeploymentTypeInstall }
+}
+If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
+
+If ($deployMode -ne $null) {
+	Write-Log "Installation is running in [$deployMode] mode" 
+}
+
+$invokingScript = $(((Get-Variable MyInvocation).Value).ScriptName)
+
 # Check how the script was invoked
-If ($(((Get-Variable MyInvocation).Value).ScriptName) -ne "") {  
-	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable MyInvocation).Value).ScriptName)]" 
-	# If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
+If ($invokingScript -ne "") {  
+	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
+    
+    # Check if we are running a task sequence, and enable NonInteractive mode
+    If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+	    $deployMode = "NonInteractive"  
+	    Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
+    }
+    # Check if we are running in session zero, and enable NonInteractive mode
+    ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
+	    $deployMode = "NonInteractive"  
+	    Write-Log "Session 0 detected."
+        If ($configToolkitAllowSystemInteraction -eq $true) {
+            Write-Log "Invoking ServiceUI to provide interaction in the system session..."
+            $serviceUIReturn = Execute-Process -FilePath "$scriptRoot\ServiceUIx64.exe" -Arguments "$PSHOME\powershell.exe `"-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $invokingScript`""
+            Exit-Script $serviceUIReturn
+        }
+        Else {
+            Write-Log "Setting Mode to [$deployMode]."
+        }
+    }
+ 
+    # If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
 	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
 		Return
 	}
@@ -4240,17 +4233,18 @@ If ($AssemblyWarning -ne $null) {
 	Write-Log "Warnings detected loading assemblies."
 }
 
-# Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-
 # Check the XMl config file version 
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
 }
 
-Write-Log "$installName setup started."
+# Set Deploy Mode switches
+Switch ($deployMode) {
+	"Silent" { $deployModeSilent = $true }
+	"NonInteractive" { $deployModeNonInteractive = $true; $deployModeSilent = $true }
+	Default {$deployModeNonInteractive = $false; $deployModeSilent = $false}
+}
+
 If ($appScriptVersion -ne $null ) { Write-Log "$installName script version is [$appScriptVersion]" }
 If ($deployAppScriptFriendlyName -ne $null ) { Write-Log "$deployAppScriptFriendlyName script version is [$deployAppScriptVersion]" }
 If ($deployAppScriptParameters -ne $null) { Write-Log "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" }
@@ -4265,36 +4259,6 @@ Write-Log "Hardware platform is [$(Get-HardwarePlatform)]"
 Write-Log "Computer name is [$envComputerName]"
 If ($envUserName -ne $null ) { Write-Log "Current user is [$envUserDomain\$envUserName]" }
 Write-Log "Current Culture is [$($culture | Select Name -ExpandProperty Name)] and UI language is [$currentLanguage]"
-
-# Check deployment type (install/uninstall)
-Switch ($deploymentType) {
-	"Install" { $deploymentTypeName = $configDeploymentTypeInstall }
-	"Uninstall" { $deploymentTypeName = $configDeploymentTypeUnInstall }
-	Default { $deploymentTypeName = $configDeploymentTypeInstall }
-}
-If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
-
-# Check if we are running a task sequence, and enable NonInteractive mode
-If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
-	$deployMode = "NonInteractive"  
-	Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
-}
-# Check if we are running in session zero, and enable NonInteractive mode
-ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
-	$deployMode = "NonInteractive"  
-	Write-Log "Session 0 detected. Setting Mode to [$deployMode]."  
-}
-
-If ($deployMode -ne $null) {
-	Write-Log "Installation is running in [$deployMode] mode" 
-}
-
-# Set Deploy Mode switches
-Switch ($deployMode) {
-	"Silent" { $deployModeSilent = $true }
-	"NonInteractive" { $deployModeNonInteractive = $true; $deployModeSilent = $true }
-	Default {$deployModeNonInteractive = $false; $deployModeSilent = $false}
-}
 
 # Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {

@@ -34,7 +34,6 @@ Param (
 	[string] $DeploymentType = "Install",
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string] $DeployMode = "Interactive",
-	[switch] $DebugMode = $false,
 	[switch] $AllowRebootPassThru = $false
 )
 
