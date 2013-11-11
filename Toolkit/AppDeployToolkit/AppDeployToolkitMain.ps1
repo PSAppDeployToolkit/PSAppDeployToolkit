@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.1.0"
 $appDeployMainScriptMinimumConfigVersion = "3.1.0"
-$appDeployMainScriptDate = "11/08/2013"
+$appDeployMainScriptDate = "11/11/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -202,9 +202,9 @@ $exeWusa = "wusa.exe"
 $exeMsiexec = "msiexec.exe"
 $exeSchTasks = "$envWinDir\System32\schtasks.exe"
 
-$psArchitecture = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture
 $is64Bit = (Get-WmiObject -Class Win32_OperatingSystem -ea 0).OSArchitecture -eq '64-bit'
 $is64BitProcess = [System.IntPtr]::Size -eq 8
+If ($is64BitProcess -eq $true) { $psArchitecture = "x64" } Else { $psArchitecture = "x86" }
 $isServerOS =  (Get-WmiObject -Class Win32_operatingsystem -ErrorAction SilentlyContinue | Select Name -ExpandProperty Name) -match "Server"
 
 # Reset Switches to false
@@ -776,7 +776,7 @@ Function Show-InstallationPrompt {
 		$installPromptParameters.Remove("NoWait")
 		# Format the parameters as a string
 		$installPromptParameters = ($installPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt `"$installPromptParameters`"" -WindowStyle Hidden -ErrorAction SilentlyContinue  
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
 	}
 	# Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
 	Else {
@@ -3276,7 +3276,7 @@ Function Show-InstallationRestartPrompt {
 	If ($deployAppScriptFriendlyName) {
 		Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
 		$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt `"$installRestartPromptParameters`"" -WindowStyle Hidden -ErrorAction SilentlyContinue  
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue  
 	}
 	Else {	
 		Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."   
@@ -3820,7 +3820,7 @@ Function Unregister-DLL {
 		}
 		Catch {
 			If ($ContinueOnError -eq $false) {
-				Throw "Failed to register DLL file [$FilePath]."					
+				Throw "Failed to register DLL file [$FilePath]."
 			}
 		}
 	}
