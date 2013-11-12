@@ -4168,12 +4168,6 @@ $installPhase = "Initialization"
 
 Write-Log "$installName setup started."
 
-# Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { $deployAppScriptParametersSanitized = $deployAppScriptParameters.GetEnumerator() | % { "-$($_.Key) $($_.Value)" } }
-If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
-
 # Check deployment type (install/uninstall)
 Switch ($deploymentType) {
 	"Install" { $deploymentTypeName = $configDeploymentTypeInstall }
@@ -4186,54 +4180,47 @@ If ($deployMode -ne $null) {
 	Write-Log "Installation is running in [$deployMode] mode" 
 }
 
+# Dot Source script extensions
+If ($appDeployToolkitDotSources -ne "") { 
+	."$scriptRoot\$appDeployToolkitDotSources"
+}
+
+# Evaluate non-default parameters passed to the scripts
+If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "-$($_.Key) $($_.Value)" } }
+If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "-$($_.Key) $($_.Value)" } }
+If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "-$($_.Key) $($_.Value)" } }
+
 $invokingScript = $(((Get-Variable MyInvocation).Value).ScriptName)
 
 # Check how the script was invoked
 If ($invokingScript -ne "") {  
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
-
+    $sessionID = [System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID" 
+    Write-Log "Session ID is [$sessionID]"
 	# Check if we are running a task sequence, and enable NonInteractive mode
 	If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 		$deployMode = "NonInteractive"  
 		Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
-	}
-	# Check if we are running in session zero, and enable NonInteractive mode
-	ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
-		$deployMode = "NonInteractive"  
-		Write-Log "Session 0 detected."
+	}    
+	# Check if we are running in session zero, and invoke ServiceUI to enable session interaction if enabled in the toolkit configuration
+	ElseIf ($sessionID -eq 0) { 
 		If ($configToolkitAllowSystemInteraction -eq $true) {
 			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-			$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-			$processStartInfo.WindowStyle = "Hidden"
-			$processStartInfo.WorkingDirectory = "$WorkingDirectory"
-			$processStartInfo.UseShellExecute = $false
-			If ($is64BitProcess) {
-				$processStartInfo.FileName = "$scriptRoot\ServiceUIx64.exe"
-			}
-			Else {
-				$processStartInfo.FileName = "$scriptRoot\ServiceUIx86.exe"
-			}
-			If ($deployAppScriptParametersSanitized -ne $null) {
-				$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`" $deployAppScriptParametersSanitized"
-			}
-			Else {
-				$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-			}
-			Write-Log "Executing Process [$($processStartInfo.FileName)] with parameters [$($processStartInfo.Arguments)]"
-			$process = [System.Diagnostics.Process]::Start($processStartInfo)
-			$serviceUIExitCode = $process.WaitForExit()
-			# Log ServiceUI exit code if it's non-zero (so errors are visible if ServiceUI fails and not the toolkit)
-			If ($serviceUIExitCode -ne 0) {
-				Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-			}
-			# Break back to Deploy-Application.ps1
-			Break
+			$exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"            
+            $serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+            If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
+			$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
+            $serviceUIExitCode = $serviceUIReturn.ExitCode
+			Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+			Exit		
 		}
 		Else {
+            Write-Log "Session Interaction is disabled in the toolkit configuration."    
+            $deployMode = "NonInteractive"
 			Write-Log "Setting Mode to [$deployMode]."
 		}
 	}
- 
+  
 	# If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
 	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
 		Return
@@ -4241,11 +4228,6 @@ If ($invokingScript -ne "") {
 }
 Else {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
-}
-
-# Dot Source script extensions
-If ($appDeployToolkitDotSources -ne "") { 
-	."$scriptRoot\$appDeployToolkitDotSources"
 }
 
 # Check for errors or warnings loading assemblies.

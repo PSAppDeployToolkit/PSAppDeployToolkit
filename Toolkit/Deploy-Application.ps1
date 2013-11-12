@@ -68,7 +68,7 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 # Dot source the App Deploy Toolkit Functions
 ."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 # Handle ServiceUI invocation
-If ($serviceUIExitCode -ne $null) { Exit $serviceUIExitCode }
+If ($serviceUIExitCode -ne $null) { Exit-Script $serviceUIExitCode }
 
 #*===============================================
 #* END VARIABLE DECLARATION
