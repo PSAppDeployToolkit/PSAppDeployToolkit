@@ -2255,6 +2255,9 @@ Function Show-InstallationWelcome {
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
 	Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
+Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -PersistPrompt
+	Prompt the user to close Word, MSAccess and Excel if the processes match the exact name specified (use .exe for exact matches). 
+    By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
 .EXAMPLE
 	Show-InstallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
 	Allow the user to defer the installation until the deadline is reached. 
