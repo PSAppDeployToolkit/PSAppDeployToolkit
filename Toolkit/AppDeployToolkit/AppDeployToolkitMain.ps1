@@ -4133,7 +4133,7 @@ If ($showInstallationRestartPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationRestartPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationRestartPrompt")
-	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")	
+	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
 	$appDeployMainScriptParameters.Remove("ReferringApplication")
 	Show-InstallationRestartPrompt @appDeployMainScriptParameters
 	Exit-Script -ExitCode 0
@@ -4169,6 +4169,7 @@ $installPhase = "Initialization"
 Write-Log "$installName setup started."
 
 # Evaluate non-default parameters passed to the scripts
+If ($deployAppScriptParameters) { $deployAppScriptParametersSanitized = $deployAppScriptParameters.GetEnumerator() | % { "-$($_.Key) $($_.Value)" } }
 If ($deployAppScriptParameters) { $deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployMainScriptParameters) { $appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
 If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" } }
@@ -4203,6 +4204,7 @@ If ($invokingScript -ne "") {
 		If ($configToolkitAllowSystemInteraction -eq $true) {
 			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
 			$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+			$processStartInfo.WindowStyle = "Hidden"
 			$processStartInfo.WorkingDirectory = "$WorkingDirectory"
 			$processStartInfo.UseShellExecute = $false
 			If ($is64BitProcess) {
@@ -4211,10 +4213,19 @@ If ($invokingScript -ne "") {
 			Else {
 				$processStartInfo.FileName = "$scriptRoot\ServiceUIx86.exe"
 			}
-			$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-			$processStartInfo.WindowStyle = "Hidden"
+			If ($deployAppScriptParametersSanitized -ne $null) {
+				$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`" $deployAppScriptParametersSanitized"
+			}
+			Else {
+				$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+			}
+			Write-Log "Executing Process [$($processStartInfo.FileName)] with parameters [$($processStartInfo.Arguments)]"
 			$process = [System.Diagnostics.Process]::Start($processStartInfo)
 			$serviceUIExitCode = $process.WaitForExit()
+			# Log ServiceUI exit code if it's non-zero (so errors are visible if ServiceUI fails and not the toolkit)
+			If ($serviceUIExitCode -ne 0) {
+				Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+			}
 			# Break back to Deploy-Application.ps1
 			Break
 		}
