@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.1.0"
 $appDeployMainScriptMinimumConfigVersion = "3.1.0"
-$appDeployMainScriptDate = "11/11/2013"
+$appDeployMainScriptDate = "11/12/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -136,7 +136,7 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)    
+[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)	
 [string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
 [string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
@@ -768,7 +768,7 @@ Function Show-DialogBox {
 <# 
 .SYNOPSIS
 	This function displays a custom dialog box with optional title, buttons, icon and timeout. 
-    The Show-InstallationPrompt function is recommended over this as it provides more customization and uses consistent branding with the other UI components.
+	The Show-InstallationPrompt function is recommended over this as it provides more customization and uses consistent branding with the other UI components.
 .DESCRIPTION
 	This function displays a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None" and the default Timeout is none.
 .EXAMPLE
@@ -2198,7 +2198,7 @@ Function Get-RunningProcesses {
 		# Replace escape characters that interfere with Regex and might cause false positive matches
 		$processNames = $processNames -replace "\.","" -replace "\*",""	-replace "\+",""	
 	
-        # Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
+		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
 		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","" -replace "\*","" -replace "\+","" -replace "$","exe") -match $processNames } 
 		$runningProcesses = $runningProcesses | Select Name,Description,ID   
 		If ($runningProcesses) {
@@ -4190,27 +4190,40 @@ $invokingScript = $(((Get-Variable MyInvocation).Value).ScriptName)
 # Check how the script was invoked
 If ($invokingScript -ne "") {  
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
-    
-    # Check if we are running a task sequence, and enable NonInteractive mode
-    If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
-	    $deployMode = "NonInteractive"  
-	    Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
-    }
-    # Check if we are running in session zero, and enable NonInteractive mode
-    ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
-	    $deployMode = "NonInteractive"  
-	    Write-Log "Session 0 detected."
-        If ($configToolkitAllowSystemInteraction -eq $true) {
-            Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-            $serviceUIReturn = Execute-Process -FilePath "$scriptRoot\ServiceUIx64.exe" -Arguments "$PSHOME\powershell.exe `"-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File $invokingScript`""
-            Exit-Script $serviceUIReturn
-        }
-        Else {
-            Write-Log "Setting Mode to [$deployMode]."
-        }
-    }
+
+	# Check if we are running a task sequence, and enable NonInteractive mode
+	If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+		$deployMode = "NonInteractive"  
+		Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
+	}
+	# Check if we are running in session zero, and enable NonInteractive mode
+	ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
+		$deployMode = "NonInteractive"  
+		Write-Log "Session 0 detected."
+		If ($configToolkitAllowSystemInteraction -eq $true) {
+			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
+			$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+			$processStartInfo.WorkingDirectory = "$WorkingDirectory"
+			$processStartInfo.UseShellExecute = $false
+			If ($is64BitProcess) {
+				$processStartInfo.FileName = "$scriptRoot\ServiceUIx64.exe"
+			}
+			Else {
+				$processStartInfo.FileName = "$scriptRoot\ServiceUIx86.exe"
+			}
+			$processStartInfo.Arguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+			$processStartInfo.WindowStyle = "Hidden"
+			$process = [System.Diagnostics.Process]::Start($processStartInfo)
+			$serviceUIExitCode = $process.WaitForExit()
+			# Break back to Deploy-Application.ps1
+			Break
+		}
+		Else {
+			Write-Log "Setting Mode to [$deployMode]."
+		}
+	}
  
-    # If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
+	# If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
 	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
 		Return
 	}
