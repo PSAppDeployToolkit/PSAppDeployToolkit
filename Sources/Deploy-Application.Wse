@@ -54,13 +54,36 @@ end
 item: Remark
 end
 item: Remark
-  Text=Run the script
+  Text=Get OS Architecture
+end
+item: Get System Information
+  Variable=ENV_64BITOS
+  Flags=00011000
+end
+item: Remark
+end
+item: Remark
+  Text=Run the deployment script
+end
+item: If/While Statement
+  Variable=ENV_64BITOS
+  Value=1
+end
+item: Execute Program
+  Pathname=%WIN%\SysNative\WindowsPowerShell\v1.0\PowerShell.exe
+  Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
+  Default Directory=%INST%
+  Flags=00001010
+end
+item: Else Statement
 end
 item: Execute Program
   Pathname=%WIN%\System32\WindowsPowerShell\v1.0\PowerShell.exe
   Command Line=-ExecutionPolicy Bypass -File Deploy-Application.ps1 %CMDLINE%
   Default Directory=%INST%
   Flags=00001010
+end
+item: End Block
 end
 item: Remark
 end
