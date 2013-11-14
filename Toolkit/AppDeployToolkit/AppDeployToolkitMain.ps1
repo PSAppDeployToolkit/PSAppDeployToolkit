@@ -1328,7 +1328,6 @@ Function Execute-Process {
 
 	$processName = $process.ProcessName
 
-	If($stdOut.length -gt 0) { Write-Log $stdOut}
 	If($stdErr.length -gt 0) { Write-Log $stdErr}
 
 	$process.WaitForExit()
@@ -4214,6 +4213,11 @@ If ($invokingScript -ne "") {
             If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
 			$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
             $serviceUIExitCode = $serviceUIReturn.ExitCode
+            # Parse output from ServiceUI.exe
+            $serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
+            $serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
+            $serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
+            $serviceUIOutput | % { Write-Log "ServiceUI: $_" }
 			Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
 			Exit		
 		}
