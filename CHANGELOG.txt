@@ -1,5 +1,5 @@
 Version 3.1.0 11/12/2013
-	When running as SYSTEM, the toolkit will automatically attempt to break out of Session 0 to the current user context in order to display user interaction. If no user is logged in, the toolkit will run silently
+	When running as SYSTEM, the toolkit will automatically break out of Session 0 and run interactively in order to display user dialogs. This highly requested feature means you can now create deployment types without selecting "Allow the user to view and interact with the program installation" and "Only when a user is logged on" and still provide user interaction. If no user is logged in, the toolkit will run silently.
 	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name
 	Fixed parameter encapsulation in asynchronous prompts and scheduled task creation
 	Fixed extension script not dot-sourcing from UNC path
