@@ -2256,7 +2256,7 @@ Function Show-InstallationWelcome {
 	Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -PersistPrompt
 	Prompt the user to close Word, MSAccess and Excel if the processes match the exact name specified (use .exe for exact matches). 
-    By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
+	By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
 .EXAMPLE
 	Show-InstallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
 	Allow the user to defer the installation until the deadline is reached. 
@@ -4197,37 +4197,37 @@ $invokingScript = $(((Get-Variable MyInvocation).Value).ScriptName)
 # Check how the script was invoked
 If ($invokingScript -ne "") {  
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
-    $sessionID = [System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID" 
-    Write-Log "Session ID is [$sessionID]"
+	$sessionID = [System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID" 
+	Write-Log "Session ID is [$sessionID]"
 	# Check if we are running a task sequence, and enable NonInteractive mode
 	If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 		$deployMode = "NonInteractive"  
 		Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
-	}    
+	}
 	# Check if we are running in session zero, and invoke ServiceUI to enable session interaction if enabled in the toolkit configuration
 	ElseIf ($sessionID -eq 0) { 
 		If ($configToolkitAllowSystemInteraction -eq $true) {
 			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-			$exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"            
-            $serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-            If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
+			$exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"
+			$serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+			If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
 			$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
-            $serviceUIExitCode = $serviceUIReturn.ExitCode
-            # Parse output from ServiceUI.exe
-            $serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
-            $serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
-            $serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
-            $serviceUIOutput | % { Write-Log "ServiceUI: $_" }
+			$serviceUIExitCode = $serviceUIReturn.ExitCode
+			# Parse output from ServiceUI.exe
+			$serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
+			$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
+			$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
+			$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
 			Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-			Exit		
+			Exit
 		}
 		Else {
-            Write-Log "Session Interaction is disabled in the toolkit configuration."    
-            $deployMode = "NonInteractive"
+			Write-Log "Session Interaction is disabled in the toolkit configuration."
+			$deployMode = "NonInteractive"
 			Write-Log "Setting Mode to [$deployMode]."
 		}
 	}
-  
+
 	# If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
 	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
 		Return
