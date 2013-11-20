@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.1.0"
 $appDeployMainScriptMinimumConfigVersion = "3.1.0"
-$appDeployMainScriptDate = "11/12/2013"
+$appDeployMainScriptDate = "11/20/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -310,7 +310,7 @@ Function Write-Log {
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
-		If ($DisableLogging -eq $false) {
+		If ($DisableLogging -eq $false -and $logFile -ne $null) {
 			# Create the Log directory if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
 			# Create the Log file if it doesn't already exist
@@ -356,7 +356,7 @@ Function Exit-Script {
 	# Stop the Close Program Dialog if running
 	If ($formCloseApps -ne $null) { 
 		$formCloseApps.Close 
-	}	 
+	}
 
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
@@ -373,7 +373,7 @@ Function Exit-Script {
 		3010 { $installSuccess = $true }
 		0 { $installSuccess = $true }
 		Default { $installSuccess = $false }
-	}	
+	}
 
 	If ($installSuccess -eq $true) {
 		If (Test-Path $regKeyDeferHistory -ErrorAction SilentlyContinue) {
@@ -4116,7 +4116,7 @@ If ($ReferringApplication -ne "") {
 	$installName = $ReferringApplication
 	$installTitle = $ReferringApplication -replace "_"," "
 	$installPhase = "Asynchronous"
-	$logFile = Join-Path $configMSILogDir ("$installName" + "_$appDeployToolkitName.log")
+	$logFile = $null
 }
 
 # If the ShowInstallationPrompt Parameter is specified, only call that function.
@@ -4127,7 +4127,7 @@ If ($showInstallationPrompt -eq $true) {
 	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
 	$appDeployMainScriptParameters.Remove("ReferringApplication")
 	Show-InstallationPrompt @appDeployMainScriptParameters
-	Exit-Script -ExitCode 0
+	Exit 0
 }
 
 # If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
@@ -4138,7 +4138,7 @@ If ($showInstallationRestartPrompt -eq $true) {
 	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
 	$appDeployMainScriptParameters.Remove("ReferringApplication")
 	Show-InstallationRestartPrompt @appDeployMainScriptParameters
-	Exit-Script -ExitCode 0
+	Exit 0
 }
 
 # If the cleanupBlockedApps Parameter is specified, only call that function.
@@ -4146,7 +4146,7 @@ If ($cleanupBlockedApps -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch CleanupBlockedApps"
 	Unblock-AppExecution
-	Exit-Script -ExitCode 0
+	Exit 0
 }
 
 # If the showBlockedAppDialog Parameter is specified, only call that function.
@@ -4155,13 +4155,13 @@ If ($showBlockedAppDialog -eq $true) {
 		$deployModeSilent = $true
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
 		Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText "OK"
-		Exit-Script -ExitCode 0
+		Exit 0
 	} 
 	Catch {
 		$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
 		Write-Log "$exceptionMessage" 
 		Show-DialogBox -Text $exceptionMessage -Icon "Stop"
-		Exit-Script -ExitCode 1
+		Exit 1
 	}
 }
 
