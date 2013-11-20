@@ -310,7 +310,7 @@ Function Write-Log {
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
-		If ($DisableLogging -eq $false -and $logFile -ne $null) {
+		If ($DisableLogging -eq $false) {
 			# Create the Log directory if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
 			# Create the Log file if it doesn't already exist
@@ -2660,14 +2660,6 @@ Function Show-WelcomePrompt {
 		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
 
-		# Initialize the countdown timer
-		$currentTime = Get-Date
-		$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
-		$timer.Start()
-		# Set up the form
-		$remainingTime = $countdownTime.Subtract($currentTime)
-		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"		
 	}
 
 	# Timer
@@ -4116,7 +4108,6 @@ If ($ReferringApplication -ne "") {
 	$installName = $ReferringApplication
 	$installTitle = $ReferringApplication -replace "_"," "
 	$installPhase = "Asynchronous"
-	$logFile = $null
 }
 
 # If the ShowInstallationPrompt Parameter is specified, only call that function.
@@ -4218,8 +4209,15 @@ If ($invokingScript -ne "") {
 			$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
 			$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
 			$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
-			Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-			Exit
+            Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+            If ($serviceUIOutput | % { $_ -match "Error: \[5\]"}) {
+                $deployMode = "NonInteractive"
+                Write-Log "ServiceUI failed to create process as user, falling back on [$deployMode]."
+                Write-Log "Setting Mode to [$deployMode]."
+                }
+            Else {
+			    Exit
+            }
 		}
 		Else {
 			Write-Log "Session Interaction is disabled in the toolkit configuration."
