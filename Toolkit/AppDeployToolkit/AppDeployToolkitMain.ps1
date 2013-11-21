@@ -212,6 +212,7 @@ $isServerOS =  (Get-WmiObject -Class Win32_operatingsystem -ErrorAction Silently
 $msiRebootDetected = $false
 $BlockExecution = $false
 $installationStarted = $false
+$script:welcomeTimer = $null
 # Reset the deferral history
 $deferHistory = $deferTimes = $deferDays = $null
 
@@ -309,15 +310,16 @@ Function Write-Log {
 		$Text = $Text -join (" ")
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
-		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
-		If ($DisableLogging -eq $false -or $ShowBlockedAppDialog -eq $true) {
+        $logEntry = "[$currentDate $currentTime] [$installPhase] $Text"
+		Write-Host $logEntry
+		If ($DisableLogging -eq $false) {
 			# Create the Log directory if it doesn't already exist
-			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
+			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction SilentlyContinue | Out-Null }
 			Try {
 				# Create or append to the log file using a StreamWriter (which gives better performance than the standard PowerShell Out-File function
 				$fileStream = New-Object IO.FileStream(([System.IO.Path]::GetFullPath($logFile)), ([System.IO.FileMode]::Append), ([IO.FileAccess]::Write), ([IO.FileShare]::Read))
 				$streamWriter = New-Object System.IO.StreamWriter($fileStream)
-				$streamWriter.WriteLine("[$currentDate $currentTime] [$installPhase] $Text")
+				$streamWriter.WriteLine($logEntry)
 				$streamWriter.Dispose()
 				$fileStream.Dispose()
 			}
@@ -2644,7 +2646,7 @@ Function Show-WelcomePrompt {
 			$buttonContinue.remove_Click($buttonContinue_OnClick)
 			$buttonDefer.remove_Click($buttonDefer_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
-			$timer.remove_Tick($timer_Tick)
+			$script:welcomeTimer.remove_Tick($timer_Tick)
 			$persistTimer.remove_Tick($persistTimer_Tick)
 			$formWelcome.remove_Load($Form_StateCorrection_Load)
 			$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
@@ -2664,10 +2666,8 @@ Function Show-WelcomePrompt {
 		Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
 
 	}
-
-	# Timer
-	$timer = New-Object 'System.Windows.Forms.Timer'
-	If ($showCountdown -eq $true) {
+  
+    If ($showCountdown -eq $true) {
 		$timer_Tick={
 			# Get the time information
 			$currentTime = Get-Date
@@ -2686,8 +2686,7 @@ Function Show-WelcomePrompt {
 			}
 		}
 	}
-	Else {
-		$timer.Interval = ($configInstallationUITimeout * 1000)
+	Else {		
 		$timer_Tick={
 			$buttonAbort.PerformClick()
 		}
@@ -2953,8 +2952,14 @@ Function Show-WelcomePrompt {
 	# Add the Buttons Panel to the form
 	$formWelcome.Controls.Add($panelButtons)
 
-	# Add the Timer Countdown
-	$timer.add_Tick($timer_Tick)
+	# Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
+	# Timer
+    If (!($script:welcomeTimer)) {
+        $script:welcomeTimer = New-Object 'System.Windows.Forms.Timer'
+        $script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
+    } 
+    $script:welcomeTimer.add_Tick($timer_Tick)
+    $script:welcomeTimer.Start()
 
 	# Save the initial state of the form
 	$formWelcomeWindowState = $formWelcome.WindowState
@@ -2962,9 +2967,6 @@ Function Show-WelcomePrompt {
 	$formWelcome.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
-
-	# Start the timer
-	$timer.Start()
 
 	Function Refresh-InstallationWelcome {
 		$formWelcome.BringToFront()
@@ -4145,6 +4147,7 @@ If ($cleanupBlockedApps -eq $true) {
 
 # If the showBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog -eq $true) {
+    $DisableLogging = $true
 	Try {
 		$deployModeSilent = $true
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"

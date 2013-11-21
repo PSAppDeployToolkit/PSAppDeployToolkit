@@ -7,6 +7,7 @@ Version 3.0.8 11/21/2013
 	Fixed parameter encapsulation in asynchronous prompts and scheduled task creation.
 	Fixed extension script not dot-sourcing from UNC path.
 	Fixed Toolkit logpath not reading config file value.
+	Fixed UI timeout resetting on Show-InstallationWelcome prompt when continue button is clicked
 	Disabled until we can figure out how to get working reliably: When running as SYSTEM, the toolkit will automatically break out of Session 0 and run interactively in order to display user dialogs. This highly requested feature means you can now create deployment types without selecting "Allow the user to view and interact with the program installation" and "Only when a user is logged on" and still provide user interaction. If no user is logged in, the toolkit will run silently.
 
 Version 3.0.7 10/24/2013
