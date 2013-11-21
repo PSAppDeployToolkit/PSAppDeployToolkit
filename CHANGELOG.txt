@@ -1,14 +1,14 @@
-Version 3.1.0 11/12/2013
-	When running as SYSTEM, the toolkit will automatically break out of Session 0 and run interactively in order to display user dialogs. This highly requested feature means you can now create deployment types without selecting "Allow the user to view and interact with the program installation" and "Only when a user is logged on" and still provide user interaction. If no user is logged in, the toolkit will run silently.
-	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name
-	Fixed parameter encapsulation in asynchronous prompts and scheduled task creation
-	Fixed extension script not dot-sourcing from UNC path
-	Added Swedish translation & improved German translation
-	
-Version 3.0.8 30/10/2013
-	Modified application name on block app execution prompt (costmetic)
+Version 3.0.8 11/21/2013
+	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name.
+	Added Swedish translation & improved German translation.
+	Changed Write-Log function to use StreamWriter, which is faster
+	Modified application name on block app execution prompt (cosmetic).
+	Fixed an issue where displaying BlockExecution message with interfere with the main application installation
+	Fixed parameter encapsulation in asynchronous prompts and scheduled task creation.
+	Fixed extension script not dot-sourcing from UNC path.
 	Fixed Toolkit logpath not reading config file value.
-	
+	Disabled until we can figure out how to get working reliably: When running as SYSTEM, the toolkit will automatically break out of Session 0 and run interactively in order to display user dialogs. This highly requested feature means you can now create deployment types without selecting "Allow the user to view and interact with the program installation" and "Only when a user is logged on" and still provide user interaction. If no user is logged in, the toolkit will run silently.
+
 Version 3.0.7 10/24/2013
 	Fixed issue where Session 0 was not detected correctly, resulting in issues when attempting to display a UI when none was allowed
 	Fixed Installation Prompt and Installation Restart Prompt appearing when deploy mode was non-interactive or silent
@@ -19,7 +19,7 @@ Version 3.0.7 10/24/2013
 	Fixed error failing to locate schtasks.exe 
 	Fixed "Restart Now" button text not using text from config file
 	Corrected the window properties of the countdown-no-hide phase of restart prompt to be topmost.
-	
+
 Version 3.0.6 10/10/2013
 	Added PersistPrompt parameter to Show-InstallationWelcome and Show-InstallationPrompt. Prompt window is persistently returned to center screen after interval specified in config file (default 10 seconds). For Show-InstallationWelcome, this only takes effect if deferral is not available to user. The user will have no option but to respond to the prompt - resistance is futile!
 	Added example advanced Office 2010 deployment script
