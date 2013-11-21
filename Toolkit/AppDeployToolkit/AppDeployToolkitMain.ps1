@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.1.0"
-$appDeployMainScriptMinimumConfigVersion = "3.1.0"
-$appDeployMainScriptDate = "11/20/2013"
+$appDeployMainScriptVersion = "3.0.8"
+$appDeployMainScriptMinimumConfigVersion = "3.0.8"
+$appDeployMainScriptDate = "11/21/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -310,20 +310,23 @@ Function Write-Log {
 		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
 		$currentTime = (Get-Date -UFormat "%T")
 		Write-Host "[$currentDate $currentTime] [$installPhase] $Text"
-		If ($DisableLogging -eq $false) {
+		If ($DisableLogging -eq $false -or $ShowBlockedAppDialog -eq $true) {
 			# Create the Log directory if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
-			# Create the Log file if it doesn't already exist
-			If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
 			Try {
-				"[$currentDate $currentTime] [$installPhase] $Text" | Out-File $logFile -Append -ErrorAction SilentlyContinue
+				# Create or append to the log file using a StreamWriter (which gives better performance than the standard PowerShell Out-File function
+				$fileStream = New-Object IO.FileStream(([System.IO.Path]::GetFullPath($logFile)), ([System.IO.FileMode]::Append), ([IO.FileAccess]::Write), ([IO.FileShare]::Read))
+				$streamWriter = New-Object System.IO.StreamWriter($fileStream)
+				$streamWriter.WriteLine("[$currentDate $currentTime] [$installPhase] $Text")
+				$streamWriter.Dispose()
+				$fileStream.Dispose()
 			}
 			Catch {
-				$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
-				Write-Host "$exceptionMessage" 	
+				$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
+				Write-Host "$exceptionMessage"
 			}
 		}
-		If ($PassThru -eq $true) { 
+		If ($PassThru -eq $true) {
 			Return $Text
 		}
 	}
@@ -4197,33 +4200,36 @@ If ($invokingScript -ne "") {
 	}
 	# Check if we are running in session zero, and invoke ServiceUI to enable session interaction if enabled in the toolkit configuration
 	ElseIf ($sessionID -eq 0) { 
-		If ($configToolkitAllowSystemInteraction -eq $true) {
-			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-			$exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"
-			$serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-			If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
-			$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
-			$serviceUIExitCode = $serviceUIReturn.ExitCode
+		$deployMode = "NonInteractive"
+		Write-Log "Setting Mode to [$deployMode]."
+		# TODO: Fix ServiceUI invocation
+#		If ($configToolkitAllowSystemInteraction -eq $true) {
+#			Write-Log "Invoking ServiceUI to provide interaction in the system session..."
+#			$exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"
+#			$serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+#			If ($deployAppScriptParameters -ne $null) { $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" }
+#			$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
+#			$serviceUIExitCode = $serviceUIReturn.ExitCode
 			# Parse output from ServiceUI.exe
-			$serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
-			$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
-			$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
-			$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
-            Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-            If ($serviceUIOutput | % { $_ -match "Error: \[5\]"}) {
-                $deployMode = "NonInteractive"
-                Write-Log "ServiceUI failed to create process as user, falling back on [$deployMode]."
-                Write-Log "Setting Mode to [$deployMode]."
-                }
-            Else {
-			    Exit
-            }
-		}
-		Else {
-			Write-Log "Session Interaction is disabled in the toolkit configuration."
-			$deployMode = "NonInteractive"
-			Write-Log "Setting Mode to [$deployMode]."
-		}
+#			$serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
+#			$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
+#			$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
+#			$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
+#			Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+#			If ($serviceUIOutput | % { $_ -match "Error: \[5\]"}) {
+#				$deployMode = "NonInteractive"
+#				Write-Log "ServiceUI failed to create process as user, falling back on [$deployMode]."
+#				Write-Log "Setting Mode to [$deployMode]."
+#				}
+#			Else {
+#				Exit
+#			}
+#		}
+#		Else {
+#			Write-Log "Session Interaction is disabled in the toolkit configuration."
+#			$deployMode = "NonInteractive"
+#			Write-Log "Setting Mode to [$deployMode]."
+#		}
 	}
 
 	# If the script was invoked by the Help console, exit the script now because we don't need initialization logging.
@@ -4244,7 +4250,7 @@ If ($AssemblyWarning -ne $null) {
 	Write-Log "Warnings detected loading assemblies."
 }
 
-# Check the XMl config file version 
+# Check the XML config file version 
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
 }

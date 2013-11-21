@@ -59,8 +59,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.1.0"
-$deployAppScriptDate = "11/20/2013"
+$deployAppScriptVersion = "3.0.8"
+$deployAppScriptDate = "11/21/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -80,7 +80,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
 	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install and persist the prompt
-	Show-InstallationWelcome -CloseApps "iexploresdf" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt -BlockExecution
+	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt -BlockExecution
 
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
@@ -100,9 +100,6 @@ $installPhase = "Post-Installation"
 #*===============================================
 
 	# Perform post-installation tasks here
-
-	# Display a message at the end of the install
-	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
 
 #*===============================================
 #* UNINSTALLATION
