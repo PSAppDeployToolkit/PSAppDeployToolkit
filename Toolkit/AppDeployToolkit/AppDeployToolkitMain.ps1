@@ -2470,7 +2470,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 			ElseIf ($promptResult -eq "Timeout") {
 				Write-Log "Installation not actioned within a reasonable amount of time."
 				$BlockExecution = $false
-				If ($deferTimes -or $deferDeadlineUniversal) {
+				If ($deferTimes -ne "" -or $deferDeadlineUniversal -ne "") {
 					Set-DeferHistory -deferTimesRemaining $DeferTimes -deferDeadline $deferDeadlineUniversal
 				}
 				# Restore minimized windows
