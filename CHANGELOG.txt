@@ -1,4 +1,4 @@
-Version 3.0.8 11/21/2013
+Version 3.0.8 11/25/2013
 	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name.
 	Added Swedish translation & improved German translation.
 	Changed Write-Log function to use StreamWriter, which is faster
@@ -9,7 +9,6 @@ Version 3.0.8 11/21/2013
 	Fixed Toolkit logpath not reading config file value.
 	Fixed UI timeout resetting on Show-InstallationWelcome prompt when continue button is clicked
 	Fixed UI timeout not decrementing deferrals remaining.
-	Disabled until we can figure out how to get working reliably: When running as SYSTEM, the toolkit will automatically break out of Session 0 and run interactively in order to display user dialogs. This highly requested feature means you can now create deployment types without selecting "Allow the user to view and interact with the program installation" and "Only when a user is logged on" and still provide user interaction. If no user is logged in, the toolkit will run silently.
 
 Version 3.0.7 10/24/2013
 	Fixed issue where Session 0 was not detected correctly, resulting in issues when attempting to display a UI when none was allowed
