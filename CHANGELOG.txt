@@ -1,4 +1,4 @@
-Version 3.0.8 11/25/2013
+Version 3.0.8 11/26/2013
 	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name.
 	Added Swedish translation & improved German translation.
 	Changed Write-Log function to use StreamWriter, which is faster

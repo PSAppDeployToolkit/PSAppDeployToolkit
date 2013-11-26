@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.8"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "11/25/2013"
+$appDeployMainScriptDate = "11/26/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -136,7 +136,6 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)	
 [string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
 [string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath

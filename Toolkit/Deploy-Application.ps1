@@ -60,15 +60,13 @@ $appScriptAuthor = "<author name>"
 
 $deployAppScriptFriendlyName = "Deploy Application"
 $deployAppScriptVersion = "3.0.8"
-$deployAppScriptDate = "11/25/2013"
+$deployAppScriptDate = "11/26/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 # Dot source the App Deploy Toolkit Functions
 ."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
-# Handle ServiceUI invocation
-If ($serviceUIExitCode -ne $null) { Exit-Script $serviceUIExitCode }
 
 #*===============================================
 #* END VARIABLE DECLARATION
