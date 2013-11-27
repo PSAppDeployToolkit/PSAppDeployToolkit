@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.8"
+$appDeployMainScriptVersion = "3.0.9"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "11/26/2013"
+$appDeployMainScriptDate = "11/27/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -312,15 +312,11 @@ Function Write-Log {
 		$logEntry = "[$currentDate $currentTime] [$installPhase] $Text"
 		Write-Host $logEntry
 		If ($DisableLogging -eq $false) {
-			# Create the Log directory if it doesn't already exist
+			# Create the Log directory and file if it doesn't already exist
 			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction SilentlyContinue | Out-Null }
+			If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
 			Try {
-				# Create or append to the log file using a StreamWriter (which gives better performance than the standard PowerShell Out-File function
-				$fileStream = New-Object IO.FileStream(([System.IO.Path]::GetFullPath($logFile)), ([System.IO.FileMode]::Append), ([IO.FileAccess]::Write), ([IO.FileShare]::Read))
-				$streamWriter = New-Object System.IO.StreamWriter($fileStream)
-				$streamWriter.WriteLine($logEntry)
-				$streamWriter.Dispose()
-				$fileStream.Dispose()
+				"$logEntry" | Out-File $logFile -Append -ErrorAction SilentlyContinue
 			}
 			Catch {
 				$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
@@ -3726,7 +3722,7 @@ Function Register-DLL {
 	Write-Log "Registering DLL file [$filePath]..."
 
 	If (Test-Path $FilePath ) {
-		Execute-Process "regsvr32.exe" -Arguments "/s '$FilePath'" -WindowStyle Hidden -PassThru
+		Execute-Process "regsvr32.exe" -Arguments "/s '"$FilePath`"" -WindowStyle Hidden -PassThru
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {
@@ -3766,7 +3762,7 @@ Function Unregister-DLL {
 
 	If (Test-Path $FilePath ) {
 		Try {
-			Execute-Process "regsvr32.exe" -Arguments "/s /u '$FilePath'" -WindowStyle Hidden -PassThru
+			Execute-Process "regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
 		}
 		Catch {
 			If ($ContinueOnError -eq $false) {

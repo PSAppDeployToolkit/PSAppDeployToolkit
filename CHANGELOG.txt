@@ -1,3 +1,7 @@
+Version 3.0.9 11/27/2013
+	Switch back from StreamWriter for logging, which seems to cause corrupt files! :O
+	Fixed Register-DLL and Unregister-DLL when using paths with spaces
+
 Version 3.0.8 11/26/2013
 	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name.
 	Added Swedish translation & improved German translation.
