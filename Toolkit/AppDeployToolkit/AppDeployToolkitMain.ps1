@@ -2663,9 +2663,23 @@ Function Show-WelcomePrompt {
 		$formWelcome.BringToFront()
 		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
+        
+        # Initialize the countdown timer
+		$currentTime = Get-Date
+		$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
+		$script:welcomeTimer.Start()
+        # Set up the form
+		$remainingTime = $countdownTime.Subtract($currentTime)
+		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
+		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"	
 
 	}
 
+	# Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
+	If (!($script:welcomeTimer)) {
+		$script:welcomeTimer = New-Object 'System.Windows.Forms.Timer'
+	}     	
+	
 	If ($showCountdown -eq $true) {
 		$timer_Tick={
 			# Get the time information
@@ -2685,12 +2699,15 @@ Function Show-WelcomePrompt {
 			}
 		}
 	}
-	Else {		
+	Else {	
+        $script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
 		$timer_Tick={
 			$buttonAbort.PerformClick()
-		}
+		}	
 	}
-
+    
+	$script:welcomeTimer.add_Tick($timer_Tick)
+	
 	# Persistence Timer
 	If ($persistWindow) {
 		$persistTimer = New-Object 'System.Windows.Forms.Timer'
@@ -2950,15 +2967,6 @@ Function Show-WelcomePrompt {
 
 	# Add the Buttons Panel to the form
 	$formWelcome.Controls.Add($panelButtons)
-
-	# Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
-	# Timer
-	If (!($script:welcomeTimer)) {
-		$script:welcomeTimer = New-Object 'System.Windows.Forms.Timer'
-		$script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
-	} 
-	$script:welcomeTimer.add_Tick($timer_Tick)
-	$script:welcomeTimer.Start()
 
 	# Save the initial state of the form
 	$formWelcomeWindowState = $formWelcome.WindowState
@@ -4241,6 +4249,36 @@ Write-Log "Hardware platform is [$(Get-HardwarePlatform)]"
 Write-Log "Computer name is [$envComputerName]"
 If ($envUserName -ne $null ) { Write-Log "Current user is [$envUserDomain\$envUserName]" }
 Write-Log "Current Culture is [$($culture | Select Name -ExpandProperty Name)] and UI language is [$currentLanguage]"
+
+# Check deployment type (install/uninstall)
+Switch ($deploymentType) {
+	"Install" { $deploymentTypeName = $configDeploymentTypeInstall }
+	"Uninstall" { $deploymentTypeName = $configDeploymentTypeUnInstall }
+	Default { $deploymentTypeName = $configDeploymentTypeInstall }
+}
+If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
+
+# Check if we are running a task sequence, and enable NonInteractive mode
+If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+	$deployMode = "NonInteractive"  
+	Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
+}
+# Check if we are running in session zero, and enable NonInteractive mode
+ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
+	$deployMode = "NonInteractive"  
+	Write-Log "Session 0 detected. Setting Mode to [$deployMode]."  
+}
+
+If ($deployMode -ne $null) {
+	Write-Log "Installation is running in [$deployMode] mode" 
+}
+
+# Set Deploy Mode switches
+Switch ($deployMode) {
+	"Silent" { $deployModeSilent = $true }
+	"NonInteractive" { $deployModeNonInteractive = $true; $deployModeSilent = $true }
+	Default {$deployModeNonInteractive = $false; $deployModeSilent = $false}
+}
 
 # Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {
