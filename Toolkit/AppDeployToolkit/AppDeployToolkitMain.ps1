@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.9"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "11/27/2013"
+$appDeployMainScriptDate = "11/28/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3722,7 +3722,7 @@ Function Register-DLL {
 	Write-Log "Registering DLL file [$filePath]..."
 
 	If (Test-Path $FilePath ) {
-		Execute-Process "regsvr32.exe" -Arguments "/s '"$FilePath`"" -WindowStyle Hidden -PassThru
+		Execute-Process "regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {
