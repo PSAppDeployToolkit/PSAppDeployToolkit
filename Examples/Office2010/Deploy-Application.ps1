@@ -75,12 +75,7 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 ."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 
 # Office Directory
-If ($is64Bit -eq $true ) {
-	$dirOffice = Join-Path "$envProgramFilesX86" "Microsoft Office"
-}
-Else {
-	$dirOffice = Join-Path "$envProgramFiles" "Microsoft Office"
-}}
+$dirOffice = Join-Path "$envProgramFilesX86" "Microsoft Office"
 
 #*===============================================
 #* END VARIABLE DECLARATION

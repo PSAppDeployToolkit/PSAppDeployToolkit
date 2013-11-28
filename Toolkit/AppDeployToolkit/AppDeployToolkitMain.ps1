@@ -78,7 +78,7 @@ $envLocalAppData = $env:LOCALAPPDATA
 $envLogonServer = $env:LOGONSERVER
 $envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction SilentlyContinue
 $envProgramFiles = $env:PROGRAMFILES
-$envProgramFilesx86 = "${env:ProgramFiles(x86)}"
+$envProgramFilesX86 = "${env:ProgramFiles(x86)}"
 $envProgramData = $env:PROGRAMDATA
 $envPublic = $env:PUBLIC
 $envSystemDrive = $env:SYSTEMDRIVE
@@ -89,6 +89,10 @@ $envUserDomain = $env:USERDOMAIN
 $envUserName = $env:USERNAME
 $envUserProfile = $env:USERPROFILE
 $envWinDir = $env:WINDIR
+# Handle X86 environment variables so they are never empty
+If ($envCommonProgramFilesX86 -eq $null -or $envCommonProgramFilesX86 -eq "") { $envCommonProgramFilesX86 = $env:CommonProgramFiles }
+If ($envProgramFilesX86 -eq $null -or $envProgramFilesX86 -eq "") { $envProgramFilesX86 = $env:PROGRAMFILES }
+
 $currentLanguage = $PSUICulture.SubString(0,2).ToUpper()
 $scriptName = [System.IO.Path]::GetFileNameWithoutExtension($MyInvocation.MyCommand.Definition)
 $scriptPath = $MyInvocation.MyCommand.Definition
