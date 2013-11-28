@@ -57,8 +57,8 @@ $appVersion = "2010 SP2"
 $appArch = "x86"
 $appLang = "EN"
 $appRevision = "01"
-$appScriptVersion = "2.0.0"
-$appScriptDate = "10/10/2013"
+$appScriptVersion = "2.0.1"
+$appScriptDate = "11/28/2013"
 $appScriptAuthor = "Dan Cunningham"
 
 #*===============================================
@@ -75,7 +75,12 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 ."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 
 # Office Directory
-$dirOffice = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Office"
+If ($is64Bit -eq $true ) {
+	$dirOffice = Join-Path "$envProgramFilesX86" "Microsoft Office"
+}
+Else {
+	$dirOffice = Join-Path "$envProgramFiles" "Microsoft Office"
+}}
 
 #*===============================================
 #* END VARIABLE DECLARATION
@@ -145,18 +150,21 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 			If (Test-Path (Join-Path $dirOffice "Office12\$officeExecutable")) { 
 				Write-Log "Microsoft Office 2007 was detected. Will be uninstalled."
 				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
+				Break
 			}
 		}
 		ForEach ($officeExecutable in $officeExecutables) {
 			If (Test-Path (Join-Path $dirOffice "Office14\$officeExecutable")) { 
 				Write-Log "Microsoft Office 2010 was detected. Will be uninstalled."
 				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
+				Break
 			}
 		}
 		ForEach ($officeExecutable in $officeExecutables) {
 			If (Test-Path (Join-Path $dirOffice "Office15\$officeExecutable")) { 
 				Write-Log "Microsoft Office 2013 was detected. Will be uninstalled."
 				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
+				Break
 			}
 		}
 	}
