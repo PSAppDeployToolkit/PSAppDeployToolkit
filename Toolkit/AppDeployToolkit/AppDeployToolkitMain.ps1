@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.9"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "11/28/2013"
+$appDeployMainScriptDate = "11/29/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -2307,27 +2307,31 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	Param(
 	[string] $CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word" 
 	[switch] $Silent = $false, # Specify whether to prompt user or force close the applications
-	[int] $CloseAppsCountdown = $null, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
+	[int] $CloseAppsCountdown = 0, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
 	[switch] $PersistPrompt = $false, # Specify whether to make the prompt persist in the center of the screen every 10 seconds.
 	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
 	[switch] $AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
 	[switch] $AllowDeferCloseApps = $false, # Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed
-	[int] $DeferTimes = $null, # Specify the number of times the deferral is allowed
-	[int] $DeferDays = $null, # Specify the number of days since first run that the deferral is allowed
+	[int] $DeferTimes = 0, # Specify the number of times the deferral is allowed
+	[int] $DeferDays = 0, # Specify the number of days since first run that the deferral is allowed
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
 	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
-	[int] $RequiredDiskSpace = $null, # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
+	[int] $RequiredDiskSpace = 0, # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
 	[switch] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
 	)
 
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
+	
+	If ($AllowDefer -eq $true -and $CloseAppsCountdown -ne 0) {
+		Throw "You cannot use both AllowDefer and CloseAppsCountdown at the same time"
+	}
 
 	# Check disk space requirements if specified
 	If ($CheckDiskSpace -eq $true) {
 		Write-Log "Evaluating disk space requirements..."
 		$freeDiskSpace = Get-FreeDiskSpace
-		If (!($RequiredDiskSpace)) {
+		If ($RequiredDiskSpace -eq 0) {
 			Try {
 				# Determine the size of the Files folder
 				$fso = New-Object -COM Scripting.FileSystemObject -ErrorAction SilentlyContinue
@@ -2371,9 +2375,9 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		$deferHistoryDeadline = $deferHistory | Select DeferDeadline -ExpandProperty DeferDeadline -ErrorAction SilentlyContinue
 		# Reset Switches 
 		$checkDeferDays = $checkDeferDeadline = $false
-		If ($DeferDays) {$checkDeferDays = $true}
+		If ($DeferDays -ne 0) {$checkDeferDays = $true}
 		If ($DeferDeadline) {$checkDeferDeadline = $true} 
-		If ($DeferTimes) {
+		If ($DeferTimes -ne 0) {
 			If ($deferHistoryTimes -ge 0) {
 				Write-Log "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
 				$DeferTimes = $deferHistory.DeferTimesRemaining -1
@@ -3716,7 +3720,7 @@ Function Register-DLL {
 .DESCRIPTION
 	Registers a DLL file using regsvr32.exe
 .EXAMPLE
-	Register-DLL "$envProgramFiles\Documentum\Shared\DcTLSFileToDMSComp.dll"	
+	Register-DLL "$envProgramFiles\Documentum\Shared\DcTLSFileToDMSComp.dll"
 .PARAMETER FilePath
 	Path to the DLL file
 .PARAMETER ContinueOnError
@@ -3734,7 +3738,12 @@ Function Register-DLL {
 	Write-Log "Registering DLL file [$filePath]..."
 
 	If (Test-Path $FilePath ) {
-		Execute-Process "regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+		If ($FilePath -Match "SysWOW64") {
+			Execute-Process "$envWinDir\SysWOW64\RegSVR32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+		}
+		Else {
+			Execute-Process "$envWinDir\System32\RegSVR32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+		}
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {
@@ -3755,7 +3764,7 @@ Function Unregister-DLL {
 .DESCRIPTION
 	Unregisters a DLL file using regsvr32.exe
 .EXAMPLE
-	Unregister-DLL "$envProgramFiles\Documentum\Shared\DcTLSFileToDMSComp.dll"	
+	Unregister-DLL "$envProgramFiles\Documentum\Shared\DcTLSFileToDMSComp.dll"
 .PARAMETER FilePath
 	Path to the DLL file
 .PARAMETER ContinueOnError
@@ -3774,7 +3783,12 @@ Function Unregister-DLL {
 
 	If (Test-Path $FilePath ) {
 		Try {
-			Execute-Process "regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
+			If ($FilePath -Match "SysWOW64") {
+				Execute-Process "$envWinDir\SysWOW64\RegSVR32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden
+			}
+			Else {
+				Execute-Process "$envWinDir\System32\RegSVR32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden
+			}
 		}
 		Catch {
 			If ($ContinueOnError -eq $false) {

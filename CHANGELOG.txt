@@ -1,8 +1,9 @@
-Version 3.0.9 11/27/2013
-	We owe an apology of some sort!
+Version 3.0.9 11/29/2013
 	Added handling of X86 environment variables so they are never empty
-	Changed back from StreamWriter for logging, which seems to cause corrupt files! :O
+	Added prevention of AllowDefer and CloseAppsCountdown at the same time
+	Added x86 support to Register-DLL and Unregister-DLL (if DLL is dropped in SysWOW64)
 	Fixed Register-DLL and Unregister-DLL when using paths with spaces
+	Fixed sporadic log file corruption that were introduced in v3.0.8
 	Fixed CloseAppsCountdown that got broken in v3.0.8
 	Fixed DeployMode handling that got broken in v3.0.8
 

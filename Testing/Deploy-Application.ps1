@@ -45,22 +45,22 @@ Try {
 #*===============================================
 # Variables: Application
 
-$appVendor = ""
-$appName = ""
-$appVersion = ""
+$appVendor = "PSAppDeployToolkit"
+$appName = "Test Script"
+$appVersion = "1.0"
 $appArch = ""
 $appLang = "EN"
 $appRevision = "01"
 $appScriptVersion = "1.0.0"
-$appScriptDate = "01/01/2013"
-$appScriptAuthor = "<author name>"
+$appScriptDate = "11/29/2013"
+$appScriptAuthor = "Dan Cunningham"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
 $deployAppScriptVersion = "3.0.9"
-$deployAppScriptDate = "11/29/2013"
+$deployAppScriptDate = "11/28/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -77,44 +77,68 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
-	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install and persist the prompt
-	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
- 
-	# Show Progress Message (with the default message)
-	Show-InstallationProgress
+	# Installation Welcome: Defer test
+	Show-InstallationWelcome -AllowDefer -DeferTimes 100
 
-	# Perform pre-installation tasks here
+	# Installation Welcome: CloseApps, CloseAppsCountdown, Defer, CheckDiskspace, PersistentPrompt and BlockExecution test
+	Show-InstallationWelcome -CloseApps "iexplore,winword,excel,powerpnt" -CloseAppsCountdown "60" -CheckDiskSpace -PersistPrompt -BlockExecution
 
 #*===============================================
 #* INSTALLATION 
 $installPhase = "Installation"
 #*===============================================
 
-	# Perform installation tasks here
+	# Progress message and Block Execution test
+	Show-InstallationProgress "BlockExecution test. Open Internet Explorer or an Office application within 10 seconds..."
+	Sleep -Seconds 10
+
+	# MSI installation and removal test
+	Show-InstallationProgress "MSI installation and removal test..."
+	Execute-MSI -Action Install -Path "PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi"
+	Remove-MSIApplications "PSAppDeployToolkit Test Installation"
+
+	# x86 file manipulation and DLL Registration test
+	Show-InstallationProgress "x86 file manipulation and DLL Registration test..."
+	Copy-File -Path "$dirSupportFiles\AutoItX3.dll" -Destination "$envWinDir\SysWOW64\AutoItx3.dll"
+	Register-DLL "$envWinDir\SysWOW64\AutoItx3.dll"
+	Unregister-DLL "$envWinDir\SysWOW64\AutoItx3.dll"
+	Remove-File -Path "$envWinDir\SysWOW64\AutoItx3.dll"
+
+	# x64 file manipulation and DLL registration test
+	Show-InstallationProgress "x64 file manipulation and DLL Registration test..."
+	Copy-File -Path "$dirSupportFiles\AutoItX3_x64.dll" -Destination "$envWinDir\System32\AutoItx3.dll"
+	Register-DLL "$envWinDir\System32\AutoItx3.dll"
+	Unregister-DLL "$envWinDir\System32\AutoItx3.dll"
+	Remove-File -Path "$envWinDir\System32\AutoItx3.dll"
 
 #*===============================================
 #* POST-INSTALLATION
 $installPhase = "Post-Installation"
 #*===============================================
 
-	# Perform post-installation tasks here
+	# Execute Process test
+	Show-InstallationProgress "Execute Process test. Close Notepad to proceed..."
+	Execute-Process "Notepad"
 
-    # Display a message at the end of the install
+	# Installation Prompt with NoWait test
 	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
- 
+	Sleep -Seconds 10
+
+	# Installation Restart Prompt test
+	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 
 #*===============================================
 #* UNINSTALLATION
 } ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"
 #*===============================================
 
-	# Show Welcome Message, close Internet Explorer if required with a 60 second countdown before automatically closing
-	Show-InstallationWelcome -CloseApps "iexplore" -CloseAppsCountdown "60"
+	# Installation Welcome: CloseApps and CloseAppsCountdown test
+	Show-InstallationWelcome -CloseApps "iexplore,winword,excel,powerpnt" -CloseAppsCountdown "60"
 
-	# Show Progress Message (with the default message)
-	Show-InstallationProgress
+	# MSI removal test
+	Show-InstallationProgress "MSI uninstallation test..."
+	Execute-MSI -Action Uninstall -Path "PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi"
 
-	# Perform uninstallation tasks here
 
 #*===============================================
 #* END SCRIPT BODY
