@@ -1,4 +1,8 @@
 Version 3.0.9 11/29/2013
+	Note	We recently attempted to add a killer new feature and release 3.1.0. We thought we had nailed it but ended up hitting problems once we went into production environments.
+			Worse still, we ended up causing a bunch of problems in 3.0.8 trying to reverse out all of these changes. 
+			We've prided ourselves on getting to be a really stable toolkit that works well in an enterprise environment. 
+			So we're very sorry for the shoddiness of 3.0.8 and have taken a number of steps (a QA process and test scripts) to ensure we don't have these issues going forward.
 	Added handling of X86 environment variables so they are never empty
 	Added prevention of AllowDefer and CloseAppsCountdown at the same time
 	Added x86 support to Register-DLL and Unregister-DLL (if DLL is dropped in SysWOW64)
