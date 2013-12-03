@@ -1,3 +1,6 @@
+Version 3.0.x 12/03/2013
+	Revert change that prevented AllowDefer and CloseAppsCountdown from working together
+
 Version 3.0.9 11/29/2013
 	Note	We recently attempted to add a killer new feature and release 3.1.0. We thought we had nailed it but ended up hitting problems once we went into production environments.
 			Worse still, we ended up causing a bunch of problems in 3.0.8 trying to reverse out all of these changes. 

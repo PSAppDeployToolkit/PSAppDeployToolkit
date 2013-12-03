@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.9"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "11/29/2013"
+$appDeployMainScriptDate = "12/03/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -2322,10 +2322,6 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 
 	# If running in NonInteractive mode, force the processes to close silently
 	If ($deployModeNonInteractive -eq $true) { $Silent = $true }
-	
-	If ($AllowDefer -eq $true -and $CloseAppsCountdown -ne 0) {
-		Throw "You cannot use both AllowDefer and CloseAppsCountdown at the same time"
-	}
 
 	# Check disk space requirements if specified
 	If ($CheckDiskSpace -eq $true) {
