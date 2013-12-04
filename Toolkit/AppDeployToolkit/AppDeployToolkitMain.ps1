@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.9"
+$appDeployMainScriptVersion = "3.0.10"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "12/03/2013"
+$appDeployMainScriptDate = "12/04/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -2045,8 +2045,8 @@ Function UnBlock-AppExecution {
 
 	# If the CleanupBlockedApps Parameter is specified, import the XML file to get the list of processes and the previous state of the registry
 	If ($CleanupBlockedApps -eq $true) {
-		Write-Log "CleanupBlockedApps specified."		
-		If (Test-Path $xmlBlockedApps) {			
+		Write-Log "CleanupBlockedApps specified."
+		If (Test-Path $xmlBlockedApps) {
 			Write-Log "Importing CliXML [$xmlBlockedApps]..."
 			$blockedApps = Import-Clixml $xmlBlockedApps -ErrorAction SilentlyContinue
 		}
@@ -2199,10 +2199,10 @@ Function Get-RunningProcesses {
 		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -join ("|")
  
 		# Replace escape characters that interfere with Regex and might cause false positive matches
-		$processNames = $processNames -replace "\.","" -replace "\*",""	-replace "\+",""	
+		$processNames = $processNames -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus"
 	
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
-		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","" -replace "\*","" -replace "\+","" -replace "$","exe") -match $processNames } 
+		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "$","exe") -match $processNames } 
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
 		If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"

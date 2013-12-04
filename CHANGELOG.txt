@@ -1,4 +1,5 @@
-Version 3.0.x 12/03/2013
+Version 3.0.10 12/04/2013
+	Improved process matching in CloseApps (for support of apps like NotePad++)
 	Revert change that prevented AllowDefer and CloseAppsCountdown from working together
 
 Version 3.0.9 11/29/2013
