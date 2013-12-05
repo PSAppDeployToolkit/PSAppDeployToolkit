@@ -1,5 +1,5 @@
-Version 3.0.10 12/04/2013
-	Improved process matching in CloseApps (for support of apps like NotePad++)
+Version 3.0.10 12/05/2013
+	Improved process matching in CloseApps, Remove-MSIApplications & Get-InstalledApplication (for support of apps with special characters, like NotePad++)
 	Revert change that prevented AllowDefer and CloseAppsCountdown from working together
 
 Version 3.0.9 11/29/2013

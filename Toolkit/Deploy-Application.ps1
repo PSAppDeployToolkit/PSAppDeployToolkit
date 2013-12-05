@@ -78,7 +78,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
 	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install and persist the prompt
-	Show-InstallationWelcome -CloseApps "iexplore,notes,notepad++" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
  
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
@@ -102,7 +102,6 @@ $installPhase = "Post-Installation"
 	# Display a message at the end of the install
 	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
  
-
 #*===============================================
 #* UNINSTALLATION
 } ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"

@@ -1009,7 +1009,7 @@ Function Get-InstalledApplication {
 	$productCode = $productCode -replace "}","" -replace "{",""
 	$applications = $name -split (",")
 	# Replace special characters in application name that interfere with regex match
-	$applications = $applications -replace "\.","" -replace "\*","" -replace "\(","" -replace "\)",""
+	$applications = $applications -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket"
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
@@ -1048,7 +1048,7 @@ Function Get-InstalledApplication {
 				If ($name -ne "") {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
-						If (($regKeyApp.DisplayName -replace "\.","" -replace "\*","" -replace "\(","" -replace "\)","") -match $application ) {
+						If (($regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket") -match $application ) {
 							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
 							$regKeyApp.DisplayName = $regKeyApp.DisplayName 
 							$installedApplication += New-Object PSObject -Property @{
@@ -2199,10 +2199,10 @@ Function Get-RunningProcesses {
 		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -join ("|")
  
 		# Replace escape characters that interfere with Regex and might cause false positive matches
-		$processNames = $processNames -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus"
+		$processNames = $processNames -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket"
 	
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
-		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "$","exe") -match $processNames } 
+		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","exe") -match $processNames } 
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
 		If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
