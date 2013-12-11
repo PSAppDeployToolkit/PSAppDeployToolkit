@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = "3.0.10"
 $appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "12/04/2013"
+$appDeployMainScriptDate = "12/11/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -4245,19 +4245,23 @@ Switch ($deploymentType) {
 }
 If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
 
+# Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
+If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $_.GetOwner().User -eq $envUsername }) {
+	Write-Log "Running as [$envUsername] in user context."
+}
 # Check if we are running a task sequence, and enable NonInteractive mode
-If (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+	Write-Log "Running in SCCM Task Sequence."
 	$deployMode = "NonInteractive"  
-	Write-Log "Running task sequence detected. Setting Mode to [$deployMode]."
 }
 # Check if we are running in session zero, and enable NonInteractive mode
 ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
-	$deployMode = "NonInteractive"  
-	Write-Log "Session 0 detected. Setting Mode to [$deployMode]."  
+	Write-Log "Running under Session 0."
+	$deployMode = "NonInteractive"
 }
 
 If ($deployMode -ne $null) {
-	Write-Log "Installation is running in [$deployMode] mode" 
+	Write-Log "Installation is running in [$deployMode] mode." 
 }
 
 # Set Deploy Mode switches
