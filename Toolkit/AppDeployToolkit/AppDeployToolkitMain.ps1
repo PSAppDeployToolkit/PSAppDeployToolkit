@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = "3.0.10"
-$appDeployMainScriptMinimumConfigVersion = "3.0.8"
-$appDeployMainScriptDate = "12/11/2013"
+$appDeployMainScriptVersion = [version]"3.0.11"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.0.8"
+$appDeployMainScriptDate = "12/19/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -134,7 +134,7 @@ $xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 
 # Get Config File Details
 $configConfigDetails = $xmlConfig.Config_File
-[string]$configConfigVersion = $configConfigDetails.Config_Version
+[string]$configConfigVersion = [version]$configConfigDetails.Config_Version
 [string]$configConfigDate = $configConfigDetails.Config_Date
 
 # Get Config File Details
@@ -4219,7 +4219,7 @@ If ($AssemblyWarning -ne $null) {
 
 # Check the XML config file version 
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
-	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptVersion]. Please upgrade the configuration file."
+	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
 }
 
 If ($appScriptVersion -ne $null ) { Write-Log "$installName script version is [$appScriptVersion]" }
