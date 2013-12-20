@@ -1597,10 +1597,10 @@ Function Set-RegistryKey {
 #>
 	Param (
 		[Parameter(Mandatory = $true)] 
-		[System.String] $Key,
-		[System.String] $Name, 
-		[System.String] $Value, 
-		[Microsoft.Win32.RegistryValueKind]$Type="String",
+		[string] $Key,
+		[string] $Name, 
+		$Value, 
+		[Microsoft.Win32.RegistryValueKind] $Type = "String",
 		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
@@ -2388,8 +2388,8 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 			}
 		}
 		Else {
-			[string]$DeferTimes = $null	
-		}		
+			[string]$DeferTimes = $null
+		}
 		If ($checkDeferDays -and $allowDefer -eq $true) {
 			If ($deferHistoryDeadline) {
 				Write-Log "Defer history shows [$deferHistoryDeadline] deadline date."
@@ -2398,7 +2398,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 			Else {
 				$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date ((Get-Date).AddDays($deferDays)) -Format ($culture).DateTimeFormat.FullDateTimePattern)
 			}
-			Write-Log "User has until [$deferDeadlineUniversal] remaining."	
+			Write-Log "User has until [$deferDeadlineUniversal] remaining."
 			If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
 				Write-Log "Deferral has expired."
 				$AllowDefer = $false
@@ -2446,7 +2446,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 			Else {
 				Break
 			}
-			
+
 			# If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again
 			If ($promptResult -eq "Continue") {
 				Write-Log "User selected to continue..."
@@ -2498,7 +2498,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 			$runningProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
 			Sleep -Seconds 2
 		}
-	}	
+	}
 
 	# Force nsd.exe to stop if Notes is one of the required applications to close
 	If (($processObjects | Select ProcessName -ExpandProperty ProcessName) -match "notes") {
@@ -2528,7 +2528,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		# Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
 		$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select ProcessName -ExpandProperty ProcessName | Sort) -DifferenceObject ($notesPathExes | Sort) -IncludeEqual | Where {$_.SideIndicator -eq "<=" -or $_.InputObject -eq "notes" } | Select-Object InputObject -ExpandProperty InputObject		
 		$processObjects = $processObjects | Where { $processesIgnoringNotesExceptions -contains $_.ProcessName }
-	}	
+	}
 
 	# If block execution switch is true, call the function to block execution of these processes
 	If ($BlockExecution -eq $true) {
@@ -2572,13 +2572,13 @@ Function Show-WelcomePrompt {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-	[string] $ProcessDescriptions = $null,
-	[int] $CloseAppsCountdown = $null,
-	[boolean] $PersistPrompt = $false,
-	[switch] $AllowDefer = $false,
-	$DeferTimes = $null,
-	$DeferDeadline = $null,
-	[switch]$minimizeWindows = $true
+		[string] $ProcessDescriptions = $null,
+		[int] $CloseAppsCountdown = $null,
+		[boolean] $PersistPrompt = $false,
+		[switch] $AllowDefer = $false,
+		$DeferTimes = $null,
+		$DeferDeadline = $null,
+		[switch]$minimizeWindows = $true
 	)
 	# Reset switches
 	$showCloseApps = $showDefer = $persistWindow = $false 
@@ -2614,7 +2614,7 @@ Function Show-WelcomePrompt {
 		}
 		If ($PersistPrompt) {
 			$persistWindow = $true
-		}		
+		}
 	}
 
 	[Array]$ProcessDescriptions = $ProcessDescriptions.split(",")
@@ -2634,11 +2634,9 @@ Function Show-WelcomePrompt {
 	$flowLayoutPanel = New-Object System.Windows.Forms.FlowLayoutPanel
 	$panelButtons = New-Object System.Windows.Forms.Panel
 
-	$Form_Cleanup_FormClosed=
-	{
+	$Form_Cleanup_FormClosed = {
 		# Remove all event handlers from the controls
-		Try
-		{
+		Try {
 			$labelAppName.remove_Click($handler_labelAppName_Click)
 			$labelDefer.remove_Click($handler_labelDefer_Click)
 			$buttonCloseApps.remove_Click($buttonCloseApps_OnClick)
@@ -2654,8 +2652,7 @@ Function Show-WelcomePrompt {
 		{ }
 	}
 
-	$Form_StateCorrection_Load=
-	{
+	$Form_StateCorrection_Load = {
 		# Correct the initial state of the form to prevent the .Net maximized form issue
 		$formWelcome.WindowState = 'Normal'
 		$formWelcome.AutoSize = $true
@@ -2663,25 +2660,25 @@ Function Show-WelcomePrompt {
 		$formWelcome.BringToFront()
 		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formWelcomeStartPosition -Value $($formWelcome.Location) -Scope Script
-        
-        # Initialize the countdown timer
+
+		# Initialize the countdown timer
 		$currentTime = Get-Date
 		$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
 		$script:welcomeTimer.Start()
-        # Set up the form
+
+		# Set up the form
 		$remainingTime = $countdownTime.Subtract($currentTime)
 		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"	
-
 	}
 
 	# Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
 	If (!($script:welcomeTimer)) {
 		$script:welcomeTimer = New-Object 'System.Windows.Forms.Timer'
-	}     	
-	
+	}
+
 	If ($showCountdown -eq $true) {
-		$timer_Tick={
+		$timer_Tick = {
 			# Get the time information
 			$currentTime = Get-Date
 			$countdownTime = $startTime.AddSeconds($CloseAppsCountdown )
@@ -2699,22 +2696,22 @@ Function Show-WelcomePrompt {
 			}
 		}
 	}
-	Else {	
-        $script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
-		$timer_Tick={
+	Else {
+		$script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
+		$timer_Tick = {
 			$buttonAbort.PerformClick()
-		}	
+		}
 	}
-    
+
 	$script:welcomeTimer.add_Tick($timer_Tick)
-	
+
 	# Persistence Timer
 	If ($persistWindow) {
 		$persistTimer = New-Object 'System.Windows.Forms.Timer'
 		$persistTimer.Interval = ($configInstallationPersistInterval * 1000)
 		$persistTimer_Tick = {
 			Refresh-InstallationWelcome
-		}		
+		}
 		$persistTimer.add_Tick($persistTimer_Tick)
 		$persistTimer.Start()
 	}
@@ -2997,8 +2994,8 @@ Function Show-WelcomePrompt {
 	}
 
 	Return $result
-	
-} #End Function
+
+} # End Function
 
 Function Show-InstallationRestartPrompt {
 <# 
@@ -3035,7 +3032,7 @@ Function Show-InstallationRestartPrompt {
 		Write-Log "Show-InstallationRestartPrompt invoked, but an existing restart prompt was detected. Cancelling restart prompt..."
 		Return
 	}
-		
+
 	$startTime = $countdownTime = Get-Date
 
 	[System.Windows.Forms.Application]::EnableVisualStyles()
@@ -3061,7 +3058,6 @@ Function Show-InstallationRestartPrompt {
 		Write-Log "Force restarting computer..."
 		Restart-Computer -Force
 	}
-	
 
 	$FormEvent_Load={
 		# Initialize the countdown timer
@@ -3077,7 +3073,6 @@ Function Show-InstallationRestartPrompt {
 		# Show Popup
 		Show-RestartPopup
 	}
-	
 
 	$buttonRestartLater_Click={
 		# Minimize the form
@@ -3093,7 +3088,7 @@ Function Show-InstallationRestartPrompt {
 		# Hide the form if minimized
 		If ($formRestart.WindowState -eq 'Minimized') {
 			$formRestart.WindowState = 'Minimized'
-		}	
+		}
 	}
 
 	$timerCountdown_Tick={
