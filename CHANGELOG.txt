@@ -1,3 +1,8 @@
+Version 3.0.11 [xx/xx/xxxx]
+	Fixed issue with false Session 0 detected on some XP machines
+	Fixed minimum configuration version checking
+	Fixed Set-RegistryValue not accepting arrays
+
 Version 3.0.10 12/05/2013
 	Improved process matching in CloseApps, Remove-MSIApplications & Get-InstalledApplication (for support of apps with special characters, like NotePad++)
 	Revert change that prevented AllowDefer and CloseAppsCountdown from working together
