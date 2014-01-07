@@ -1,4 +1,5 @@
-Version 3.0.11 [xx/xx/xxxx]
+Version 3.0.11 [07/01/2014]
+	Changed persistent prompt interval to default to 60 seconds
 	Fixed issue with false Session 0 detected on some XP machines
 	Fixed minimum configuration version checking
 	Fixed Set-RegistryValue not accepting arrays
