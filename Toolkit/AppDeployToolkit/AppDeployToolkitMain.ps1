@@ -1361,9 +1361,9 @@ Function Execute-Process {
 	# If the passthru switch is specified, return the exit code and any output from process
 	If ($PassThru -eq $true) {
 		New-Object PSObject -Property @{
-			ExitCode	= $returnCode
-			StdOut		= $stdOut
-			StdErr		= $stdErr
+			ExitCode = $returnCode
+			StdOut = $stdOut
+			StdErr = $stdErr
 		}
 		Write-Log "Execution completed with return code $returnCode."
 	}
@@ -1392,8 +1392,9 @@ Function Execute-Process {
 	}
 
 	Trap [Exception] {
-	Write-Log ("Execution failed: " + $_.Exception.Message)
-	Exit-Script $returnCode
+		Write-Log ("Execution failed: " + $_.Exception.Message)
+		If ($returnCode -eq $null) { $returnCode = 999 }
+		Exit-Script $returnCode
 	}
 }
 
