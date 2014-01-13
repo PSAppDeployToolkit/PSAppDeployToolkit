@@ -1992,7 +1992,7 @@ Function Block-AppExecution {
 	$blockedApps | Export-Clixml -Path $xmlBlockedApps -Force
 
 	# Copy Script to Temporary directory so it can be called by scheduled task later if required
-	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Force -Recurse -ErrorAction SilentlyContinue
+	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
 
 	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 
