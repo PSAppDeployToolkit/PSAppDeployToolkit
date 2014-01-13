@@ -111,6 +111,11 @@ $installPhase = "Installation"
 	Unregister-DLL "$envWinDir\System32\AutoItx3.dll"
 	Remove-File -Path "$envWinDir\System32\AutoItx3.dll"
 
+	# Pin to Start Menu test
+	Show-InstallationProgress "Pinned Application test..."
+	Set-PinnedApplication -Action "PintoStartMenu" -FilePath "$envWinDir\Notepad.exe"
+	Set-PinnedApplication -Action "PintoTaskBar" -FilePath "$envWinDir\Notepad.exe"
+
 #*===============================================
 #* POST-INSTALLATION
 $installPhase = "Post-Installation"
@@ -121,11 +126,11 @@ $installPhase = "Post-Installation"
 	Execute-Process "Notepad"
 
 	# Installation Prompt with NoWait test
-	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
+	Show-InstallationPrompt -Message "Installation Prompt test. The installation should complete in the background. Click Ok to dismiss..." -ButtonRightText "Ok" -Icon Information -NoWait
 	Sleep -Seconds 10
 
 	# Installation Restart Prompt test
-	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
+	# Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 
 #*===============================================
 #* UNINSTALLATION
