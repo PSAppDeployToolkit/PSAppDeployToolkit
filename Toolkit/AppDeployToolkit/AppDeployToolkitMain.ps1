@@ -1130,10 +1130,10 @@ Function Execute-MSI {
 			$productCodeNameVersion = (Get-InstalledApplication -ProductCode $path | Select DisplayName,DisplayVersion -First 1 -ErrorAction SilentlyContinue)
 			If ($productCodeNameVersion -ne $null) {
 				If ($($productCodeNameVersion.Publisher) -ne $null) {
-					$logName = ($productCodeNameVersion.Publisher + "_" + $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\",""
+					$logName = ($productCodeNameVersion.Publisher + "_" + $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\","" -replace "/",""
 				}
 				Else {
-					$logName = ( $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\",""
+					$logName = ( $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\","" -replace "/",""
 				}
 			}
 			Else {
