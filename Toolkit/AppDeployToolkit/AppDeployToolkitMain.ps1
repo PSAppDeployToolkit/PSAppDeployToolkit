@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.0.11"
+$appDeployMainScriptVersion = [version]"3.0.12"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.11"
-$appDeployMainScriptDate = "01/07/2013"
+$appDeployMainScriptDate = "01/13/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1130,10 +1130,10 @@ Function Execute-MSI {
 			$productCodeNameVersion = (Get-InstalledApplication -ProductCode $path | Select DisplayName,DisplayVersion -First 1 -ErrorAction SilentlyContinue)
 			If ($productCodeNameVersion -ne $null) {
 				If ($($productCodeNameVersion.Publisher) -ne $null) {
-					$logName = ($productCodeNameVersion.Publisher + "_" + $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ",""
+					$logName = ($productCodeNameVersion.Publisher + "_" + $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\",""
 				}
 				Else {
-					$logName = ( $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ",""
+					$logName = ( $productCodeNameVersion.DisplayName + "_" + $productCodeNameVersion.DisplayVersion) -replace " ","" -replace "\",""
 				}
 			}
 			Else {
