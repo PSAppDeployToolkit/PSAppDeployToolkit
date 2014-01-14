@@ -2165,9 +2165,12 @@ Function Get-UniversalDate {
 		$ContinueOnError = $false
 	)
 	Try {
+        # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
+        If ($dateTime -match "Z") { $dateTime = $dateTime -replace "Z","" }
 		$dateTime = [DateTime]::Parse($dateTime, $culture)
 		# Convert the date in a universal sortable date time pattern based on the current culture
-		Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
+        $universalDateTime = Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
+        Return $universalDateTime
 	}
 	Catch {		
 		If ($ContinueOnError -eq $false) {
@@ -2601,9 +2604,11 @@ Function Show-WelcomePrompt {
 	If ($AllowDefer -eq $true -and ($DeferTimes -ge 0 -or $DeferDeadline)) { 
 		Write-Log "User has the option to defer."
 		$showDefer = $true 
+		If ($deferDeadline) { 
+		# Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone
+            $deferDeadline = $deferDeadline -replace "Z",""    
 		# Convert the deadline date to a string
-		If ($DeferDeadline) { 
-			[string]$DeferDeadline = Get-Date $DeferDeadline | Out-String -Stream
+			[string]$deferDeadline = Get-Date $deferDeadline | Out-String -Stream
 		}
 	}
 
