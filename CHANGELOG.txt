@@ -1,3 +1,10 @@
+Version 3.0.12 [17/01/2014]
+	Fixed issue where user generated thumbs.db file in AppDeployToolkit folder could cause BlockExecution to fail
+	Fixed issue where uninstalls would fail if there was a blackslash in the MSI DisplayName
+	Fixed issue where Execute-Process could fail but return an exit code of 0 indicating success
+	Fixed issue where DeferDays or in some scenarios DeferDeadline values would be erroneously converted to a different timezone.
+	Fixed issue where Remove-MSIApplications and Get-InstalledApplication wouldn't find a match if the application name contained square brackets
+
 Version 3.0.11 [07/01/2014]
 	Changed persistent prompt interval to default to 60 seconds
 	Fixed issue with false Session 0 detected on some XP machines

@@ -51,16 +51,16 @@ $appVersion = "1.0"
 $appArch = ""
 $appLang = "EN"
 $appRevision = "01"
-$appScriptVersion = "1.0.0"
-$appScriptDate = "11/29/2013"
+$appScriptVersion = "1.0.1"
+$appScriptDate = "01/17/2014"
 $appScriptAuthor = "Dan Cunningham"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.9"
-$deployAppScriptDate = "11/28/2013"
+$deployAppScriptVersion = "3.0.12"
+$deployAppScriptDate = "01/17/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -95,7 +95,7 @@ $installPhase = "Installation"
 	# MSI installation and removal test
 	Show-InstallationProgress "MSI installation and removal test..."
 	Execute-MSI -Action Install -Path "PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi"
-	Remove-MSIApplications "PSAppDeployToolkit Test Installation"
+	Remove-MSIApplications "Test Installation (Testing) [Testing]"
 
 	# x86 file manipulation and DLL Registration test
 	Show-InstallationProgress "x86 file manipulation and DLL Registration test..."

@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.0.12"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.11"
-$appDeployMainScriptDate = "01/13/2013"
+$appDeployMainScriptDate = "01/17/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1009,7 +1009,7 @@ Function Get-InstalledApplication {
 	$productCode = $productCode -replace "}","" -replace "{",""
 	$applications = $name -split (",")
 	# Replace special characters in application name that interfere with regex match
-	$applications = $applications -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket"
+	$applications = $applications -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket" 
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
@@ -1048,7 +1048,7 @@ Function Get-InstalledApplication {
 				If ($name -ne "") {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
-						If (($regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket") -match $application ) {
+						If (($regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket") -match $application ) {
 							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
 							$regKeyApp.DisplayName = $regKeyApp.DisplayName 
 							$installedApplication += New-Object PSObject -Property @{
