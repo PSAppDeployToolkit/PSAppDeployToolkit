@@ -3568,8 +3568,8 @@ Function Set-PinnedApplication {
 		$folder = $shellApp.Namespace($path)
 		$item = $folder.Parsename((Split-Path $FilePath -leaf -ErrorAction SilentlyContinue))
 		$itemVerb = $item.Verbs() | ? {$_.Name.Replace("&","") -eq $verb} -ErrorAction SilentlyContinue
-		If ($itemVerb -eq $null) {
-			Write-Log "Error performing action [$verb] on [$filePath]."
+		 If (($itemVerb | Select Name -ExpandProperty Name) -eq "") {
+			Write-Log "Performing action [$verb] on [$filePath] is not progamtically supported on this system."
 		} 
 		Else {
 			Write-Log "Performing [$verb] on [$filePath]..."

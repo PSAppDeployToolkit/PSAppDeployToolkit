@@ -89,7 +89,7 @@ $installPhase = "Installation"
 #*===============================================
 
 	# Progress message and Block Execution test
-	Show-InstallationProgress "BlockExecution test. Open Internet Explorer or an Office application within 10 seconds..."
+	Show-InstallationProgress "BlockExecution test: Open Internet Explorer or an Office application within 10 seconds..."
 	Sleep -Seconds 10
 
 	# MSI installation and removal test
@@ -111,10 +111,15 @@ $installPhase = "Installation"
 	Unregister-DLL "$envWinDir\System32\AutoItx3.dll"
 	Remove-File -Path "$envWinDir\System32\AutoItx3.dll"
 
+    # Create Shortcut test
+	Show-InstallationProgress "Shortcut Creation Test..."
+    New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description "Notepad" -WorkingDirectory "$envHomeDrive\$envHomePath"
+
 	# Pin to Start Menu test
 	Show-InstallationProgress "Pinned Application test..."
 	Set-PinnedApplication -Action "PintoStartMenu" -FilePath "$envWinDir\Notepad.exe"
 	Set-PinnedApplication -Action "PintoTaskBar" -FilePath "$envWinDir\Notepad.exe"
+    
 
 #*===============================================
 #* POST-INSTALLATION
@@ -126,8 +131,15 @@ $installPhase = "Post-Installation"
 	Execute-Process "Notepad"
 
 	# Installation Prompt with NoWait test
-	Show-InstallationPrompt -Message "Installation Prompt test. The installation should complete in the background. Click Ok to dismiss..." -ButtonRightText "Ok" -Icon Information -NoWait
+	Show-InstallationPrompt -Message "Asynchronous installation prompt test. The installation should complete in the background. Click Ok to dismiss..." -ButtonRightText "Ok" -Icon Information -NoWait
 	Sleep -Seconds 10
+
+    # Remove Shortcut
+    Remove-File -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
+
+    # Unpin from Start Menu
+	Set-PinnedApplication -Action "UnPinFromStartMenu" -FilePath "$envWinDir\Notepad.exe"
+	Set-PinnedApplication -Action "UnPinFromTaskBar" -FilePath "$envWinDir\Notepad.exe"
 
 	# Installation Restart Prompt test
 	# Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
