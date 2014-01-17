@@ -1013,7 +1013,7 @@ Function Get-InstalledApplication {
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
-		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object {Get-ItemProperty $_.PsPath}
+		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty -LiteralPath $_.PsPath }
 			Foreach ($regKeyApp in $regKeyApplication) {
 				$appDisplayName = $null
 				$appDisplayVersion = $null
