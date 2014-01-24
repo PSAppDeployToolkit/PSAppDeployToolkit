@@ -55,9 +55,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.0.12"
+$appDeployMainScriptVersion = [version]"3.0.13"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.11"
-$appDeployMainScriptDate = "01/17/2013"
+$appDeployMainScriptDate = "01/24/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -2067,9 +2067,16 @@ Function UnBlock-AppExecution {
 
 		Write-Log "Restoring the original Image File Execution Options registry key for $blockedAppName..."
 		If ($blockedAppKeyExists -eq $true) {
-			# If the Debugger value was previously set, restore the original value
+			# If the Debugger value was previously set...
 			If ($blockedAppDebuggerValue -ne "" -and $blockedAppDebuggerValue -ne $null) {
-				Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $blockedAppDebuggerValue -ContinueOnError
+				# Remove it if it was previously calling BlockExecution (something went wrong )
+				If ($blockedAppDebugerValue -match $scriptFileName) {
+					Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError
+				}
+				# Otherwise restore the original value
+				Else {
+					Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $blockedAppDebuggerValue -ContinueOnError
+				}
 			}
 			# If the Debugger value was not previously set, but the parent registry key existed, remove the value
 			Else {
@@ -3958,9 +3965,9 @@ Function Test-NetworkConnection {
 Function Test-PowerPoint {
 <# 
 .SYNOPSIS
-	Tests whether Power point is running in presentation mode
+	Tests whether PowerPoint is running
 .DESCRIPTION
-	Tests whether Power point is running in presentation mode
+	Tests whether PowerPoint is running
 .EXAMPLE
 	Test-PowerPoint
 .NOTES
@@ -3971,21 +3978,17 @@ Function Test-PowerPoint {
 	Write-Log "Testing Powerpoint status..."
 
 	Try {
-		$powerPoint = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Powerpoint.Application")
-		$slideshow = $powerPoint.SlideShowWindows
-		# detects if a PPT slideshow is in progress
-		If ($slideshow.Count -gt 0) {
-			Write-Log "Presentation Mode is enabled."
+		If (Get-Process "powerpnt" -ErrorAction SilentlyContinue) {
+			Write-Log "PowerPoint is running."
 			Return $true
 		} 
 		Else {
-			Write-Log "Presentation Mode is not enabled."
+			Write-Log "PowerPoint is not running."
 			Return $false
 		}
 	}
 	Catch [Exception] {
-		# If no powerpoint instances are found
-		Write-Log "Presentation Mode is not enabled."
+		Write-Log "PowerPoint is not running."
 		Return $false
 	}
 }
