@@ -1948,8 +1948,9 @@ Function Block-AppExecution {
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml") 
 	# If there is an existing scheduled task from a failed installation for this application, run that now to restore the original IFEO keys before we back them up again.
-	If ((Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) -ne $null) {
-		Write-Log "Existing Scheduled Task detected [$schTaskBlockedAppsName]. UnBlock-AppExecution will be called." 
+    If (Test-Path $xmlBlockedApps) {
+		Write-Log "Existing Block Execution detected [$xmlBlockedApps]."
+        Write-Log "UnBlock-AppExecution will be called."
 		Unblock-AppExecution
 	}
 
@@ -2004,7 +2005,8 @@ Function Block-AppExecution {
 	}
 	Else { 
 		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication `'$installName`'`"" -PassThru
-	}
+	    Write-Log "Result: $($schTaskCreation | Select-Object StdOut -ExpandProperty StdOut)"
+    }
 
 	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).
 	# Then change the debugger value to block execution of the application.
@@ -2069,8 +2071,8 @@ Function UnBlock-AppExecution {
 		If ($blockedAppKeyExists -eq $true) {
 			# If the Debugger value was previously set...
 			If ($blockedAppDebuggerValue -ne "" -and $blockedAppDebuggerValue -ne $null) {
-				# Remove it if it was previously calling BlockExecution (something went wrong )
-				If ($blockedAppDebugerValue -match $scriptFileName) {
+				# If the XML contains the BlockExecution execution command, don't restore it to the registry, instead delete the registry key
+				If ($blockedAppDebuggerValue -match $scriptFileName) {
 					Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError
 				}
 				# Otherwise restore the original value
