@@ -5,10 +5,10 @@
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 .PARAMETER ContinueOnErrorGlobalPreference
-	Sets the global preference for the -ContinueOnError. This global preference is set on most functions to True by default. 
+	Sets the global preference for the -ContinueOnError $true. This global preference is set on most functions to True by default. 
 	The purpose of having this global variable is to assist with script debugging so that you can stop the script if any functions throw an error. 
 	To debug the script, set to $false or add the parameter to the dot-sourcing line in the Deploy-Application.ps1 script, e.g.
-	."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1" -ContinueOnErrorGlobalPreference $false
+	."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1" -ContinueOnError $trueGlobalPreference $false
 .PARAMETER CleanupBlockedApps
 	Clean up the blocked applications.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
@@ -25,7 +25,7 @@
 "#>
 Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
-	[switch] $ContinueOnErrorGlobalPreference = $true,
+	[boolean] $ContinueOnErrorGlobalPreference = $true,
 	[switch] $ShowInstallationPrompt = $false,
 	[switch] $ShowInstallationRestartPrompt = $false,
 	[switch] $CleanupBlockedApps = $false, 
@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.0.13"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.13"
-$appDeployMainScriptDate = "02/21/2013"
+$appDeployMainScriptDate = "01/29/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1132,7 +1132,7 @@ Function Execute-MSI {
 		[string] $Parameters = $null,
 		[string] $LogName = $null,
 		[string] $WorkingDirectory,
-		[switch] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if an MSI fails to install
+		[boolean] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if an MSI fails to install
 	)
 
 	# Build the log file name
@@ -1218,7 +1218,7 @@ Function Execute-MSI {
 
 	# Call the Execute-Process function
 	If ($ContinueOnError -eq $true) {
-		Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError
+		Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
 	}
 	Else {
 		Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
@@ -1258,7 +1258,7 @@ Function Remove-MSIApplications {
 			If ($installedApplication.UninstallString -match "msiexec") {
 				Write-Log "Removing Application [$($installedApplication.DisplayName) $($installedApplication.Version)]..."
 				If ($ContinueOnError -eq $true) {
-					Execute-MSI -Action Uninstall -Path $installedApplication.ProductCode -ContinueOnError
+					Execute-MSI -Action Uninstall -Path $installedApplication.ProductCode -ContinueOnError $true
 				}
 				Else {
 					Execute-MSI -Action Uninstall -Path $installedApplication.ProductCode
@@ -1315,7 +1315,7 @@ Function Execute-Process {
 		[switch] $NoWait = $false,
 		[switch] $PassThru = $false,
 		[string] $IgnoreExitCodes = $false,
-		[switch] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if a process execution fails
+		[boolean] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if a process execution fails
 	)
 
 	# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
@@ -2013,7 +2013,7 @@ Function Block-AppExecution {
 
 	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
-	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
+	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
@@ -2031,7 +2031,7 @@ Function Block-AppExecution {
 
 		# Set the debugger value to block application execution
 		Write-Log "Setting the Image File Execution Options registry keys to block execution of $blockedAppName..."	
-		Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $debuggerBlockValue -ContinueOnError
+		Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $debuggerBlockValue -ContinueOnError $true
 	}
 }
 
@@ -2086,21 +2086,21 @@ Function UnBlock-AppExecution {
 			If ($blockedAppDebuggerValue -ne "" -and $blockedAppDebuggerValue -ne $null) {
 				# If the XML contains the BlockExecution execution command, don't restore it to the registry, instead delete the registry key
 				If ($blockedAppDebuggerValue -match $scriptFileName) {
-					Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError
+					Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError $true
 				}
 				# Otherwise restore the original value
 				Else {
-					Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $blockedAppDebuggerValue -ContinueOnError
+					Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $blockedAppDebuggerValue -ContinueOnError $true
 				}
 			}
 			# If the Debugger value was not previously set, but the parent registry key existed, remove the value
 			Else {
-				Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError
+				Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError $true
 			}
 		}
 		# Otherwise, remove the registry key
 		Else {
-			Remove-RegistryKey -Key $blockedAppPath -ContinueOnError
+			Remove-RegistryKey -Key $blockedAppPath -ContinueOnError $true
 		}
 	}
 
@@ -2111,7 +2111,7 @@ Function UnBlock-AppExecution {
 	}
 
 	# Remove the scheduled task if it exists
-	If (Get-ScheduledTask -ContinueOnError | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
+	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Deleting Scheduled Task [$schTaskBlockedAppsName] ..."
 		Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
 	}
@@ -2131,7 +2131,7 @@ Function Get-DeferHistory {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Write-Log "Getting deferral history..."	
-	Get-RegistryKey -Key $regKeyDeferHistory -ContinueOnError
+	Get-RegistryKey -Key $regKeyDeferHistory -ContinueOnError $true
 }
 
 Function Set-DeferHistory {
@@ -2154,11 +2154,11 @@ Function Set-DeferHistory {
 
 	If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
 		Write-Log "Setting deferral history...[DeferTimesRemaining = $deferTimes]"
-		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferTimesRemaining" -Value $deferTimesRemaining -ContinueOnError
+		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferTimesRemaining" -Value $deferTimesRemaining -ContinueOnError $true
 	}
 	If ($deferDeadline) {
 		Write-Log "Setting deferral history...[DeferDeadline = $deferDeadline]"
-		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferDeadline" -Value $deferDeadline -ContinueOnError
+		Set-RegistryKey -Key $regKeyDeferHistory -Name "DeferDeadline" -Value $deferDeadline -ContinueOnError $true
 	}
 }
 
@@ -2184,7 +2184,7 @@ Function Get-UniversalDate {
 #>
 	Param (
 		$DateTime = (Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern), # Get the current date
-		$ContinueOnError = $false # do not default to global continue on error preference as errors with this function should default to false
+		$ContinueOnError = $false
 	)
 	Try {
         # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
