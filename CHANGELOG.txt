@@ -1,3 +1,8 @@
+Version 3.0.13 [21/02/2014]
+	Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to noninteractive
+	Fixed ContinueOnError parameter data type which was set as a switch but should have been boolean
+	Added additional safety nets to prevent block execution not rolling back correctly
+
 Version 3.0.12 [17/01/2014]
 	Fixed error handling of Pin To Start in Win 8 (not programatically supported in Win 8.1)
 	Fixed issue where user generated thumbs.db file in AppDeployToolkit folder could cause BlockExecution to fail

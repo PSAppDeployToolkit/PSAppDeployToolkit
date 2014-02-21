@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.0.13"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.13"
-$appDeployMainScriptDate = "01/29/2013"
+$appDeployMainScriptDate = "02/21/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -222,13 +222,26 @@ $deferHistory = $deferTimes = $deferDays = $null
 # Assemblies: Load
 # Reset Assembly Errors & Warnings
 $AssemblyError = $AssemblyWarning = $null
-Add-Type -AssemblyName System.Windows.Forms -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName PresentationFramework -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName Microsoft.VisualBasic -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName System.Drawing -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName PresentationFramework -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName PresentationCore -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
-Add-Type -AssemblyName WindowsBase -ErrorVariable +AssemblyError -WarningVariable +AssemblyWarning
+Try {
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName PresentationFramework
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    Add-Type -AssemblyName System.Drawing
+    Add-Type -AssemblyName PresentationFramework
+    Add-Type -AssemblyName PresentationCore
+    Add-Type -AssemblyName WindowsBase
+}
+Catch {
+    $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
+    If ($deployModeNonInteractive -eq $true) {
+        Write-Log "Error Loading Assemmbly: $exceptionMessage"
+        Write-Log "Continuing despite assembly error since deployment mode is [$deployMode]"
+        Continue
+    }
+    Else {
+        Exit-Script 1    
+    }
+}
 
 # COM Objects: Initialize
 $shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
@@ -922,7 +935,7 @@ Function Get-HardwarePlatform {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Try {
@@ -963,7 +976,7 @@ Function Get-FreeDiskSpace {
 #>
 	Param (
 		[string] $Drive = $envSystemDrive,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Try {
@@ -1236,7 +1249,7 @@ Function Remove-MSIApplications {
 	Param( 
 		[Parameter(Mandatory = $true)]
 		[string] $Name,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$installedApplications = Get-InstalledApplication $name
@@ -1420,7 +1433,7 @@ Function Copy-File {
 		[string]$Path = $(throw "Path param required"),
 		[Parameter(Mandatory = $true)]
 		[string]$Destination = $(throw "Destination param required"),
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Copying File [$path] to [$destination]..."
@@ -1462,7 +1475,7 @@ Function Remove-File {
 		[Parameter(Mandatory = $true)]
 		[string] $Path = $(throw "Path Param required"),
 		[switch] $Recurse,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Deleting File(s) [$path]..."
@@ -1539,7 +1552,7 @@ Function Get-RegistryKey {
 	Param ( 
 		[Parameter(Mandatory = $true)]
 		$Key,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$key = Convert-RegistryPath -Key $key
@@ -1602,7 +1615,7 @@ Function Set-RegistryKey {
 		[string] $Name, 
 		$Value, 
 		[Microsoft.Win32.RegistryValueKind] $Type = "String",
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$key = Convert-RegistryPath -Key $Key
@@ -1670,7 +1683,7 @@ Function Remove-RegistryKey {
 		[string] $Key = $(throw "Key Param required"),
 		[string] $Name,
 		[switch] $Recurse,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$key = Convert-RegistryPath -Key $key
@@ -1727,7 +1740,7 @@ Function Get-FileVersion {
 	Param (
 		[Parameter(Mandatory = $true)]
 		[string] $File,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Getting file version info for [$file]..."
@@ -1798,7 +1811,7 @@ Function New-Shortcut {
 		[string] $IconLocation,
 		[string] $Description,
 		[string] $WorkingDirectory,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$PathDirectory = ([System.IO.FileInfo]$Path).DirectoryName
@@ -1846,7 +1859,7 @@ Function Refresh-Desktop {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Refreshing Desktop..."
@@ -1896,7 +1909,7 @@ Function Get-ScheduledTask {
 #>
 
 	Param (
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Retrieving Scheduled Tasks..."
@@ -2171,7 +2184,7 @@ Function Get-UniversalDate {
 #>
 	Param (
 		$DateTime = (Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern), # Get the current date
-		$ContinueOnError = $false
+		$ContinueOnError = $false # do not default to global continue on error preference as errors with this function should default to false
 	)
 	Try {
         # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
@@ -3641,7 +3654,7 @@ Function Get-IniContent {
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	) 
 	If (Test-Path $FilePath) {
 		Switch -Regex -File $FilePath {
@@ -3695,7 +3708,7 @@ Function Set-IniContent {
 		[Parameter(Mandatory = $true)]
 		[string] $Key,
 		[string] $Value,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 	If (Test-Path $FilePath) {
 		$iniContent = Get-Content $FilePath
@@ -3738,7 +3751,7 @@ Function Register-DLL {
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Registering DLL file [$filePath]..."
@@ -3782,7 +3795,7 @@ Function Unregister-DLL {
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	Write-Log "Unregistering DLL file [$filePath]..." 
@@ -4017,7 +4030,7 @@ Function Invoke-SCCMTask {
 	Param(
 		[ValidateSet("HardwareInventory","SoftwareInventory","HeartbeatDiscovery","SoftwareInventoryFileCollection","RequestMachinePolicy","EvaluateMachinePolicy","LocationServicesCleanup","SoftwareMeteringReport","SourceUpdate","PolicyAgentCleanup","RequestMachinePolicy2","CertificateMaintenance","PeerDistributionPointStatus","PeerDistributionPointProvisioning","ComplianceIntervalEnforcement","SoftwareUpdatesAgentAssignmentEvaluation","UploadStateMessage","StateMessageManager","SoftwareUpdatesScan","AMTProvisionCycle")]
 		[string] $ScheduleID,
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	$ScheduleIds = @{
@@ -4080,7 +4093,7 @@ Function Install-SCCMSoftwareUpdates {
 	Http://psappdeploytoolkit.codeplex.com 
 #>
 	Param (
-		[switch] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
 	)
 
 	# Scan for updates
@@ -4212,15 +4225,6 @@ If ($invokingScript -ne "") {
 }
 Else {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
-}
-
-# Check for errors or warnings loading assemblies.
-If ($AssemblyError -ne $null) {
-	Write-Log "Errors detected loading assemblies."
-	$AssemblyError | Where { $_.Exception.Message -ne $null } | % { Write-Log "$($_.Exception.Message) $($_.ScriptStackTrace)"}
-}
-If ($AssemblyWarning -ne $null) {
-	Write-Log "Warnings detected loading assemblies."
 }
 
 # Check the XML config file version 
