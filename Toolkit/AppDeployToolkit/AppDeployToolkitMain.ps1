@@ -5,8 +5,8 @@
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 .PARAMETER ContinueOnErrorGlobalPreference
-	Sets the global preference for the -ContinueOnError $true. This global preference is set on most functions to True by default. 
-	The purpose of having this global variable is to assist with script debugging so that you can stop the script if any functions throw an error. 
+	Sets the global preference for the -ContinueOnError $true. This global preference is set on most functions to True by default.
+	The purpose of having this global variable is to assist with script debugging so that you can stop the script if any functions throw an error.
 	To debug the script, set to $false or add the parameter to the dot-sourcing line in the Deploy-Application.ps1 script, e.g.
 	."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1" -ContinueOnError $trueGlobalPreference $false
 .PARAMETER CleanupBlockedApps
@@ -19,29 +19,28 @@
 	Name of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
 .NOTES
-	The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously 
-.LINK 
+	The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously
+.LINK
 	Http://psappdeploytoolkit.codeplex.com
 "#>
 Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
-	[boolean] $ContinueOnErrorGlobalPreference = $true,
 	[switch] $ShowInstallationPrompt = $false,
 	[switch] $ShowInstallationRestartPrompt = $false,
-	[switch] $CleanupBlockedApps = $false, 
-	[switch] $ShowBlockedAppDialog = $false, 
+	[switch] $CleanupBlockedApps = $false,
+	[switch] $ShowBlockedAppDialog = $false,
 	[switch] $DisableLogging = $false,
 	[string] $ReferringApplication = $Null,
 	[string] $Message = $null,
 	[string] $MessageAlignment = $null,
 	[string] $ButtonRightText = $null,
 	[string] $ButtonLeftText = $null,
-	[string] $ButtonMiddleText = $null, 
+	[string] $ButtonMiddleText = $null,
 	[string] $Icon = $null,
 	[string] $Timeout = $null,
 	[switch] $ExitOnTimeout = $null,
 	[switch] $MinimizeWindows = $null,
-	[switch] $PersistPrompt = $false, 
+	[switch] $PersistPrompt = $false,
 	[int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds
 )
@@ -50,14 +49,14 @@ Param (
 #* VARIABLE DECLARATION
 #*=============================================
 
-# Variables: Toolkit 
+# Variables: Toolkit
 $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.0.13"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.0.13"
-$appDeployMainScriptDate = "01/29/2013"
+$appDeployMainScriptDate = "02/21/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -100,7 +99,7 @@ $scriptFileName = Split-Path -Leaf $MyInvocation.MyCommand.Definition
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 # Get the invoking script directory
-If (((Get-Variable MyInvocation).Value).ScriptName) { 
+If (((Get-Variable MyInvocation).Value).ScriptName) {
 	$scriptParentPath = Split-Path -Parent ((Get-Variable MyInvocation).Value).ScriptName
 }
 # Fall back on the directory one level above this script
@@ -115,7 +114,7 @@ $appDeployConfigFile = Join-Path $scriptRoot "AppDeployToolkitConfig.xml"
 
 # Variables: App Deploy Optional Files
 # Specify any additional PowerShell script files to be dot-sourced by this script, separated by commas.
-$appDeployToolkitDotSources = "AppDeployToolkitExtensions.ps1" 
+$appDeployToolkitDotSources = "AppDeployToolkitExtensions.ps1"
 
 # Check that dependency files are present
 If (!(Test-Path $AppDeployLogoIcon)) {
@@ -199,7 +198,7 @@ $dirAppDeployFiles = Join-Path $scriptParentPath "AppDeployToolkitFiles" # The A
 $dirFiles = Join-Path $scriptParentPath "Files" # The Files directory should be relative to the parent invoking script
 $dirSupportFiles = Join-Path $scriptParentPath "SupportFiles"
 $dirAppDeployTemp = Join-Path $configToolkitTempPath ($appDeployToolkitName)
-$dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps" 
+$dirBlockedApps = Join-Path $dirAppDeployTemp "BlockedApps"
 
 # Variables: Executables
 $exeWusa = "wusa.exe"
@@ -219,30 +218,6 @@ $script:welcomeTimer = $null
 # Reset the deferral history
 $deferHistory = $deferTimes = $deferDays = $null
 
-# Assemblies: Load
-# Reset Assembly Errors & Warnings
-$AssemblyError = $AssemblyWarning = $null
-Try {
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName PresentationFramework
-    Add-Type -AssemblyName Microsoft.VisualBasic
-    Add-Type -AssemblyName System.Drawing
-    Add-Type -AssemblyName PresentationFramework
-    Add-Type -AssemblyName PresentationCore
-    Add-Type -AssemblyName WindowsBase
-}
-Catch {
-    $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
-    If ($deployModeNonInteractive -eq $true) {
-        Write-Log "Error Loading Assemmbly: $exceptionMessage"
-        Write-Log "Continuing despite assembly error since deployment mode is [$deployMode]"
-        Continue
-    }
-    Else {
-        Exit-Script 1    
-    }
-}
-
 # COM Objects: Initialize
 $shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
 $shellApp = New-Object -ComObject Shell.Application -ErrorAction SilentlyContinue
@@ -261,7 +236,7 @@ If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 $installTitle = "$appVendor $appName $appVersion"
 
 # Sanitize the application details, as they can cause issues in the script
-$invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars() 
+$invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars()
 $appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
 $appName = $appName -replace "[$invalidFileNameChars]","" -replace " ",""
 $appVersion = $appVersion -replace "[$invalidFileNameChars]","" -replace " ",""
@@ -300,8 +275,8 @@ $logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitN
 #* FUNCTION LISTINGS
 #*=============================================
 
-Function Write-Log { 
-<# 
+Function Write-Log {
+<#
 .SYNOPSIS
 	Writes output to the console and log file simultaneously
 .DESCRIPTION
@@ -314,10 +289,10 @@ Function Write-Log {
 .PARAMETER PassThru
 	Passes the text back to the PowerShell pipeline
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-	Param( 
+	Param(
 		[Parameter(Mandatory = $true,ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]
 		[array] $Text,
 		[switch] $PassThru = $false
@@ -347,14 +322,14 @@ Function Write-Log {
 }
 
 Function Exit-Script {
-<# 
+<#
 .SYNOPSIS
 	This function exits the scripts, performs cleanup actions and passes an exit code to the parent process.
 .DESCRIPTION
 	This function should always be used when exiting the script, to ensure cleanup actions are performed.
 	This function performs cleanup actions, such as closing down dialogs and unblocking blocked applications.
 	It displays a balloon tip notification to indicate the setup is complete and whether it was a success or a failure.
-	The function determines what exit code to pass to the parent process depending on the the options specified in the deployment script, e.g. 
+	The function determines what exit code to pass to the parent process depending on the the options specified in the deployment script, e.g.
 	If $AllowRebootPassThru is set to False, it will suppress any "3010" exit codes detected during the installation and instead pass the "0" exit code.
 .EXAMPLE
 	Exit-Script -ExitCode "0"
@@ -362,17 +337,17 @@ Function Exit-Script {
 	Exit-Script -ExitCode "1618"
 .PARAMETER ExitCode
 	The exit code to be passed from the script to the parent process, e.g. SCCM
-.NOTES	
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.NOTES
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[string] $ExitCode = 0
 	)
 
 	# Stop the Close Program Dialog if running
-	If ($formCloseApps -ne $null) { 
-		$formCloseApps.Close 
+	If ($formCloseApps -ne $null) {
+		$formCloseApps.Close
 	}
 
 	# Close the Installation Progress Dialog if running
@@ -399,7 +374,7 @@ Function Exit-Script {
 		}
 		$balloonText = "$deploymentTypeName $configBalloonTextComplete"
 		# Handle reboot prompts on successful script completion
-		If ($msiRebootDetected -eq $true -and $AllowRebootPassThru -eq $true) { 
+		If ($msiRebootDetected -eq $true -and $AllowRebootPassThru -eq $true) {
 			Write-Log "A restart has been flagged as required."
 			$balloonText = "$deploymentTypeName $configBalloonTextRestartRequired"
 			$exitCode = 3010
@@ -409,7 +384,7 @@ Function Exit-Script {
 		}
 		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."
 		Show-BalloonTip -BalloonTipIcon "Info" -BalloonTipText "$balloonText"
-	} 
+	}
 	ElseIf ($installSuccess -eq $false) {
 		Write-Log "$installName $deploymentTypeName completed with exit code [$exitcode]."
 		If ($exitCode -eq $configInstallationUIExitCode -or $exitCode -eq $configInstallationDeferExitCode) {
@@ -425,7 +400,7 @@ Function Exit-Script {
 	Write-Log "----------------------------------------------------------------------------------------------------------"
 
 	# Exit the script returning the exit code to SCCM
-	Exit $exitCode 
+	Exit $exitCode
 }
 
 Function Show-InstallationPrompt {
@@ -457,17 +432,17 @@ Function Show-InstallationPrompt {
 	Show a system icon in the prompt ("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo") [Default is "None"]
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response) [Default is $false]
-.PARAMETER PersistPrompt 
+.PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile!
-.PARAMETER MinimizeWindows 
+.PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt [Default is false]
 .PARAMETER Timeout
 	Specifies the period in seconds after which the prompt should timeout [Default is the UI timeout value set in the config XML file]
 .PARAMETER ExitOnTimeout
 	Specifies whether to exit the script if the UI times out [Default True]
-.NOTES	
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.NOTES
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		$Title = $installTitle,
@@ -477,20 +452,20 @@ Function Show-InstallationPrompt {
 		$ButtonRightText = $null,
 		$ButtonLeftText = $null,
 		$ButtonMiddleText = $null,
-		[ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")] 
+		[ValidateSet("Application","Asterisk","Error","Exclamation","Hand","Information","None","Question","Shield","Warning","WinLogo")]
 		[string] $Icon = "None",
 		[switch] $NoWait = $false,
 		[switch] $PersistPrompt = $false,
-		[switch] $MinimizeWindows = $false, 
+		[switch] $MinimizeWindows = $false,
 		$Timeout = $configInstallationUITimeout,
 		$ExitOnTimeout = $true
 
-	)	
+	)
 
 	# Bypass if in non-interactive mode
-	If ($deployModeNonInteractive -eq $true) { 
+	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Bypassing Installation Prompt [Mode: $deployMode]... $Message"
-		Return 
+		Return
 	}
 
 	# Get parameters for calling function asynchronously
@@ -500,7 +475,7 @@ Function Show-InstallationPrompt {
 	If ($timeout -gt $configInstallationUITimeout) {
 			Throw "Error: The Show-InstallationPrompt timeout can not be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout."
 	}
-	
+
 	[System.Windows.Forms.Application]::EnableVisualStyles()
 	$formInstallationPrompt = New-Object System.Windows.Forms.Form
 	$pictureBanner = New-Object System.Windows.Forms.PictureBox
@@ -511,7 +486,7 @@ Function Show-InstallationPrompt {
 	$buttonLeft = New-Object System.Windows.Forms.Button
 	$buttonAbort = New-Object System.Windows.Forms.Button
 	$InitialFormInstallationPromptWindowState = New-Object System.Windows.Forms.FormWindowState
-	
+
 	$Form_Cleanup_FormClosed=
 	{
 		# Remove all event handlers from the controls
@@ -522,7 +497,7 @@ Function Show-InstallationPrompt {
 			$buttonRight.remove_Click($buttonRight_OnClick)
 			$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
-			$timer.remove_Tick($timer_Tick)			
+			$timer.remove_Tick($timer_Tick)
 			$persistTimer.remove_Tick($persistTimer_Tick)
 			$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 			$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
@@ -541,7 +516,7 @@ Function Show-InstallationPrompt {
 		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formInstallationPromptStartPosition -Value $($formInstallationPrompt.Location) -Scope Script
 	}
-	
+
 	# Form
 	$formInstallationPrompt.Controls.Add($pictureBanner)
 
@@ -557,7 +532,7 @@ Function Show-InstallationPrompt {
 	$labelPadding = "20,0,20,0"
 
 	# Generic Button properties
-	$buttonWidth = 110 
+	$buttonWidth = 110
 	$buttonHeight = 23
 	$buttonPadding = 50
 	$buttonSize = New-Object System.Drawing.Size
@@ -682,7 +657,7 @@ Function Show-InstallationPrompt {
 	$formInstallationPrompt.MaximizeBox = $false
 	$formInstallationPrompt.MinimizeBox = $false
 	$formInstallationPrompt.TopMost = $True
-	$formInstallationPrompt.TopLevel = $True 
+	$formInstallationPrompt.TopLevel = $True
 	$formInstallationPrompt.Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)
 	$formInstallationPrompt.Controls.Add($pictureBanner)
 	$formInstallationPrompt.Controls.Add($pictureIcon)
@@ -698,10 +673,10 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.Controls.Add($buttonRight)
 	}
 
-	# Timer 
+	# Timer
 	$timer = New-Object 'System.Windows.Forms.Timer'
 	$timer.Interval = ($timeout * 1000)
-	$timer.Add_Tick({	 
+	$timer.Add_Tick({
 		Write-Log "Installation not actioned within a reasonable amount of time."
 		$buttonAbort.PerformClick()
 	})
@@ -712,7 +687,7 @@ Function Show-InstallationPrompt {
 		$persistTimer.Interval = ($configInstallationPersistInterval * 1000)
 		$persistTimer_Tick = {
 			Refresh-InstallationPrompt
-		}		
+		}
 		$persistTimer.add_Tick($persistTimer_Tick)
 		$persistTimer.Start()
 	}
@@ -735,8 +710,8 @@ Function Show-InstallationPrompt {
 
 	# Close the Installation Progress Dialog if running
 	Close-InstallationProgress
-	
-	$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " "	
+
+	$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | % { "($($_.Key)=$($_.Value))" }) -join " "
 	Write-Log "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]..."
 
 	# If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
@@ -751,17 +726,17 @@ Function Show-InstallationPrompt {
 	Else {
 		$showDialog = $true
 		While ($showDialog -eq $true) {
-			If ($minimizeWindows -eq $true) { 
+			If ($minimizeWindows -eq $true) {
 				# Minimize all other windows
 				$shellApp.MinimizeAll()
-			}			
-			# Show the Form 
+			}
+			# Show the Form
 			$result = $formInstallationPrompt.ShowDialog()
 			If ($result -eq "Yes" -or $result -eq "No" -or $result -eq "Ignore" -or $result -eq "Abort") {
 				$showDialog = $false
 			}
 		}
-	
+
 		Switch ($result) {
 			"Yes" { Return $buttonRightText}
 			"No" { Return $buttonLeftText}
@@ -771,8 +746,8 @@ Function Show-InstallationPrompt {
 				$shellApp.UndoMinimizeAll()
 				If ($ExitOnTimeout -eq $true) {
 					Exit-Script $configInstallationUIExitCode
-				} 
-				Else { 
+				}
+				Else {
 					Write-Log "UI timed out but ExitOnTimeout set to false. Continuing..."
 				}
 			}
@@ -782,9 +757,9 @@ Function Show-InstallationPrompt {
 } #End Function
 
 Function Show-DialogBox {
-<# 
+<#
 .SYNOPSIS
-	This function displays a custom dialog box with optional title, buttons, icon and timeout. 
+	This function displays a custom dialog box with optional title, buttons, icon and timeout.
 	The Show-InstallationPrompt function is recommended over this as it provides more customization and uses consistent branding with the other UI components.
 .DESCRIPTION
 	This function displays a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None" and the default Timeout is none.
@@ -812,39 +787,39 @@ Function Show-DialogBox {
 	"Third"
 .PARAMETER Icon
 	Icon to display on the dialog box [Default is "None"]
-	Acceptable valures are: "None",	"Stop", "Question", "Exclamation", "Information", 
+	Acceptable valures are: "None",	"Stop", "Question", "Exclamation", "Information",
 .PARAMETER Timeout
 	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout" [Default is the UI timeout value set in the config XML file]
 .PARAMETER TopMost
 	Specifies whether the message box is a system modal message box and appears in a topmost window. [Default is True]
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 	[ValidateNotNullorEmpty()]
 	[Parameter(Position=0,Mandatory=$True,HelpMessage="Enter a message for the dialog box")]
 	[string] $Text,
 	[string] $Title = $installTitle,
-	[ValidateSet("OK","OKCancel","AbortRetryIgnore","YesNoCancel","YesNo","RetryCancel","CancelTryAgainContinue")] 	
+	[ValidateSet("OK","OKCancel","AbortRetryIgnore","YesNoCancel","YesNo","RetryCancel","CancelTryAgainContinue")]
 	[string] $Buttons = "OK",
-	[ValidateSet("First","Second","Third")] 
+	[ValidateSet("First","Second","Third")]
 	[string] $DefaultButton = "First",
-	[ValidateSet("Exclamation","Information","None","Stop","Question")] 
+	[ValidateSet("Exclamation","Information","None","Stop","Question")]
 	[string] $Icon = "None",
 	[string] $Timeout = $configInstallationUITimeout,
 	[switch] $TopMost = $true
  	)
 
 	# Bypass if in non-interactive mode
-	If ($deployModeNonInteractive -eq $true) { 
+	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Bypassing Dialog Box [Mode: $deployMode]... $Text"
-		Return 
+		Return
 	}
 
 	Write-Log "Displaying Dialog Box with message: [$Text]..."
 
-	$dialogButtons = @{ 
+	$dialogButtons = @{
 		"OK" = 0
 		"OKCancel" = 1
 		"AbortRetryIgnore" = 2
@@ -854,15 +829,15 @@ Function Show-DialogBox {
 		"CancelTryAgainContinue" = 6
 	}
 
-	$dialogIcons = @{ 
+	$dialogIcons = @{
 		"None" = 0
 		"Stop" = 16
 		"Question" = 32
 		"Exclamation" = 48
 		"Information" = 64
-	} 
+	}
 
-	$dialogDefaultButton = @{ 
+	$dialogDefaultButton = @{
 		"First" = 0
 		"Second" = 256
 		"Third" = 512
@@ -870,58 +845,58 @@ Function Show-DialogBox {
 
 	Switch ($TopMost) {
 		$true { $dialogTopMost = 4096 }
-		$false { $dialogTopMost = 0 }		
+		$false { $dialogTopMost = 0 }
 	}
 
 	$wshell = New-Object -COMObject WScript.Shell
 	$response = $wshell.Popup($Text,$Timeout,$Title,$dialogButtons[$Buttons]+$dialogIcons[$Icon]+$dialogDefaultButton[$DefaultButton]+$dialogTopMost)
 
-	Switch ($response) { 
+	Switch ($response) {
 		1 {
 			Write-Log "Dialog Box Response: OK"
 			Return "OK"
-		} 
+		}
 		2 {
 			Write-Log "Dialog Box Response: Cancel"
 			Return "Cancel"
-		} 
+		}
 		3 {
 			Write-Log "Dialog Box Response: Abort"
 			Return "Abort"
-		} 
+		}
 		4 {
 			Write-Log "Dialog Box Response: Retry"
 			Return "Retry"
-		} 
+		}
 		5 {
 			Write-Log "Dialog Box Response: Ignore"
 			Return "Ignore"
-		} 
+		}
 		6 {
 			Write-Log "Dialog Box Response: Yes"
 			Return "Yes"
-		} 
+		}
 		7 {
 			Write-Log "Dialog Box Response: No"
 			Return "No"
-		} 
+		}
 		10 {
 			Write-Log "Dialog Box Response: Try Again"
 			Return "Try Again"
-		} 
+		}
 		11 {
 			Write-Log "Dialog Box Response: Continue"
 			Return "Copnt"
-		} 
+		}
 		-1 {
 			Write-Log "Dialog Box timed out..."
 			Return "Timeout"
-		} 
+		}
 	}
 }
 
 Function Get-HardwarePlatform {
-<# 
+<#
 .SYNOPSIS
 	Retrieves information about the hardware platform (physical or virtual)
 .DESCRIPTION
@@ -931,11 +906,11 @@ Function Get-HardwarePlatform {
 .EXAMPLE
 	Get-HardwarePlatform
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Try {
@@ -959,7 +934,7 @@ Function Get-HardwarePlatform {
 }
 
 Function Get-FreeDiskSpace {
-<# 
+<#
 .SYNOPSIS
 	Retrieves the free disk space in MB on a particular drive (defaults to system drive)
 .DESCRIPTION
@@ -971,12 +946,12 @@ Function Get-FreeDiskSpace {
 .EXAMPLE
 	Get-FreeDiskSpace -Drive "C:"
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[string] $Drive = $envSystemDrive,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Try {
@@ -992,7 +967,7 @@ Function Get-FreeDiskSpace {
 }
 
 Function Get-InstalledApplication {
-<# 
+<#
 .SYNOPSIS
 	Retrieves information about installed applications.
 .DESCRIPTION
@@ -1007,13 +982,13 @@ Function Get-InstalledApplication {
 .PARAMETER ProductCode
 	The product code of the application you want to retrieve information on.
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[array] $Name = "",
 		[string] $ProductCode = ""
-	)	
+	)
 
 	If ($name -ne "") { Write-Log "Getting information for installed Application Name [$name]..."}
 	If ($productCode -ne "") { Write-Log "Getting information for installed Product Code [$ProductCode]..."}
@@ -1022,7 +997,7 @@ Function Get-InstalledApplication {
 	$productCode = $productCode -replace "}","" -replace "{",""
 	$applications = $name -split (",")
 	# Replace special characters in application name that interfere with regex match
-	$applications = $applications -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket" 
+	$applications = $applications -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket"
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
@@ -1063,7 +1038,7 @@ Function Get-InstalledApplication {
 					Foreach ($application in $applications) {
 						If (($regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket") -match $application ) {
 							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
-							$regKeyApp.DisplayName = $regKeyApp.DisplayName 
+							$regKeyApp.DisplayName = $regKeyApp.DisplayName
 							$installedApplication += New-Object PSObject -Property @{
 								ProductCode	=		$regKeyApp.PSChildName
 								DisplayName =		$appDisplayName
@@ -1084,7 +1059,7 @@ Function Get-InstalledApplication {
 }
 
 Function Execute-MSI {
-<# 
+<#
 .SYNOPSIS
 	Executes msiexec.exe to perform the following actions for MSI & MSP files and MSI product codes: install, uninstall, patch, repair, active setup.
 .DESCRIPTION
@@ -1096,13 +1071,13 @@ Function Execute-MSI {
 	Execute-MSI -Action Install -Path "Adobe_FlashPlayer_11.2.202.233_x64_EN.msi"
 	Installs an MSI
 .EXAMPLE
-	Execute-MSI -Action Install -Path "Adobe_FlashPlayer_11.2.202.233_x64_EN.msi" -Transform "Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst" -Parameters "/QN" 
+	Execute-MSI -Action Install -Path "Adobe_FlashPlayer_11.2.202.233_x64_EN.msi" -Transform "Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst" -Parameters "/QN"
 	Installs an MSI, applying a transform and overriding the default MSI toolkit parameters
 .EXAMPLE
 	Execute-MSI -Action Uninstall -Path "{26923b43-4d38-484f-9b9e-de460746276c}"
 	Uninstalls an MSI using a product code
 .EXAMPLE
-	Execute-MSI -Action Patch -Path "Adobe_Reader_11.0.3_EN.msp" 
+	Execute-MSI -Action Patch -Path "Adobe_Reader_11.0.3_EN.msp"
 	Installs an MSP
 .PARAMETER Action
 	The action to perform ["Install","Uninstall","Patch","Repair","ActiveSetup"]
@@ -1113,7 +1088,7 @@ Function Execute-MSI {
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is "REBOOT=ReallySuppress /QB!", uninstall default is "REBOOT=ReallySuppress /QN"
 .PARAMETER LogName
-	Overrides the default log file name. 
+	Overrides the default log file name.
 	The default log file name is generated from the MSI file name or for uninstallations, the product code is resolved to the displayname and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory.
@@ -1121,18 +1096,18 @@ Function Execute-MSI {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognised by the App Deploy Toolkit.
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
-		[ValidateSet("Install","Uninstall","Patch","Repair","ActiveSetup")] 
+		[ValidateSet("Install","Uninstall","Patch","Repair","ActiveSetup")]
 		[string] $Action = $null,
 		[string] $Path = $(throw "Path to MSI/MSP file required or Product Code required"),
 		[string] $Transform = $null,
 		[string] $Parameters = $null,
 		[string] $LogName = $null,
 		[string] $WorkingDirectory,
-		[boolean] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if an MSI fails to install
+		[boolean] $ContinueOnError = $false # Fail if there is an error (Default)
 	)
 
 	# Build the log file name
@@ -1162,7 +1137,7 @@ Function Execute-MSI {
 	If (!(Test-Path -path $configMSILogDir -ErrorAction SilentlyContinue )) { New-Item $configMSILogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
 	# Build the log file path
 	$logPath = Join-Path $configMSILogDir $logName
-	
+
 	# Set the installation Parameters
 	$msiUninstallDefaultParams = $configMSISilentParams
 	If ($deployModeSilent -eq $true) {
@@ -1191,7 +1166,7 @@ Function Execute-MSI {
 	If (Test-Path (Join-Path $dirFiles $path -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
 		$msiFile = (Join-Path $dirFiles $path)
 	}
-	Else { 
+	Else {
 		$msiFile = $Path
 	}
 
@@ -1225,12 +1200,12 @@ Function Execute-MSI {
 	}
 }
 
-Function Remove-MSIApplications { 
-<# 
+Function Remove-MSIApplications {
+<#
 .SYNOPSIS
 	Removes all MSI applications matching the specified application name
 .DESCRIPTION
-	Removes all MSI applications matching the specified application name. 
+	Removes all MSI applications matching the specified application name.
 	Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code, provided the uninstall string matches "msiexec"
 .EXAMPLE
 	Remove-MSIApplications "Adobe Flash"
@@ -1243,13 +1218,13 @@ Function Remove-MSIApplications {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognised by the App Deploy Toolkit.
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-	Param( 
+	Param(
 		[Parameter(Mandatory = $true)]
 		[string] $Name,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$installedApplications = Get-InstalledApplication $name
@@ -1272,7 +1247,7 @@ Function Remove-MSIApplications {
 }
 
 Function Execute-Process {
-<# 
+<#
 .SYNOPSIS
 	Function to execute a process, with optional arguments, working directory, window style.
 .DESCRIPTION
@@ -1286,7 +1261,7 @@ Function Execute-Process {
 .EXAMPLE
 	Execute-Process -FilePath "setup.exe" -Arguments "/S" -IgnoreExitCodes "1,2"
 .PARAMETER FilePath
-	Path of the file you want to execute. 
+	Path of the file you want to execute.
 	If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 	Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example above.
 .PARAMETER Arguments
@@ -1303,8 +1278,8 @@ Function Execute-Process {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by the process that is not recognised by the App Deploy Toolkit.
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
 		[string] $FilePath = $(throw "Command Param required"),
@@ -1315,7 +1290,7 @@ Function Execute-Process {
 		[switch] $NoWait = $false,
 		[switch] $PassThru = $false,
 		[string] $IgnoreExitCodes = $false,
-		[boolean] $ContinueOnError = $false # Do not use Global $ContinueOnErrorGlobalPreference parameter as the script should default to an overall fail if a process execution fails
+		[boolean] $ContinueOnError = $false # Fail if there is an error (Default)
 	)
 
 	# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
@@ -1323,7 +1298,7 @@ Function Execute-Process {
 		$FilePath = (Join-Path $dirFiles $FilePath)
 	}
 
-	Write-Log "Executing [$FilePath $Arguments]..." 
+	Write-Log "Executing [$FilePath $Arguments]..."
 	If ($workingDirectory -ne "") { Write-Log "Working Directory is [$WorkingDirectory]" }
 
 	# Disable Zone checking to prevent warnings when running executables from a Distribution Point
@@ -1339,7 +1314,7 @@ Function Execute-Process {
 	If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
 
 	$process = [System.Diagnostics.Process]::Start($processStartInfo)
-	
+
 	$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
 	$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
 
@@ -1357,18 +1332,18 @@ Function Execute-Process {
 	$ignoreExitCodeMatch = $false
 	If ($ignoreExitCodes -ne "") {
 		# Create array to store the exit codes
-		$ignoreExitCodesArray = @()	
+		$ignoreExitCodesArray = @()
 		# Split the processes on a comma
 		$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
 		ForEach ($ignoreCode in $ignoreExitCodesArray) {
-			If ($returnCode -eq $ignoreCode) { 
-				$ignoreExitCodeMatch = $true 
+			If ($returnCode -eq $ignoreCode) {
+				$ignoreExitCodeMatch = $true
 			}
 		}
 	}
 	# Or always ignore exit codes
 	If ($ContinueOnError -eq $true) {
-		$ignoreExitCodeMatch = $true 
+		$ignoreExitCodeMatch = $true
 	}
 
 	# If the passthru switch is specified, return the exit code and any output from process
@@ -1401,7 +1376,7 @@ Function Execute-Process {
 	}
 	Else {
 		Write-Log ("Execution failed with code: " + $returnCode)
-		Exit-Script $returnCode 
+		Exit-Script $returnCode
 	}
 
 	Trap [Exception] {
@@ -1412,7 +1387,7 @@ Function Execute-Process {
 }
 
 Function Copy-File {
-<# 
+<#
 .SYNOPSIS
 	Function to copy a file to a destination path.
 .DESCRIPTION
@@ -1426,14 +1401,14 @@ Function Copy-File {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>	Param(
 		[Parameter(Mandatory = $true)]
 		[string]$Path = $(throw "Path param required"),
 		[Parameter(Mandatory = $true)]
 		[string]$Destination = $(throw "Destination param required"),
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Copying File [$path] to [$destination]..."
@@ -1452,7 +1427,7 @@ Function Copy-File {
 }
 
 Function Remove-File {
-<# 
+<#
 .SYNOPSIS
 	Function to remove a file or all files recursively in a given path.
 .DESCRIPTION
@@ -1469,13 +1444,13 @@ Function Remove-File {
 	Continue if an error is encountered
 .NOTES
 .LINK
-	Http://psappdeploytoolkit.codeplex.com 
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
 		[Parameter(Mandatory = $true)]
 		[string] $Path = $(throw "Path Param required"),
 		[switch] $Recurse,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Deleting File(s) [$path]..."
@@ -1497,7 +1472,7 @@ Function Remove-File {
 }
 
 Function Convert-RegistryPath {
-<# 
+<#
 .SYNOPSIS
 	Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 .DESCRIPTION
@@ -1510,10 +1485,10 @@ Function Convert-RegistryPath {
 .PARAMETER Key
 	Path to the registry key to convert (can be a registry hive or fully qualified path)
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-Param ( 
+Param (
 		[Parameter(Mandatory = $true)]
 		$Key
 	)
@@ -1531,7 +1506,7 @@ Param (
 }
 
 Function Get-RegistryKey {
-<# 
+<#
 .SYNOPSIS
 	Retrieves value names and value data for a specified registry key
 .DESCRIPTION
@@ -1546,13 +1521,13 @@ Function Get-RegistryKey {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-	Param ( 
+	Param (
 		[Parameter(Mandatory = $true)]
 		$Key,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$key = Convert-RegistryPath -Key $key
@@ -1561,7 +1536,7 @@ Function Get-RegistryKey {
 
 	# Check if the registry key exists
 	If (Test-Path -Path $key -ErrorAction SilentlyContinue) {
-		$regKeyValue = Get-ItemProperty -Path $key 
+		$regKeyValue = Get-ItemProperty -Path $key
 		If ($regKeyValue -ne "") {
 			Return $regKeyValue
 		}
@@ -1584,7 +1559,7 @@ Function Get-RegistryKey {
 }
 
 Function Set-RegistryKey {
-<# 
+<#
 .SYNOPSIS
 	Creates a registry key name, value or value data or sets the same if it does not already exist.
 .DESCRIPTION
@@ -1600,30 +1575,30 @@ Function Set-RegistryKey {
 .PARAMETER Value
 	The value data
 .PARAMETER Type
-	The type of registry value to create or set [Default is "String" 
+	The type of registry value to create or set [Default is "String"
 	Acceptable values are: "Binary","DWord","ExpandString","MultiString","None","QWord","String","Unknown"
 	Object type: [Microsoft.Win32.RegistryValueKind]
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
-		[Parameter(Mandatory = $true)] 
+		[Parameter(Mandatory = $true)]
 		[string] $Key,
-		[string] $Name, 
-		$Value, 
+		[string] $Name,
+		$Value,
 		[Microsoft.Win32.RegistryValueKind] $Type = "String",
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$key = Convert-RegistryPath -Key $Key
 
 	# Create registry key if it doesn't exist
-	If (!(Test-Path $key -ErrorAction SilentlyContinue)) { 
+	If (!(Test-Path $key -ErrorAction SilentlyContinue)) {
 		Write-Log "Creating Registry key [$key]..."
-		New-Item -Path $key -ItemType Registry -Force | Out-Null 
+		New-Item -Path $key -ItemType Registry -Force | Out-Null
 		Trap [Exception] {
 			If ($ContinueOnError -eq $true) {
 				Write-Log $("Failed to create registry key [$Key]" + $_.Exception.Message)
@@ -1642,7 +1617,7 @@ Function Set-RegistryKey {
 			New-ItemProperty -Path $key -Name $name -Value $value -PropertyType $type | Out-Null
 		}
 		# Update registry value if it does exist
-		Else { 
+		Else {
 			Write-Log "Updating registry key: [$key] [$name = $value]..."
 			Set-ItemProperty -Path $key -Name $name -Value $value | Out-Null
 		}
@@ -1659,7 +1634,7 @@ Function Set-RegistryKey {
 }
 
 Function Remove-RegistryKey {
-<# 
+<#
 .SYNOPSIS
 	Deletes the specified registry key or value
 .DESCRIPTION
@@ -1675,15 +1650,15 @@ Function Remove-RegistryKey {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
 		[Parameter(Mandatory = $true)]
 		[string] $Key = $(throw "Key Param required"),
 		[string] $Name,
 		[switch] $Recurse,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$key = Convert-RegistryPath -Key $key
@@ -1722,25 +1697,25 @@ Function Remove-RegistryKey {
 }
 
 Function Get-FileVersion {
-<# 
+<#
 .SYNOPSIS
 	Gets the version of the specified file
 .DESCRIPTION
 	Gets the version of the specified file
 .EXAMPLE
-	Get-FileVersion "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"	
+	Get-FileVersion "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
 .PARAMETER File
 	Path of the file
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
 		[string] $File,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Getting file version info for [$file]..."
@@ -1777,7 +1752,7 @@ Function Get-FileVersion {
 }
 
 Function New-Shortcut {
-<# 
+<#
 .SYNOPSIS
 	Creates a new shortcut .lnk or .url file, which can be used for example on the start menu.
 .DESCRIPTION
@@ -1799,8 +1774,8 @@ Function New-Shortcut {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
@@ -1811,7 +1786,7 @@ Function New-Shortcut {
 		[string] $IconLocation,
 		[string] $Description,
 		[string] $WorkingDirectory,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$PathDirectory = ([System.IO.FileInfo]$Path).DirectoryName
@@ -1820,7 +1795,7 @@ Function New-Shortcut {
 		New-Item -ItemType Directory -Path $PathDirectory -ErrorAction SilentlyContinue -Force | Out-Null
 	}
 
-	
+
 	Write-Log "Creating shortcut [$path]..."
 	$shortcut = $shell.CreateShortcut($path)
 	$shortcut.TargetPath = $targetPath
@@ -1844,7 +1819,7 @@ Function New-Shortcut {
 
 # Function to refresh the Windows Explorer Desktop (forces icons to refresh)
 Function Refresh-Desktop {
-<# 
+<#
 .SYNOPSIS
 	Forces the Windows Exporer Shell to refresh, which causes desktop icons to be reloaded
 .DESCRIPTION
@@ -1855,30 +1830,30 @@ Function Refresh-Desktop {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Refreshing Desktop..."
 
 	$refreshDesktopCode = @'
-private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff); 
-private const int WM_SETTINGCHANGE = 0x1a; 
-private const int SMTO_ABORTIFHUNG = 0x0002; 
+private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
+private const int WM_SETTINGCHANGE = 0x1a;
+private const int SMTO_ABORTIFHUNG = 0x0002;
 [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError=true, CharSet=CharSet.Auto)] static extern bool SendNotifyMessage(IntPtr hWnd, uint Msg, UIntPtr wParam, IntPtr lParam);
-[System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)] private static extern IntPtr SendMessageTimeout ( IntPtr hWnd, int Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult ); 
+[System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)] private static extern IntPtr SendMessageTimeout ( IntPtr hWnd, int Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult );
 [System.Runtime.InteropServices.DllImport("Shell32.dll")] private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
 
 public static void Refresh() {
 	SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
-	SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, null, SMTO_ABORTIFHUNG, 100, IntPtr.Zero); 
+	SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, null, SMTO_ABORTIFHUNG, 100, IntPtr.Zero);
 }
 '@
 
-	Add-Type -MemberDefinition $refreshDesktopCode -Namespace MyWinAPI -Name Explorer 
+	Add-Type -MemberDefinition $refreshDesktopCode -Namespace MyWinAPI -Name Explorer
 	[MyWinAPI.Explorer]::Refresh()
 
 	Trap [Exception] {
@@ -1893,8 +1868,8 @@ public static void Refresh() {
 }
 
 # Function to get scheduled task information
-Function Get-ScheduledTask { 
-<# 
+Function Get-ScheduledTask {
+<#
 .SYNOPSIS
 	Retrieves a list of the scheduled tasks on the local computer
 .DESCRIPTION
@@ -1904,12 +1879,12 @@ Function Get-ScheduledTask {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered [Default is false]
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 
 	Param (
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Retrieving Scheduled Tasks..."
@@ -1919,23 +1894,23 @@ Function Get-ScheduledTask {
 	Catch {
 		If ($ContinueOnError -eq $false) {
 			Throw "Error retrieving scheduled tasks."
-		} 
+		}
 	}
 }
 
 Function Block-AppExecution {
-<# 
+<#
 .SYNOPSIS
 	Function to block the execution of an application(s)
 .DESCRIPTION
 	This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
 	1. Makes a copy of this script in a temporary directory on the local machine.
 	2. Backs up the "Image File Execution Options" (IFEO) as a PowerShell CLIXML file.
-	3. Checks for an existing scheduled task from previous failed installation attemp where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys. 
+	3. Checks for an existing scheduled task from previous failed installation attemp where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
 		This is to prevent the function from overriding the backup of the original IFEO options.
 	4. Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameters -CleanupBlockedApps and -ReferringApplication
 	5. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameters -ShowBlockedAppDialog and -ReferringApplication
-	6. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress. 
+	6. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
 		The text of this message can be customized in the XML configuration file.
 .EXAMPLE
 	Block-AppExecution -ProcessName "winword,excel"
@@ -1943,100 +1918,39 @@ Function Block-AppExecution {
 	Name of the process or processes separated by commas
 .NOTES
 	This is an internal script function and should typically not be called directly. It is used by the Stop-RunningApplications function when the -BlockExecution parameter is specified.
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
 		[Parameter(Mandatory = $true)]
-		$ProcessName # Specify process names separated by commas 
+		$ProcessName # Specify process names separated by commas
 	)
 
 	# Bypass if in NonInteractive mode
-	If ($deployModeNonInteractive -eq $true) { 
+	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Bypassing Block-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
 
 	Write-Log "Invoking Block-AppExecution Function..."
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
-	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml") 
-	# If there is an existing scheduled task from a failed installation for this application, run that now to restore the original IFEO keys before we back them up again.
-    If (Test-Path $xmlBlockedApps) {
-		Write-Log "Existing Block Execution detected [$xmlBlockedApps]."
-        Write-Log "UnBlock-AppExecution will be called."
-		Unblock-AppExecution
-	}
 
 	# Create array to store the state of the registry keys we need to change so that we can restore them later
 	$blockedApps = @()
-
 	$blockProcessName = $processName
 	# Append .exe to match registry keys
-	$blockProcessName = $blockProcessName | Foreach-Object { $_ + ".exe" } -ErrorAction SilentlyContinue
+	$blockProcessName = $blockProcessName | ForEach-Object { $_ + ".exe" } -ErrorAction SilentlyContinue
 
-	# Enumerate the Image File Execution Options registry keys
-	$regKeyAppExePath = Get-ChildItem -Path $regKeyAppExecution -ErrorAction SilentlyContinue
 	# Enumerate each process we want to block
 	Foreach ($blockProcess in $blockProcessName) {
-		# Reset variables for each loop
-		$regKeyExeExists = $false
-		$regValueDebugger = ""
-		# Enumerate each process in the IFEO reg key to see if they match our block processes
-		Foreach ($regKeyAppExe in $regKeyAppExePath ) {
-			$appExeName = ($regKeyAppExe | Select PSChildName -ExpandProperty PSChildName -ErrorAction SilentlyContinue)
-			If ($blockProcess -eq $appExeName) {
-				$regKeyExeExists = $true
-				# Get the current debugger value if it exists and replace null values with empty strings to prevent null values in XML which cause errors on import of XML
-				$regValueDebugger = ($regKeyAppExe | ForEach-Object {Get-ItemProperty $_.PsPath} | Where {$_.Debugger} | Select Debugger -ExpandProperty Debugger -ErrorAction SilentlyContinue) -replace ($null,"")
-			}
-		}
-		# Create PS objects to store the state of the registry key
-		$blockedApps += New-Object PSobject -Property @{
-			Name = $blockProcess
-			Path = (Join-Path $regKeyAppExecution $blockProcess)
-			KeyExists = $regKeyExeExists
-			DebuggerValue = $regValueDebugger
-		}
-	}
-	# Make this variable available to the script
-	Set-Variable -Name blockedApps -Value $blockedApps -Scope Script
-	If (!(Test-Path $dirBlockedApps)) {
-		New-Item -Path $dirBlockedApps -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
-	} 
-	Write-Log "Exporting original IFEO registry keys to XML [$xmlBlockedApps]..."
-	$blockedApps | Export-Clixml -Path $xmlBlockedApps -Force
-
-	# Copy Script to Temporary directory so it can be called by scheduled task later if required
-	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
-
-	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
-
-	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
-	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
-		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
-	}
-	Else { 
-		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication `'$installName`'`"" -PassThru
-	    Write-Log "Result: $($schTaskCreation | Select-Object StdOut -ExpandProperty StdOut)"
-    }
-
-	# Foreach blocked app, set a RunOnce Key to restore the original value in case of interruption (e.g. user shuts down during installation).
-	# Then change the debugger value to block execution of the application.
-	Foreach ($blockedApp in $blockedApps) {	
-		$blockedAppName = $blockedApp | Select Name -ExpandProperty Name -ErrorAction SilentlyContinue
-		$blockedAppPath = $blockedApp | Select Path -ExpandProperty Path -ErrorAction SilentlyContinue
-		$blockedAppKeyExists = $blockedApp | Select KeyExists -ExpandProperty KeyExists -ErrorAction SilentlyContinue
-		$blockedAppDebuggerValue = $blockedApp | Select DebuggerValue -Expand DebuggerValue -ErrorAction SilentlyContinue
-
 		# Set the debugger value to block application execution
-		Write-Log "Setting the Image File Execution Options registry keys to block execution of $blockedAppName..."	
-		Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $debuggerBlockValue -ContinueOnError $true
+		Write-Log "Setting the Image File Execution Options registry keys to block execution of $blockProcess..."
+		Set-RegistryKey -Key (Join-Path $regKeyAppExecution $blockProcess) -Name "Debugger" -Value $debuggerBlockValue -ContinueOnError $true
 	}
 }
 
 Function UnBlock-AppExecution {
-<# 
+<#
 .SYNOPSIS
 	Unblocks the execution of applications performed by the Block-AppExecution function
 .DESCRIPTION
@@ -2046,96 +1960,50 @@ Function UnBlock-AppExecution {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the acitons performed by Block-AppExecution.
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	# Bypass if in NonInteractive mode
-	If ($deployModeNonInteractive -eq $true) { 
+	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Bypassing UnBlock-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
 
-	# Set these variables here so the function can be called on its own
-	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
-	$xmlBlockedApps = Join-Path $dirBlockedApps ($installName + "_BlockedApps.xml")
-
-	# If the CleanupBlockedApps Parameter is specified, import the XML file to get the list of processes and the previous state of the registry
-	If ($CleanupBlockedApps -eq $true) {
-		Write-Log "CleanupBlockedApps specified."
-		If (Test-Path $xmlBlockedApps) {
-			Write-Log "Importing CliXML [$xmlBlockedApps]..."
-			$blockedApps = Import-Clixml $xmlBlockedApps -ErrorAction SilentlyContinue
-		}
-		Else {
-			Write-Log "Error: Could not find file [$xmlBlockedApps]..."
-			Return
-		}
-	}
-
-	Write-Log "Invoking UnBlock-AppExecution Function..."
-	# Restore the original state of the IFEO registry key then remove the RunOnce Key that was set previousl
-	Foreach ($blockedApp in $blockedApps) {	
-		$blockedAppName = $blockedApp | Select Name -ExpandProperty Name -ErrorAction SilentlyContinue
-		$blockedAppPath = $blockedApp | Select Path -ExpandProperty Path -ErrorAction SilentlyContinue
-		$blockedAppKeyExists = $blockedApp | Select KeyExists -ExpandProperty KeyExists -ErrorAction SilentlyContinue
-		$blockedAppDebuggerValue = $blockedApp | Select DebuggerValue -Expand DebuggerValue -ErrorAction SilentlyContinue
-
-		Write-Log "Restoring the original Image File Execution Options registry key for $blockedAppName..."
-		If ($blockedAppKeyExists -eq $true) {
-			# If the Debugger value was previously set...
-			If ($blockedAppDebuggerValue -ne "" -and $blockedAppDebuggerValue -ne $null) {
-				# If the XML contains the BlockExecution execution command, don't restore it to the registry, instead delete the registry key
-				If ($blockedAppDebuggerValue -match $scriptFileName) {
-					Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError $true
-				}
-				# Otherwise restore the original value
-				Else {
-					Set-RegistryKey -Key $blockedAppPath -Name "Debugger" -Value $blockedAppDebuggerValue -ContinueOnError $true
-				}
-			}
-			# If the Debugger value was not previously set, but the parent registry key existed, remove the value
-			Else {
-				Remove-RegistryKey -Key $blockedAppPath -Name "Debugger" -ContinueOnError $true
-			}
-		}
-		# Otherwise, remove the registry key
-		Else {
-			Remove-RegistryKey -Key $blockedAppPath -ContinueOnError $true
-		}
-	}
-
-	# Remove the XML file if it exists
-	If (Test-Path $xmlBlockedApps) {
-		Write-Log "Removing CliXML [$xmlBlockedApps]..."
-		Remove-File -Path $xmlBlockedApps
+	# Enumerate each process we want to block
+	$unblockProcessName = Get-ChildItem $regKeyAppExecution -Recurse | ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object {$_.Debugger -like "*ShowBlockedAppDialog*"}
+	Foreach ($unblockProcess in $unblockProcessName) {
+		Write-Log "Removing the Image File Execution Options registry keys to unblock execution of $unblockProcess..."
+		$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction SilentlyContinue
 	}
 
 	# Remove the scheduled task if it exists
+	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Deleting Scheduled Task [$schTaskBlockedAppsName] ..."
 		Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
 	}
+
 }
 
 Function Get-DeferHistory {
-<# 
+<#
 .SYNOPSIS
 	Gets the history of deferrals from the registry for the current application, if it exists.
 .DESCRIPTION
-	Gets the history of deferrals from the registry for the current application, if it exists. 
+	Gets the history of deferrals from the registry for the current application, if it exists.
 .EXAMPLE
 	Get-DeferHistory
 .NOTES
-	This is an internal script function and should typically not be called directly.	
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+	This is an internal script function and should typically not be called directly.
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-	Write-Log "Getting deferral history..."	
+	Write-Log "Getting deferral history..."
 	Get-RegistryKey -Key $regKeyDeferHistory -ContinueOnError $true
 }
 
 Function Set-DeferHistory {
-<# 
+<#
 .SYNOPSIS
 	Sets the history of deferrals in the registry for the current application.
 .DESCRIPTION
@@ -2143,9 +2011,9 @@ Function Set-DeferHistory {
 .EXAMPLE
 	Set-DeferHistory
 .NOTES
-	This is an internal script function and should typically not be called directly.	
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+	This is an internal script function and should typically not be called directly.
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[string] $deferTimesRemaining = $null,
@@ -2163,9 +2031,9 @@ Function Set-DeferHistory {
 }
 
 Function Get-UniversalDate {
-<# 
+<#
 .SYNOPSIS
-	Returns the date/time for the local culture in a universal sortable date time pattern. 
+	Returns the date/time for the local culture in a universal sortable date time pattern.
 .DESCRIPTION
 	Converts the current datetime or a datetime string for the current culture in to a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z
 .EXAMPLE
@@ -2173,14 +2041,14 @@ Function Get-UniversalDate {
 	Returns the current date in a universal sortable date time pattern.
 .EXAMPLE
 	Get-UniversalDate -DateTime "25/08/2013"
-	Returns the date for the current culture in a universal sortable date time pattern. 
+	Returns the date for the current culture in a universal sortable date time pattern.
 .PARAMETER
 	Specify the DateTime in the current culture
 .PARAMETER ContinueOnError
 	Continue if an error is encountered [Default is false]
-.NOTES		
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.NOTES
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		$DateTime = (Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern), # Get the current date
@@ -2194,7 +2062,7 @@ Function Get-UniversalDate {
         $universalDateTime = Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
         Return $universalDateTime
 	}
-	Catch {		
+	Catch {
 		If ($ContinueOnError -eq $false) {
 			Throw "The date/time specified [$dateTime] is not specified in a format recognised by the current culture [$culture]"
 		}
@@ -2202,7 +2070,7 @@ Function Get-UniversalDate {
 }
 
 Function Get-RunningProcesses {
-<# 
+<#
 .SYNOPSIS
 	Gets the processes that are running from a custom list of process objects.
 .DESCRIPTION
@@ -2210,9 +2078,9 @@ Function Get-RunningProcesses {
 .EXAMPLE
 	Get-RunningProcesses
 .NOTES
-	This is an internal script function and should typically not be called directly.	
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+	This is an internal script function and should typically not be called directly.
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		$processObjects
@@ -2223,12 +2091,12 @@ Function Get-RunningProcesses {
 
 		# Join the process names with the regex operator '|' to perform "or" match against multiple applications
 		$processNames = ($processObjects | Select ProcessName -ExpandProperty ProcessName -ErrorAction SilentlyContinue) -join ("|")
- 
+
 		# Replace escape characters that interfere with Regex and might cause false positive matches
 		$processNames = $processNames -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket"
-	
+
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
-		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","exe") -match $processNames } 
+		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","exe") -match $processNames }
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
 		If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
@@ -2236,7 +2104,7 @@ Function Get-RunningProcesses {
 			# Resolve the running process names to descriptions in the following precedence:
 			# 1. The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
 			# 2. The description of the process provided by WMI
-			# 3. Fall back on the process name	 
+			# 3. Fall back on the process name
 			Foreach ($runningProcess in $runningProcesses) {
 				Foreach ($processObject in $processObjects) {
 					If ($runningProcess.Name -eq $processObject.ProcessName) {
@@ -2260,7 +2128,7 @@ Function Get-RunningProcesses {
 }
 
 Function Show-InstallationWelcome {
-<# 
+<#
 .SYNOPSIS
 	This function provides a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
 .DESCRIPTION
@@ -2269,7 +2137,7 @@ Function Show-InstallationWelcome {
 	Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
 	Countdown until applications are automatically closed.
 	Prevent users from launching the specified applications while the installation is in progress.
-	Notes: 
+	Notes:
 	The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 	The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 .EXAMPLE
@@ -2285,23 +2153,23 @@ Function Show-InstallationWelcome {
 	Show-InstallationWelcome -CloseApps "winword=Microsoft Office Word,excel=Microsoft Office Excel" -CloseAppsCountdown "600"
 	Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -PersistPrompt
-	Prompt the user to close Word, MSAccess and Excel if the processes match the exact name specified (use .exe for exact matches). 
+	Prompt the user to close Word, MSAccess and Excel if the processes match the exact name specified (use .exe for exact matches).
 	By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
 .EXAMPLE
 	Show-InstallationWelcome -AllowDefer -DeferDeadline "25/08/2013"
-	Allow the user to defer the installation until the deadline is reached. 
+	Allow the user to defer the installation until the deadline is reached.
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps "winword,excel" -BlockExecution -AllowDefer -DeferTimes "10" -DeferDeadline "25/08/2013" -CloseAppsCountdown "600"
-	Close Word and Excel and prevent the user from launching the applications while the installation is in progress. 
-	Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first. 
-	When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes. 
+	Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+	Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
+	When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 .PARAMETER CloseApps
 	Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: "winword=Microsoft Office Word,excel=Microsoft Office Excel"
 .PARAMETER Silent
 	Stop processes without prompting the user.
 .PARAMETER CloseAppsCountdown
 	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
-.PARAMETER PersistPrompt 
+.PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile! This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation
@@ -2315,34 +2183,34 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	Specify the number of days since first run that the installation can be deferred. This is converted to a deadline.
 .PARAMETER DeferDeadline
 	Specify the deadline date up until which the installation can be deferred.
-	Specify the date in the local culture if the script is intended for that same culture, e.g. 
+	Specify the date in the local culture if the script is intended for that same culture, e.g.
 	If the script is intended to run on EN-US machines, specify the date in the format "08/25/2013" or "08-25-2013" or "08-25-2013 18:00:00".
 	If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. "2013-08-22 11:51:52Z"
 	The deadline date will be displayed to the user in the format of their culture.
 .PARAMETER CheckDiskSpace
-	Specify whether to check if there is enough disk space for the installation to proceed. 
+	Specify whether to check if there is enough disk space for the installation to proceed.
 	If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 .PARAMETER RequiredDiskSpace
 	Specify required disk space in MB, used in combination with CheckDiskSpace.
-.PARAMETER MinimizeWindows 
+.PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt [Default is true]
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param(
-	[string] $CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word" 
+	[string] $CloseApps, # Specify process names separated by commas. Optionally specify a process description with an equals symobol, e.g. "winword=Microsoft Office Word"
 	[switch] $Silent = $false, # Specify whether to prompt user or force close the applications
 	[int] $CloseAppsCountdown = 0, # Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
 	[switch] $PersistPrompt = $false, # Specify whether to make the prompt persist in the center of the screen every 10 seconds.
-	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation	
+	[switch] $BlockExecution = $false, # Specify whether to block execution of the processes during installation
 	[switch] $AllowDefer = $false, # Specify whether to enable the optional defer button on the dialog box
 	[switch] $AllowDeferCloseApps = $false, # Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed
 	[int] $DeferTimes = 0, # Specify the number of times the deferral is allowed
 	[int] $DeferDays = 0, # Specify the number of days since first run that the deferral is allowed
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
 	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
-	[int] $RequiredDiskSpace = 0, # Specify required disk space in MB, used in combination with $CheckDiskSpace. 
+	[int] $RequiredDiskSpace = 0, # Specify required disk space in MB, used in combination with $CheckDiskSpace.
 	[switch] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
 	)
 
@@ -2378,8 +2246,8 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	If ($CloseApps -ne "") {
 		# Create a Process object with custom descriptions where they are provided (split on a "=" sign)
 		$processObjects = @()
-		Foreach ($process in ($CloseApps -split(",") | Where { $_ -ne ""})) { # Split multiple processes on a comma and join with the regex operator '|' to perform "or" match against multiple applications 
-			$process = $process -split("=")	 
+		Foreach ($process in ($CloseApps -split(",") | Where { $_ -ne ""})) { # Split multiple processes on a comma and join with the regex operator '|' to perform "or" match against multiple applications
+			$process = $process -split("=")
 			$processObjects += New-Object PSObject -Property @{
 				ProcessName = $process[0]
 				ProcessDescription = $process[1]
@@ -2395,16 +2263,16 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		$deferHistory = Get-DeferHistory
 		$deferHistoryTimes = $deferHistory | Select DeferTimesRemaining -ExpandProperty DeferTimesRemaining -ErrorAction SilentlyContinue
 		$deferHistoryDeadline = $deferHistory | Select DeferDeadline -ExpandProperty DeferDeadline -ErrorAction SilentlyContinue
-		# Reset Switches 
+		# Reset Switches
 		$checkDeferDays = $checkDeferDeadline = $false
 		If ($DeferDays -ne 0) {$checkDeferDays = $true}
-		If ($DeferDeadline) {$checkDeferDeadline = $true} 
+		If ($DeferDeadline) {$checkDeferDeadline = $true}
 		If ($DeferTimes -ne 0) {
 			If ($deferHistoryTimes -ge 0) {
 				Write-Log "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
 				$DeferTimes = $deferHistory.DeferTimesRemaining -1
 			}
-			Else { 
+			Else {
 				$DeferTimes = $DeferTimes -1
 			}
 			Write-Log "User now has [$deferTimes] deferrals remaining."
@@ -2432,17 +2300,17 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		}
 		If ($checkDeferDeadline -and $allowDefer -eq $true) {
 			# Validate Date
-			Try { 
+			Try {
 				$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferDeadline
 			}
 			Catch {
-				Throw "Date is not in the correct format for the current culture .Type the date in the format of current locale, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'"					 
+				Throw "Date is not in the correct format for the current culture .Type the date in the format of current locale, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'"
 			}
 			Write-Log "User has until [$deferDeadlineUniversal] remaining."
 			If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
 				Write-Log "Deferral has expired."
 				$AllowDefer = $false
-			} 
+			}
 		}
 	}
 	If (($deferTimes -lt 0) -and !($deferDeadlineUniversal)) {
@@ -2450,9 +2318,9 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	}
 
 	# Prompt the user to close running applications and optionally defer if enabled
-	If (!($deployModeSilent) -and !($silent)) { 
+	If (!($deployModeSilent) -and !($silent)) {
 		While ((Get-RunningProcesses $processObjects -Exact | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
-			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
+			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join ","
 			# Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
 			If ($allowDefer) {
 				# If there is deferral but only for apps to be closed and there are no apps to be closed, break the while loop
@@ -2460,8 +2328,8 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 					Break
 				}
 				# Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
-				ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) { 
-					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows	
+				ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) {
+					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows
 				}
 			}
 			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
@@ -2514,12 +2382,12 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		}
 	}
 
-	# Force the processes to close silently, without prompting the user	
+	# Force the processes to close silently, without prompting the user
 	If (($Silent -or $deployModeSilent) -and $CloseApps) {
 		$runningProcesses = $null
 		$runningProcesses = Get-RunningProcesses $processObjects
 		If ($runningProcesses -ne $null) {
-			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join "," 
+			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join ","
 			Write-Log "Force closing application(s) [$($runningProcessDescriptions)] without prompting user..."
 			$runningProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
 			Sleep -Seconds 2
@@ -2552,13 +2420,13 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 		# Get a list of all the executables in the Notes folder
 		$notesPathExes = Get-ChildItem $notesPath -Filter "*.exe" -Recurse | Select BaseName -ExpandProperty BaseName
 		# Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
-		$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select ProcessName -ExpandProperty ProcessName | Sort) -DifferenceObject ($notesPathExes | Sort) -IncludeEqual | Where {$_.SideIndicator -eq "<=" -or $_.InputObject -eq "notes" } | Select-Object InputObject -ExpandProperty InputObject		
+		$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select ProcessName -ExpandProperty ProcessName | Sort) -DifferenceObject ($notesPathExes | Sort) -IncludeEqual | Where {$_.SideIndicator -eq "<=" -or $_.InputObject -eq "notes" } | Select-Object InputObject -ExpandProperty InputObject
 		$processObjects = $processObjects | Where { $processesIgnoringNotesExceptions -contains $_.ProcessName }
 	}
 
 	# If block execution switch is true, call the function to block execution of these processes
 	If ($BlockExecution -eq $true) {
-		# Make this variable globally available so we can check whether we need to call Unblock-AppExecution 
+		# Make this variable globally available so we can check whether we need to call Unblock-AppExecution
 		Set-Variable -Name BlockExecution -Value $BlockExecution -Scope Script
 		Write-Log "Block Execution Parameter specified."
 		Block-AppExecution -ProcessName ($processObjects | Select ProcessName -ExpandProperty ProcessName)
@@ -2570,7 +2438,7 @@ Function Show-WelcomePrompt {
 .SYNOPSIS
 	This function is called by Show-InstallationWelcome to prompts the user to optionally do the following:
 	Close the specified running applications.
-	Provide an option to defer the installation. 
+	Provide an option to defer the installation.
 	Show a countdown before applications are automatically closed.
 .DESCRIPTION
 	The user is presented with a Windows Forms dialog box to close the applications themselves and continue or to have the script close the applications for them.
@@ -2590,12 +2458,12 @@ Function Show-WelcomePrompt {
 	Specify the number of times the user is allowed to defer
 .PARAMETER DeferDeadline
 	Specify the deadline date before the user is allowed to defer
-.PARAMETER MinimizeWindows 
+.PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt [Default is true]
 .NOTES
 	This is an internal script function and should typically not be called directly. It is used by the Show-InstallationWelcome prompt to display a custom prompt.
 .LINK
-	Http://psappdeploytoolkit.codeplex.com 
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[string] $ProcessDescriptions = $null,
@@ -2607,9 +2475,9 @@ Function Show-WelcomePrompt {
 		[switch]$minimizeWindows = $true
 	)
 	# Reset switches
-	$showCloseApps = $showDefer = $persistWindow = $false 
+	$showCloseApps = $showDefer = $persistWindow = $false
 	# Reset times
-	$startTime = $countdownTime = Get-Date	
+	$startTime = $countdownTime = Get-Date
 
 	# Check if the countdown was specified
 	If ($CloseAppsCountdown) {
@@ -2620,15 +2488,15 @@ Function Show-WelcomePrompt {
 
 	# Initial form layout: Close Applications / Allow Deferral
 	If ($ProcessDescriptions -ne "") {
-		Write-Log "Prompting user to close application(s) [$runningProcessDescriptions]..." 
-		$showCloseApps = $true 
+		Write-Log "Prompting user to close application(s) [$runningProcessDescriptions]..."
+		$showCloseApps = $true
 	}
-	If ($AllowDefer -eq $true -and ($DeferTimes -ge 0 -or $DeferDeadline)) { 
+	If ($AllowDefer -eq $true -and ($DeferTimes -ge 0 -or $DeferDeadline)) {
 		Write-Log "User has the option to defer."
-		$showDefer = $true 
-		If ($deferDeadline) { 
+		$showDefer = $true
+		If ($deferDeadline) {
 		# Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone
-            $deferDeadline = $deferDeadline -replace "Z",""    
+            $deferDeadline = $deferDeadline -replace "Z",""
 		# Convert the deadline date to a string
 			[string]$deferDeadline = Get-Date $deferDeadline | Out-String -Stream
 		}
@@ -2697,7 +2565,7 @@ Function Show-WelcomePrompt {
 		# Set up the form
 		$remainingTime = $countdownTime.Subtract($currentTime)
 		$labelCountdownSeconds = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"	
+		$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"
 	}
 
 	# Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
@@ -2760,7 +2628,7 @@ Function Show-WelcomePrompt {
 	$labelPadding = "20,0,20,0"
 
 	# Generic Button properties
-	$buttonWidth = 110 
+	$buttonWidth = 110
 	$buttonHeight = 23
 	$buttonPadding = 50
 	$buttonSize = New-Object System.Drawing.Size
@@ -2815,7 +2683,7 @@ Function Show-WelcomePrompt {
 	$labelAppName.Text = $labelAppNameText
 	$labelAppName.TextAlign = 'TopCenter'
 	$labelAppName.Anchor = "Top"
-	$labelAppName.AutoSize = $false	
+	$labelAppName.AutoSize = $false
 	$labelAppName.add_Click($handler_labelAppName_Click)
 
 	# Listbox Close Applications
@@ -2846,14 +2714,14 @@ Function Show-WelcomePrompt {
 	$deferralText = "$configDeferPromptExpiryMessage`n"
 	If ($deferTimes -ge 0) {
 		$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $($deferTimes + 1)"
-	} 
+	}
 	If ($DeferDeadline) {
 		$deferralText = "$deferralText `n$configDeferPromptDeadline $deferDeadline"
 	}
 	If ($DeferTimes -lt 0 -and !($DeferDeadline)) {
 		$deferralText = "$deferralText `n$configDeferPromptNoDeadline"
 	}
-	$deferralText = "$deferralText `n`n$configDeferPromptWarningMessage" 
+	$deferralText = "$deferralText `n`n$configDeferPromptWarningMessage"
 	$labelDefer.Text = $deferralText
 	$labelDefer.TextAlign = 'MiddleCenter'
 	$labelDefer.add_Click($handler_labelDefer_Click)
@@ -2893,7 +2761,7 @@ Function Show-WelcomePrompt {
 		$flowLayoutPanel.Controls.Add($labelCountdown)
 	}
 
-	# Button Close For Me 
+	# Button Close For Me
 	$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
 	$buttonCloseApps.Location = "15,0"
 	$buttonCloseApps.Name = "buttonCloseApps"
@@ -2958,7 +2826,7 @@ Function Show-WelcomePrompt {
 	$formWelcome.MaximizeBox = $False
 	$formWelcome.MinimizeBox = $False
 	$formWelcome.TopMost = $True
-	$formWelcome.TopLevel = $True 
+	$formWelcome.TopLevel = $True
 	$formWelcome.Icon = New-Object System.Drawing.Icon ($AppDeployLogoIcon)
 	$formWelcome.AutoSize = $true
 	$formWelcome.Controls.Add($pictureBanner)
@@ -3006,7 +2874,7 @@ Function Show-WelcomePrompt {
 		$formWelcome.Refresh()
 	}
 
-	If ($minimizeWindows -eq $true) { 
+	If ($minimizeWindows -eq $true) {
 		# Minimize all other windows
 		$shellApp.MinimizeAll()
 	}
@@ -3026,7 +2894,7 @@ Function Show-WelcomePrompt {
 } # End Function
 
 Function Show-InstallationRestartPrompt {
-<# 
+<#
 .SYNOPSIS
 	Displays a restart prompt with a countdown to a forced restart.
 .DESCRIPTION
@@ -3038,8 +2906,8 @@ Function Show-InstallationRestartPrompt {
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[int] $CountdownSeconds = 60,
@@ -3047,9 +2915,9 @@ Function Show-InstallationRestartPrompt {
 	)
 
 	# Bypass if in non-interactive mode
-	If ($deployModeNonInteractive -eq $true) { 
+	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Bypassing Installation Restart Prompt [Mode: $deployMode]..."
-		Return 
+		Return
 	}
 
 	# Get the parameters passed to the function for invoking the function asynchronously
@@ -3072,7 +2940,7 @@ Function Show-InstallationRestartPrompt {
 	$picturebox = New-Object 'System.Windows.Forms.PictureBox'
 	$buttonRestartNow = New-Object 'System.Windows.Forms.Button'
 	$timerCountdown = New-Object 'System.Windows.Forms.Timer'
-	$InitialFormWindowState = New-Object 'System.Windows.Forms.FormWindowState'	
+	$InitialFormWindowState = New-Object 'System.Windows.Forms.FormWindowState'
 
 	Function Show-RestartPopup {
 		# Show the Restart Popup
@@ -3094,7 +2962,7 @@ Function Show-InstallationRestartPrompt {
 		$timerCountdown.Start()
 		# Set up the form
 		$remainingTime = $countdownTime.Subtract($currentTime)
-		$labelCountdown.Text = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)	
+		$labelCountdown.Text = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 		If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
 			$buttonRestartLater.Enabled = $false
 		}
@@ -3120,7 +2988,7 @@ Function Show-InstallationRestartPrompt {
 	}
 
 	$timerCountdown_Tick={
-		# Get the time information	
+		# Get the time information
 		$currentTime = Get-Date
 		$countdownTime = $startTime.AddSeconds($countdownSeconds)
 		$remainingTime = $countdownTime.Subtract($currentTime)
@@ -3130,7 +2998,7 @@ Function Show-InstallationRestartPrompt {
 		}
 		Else {
 			# Update the form
-			$labelCountdown.Text = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)	
+			$labelCountdown.Text = [String]::Format("{0}:{1:d2}:{2:d2}", $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
 				$buttonRestartLater.Enabled = $false
 				# If the form is hidden when we hit the No Hide, bring it back up
@@ -3236,7 +3104,7 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow.Name = "buttonRestartNow"
 	$buttonRestartNow.Size = '159, 23'
 	$buttonRestartNow.TabIndex = 0
-	$buttonRestartNow.Text = $configRestartPromptButtonRestartNow 
+	$buttonRestartNow.Text = $configRestartPromptButtonRestartNow
 	$buttonRestartNow.UseVisualStyleBackColor = $True
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
@@ -3259,7 +3127,7 @@ Function Show-InstallationRestartPrompt {
 		$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
 		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
-	Else {	
+	Else {
 		Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
 		# Show the Form
 		Return $formRestart.ShowDialog()
@@ -3273,7 +3141,7 @@ Function Show-InstallationRestartPrompt {
 
 # Function to display a balloon tip notification
 Function Show-BalloonTip {
-<# 
+<#
 .SYNOPSIS
 	Displays a balloon tip notification in the system tray
 .DESCRIPTION
@@ -3292,10 +3160,10 @@ Function Show-BalloonTip {
 .PARAMETER BalloonTipTime
 	Time in milliseconds to display the balloon tip [Default 500]
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
-	Param(	
+	Param(
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[String]$BalloonTipText,
@@ -3307,7 +3175,7 @@ Function Show-BalloonTip {
 	[Parameter(Position = 3)]
 	[int]$BalloonTipTime = 500
 	)
-	
+
 	# Skip balloon if in silent mode
 	If ($deployModeSilent -eq $true -or $configShowBalloonNotifications -eq $false) {
 		Return
@@ -3330,7 +3198,7 @@ Function Show-BalloonTip {
 		Text = -join $BalloonTipText[0..62]
 		Visible = $true
 	}
-	
+
 	Set-Variable -Name NotifyIcon -Value $NotifyIcon -Scope Global
 	$NotifyIcon.ShowBalloonTip($BalloonTipTime)
 
@@ -3348,9 +3216,9 @@ Function Show-BalloonTip {
 }
 
 Function Show-InstallationProgress {
-<# 
+<#
 .SYNOPSIS
-	Displays a progress dialog in a separate thread with an updatable custom message. 
+	Displays a progress dialog in a separate thread with an updatable custom message.
 .DESCRIPTION
 	Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated.
 	The status message supports line breaks.
@@ -3371,8 +3239,8 @@ Function Show-InstallationProgress {
 .PARAMETER TopMost
 	Specificies whether the progress window should be topmost [default is true]
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[string] $StatusMessage = $configProgressMessage,
@@ -3380,10 +3248,10 @@ Function Show-InstallationProgress {
 		[string] $WindowLocation = "Default",
 		[boolean] $TopMost = $true
 	)
-	If ($deployModeSilent -eq $true) { 
-		Return 
+	If ($deployModeSilent -eq $true) {
+		Return
 	}
-	
+
 	If ($envhost.Name -match "PowerGUI") {
 		Write-Log "Warning: $($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed."
 		Return
@@ -3403,7 +3271,7 @@ Function Show-InstallationProgress {
 		# Add the sync hash to the runspace
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("progressSyncHash",$Global:ProgressSyncHash)
 		# Add other variables from the parent thread required in the progress runspace
-		$Global:ProgressRunspace.SessionStateProxy.SetVariable("installTitle",$installTitle) 
+		$Global:ProgressRunspace.SessionStateProxy.SetVariable("installTitle",$installTitle)
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("windowLocation",$windowLocation)
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("topMost",[string]$topMost)
 		$Global:ProgressRunspace.SessionStateProxy.SetVariable("appDeployLogoBanner",$appDeployLogoBanner)
@@ -3416,9 +3284,9 @@ Function Show-InstallationProgress {
 			[xml]$xamlProgress = @'
 			<Window
 			xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			x:Name="Window" Title=""
-			MaxHeight="200" MinHeight="180" Height="180" 
+			MaxHeight="200" MinHeight="180" Height="180"
 			MaxWidth="456" MinWidth="456" Width="456" Padding="0,0,0,0" Margin="0,0,0,0"
 			WindowStartupLocation = "Manual"
 			Top=""
@@ -3438,7 +3306,7 @@ Function Show-InstallationProgress {
 				<EventTrigger RoutedEvent="FrameworkElement.Loaded">
 					<BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
 				</EventTrigger>
-			</Window.Triggers> 
+			</Window.Triggers>
 			<Grid Background="#F0F0F0">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="50"/>
@@ -3487,7 +3355,7 @@ Function Show-InstallationProgress {
 			}
 			$xamlProgress.Window.TopMost = $topMost
 			$xamlProgress.Window.Icon = $AppDeployLogoIcon
-			$xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner 
+			$xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
 			$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
 			$xamlProgress.Window.Title = $installTitle
 			# Parse the XAML
@@ -3495,7 +3363,7 @@ Function Show-InstallationProgress {
 			$Global:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load( $progressReader )
 			$Global:ProgressSyncHash.ProgressText = $Global:ProgressSyncHash.Window.FindName("ProgressText")
 			# Add an action to the Window.Closing event handler to disable the close button
-			$Global:ProgressSyncHash.Window.Add_Closing({$_.Cancel = $true}) 
+			$Global:ProgressSyncHash.Window.Add_Closing({$_.Cancel = $true})
 			# Allow the window to be dragged by clicking on it anywhere
 			$Global:ProgressSyncHash.Window.Add_MouseLeftButtonDown({$Global:ProgressSyncHash.Window.DragMove()})
 			# Add a tooltip
@@ -3524,14 +3392,14 @@ Function Show-InstallationProgress {
 			$Global:ProgressSyncHash.Window.Dispatcher.Invoke([System.Windows.Threading.DispatcherPriority]"Normal",[Windows.Input.InputEventHandler]{$Global:ProgressSyncHash.ProgressText.Text = $statusMessage},$null,$null)
 		}
 		Catch {
-			$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
+			$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
 			Write-Log "Warning: $exceptionMessage"
 		}
 	}
 }
 
 Function Close-InstallationProgress {
-<# 
+<#
 .SYNOPSIS
 	Closes the dialog created by Show-InstallationProgress
 .DESCRIPTION
@@ -3541,23 +3409,23 @@ Function Close-InstallationProgress {
 	Close-InstallationProgress
 .NOTES
 	This is an internal script function and should typically not be called directly.
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	If ($Global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq "Running") {
-		# Close the progress thread 
+		# Close the progress thread
 		$Global:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
-		$Global:ProgressSyncHash.Clear()		
+		$Global:ProgressSyncHash.Clear()
 	}
 }
 
 Function Set-PinnedApplication {
-<# 
+<#
 .SYNOPSIS
 	Pins or unpins a shortcut to the start menu or task bar.
 .DESCRIPTION
 	Pins or unpins a shortcut to the start menu or task bar.
-	This should typically be run in the user context, as pinned items are stored in the user profile. 
+	This should typically be run in the user context, as pinned items are stored in the user profile.
 .EXAMPLE
 	Set-PinnedApplication -Action "PintoStartMenu" -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
 .EXAMPLE
@@ -3567,8 +3435,8 @@ Function Set-PinnedApplication {
 .PARAMETER FilePath
 	Path to the shortcut file to be pinned or unpinned
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
 	Param(
@@ -3576,8 +3444,8 @@ Function Set-PinnedApplication {
 	[Parameter(Mandatory = $true)][string] $Action,
 	[Parameter(Mandatory = $true)][string] $FilePath
 	)
-	Write-Log "Set-Pinned Application function called with Parameters: [$Action] [$FilePath]" 
-	
+	Write-Log "Set-Pinned Application function called with Parameters: [$Action] [$FilePath]"
+
 	If(!(Test-Path $FilePath)) {
 		Write-Log "Warning: Path [$filePath] does not exist. Action [$action] will not be performed."
 		Return
@@ -3592,7 +3460,7 @@ Function Set-PinnedApplication {
 		$itemVerb = $item.Verbs() | ? {$_.Name.Replace("&","") -eq $verb} -ErrorAction SilentlyContinue
 		 If (($itemVerb | Select Name -ExpandProperty Name) -eq "") {
 			Write-Log "Performing action [$verb] on [$filePath] is not progamtically supported on this system."
-		} 
+		}
 		Else {
 			Write-Log "Performing [$verb] on [$filePath]..."
 			$itemVerb.DoIt()
@@ -3602,7 +3470,7 @@ Function Set-PinnedApplication {
 		Param([int]$verbId)
 		Try {
 			$t = [type]"CosmosKey.Util.MuiHelper"
-		} 
+		}
 		Catch {
 			$def = [Text.StringBuilder]""
 			[void]$def.AppendLine(‘[DllImport("user32.dll")]‘)
@@ -3634,7 +3502,7 @@ Function Set-PinnedApplication {
 }
 
 Function Get-IniContent {
-<# 
+<#
 .SYNOPSIS
 	Parses an ini file and returns the contents as objects with ini section, name and value properties
 .DESCRIPTION
@@ -3642,32 +3510,32 @@ Function Get-IniContent {
 .EXAMPLE
 	Get-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini"
 .EXAMPLE
-	Get-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini" | Where { $_.Name -eq "KeyFileName" } | Select Value -ExpandProperty Value 
+	Get-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini" | Where { $_.Name -eq "KeyFileName" } | Select Value -ExpandProperty Value
 .PARAMETER FilePath
 	Path to the ini file
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
-	) 
+		[boolean] $ContinueOnError = $true
+	)
 	If (Test-Path $FilePath) {
 		Switch -Regex -File $FilePath {
 			"^\[(.+)\]" {
 				$section = $matches[1]
 			}
-			"(.+?)\s*=(.*)" { 
+			"(.+?)\s*=(.*)" {
 				$name,$value = $matches[1..2]
 				New-Object PSObject -Property @{
 					Section = $section
 					Name = $name
 					Value = $value
-				}			
+				}
 			}
 		}
 	}
@@ -3683,7 +3551,7 @@ Function Get-IniContent {
 }
 
 Function Set-IniContent {
-<# 
+<#
 .SYNOPSIS
 	Adds or sets the value of a property in an ini file
 .DESCRIPTION
@@ -3699,8 +3567,8 @@ Function Set-IniContent {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
@@ -3708,7 +3576,7 @@ Function Set-IniContent {
 		[Parameter(Mandatory = $true)]
 		[string] $Key,
 		[string] $Value,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 	If (Test-Path $FilePath) {
 		$iniContent = Get-Content $FilePath
@@ -3733,7 +3601,7 @@ Function Set-IniContent {
 }
 
 Function Register-DLL {
-<# 
+<#
 .SYNOPSIS
 	Registers a DLL file
 .DESCRIPTION
@@ -3745,13 +3613,13 @@ Function Register-DLL {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	Write-Log "Registering DLL file [$filePath]..."
@@ -3777,7 +3645,7 @@ Function Register-DLL {
 }
 
 Function Unregister-DLL {
-<# 
+<#
 .SYNOPSIS
 	Unregisters a DLL file
 .DESCRIPTION
@@ -3789,16 +3657,16 @@ Function Unregister-DLL {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
-	Write-Log "Unregistering DLL file [$filePath]..." 
+	Write-Log "Unregistering DLL file [$filePath]..."
 
 	If (Test-Path $FilePath ) {
 		Try {
@@ -3828,7 +3696,7 @@ Function Unregister-DLL {
 }
 
 Function Test-MSUpdates {
-<# 
+<#
 .SYNOPSIS
 	Test whether an Microsoft Windows update is installed
 .DESCRIPTION
@@ -3838,15 +3706,15 @@ Function Test-MSUpdates {
 .PARAMETER KBNumber
 	KBNumber
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[ValidateNotNullorEmpty()]
 		[Parameter(Position=0,Mandatory=$True,HelpMessage="Enter a KB Number for the MS update")]
 		[string] $KBNumber
 	)
-	
+
 	Write-Log "Testing for Microsoft Update $kbNumber..."
 
 	# Default is not found
@@ -3866,19 +3734,19 @@ Function Test-MSUpdates {
 	If ($kbFound -eq $false) { Get-Hotfix -id $kbNumber -ErrorAction SilentlyContinue | ForEach-Object { $kbFound = $true } }
 
 	# Return Result
-	If ($kbFound -eq $false) { 
+	If ($kbFound -eq $false) {
 		Write-Log "Update $kbNumber is not installed"
 		Return $false
-	} 
-	Else { 
+	}
+	Else {
 		Write-Log "Update $kbNumber is installed"
-		Return $true 
+		Return $true
 	}
 
 }
 
 Function Install-MSUpdates ($Directory) {
-<# 
+<#
 .SYNOPSIS
 	Installs all Microsft Updates in a given directory
 .DESCRIPTION
@@ -3888,8 +3756,8 @@ Function Install-MSUpdates ($Directory) {
 .PARAMETER Directory
 	Directory containing the updates
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 
 	Write-Log "Installing Microsoft Updates from directory [$Directory]"
@@ -3922,18 +3790,18 @@ Function Install-MSUpdates ($Directory) {
 }
 
 # Function to test whether the laptop is on power or battery
-Function Test-Battery { 
-<# 
+Function Test-Battery {
+<#
 .SYNOPSIS
 	Tests whether the local machine is running on battery
 .DESCRIPTION
-	Tests whether the local machine is running on battery and returns true/false 
+	Tests whether the local machine is running on battery and returns true/false
 .EXAMPLE
 	Test-Battery
 .EXAMPLE
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Write-Log "Testing power connection status..."
 
@@ -3949,10 +3817,10 @@ Function Test-Battery {
 
 	Write-Log "AC Power connection not found"
 	Return $true
-} 
+}
 
 Function Test-NetworkConnection {
-<# 
+<#
 .SYNOPSIS
 	Tests for an active network connection
 .DESCRIPTION
@@ -3960,8 +3828,8 @@ Function Test-NetworkConnection {
 .EXAMPLE
 	Test-NetworkConnection
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 
 	Write-Log "Testing Network connection status..."
@@ -3972,13 +3840,13 @@ Function Test-NetworkConnection {
 		$onNetwork = $true
 		Return $true
 	}
-	
+
 	Write-Log "Network connection not found."
 	Return $false
 }
 
 Function Test-PowerPoint {
-<# 
+<#
 .SYNOPSIS
 	Tests whether PowerPoint is running
 .DESCRIPTION
@@ -3986,8 +3854,8 @@ Function Test-PowerPoint {
 .EXAMPLE
 	Test-PowerPoint
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 
 	Write-Log "Testing Powerpoint status..."
@@ -3996,7 +3864,7 @@ Function Test-PowerPoint {
 		If (Get-Process "powerpnt" -ErrorAction SilentlyContinue) {
 			Write-Log "PowerPoint is running."
 			Return $true
-		} 
+		}
 		Else {
 			Write-Log "PowerPoint is not running."
 			Return $false
@@ -4009,7 +3877,7 @@ Function Test-PowerPoint {
 }
 
 Function Invoke-SCCMTask {
-<# 
+<#
 .SYNOPSIS
 	Triggers SCCM to invoke the relevant task
 .DESCRIPTION
@@ -4023,14 +3891,14 @@ Function Invoke-SCCMTask {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
 	Param(
 		[ValidateSet("HardwareInventory","SoftwareInventory","HeartbeatDiscovery","SoftwareInventoryFileCollection","RequestMachinePolicy","EvaluateMachinePolicy","LocationServicesCleanup","SoftwareMeteringReport","SourceUpdate","PolicyAgentCleanup","RequestMachinePolicy2","CertificateMaintenance","PeerDistributionPointStatus","PeerDistributionPointProvisioning","ComplianceIntervalEnforcement","SoftwareUpdatesAgentAssignmentEvaluation","UploadStateMessage","StateMessageManager","SoftwareUpdatesScan","AMTProvisionCycle")]
 		[string] $ScheduleID,
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	$ScheduleIds = @{
@@ -4057,7 +3925,7 @@ Function Invoke-SCCMTask {
 		SoftwareUpdatesScan = "{00000000-0000-0000-0000-000000000113}"; 						# Force Update Scan
 		AMTProvisionCycle = "{00000000-0000-0000-0000-000000000120}"; 							# AMT Provision Cycle
 	}
-	
+
 	Write-Log "Invoking SCCM Task [$ScheduleId]..."
 
 	# Trigger SCCM task
@@ -4078,7 +3946,7 @@ Function Invoke-SCCMTask {
 }
 
 Function Install-SCCMSoftwareUpdates {
-<# 
+<#
 .SYNOPSIS
 	Scans for outstanding SCCM updates to be installed and installed the pending updates
 .DESCRIPTION
@@ -4089,11 +3957,11 @@ Function Install-SCCMSoftwareUpdates {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
-		[boolean] $ContinueOnError = $Global:ContinueOnErrorGlobalPreference
+		[boolean] $ContinueOnError = $true
 	)
 
 	# Scan for updates
@@ -4120,7 +3988,7 @@ Function Install-SCCMSoftwareUpdates {
 }
 
 Function Update-GroupPolicy {
-<# 
+<#
 .SYNOPSIS
 	Performs a gpupdate command to refresh Group Policies on the local machine
 .DESCRIPTION
@@ -4128,8 +3996,8 @@ Function Update-GroupPolicy {
 .EXAMPLE
 	Update-GroupPolicy
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
 #>
 	Write-Log "Updating Group Policies..."
 	$gpUpdatePath = Join-Path $env:SystemRoot "System32\GPUpdate"
@@ -4143,6 +4011,28 @@ Function Update-GroupPolicy {
 #*=============================================
 #* SCRIPT BODY
 #*=============================================
+
+# Assemblies: Load
+Try {
+	Add-Type -AssemblyName System.Windows.Forms
+	Add-Type -AssemblyName PresentationFramework
+	Add-Type -AssemblyName Microsoft.VisualBasic
+	Add-Type -AssemblyName System.Drawing
+	Add-Type -AssemblyName PresentationFramework
+	Add-Type -AssemblyName PresentationCore
+	Add-Type -AssemblyName WindowsBase
+}
+Catch {
+	$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
+	Write-Log "Error Loading Assembly: $exceptionMessage"
+	If ($deployModeNonInteractive -eq $true) {
+		Write-Log "Continuing despite assembly error since deployment mode is [$deployMode]"
+		Continue
+	}
+	Else {
+		Exit-Script 1
+	}
+}
 
 # Set the install name if the referring application parameter was specified
 If ($ReferringApplication -ne "") {
@@ -4189,10 +4079,10 @@ If ($showBlockedAppDialog -eq $true) {
 		Write-Log "$appDeployMainScriptFriendlyName called with switch ShowBlockedAppDialog"
 		Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText "OK"
 		Exit 0
-	} 
+	}
 	Catch {
-		$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)" 
-		Write-Log "$exceptionMessage" 
+		$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
+		Write-Log "$exceptionMessage"
 		Show-DialogBox -Text $exceptionMessage -Icon "Stop"
 		Exit 1
 	}
@@ -4204,7 +4094,7 @@ $installPhase = "Initialization"
 Write-Log "$installName setup started."
 
 # Dot Source script extensions
-If ($appDeployToolkitDotSources -ne "") { 
+If ($appDeployToolkitDotSources -ne "") {
 	."$scriptRoot\$appDeployToolkitDotSources"
 }
 
@@ -4227,7 +4117,7 @@ Else {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
 }
 
-# Check the XML config file version 
+# Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
 }
@@ -4262,16 +4152,16 @@ If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $
 # Check if we are running a task sequence, and enable NonInteractive mode
 ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 	Write-Log "Running in SCCM Task Sequence."
-	$deployMode = "NonInteractive"  
+	$deployMode = "NonInteractive"
 }
 # Check if we are running in session zero, and enable NonInteractive mode
-ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) { 
+ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
 	Write-Log "Running under Session 0."
 	$deployMode = "NonInteractive"
 }
 
 If ($deployMode -ne $null) {
-	Write-Log "Installation is running in [$deployMode] mode." 
+	Write-Log "Installation is running in [$deployMode] mode."
 }
 
 # Set Deploy Mode switches
