@@ -1,4 +1,4 @@
-Version 3.1 [23/02/2014]
+Version 3.1.0 [24/02/2014]
 	Re-coded BlockExecution to be more stable and prevent issues unblocking execution
 	Added support for installating applications on Remote Desktop Session Host/Citrix servers
 	Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to noninteractive

@@ -24,9 +24,9 @@
 	NonInteractive = Very silent, i.e. no blocking apps. Noninteractive mode is automatically set if an SCCM task sequence or session 0 is detected.
 .PARAMETER AllowRebootPassThru
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation.
-    If 3010 is passed back to SCCM a reboot prompt will be triggered. 
+	If 3010 is passed back to SCCM a reboot prompt will be triggered. 
 .PARAMETER TerminalServerMode
-    Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
+	Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
@@ -37,7 +37,7 @@ Param (
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string] $DeployMode = "Interactive",
 	[switch] $AllowRebootPassThru = $false,
-    [switch] $TerminalServerMode = $false
+	[switch] $TerminalServerMode = $false
 )
 
 #*===============================================
@@ -81,7 +81,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 #*===============================================
 
 	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install and persist the prompt
-	Show-InstallationWelcome -CloseApps "winword,excel" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+	Show-InstallationWelcome -CloseApps "iexplore" -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
@@ -104,7 +104,7 @@ $installPhase = "Post-Installation"
 
 	# Display a message at the end of the install
 	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
- 
+
 #*===============================================
 #* UNINSTALLATION
 } ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"

@@ -51,7 +51,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
-$appDeployMainScriptDate = "02/21/2013"
+$appDeployMainScriptDate = "02/24/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -354,10 +354,10 @@ Function Exit-Script {
 		Unblock-AppExecution
 	}
 
-    # If Terminal Server mode was set, turn it off
-    If ($terminalServerMode) {
-        Disable-TerminalServerInstallMode
-    }
+	# If Terminal Server mode was set, turn it off
+	If ($terminalServerMode) {
+		Disable-TerminalServerInstallMode
+	}
 
 	# Determine action based on exit code
 	Switch ($exitCode) {
@@ -1931,17 +1931,17 @@ Function Block-AppExecution {
 		Write-Log "Bypassing Block-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
-    
+
 	Write-Log "Invoking Block-AppExecution Function..."
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 
-   	# Copy Script to Temporary directory so it can be called by scheduled task later if required
+	# Copy Script to Temporary directory so it can be called by scheduled task later if required
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
 
-    # Built the debugger block value
+	# Built the debugger block value
 	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 
-    # Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
+	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
 	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
@@ -2067,12 +2067,12 @@ Function Get-UniversalDate {
 		$ContinueOnError = $false
 	)
 	Try {
-        # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-        If ($dateTime -match "Z") { $dateTime = $dateTime -replace "Z","" }
+		# If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
+		If ($dateTime -match "Z") { $dateTime = $dateTime -replace "Z","" }
 		$dateTime = [DateTime]::Parse($dateTime, $culture)
 		# Convert the date in a universal sortable date time pattern based on the current culture
-        $universalDateTime = Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
-        Return $universalDateTime
+		$universalDateTime = Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
+		Return $universalDateTime
 	}
 	Catch {
 		If ($ContinueOnError -eq $false) {
@@ -2507,9 +2507,9 @@ Function Show-WelcomePrompt {
 		Write-Log "User has the option to defer."
 		$showDefer = $true
 		If ($deferDeadline) {
-		# Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone
-            $deferDeadline = $deferDeadline -replace "Z",""
-		# Convert the deadline date to a string
+			# Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone
+			$deferDeadline = $deferDeadline -replace "Z",""
+			# Convert the deadline date to a string
 			[string]$deferDeadline = Get-Date $deferDeadline | Out-String -Stream
 		}
 	}
@@ -3264,10 +3264,10 @@ Function Show-InstallationProgress {
 		Return
 	}
 
-    # If the default progress message hasn't been overriden and the deployment type is uninstall, use the default uninstallation message
-    If ($StatusMessage -eq $configProgressMessageInstall -and $deploymentType -eq "Uninstall") {
-        $StatusMessage = $configProgressMessageUninstall
-    }
+	# If the default progress message hasn't been overriden and the deployment type is uninstall, use the default uninstallation message
+	If ($StatusMessage -eq $configProgressMessageInstall -and $deploymentType -eq "Uninstall") {
+		$StatusMessage = $configProgressMessageUninstall
+	}
 
 	If ($envhost.Name -match "PowerGUI") {
 		Write-Log "Warning: $($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed."
@@ -4026,7 +4026,7 @@ Function Enable-TerminalServerInstallMode {
 .SYNOPSIS
 	Changes to user install mode for Remote Desktop Session Host/Citrix servers
 .DESCRIPTION
-    Changes to user install mode for Remote Desktop Session Host/Citrix servers
+	Changes to user install mode for Remote Desktop Session Host/Citrix servers
 .EXAMPLE
 	Enable-TerminalServerInstall
 .PARAMETER ContinueOnError
@@ -4041,12 +4041,12 @@ Function Enable-TerminalServerInstallMode {
 
 	Write-Log "Changing to user install mode for Terminal Server..."
 	$terminalServerResult = Change User /Install
-    If ($terminalServerResult -notmatch "User Session is ready to install applications" -and $ContinueOnError -ne $true) {
-        Throw $terminalServerResult
-    }
-    Else {
-        Write-Log $terminalServerResult        
-    }   
+	If ($terminalServerResult -notmatch "User Session is ready to install applications" -and $ContinueOnError -ne $true) {
+		Throw $terminalServerResult
+	}
+	Else {
+		Write-Log $terminalServerResult
+	}
 }
 
 Function Disable-TerminalServerInstallMode {
@@ -4054,7 +4054,7 @@ Function Disable-TerminalServerInstallMode {
 .SYNOPSIS
 	Changes to user install mode for Remote Desktop Session Host/Citrix servers
 .DESCRIPTION
-    Changes to user install mode for Remote Desktop Session Host/Citrix servers
+	Changes to user install mode for Remote Desktop Session Host/Citrix servers
 .EXAMPLE
 	Enable-TerminalServerInstall
 .NOTES
@@ -4063,7 +4063,7 @@ Function Disable-TerminalServerInstallMode {
 #>
 	Write-Log "Changing to user execute mode for Terminal Server..."
 	$terminalServerResult = Change User /Execute
-    Write-Log $terminalServerResult
+	Write-Log $terminalServerResult
 }
 
 
@@ -4217,10 +4217,10 @@ ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 }
 # Check if we are running in session zero on XP or lower, and enable NonInteractive mode
 ElseIf ($envOS.Version -le "5.2") {
-    If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
-            Write-Log "Running under Session 0."
-	$deployMode = "NonInteractive"        
-    }
+	If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
+			Write-Log "Running under Session 0."
+	$deployMode = "NonInteractive"
+	}
 }
 # Check if we are running in session zero, and enable NonInteractive mode
 ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
