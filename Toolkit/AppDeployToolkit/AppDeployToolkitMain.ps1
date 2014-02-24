@@ -4215,6 +4215,13 @@ ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
 	Write-Log "Running in SCCM Task Sequence."
 	$deployMode = "NonInteractive"
 }
+# Check if we are running in session zero on XP or lower, and enable NonInteractive mode
+ElseIf ($envOS.Version -le "5.2") {
+    If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
+            Write-Log "Running under Session 0."
+	$deployMode = "NonInteractive"        
+    }
+}
 # Check if we are running in session zero, and enable NonInteractive mode
 ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
 	Write-Log "Running under Session 0."
