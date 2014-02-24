@@ -4,11 +4,6 @@
 .DESCRIPTION
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
-.PARAMETER ContinueOnErrorGlobalPreference
-	Sets the global preference for the -ContinueOnError $true. This global preference is set on most functions to True by default.
-	The purpose of having this global variable is to assist with script debugging so that you can stop the script if any functions throw an error.
-	To debug the script, set to $false or add the parameter to the dot-sourcing line in the Deploy-Application.ps1 script, e.g.
-	."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1" -ContinueOnError $trueGlobalPreference $false
 .PARAMETER CleanupBlockedApps
 	Clean up the blocked applications.
 	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
@@ -54,8 +49,8 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.0.13"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.0.13"
+$appDeployMainScriptVersion = [version]"3.1.0"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
 $appDeployMainScriptDate = "02/21/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
@@ -169,7 +164,8 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
 [string]$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
 [string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
-[string]$configProgressMessage = $xmlUIMessages.Progress_Message
+[string]$configProgressMessageInstall = $xmlUIMessages.Progress_MessageInstall
+[string]$configProgressMessageUninstall = $xmlUIMessages.Progress_MessageUninstall
 [string]$configClosePromptConfirm = $xmlUIMessages.ClosePrompt_Confirm
 [string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
 [string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
@@ -357,6 +353,11 @@ Function Exit-Script {
 	If ($BlockExecution -eq $true) {
 		Unblock-AppExecution
 	}
+
+    # If Terminal Server mode was set, turn it off
+    If ($terminalServerMode) {
+        Disable-TerminalServerInstallMode
+    }
 
 	# Determine action based on exit code
 	Switch ($exitCode) {
@@ -1905,12 +1906,11 @@ Function Block-AppExecution {
 .DESCRIPTION
 	This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
 	1. Makes a copy of this script in a temporary directory on the local machine.
-	2. Backs up the "Image File Execution Options" (IFEO) as a PowerShell CLIXML file.
-	3. Checks for an existing scheduled task from previous failed installation attemp where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
+	2. Checks for an existing scheduled task from previous failed installation attemp where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
 		This is to prevent the function from overriding the backup of the original IFEO options.
-	4. Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameters -CleanupBlockedApps and -ReferringApplication
-	5. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameters -ShowBlockedAppDialog and -ReferringApplication
-	6. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
+	3. Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameters -CleanupBlockedApps and -ReferringApplication
+	4. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameters -ShowBlockedAppDialog and -ReferringApplication
+	5. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
 		The text of this message can be customized in the XML configuration file.
 .EXAMPLE
 	Block-AppExecution -ProcessName "winword,excel"
@@ -1931,12 +1931,25 @@ Function Block-AppExecution {
 		Write-Log "Bypassing Block-AppExecution Function [Mode: $deployMode]"
 		Return
 	}
-
+    
 	Write-Log "Invoking Block-AppExecution Function..."
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 
-	# Create array to store the state of the registry keys we need to change so that we can restore them later
-	$blockedApps = @()
+   	# Copy Script to Temporary directory so it can be called by scheduled task later if required
+	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
+
+    # Built the debugger block value
+	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
+
+    # Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
+	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
+	If (Get-ScheduledTask -ContinueOnError $true | Select TaskName | Where { $_.TaskName -eq "\$schTaskBlockedAppsName" } ) {
+		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
+	}
+	Else { 
+		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication `'$installName`'`"" -PassThru
+	}
+
 	$blockProcessName = $processName
 	# Append .exe to match registry keys
 	$blockProcessName = $blockProcessName | ForEach-Object { $_ + ".exe" } -ErrorAction SilentlyContinue
@@ -1969,10 +1982,10 @@ Function UnBlock-AppExecution {
 		Return
 	}
 
-	# Enumerate each process we want to block
-	$unblockProcessName = Get-ChildItem $regKeyAppExecution -Recurse | ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object {$_.Debugger -like "*ShowBlockedAppDialog*"}
+	Write-Log "Invoking UnBlock-AppExecution Function..."
+	$unblockProcessName = Get-ChildItem $regKeyAppExecution -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object {$_.Debugger -like "*ShowBlockedAppDialog*"}
 	Foreach ($unblockProcess in $unblockProcessName) {
-		Write-Log "Removing the Image File Execution Options registry keys to unblock execution of $unblockProcess..."
+		Write-Log "Removing the Image File Execution Options registry keys to unblock execution of [$($unblockProcess.PSChildName)]..."
 		$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction SilentlyContinue
 	}
 
@@ -1982,7 +1995,6 @@ Function UnBlock-AppExecution {
 		Write-Log "Deleting Scheduled Task [$schTaskBlockedAppsName] ..."
 		Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
 	}
-
 }
 
 Function Get-DeferHistory {
@@ -3243,7 +3255,7 @@ Function Show-InstallationProgress {
 	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
-		[string] $StatusMessage = $configProgressMessage,
+		[string] $StatusMessage = $configProgressMessageInstall,
 		[ValidateSet("Default","BottomRight")]
 		[string] $WindowLocation = "Default",
 		[boolean] $TopMost = $true
@@ -3251,6 +3263,11 @@ Function Show-InstallationProgress {
 	If ($deployModeSilent -eq $true) {
 		Return
 	}
+
+    # If the default progress message hasn't been overriden and the deployment type is uninstall, use the default uninstallation message
+    If ($StatusMessage -eq $configProgressMessageInstall -and $deploymentType -eq "Uninstall") {
+        $StatusMessage = $configProgressMessageUninstall
+    }
 
 	If ($envhost.Name -match "PowerGUI") {
 		Write-Log "Warning: $($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed."
@@ -4004,6 +4021,52 @@ Function Update-GroupPolicy {
 	Execute-Process -FilePath $gpUpdatePath -WindowStyle Hidden
 }
 
+Function Enable-TerminalServerInstallMode {
+<#
+.SYNOPSIS
+	Changes to user install mode for Remote Desktop Session Host/Citrix servers
+.DESCRIPTION
+    Changes to user install mode for Remote Desktop Session Host/Citrix servers
+.EXAMPLE
+	Enable-TerminalServerInstall
+.PARAMETER ContinueOnError
+	Continue if an error is encountered
+.NOTES
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
+#>
+	Param (
+		[boolean] $ContinueOnError = $true
+	)
+
+	Write-Log "Changing to user install mode for Terminal Server..."
+	$terminalServerResult = Change User /Install
+    If ($terminalServerResult -notmatch "User Session is ready to install applications" -and $ContinueOnError -ne $true) {
+        Throw $terminalServerResult
+    }
+    Else {
+        Write-Log $terminalServerResult        
+    }   
+}
+
+Function Disable-TerminalServerInstallMode {
+<#
+.SYNOPSIS
+	Changes to user install mode for Remote Desktop Session Host/Citrix servers
+.DESCRIPTION
+    Changes to user install mode for Remote Desktop Session Host/Citrix servers
+.EXAMPLE
+	Enable-TerminalServerInstall
+.NOTES
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
+#>
+	Write-Log "Changing to user execute mode for Terminal Server..."
+	$terminalServerResult = Change User /Execute
+    Write-Log $terminalServerResult
+}
+
+
 #*=============================================
 #* END FUNCTION LISTINGS
 #*=============================================
@@ -4046,7 +4109,6 @@ If ($showInstallationPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationPrompt")
-	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
 	$appDeployMainScriptParameters.Remove("ReferringApplication")
 	Show-InstallationPrompt @appDeployMainScriptParameters
 	Exit 0
@@ -4057,7 +4119,6 @@ If ($showInstallationRestartPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationRestartPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationRestartPrompt")
-	$appDeployMainScriptParameters.Remove("ContinueOnErrorGlobalPreference")
 	$appDeployMainScriptParameters.Remove("ReferringApplication")
 	Show-InstallationRestartPrompt @appDeployMainScriptParameters
 	Exit 0
@@ -4179,6 +4240,9 @@ If ($configToolkitRequireAdmin) {
 		}
 	}
 }
+
+# If terminal server mode was specified, change the installation mode to support it
+If ($terminalServerMode) { Enable-TerminalServerInstallMode }
 
 #*=============================================
 #* END SCRIPT BODY

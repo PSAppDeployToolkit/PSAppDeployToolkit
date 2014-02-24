@@ -23,8 +23,10 @@
 	Silent = No dialogs
 	NonInteractive = Very silent, i.e. no blocking apps. Noninteractive mode is automatically set if an SCCM task sequence or session 0 is detected.
 .PARAMETER AllowRebootPassThru
-	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. 
-	If 3010 is passed back to SCCM a reboot prompt will be triggered.
+	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation.
+    If 3010 is passed back to SCCM a reboot prompt will be triggered. 
+.PARAMETER TerminalServerMode
+    Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
@@ -34,7 +36,8 @@ Param (
 	[string] $DeploymentType = "Install",
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string] $DeployMode = "Interactive",
-	[switch] $AllowRebootPassThru = $false
+	[switch] $AllowRebootPassThru = $false,
+    [switch] $TerminalServerMode = $false
 )
 
 #*===============================================
@@ -59,8 +62,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.0.13"
-$deployAppScriptDate = "01/29/2013"
+$deployAppScriptVersion = [version]"3.1.0"
+$deployAppScriptDate = "02/24/2013"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -117,6 +120,6 @@ $installPhase = "Post-Installation"
 
 #*===============================================
 #* END SCRIPT BODY
-} } Catch {$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"; Write-Log "$exceptionMessage"; Show-DialogBox -Text $exceptionMessage -Icon "Stop"; Exit-Script -ExitCode 1} # Catch any errors in this script 
+} } Catch { $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"; Write-Log "$exceptionMessage"; Show-DialogBox -Text $exceptionMessage -Icon "Stop"; Exit-Script -ExitCode 1 } # Catch any errors in this script 
 Exit-Script -ExitCode 0 # Otherwise call the Exit-Script function to perform final cleanup operations
 #*===============================================
