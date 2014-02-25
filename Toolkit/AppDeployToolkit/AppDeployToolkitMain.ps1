@@ -1287,7 +1287,7 @@ Function Execute-Process {
 		[Array] $Arguments = @(),
 		[ValidateSet("Normal","Hidden","Maximized","Minimized")]
 		[System.Diagnostics.ProcessWindowStyle] $WindowStyle = "Normal",
-		[string] $WorkingDirectory = (Split-Path $FilePath -Parent),
+		[string] $WorkingDirectory = $null,
 		[switch] $NoWait = $false,
 		[switch] $PassThru = $false,
 		[string] $IgnoreExitCodes = $false,
@@ -1299,13 +1299,13 @@ Function Execute-Process {
 		$FilePath = (Join-Path $dirFiles $FilePath)
 	}
 
-	# If the working directory is in the Files subdirectory of the App Deploy Toolkit, set the full path accordingly
-	If (Test-Path (Join-Path $dirFiles $WorkingDirectory -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
-		$WorkingDirectory = (Join-Path $dirFiles $WorkingDirectory)
+	# Set the Working directory (if not specified)
+	If ($workingDirectory -eq $null) {
+		$workingDirectory = (Split-Path $FilePath -Parent)
 	}
 
 	Write-Log "Executing [$FilePath $Arguments]..."
-	If ($workingDirectory -ne "") { Write-Log "Working Directory is [$WorkingDirectory]" }
+	Write-Log "Working Directory is [$WorkingDirectory]"
 
 	# Disable Zone checking to prevent warnings when running executables from a Distribution Point
 	$env:SEE_MASK_NOZONECHECKS = 1
