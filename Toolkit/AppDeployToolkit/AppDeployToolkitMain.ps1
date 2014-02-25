@@ -51,7 +51,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
-$appDeployMainScriptDate = "02/24/2013"
+$appDeployMainScriptDate = "02/25/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1297,6 +1297,11 @@ Function Execute-Process {
 	# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
 	If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
 		$FilePath = (Join-Path $dirFiles $FilePath)
+	}
+
+	# If the working directory is in the Files subdirectory of the App Deploy Toolkit, set the full path accordingly
+	If (Test-Path (Join-Path $dirFiles $WorkingDirectory -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
+		$WorkingDirectory = (Join-Path $dirFiles $WorkingDirectory)
 	}
 
 	Write-Log "Executing [$FilePath $Arguments]..."
