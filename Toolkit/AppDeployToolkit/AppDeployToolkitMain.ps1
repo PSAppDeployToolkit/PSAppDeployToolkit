@@ -51,7 +51,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
-$appDeployMainScriptDate = "02/25/2013"
+$appDeployMainScriptDate = "02/27/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -107,9 +107,8 @@ $appDeployLogoIcon = Join-Path $scriptRoot "AppDeployToolkitLogo.ico"
 $appDeployLogoBanner = Join-Path $scriptRoot "AppDeployToolkitBanner.png"
 $appDeployConfigFile = Join-Path $scriptRoot "AppDeployToolkitConfig.xml"
 
-# Variables: App Deploy Optional Files
-# Specify any additional PowerShell script files to be dot-sourced by this script, separated by commas.
-$appDeployToolkitDotSources = "AppDeployToolkitExtensions.ps1"
+# Variables: App Deploy Optional Extensions File
+$appDeployToolkitDotSourceExtensions = "AppDeployToolkitExtensions.ps1"
 
 # Check that dependency files are present
 If (!(Test-Path $AppDeployLogoIcon)) {
@@ -4160,8 +4159,8 @@ $installPhase = "Initialization"
 Write-Log "$installName setup started."
 
 # Dot Source script extensions
-If ($appDeployToolkitDotSources -ne "") {
-	."$scriptRoot\$appDeployToolkitDotSources"
+If ($appDeployToolkitDotSourceExtensions -ne "") {
+	."$scriptRoot\$appDeployToolkitDotSourceExtensions"
 }
 
 # Evaluate non-default parameters passed to the scripts
