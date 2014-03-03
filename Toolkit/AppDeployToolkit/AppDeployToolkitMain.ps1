@@ -51,7 +51,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
-$appDeployMainScriptDate = "02/27/2013"
+$appDeployMainScriptDate = "03/03/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1299,8 +1299,8 @@ Function Execute-Process {
 	}
 
 	# Set the Working directory (if not specified)
-	If ($workingDirectory -eq $null) {
-		$workingDirectory = (Split-Path $FilePath -Parent)
+	If ($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") {
+		$WorkingDirectory = (Split-Path $FilePath -Parent)
 	}
 
 	Write-Log "Executing [$FilePath $Arguments]..."
