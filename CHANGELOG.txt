@@ -4,7 +4,7 @@ Version 3.1.0 [25/02/2014]
 	Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to noninteractive
 	Fixed ContinueOnError parameter data type which was set as a switch but should have been boolean
 	Added default progress message for Uninstallation deployment mode
-	Fixed issue with detection of Session 0 on XP
+	Fixed issue with detection of Session 0 on XP which resulted in no UI being displayed
 	Fixed issue where Working Directory wouldn't be set correctly if using a subfolder in $dirFiles
 
 Version 3.0.12 [17/01/2014]
