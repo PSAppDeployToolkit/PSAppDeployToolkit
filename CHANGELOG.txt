@@ -1,3 +1,7 @@
+Version 3.1.1 [27/03/2014]
+	Fixed exact process which was broken in 3.0.10
+	Fixed MinimizeWindows parameter
+
 Version 3.1.0 [25/02/2014]
 	Re-coded BlockExecution to be more stable and prevent issues unblocking execution
 	Added support for installating applications on Remote Desktop Session Host/Citrix servers

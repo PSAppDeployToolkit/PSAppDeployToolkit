@@ -34,7 +34,7 @@ Param (
 	[string] $Icon = $null,
 	[string] $Timeout = $null,
 	[switch] $ExitOnTimeout = $null,
-	[switch] $MinimizeWindows = $null,
+	[boolean] $MinimizeWindows = $null,
 	[switch] $PersistPrompt = $false,
 	[int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds
@@ -49,9 +49,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.0"
+$appDeployMainScriptVersion = [version]"3.1.1"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
-$appDeployMainScriptDate = "03/03/2013"
+$appDeployMainScriptDate = "03/27/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -456,7 +456,7 @@ Function Show-InstallationPrompt {
 		[string] $Icon = "None",
 		[switch] $NoWait = $false,
 		[switch] $PersistPrompt = $false,
-		[switch] $MinimizeWindows = $false,
+		[boolean] $MinimizeWindows = $false,
 		$Timeout = $configInstallationUITimeout,
 		$ExitOnTimeout = $true
 
@@ -2110,11 +2110,10 @@ Function Get-RunningProcesses {
 
 		# Replace escape characters that interfere with Regex and might cause false positive matches
 		$processNames = $processNames -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket"
-
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
-		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","exe") -match $processNames }
+		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","dotexe") -match $processNames }
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
-		If ($runningProcesses) {
+        If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
 			Write-Log "Resolving process descriptions..."
 			# Resolve the running process names to descriptions in the following precedence:
@@ -2227,7 +2226,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	[string] $DeferDeadline = $null, # Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option
 	[switch] $CheckDiskSpace = $false, # Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 	[int] $RequiredDiskSpace = 0, # Specify required disk space in MB, used in combination with $CheckDiskSpace.
-	[switch] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
+	[boolean] $MinimizeWindows = $true # Specify whether to minimize other windows when displaying prompt
 	)
 
 	# If running in NonInteractive mode, force the processes to close silently
@@ -2345,12 +2344,12 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 				}
 				# Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
 				ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) {
-					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows
+					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
 				}
 			}
 			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 			ElseIf ($runningProcessDescriptions -ne "") {
-				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt
+				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
 			}
 			# If there is no deferral and no processes running, break the while loop
 			Else {
@@ -2488,14 +2487,14 @@ Function Show-WelcomePrompt {
 		[switch] $AllowDefer = $false,
 		$DeferTimes = $null,
 		$DeferDeadline = $null,
-		[switch]$minimizeWindows = $true
+		[boolean]$minimizeWindows = $true
 	)
 	# Reset switches
 	$showCloseApps = $showDefer = $persistWindow = $false
 	# Reset times
 	$startTime = $countdownTime = Get-Date
-
-	# Check if the countdown was specified
+ 
+ 	# Check if the countdown was specified
 	If ($CloseAppsCountdown) {
 		If ($CloseAppsCountdown -gt $configInstallationUITimeout) {
 			Throw "Error: The close applications countdown time can not be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout."
