@@ -34,10 +34,11 @@ Param (
 	[string] $Icon = $null,
 	[string] $Timeout = $null,
 	[switch] $ExitOnTimeout = $null,
-	[boolean] $MinimizeWindows = $null,
+	[boolean] $MinimizeWindows = $false,
 	[switch] $PersistPrompt = $false,
 	[int] $CountdownSeconds,
-	[int] $CountdownNoHideSeconds
+	[int] $CountdownNoHideSeconds,
+    [switch] $NoCountdown = $false
 )
 
 #*=============================================
@@ -50,7 +51,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.1"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.0"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.1"
 $appDeployMainScriptDate = "03/27/2013"
 $appDeployMainScriptParameters = $psBoundParameters
 
@@ -183,6 +184,8 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
 [string]$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
 [string]$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
+[string]$configRestartPromptMessageTime = $xmlUIMessages.RestartPrompt_MessageTime
+[string]$configRestartPromptMessageRestart = $xmlUIMessages.RestartPrompt_MessageRestart
 [string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
 [string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
 [string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
@@ -2916,17 +2919,22 @@ Function Show-InstallationRestartPrompt {
 	Displays a restart prompt with a countdown to a forced restart.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
+.EXAMPLE
+    Show-InstallationRestartPrompt -NoCountdown
 .PARAMETER CountdownSeconds
 	Specifies the number of seconds to countdown to the system restart.
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
+.PARAMETER NoCountdown
+	Specifies not to show a countdown, but just the Restart Now and Restart Later buttons.
 .NOTES
 .LINK
 	Http://psappdeploytoolkit.codeplex.com
 #>
 	Param (
 		[int] $CountdownSeconds = 60,
-		[int] $CountdownNoHideSeconds = 30
+		[int] $CountdownNoHideSeconds = 30,
+        [switch] $NoCountdown = $false
 	)
 
 	# Bypass if in non-interactive mode
@@ -2986,8 +2994,13 @@ Function Show-InstallationRestartPrompt {
 	}
 
 	$buttonRestartLater_Click={
-		# Minimize the form
-		$formRestart.WindowState = 'Minimized'
+		If ($NoCountdown -eq $false) {
+            # Minimize the form
+		    $formRestart.WindowState = 'Minimized'
+        }    
+        Else {
+            $formRestart.Close()
+        } 
 	}
 
 	$buttonRestartNow_Click={
@@ -3050,8 +3063,10 @@ Function Show-InstallationRestartPrompt {
 	}
 
 	# Form
-	$formRestart.Controls.Add($labelCountdown)
-	$formRestart.Controls.Add($labelTimeRemaining)
+    If ($NoCountdown -eq $false) {
+	    $formRestart.Controls.Add($labelCountdown)
+	    $formRestart.Controls.Add($labelTimeRemaining)
+    }
 	$formRestart.Controls.Add($labelMessage)
 	$formRestart.Controls.Add($buttonRestartLater)
 	$formRestart.Controls.Add($picturebox)
@@ -3083,8 +3098,11 @@ Function Show-InstallationRestartPrompt {
 	$labelMessage.Name = "labelMessage"
 	$labelMessage.Size = '400, 79'
 	$labelMessage.TabIndex = 3
-	$labelMessage.Text = $configRestartPromptMessage
-	$labelMessage.TextAlign = 'MiddleCenter'
+    $labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
+	If ($NoCountdown) {
+        $labelMessage.Text = $configRestartPromptMessage
+    }
+    $labelMessage.TextAlign = 'MiddleCenter'
 
 	# Label Time Remaining
 	$labelTimeRemaining.Location = '20, 138'
@@ -3124,7 +3142,9 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
 	# Timer Countdown
-	$timerCountdown.add_Tick($timerCountdown_Tick)
+    If ($NoCountdown -eq $false) {
+	    $timerCountdown.add_Tick($timerCountdown_Tick)
+    }
 
 	#----------------------------------------------
 
@@ -3138,13 +3158,21 @@ Function Show-InstallationRestartPrompt {
 
 	# If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
 	If ($deployAppScriptFriendlyName) {
-		Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
-		$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
+        If ($NoCountdown -eq $true) {
+            Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with no countdown..."
+	    }
+		Else {
+            Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
+		}$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
 		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	Else {
-		Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
-		# Show the Form
+        If ($NoCountdown -eq $true) {
+            Write-Log "Displaying restart prompt with no countdown."
+	    }
+		Else {
+            Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
+		}# Show the Form
 		Return $formRestart.ShowDialog()
 
 		# Activate the Window

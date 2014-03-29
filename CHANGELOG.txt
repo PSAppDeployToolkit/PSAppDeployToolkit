@@ -1,4 +1,5 @@
 Version 3.1.1 [27/03/2014]
+	Added -NoCountdown parameter to Show-InstallationRestartPrompt to provide option for just displaying the restart now or restart later buttons 
 	Fixed exact process which was broken in 3.0.10
 	Fixed MinimizeWindows parameter
 
