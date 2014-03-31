@@ -152,6 +152,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [int]$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
 [int]$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
 [int]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
+[int]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
 # Get Message UI Language Options (default for English if no localization found)
 $xmlUIMessageLanguage = "UI_Messages_" + $currentLanguage
 If (($xmlConfig.$xmlUIMessageLanguage) -eq $null) {
@@ -501,7 +502,7 @@ Function Show-InstallationPrompt {
 			$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
 			$timer.remove_Tick($timer_Tick)
-			$persistTimer.remove_Tick($persistTimer_Tick)
+			$timerPersist.remove_Tick($timerPersist_Tick)
 			$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 			$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
 		}
@@ -684,15 +685,15 @@ Function Show-InstallationPrompt {
 		$buttonAbort.PerformClick()
 	})
 
-	 # Persistence Timer
+	# Persistence Timer
 	If ($persistPrompt) {
-		$persistTimer = New-Object 'System.Windows.Forms.Timer'
-		$persistTimer.Interval = ($configInstallationPersistInterval * 1000)
-		$persistTimer_Tick = {
+		$timerPersist = New-Object 'System.Windows.Forms.Timer'
+		$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
+		$timerPersist_Tick = {
 			Refresh-InstallationPrompt
 		}
-		$persistTimer.add_Tick($persistTimer_Tick)
-		$persistTimer.Start()
+		$timerPersist.add_Tick($timerPersist_Tick)
+		$timerPersist.Start()
 	}
 
 	# Save the initial state of the form
@@ -2558,7 +2559,7 @@ Function Show-WelcomePrompt {
 			$buttonDefer.remove_Click($buttonDefer_OnClick)
 			$buttonAbort.remove_Click($buttonAbort_OnClick)
 			$script:welcomeTimer.remove_Tick($timer_Tick)
-			$persistTimer.remove_Tick($persistTimer_Tick)
+			$timerPersist.remove_Tick($timerPersist_Tick)
 			$formWelcome.remove_Load($Form_StateCorrection_Load)
 			$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
 		}
@@ -2621,13 +2622,13 @@ Function Show-WelcomePrompt {
 
 	# Persistence Timer
 	If ($persistWindow) {
-		$persistTimer = New-Object 'System.Windows.Forms.Timer'
-		$persistTimer.Interval = ($configInstallationPersistInterval * 1000)
-		$persistTimer_Tick = {
+		$timerPersist = New-Object 'System.Windows.Forms.Timer'
+		$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
+		$timerPersist_Tick = {
 			Refresh-InstallationWelcome
 		}
-		$persistTimer.add_Tick($persistTimer_Tick)
-		$persistTimer.Start()
+		$timerPersist.add_Tick($timerPersist_Tick)
+		$timerPersist.Start()
 	}
 
 	# Form
@@ -2926,7 +2927,8 @@ Function Show-InstallationRestartPrompt {
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 .PARAMETER NoCountdown
-	Specifies not to show a countdown, but just the Restart Now and Restart Later buttons.
+	Specifies not to show a countdown, just the Restart Now and Restart Later buttons. 
+    The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .NOTES
 .LINK
 	Http://psappdeploytoolkit.codeplex.com
@@ -2965,14 +2967,6 @@ Function Show-InstallationRestartPrompt {
 	$timerCountdown = New-Object 'System.Windows.Forms.Timer'
 	$InitialFormWindowState = New-Object 'System.Windows.Forms.FormWindowState'
 
-	Function Show-RestartPopup {
-		# Show the Restart Popup
-		$formRestart.WindowState = 'Normal'
-		$formRestart.TopMost = $true
-		$formRestart.BringToFront()
-		[System.Windows.Forms.Application]::DoEvents()
-	}
-
 	Function Perform-Restart {
 		Write-Log "Force restarting computer..."
 		Restart-Computer -Force
@@ -2989,18 +2983,45 @@ Function Show-InstallationRestartPrompt {
 		If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
 			$buttonRestartLater.Enabled = $false
 		}
-		# Show Popup
-		Show-RestartPopup
+		$formRestart.WindowState = 'Normal'
+		$formRestart.TopMost = $true
+		$formRestart.BringToFront()
+	}
+
+    $Form_StateCorrection_Load=
+	{
+		# Correct the initial state of the form to prevent the .Net maximized form issue
+		$formRestart.WindowState = $InitialFormWindowState
+ 		$formRestart.AutoSize = $true
+		$formRestart.TopMost = $true
+		$formRestart.BringToFront()
+        # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+		Set-Variable -Name formInstallationRestartPromptStartPosition -Value $($formRestart.Location) -Scope Script
+  	}
+
+    # Persistence Timer
+    If ($NoCountdown) {
+		$timerPersist = New-Object 'System.Windows.Forms.Timer'
+		$timerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
+        $timerPersist_Tick = {
+            # Show the Restart Popup
+		    $formRestart.WindowState = 'Normal'
+		    $formRestart.TopMost = $true
+		    $formRestart.BringToFront()
+            $formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
+		    $formRestart.Refresh()
+		    [System.Windows.Forms.Application]::DoEvents()
+		}
+		$timerPersist.add_Tick($timerPersist_Tick)
+		$timerPersist.Start()
 	}
 
 	$buttonRestartLater_Click={
-		If ($NoCountdown -eq $false) {
-            # Minimize the form
-		    $formRestart.WindowState = 'Minimized'
-        }    
-        Else {
-            $formRestart.Close()
-        } 
+        # Minimize the form
+		$formRestart.WindowState = 'Minimized'
+        # Reset the persistence timer
+        $timerPersist.Stop()
+        $timerPersist.Start()
 	}
 
 	$buttonRestartNow_Click={
@@ -3032,17 +3053,16 @@ Function Show-InstallationRestartPrompt {
 				# If the form is hidden when we hit the No Hide, bring it back up
 				If ($formRestart.WindowState -eq 'Minimized') {
 					# Show Popup
-					Show-RestartPopup
+					$formRestart.WindowState = 'Normal'
+	            	$formRestart.TopMost = $true
+            		$formRestart.BringToFront()
+                    $formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
+		            $formRestart.Refresh()
+		            [System.Windows.Forms.Application]::DoEvents()
 				}
 			}
 			[System.Windows.Forms.Application]::DoEvents()
 		}
-	}
-
-	$Form_StateCorrection_Load=
-	{
-		# Correct the initial state of the form to prevent the .Net maximized form issue
-		$formRestart.WindowState = $InitialFormWindowState
 	}
 
 	$Form_Cleanup_FormClosed=
@@ -3055,6 +3075,7 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.remove_Load($FormEvent_Load)
 			$formRestart.remove_Resize($formRestart_Resize)
 			$timerCountdown.remove_Tick($timerCountdown_Tick)
+			$timerPersist.remove_Tick($timerPersist_Tick)
 			$formRestart.remove_Load($Form_StateCorrection_Load)
 			$formRestart.remove_FormClosed($Form_Cleanup_FormClosed)
 		}
