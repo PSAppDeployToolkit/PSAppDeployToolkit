@@ -86,8 +86,6 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
-	# Perform pre-installation tasks here
-
 #*===============================================
 #* INSTALLATION 
 $installPhase = "Installation"

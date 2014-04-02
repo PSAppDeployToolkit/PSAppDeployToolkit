@@ -3175,7 +3175,10 @@ Function Show-InstallationRestartPrompt {
 	$formRestart.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-
+    $formRestartClosing =[System.Windows.Forms.FormClosingEventHandler]{
+        $_.Cancel = $true
+    }
+    $formRestart.add_FormClosing($formRestartClosing)
 
 	# If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
 	If ($deployAppScriptFriendlyName) {
@@ -3193,7 +3196,9 @@ Function Show-InstallationRestartPrompt {
 	    }
 		Else {
             Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
-		}# Show the Form
+		}
+
+        # Show the Form
 		Return $formRestart.ShowDialog()
 
 		# Activate the Window
