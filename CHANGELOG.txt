@@ -1,7 +1,8 @@
 Version 3.1.1 [27/03/2014]
 	Added -NoCountdown parameter to Show-InstallationRestartPrompt to provide an option for just displaying the restart now or restart later buttons. The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 	Fixed issue whereby the restart prompt could be closed from the task bar
-	Fixed exact process match which was broken in 3.0.10
+	Added Recurse parameter to Copy-File function
+	Fixed exact process match on Show-InstallationWelcome was broken in a recent release
 	Fixed MinimizeWindows parameter which was broken in a recent release
 
 Version 3.1.0 [25/02/2014]

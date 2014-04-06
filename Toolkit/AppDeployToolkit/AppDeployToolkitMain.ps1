@@ -1407,6 +1407,8 @@ Function Copy-File {
 	Path of the file you want to copy
 .PARAMETER Destination
 	Destination Path of the file to copy
+.PARAMETER Recurse
+	Copy files in subdirectories
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
@@ -1417,13 +1419,18 @@ Function Copy-File {
 		[string]$Path = $(throw "Path param required"),
 		[Parameter(Mandatory = $true)]
 		[string]$Destination = $(throw "Destination param required"),
+		[switch]$Recurse = $false,
 		[boolean] $ContinueOnError = $true
 	)
 
-	Write-Log "Copying File [$path] to [$destination]..."
-
-	Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force | Out-Null
-
+    If ($Recurse) {
+        Write-Log "Copying File [$path] to [$destination] recursively..."
+        Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force -Recurse | Out-Null
+    }
+    Else {
+        Write-Log "Copying File [$path] to [$destination]..."
+        Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force | Out-Null
+    }
 	Trap [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Could not copy file [$path] to [$destination]:" + $_.Exception.Message)
