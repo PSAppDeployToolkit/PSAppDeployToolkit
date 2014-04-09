@@ -38,7 +38,7 @@ Param (
 	[switch] $PersistPrompt = $false,
 	[int] $CountdownSeconds,
 	[int] $CountdownNoHideSeconds,
-    [switch] $NoCountdown = $false
+	[switch] $NoCountdown = $false
 )
 
 #*=============================================
@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.1"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.1"
-$appDeployMainScriptDate = "03/27/2013"
+$appDeployMainScriptVersion = [version]"3.1.2"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.2"
+$appDeployMainScriptDate = "04/09/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3582,18 +3582,20 @@ Function Set-PinnedApplication {
 	Invoke-Verb -FilePath $FilePath -Verb $(Get-PinVerb -VerbId $verbs.$action)
 }
 
-Function Get-IniContent {
+Function Get-IniValue {
 <#
 .SYNOPSIS
-	Parses an ini file and returns the contents as objects with ini section, name and value properties
+	Parses an ini file and returns the value of the specified section and key
 .DESCRIPTION
-	Parses an ini file and returns the contents as objects with ini section, name and value properties
+	Parses an ini file and returns the value of the specified section and key
 .EXAMPLE
-	Get-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini"
-.EXAMPLE
-	Get-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini" | Where { $_.Name -eq "KeyFileName" } | Select Value -ExpandProperty Value
+	Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section "Notes" -Key "KeyFileName"
 .PARAMETER FilePath
 	Path to the ini file
+.PARAMETER Section
+	Section within the ini file
+.PARAMETER Key
+	Key within the section of the ini file
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
@@ -3603,22 +3605,27 @@ Function Get-IniContent {
 	Param (
 		[Parameter(Mandatory = $true)]
 		[String] $FilePath,
+		[String] $Section,
+		[String] $Key,
 		[boolean] $ContinueOnError = $true
 	)
+
+$signature = @'
+[DllImport("kernel32.dll")]
+public static extern uint GetPrivateProfileString(
+	string lpAppName,
+	string lpKeyName,
+	string lpDefault,
+	StringBuilder lpReturnedString,
+	uint nSize,
+	string lpFileName);
+'@
+
 	If (Test-Path $FilePath) {
-		Switch -Regex -File $FilePath {
-			"^\[(.+)\]" {
-				$section = $matches[1]
-			}
-			"(.+?)\s*=(.*)" {
-				$name,$value = $matches[1..2]
-				New-Object PSObject -Property @{
-					Section = $section
-					Name = $name
-					Value = $value
-				}
-			}
-		}
+		$type = Add-Type -MemberDefinition $signature -Name Win32Utils -Namespace GetPrivateProfileString -Using System.Text -PassThru
+		$builder = New-Object System.Text.StringBuilder 1024
+		$null = $type::GetPrivateProfileString($Section, $Key, "", $builder, $builder.Capacity, $FilePath)
+		Return $builder.ToString()
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {
@@ -3631,20 +3638,22 @@ Function Get-IniContent {
 	}
 }
 
-Function Set-IniContent {
+Function Set-IniValue {
 <#
 .SYNOPSIS
-	Adds or sets the value of a property in an ini file
+	Opens an ini file and sets the value of the specified section and key
 .DESCRIPTION
-	Adds or sets the value of a property in an ini file
+	Opens an ini file and sets the value of the specified section and key
 .EXAMPLE
-	Set-IniContent "$envProgramFilesX86\IBM\Lotus\Notes\notes.ini" -Key "AutoLogoffMinutes" -Value "10"
+	Set-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section "Notes" -Key "KeyFileName" -Value "MyFile.ID"
 .PARAMETER FilePath
-	Path to the inin file
+	Path to the ini file
+.PARAMETER Section
+	Section within the ini file
 .PARAMETER Key
-	The ini property name
+	Key within the section of the ini file
 .PARAMETER Value
-	The ini property value
+	Value for the key within the section of the ini file
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
@@ -3653,22 +3662,27 @@ Function Set-IniContent {
 #>
 	Param (
 		[Parameter(Mandatory = $true)]
-		[string] $FilePath,
-		[Parameter(Mandatory = $true)]
-		[string] $Key,
-		[string] $Value,
+		[String] $FilePath,
+		[String] $Section,
+		[String] $Key,
+		[String] $Value,
 		[boolean] $ContinueOnError = $true
 	)
+
+$signature = @'
+[DllImport("kernel32.dll")]
+public static extern uint WritePrivateProfileString(
+	string lpSectionName,
+	string lpKeyName,
+	string lpValue,
+	string lpFileName);
+'@
+
 	If (Test-Path $FilePath) {
-		$iniContent = Get-Content $FilePath
-		If ($iniContent -match "($key)=(.*)") {
-			Write-Log "Setting key/value [$key=$value] in INI file [$filePath]..."
-			$iniContent | ForEach-Object {$_ -replace "($key)=(.*)", "$key=$value" } | Set-Content -Path $FilePath -Force -ErrorAction SilentlyContinue
-		}
-		Else {
-			Write-Log "Adding key/value [$key=$value] to INI file [$filePath]..."
-			Add-Content -Path $filePath -Value "$key=$value" -Force -ErrorAction SilentlyContinue
-		}
+		## Create a new type that lets us access the Windows API function
+		$type = Add-Type -MemberDefinition $signature -Name Win32Utils -Namespace WritePrivateProfileString -Using System.Text -PassThru
+
+		$null = $type::WritePrivateProfileString($Section, $Key, $Value, $FilePath)
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {

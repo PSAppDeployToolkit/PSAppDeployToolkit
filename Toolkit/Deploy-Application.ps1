@@ -55,15 +55,15 @@ $appArch = ""
 $appLang = "EN"
 $appRevision = "01"
 $appScriptVersion = "1.0.0"
-$appScriptDate = "01/01/2013"
+$appScriptDate = "01/01/2014"
 $appScriptAuthor = "<author name>"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.1.0"
-$deployAppScriptDate = "02/25/2013"
+$deployAppScriptVersion = [version]"3.1.2"
+$deployAppScriptDate = "04/09/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment

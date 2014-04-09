@@ -1,3 +1,7 @@
+Version 3.1.2 [04/09/2014]
+	Added Get-IniValue / Set-IniValue functions. Replaces Get-IniContent / Set-IniContent which were a bit unwieldy. The new functions are much easier to use.
+	Updated Japanese translations
+
 Version 3.1.1 [27/03/2014]
 	Added -NoCountdown parameter to Show-InstallationRestartPrompt to provide an option for just displaying the restart now or restart later buttons. The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 	Fixed issue whereby the restart prompt could be closed from the task bar
