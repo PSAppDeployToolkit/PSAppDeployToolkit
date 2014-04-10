@@ -1,5 +1,6 @@
-Version 3.1.2 [04/09/2014]
+Version 3.1.2 [04/xx/2014]
 	Added Get-IniValue / Set-IniValue functions. Replaces Get-IniContent / Set-IniContent which were a bit unwieldy. The new functions are much easier to use.
+	Updated French translations
 	Updated Japanese translations
 
 Version 3.1.1 [27/03/2014]
