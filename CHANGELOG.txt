@@ -1,5 +1,6 @@
 Version 3.1.2 [04/xx/2014]
 	Added Get-IniValue / Set-IniValue functions. Replaces Get-IniContent / Set-IniContent which were a bit unwieldy. The new functions are much easier to use.
+	Added -Value parameter to Get-RegistryKey so that a specific registry value can be retrieved instead of the entire Key as an object
 	Fixed Test-Battery to work with machines that can have multiple batteries
 	Fixed issue where BlockExecution would fail if a Custom Temp Path was specified in the config file
 	Updated French translations

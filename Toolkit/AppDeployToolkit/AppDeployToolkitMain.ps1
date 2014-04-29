@@ -1524,16 +1524,20 @@ Param (
 Function Get-RegistryKey {
 <#
 .SYNOPSIS
-	Retrieves value names and value data for a specified registry key
+	Retrieves value names and value data for a specified registry key or optionally, a specific value
 .DESCRIPTION
-	Retrieves value names and value data for a specified registry key.
+	Retrieves value names and value data for a specified registry key or optionally, a specific value
 	If the registry key does not contain any values, the function will return $null. If you need to test for existence of a registry key path, use the built-in Test-Path cmdlet
 .EXAMPLE
 	Get-RegistryKey "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}"
 .EXAMPLE
 	Get-RegistryKey "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe"
+.EXAMPLE
+	Get-RegistryKey "HKLM:\Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5" -Value "Version"
 .PARAMETER Key
 	Path of the registry key
+.PARAMETER Value
+	Value to retrieve (optional)
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES
@@ -1543,16 +1547,29 @@ Function Get-RegistryKey {
 	Param (
 		[Parameter(Mandatory = $true)]
 		$Key,
+		$Value,
 		[boolean] $ContinueOnError = $true
 	)
 
 	$key = Convert-RegistryPath -Key $key
 
-	Write-Log "Getting Registry key [$key] ..."
+	If ($Value -eq $null) {
+		Write-Log "Getting Registry key [$key] ..."
+	}
+	Else {
+		Write-Log "Getting Registry key [$key] value [$value] ..."
+	}
 
 	# Check if the registry key exists
 	If (Test-Path -Path $key -ErrorAction SilentlyContinue) {
-		$regKeyValue = Get-ItemProperty -Path $key
+		If ($Value -eq $null) {
+			# Get the Key
+			$regKeyValue = Get-ItemProperty -Path $key
+		}
+		Else {
+			# Get the Value
+			$regKeyValue = Get-ItemProperty -Path $key | Select $Value -ExpandProperty $Value
+		}
 		If ($regKeyValue -ne "") {
 			Return $regKeyValue
 		}
