@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.2"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.2"
-$appDeployMainScriptDate = "04/09/2014"
+$appDeployMainScriptDate = "04/29/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1950,7 +1950,8 @@ Function Block-AppExecution {
 	Write-Log "Invoking Block-AppExecution Function..."
 	$schTaskBlockedAppsName = "$installName" + "_BlockedApps"
 
-	# Copy Script to Temporary directory so it can be called by scheduled task later if required
+	# Create Temporary directory (if required) and copy Toolkit  so it can be called by scheduled task later if required
+	If (!(Test-Path -path $dirAppDeployTemp -ErrorAction SilentlyContinue )) { New-Item $dirAppDeployTemp -Type Directory -ErrorAction SilentlyContinue | Out-Null }
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
 
 	# Built the debugger block value
@@ -3900,12 +3901,17 @@ Function Test-Battery {
 #>
 	Write-Log "Testing power connection status..."
 
+	$onPower = $false
 	$batteryStatus = Get-WmiObject -Class BatteryStatus -Namespace root\wmi -ComputerName . -ErrorAction SilentlyContinue
 	If ($batteryStatus) {
-		$power = $batteryStatus.PowerOnLine
-		If ($power) {
-			Write-Log "AC Power connection found."
-			$onPower = $true
+		ForEach ($battery in $batteryStatus) {
+			$power = $battery.PowerOnLine
+			If ($power) {
+				Write-Log "AC Power connection found."
+				$onPower = $true
+			}
+		}
+		If ($onPower) {
 			Return $false
 		}
 	}
