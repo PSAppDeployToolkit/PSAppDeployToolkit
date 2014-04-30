@@ -10,9 +10,9 @@
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
-	Deploy-Application.ps1 -DeploymentType "Silent"
+	Deploy-Application.ps1 -DeploymentMode "Silent"
 .EXAMPLE
-	Deploy-Application.ps1 -AllowSCCMReboot -AllowDefer
+	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
 	Deploy-Application.ps1 -Uninstall 
 .PARAMETER DeploymentType
@@ -25,16 +25,19 @@
 .PARAMETER AllowRebootPassThru
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. 
 	If 3010 is passed back to SCCM a reboot prompt will be triggered.
+.PARAMETER TerminalServerMode
+	Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
 "#>
 Param (
 	[ValidateSet("Install","Uninstall")] 
-	[string]$DeploymentType = "Install",	 
+	[string]$DeploymentType = "Install",
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string]$DeployMode = "Interactive",
-	[switch]$AllowRebootPassThru = $false
+	[switch] $AllowRebootPassThru = $false,
+	[switch] $TerminalServerMode = $false
 )
 
 #*===============================================
@@ -47,20 +50,20 @@ Try {
 
 $appVendor = "Adobe"
 $appName = "Reader"
-$appVersion = "11.0.3"
+$appVersion = "11.0.6"
 $appArch = ""
 $appLang = "EN"
 $appRevision = "01"
 $appScriptVersion = "1.0.0"
-$appScriptDate = "08/08/2013"
-$appScriptAuthor = "Your Name"
+$appScriptDate = "01/01/2014"
+$appScriptAuthor = "<author name>"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.0"
-$deployAppScriptDate = "08/21/2013"
+$deployAppScriptVersion = [version]"3.1.2"
+$deployAppScriptDate = "04/30/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -92,7 +95,7 @@ $installPhase = "Installation"
     # Install the base MSI and apply a transform
     Execute-MSI -Action Install -Path "Adobe_Reader_11.0.0_EN.msi" -Transform "Adobe_Reader_11.0.0_EN_01.mst"
     # Install the patch
-    Execute-MSI -Action Patch -Path "Adobe_Reader_11.0.3_EN.msp" 
+    Execute-MSI -Action Patch -Path "Adobe_Reader_11.0.6_EN.msp" 
 
 
 #*===============================================

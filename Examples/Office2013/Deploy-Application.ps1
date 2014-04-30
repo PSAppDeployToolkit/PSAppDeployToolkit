@@ -10,7 +10,7 @@
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
-	Deploy-Application.ps1 -DeploymentType "Silent"
+	Deploy-Application.ps1 -DeploymentMode "Silent"
 .EXAMPLE
 	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
@@ -25,6 +25,8 @@
 .PARAMETER AllowRebootPassThru
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. 
 	If 3010 is passed back to SCCM a reboot prompt will be triggered.
+.PARAMETER TerminalServerMode
+	Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
 .NOTES
 .LINK 
 	Http://psappdeploytoolkit.codeplex.com
@@ -35,12 +37,13 @@ Param (
 	[ValidateSet("Interactive","Silent","NonInteractive")]
 	[string] $DeployMode = "Interactive",
 	[switch] $AllowRebootPassThru = $false,
-	[string]$addComponentsOnly = $false, # Specify whether running in Component Only Mode
-	[string]$addInfoPath = $false, # Add InfoPath to the install
-	[string]$addOneNote = $false, # Add OneNote to the install
-	[string]$addOutlook = $false, # Add Outlook to the install
-	[string]$addPublisher = $false, # Add Publisher to the install
-	[string]$addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
+	[switch] $TerminalServerMode = $false,
+	[string] $addComponentsOnly = $false, # Specify whether running in Component Only Mode
+	[string] $addInfoPath = $false, # Add InfoPath to the install
+	[string] $addOneNote = $false, # Add OneNote to the install
+	[string] $addOutlook = $false, # Add Outlook to the install
+	[string] $addPublisher = $false, # Add Publisher to the install
+	[string] $addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
 )
 
 #*===============================================
@@ -53,20 +56,20 @@ Try {
 
 $appVendor = "Microsoft"
 $appName = "Office"
-$appVersion = "2010 SP2"
+$appVersion = "2013 SP1"
 $appArch = "x86"
 $appLang = "EN"
 $appRevision = "01"
-$appScriptVersion = "2.0.1"
-$appScriptDate = "11/28/2013"
+$appScriptVersion = "2.0.2"
+$appScriptDate = "04/30/2014"
 $appScriptAuthor = "Dan Cunningham"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = "3.0.6"
-$deployAppScriptDate = "10/10/2013"
+$deployAppScriptVersion = [version]"3.1.2"
+$deployAppScriptDate = "04/30/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -94,12 +97,12 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 			Exit-Script 9
 		}
 		
-		# Verify that Office 2010 is already installed
-		$officeVersion = Get-ItemProperty 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90140000-0011-0000-0000-0000000FF1CE}' -ErrorAction SilentlyContinue | Select DisplayName -ExpandProperty DisplayName
+		# Verify that Office 2013 is already installed
+		$officeVersion = Get-ItemProperty 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90150000-0011-0000-0000-0000000FF1CE}' -ErrorAction SilentlyContinue | Select DisplayName -ExpandProperty DisplayName
 		
 		# If not found, display an error and exit
 		If ($officeVersion -eq $null) {
-			Show-InstallationPrompt -message "Unable to add the requested components as Office 2010 is not currently installed" -ButtonRightText "OK" -Icon "Error"
+			Show-InstallationPrompt -message "Unable to add the requested components as Office 2013 is not currently installed" -ButtonRightText "OK" -Icon "Error"
 		}
 	}
 
@@ -132,7 +135,7 @@ If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
 			}
 			If (Test-Path (Join-Path $dirOffice "$officeFolder\MSPub.Exe")) { 
 				Write-Log "Publisher was previously installed. Will be reinstalled"
-				$addOutlook = $true
+				$addPublisher = $true
 			}
 		}
 		
@@ -172,37 +175,37 @@ $installPhase = "Installation"
 	# Check whether running in Add Components Only mode
 	If ($addComponentsOnly -eq $false) {
   		Show-InstallationProgress "Installing Office Professional. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Office\Setup.exe" -Arguments "/adminfile `"$dirFiles\Config\Office2010ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes "3010"
+		Execute-Process -FilePath "$dirFiles\Office\Setup.exe" -Arguments "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes "3010"
 	}
 
 	# Install InfoPath if required
 	If ($addInfoPath -eq $true) {
 		Show-InstallationProgress "Installing Office Infopath. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden	
+		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden
 	}
 
 	# Install Sharepoint Designer if required
 	If ($addSharepointWorkspace -eq $true) {
 		Show-InstallationProgress "Installing Office Sharepoint Workspace. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden	
+		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden
 	}
 
 	# Install OneNote if required
 	If ($addOneNote -eq $true) {
 		Show-InstallationProgress "Installing Office OneNote. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden	
+		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden
 	}
 
 	# Install Outlook if required
 	If ($addOutlook -eq $true) {
 		Show-InstallationProgress "Installing Office Outlook. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden	
+		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden
 	}
 
 	# Install Publisher if required
 	If ($addPublisher -eq $true) {
 		Show-InstallationProgress "Installing Office Publisher. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden	
+		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden
 	}
 
 #*===============================================
@@ -212,9 +215,9 @@ $installPhase = "Post-Installation"
 
 	# Activate Office components (if running as a user)
 	If ($osdMode -eq $false) {
-		If (Test-Path (Join-Path $dirOffice "Office14\OSPP.VBS")) { 
+		If (Test-Path (Join-Path $dirOffice "Office15\OSPP.VBS")) { 
 			Show-InstallationProgress "Activating Microsoft Office components. This may take some time. Please wait..."
-			Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirOffice\Office14\OSPP.VBS`" /ACT" -WindowStyle Hidden	
+			Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
 		}
 	}
 
