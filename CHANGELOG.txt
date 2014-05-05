@@ -1,3 +1,6 @@
+Version 3.1.3 [05/xx/2014]
+	Added variable expansion to all paths in the configuration file - which fixes Temp folder location on Windows XP to use correct %PUBLIC% path
+
 Version 3.1.2 [04/30/2014]
 	Added Get-IniValue / Set-IniValue functions. Replaces Get-IniContent / Set-IniContent which were a bit unwieldy. The new functions are much easier to use.
 	Added -Value parameter to Get-RegistryKey so that a specific registry value can be retrieved instead of the entire Key as an object

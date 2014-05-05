@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.2"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.2"
-$appDeployMainScriptDate = "04/30/2014"
+$appDeployMainScriptVersion = [version]"3.1.3"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
+$appDeployMainScriptDate = "05/05/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -134,8 +134,8 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[string]$configToolkitLogDir = $xmlToolkitOptions.Toolkit_LogPath
-[string]$configToolkitTempPath = $xmlToolkitOptions.Toolkit_TempPath
+[string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
+[string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
 
 # Get MSI Options
@@ -144,7 +144,7 @@ $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [string]$configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
 [string]$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
 [string]$configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
-[string]$configMSILogDir = $xmlConfigMSIOptions.MSI_LogPath
+[string]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 # Get UI Options
 $xmlConfigUIOptions = $xmlConfig.UI_Options
 [bool]$configShowBalloonNotifications = [boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
