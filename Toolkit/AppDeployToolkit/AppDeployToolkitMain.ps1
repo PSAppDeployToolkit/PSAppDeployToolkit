@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.3"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/05/2014"
+$appDeployMainScriptDate = "05/13/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3552,17 +3552,22 @@ Function Set-PinnedApplication {
 
 	Function Invoke-Verb {
 		Param([string]$FilePath,$verb)
+		Try {
 		$verb = $verb.Replace("&","")
 		$path = Split-Path $FilePath -ErrorAction SilentlyContinue
 		$folder = $shellApp.Namespace($path)
 		$item = $folder.Parsename((Split-Path $FilePath -leaf -ErrorAction SilentlyContinue))
 		$itemVerb = $item.Verbs() | ? {$_.Name.Replace("&","") -eq $verb} -ErrorAction SilentlyContinue
 		 If (($itemVerb | Select Name -ExpandProperty Name) -eq "") {
-			Write-Log "Performing action [$verb] on [$filePath] is not progamtically supported on this system."
+				Write-Log "Performing action [$verb] on [$FilePath] is not progamtically supported on this system."
 		}
 		Else {
-			Write-Log "Performing [$verb] on [$filePath]..."
+				Write-Log "Performing [$verb] on [$FilePath]..."
 			$itemVerb.DoIt()
+		}
+	}
+		Catch {
+			Write-Log "Unable to perform [$verb] on [$FilePath]."
 		}
 	}
 	Function Get-PinVerb {
