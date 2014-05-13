@@ -48,22 +48,22 @@ Try {
 #*===============================================
 # Variables: Application
 
-$appVendor = ""
-$appName = ""
-$appVersion = ""
-$appArch = ""
-$appLang = "EN"
-$appRevision = "01"
-$appScriptVersion = "1.0.0"
-$appScriptDate = "01/01/2014"
-$appScriptAuthor = "<author name>"
+[string] $appVendor = ""
+[string] $appName = ""
+[string] $appVersion = ""
+[string] $appArch = ""
+[string] $appLang = "EN"
+[string] $appRevision = "01"
+[string] $appScriptVersion = "1.0.0"
+[string] $appScriptDate = "01/01/2014"
+[string] $appScriptAuthor = "<author name>"
 
 #*===============================================
 # Variables: Script - Do not modify this section
 
-$deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.1.3"
-$deployAppScriptDate = "05/05/2014"
+[string] $deployAppScriptFriendlyName = "Deploy Application"
+[version] $deployAppScriptVersion = [version]"3.1.3"
+[string] $deployAppScriptDate = "05/13/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
