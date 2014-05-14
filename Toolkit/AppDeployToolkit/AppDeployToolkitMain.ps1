@@ -221,18 +221,6 @@ $deferHistory = $deferTimes = $deferDays = $null
 $shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
 $shellApp = New-Object -ComObject Shell.Application -ErrorAction SilentlyContinue
 
-# Variables: Registry Keys
-# Registry keys for native and WOW64 applications
-$regKeyApplications = @( "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" )
-If ($is64Bit -eq $true) {
-	$regKeyLotusNotes = "HKLM:\Software\Wow6432Node\Lotus\Notes"
-}
-Else {
-	$regKeyLotusNotes = "HKLM:\Software\Lotus\Notes"
-}
-$regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
-
-
 # Set up sample variables if Dot Sourcing the script or app details have not been specified
 If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 	$appVendor = "PS"
@@ -243,40 +231,44 @@ If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
 	$appArch = ""
 }
 
-Function Reset-DeploymentConfiguration {
-	# Build the Application Title and Name
-	Set-Variable -Name installTitle -Value "$appVendor $appName $appVersion" -Scope Script
+# Build the Application Title and Name
+$installTitle = "$appVendor $appName $appVersion"
 
-	# Sanitize the application details, as they can cause issues in the script
-	$invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars()
-	$appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
-	$appName = $appName -replace "[$invalidFileNameChars]","" -replace " ",""
-	$appVersion = $appVersion -replace "[$invalidFileNameChars]","" -replace " ",""
-	$appArch = $appArch -replace "[$invalidFileNameChars]","" -replace " ",""
-	$appLang = $appLang -replace "[$invalidFileNameChars]","" -replace " ",""
-	$appRevision = $appRevision -replace "[$invalidFileNameChars]","" -replace " ",""
+# Sanitize the application details, as they can cause issues in the script
+$invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars()
+$appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
+$appName = $appName -replace "[$invalidFileNameChars]","" -replace " ",""
+$appVersion = $appVersion -replace "[$invalidFileNameChars]","" -replace " ",""
+$appArch = $appArch -replace "[$invalidFileNameChars]","" -replace " ",""
+$appLang = $appLang -replace "[$invalidFileNameChars]","" -replace " ",""
+$appRevision = $appRevision -replace "[$invalidFileNameChars]","" -replace " ",""
 
-	# Build the Installation Name
-	If ($appArch -ne "") {
-		Set-Variable -Name installName -Value ("$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision") -Scope Script
-	}
-	Else {
-		Set-Variable -Name installName -Value ("$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision") -Scope Script
-	}
-
-	# Set the Defer History location
-	Set-Variable -Name regKeyDeferHistory -Value "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName" -Scope Script
-
-	# Set the Log File location
-	Set-Variable -Name logFile -Value (Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName.log")) -Scope Script
+# Build the Installation Name
+If ($appArch -ne "") {
+	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision"
 }
+Else {
+	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision"
+}
+
+# Variables: Registry Keys
+# Registry keys for native and WOW64 applications
+$regKeyApplications = @( "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" )
+If ($is64Bit -eq $true) {
+	$regKeyLotusNotes = "HKLM:\Software\Wow6432Node\Lotus\Notes"
+}
+Else {
+	$regKeyLotusNotes = "HKLM:\Software\Lotus\Notes"
+}
+$regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
+
+# Variables: Log Files
+$logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName.log")
 
 #*=============================================
 #* END VARIABLE DECLARATION
 #*=============================================
-
-# Initialize the deployment configuration for the first time
-Reset-DeploymentConfiguration
 
 #*=============================================
 #* FUNCTION LISTINGS
@@ -1400,62 +1392,6 @@ Function Execute-Process {
 		Write-Log ("Execution failed: " + $_.Exception.Message)
 		If ($returnCode -eq $null) { $returnCode = 999 }
 		Exit-Script $returnCode
-	}
-}
-
-Function Get-MSIProperty {
-<#
-.SYNOPSIS
-	Retrieves a property from an MSI file
-.DESCRIPTION
-	Retrieves a property from an MSI file by querying the file using the Windows Installer COM component
-	Returns information such as Manufacturer, ProductName, ProductVersion, ProductCode, etc.
-.EXAMPLE
-	Get-MSIProperty -FilePath "MyApplication.MSI" -Property "ProductName"
-.PARAMETER File
-	The path of the MSI file you want to retrieve properties for.
-.PARAMETER Property
-	The property you want to retreive.
-.PARAMETER ContinueOnError
-	Continue if an error is encountered
-.NOTES
-.LINK
-	Http://psappdeploytoolkit.codeplex.com
-#>
-	Param (
-		[Parameter(Mandatory = $true)]
-		[string]$File = $(throw "File param required"),
-		[Parameter(Mandatory = $true)]
-		[string]$Property = $(throw "Property param required"),
-		[boolean] $ContinueOnError = $true
-	)
-
-	Write-Log "Retriving MSI property [$Property] from File [$File]..."
-	
-	If (Test-Path $File) {
-		Try {
-			$windowsInstaller = New-Object -com WindowsInstaller.Installer
-			$msiDatabase = $windowsInstaller.GetType().InvokeMember("OpenDatabase", "InvokeMethod", $Null,$windowsInstaller, @($File, 0))
-			$msiView = $msiDatabase.GetType().InvokeMember("OpenView", "InvokeMethod", $Null, $msiDatabase, ("SELECT Value FROM Property WHERE Property = '$Property'"))
-			$msiView.GetType().InvokeMember("Execute", "InvokeMethod", $Null, $msiView, $Null)
-			$msiRecord = $msiView.GetType().InvokeMember("Fetch", "InvokeMethod", $Null, $msiView, $Null)
-			$msiProperty = $msiRecord.GetType().InvokeMember("StringData", "GetProperty", $Null, $msiRecord, 1)
-			[string] $msiPropertyFormatted = $msiProperty.Trim()
-			Write-Log "Property [$Property] Result [$msiPropertyFormatted]"
-			Return $msiPropertyFormatted
-		} 
-		Catch {
-			Throw "Failed to get MSI property. Error: {0}." -f $_
-		}
-	}
-	Else {
-		If ($ContinueOnError -eq $true) {
-			Write-Log "File could not be found."
-			Continue
-		}
-		Else {
-			Throw "File could not be found."
-		}
 	}
 }
 

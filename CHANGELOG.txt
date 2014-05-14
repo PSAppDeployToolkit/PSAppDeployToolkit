@@ -1,6 +1,4 @@
 Version 3.1.3 [05/xx/2014]
-	Added Get-MSIProperty function which can be used to retrieve individual properties from an MSI
-	Added Reset-DeploymentConfiguration which resets the deployment configuration if you changing variables in the script body
 	Added variable expansion to all paths in the configuration file
 	Fixed error handled in Set-PinnedApplication if the exectuable existed but the shortcut wasn't actually pinned
 
