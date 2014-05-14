@@ -4123,8 +4123,8 @@ Function Update-GroupPolicy {
 	Http://psappdeploytoolkit.codeplex.com
 #>
 	Write-Log "Updating Group Policies..."
-	$gpUpdatePath = Join-Path $env:SystemRoot "System32\GPUpdate"
-	Execute-Process -FilePath $gpUpdatePath -WindowStyle Hidden
+	Execute-Process -FilePath "$envWindir\system32\cmd.exe" -Arguments "/C Echo N | GPUpdate /Target:Computer /Force" -WindowStyle Hidden
+	Execute-Process -FilePath "$envWindir\system32\cmd.exe" -Arguments "/C Echo N | GPUpdate /Target:User /Force" -WindowStyle Hidden
 }
 
 Function Enable-TerminalServerInstallMode {
