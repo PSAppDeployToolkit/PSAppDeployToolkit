@@ -1,7 +1,8 @@
 Version 3.1.3 [05/xx/2014]
 	Added variable expansion to all paths in the configuration file
 	Implement /Force parameter on Update-GroupPolicy (ensure that any logoff message is ignored)
-	Fixed error handled in Set-PinnedApplication if the exectuable existed but the shortcut wasn't actually pinned
+	Fixed issue where the AppClose Countdown timer would reset if the user attempted to close the UI
+	Fixed error handling in Set-PinnedApplication if the executable existed but the shortcut wasn't actually pinned
 
 Version 3.1.2 [04/30/2014]
 	Added Get-IniValue / Set-IniValue functions. Replaces Get-IniContent / Set-IniContent which were a bit unwieldy. The new functions are much easier to use.

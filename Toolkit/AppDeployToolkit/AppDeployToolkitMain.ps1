@@ -2363,6 +2363,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 
 	# Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) {
+		Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 		While ((Get-RunningProcesses $processObjects -Exact | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join ","
 			# Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
@@ -2373,12 +2374,12 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 				}
 				# Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
 				ElseIf ($promptResult -ne "Close" -or ($runningProcessDescriptions -ne "" -and $promptResult -ne "Continue")) {
-					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
+					$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
 				}
 			}
 			# If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 			ElseIf ($runningProcessDescriptions -ne "") {
-				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
+				$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
 			}
 			# If there is no deferral and no processes running, break the while loop
 			Else {
@@ -2623,6 +2624,7 @@ Function Show-WelcomePrompt {
 			$currentTime = Get-Date
 			$countdownTime = $startTime.AddSeconds($CloseAppsCountdown )
 			$remainingTime = $countdownTime.Subtract($currentTime)
+			Set-Variable -Name closeAppsCountdownGlobal -Value ($remainingTime.TotalSeconds) -Scope Script
 			# If the countdown is complete, close the Applicationss
 			If ($countdownTime -lt $currentTime) {
 				Write-Log "Close Applications countdown timer has elapsed. Force closing applications..."
