@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.3"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/13/2014"
+$appDeployMainScriptDate = "05/20/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -137,6 +137,7 @@ $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
 [string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
+[bool]$configToolkitCompressLogs = [boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
@@ -264,7 +265,17 @@ $regKeyAppExecution = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image 
 $regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 # Variables: Log Files
-$logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName.log")
+$logTempFolder = Join-Path $envTemp $installName
+If ($configToolkitCompressLogs) {
+	$logFile = Join-Path $logTempFolder ("$installName" + "_$appDeployToolkitName" + "_$deploymentType.log")
+	$zipFileDate = (Get-Date).ToString("yyyy-MM-dd-hh-mm-ss")
+	$zipFileName = Join-Path $configToolkitLogDir ("$installName" + "_$deploymentType" + "_$zipFileDate.zip")
+	If (Test-Path -Path $logTempFolder -ErrorAction SilentlyContinue ) { Remove-Item $logTempFolder -Recurse -Force -ErrorAction SilentlyContinue | Out-Null }
+	If (!(Test-Path -Path $logTempFolder -ErrorAction SilentlyContinue )) { New-Item $logTempFolder -Type Directory -ErrorAction SilentlyContinue | Out-Null }
+}
+Else {
+	$logFile = Join-Path $configToolkitLogDir ("$installName" + "_$appDeployToolkitName" + "_$deploymentType.log")
+}
 
 #*=============================================
 #* END VARIABLE DECLARATION
@@ -304,8 +315,8 @@ Function Write-Log {
 		Write-Host $logEntry
 		If ($DisableLogging -eq $false) {
 			# Create the Log directory and file if it doesn't already exist
-			If (!(Test-Path -path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction SilentlyContinue | Out-Null }
-			If (!(Test-Path -path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
+			If (!(Test-Path -Path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction SilentlyContinue | Out-Null }
+			If (!(Test-Path -Path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
 			Try {
 				"$logEntry" | Out-File $logFile -Append -ErrorAction SilentlyContinue
 			}
@@ -402,6 +413,23 @@ Function Exit-Script {
 	}
 
 	Write-Log "----------------------------------------------------------------------------------------------------------"
+
+	# Compress the log files and remove the temporary folder
+	If ($configToolkitCompressLogs) {
+		Try {
+			Set-Content $zipFileName ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18))
+			$zipFile = $shellApp.NameSpace($zipFileName)
+			ForEach ($file in (Get-ChildItem $logTempFolder)) {
+				Write-Host "Compressing log file [$($file.Name)] to [$($zipFileName)]..."
+				$zipFile.CopyHere($file.FullName)
+				Start-Sleep -Milliseconds 500
+			}
+			If (Test-Path -Path $logTempFolder -ErrorAction SilentlyContinue ) { Remove-Item $logTempFolder -Recurse -Force -ErrorAction SilentlyContinue | Out-Null }
+		}
+		Catch {
+			Write-Log "An error occurred while attempting to compress the log files: $($_.Exception.Message)"
+		}
+	}
 
 	# Exit the script returning the exit code to SCCM
 	Exit $exitCode
@@ -1137,10 +1165,16 @@ Function Execute-MSI {
 		}
 	}
 
-	# Create the Log directory if it doesn't already exist
-	If (!(Test-Path -path $configMSILogDir -ErrorAction SilentlyContinue )) { New-Item $configMSILogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
-	# Build the log file path
-	$logPath = Join-Path $configMSILogDir $logName
+	If ($configToolkitCompressLogs) {
+		# Build the log file path
+		$logPath = Join-Path $logTempFolder $logName
+	}
+	Else {
+		# Create the Log directory if it doesn't already exist
+		If (!(Test-Path -path $configMSILogDir -ErrorAction SilentlyContinue )) { New-Item $configMSILogDir -Type directory -ErrorAction SilentlyContinue | Out-Null }
+		# Build the log file path
+		$logPath = Join-Path $configMSILogDir $logName
+	}
 
 	# Set the installation Parameters
 	$msiUninstallDefaultParams = $configMSISilentParams

@@ -1,4 +1,5 @@
 Version 3.1.3 [05/xx/2014]
+	Added CompressLogs option to the config file. Each Install / Uninstall creates a timestamped zip file with all MSI and PSAppDeployToolkit logs contained within
 	Added variable expansion to all paths in the configuration file
 	Added documentation for each of the Toolkit internal variables that can be used
 	Implement /Force parameter on Update-GroupPolicy (ensure that any logoff message is ignored)
