@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.3"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/20/2014"
+$appDeployMainScriptDate = "05/22/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3930,11 +3930,11 @@ Function Install-MSUpdates ($Directory) {
 			Write-Log "$kbNumber was not detected and will be installed."
 			Switch ($file.Extension) {
 				# Installation type for executables (ie, Microsoft Office Updates)
-				".exe" { Execute-Process -FilePath $file -Arguments "/quiet /norestart" -WindowStyle Hidden }
+				".exe" { Execute-Process -FilePath $file -Arguments "/quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
 				# Installation type for Windows updates using Windows Update Standalone Installer
-				".msu" { Execute-Process -FilePath "wusa.exe" -Arguments "`"$file`" /quiet /norestart" -WindowStyle Hidden }
+				".msu" { Execute-Process -FilePath "wusa.exe" -Arguments "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
 				# Installation type for Windows Installer Patch
-				".msp" { Execute-MSI -Action "Patch" -Path $file }
+				".msp" { Execute-MSI -Action "Patch" -Path $file -ContinueOnError $true }
 			}
 		}
 		Else {

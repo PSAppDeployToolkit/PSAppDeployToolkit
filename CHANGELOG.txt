@@ -1,7 +1,8 @@
-Version 3.1.3 [05/xx/2014]
+Version 3.1.3 [05/22/2014]
 	Added CompressLogs option to the config file. Each Install / Uninstall creates a timestamped zip file with all MSI and PSAppDeployToolkit logs contained within
 	Added variable expansion to all paths in the configuration file
 	Added documentation for each of the Toolkit internal variables that can be used
+	Changed Install-MSUpdates to continue if any errors are encountered when installing updates
 	Implement /Force parameter on Update-GroupPolicy (ensure that any logoff message is ignored)
 	Fixed issue where the AppClose Countdown timer would reset if the user attempted to close the UI
 	Fixed error handling in Set-PinnedApplication if the executable existed but the shortcut wasn't actually pinned
