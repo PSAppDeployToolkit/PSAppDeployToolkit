@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.3"
+$appDeployMainScriptVersion = [version]"3.1.4"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/22/2014"
+$appDeployMainScriptDate = "05/27/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1309,6 +1309,8 @@ Function Execute-Process {
 .PARAMETER WorkingDirectory
 	The working directory used for executing the process.
 	Defaults to the directory of the file being executed.
+.PARAMETER NoWait
+	Immediately continue after executing the process.
 .PARAMETER PassThru
 	Returns STDOut and STDErr output from the process.
 .PARAMETER IgnoreExitCodes
@@ -1358,68 +1360,73 @@ Function Execute-Process {
 
 	$process = [System.Diagnostics.Process]::Start($processStartInfo)
 
-	$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
-	$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
+	If ($NoWait -eq $true) {
+		Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
+	} 
+	Else {
+		$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
+		$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
 
-	$processName = $process.ProcessName
+		$processName = $process.ProcessName
 
-	If($stdErr.length -gt 0) { Write-Log $stdErr}
+		If($stdErr.length -gt 0) { Write-Log $stdErr}
 
-	$process.WaitForExit()
-	$returnCode = $process.ExitCode
+		$process.WaitForExit()
+		$returnCode = $process.ExitCode
 
-	# Re-enable Zone checking
-	Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
+		# Re-enable Zone checking
+		Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
 
-	# Check to see whether we should ignore exit codes
-	$ignoreExitCodeMatch = $false
-	If ($ignoreExitCodes -ne "") {
-		# Create array to store the exit codes
-		$ignoreExitCodesArray = @()
-		# Split the processes on a comma
-		$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
-		ForEach ($ignoreCode in $ignoreExitCodesArray) {
-			If ($returnCode -eq $ignoreCode) {
-				$ignoreExitCodeMatch = $true
+		# Check to see whether we should ignore exit codes
+		$ignoreExitCodeMatch = $false
+		If ($ignoreExitCodes -ne "") {
+			# Create array to store the exit codes
+			$ignoreExitCodesArray = @()
+			# Split the processes on a comma
+			$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
+			ForEach ($ignoreCode in $ignoreExitCodesArray) {
+				If ($returnCode -eq $ignoreCode) {
+					$ignoreExitCodeMatch = $true
+				}
 			}
 		}
-	}
-	# Or always ignore exit codes
-	If ($ContinueOnError -eq $true) {
-		$ignoreExitCodeMatch = $true
-	}
-
-	# If the passthru switch is specified, return the exit code and any output from process
-	If ($PassThru -eq $true) {
-		New-Object PSObject -Property @{
-			ExitCode = $returnCode
-			StdOut = $stdOut
-			StdErr = $stdErr
+		# Or always ignore exit codes
+		If ($ContinueOnError -eq $true) {
+			$ignoreExitCodeMatch = $true
 		}
-		Write-Log "Execution completed with return code $returnCode."
-	}
-	ElseIf ($ignoreExitCodeMatch -eq $true) {
-		Write-Log "Execution complete and the return code $returncode has been ignored."
-	}
-	ElseIf ( ($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
-		Write-Log "Execution completed successfully with return code $returnCode. A reboot is required."
-		Set-Variable -Name msiRebootDetected -Value $true -Scope Script
-	}
-	ElseIf ( ($returnCode -eq 1605) -and ($filePath -eq $exeMsiexec)) {
-		Write-Log "Execution did not complete, because the product is not currently installed."
-	}
-	ElseIf ( ($returnCode -eq -2145124329) -and ($filePath -eq $exeWusa)) {
-		Write-Log "Execution did not complete, because this Windows Update is not applicable to this system."
-	}
-	ElseIf ( ($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
-		Write-Log "Execution did not complete, because the Office Update is not applicable to this system."
-	}
-	ElseIf ($returnCode -eq 0) {
-		Write-Log "Execution completed successfully with return code $returnCode."
-	}
-	Else {
-		Write-Log ("Execution failed with code: " + $returnCode)
-		Exit-Script $returnCode
+
+		# If the passthru switch is specified, return the exit code and any output from process
+		If ($PassThru -eq $true) {
+			New-Object PSObject -Property @{
+				ExitCode = $returnCode
+				StdOut = $stdOut
+				StdErr = $stdErr
+			}
+			Write-Log "Execution completed with return code $returnCode."
+		}
+		ElseIf ($ignoreExitCodeMatch -eq $true) {
+			Write-Log "Execution complete and the return code $returncode has been ignored."
+		}
+		ElseIf ( ($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
+			Write-Log "Execution completed successfully with return code $returnCode. A reboot is required."
+			Set-Variable -Name msiRebootDetected -Value $true -Scope Script
+		}
+		ElseIf ( ($returnCode -eq 1605) -and ($filePath -eq $exeMsiexec)) {
+			Write-Log "Execution did not complete, because the product is not currently installed."
+		}
+		ElseIf ( ($returnCode -eq -2145124329) -and ($filePath -eq $exeWusa)) {
+			Write-Log "Execution did not complete, because this Windows Update is not applicable to this system."
+		}
+		ElseIf ( ($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
+			Write-Log "Execution did not complete, because the Office Update is not applicable to this system."
+		}
+		ElseIf ($returnCode -eq 0) {
+			Write-Log "Execution completed successfully with return code $returnCode."
+		}
+		Else {
+			Write-Log ("Execution failed with code: " + $returnCode)
+			Exit-Script $returnCode
+		}
 	}
 
 	Trap [Exception] {
