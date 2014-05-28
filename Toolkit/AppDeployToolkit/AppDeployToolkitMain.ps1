@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.4"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/27/2014"
+$appDeployMainScriptDate = "05/28/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1346,90 +1346,91 @@ Function Execute-Process {
 	Write-Log "Executing [$FilePath $Arguments]..."
 	Write-Log "Working Directory is [$WorkingDirectory]"
 
-	# Disable Zone checking to prevent warnings when running executables from a Distribution Point
-	$env:SEE_MASK_NOZONECHECKS = 1
+	Try {
+		# Disable Zone checking to prevent warnings when running executables from a Distribution Point
+		$env:SEE_MASK_NOZONECHECKS = 1
 
-	$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-	$processStartInfo.FileName = "$FilePath"
-	$processStartInfo.WorkingDirectory = "$WorkingDirectory"
-	$processStartInfo.UseShellExecute = $false
-	$processStartInfo.RedirectStandardOutput = $true
-	$processStartInfo.RedirectStandardError = $true
-	If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
-	If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
+		$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+		$processStartInfo.FileName = "$FilePath"
+		$processStartInfo.WorkingDirectory = "$WorkingDirectory"
+		$processStartInfo.UseShellExecute = $false
+		$processStartInfo.RedirectStandardOutput = $true
+		$processStartInfo.RedirectStandardError = $true
+		If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
+		If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
 
-	$process = [System.Diagnostics.Process]::Start($processStartInfo)
+		$process = [System.Diagnostics.Process]::Start($processStartInfo)
 
-	If ($NoWait -eq $true) {
-		Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
-	} 
-	Else {
-		$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
-		$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
+		If ($NoWait -eq $true) {
+			Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
+		} 
+		Else {
+			$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
+			$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
 
-		$processName = $process.ProcessName
+			$processName = $process.ProcessName
 
-		If($stdErr.length -gt 0) { Write-Log $stdErr}
+			If($stdErr.length -gt 0) { Write-Log $stdErr}
 
-		$process.WaitForExit()
-		$returnCode = $process.ExitCode
+			$process.WaitForExit()
+			$returnCode = $process.ExitCode
 
-		# Re-enable Zone checking
-		Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
+			# Re-enable Zone checking
+			Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
 
-		# Check to see whether we should ignore exit codes
-		$ignoreExitCodeMatch = $false
-		If ($ignoreExitCodes -ne "") {
-			# Create array to store the exit codes
-			$ignoreExitCodesArray = @()
-			# Split the processes on a comma
-			$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
-			ForEach ($ignoreCode in $ignoreExitCodesArray) {
-				If ($returnCode -eq $ignoreCode) {
-					$ignoreExitCodeMatch = $true
+			# Check to see whether we should ignore exit codes
+			$ignoreExitCodeMatch = $false
+			If ($ignoreExitCodes -ne "") {
+				# Create array to store the exit codes
+				$ignoreExitCodesArray = @()
+				# Split the processes on a comma
+				$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
+				ForEach ($ignoreCode in $ignoreExitCodesArray) {
+					If ($returnCode -eq $ignoreCode) {
+						$ignoreExitCodeMatch = $true
+					}
 				}
 			}
-		}
-		# Or always ignore exit codes
-		If ($ContinueOnError -eq $true) {
-			$ignoreExitCodeMatch = $true
-		}
-
-		# If the passthru switch is specified, return the exit code and any output from process
-		If ($PassThru -eq $true) {
-			New-Object PSObject -Property @{
-				ExitCode = $returnCode
-				StdOut = $stdOut
-				StdErr = $stdErr
+			# Or always ignore exit codes
+			If ($ContinueOnError -eq $true) {
+				$ignoreExitCodeMatch = $true
 			}
-			Write-Log "Execution completed with return code $returnCode."
-		}
-		ElseIf ($ignoreExitCodeMatch -eq $true) {
-			Write-Log "Execution complete and the return code $returncode has been ignored."
-		}
-		ElseIf ( ($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
-			Write-Log "Execution completed successfully with return code $returnCode. A reboot is required."
-			Set-Variable -Name msiRebootDetected -Value $true -Scope Script
-		}
-		ElseIf ( ($returnCode -eq 1605) -and ($filePath -eq $exeMsiexec)) {
-			Write-Log "Execution did not complete, because the product is not currently installed."
-		}
-		ElseIf ( ($returnCode -eq -2145124329) -and ($filePath -eq $exeWusa)) {
-			Write-Log "Execution did not complete, because this Windows Update is not applicable to this system."
-		}
-		ElseIf ( ($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
-			Write-Log "Execution did not complete, because the Office Update is not applicable to this system."
-		}
-		ElseIf ($returnCode -eq 0) {
-			Write-Log "Execution completed successfully with return code $returnCode."
-		}
-		Else {
-			Write-Log ("Execution failed with code: " + $returnCode)
-			Exit-Script $returnCode
+
+			# If the passthru switch is specified, return the exit code and any output from process
+			If ($PassThru -eq $true) {
+				New-Object PSObject -Property @{
+					ExitCode = $returnCode
+					StdOut = $stdOut
+					StdErr = $stdErr
+				}
+				Write-Log "Execution completed with return code $returnCode."
+			}
+			ElseIf ($ignoreExitCodeMatch -eq $true) {
+				Write-Log "Execution complete and the return code $returncode has been ignored."
+			}
+			ElseIf ( ($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
+				Write-Log "Execution completed successfully with return code $returnCode. A reboot is required."
+				Set-Variable -Name msiRebootDetected -Value $true -Scope Script
+			}
+			ElseIf ( ($returnCode -eq 1605) -and ($filePath -eq $exeMsiexec)) {
+				Write-Log "Execution did not complete, because the product is not currently installed."
+			}
+			ElseIf ( ($returnCode -eq -2145124329) -and ($filePath -eq $exeWusa)) {
+				Write-Log "Execution did not complete, because this Windows Update is not applicable to this system."
+			}
+			ElseIf ( ($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
+				Write-Log "Execution did not complete, because the Office Update is not applicable to this system."
+			}
+			ElseIf ($returnCode -eq 0) {
+				Write-Log "Execution completed successfully with return code $returnCode."
+			}
+			Else {
+				Write-Log ("Execution failed with code: " + $returnCode)
+				Exit-Script $returnCode
+			}
 		}
 	}
-
-	Trap [Exception] {
+	Catch [Exception] {
 		Write-Log ("Execution failed: " + $_.Exception.Message)
 		If ($returnCode -eq $null) { $returnCode = 999 }
 		Exit-Script $returnCode
@@ -1464,18 +1465,19 @@ Function Copy-File {
 		[boolean] $ContinueOnError = $true
 	)
 
-    If ($Recurse) {
-        Write-Log "Copying File [$path] to [$destination] recursively..."
-        Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force -Recurse | Out-Null
-    }
-    Else {
-        Write-Log "Copying File [$path] to [$destination]..."
-        Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force | Out-Null
-    }
-	Trap [Exception] {
+	Try {
+		If ($Recurse) {
+			Write-Log "Copying File [$path] to [$destination] recursively..."
+			Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force -Recurse | Out-Null
+		}
+		Else {
+			Write-Log "Copying File [$path] to [$destination]..."
+			Copy-Item -Path "$Path" -Destination "$destination" -ErrorAction "STOP" -Force | Out-Null
+		}
+	}
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Could not copy file [$path] to [$destination]:" + $_.Exception.Message)
-			Continue
 		}
 		Else {
 			Throw $("Could not copy file [$path] to [$destination]:" + $_.Exception.Message)
@@ -1511,16 +1513,17 @@ Function Remove-File {
 	)
 
 	Write-Log "Deleting File(s) [$path]..."
-	If ($Recurse) {
-		Remove-Item -Path "$path" -ErrorAction "STOP" -Force -Recurse | Out-Null
+	Try {
+		If ($Recurse) {
+			Remove-Item -Path "$path" -ErrorAction "STOP" -Force -Recurse | Out-Null
+		}
+		Else {
+			Remove-Item -Path "$path" -ErrorAction "STOP" -Force | Out-Null
+		}
 	}
-	Else {
-		Remove-Item -Path "$path" -ErrorAction "STOP" -Force | Out-Null
-	}
-	Trap [Exception] {
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
 			Write-Log $("Could not delete file [$path]:" + $_.Exception.Message)
-			Continue
 		}
 		Else {
 			Throw $("Could not delete file [$path]:" + $_.Exception.Message)
@@ -1603,24 +1606,25 @@ Function Get-RegistryKey {
 
 	# Check if the registry key exists
 	If (Test-Path -Path $key -ErrorAction SilentlyContinue) {
-		If ($Value -eq $null) {
-			# Get the Key
-			$regKeyValue = Get-ItemProperty -Path $key
+		Try {
+			If ($Value -eq $null) {
+				# Get the Key
+				$regKeyValue = Get-ItemProperty -Path $key
+			}
+			Else {
+				# Get the Value
+				$regKeyValue = Get-ItemProperty -Path $key | Select $Value -ExpandProperty $Value
+			}
+			If ($regKeyValue -ne "") {
+				Return $regKeyValue
+			}
+			Else {
+				Return $null
+			}
 		}
-		Else {
-			# Get the Value
-			$regKeyValue = Get-ItemProperty -Path $key | Select $Value -ExpandProperty $Value
-		}
-		If ($regKeyValue -ne "") {
-			Return $regKeyValue
-		}
-		Else {
-			Return $null
-		}
-		Trap [Exception] {
+		Catch [Exception] {
 			If ($ContinueOnError -eq $true) {
 				Write-Log $("Registry key does not exist: [$key]" + $_.Exception.Message)
-				Continue
 			}
 			Else {
 				Throw $("Registry key does not exist: [$key]" + $_.Exception.Message)
@@ -1672,36 +1676,38 @@ Function Set-RegistryKey {
 	# Create registry key if it doesn't exist
 	If (!(Test-Path $key -ErrorAction SilentlyContinue)) {
 		Write-Log "Creating Registry key [$key]..."
-		New-Item -Path $key -ItemType Registry -Force | Out-Null
-		Trap [Exception] {
+		Try {
+			New-Item -Path $key -ItemType Registry -Force | Out-Null
+		}
+		Catch [Exception] {
 			If ($ContinueOnError -eq $true) {
-				Write-Log $("Failed to create registry key [$Key]" + $_.Exception.Message)
-				Continue
+				Write-Log $("Failed to create registry key [$Key]:" + $_.Exception.Message)
 			}
 			Else {
-				Throw $("Failed to create registry key [$Key]" + $_.Exception.Message)
+				Throw $("Failed to create registry key [$Key]: " + $_.Exception.Message)
 			}
 		}
 	}
 
 	If ($Name) {
-		# Set registry value if it doesn't exist
-		If ((Get-ItemProperty -Path $key -Name $Name -ErrorAction SilentlyContinue) -eq $null) {
-			Write-Log "Setting registry key [$key] [$name = $value]..."
-			New-ItemProperty -Path $key -Name $name -Value $value -PropertyType $type | Out-Null
+		Try {
+			# Set registry value if it doesn't exist
+			If ((Get-ItemProperty -Path $key -Name $Name -ErrorAction SilentlyContinue) -eq $null) {
+				Write-Log "Setting registry key [$key] [$name = $value]..."
+				New-ItemProperty -Path $key -Name $name -Value $value -PropertyType $type | Out-Null
+			}
+			# Update registry value if it does exist
+			Else {
+				Write-Log "Updating registry key: [$key] [$name = $value]..."
+				Set-ItemProperty -Path $key -Name $name -Value $value | Out-Null
+			}
 		}
-		# Update registry value if it does exist
-		Else {
-			Write-Log "Updating registry key: [$key] [$name = $value]..."
-			Set-ItemProperty -Path $key -Name $name -Value $value | Out-Null
-		}
-		Trap [Exception] {
+		Catch [Exception] {
 			If ($ContinueOnError -eq $true) {
-				Write-Log $("Failed to set registry value [$value] for registry key [$key] [$name]" + $_.Exception.Message)
-				Continue
+				Write-Log $("Failed to set registry value [$value] for registry key [$key] [$name]: " + $_.Exception.Message)
 			}
 			Else {
-				Throw $("Failed to set registry value [$value] for registry key [$key] [$name]" + $_.Exception.Message)
+				Throw $("Failed to set registry value [$value] for registry key [$key] [$name]: " + $_.Exception.Message)
 			}
 		}
 	}
@@ -1739,32 +1745,34 @@ Function Remove-RegistryKey {
 
 	If (!($name)) {
 		Write-Log "Deleting Registry Key [$key]..."
-		If ($Recurse) {
-			Remove-Item -Path $Key -ErrorAction "STOP" -Force -Recurse | Out-Null
-		}
-		Else {
-			Remove-Item -Path $Key -ErrorAction "STOP" -Force | Out-Null
-		}
-		Trap [Exception] {
-			If ($ContinueOnError -eq $true) {
-				Write-Log $("Failed to delete registry key [$Key]:" + $_.Exception.Message)
-				Continue
+		Try {
+			If ($Recurse) {
+				Remove-Item -Path $Key -ErrorAction "STOP" -Force -Recurse | Out-Null
 			}
 			Else {
-				Throw $("Failed to delete registry key [$Key]:" + $_.Exception.Message)
+				Remove-Item -Path $Key -ErrorAction "STOP" -Force | Out-Null
+			}
+		}
+		Catch [Exception] {
+			If ($ContinueOnError -eq $true) {
+				Write-Log $("Failed to delete registry key [$Key]: " + $_.Exception.Message)
+			}
+			Else {
+				Throw $("Failed to delete registry key [$Key]: " + $_.Exception.Message)
 			}
 		}
 	}
 	Else {
 		Write-Log "Deleting Registry Value [$Key] [$name] ..."
-		Remove-ItemProperty -Path $Key -Name $Name -ErrorAction "STOP" -Force | Out-Null
-		Trap [Exception] {
+		Try {
+			Remove-ItemProperty -Path $Key -Name $Name -ErrorAction "STOP" -Force | Out-Null
+		}
+		Catch [Exception] {
 			If ($ContinueOnError -eq $true) {
-				Write-Log $("Failed to delete registry value [$Key] [$name]:" + $_.Exception.Message)
-				Continue
+				Write-Log $("Failed to delete registry value [$Key] [$name]: " + $_.Exception.Message)
 			}
 			Else {
-				Throw $("Failed to delete registry value [$Key] [$name]:" + $_.Exception.Message)
+				Throw $("Failed to delete registry value [$Key] [$name]: " + $_.Exception.Message)
 			}
 		}
 	}
@@ -1802,22 +1810,23 @@ Function Get-FileVersion {
 				$fileVersion = ($fileVersion -split " " | Select -First 1)
 				Write-Log "File version is [$fileVersion]"
 				Return $fileVersion
-				}
-			}
-		Catch {
-			If ($ContinueOnError -eq $true) {
-				Write-Log "Error getting file version info."
-				Continue
 			}
 			Else {
-				Throw "Error getting file version info."
+				Write-Log "No file version information found."
+			}
+		}
+		Catch [Exception] {
+			If ($ContinueOnError -eq $true) {
+				Write-Log "Error getting file version info: " + $_.Exception.Message
+			}
+			Else {
+				Throw "Error getting file version info: " + $_.Exception.Message
 			}
 		}
 	}
 	Else {
 		If ($ContinueOnError -eq $true) {
 			Write-Log "File could not be found."
-			Continue
 		}
 		Else {
 			Throw "File could not be found."
@@ -1864,28 +1873,38 @@ Function New-Shortcut {
 	)
 
 	$PathDirectory = ([System.IO.FileInfo]$Path).DirectoryName
-	If (!(Test-Path -Path $PathDirectory)) {
-		Write-Log "Creating Shortcut Directory..."
-		New-Item -ItemType Directory -Path $PathDirectory -ErrorAction SilentlyContinue -Force | Out-Null
+	Try {
+		If (!(Test-Path -Path $PathDirectory)) {
+			Write-Log "Creating shortcut directory..."
+			New-Item -ItemType Directory -Path $PathDirectory -ErrorAction SilentlyContinue -Force | Out-Null
+		}
+	}
+	Catch [Exception] {
+		If ($ContinueOnError -eq $true) {
+			Write-Log $("Failed to create shortcut directory [$PathDirectory]: " + $_.Exception.Message)
+		}
+		Else {
+			Throw $("Failed to create shortcut directory [$PathDirectory]: " + $_.Exception.Message)
+		}
 	}
 
 
 	Write-Log "Creating shortcut [$path]..."
-	$shortcut = $shell.CreateShortcut($path)
-	$shortcut.TargetPath = $targetPath
-	$shortcut.Arguments = $arguments
-	$shortcut.IconLocation = $iconLocation
-	$shortcut.Description = $description
-	$shortcut.WorkingDirectory = $workingDirectory
-	$shortcut.Save()
-
-	Trap [Exception] {
+	Try { 
+		$shortcut = $shell.CreateShortcut($path)
+		$shortcut.TargetPath = $targetPath
+		$shortcut.Arguments = $arguments
+		$shortcut.IconLocation = $iconLocation
+		$shortcut.Description = $description
+		$shortcut.WorkingDirectory = $workingDirectory
+		$shortcut.Save()
+	}
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
-			Write-Log $("Failed to create shortcut [$path]:" + $_.Exception.Message)
-			Continue
+			Write-Log $("Failed to create shortcut [$path]: " + $_.Exception.Message)
 		}
 		Else {
-			Throw $("Failed to create shortcut [$path]:" + $_.Exception.Message)
+			Throw $("Failed to create shortcut [$path]: " + $_.Exception.Message)
 		}
 	}
 
@@ -1927,16 +1946,16 @@ public static void Refresh() {
 }
 '@
 
-	Add-Type -MemberDefinition $refreshDesktopCode -Namespace MyWinAPI -Name Explorer
-	[MyWinAPI.Explorer]::Refresh()
-
-	Trap [Exception] {
+	Try {
+		Add-Type -MemberDefinition $refreshDesktopCode -Namespace MyWinAPI -Name Explorer
+		[MyWinAPI.Explorer]::Refresh()
+	}
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
-			Write-Log $("Error refreshing Desktop:" + $_.Exception.Message)
-			Continue
+			Write-Log $("Error refreshing Desktop: " + $_.Exception.Message)
 		}
 		Else {
-			Throw $("Error refreshing Desktop:" + $_.Exception.Message)
+			Throw $("Error refreshing Desktop: " + $_.Exception.Message)
 		}
 	}
 }
@@ -3696,7 +3715,6 @@ public static extern uint GetPrivateProfileString(
 	Else {
 		If ($ContinueOnError -eq $true) {
 			Write-Log "File [$filePath] could not be found."
-			Continue
 		}
 		Else {
 			Throw "File [$filePath] could not be found."
@@ -3753,7 +3771,6 @@ public static extern uint WritePrivateProfileString(
 	Else {
 		If ($ContinueOnError -eq $true) {
 			Write-Log "File [$filePath] could not be found."
-			Continue
 		}
 		Else {
 			Throw "File [$filePath] could not be found."
@@ -3796,7 +3813,6 @@ Function Register-DLL {
 	Else {
 		If ($ContinueOnError -eq $true) {
 			Write-Log "File [$filePath] could not be found."
-			Continue
 		}
 		Else {
 			Throw "File [$filePath] could not be found."
@@ -3847,7 +3863,6 @@ Function Unregister-DLL {
 	Else {
 		If ($ContinueOnError -eq $true) {
 			Write-Log "File [$filePath] could not be found."
-			Continue
 		}
 		Else {
 			Throw "File [$filePath] could not be found."
@@ -4099,13 +4114,12 @@ Function Invoke-SCCMTask {
 		$SmsClient = [wmiclass]"ROOT\ccm:SMS_Client"
 		$SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID) | Out-Null
 	}
-	Catch {
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
-			Write-Log "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId)"
-			Continue
+			Write-Log "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): " + $_.Exception.Message
 		}
 		Else {
-			Throw "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId)"
+			Throw "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): " + $_.Exception.Message
 		}
 	}
 
@@ -4137,18 +4151,17 @@ Function Install-SCCMSoftwareUpdates {
 	Write-Log "Sleeping 180 seconds..."
 	Sleep -Seconds 180
 
+	Write-Log "Installing pending software updates..."
 	Try {
-		Write-Log "Installing pending software updates..."
 		$SmsSoftwareUpdates = [wmiclass]"ROOT\ccm:SMS_Client"
 		$SmsSoftwareUpdates.InstallUpdates([System.Management.ManagementObject[]] (Get-WmiObject -Query “SELECT * FROM CCM_SoftwareUpdate” -Namespace “ROOT\ccm\ClientSDK”)) | Out-Null
 	}
-	Catch {
+	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
-			Write-Log "Trigger SCCM Install Updates failed"
-			Continue
+			Write-Log "Trigger SCCM Install Updates failed: " + $_.Exception.Message
 		}
 		Else {
-			Throw "Trigger SCCM Install Updates failed"
+			Throw "Trigger SCCM Install Updates failed: " + $_.Exception.Message
 		}
 	}
 }
@@ -4234,12 +4247,11 @@ Try {
 	Add-Type -AssemblyName PresentationCore
 	Add-Type -AssemblyName WindowsBase
 }
-Catch {
+Catch [Exception] {
 	$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
 	Write-Log "Error Loading Assembly: $exceptionMessage"
 	If ($deployModeNonInteractive -eq $true) {
 		Write-Log "Continuing despite assembly error since deployment mode is [$deployMode]"
-		Continue
 	}
 	Else {
 		Exit-Script 1

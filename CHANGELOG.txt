@@ -1,5 +1,7 @@
 Version 3.1.4 [xx/xx/2014]
 	Added NoWait parameter to Execute-Process
+	Improved exception handling and logging for a number of functions
+	Fixed issue where hang could occur if file version was null when using Get-FileVersion
 
 Version 3.1.3 [05/22/2014]
 	Added CompressLogs option to the config file. Each Install / Uninstall creates a timestamped zip file with all MSI and PSAppDeployToolkit logs contained within
