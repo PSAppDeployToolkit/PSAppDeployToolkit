@@ -100,6 +100,29 @@ end
 item: Remark
 end
 item: Remark
+  Text=Verify AppDeployToolkit folder exists (Exit code 10 if failed)
+end
+item: Check if File/Dir Exists
+  Pathname=%INST%\AppDeployToolkit
+  Flags=00000101
+end
+item: Display Message
+  Title=Required Files Missing
+  Text=A critical component of the App Deployment Toolkit is missing:
+  Text=
+  Text=Unable to find the "AppDeployToolkit" folder.
+  Text=
+  Text=Please ensure you have all of the required files available to start the installation.
+  Flags=00110000
+end
+item: Exit Installation
+  Flags=10
+end
+item: End Block
+end
+item: Remark
+end
+item: Remark
   Text=Run the deployment script
 end
 item: If/While Statement

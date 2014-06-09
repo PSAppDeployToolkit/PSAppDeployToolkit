@@ -1,5 +1,8 @@
 Version 3.1.4 [xx/xx/2014]
 	Added NoWait parameter to Execute-Process
+	Added the ability for Deploy-Application.exe to point to a different .ps1 file by specifying it on the command-line
+	Added checks to Deploy-Application.exe to verify the AppDeployToolkit folder exists
+	Added PSAppDeployToolkit icon to Deploy-Application.exe
 	Improved exception handling and logging for a number of functions
 	Fixed issue where hang could occur if file version was null when using Get-FileVersion
 
