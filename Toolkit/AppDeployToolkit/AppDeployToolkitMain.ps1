@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.4"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "05/28/2014"
+$appDeployMainScriptDate = "06/10/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1434,6 +1434,93 @@ Function Execute-Process {
 		Write-Log ("Execution failed: " + $_.Exception.Message)
 		If ($returnCode -eq $null) { $returnCode = 999 }
 		Exit-Script $returnCode
+	}
+}
+
+Function New-Folder { 
+<# 
+.SYNOPSIS
+	Function to create a new folder.
+.DESCRIPTION
+	Function to create a new folder if it does not exist.
+.EXAMPLE
+	New-Folder -Path "$envWinDir\System32"
+.PARAMETER Path
+	Path of the folder you want to create
+.PARAMETER ContinueOnError
+	Continue if an error is encountered
+.NOTES 
+.LINK
+	Http://psappdeploytoolkit.codeplex.com
+#>	Param(
+		[Parameter(Mandatory = $true)]
+		[string]$Path = $(Throw "Path param required"),
+		[boolean] $ContinueOnError = $true
+	)
+
+	Try {
+		Write-Log "Testing if folder [$Path] exists..."
+		$CheckFolder = Test-Path -PathType Container $Path
+
+		If ($CheckFolder -eq $False) {
+			Write-Log "Creating Folder [$Path]..."
+			New-Item $Path -type Directory
+		}
+		Else {
+			Write-Log "$Path folder already exists..."
+		}
+	}
+	Catch [Exception] {
+		If ($ContinueOnError -eq $true) {
+			Write-Log $("Could not create folder [$path]:" + $_.Exception.Message)
+			Continue
+		}
+		Else {
+			Throw $("Could not create folder [$path]:" + $_.Exception.Message)
+		}
+	}
+}
+
+Function Remove-Folder {
+<# 
+.SYNOPSIS
+	Function to remove a folder and files if they exist.
+.DESCRIPTION
+	Function to remove a folder and all files recursively in a given path.
+.EXAMPLE
+	Remove-Folder -Path "$envWinDir\Downloaded Program Files"
+.PARAMETER Path
+	Path of the folder you want to remove
+.PARAMETER Recurse
+	Optionally, remove all folder and files recursively in a directory
+.PARAMETER ContinueOnError
+	Continue if an error is encountered
+.NOTES 
+.LINK
+Http://psappdeploytoolkit.codeplex.com
+#>	Param(
+		[Parameter(Mandatory = $true)]
+		[string] $Path = $(throw "Path Param required"),
+		[boolean] $ContinueOnError = $true
+	)
+
+	Try {
+		Write-Log "Testing if folder [$Path] exists..."
+		$CheckFolder = Test-Path -PathType Container $Path
+
+		If ($CheckFolder -ne $False) {
+			Write-Log "Deleting Folder(s) and Files [$path]..."
+			Remove-Item -Path "$path" -ErrorAction "STOP" -Force -Recurse | Out-Null
+		}
+	}
+	Catch [Exception] {
+		If ($ContinueOnError -eq $true) {
+			Write-Log $("Could not delete folder and files [$path]:" + $_.Exception.Message)
+			Continue
+		}
+		Else {
+			Throw $("Could not delete folder and files [$path]:" + $_.Exception.Message)
+		}
 	}
 }
 
