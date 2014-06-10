@@ -1491,8 +1491,6 @@ Function Remove-Folder {
 	Remove-Folder -Path "$envWinDir\Downloaded Program Files"
 .PARAMETER Path
 	Path of the folder you want to remove
-.PARAMETER Recurse
-	Optionally, remove all folder and files recursively in a directory
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .NOTES 
