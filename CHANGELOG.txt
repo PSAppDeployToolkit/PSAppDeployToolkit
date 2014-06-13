@@ -1,3 +1,6 @@
+Version 3.1.5 [06/13/2014]
+	Fixed issue where Execute-MSI did not use value from XML file for uninstall but instead ran all uninstalls silently by default
+
 Version 3.1.4 [xx/xx/2014]
 	Added New-Folder and Remove-Folder functions (Thanks to SueH)
 	Added NoWait parameter to Execute-Process

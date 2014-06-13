@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.4"
+$appDeployMainScriptVersion = [version]"3.1.5"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "06/10/2014"
+$appDeployMainScriptDate = "06/13/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1177,12 +1177,13 @@ Function Execute-MSI {
 	}
 
 	# Set the installation Parameters
-	$msiUninstallDefaultParams = $configMSISilentParams
 	If ($deployModeSilent -eq $true) {
 		$msiInstallDefaultParams = $configMSISilentParams
+        $msiUninstallDefaultParams = $configMSISilentParams
 	}
 	Else {
 		$msiInstallDefaultParams = $configMSIInstallParams
+        $msiUninstallDefaultParams = $configMSIUninstallParams
 	}
 
 	# Build the MSI Parameters
