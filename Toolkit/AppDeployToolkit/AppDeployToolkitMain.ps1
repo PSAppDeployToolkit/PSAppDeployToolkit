@@ -378,6 +378,7 @@ Function Exit-Script {
 		$configInstallationUIExitCode { $installSuccess = $false }
 		$configInstallationDeferExitCode { $installSuccess = $false }
 		3010 { $installSuccess = $true }
+		1641 { $installSuccess = $true }
 		0 { $installSuccess = $true }
 		Default { $installSuccess = $false }
 	}

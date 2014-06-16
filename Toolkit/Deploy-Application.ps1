@@ -14,7 +14,7 @@
 .EXAMPLE
 	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
-	Deploy-Application.ps1 -Uninstall 
+	Deploy-Application.ps1 Uninstall 
 .PARAMETER DeploymentType
 	The type of deployment to perform. [Default is "Install"]
 .PARAMETER DeployMode
@@ -62,7 +62,7 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.1.4"
+$deployAppScriptVersion = [version]"3.1.5"
 $deployAppScriptDate = "06/10/2014"
 $deployAppScriptParameters = $psBoundParameters
 
