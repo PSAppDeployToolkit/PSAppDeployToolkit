@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.5"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.3"
-$appDeployMainScriptDate = "06/13/2014"
+$appDeployMainScriptVersion = [version]"4.0"
+$appDeployMainScriptMinimumConfigVersion = [version]"4.0"
+$appDeployMainScriptDate = "06/17/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -134,10 +134,11 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
+[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)
+[bool]$configToolkitCompressLogs = [boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 [string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
 [string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
-[bool]$configToolkitCompressLogs = [boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 
 # Get MSI Options
 $xmlConfigMSIOptions = $xmlConfig.MSI_Options
@@ -214,6 +215,8 @@ $isServerOS = (Get-WmiObject -Class Win32_operatingsystem -ErrorAction SilentlyC
 $msiRebootDetected = $false
 $BlockExecution = $false
 $installationStarted = $false
+$sessionZero = $false
+$runningTaskSequence = $false
 $script:welcomeTimer = $null
 # Reset the deferral history
 $deferHistory = $deferTimes = $deferDays = $null
@@ -266,6 +269,7 @@ $regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\
 
 # Variables: Log Files
 $logTempFolder = Join-Path $envTemp $installName
+If ($deploymentType -eq $Null) {$deploymentType = "Install" }
 If ($configToolkitCompressLogs) {
 	$logFile = Join-Path $logTempFolder ("$installName" + "_$appDeployToolkitName" + "_$deploymentType.log")
 	$zipFileDate = (Get-Date).ToString("yyyy-MM-dd-hh-mm-ss")
@@ -4414,18 +4418,6 @@ If ($appDeployExtScriptParameters) { $appDeployExtScriptParameters = $appDeployE
 
 $invokingScript = $(((Get-Variable MyInvocation).Value).ScriptName)
 
-# Check how the script was invoked
-If ($invokingScript -ne "") {
-	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
-	# If the script was invoked by the Help console, exit the script now because we don't need to initialization logging.
-	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
-		Return
-	}
-}
-Else {
-	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
-}
-
 # Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
@@ -4454,27 +4446,93 @@ Switch ($deploymentType) {
 }
 If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deploymentTypeName]" }
 
-# Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
-If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $_.GetOwner().User -eq $envUsername }) {
-	Write-Log "Running as [$envUsername] in user context."
+# Check how the script was invoked
+If ($invokingScript -ne "") {
+	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
+	# If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
+    If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
+        Return
+	}        
+    Else { 
+        # Check if a user is logged on to the system
+        $usersLoggedOn = Get-WmiObject -Class "Win32_ComputerSystem" -Property UserName | Select UserName -ExpandProperty UserName
+        If ($usersLoggedOn -ne $Null) {
+            Write-Log "The following users are logged on to the system: $($usersLoggedOn | % {$_ -join ","})"
+        }
+
+        # Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
+        If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $_.GetOwner().User -eq $envUsername }) {
+	        Write-Log "Running as [$envUsername] in user context."
+        }
+        # Check if we are running a task sequence, and enable NonInteractive mode
+        ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+	        Write-Log "Running in SCCM Task Sequence."
+            $runningTaskSequence = $true
+            $sessionZero = $true
+        }
+        # Check if we are running in session zero on XP or lower
+        ElseIf ($envOS.Version -le "5.2") {
+	        If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
+                $sessionZero = $true
+	        }
+        }
+        # Check if we are running in session zero on all OS higher than XP
+        ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
+            $sessionZero = $true
+        }
+        
+        # If we are running in Session zero and the deployment mode has not been set to NonInteractive by the admin or because we are running in task sequence  
+        If ($sessionZero -eq $true) {
+            If ($deployMode -ne "NonInteractive") {
+                If ($runningTaskSequence -ne $true) {
+                    If ($usersLoggedOn -ne $null) {
+                        If ($configToolkitAllowSystemInteraction -eq $true) {
+		                    Write-Log "Invoking ServiceUI to provide interaction in the system session..."
+		                    $exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"            
+                            $serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+                            If ($deployAppScriptParameters -ne $null) { 
+                                $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
+                            }
+		                    # Execute ServiceUI calling the deployment script with the given parameters to provide user interaction in the system context
+                            $serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
+                            $serviceUIExitCode = $serviceUIReturn.ExitCode
+                            # Parse output from ServiceUI.exe
+                            $serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
+                            $serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
+                            $serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
+                            $serviceUIOutput | % { Write-Log "ServiceUI: $_" }
+		                    Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+		                    # Exit to Deploy-Application to handle the ServiceUIExitCode
+                            Exit		
+	                    }
+	                    Else {
+                            $deployMode = "NonInteractive"
+		                    Write-Log "Session 0 detected but AllowSystemInteraction is disabled in the toolkit configuration, setting deployment mode to [$deployMode]."
+	                    }
+                    }
+                    Else {
+                        $deployMode = "NonInteractive"
+                        Write-Log "Session 0 detected but no user logged on, setting deployment mode to [$deployMode]."
+                    }
+                }
+                Else {
+                    $deployMode = "NonInteractive"
+                    Write-Log "Session 0 detected but a task sequence is running, setting deployment mode to [$deployMode]."
+                }
+            }
+            Else {
+                Write-Log "Session 0 detected but deployment mode is set to NonInteractive."
+            }
+        }
+        Else {
+            Write-Log "Session 0 not detected."
+        }
+    }
 }
-# Check if we are running a task sequence, and enable NonInteractive mode
-ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
-	Write-Log "Running in SCCM Task Sequence."
-	$deployMode = "NonInteractive"
+Else {
+	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
 }
-# Check if we are running in session zero on XP or lower, and enable NonInteractive mode
-ElseIf ($envOS.Version -le "5.2") {
-	If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
-			Write-Log "Running under Session 0."
-	$deployMode = "NonInteractive"
-	}
-}
-# Check if we are running in session zero, and enable NonInteractive mode
-ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
-	Write-Log "Running under Session 0."
-	$deployMode = "NonInteractive"
-}
+
 
 If ($deployMode -ne $null) {
 	Write-Log "Installation is running in [$deployMode] mode."

@@ -1,4 +1,5 @@
-Version 3.1.5 [xx/xx/2014]
+Version 4.0 [xx/xx/2014]
+	When running as SYSTEM, the toolkit will automatically break out of Session 0 to the logged on user context in order to provide user interaction. If a task sequence is running, no user is logged on, or non-interactive deployment mode has been specified then the toolkit will run silently.
 	Fixed issue where Execute-MSI did not use value from XML file for uninstall but instead ran all uninstalls silently by default
 	Fixed error on 1641 exit code (should be a success like 3010)
 	Fixed typo in Deploy-Application.ps1 help relating to DeploymentType parameters
