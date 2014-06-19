@@ -1038,7 +1038,8 @@ Function Get-InstalledApplication {
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
-		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty -LiteralPath $_.PsPath }
+		$regKeyApplicationArray = Get-ChildItem $regKey -ErrorAction SilentlyContinue 
+        $regKeyApplication = Foreach ($regKeyApp in $regKeyAppArray) { Get-ItemProperty -LiteralPath $regKeyApp.PsPath }
 			Foreach ($regKeyApp in $regKeyApplication) {
 				$appDisplayName = $null
 				$appDisplayVersion = $null
@@ -4489,7 +4490,7 @@ If ($invokingScript -ne "") {
                         If ($configToolkitAllowSystemInteraction -eq $true) {
 		                    Write-Log "Invoking ServiceUI to provide interaction in the system session..."
 		                    $exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"            
-                            $serviceUIArguments = "$PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+                            $serviceUIArguments = "-Process:Explorer.exe $PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
                             If ($deployAppScriptParameters -ne $null) { 
                                 $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
                             }
