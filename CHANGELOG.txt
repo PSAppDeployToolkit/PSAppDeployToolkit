@@ -3,6 +3,7 @@ Version 4.0 [xx/xx/2014]
 	Fixed issue where Execute-MSI did not use value from XML file for uninstall but instead ran all uninstalls silently by default
 	Fixed error on 1641 exit code (should be a success like 3010)
 	Fixed typo in Deploy-Application.ps1 help relating to DeploymentType parameters
+	Updated French translations
 
 Version 3.1.4 [06/10/2014]
 	Added New-Folder and Remove-Folder functions (Thanks to SueH)
