@@ -4456,9 +4456,12 @@ If ($invokingScript -ne "") {
 	}        
     Else { 
         # Check if a user is logged on to the system
-        $usersLoggedOn = Get-WmiObject -Class "Win32_ComputerSystem" -Property UserName | Select UserName -ExpandProperty UserName
+        $usersLoggedOn = Get-WmiObject -Class "Win32_ComputerSystem" -Property UserName | Where-Object {$_.UserName -ne $null} | Select UserName -ExpandProperty UserName
         If ($usersLoggedOn -ne $Null) {
             Write-Log "The following users are logged on to the system: $($usersLoggedOn | % {$_ -join ","})"
+        }
+        Else {
+            Write-Log "No User is logged on"
         }
 
         # Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
@@ -4484,13 +4487,22 @@ If ($invokingScript -ne "") {
         
         # If we are running in Session zero and the deployment mode has not been set to NonInteractive by the admin or because we are running in task sequence  
         If ($sessionZero -eq $true) {
+            Write-Log "Session 0 detected."
             If ($deployMode -ne "NonInteractive") {
                 If ($runningTaskSequence -ne $true) {
                     If ($usersLoggedOn -ne $null) {
                         If ($configToolkitAllowSystemInteraction -eq $true) {
 		                    Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-		                    $exeServiceUI = "$scriptRoot\ServiceUI" + "$psArchitecture" + ".exe"            
-                            $serviceUIArguments = "-Process:Explorer.exe $PSHOME\powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+                            $exeServiceUI = "$scriptRoot\ServiceUIx86.exe"         
+                            # Launch the same PS architecture with ServiceUI that was used to launch ServiceUI
+                            # e.g. launch the 64-bit version from 32 bit process if the original PS architecture was 64-bit
+                            If ($psArchitecture -eq "x64") { 
+                                $psExe = "$env:WINDIR\sysnative\WindowsPowerShell\v1.0\powershell.exe"    
+                            }
+                            Else {
+                                $psExe = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
+                            }
+                            $serviceUIArguments = "$psExe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
                             If ($deployAppScriptParameters -ne $null) { 
                                 $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
                             }
