@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"4.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"4.0"
-$appDeployMainScriptDate = "06/17/2014"
+$appDeployMainScriptDate = "07/07/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1039,7 +1039,7 @@ Function Get-InstalledApplication {
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
 		$regKeyApplicationArray = Get-ChildItem $regKey -ErrorAction SilentlyContinue 
-        $regKeyApplication = Foreach ($regKeyApp in $regKeyAppArray) { Get-ItemProperty -LiteralPath $regKeyApp.PsPath }
+		$regKeyApplication = Foreach ($regKeyApp in $regKeyAppArray) { Get-ItemProperty -LiteralPath $regKeyApp.PsPath }
 			Foreach ($regKeyApp in $regKeyApplication) {
 				$appDisplayName = $null
 				$appDisplayVersion = $null
@@ -1185,11 +1185,11 @@ Function Execute-MSI {
 	# Set the installation Parameters
 	If ($deployModeSilent -eq $true) {
 		$msiInstallDefaultParams = $configMSISilentParams
-        $msiUninstallDefaultParams = $configMSISilentParams
+		$msiUninstallDefaultParams = $configMSISilentParams
 	}
 	Else {
 		$msiInstallDefaultParams = $configMSIInstallParams
-        $msiUninstallDefaultParams = $configMSIUninstallParams
+		$msiUninstallDefaultParams = $configMSIUninstallParams
 	}
 
 	# Build the MSI Parameters
@@ -2294,7 +2294,7 @@ Function Get-RunningProcesses {
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
 		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","dotexe") -match $processNames }
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
-        If ($runningProcesses) {
+		If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
 			Write-Log "Resolving process descriptions..."
 			# Resolve the running process names to descriptions in the following precedence:
@@ -3100,14 +3100,14 @@ Function Show-InstallationRestartPrompt {
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
-    Show-InstallationRestartPrompt -NoCountdown
+	Show-InstallationRestartPrompt -NoCountdown
 .PARAMETER CountdownSeconds
 	Specifies the number of seconds to countdown to the system restart.
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 .PARAMETER NoCountdown
 	Specifies not to show a countdown, just the Restart Now and Restart Later buttons. 
-    The UI will restore/reposition itself persistently based on the interval value specified in the config file.
+	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .NOTES
 .LINK
 	Http://psappdeploytoolkit.codeplex.com
@@ -3115,7 +3115,7 @@ Function Show-InstallationRestartPrompt {
 	Param (
 		[int] $CountdownSeconds = 60,
 		[int] $CountdownNoHideSeconds = 30,
-        [switch] $NoCountdown = $false
+		[switch] $NoCountdown = $false
 	)
 
 	# Bypass if in non-interactive mode
@@ -3167,40 +3167,40 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.BringToFront()
 	}
 
-    $Form_StateCorrection_Load=
+	$Form_StateCorrection_Load=
 	{
 		# Correct the initial state of the form to prevent the .Net maximized form issue
 		$formRestart.WindowState = $InitialFormWindowState
  		$formRestart.AutoSize = $true
 		$formRestart.TopMost = $true
 		$formRestart.BringToFront()
-        # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+		# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 		Set-Variable -Name formInstallationRestartPromptStartPosition -Value $($formRestart.Location) -Scope Script
   	}
 
-    # Persistence Timer
-    If ($NoCountdown) {
+	# Persistence Timer
+	If ($NoCountdown) {
 		$timerPersist = New-Object 'System.Windows.Forms.Timer'
 		$timerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
-        $timerPersist_Tick = {
-            # Show the Restart Popup
-		    $formRestart.WindowState = 'Normal'
-		    $formRestart.TopMost = $true
-		    $formRestart.BringToFront()
-            $formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-		    $formRestart.Refresh()
-		    [System.Windows.Forms.Application]::DoEvents()
+		$timerPersist_Tick = {
+			# Show the Restart Popup
+			$formRestart.WindowState = 'Normal'
+			$formRestart.TopMost = $true
+			$formRestart.BringToFront()
+			$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
+			$formRestart.Refresh()
+			[System.Windows.Forms.Application]::DoEvents()
 		}
 		$timerPersist.add_Tick($timerPersist_Tick)
 		$timerPersist.Start()
 	}
 
 	$buttonRestartLater_Click={
-        # Minimize the form
+		# Minimize the form
 		$formRestart.WindowState = 'Minimized'
-        # Reset the persistence timer
-        $timerPersist.Stop()
-        $timerPersist.Start()
+		# Reset the persistence timer
+		$timerPersist.Stop()
+		$timerPersist.Start()
 	}
 
 	$buttonRestartNow_Click={
@@ -3233,11 +3233,11 @@ Function Show-InstallationRestartPrompt {
 				If ($formRestart.WindowState -eq 'Minimized') {
 					# Show Popup
 					$formRestart.WindowState = 'Normal'
-	            	$formRestart.TopMost = $true
-            		$formRestart.BringToFront()
-                    $formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-		            $formRestart.Refresh()
-		            [System.Windows.Forms.Application]::DoEvents()
+					$formRestart.TopMost = $true
+					$formRestart.BringToFront()
+					$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
+					$formRestart.Refresh()
+					[System.Windows.Forms.Application]::DoEvents()
 				}
 			}
 			[System.Windows.Forms.Application]::DoEvents()
@@ -3263,10 +3263,10 @@ Function Show-InstallationRestartPrompt {
 	}
 
 	# Form
-    If ($NoCountdown -eq $false) {
-	    $formRestart.Controls.Add($labelCountdown)
-	    $formRestart.Controls.Add($labelTimeRemaining)
-    }
+	If ($NoCountdown -eq $false) {
+		$formRestart.Controls.Add($labelCountdown)
+		$formRestart.Controls.Add($labelTimeRemaining)
+	}
 	$formRestart.Controls.Add($labelMessage)
 	$formRestart.Controls.Add($buttonRestartLater)
 	$formRestart.Controls.Add($picturebox)
@@ -3298,11 +3298,11 @@ Function Show-InstallationRestartPrompt {
 	$labelMessage.Name = "labelMessage"
 	$labelMessage.Size = '400, 79'
 	$labelMessage.TabIndex = 3
-    $labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
+	$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
 	If ($NoCountdown) {
-        $labelMessage.Text = $configRestartPromptMessage
-    }
-    $labelMessage.TextAlign = 'MiddleCenter'
+		$labelMessage.Text = $configRestartPromptMessage
+	}
+	$labelMessage.TextAlign = 'MiddleCenter'
 
 	# Label Time Remaining
 	$labelTimeRemaining.Location = '20, 138'
@@ -3342,9 +3342,9 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
 	# Timer Countdown
-    If ($NoCountdown -eq $false) {
-	    $timerCountdown.add_Tick($timerCountdown_Tick)
-    }
+	If ($NoCountdown -eq $false) {
+		$timerCountdown.add_Tick($timerCountdown_Tick)
+	}
 
 	#----------------------------------------------
 
@@ -3354,30 +3354,30 @@ Function Show-InstallationRestartPrompt {
 	$formRestart.add_Load($Form_StateCorrection_Load)
 	# Clean up the control events
 	$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-    $formRestartClosing =[System.Windows.Forms.FormClosingEventHandler]{
-        $_.Cancel = $true
-    }
-    $formRestart.add_FormClosing($formRestartClosing)
+	$formRestartClosing =[System.Windows.Forms.FormClosingEventHandler]{
+		$_.Cancel = $true
+	}
+	$formRestart.add_FormClosing($formRestartClosing)
 
 	# If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
 	If ($deployAppScriptFriendlyName) {
-        If ($NoCountdown -eq $true) {
-            Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with no countdown..."
-	    }
+		If ($NoCountdown -eq $true) {
+			Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with no countdown..."
+		}
 		Else {
-            Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
+			Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
 		}$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
 		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	Else {
-        If ($NoCountdown -eq $true) {
-            Write-Log "Displaying restart prompt with no countdown."
-	    }
+		If ($NoCountdown -eq $true) {
+			Write-Log "Displaying restart prompt with no countdown."
+		}
 		Else {
-            Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
+			Write-Log "Displaying restart prompt with [$countDownSeconds] countdown seconds."
 		}
 
-        # Show the Form
+		# Show the Form
 		Return $formRestart.ShowDialog()
 
 		# Activate the Window
@@ -4451,96 +4451,96 @@ If ($deploymentTypeName -ne $null ) { Write-Log "Deployment type is [$deployment
 If ($invokingScript -ne "") {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$invokingScript]"
 	# If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
-    If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
-        Return
-	}        
-    Else { 
-        # Check if a user is logged on to the system
-        $usersLoggedOn = Get-WmiObject -Class "Win32_ComputerSystem" -Property UserName | Where-Object {$_.UserName -ne $null} | Select UserName -ExpandProperty UserName
-        If ($usersLoggedOn -ne $Null) {
-            Write-Log "The following users are logged on to the system: $($usersLoggedOn | % {$_ -join ","})"
-        }
-        Else {
-            Write-Log "No User is logged on"
-        }
+	If ($(((Get-Variable MyInvocation).Value).ScriptName) -match "Help") {
+		Return
+	}
+	Else { 
+		# Check if a user is logged on to the system
+		$usersLoggedOn = Get-WmiObject -Class "Win32_ComputerSystem" -Property UserName | Where-Object {$_.UserName -ne $null} | Select UserName -ExpandProperty UserName
+		If ($usersLoggedOn -ne $Null) {
+			Write-Log "The following users are logged on to the system: $($usersLoggedOn | % {$_ -join ","})"
+		}
+		Else {
+			Write-Log "No User is logged on"
+		}
 
-        # Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
-        If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $_.GetOwner().User -eq $envUsername }) {
-	        Write-Log "Running as [$envUsername] in user context."
-        }
-        # Check if we are running a task sequence, and enable NonInteractive mode
-        ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
-	        Write-Log "Running in SCCM Task Sequence."
-            $runningTaskSequence = $true
-            $sessionZero = $true
-        }
-        # Check if we are running in session zero on XP or lower
-        ElseIf ($envOS.Version -le "5.2") {
-	        If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
-                $sessionZero = $true
-	        }
-        }
-        # Check if we are running in session zero on all OS higher than XP
-        ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
-            $sessionZero = $true
-        }
-        
-        # If we are running in Session zero and the deployment mode has not been set to NonInteractive by the admin or because we are running in task sequence  
-        If ($sessionZero -eq $true) {
-            Write-Log "Session 0 detected."
-            If ($deployMode -ne "NonInteractive") {
-                If ($runningTaskSequence -ne $true) {
-                    If ($usersLoggedOn -ne $null) {
-                        If ($configToolkitAllowSystemInteraction -eq $true) {
-		                    Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-                            $exeServiceUI = "$scriptRoot\ServiceUIx86.exe"         
-                            # Launch the same PS architecture with ServiceUI that was used to launch ServiceUI
-                            # e.g. launch the 64-bit version from 32 bit process if the original PS architecture was 64-bit
-                            If ($psArchitecture -eq "x64") { 
-                                $psExe = "$env:WINDIR\sysnative\WindowsPowerShell\v1.0\powershell.exe"    
-                            }
-                            Else {
-                                $psExe = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-                            }
-                            $serviceUIArguments = "$psExe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-                            If ($deployAppScriptParameters -ne $null) { 
-                                $serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
-                            }
-		                    # Execute ServiceUI calling the deployment script with the given parameters to provide user interaction in the system context
-                            $serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
-                            $serviceUIExitCode = $serviceUIReturn.ExitCode
-                            # Parse output from ServiceUI.exe
-                            $serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
-                            $serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
-                            $serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
-                            $serviceUIOutput | % { Write-Log "ServiceUI: $_" }
-		                    Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-		                    # Exit to Deploy-Application to handle the ServiceUIExitCode
-                            Exit		
-	                    }
-	                    Else {
-                            $deployMode = "NonInteractive"
-		                    Write-Log "Session 0 detected but AllowSystemInteraction is disabled in the toolkit configuration, setting deployment mode to [$deployMode]."
-	                    }
-                    }
-                    Else {
-                        $deployMode = "NonInteractive"
-                        Write-Log "Session 0 detected but no user logged on, setting deployment mode to [$deployMode]."
-                    }
-                }
-                Else {
-                    $deployMode = "NonInteractive"
-                    Write-Log "Session 0 detected but a task sequence is running, setting deployment mode to [$deployMode]."
-                }
-            }
-            Else {
-                Write-Log "Session 0 detected but deployment mode is set to NonInteractive."
-            }
-        }
-        Else {
-            Write-Log "Session 0 not detected."
-        }
-    }
+		# Check if we are running in the logged in user context (ie, PowerShell is running in the same context as Explorer)
+		If (Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'" | Where { $_.GetOwner().User -eq $envUsername }) {
+			Write-Log "Running as [$envUsername] in user context."
+		}
+		# Check if we are running a task sequence, and enable NonInteractive mode
+		ElseIf (Get-Process -Name "TSManager" -ErrorAction SilentlyContinue) {
+			Write-Log "Running in SCCM Task Sequence."
+			$runningTaskSequence = $true
+			$sessionZero = $true
+		}
+		# Check if we are running in session zero on XP or lower
+		ElseIf ($envOS.Version -le "5.2") {
+			If ((Get-WmiObject -Class Win32_Process -Filter "Name='explorer.exe'") -eq $null) {
+				$sessionZero = $true
+			}
+		}
+		# Check if we are running in session zero on all OS higher than XP
+		ElseIf (([System.Diagnostics.Process]::GetCurrentProcess() | Select "SessionID" -ExpandProperty "SessionID") -eq 0) {
+			$sessionZero = $true
+		}
+		
+		# If we are running in Session zero and the deployment mode has not been set to NonInteractive by the admin or because we are running in task sequence  
+		If ($sessionZero -eq $true) {
+			Write-Log "Session 0 detected."
+			If ($deployMode -ne "NonInteractive") {
+				If ($runningTaskSequence -ne $true) {
+					If ($usersLoggedOn -ne $null) {
+						If ($configToolkitAllowSystemInteraction -eq $true) {
+							Write-Log "Invoking ServiceUI to provide interaction in the system session..."
+							$exeServiceUI = "$scriptRoot\ServiceUIx86.exe"
+							# Launch the same PS architecture with ServiceUI that was used to launch ServiceUI
+							# e.g. launch the 64-bit version from 32 bit process if the original PS architecture was 64-bit
+							If ($is64Bit -eq $true -and $is64BitProcess -eq $false) { 
+								$psExe = "$envWinDir\SysNative\WindowsPowerShell\v1.0\powershell.exe"
+							}
+							Else {
+								$psExe = "$envWinDir\System32\WindowsPowerShell\v1.0\powershell.exe"
+							}
+							$serviceUIArguments = "$psExe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
+							If ($deployAppScriptParameters -ne $null) { 
+								$serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
+							}
+							# Execute ServiceUI calling the deployment script with the given parameters to provide user interaction in the system context
+							$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
+							$serviceUIExitCode = $serviceUIReturn.ExitCode
+							# Parse output from ServiceUI.exe
+							$serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
+							$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
+							$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
+							$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
+							Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
+							# Exit to Deploy-Application to handle the ServiceUIExitCode
+							Exit
+						}
+						Else {
+							$deployMode = "NonInteractive"
+							Write-Log "Session 0 detected but AllowSystemInteraction is disabled in the toolkit configuration, setting deployment mode to [$deployMode]."
+						}
+					}
+					Else {
+						$deployMode = "NonInteractive"
+						Write-Log "Session 0 detected but no user logged on, setting deployment mode to [$deployMode]."
+					}
+				}
+				Else {
+					$deployMode = "NonInteractive"
+					Write-Log "Session 0 detected but a task sequence is running, setting deployment mode to [$deployMode]."
+				}
+			}
+			Else {
+				Write-Log "Session 0 detected but deployment mode is set to NonInteractive."
+			}
+		}
+		Else {
+			Write-Log "Session 0 not detected."
+		}
+	}
 }
 Else {
 	Write-Log "Script [$($MyInvocation.MyCommand.Definition)] invoked directly"
