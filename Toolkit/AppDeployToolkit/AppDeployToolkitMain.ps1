@@ -52,7 +52,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"4.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"4.0"
-$appDeployMainScriptDate = "07/24/2014"
+$appDeployMainScriptDate = "07/07/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -3119,8 +3119,7 @@ Function Show-InstallationRestartPrompt {
 
 	# Bypass if in non-interactive mode
 	If ($deployModeNonInteractive -eq $true) {
-		Write-Log "Bypassing Installation Restart Prompt [Mode: $deployMode] and restarting computer immediately..."
-		Restart-Computer -Force
+		Write-Log "Bypassing Installation Restart Prompt [Mode: $deployMode]..."
 		Return
 	}
 
