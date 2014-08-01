@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"4.0"
-$appDeployMainScriptMinimumConfigVersion = [version]"4.0"
-$appDeployMainScriptDate = "07/07/2014"
+$appDeployMainScriptVersion = [version]"3.1.5"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.5"
+$appDeployMainScriptDate = "08/01/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1293,154 +1293,173 @@ Function Remove-MSIApplications {
 Function Execute-Process {
 <#
 .SYNOPSIS
-	Function to execute a process, with optional arguments, working directory, window style.
+    Function to execute a process, with optional arguments, working directory, window style.
 .DESCRIPTION
-	Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine.
-	Provides various options for handling the return codes (see Parameters)
+    Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine.
+    Provides various options for handling the return codes (see Parameters)
 .EXAMPLE
-	Execute-Process -FilePath "uninstall_flash_player_64bit.exe" -Arguments "/uninstall" -WindowStyle Hidden
-	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
+    Execute-Process -FilePath "uninstall_flash_player_64bit.exe" -Arguments "/uninstall" -WindowStyle Hidden
+    If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 .EXAMPLE
-	Execute-Process -FilePath "$dirFiles\Bin\setup.exe" -Arguments "/S" -WindowStyle Hidden
+    Execute-Process -FilePath "$dirFiles\Bin\setup.exe" -Arguments "/S" -WindowStyle Hidden
 .EXAMPLE
-	Execute-Process -FilePath "setup.exe" -Arguments "/S" -IgnoreExitCodes "1,2"
+    Execute-Process -FilePath "setup.exe" -Arguments "/S" -IgnoreExitCodes "1,2"
 .PARAMETER FilePath
-	Path of the file you want to execute.
-	If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
-	Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example above.
+    Path of the file you want to execute.
+    If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
+    Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example above.
 .PARAMETER Arguments
-	Arguments to be passed to the executable
+    Arguments to be passed to the executable
 .PARAMETER WindowStyle
-	Style of the window of the process executed: "Normal","Hidden","Maximized","Minimized" [Default is "Normal"]
+    Style of the window of the process executed: "Normal","Hidden","Maximized","Minimized" [Default is "Normal"]
 .PARAMETER WorkingDirectory
-	The working directory used for executing the process.
-	Defaults to the directory of the file being executed.
+    The working directory used for executing the process.
+    Defaults to the directory of the file being executed.
 .PARAMETER NoWait
-	Immediately continue after executing the process.
+    Immediately continue after executing the process.
 .PARAMETER PassThru
-	Returns STDOut and STDErr output from the process.
+    Returns STDOut and STDErr output from the process.
 .PARAMETER IgnoreExitCodes
-	List the exit codes you want to ignore.
+    List the exit codes you want to ignore.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by the process that is not recognised by the App Deploy Toolkit.
+    Continue if an exit code is returned by the process that is not recognised by the App Deploy Toolkit.
 .NOTES
 .LINK
-	Http://psappdeploytoolkit.codeplex.com
+    Http://psappdeploytoolkit.codeplex.com
 #>
-	Param(
-		[string] $FilePath = $(throw "Command Param required"),
-		[Array] $Arguments = @(),
-		[ValidateSet("Normal","Hidden","Maximized","Minimized")]
-		[System.Diagnostics.ProcessWindowStyle] $WindowStyle = "Normal",
-		[string] $WorkingDirectory = $null,
-		[switch] $NoWait = $false,
-		[switch] $PassThru = $false,
-		[string] $IgnoreExitCodes = $false,
-		[boolean] $ContinueOnError = $false # Fail if there is an error (Default)
-	)
+    Param(
+        [string] $FilePath = $(throw "Command Param required"),
+        [Array] $Arguments = @(),
+        [ValidateSet("Normal","Hidden","Maximized","Minimized")]
+        [System.Diagnostics.ProcessWindowStyle] $WindowStyle = "Normal",
+        [string] $WorkingDirectory = $null,
+        [switch] $NoWait = $false,
+        [switch] $PassThru = $false,
+        [string] $IgnoreExitCodes = $false,
+        [boolean] $ContinueOnError = $false # Fail if there is an error (Default)
+    )
 
-	# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
-	If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
-		$FilePath = (Join-Path $dirFiles $FilePath)
-	}
+    # If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
+    If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
+        $FilePath = (Join-Path $dirFiles $FilePath)
+    }
 
-	# Set the Working directory (if not specified)
-	If ($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") {
-		$WorkingDirectory = (Split-Path $FilePath -Parent)
-	}
+    # Set the Working directory (if not specified)
+    If ($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") {
+        $WorkingDirectory = (Split-Path $FilePath -Parent)
+    }
 
-	Write-Log "Executing [$FilePath $Arguments]..."
-	Write-Log "Working Directory is [$WorkingDirectory]"
+    Write-Log "Working Directory is [$WorkingDirectory]"
 
-	Try {
-		# Disable Zone checking to prevent warnings when running executables from a Distribution Point
-		$env:SEE_MASK_NOZONECHECKS = 1
+    Try {
+        # Disable Zone checking to prevent warnings when running executables from a Distribution Point
+        $env:SEE_MASK_NOZONECHECKS = 1
 
-		$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-		$processStartInfo.FileName = "$FilePath"
-		$processStartInfo.WorkingDirectory = "$WorkingDirectory"
-		$processStartInfo.UseShellExecute = $false
-		$processStartInfo.RedirectStandardOutput = $true
-		$processStartInfo.RedirectStandardError = $true
-		If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
-		If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
+        $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+        $processStartInfo.FileName = "$FilePath"
+        $processStartInfo.WorkingDirectory = "$WorkingDirectory"
+        $processStartInfo.UseShellExecute = $false
+        $processStartInfo.RedirectStandardOutput = $true
+        $processStartInfo.RedirectStandardError = $true
+        If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
+        If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
 
-		$process = [System.Diagnostics.Process]::Start($processStartInfo)
+        Write-Log "Executing [$FilePath $Arguments]..."
+        $process = [System.Diagnostics.Process]::Start($processStartInfo)
 
-		If ($NoWait -eq $true) {
-			Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
-		} 
-		Else {
-			$stdOut = $process.StandardOutput.ReadToEnd() -replace "`0",""
-			$stdErr = $process.StandardError.ReadToEnd() -replace "`0",""
+        If ($NoWait -eq $true) {
+            Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
+            # Free resources associated with the process, this does not cause process to exit
+            $process.Close()
+        }
+        Else {
+            $stdOut = $process.BeginOutputReadLine() -replace "`0",""       # `0 = Null
+            $stdErr = $process.StandardError.ReadToEnd() -replace "`0",""   # `0 = Null
 
-			$processName = $process.ProcessName
+            $processName = $process.ProcessName
 
-			If($stdErr.length -gt 0) { Write-Log $stdErr}
+            If($stdErr.length -gt 0) {Write-Log "Standard error output from the process [$processName]: $stdErr"}
 
-			$process.WaitForExit()
-			$returnCode = $process.ExitCode
+            # Instructs the Process component to wait indefinitely for the associated process to exit.
+            $process.WaitForExit()
+            Do
+            {
+                # HasExited indicates that the associated process has terminated, either normally or abnormally
+                # We will wait until HasExited returns true
+                If (-not $process.HasExited)
+                {
+                    Start-Sleep -Seconds 1
+                }
+            } Until ($process.HasExited)
+            
+            # Get the exit code for the process
+            $returnCode = $process.ExitCode
+            
+            # Free resources associated with the process, this does not cause process to exit
+            $process.Close()
 
-			# Re-enable Zone checking
-			Remove-Item env:\SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
+            # Check to see whether we should ignore exit codes
+            $ignoreExitCodeMatch = $false
+            If ($ignoreExitCodes -ne "") {
+                # Create array to store the exit codes
+                $ignoreExitCodesArray = @()
+                # Split the processes on a comma
+                $ignoreExitCodesArray = $IgnoreExitCodes -split(",")
+                ForEach ($ignoreCode in $ignoreExitCodesArray) {
+                    If ($returnCode -eq $ignoreCode) {
+                        $ignoreExitCodeMatch = $true
+                    }
+                }
+            }
+            # Or always ignore exit codes
+            If ($ContinueOnError -eq $true) {
+                $ignoreExitCodeMatch = $true
+            }
 
-			# Check to see whether we should ignore exit codes
-			$ignoreExitCodeMatch = $false
-			If ($ignoreExitCodes -ne "") {
-				# Create array to store the exit codes
-				$ignoreExitCodesArray = @()
-				# Split the processes on a comma
-				$ignoreExitCodesArray = $IgnoreExitCodes -split(",")
-				ForEach ($ignoreCode in $ignoreExitCodesArray) {
-					If ($returnCode -eq $ignoreCode) {
-						$ignoreExitCodeMatch = $true
-					}
-				}
-			}
-			# Or always ignore exit codes
-			If ($ContinueOnError -eq $true) {
-				$ignoreExitCodeMatch = $true
-			}
-
-			# If the passthru switch is specified, return the exit code and any output from process
-			If ($PassThru -eq $true) {
-				New-Object PSObject -Property @{
-					ExitCode = $returnCode
-					StdOut = $stdOut
-					StdErr = $stdErr
-				}
-				Write-Log "Execution completed with return code $returnCode."
-			}
-			ElseIf ($ignoreExitCodeMatch -eq $true) {
-				Write-Log "Execution complete and the return code $returncode has been ignored."
-			}
-			ElseIf ( ($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
-				Write-Log "Execution completed successfully with return code $returnCode. A reboot is required."
-				Set-Variable -Name msiRebootDetected -Value $true -Scope Script
-			}
-			ElseIf ( ($returnCode -eq 1605) -and ($filePath -eq $exeMsiexec)) {
-				Write-Log "Execution did not complete, because the product is not currently installed."
-			}
-			ElseIf ( ($returnCode -eq -2145124329) -and ($filePath -eq $exeWusa)) {
-				Write-Log "Execution did not complete, because this Windows Update is not applicable to this system."
-			}
-			ElseIf ( ($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
-				Write-Log "Execution did not complete, because the Office Update is not applicable to this system."
-			}
-			ElseIf ($returnCode -eq 0) {
-				Write-Log "Execution completed successfully with return code $returnCode."
-			}
-			Else {
-				Write-Log ("Execution failed with code: " + $returnCode)
-				Exit-Script $returnCode
-			}
-		}
-	}
-	Catch [Exception] {
-		Write-Log ("Execution failed: " + $_.Exception.Message)
-		If ($returnCode -eq $null) { $returnCode = 999 }
-		Exit-Script $returnCode
-	}
+            # If the passthru switch is specified, return the exit code and any output from process
+            If ($PassThru -eq $true) {
+                New-Object PSObject -Property @{
+                    ExitCode = $returnCode
+                    StdOut = $stdOut
+                    StdErr = $stdErr
+                }
+                Write-Log "Execution completed with exit code [$returnCode]"
+            }
+            ElseIf ($ignoreExitCodeMatch -eq $true) {
+                Write-Log "Execution complete and the exit code [$returncode] is being ignored"
+            }
+            ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641) ) {
+                Write-Log "Execution completed successfully with exit code [$returnCode]. A reboot is required."
+                Set-Variable -Name msiRebootDetected -Value $true -Scope Script
+            }
+            ElseIf (($returnCode -eq 1605) -and ($filePath -match 'msiexec')) {
+                Write-Log "Execution failed with exit code [$returnCode] because the product is not currently installed."
+            }
+            ElseIf (($returnCode -eq -2145124329) -and ($filePath -match 'wusa')) {
+                Write-Log "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system."
+            }
+            ElseIf (($returnCode -eq 17025) -and ($filePath -match "fullfile")) {
+                Write-Log "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system."
+            }
+            ElseIf ($returnCode -eq 0) {
+                Write-Log "Execution completed successfully with exit code [$returnCode]"
+            }
+            Else {
+                Write-Log ("Execution failed with exit code [$returnCode]")
+                Exit-Script $returnCode
+            }
+        }
+    }
+    Catch [Exception] {
+        Write-Log ("Execution failed: " + $_.Exception.Message)
+        If ($returnCode -eq $null) { $returnCode = 999 }
+        Exit-Script $returnCode
+    }
+    Finally
+    {
+        # Re-enable Zone checking
+        Remove-Item env:SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
+    }
 }
 
 Function New-Folder { 
@@ -2252,7 +2271,7 @@ Function Get-UniversalDate {
 	)
 	Try {
 		# If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-		If ($dateTime -match "Z") { $dateTime = $dateTime -replace "Z","" }
+		If ($dateTime -match "Z$") { $dateTime = $dateTime -replace "Z$","" }
 		$dateTime = [DateTime]::Parse($dateTime, $culture)
 		# Convert the date in a universal sortable date time pattern based on the current culture
 		$universalDateTime = Get-Date $dateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction SilentlyContinue
@@ -2293,7 +2312,7 @@ Function Get-RunningProcesses {
 		# Get running processes and replace escape characters. Also, append exe so that we can match exact processes.
 		$runningProcesses = Get-Process | Where { ($_.ProcessName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "$","dotexe") -match $processNames }
 		$runningProcesses = $runningProcesses | Select Name,Description,ID
-		If ($runningProcesses) {
+        If ($runningProcesses) {
 			Write-Log "The following processes are running: [$(($runningProcesses.Name) -Join ",")]"
 			Write-Log "Resolving process descriptions..."
 			# Resolve the running process names to descriptions in the following precedence:
@@ -2302,7 +2321,7 @@ Function Get-RunningProcesses {
 			# 3. Fall back on the process name
 			Foreach ($runningProcess in $runningProcesses) {
 				Foreach ($processObject in $processObjects) {
-					If ($runningProcess.Name -eq $processObject.ProcessName) {
+					If ($runningProcess.Name -eq ($processObject.ProcessName -replace ".exe","")) {
 						If ( $processObject.ProcessDescription -ne $null ) {
 							$runningProcess | Add-Member -type NoteProperty -name Description -value $processObject.ProcessDescription -Force -ErrorAction SilentlyContinue
 						}
@@ -2515,7 +2534,7 @@ Show-InstallationWelcome -CloseApps "winword.exe,msaccess.exe,excel.exe" -Persis
 	# Prompt the user to close running applications and optionally defer if enabled
 	If (!($deployModeSilent) -and !($silent)) {
 		Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
-		While ((Get-RunningProcesses $processObjects -Exact | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
+		While ((Get-RunningProcesses $processObjects | Select * -OutVariable RunningProcesses) -or ($promptResult -ne "Defer" -and $promptResult -ne "Close")) {
 			$runningProcessDescriptions	= ($runningProcesses | Select Description -ExpandProperty Description | Select -Unique | Sort) -join ","
 			# Check if we need to prompt the user to defer, to defer and close apps or not to prompt them at all
 			If ($allowDefer) {
@@ -4207,10 +4226,10 @@ Function Invoke-SCCMTask {
 	}
 	Catch [Exception] {
 		If ($ContinueOnError -eq $true) {
-			Write-Log "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): " + $_.Exception.Message
-		}
+		    Write-Log "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): $($_.Exception.Message)"
+        }
 		Else {
-			Throw "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): " + $_.Exception.Message
+			Throw "Trigger SCCM Schedule failed for Schedule ID $($ScheduleIds.$ScheduleId): $($_.Exception.Message)"
 		}
 	}
 
@@ -4489,43 +4508,7 @@ If ($invokingScript -ne "") {
 			Write-Log "Session 0 detected."
 			If ($deployMode -ne "NonInteractive") {
 				If ($runningTaskSequence -ne $true) {
-					If ($usersLoggedOn -ne $null) {
-						If ($configToolkitAllowSystemInteraction -eq $true) {
-							Write-Log "Invoking ServiceUI to provide interaction in the system session..."
-							$exeServiceUI = "$scriptRoot\ServiceUIx86.exe"
-							# Launch the same PS architecture with ServiceUI that was used to launch ServiceUI
-							# e.g. launch the 64-bit version from 32 bit process if the original PS architecture was 64-bit
-							If ($is64Bit -eq $true -and $is64BitProcess -eq $false) { 
-								$psExe = "$envWinDir\SysNative\WindowsPowerShell\v1.0\powershell.exe"
-							}
-							Else {
-								$psExe = "$envWinDir\System32\WindowsPowerShell\v1.0\powershell.exe"
-							}
-							$serviceUIArguments = "$psExe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$invokingScript`""
-							If ($deployAppScriptParameters -ne $null) { 
-								$serviceUIArguments = $serviceUIArguments + " $deployAppScriptParameters" 
-							}
-							# Execute ServiceUI calling the deployment script with the given parameters to provide user interaction in the system context
-							$serviceUIReturn = Execute-Process -FilePath $exeServiceUI -Arguments $serviceUIArguments -WindowStyle Hidden -PassThru
-							$serviceUIExitCode = $serviceUIReturn.ExitCode
-							# Parse output from ServiceUI.exe
-							$serviceUIOutput = (($serviceUIReturn.StdOut) -Split "`n")
-							$serviceUIOutput = $serviceUIOutput | % {$_.TrimStart()} 
-							$serviceUIOutput = $serviceUIOutput | Where {$_ -ne "" -and $_ -notmatch "\=\=" -and $_ -notmatch "logon lookup" -and $_ -notmatch "launch process" -and $_ -notmatch "exiting with"}
-							$serviceUIOutput | % { Write-Log "ServiceUI: $_" }
-							Write-Log "ServiceUI returned exit code [$serviceUIExitCode]"
-							# Exit to Deploy-Application to handle the ServiceUIExitCode
-							Exit
-						}
-						Else {
-							$deployMode = "NonInteractive"
-							Write-Log "Session 0 detected but AllowSystemInteraction is disabled in the toolkit configuration, setting deployment mode to [$deployMode]."
-						}
-					}
-					Else {
-						$deployMode = "NonInteractive"
-						Write-Log "Session 0 detected but no user logged on, setting deployment mode to [$deployMode]."
-					}
+					$deployMode = "NonInteractive"
 				}
 				Else {
 					$deployMode = "NonInteractive"
