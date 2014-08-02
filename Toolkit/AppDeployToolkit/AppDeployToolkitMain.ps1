@@ -16,7 +16,7 @@
 .NOTES
 	The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously
 .LINK
-	Http://psappdeploytoolkit.codeplex.com
+	Http://psappdeploytoolkit.codeplex.com 
 "#>
 Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or Image File Execution Options
@@ -4073,6 +4073,128 @@ Function Install-MSUpdates ($Directory) {
 			Write-Log "$kbNumber was already installed. Skipping..."
 		}
 	}
+}
+
+Function Send-Keys
+{
+<#
+.SYNOPSIS
+    Send a sequence of keys to an application window.
+    
+.DESCRIPTION
+    Send a sequence of keys to an application window. 
+    
+.PARAMETER WindowTitle
+    The title of the application window. This can be a partial title.
+    
+.PARAMETER Keys
+    The sequence of keys to send
+    
+.PARAMETER WaitSeconds
+    An optional number of seconds to wait after the sending of the keys
+    
+.EXAMPLE
+    Send-Keys "foobar - Notepad" "Hello world"
+    
+Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
+    
+.EXAMPLE
+    Send-Keys "foobar - Notepad" "Hello world" -WaitSeconds 5
+    
+    Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
+    
+.EXAMPLE
+    New-Item foobar.txt -ItemType File
+    notepad foobar.txt
+    Send-Keys "foobar - Notepad" "Hello world{ENTER}Ciao mondo{ENTER}" -WaitSeconds 1
+    Send-Keys "foobar - Notepad" "^s"
+
+    This command sequence creates a new text file called foobar.txt, opens the file using notepad.exe,
+    writes some text, and saves the file using notepad.
+    
+.LINK
+    http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+	Http://psappdeploytoolkit.codeplex.com
+#>
+    
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]$WindowTitle,
+
+        [Parameter(Mandatory=$true,Position=2)]
+        [string]$Keys,
+
+        [Parameter(Mandatory=$false)]
+        [int]$WaitSeconds
+    )
+    
+    Begin {
+        ${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+        $PSParameters = New-Object -TypeName PSObject -Property $PSBoundParameters
+        
+        If (-not [string]::IsNullOrEmpty($PSParameters)) {
+            Write-Log "Function Send-Keys invoked with bound parameters [$PSParameters]"
+        }
+        Else {
+            Write-Log "Function Send-Keys invoked without any bound parameters"
+        }
+    }
+    Process {
+        Try {
+            # Load assembly containing class System.Windows.Forms.SendKeys
+            Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+            
+            # Add a C# class to access the WIN32 API SetForegroundWindow
+            $SetForegroundWindow = @"
+                using System;
+                using System.Runtime.InteropServices;
+                public class WINDOW
+                {
+                    [DllImport("user32.dll")]
+                    [return: MarshalAs(UnmanagedType.Bool)]
+                    public static extern bool SetForegroundWindow(IntPtr hWnd);
+                }
+"@
+            If (-not ([System.Management.Automation.PSTypeName]'WINDOW').Type) {
+                Add-Type $SetForegroundWindow -ErrorAction 'Stop'
+            }
+            
+            # Get the process with the specified window title
+            $Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.MainWindowTitle.Contains($WindowTitle) }
+            If ($Process) {
+                Write-Log "Matching window title found running under process [$($process.name)]..."
+                # Get the window handle of the first process only if there is more than one process returned
+                $ProcessHandle = $Process[0].MainWindowHandle
+                Write-Log "Bringing window to foreground..."
+                # Bring the process to the foreground
+                $ActivateWindow = [WINDOW]::SetForegroundWindow($ProcessHandle)
+                
+                # Send the Key sequence
+                # Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+                If ($ActivateWindow) {
+                    Write-Log "Sending keys to window..."
+                    [System.Windows.Forms.SendKeys]::SendWait($Keys)
+                }
+                Else {
+                    Write-Log "Failed to bring window to foreground."
+                    # Failed to bring the window to the foreground. Do nothing.
+                }
+                
+                If ($WaitSeconds) {
+                    Start-Sleep -Seconds $WaitSeconds
+                }
+            }
+        }
+        Catch {
+            Write-Log "Failed to send keys `n$_.Exception.Message"
+            Exit
+        }
+    }
+    End {
+        Write-Log "Send keys action complete."
+    }
 }
 
 # Function to test whether the laptop is on power or battery

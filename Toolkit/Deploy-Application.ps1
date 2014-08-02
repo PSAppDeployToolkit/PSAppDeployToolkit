@@ -62,8 +62,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"4.0"
-$deployAppScriptDate = "06/17/2014"
+$deployAppScriptVersion = [version]"3.1.5"
+$deployAppScriptDate = "08/01/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment

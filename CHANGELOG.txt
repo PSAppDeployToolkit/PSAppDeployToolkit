@@ -1,8 +1,14 @@
 Version 4.0 [xx/xx/2014]
 	When running as SYSTEM, the toolkit will automatically break out of Session 0 to the logged on user context in order to provide user interaction. If a task sequence is running, no user is logged on, or non-interactive deployment mode has been specified then the toolkit will run silently.
+
+Version 3.1.5 [01/08/2014]
+	Added Send-Keys function to send a sequence of keys to an application window (Thanks to mmashwani)
+	Added 3 optimization/stability improvements to Execute-Process following MS best practice (Thanks to mmashwani)
 	Fixed issue where Execute-MSI did not use value from XML file for uninstall but instead ran all uninstalls silently by default
 	Fixed error on 1641 exit code (should be a success like 3010)
-	Fixed typo in Deploy-Application.ps1 help relating to DeploymentType parameters
+	Fixed issue with error handling in Invoke-SCCMTask
+	Fixed issue with deferral dates where the letter Z is in the month (non-English languages)
+	Fixed issue where custom process descriptions failed to display in Show-InstallationWelcome if an exact process name was specified
 	Updated French translations
 
 Version 3.1.4 [06/10/2014]
