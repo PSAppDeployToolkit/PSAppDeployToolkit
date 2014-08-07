@@ -3,8 +3,8 @@ Version 4.0 [xx/xx/2014]
 
 Version 3.1.6 [07/08/2014]
 	Further optimizations/best practice changes to Execute-Process to improve parameter validation, object and exception handling. (Thanks to mmashwani)
-	Added Get-MsiExitCodeMessage - used by Execute-Process to get MSI exit code description if not handled by default. (Thanks to mmashwani)
-	Added Test-MsiExecMutex - used by ExecuteProcess to check if an in-progress MSI installation is preventing an MSI from installing and waits up to 10 minutes (this reduces instances of MSI error code 1618) (Thanks to mmashwani)
+	Added Get-MsiExitCodeMessage - used by Execute-MSI (also available to Execute-Process) to get MSI exit code description if not handled by default. (Thanks to mmashwani)
+	Added Test-MsiExecMutex - used by Execute-MSI (also available to Execute-Process) to check if an in-progress MSI installation is preventing an MSI from installing and waits up to 10 minutes - this reduces instances of MSI error code 1618. (Thanks to mmashwani)
 	Improved exception handling in Write-Log
 	Added error handling when the toolkit fails to dot source, i.e. no more "The term 'Write-Log' is not recognized as the name of a cmdlet"
 
