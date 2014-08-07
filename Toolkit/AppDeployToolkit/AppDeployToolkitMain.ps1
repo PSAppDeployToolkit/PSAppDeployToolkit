@@ -50,9 +50,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.5"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.5"
-$appDeployMainScriptDate = "08/01/2014"
+$appDeployMainScriptVersion = [version]"3.1.6"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.1.6"
+$appDeployMainScriptDate = "08/07/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -134,7 +134,6 @@ $configConfigDetails = $xmlConfig.Config_File
 # Get Config File Details
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [bool]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[bool]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)
 [bool]$configToolkitCompressLogs = [boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 [string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
 [string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
@@ -147,6 +146,7 @@ $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [string]$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
 [string]$configMSIUninstallParams = $xmlConfigMSIOptions.MSI_UninstallParams
 [string]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
+[string]$configMSIMutexWaitTime = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_MutexWaitTime)
 # Get UI Options
 $xmlConfigUIOptions = $xmlConfig.UI_Options
 [bool]$configShowBalloonNotifications = [boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
@@ -292,47 +292,47 @@ Else {
 Function Write-Log {
 <#
 .SYNOPSIS
-	Writes output to the console and log file simultaneously
+    Writes output to the console and log file simultaneously
 .DESCRIPTION
-	This functions outputs text to the console and to the log file specified in the XML configuration.
-	The date, time and installation phase is pre-pended to the text, e.g. [30-07-2013 11:27:07] [Initialization] "Deploy Application script version is [2.0.0]"
+    This functions outputs text to the console and to the log file specified in the XML configuration.
+    The date, time and installation phase is pre-pended to the text, e.g. [30-07-2013 11:27:07] [Initialization] "Deploy Application script version is [2.0.0]"
 .EXAMPLE
-	Write-Log -Text "This is a custom message..."
+    Write-Log -Text "This is a custom message..."
 .PARAMETER Text
-	The text to display in the console and to write to the log file
+    The text to display in the console and to write to the log file
 .PARAMETER PassThru
-	Passes the text back to the PowerShell pipeline
+    Passes the text back to the PowerShell pipeline
 .NOTES
 .LINK
-	Http://psappdeploytoolkit.codeplex.com
+    Http://psappdeploytoolkit.codeplex.com
 #>
-	Param(
-		[Parameter(Mandatory = $true,ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]
-		[array] $Text,
-		[switch] $PassThru = $false
-	)
-	Process {
-		$Text = $Text -join (" ")
-		$currentDate = (Get-Date -UFormat "%d-%m-%Y")
-		$currentTime = (Get-Date -UFormat "%T")
-		$logEntry = "[$currentDate $currentTime] [$installPhase] $Text"
-		Write-Host $logEntry
-		If ($DisableLogging -eq $false) {
-			# Create the Log directory and file if it doesn't already exist
-			If (!(Test-Path -Path $configToolkitLogDir -ErrorAction SilentlyContinue )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction SilentlyContinue | Out-Null }
-			If (!(Test-Path -Path $logFile -ErrorAction SilentlyContinue )) { New-Item $logFile -Type File -ErrorAction SilentlyContinue | Out-Null }
-			Try {
-				"$logEntry" | Out-File $logFile -Append -ErrorAction SilentlyContinue
-			}
-			Catch {
-				$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
-				Write-Host "$exceptionMessage"
-			}
-		}
-		If ($PassThru -eq $true) {
-			Return $Text
-		}
-	}
+    Param(
+        [Parameter(Mandatory = $true,ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]
+        [array] $Text,
+        [switch] $PassThru = $false
+    )
+    Process {
+        $Text = $Text -join (" ")
+        $currentDate = (Get-Date -UFormat "%d-%m-%Y")
+        $currentTime = (Get-Date -UFormat "%T")
+        $logEntry = "[$currentDate $currentTime] [$installPhase] $Text"
+        Write-Host $logEntry
+        If ($DisableLogging -eq $false) {
+            # Create the Log directory and file if it doesn't already exist
+            If (!(Test-Path -Path $configToolkitLogDir -ErrorAction Stop )) { New-Item $configToolkitLogDir -Type Directory -ErrorAction Stop | Out-Null }
+            If (!(Test-Path -Path $logFile -ErrorAction Stop )) { New-Item $logFile -Type File -ErrorAction Stop | Out-Null }
+            Try {
+                "$logEntry" | Out-File $logFile -Append -ErrorAction Stop
+            }
+            Catch {
+                $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"
+                Write-Host "$exceptionMessage"
+            }
+        }
+        If ($PassThru -eq $true) {
+            Return $Text
+        }
+    }
 }
 
 Function Exit-Script {
@@ -1319,6 +1319,11 @@ Function Execute-Process {
     Immediately continue after executing the process.
 .PARAMETER PassThru
     Returns STDOut and STDErr output from the process.
+.PARAMETER WaitForMsiExec
+	Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that
+	that this function waits for the msiexec engine to become available before starting the install.
+.PARAMETER MsiExecWaitTime
+	Specify the length of time in seconds to wait for the msiexec engine to become available. Default is 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
     List the exit codes you want to ignore.
 .PARAMETER ContinueOnError
@@ -1328,34 +1333,56 @@ Function Execute-Process {
     Http://psappdeploytoolkit.codeplex.com
 #>
     Param(
-        [string] $FilePath = $(throw "Command Param required"),
-        [Array] $Arguments = @(),
-        [ValidateSet("Normal","Hidden","Maximized","Minimized")]
-        [System.Diagnostics.ProcessWindowStyle] $WindowStyle = "Normal",
-        [string] $WorkingDirectory = $null,
-        [switch] $NoWait = $false,
-        [switch] $PassThru = $false,
-        [string] $IgnoreExitCodes = $false,
-        [boolean] $ContinueOnError = $false # Fail if there is an error (Default)
+        [Parameter(Mandatory=$true)]
+		[string]$FilePath,
+		
+		[Parameter(Mandatory=$false)]
+		[array]$Arguments = @(),
+		
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[ValidateSet("Normal","Hidden","Maximized","Minimized")]
+		[System.Diagnostics.ProcessWindowStyle] $WindowStyle = "Normal",
+		
+		[Parameter(Mandatory=$false)]
+		[string]$WorkingDirectory = $null,
+		
+		[Parameter(Mandatory=$false)]
+		[switch]$NoWait = $false,
+		
+		[Parameter(Mandatory=$false)]
+		[switch]$PassThru = $false,
+		
+		[Parameter(Mandatory=$false)]
+		[switch]$WaitForMsiExec = $false,
+	
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[timespan]$MsiExecWaitTime = $(New-TimeSpan -Seconds $configMSIMutexWaitTime),
+		
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IgnoreExitCodes = $false,
+		
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ContinueOnError = $false # Fail if there is an error (Default)
     )
 
-    # If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
-    If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) {
-        $FilePath = (Join-Path $dirFiles $FilePath)
-    }
-
-    # Set the Working directory (if not specified)
-    If ($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") {
-        $WorkingDirectory = (Split-Path $FilePath -Parent)
-    }
-
-    Write-Log "Working Directory is [$WorkingDirectory]"
-
     Try {
-        # Disable Zone checking to prevent warnings when running executables from a Distribution Point
-        $env:SEE_MASK_NOZONECHECKS = 1
+		$returnCode = $null
+		
+		# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
+	    If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction Stop) -ErrorAction Stop) {
+	        $FilePath = (Join-Path $dirFiles $FilePath -ErrorAction Stop)
+	    }
 
-        $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+	    # Set the Working directory (if not specified)
+	    If ($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") {
+	        $WorkingDirectory = (Split-Path $FilePath -Parent -ErrorAction Stop)
+	    }
+
+        $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo -ErrorAction Stop
         $processStartInfo.FileName = "$FilePath"
         $processStartInfo.WorkingDirectory = "$WorkingDirectory"
         $processStartInfo.UseShellExecute = $false
@@ -1363,41 +1390,73 @@ Function Execute-Process {
         $processStartInfo.RedirectStandardError = $true
         If ($arguments.Length -gt 0) { $processStartInfo.Arguments = $Arguments }
         If ($windowStyle) {$processStartInfo.WindowStyle = $WindowStyle}
+		
+		# If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
+		# Please note that a race condition is possible after this check where another process waiting for the MSI installer
+		#  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
+		If (($FilePath -match 'msiexec') -or ($WaitForMsiExec))
+		{
+			$MsiExecAvailable = Test-MsiExecMutex -MsiExecWaitTime $MsiExecWaitTime
+			Start-Sleep -Seconds 1
+			If (-not $MsiExecAvailable)
+			{
+				$returnCode = 1618 # Default MSI exit code for install already in progress
+				Throw "Another MSI installation is already in progress. Complete that installation before proceeding with this install."
+			}
+		}
+		
+		Try {
+	        # Disable Zone checking to prevent warnings when running executables
+	        $env:SEE_MASK_NOZONECHECKS = 1
+			
+			Write-Log "Working Directory is [$WorkingDirectory]"
+	        Write-Log "Executing [$FilePath $Arguments]..."
+			
+			$OldErrorActionPreference = $ErrorActionPreference
+			$ErrorActionPreference = 'Stop' # Using this variable allows capture of exceptions from .NET methods
+	        $process = [System.Diagnostics.Process]::Start($processStartInfo)
+			$ErrorActionPreference = $OldErrorActionPreference
+			
+	        If ($NoWait) {
+	            Write-Log "NoWait parameter specified. Continuing without checking exit code..."
+	        }
+	        Else {
+	            $stdOut = $process.BeginOutputReadLine() -replace "`0",""       # `0 = Null
+	            $stdErr = $process.StandardError.ReadToEnd() -replace "`0",""   # `0 = Null
 
-        Write-Log "Executing [$FilePath $Arguments]..."
-        $process = [System.Diagnostics.Process]::Start($processStartInfo)
+	            $processName = $process.ProcessName
 
-        If ($NoWait -eq $true) {
-            Write-Log ("NoWait parameter specified. Continuing without checking exit code...")
-            # Free resources associated with the process, this does not cause process to exit
-            $process.Close()
-        }
-        Else {
-            $stdOut = $process.BeginOutputReadLine() -replace "`0",""       # `0 = Null
-            $stdErr = $process.StandardError.ReadToEnd() -replace "`0",""   # `0 = Null
+	            If($stdErr.length -gt 0) {Write-Log "Standard error output from the process [$processName]: $stdErr"}
 
-            $processName = $process.ProcessName
-
-            If($stdErr.length -gt 0) {Write-Log "Standard error output from the process [$processName]: $stdErr"}
-
-            # Instructs the Process component to wait indefinitely for the associated process to exit.
-            $process.WaitForExit()
-            Do
-            {
-                # HasExited indicates that the associated process has terminated, either normally or abnormally
-                # We will wait until HasExited returns true
-                If (-not $process.HasExited)
-                {
-                    Start-Sleep -Seconds 1
-                }
-            } Until ($process.HasExited)
-            
-            # Get the exit code for the process
-            $returnCode = $process.ExitCode
-            
-            # Free resources associated with the process, this does not cause process to exit
-            $process.Close()
-
+	            # Instructs the Process component to wait indefinitely for the associated process to exit.
+	            $process.WaitForExit()
+	            Do
+	            {
+	                # HasExited indicates that the associated process has terminated, either normally or abnormally
+	                # We will wait until HasExited returns true
+	                If (-not $process.HasExited)
+	                {
+	                    Start-Sleep -Seconds 1
+	                }
+	            } Until ($process.HasExited)
+	            
+	            # Get the exit code for the process
+	            $returnCode = $process.ExitCode
+			}
+		}
+		Finally {
+			# Free resources associated with the process, this does not cause process to exit
+			If ($process) {
+	        	$process.Close()
+			}
+			
+			# Re-enable Zone checking
+        	Remove-Item env:SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
+			
+			$ErrorActionPreference = $OldErrorActionPreference
+		}
+		
+		If (-not $NoWait){
             # Check to see whether we should ignore exit codes
             $ignoreExitCodeMatch = $false
             If ($ignoreExitCodes -ne "") {
@@ -1445,21 +1504,236 @@ Function Execute-Process {
                 Write-Log "Execution completed successfully with exit code [$returnCode]"
             }
             Else {
-                Write-Log ("Execution failed with exit code [$returnCode]")
-                Exit-Script $returnCode
+                If ($FilePath -match 'msiexec'){
+					$MsiExitCodeMessage = Get-MsiExitCodeMessage -MsiExitCode $returnCode
+					Write-Log "Execution failed with exit code [$returnCode]: [$MsiExitCodeMessage]"
+				}
+				Else {
+					Write-Log "Execution failed with exit code [$returnCode]"
+				}
+				Exit-Script $returnCode
             }
         }
     }
     Catch [Exception] {
-        Write-Log ("Execution failed: " + $_.Exception.Message)
-        If ($returnCode -eq $null) { $returnCode = 999 }
-        Exit-Script $returnCode
+		If ($returnCode -eq $null) {
+			Write-Log "Execution failed `n$($_.Exception.Message)"
+			$returnCode = 999
+		}
+		Else {
+			Write-Log "Execution completed with exit code [$returnCode]. Function failed with message `n$($_.Exception.Message)"
+		}
+		Exit-Script $returnCode
     }
-    Finally
-    {
-        # Re-enable Zone checking
-        Remove-Item env:SEE_MASK_NOZONECHECKS -ErrorAction SilentlyContinue
-    }
+}
+
+Function Get-MsiExitCodeMessage
+{
+<#
+	.SYNOPSIS
+		Get message for MSI error code
+	.DESCRIPTION
+		Get message for MSI error code by reading it from msimsg.dll
+	.PARAMETER MsiErrorCode
+		MSI error code
+	.EXAMPLE
+		Get-MsiExitCodeMessage -MsiErrorCode 1618
+	.NOTES
+	    This is an internal script function and should typically not be called directly.
+    .LINK
+		http://msdn.microsoft.com/en-us/library/aa368542(v=vs.85).aspx        
+        Http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param
+	(
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[uint32]$MsiExitCode
+	)
+	
+	Begin
+	{		
+		$MsiExitCodeMsgSource = @"
+		/// Get MSI exit code message from msimsg.dll resource dll
+		using System;
+		using System.Text;
+		using System.Runtime.InteropServices;
+		public class MsiExitCode
+		{
+			public static string GetMessageFromMsiExitCode(uint errCode) 
+			{
+				string libPath = "msimsg.dll";
+				IntPtr hModuleInstance = LoadLibraryEx(libPath, IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
+				
+				StringBuilder sb = new StringBuilder(255);
+				LoadString(hModuleInstance, errCode, sb, sb.Capacity + 1);
+				
+				return sb.ToString();
+			}
+			
+			[DllImport("kernel32.dll")]
+			static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, LoadLibraryFlags dwFlags);
+			
+			enum LoadLibraryFlags : uint
+			{
+				DONT_RESOLVE_DLL_REFERENCES 		= 0x00000001,
+				LOAD_IGNORE_CODE_AUTHZ_LEVEL 		= 0x00000010,
+				LOAD_LIBRARY_AS_DATAFILE 			= 0x00000002,
+				LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE 	= 0x00000040,
+				LOAD_LIBRARY_AS_IMAGE_RESOURCE 		= 0x00000020,
+				LOAD_WITH_ALTERED_SEARCH_PATH 		= 0x00000008
+			}
+			
+			[DllImport("user32.dll", CharSet = CharSet.Auto)]
+			static extern int LoadString(IntPtr hInstance, uint uID, StringBuilder lpBuffer, int nBufferMax);
+		}
+"@
+		
+		If (-not ([System.Management.Automation.PSTypeName]'MsiExitCode').Type)
+		{
+			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp
+		}
+	}
+	Process
+	{
+		Try
+		{
+			Write-Log "Get message for MSI exit code [$MsiExitCode]"
+			[string]$MsiExitCodeMsg = [MsiExitCode]::GetMessageFromMsiExitCode($MsiExitCode)
+			Write-Output $MsiExitCodeMsg
+		}
+		Catch
+		{
+			Write-Log "Failed to get message for MSI exit code `n$($_.Exception.Message)"
+			Continue
+		}
+	}
+}
+
+Function Test-MsiExecMutex
+{
+<#
+	.SYNOPSIS
+		Wait, up to a timeout, for the MSI installer service to become free.
+	.DESCRIPTION
+		The _MSIExecute mutex is used by the MSI installer service to serialize installations
+		and prevent multiple MSI based installations happening at the same time.
+		Wait, up to a timeout (default is 10 minutes), for the MSI installer service to become free
+		by checking to see if the MSI mutex, "Global\\_MSIExecute", is available.
+	.PARAMETER MsiExecWaitTime
+		The length of time to wait for the MSI installer service to become available.
+		This variable must be specified as a [timespan] variable type using the [New-TimeSpan] cmdlet.
+		Example of specifying a [timespan] variable type: New-TimeSpan -Minutes 5
+	.OUTPUTS
+		Returns true for a successful wait, when the installer service has become free.
+		Returns false when waiting for the installer service to become free has exceeded the timeout.
+	.EXAMPLE
+		Test-MsiExecMutex
+	.EXAMPLE
+		Test-MsiExecMutex -MsiExecWaitTime $(New-TimeSpan -Minutes 5)
+	.EXAMPLE
+		Test-MsiExecMutex -MsiExecWaitTime $(New-TimeSpan -Seconds 60)
+    .NOTES
+	    This is an internal script function and should typically not be called directly.
+	.LINK
+		http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
+        Http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param
+	(
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[timespan]$MsiExecWaitTime = $(New-TimeSpan -Seconds $configMSIMutexWaitTime)
+	)
+	
+	Begin
+	{		
+		$IsMsiExecFreeSource = @"
+		using System;
+		using System.Threading;
+		public class MsiExec
+		{
+			public static bool IsMsiExecFree(TimeSpan maxWaitTime)
+			{
+				/// <summary>
+				/// Wait (up to a timeout) for the MSI installer service to become free.
+				/// </summary>
+				/// <returns>
+				/// Returns true for a successful wait, when the installer service has become free.
+				/// Returns false when waiting for the installer service has exceeded the timeout.
+				/// </returns>
+				
+			    // The _MSIExecute mutex is used by the MSI installer service to serialize installations
+			    // and prevent multiple MSI based installations happening at the same time.
+			    // For more info: http://msdn.microsoft.com/en-us/library/aa372909(VS.85).aspx
+			    const string installerServiceMutexName = "Global\\_MSIExecute";
+			    Mutex MSIExecuteMutex = null;
+			    var isMsiExecFree = false;
+				
+			    try
+			    {
+			        MSIExecuteMutex = Mutex.OpenExisting(installerServiceMutexName,
+			                        System.Security.AccessControl.MutexRights.Synchronize);
+			        isMsiExecFree = MSIExecuteMutex.WaitOne(maxWaitTime, false);
+			    }
+			    catch (WaitHandleCannotBeOpenedException)
+			    {
+			        // Mutex doesn't exist, do nothing
+			        isMsiExecFree = true;
+			    }
+			    catch (ObjectDisposedException)
+			    {
+			        // Mutex was disposed between opening it and attempting to wait on it, do nothing
+			        isMsiExecFree = true;
+			    }
+			    finally
+			    {
+			        if (MSIExecuteMutex != null && isMsiExecFree)
+			        MSIExecuteMutex.ReleaseMutex();
+			    }
+				
+			    return isMsiExecFree;
+			}
+		}
+"@
+		
+		If (-not ([System.Management.Automation.PSTypeName]'MsiExec').Type)
+		{
+			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp
+		}
+	}
+	Process
+	{
+		Try
+		{
+			If ($MsiExecWaitTime.TotalMinutes -gt 0)
+			{
+				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalMinutes) minutes"
+			}
+			Else
+			{
+				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalSeconds) seconds"
+			}
+			Write-Log "Check to see if the _MSIExecute mutex is available. Wait up to [$WaitLogMsg] for the _MSIExecute mutex to become available."
+			[boolean]$IsMsiExecInstallFree = [MsiExec]::IsMsiExecFree($MsiExecWaitTime)
+			
+			If ($IsMsiExecInstallFree)
+			{
+				Write-Log "The _MSIExecute mutex is available."
+			}
+			Else
+			{
+				Write-Log "The _MSIExecute mutex is not available."
+			}
+			Return $IsMsiExecInstallFree
+		}
+		Catch
+		{
+			Write-Log "Error while checking if _MSIExecute mutex is available `n$($_.Exception.Message)"
+		}
+	}
 }
 
 Function New-Folder { 

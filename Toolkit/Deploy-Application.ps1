@@ -62,8 +62,8 @@ $appScriptAuthor = "<author name>"
 # Variables: Script - Do not modify this section
 
 $deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.1.5"
-$deployAppScriptDate = "08/01/2014"
+$deployAppScriptVersion = [version]"3.1.6"
+$deployAppScriptDate = "08/07/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -120,6 +120,7 @@ $installPhase = "Post-Installation"
 
 #*===============================================
 #* END SCRIPT BODY
-} } Catch { $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"; Write-Log "$exceptionMessage"; Show-DialogBox -Text $exceptionMessage -Icon "Stop"; Exit-Script -ExitCode 1 } # Catch any errors in this script 
+} } Catch { $exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"; If (!($appDeployToolkitName)) {Throw "Failed to dot-source AppDeployToolkitMain.ps1 - please check if the file is present in the \AppDeployToolkit folder"; Exit 1} 
+{ Else Write-Log "$exceptionMessage"; Show-DialogBox -Text $exceptionMessage -Icon "Stop"; Exit-Script -ExitCode 1 } } # Catch any errors in this script 
 Exit-Script -ExitCode 0 # Otherwise call the Exit-Script function to perform final cleanup operations
 #*===============================================
