@@ -57,7 +57,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.6"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.6"
-$appDeployMainScriptDate = "08/07/2014"
+$appDeployMainScriptDate = "08/09/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
