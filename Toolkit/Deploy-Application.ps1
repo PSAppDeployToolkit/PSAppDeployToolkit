@@ -10,7 +10,7 @@
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
-	Deploy-Application.ps1 -DeploymentMode "Silent"
+	Deploy-Application.ps1 -DeployMode "Silent"
 .EXAMPLE
 	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE

@@ -5,14 +5,29 @@
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 .PARAMETER CleanupBlockedApps
-	Clean up the blocked applications.
-	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
+	Clean up the blocked applications.	
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
-	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
-.PARAMETER ReferringApplication
-	Name of the referring application that invoked the script externally.
-	This parameter is passed to the script when it is called externally from a scheduled task or Image File Execution Options.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppVendor
+    Vendor of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppName
+    Name of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppVersion
+    Version of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppArch
+    Architecture of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppLang
+    Language of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AppRevision
+    Revision of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .NOTES
 	The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously
 .LINK
@@ -25,7 +40,12 @@ Param (
 	[switch] $CleanupBlockedApps = $false,
 	[switch] $ShowBlockedAppDialog = $false,
 	[switch] $DisableLogging = $false,
-	[string] $ReferringApplication = $Null,
+	[string] $appVendor = $Null,
+	[string] $appName = $Null,
+	[string] $appVersion = $Null,
+	[string] $appArch = $Null,
+	[string] $appLang = $Null,
+	[string] $appRevision = $Null,
 	[string] $Message = $null,
 	[string] $MessageAlignment = $null,
 	[string] $ButtonRightText = $null,
@@ -757,7 +777,7 @@ Function Show-InstallationPrompt {
 		$installPromptParameters.Remove("NoWait")
 		# Format the parameters as a string
 		$installPromptParameters = ($installPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -AppVendor `"$appVendor`" -AppName `"$appName`" -AppVersion `"$appVersion`" -AppArch `"$appArch`" -AppLang `"$appLang`" -AppRevision `"$appRevision`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	# Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
 	Else {
@@ -2384,8 +2404,8 @@ Function Block-AppExecution {
 	1. Makes a copy of this script in a temporary directory on the local machine.
 	2. Checks for an existing scheduled task from previous failed installation attemp where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
 		This is to prevent the function from overriding the backup of the original IFEO options.
-	3. Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameters -CleanupBlockedApps and -ReferringApplication
-	4. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameters -ShowBlockedAppDialog and -ReferringApplication
+	3. Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameter -CleanupBlockedApps
+	4. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog
 	5. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
 		The text of this message can be customized in the XML configuration file.
 .EXAMPLE
@@ -2416,7 +2436,7 @@ Function Block-AppExecution {
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
 
 	# Built the debugger block value
-	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
+	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -AppVendor `'$appVendor`' -AppName `'$appName`' -AppVersion `'$appVersion`' -AppArch `'$appArch`' -AppLang `'$appLang`' -AppRevision `'$appRevision`'`""
 
 	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
@@ -2424,7 +2444,7 @@ Function Block-AppExecution {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
-		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -ReferringApplication `'$installName`'`"" -PassThru
+		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -AppVendor `'$appVendor`' -AppName `'$appName`' -AppVersion `'$appVersion`' -AppArch `'$appArch`' -AppLang `'$appLang`' -AppRevision `'$appRevision`'`"" -PassThru
 	}
 
 	$blockProcessName = $processName
@@ -2444,7 +2464,7 @@ Function UnBlock-AppExecution {
 .SYNOPSIS
 	Unblocks the execution of applications performed by the Block-AppExecution function
 .DESCRIPTION
-	This function is called by the Exit-Script function or when the script itself is called with the parameters -CleanupBlockedApps and -ReferringApplication
+	This function is called by the Exit-Script function or when the script itself is called with the parameters -CleanupBlockedApps
 .EXAMPLE
 	UnblockAppExecution
 .NOTES
@@ -3658,8 +3678,9 @@ Function Show-InstallationRestartPrompt {
 		}
 		Else {
 			Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
-		}$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
+		}
+        $installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -AppVendor `'$appVendor`' -AppName `'$appName`' -AppVersion `'$appVersion`' -AppArch `'$appArch`' -AppLang `'$appLang`' -AppRevision `'$appRevision`' -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	Else {
 		If ($NoCountdown -eq $true) {
@@ -4766,8 +4787,6 @@ Catch [Exception] {
 
 # Set the install name if the referring application parameter was specified
 If ($ReferringApplication -ne "") {
-	$installName = $ReferringApplication
-	$installTitle = $ReferringApplication -replace "_"," "
 	$installPhase = "Asynchronous"
 }
 
@@ -4776,7 +4795,12 @@ If ($showInstallationPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationPrompt")
-	$appDeployMainScriptParameters.Remove("ReferringApplication")
+	$appDeployMainScriptParameters.Remove("AppVendor")
+    $appDeployMainScriptParameters.Remove("AppName")
+    $appDeployMainScriptParameters.Remove("AppVersion")
+    $appDeployMainScriptParameters.Remove("AppArch")
+    $appDeployMainScriptParameters.Remove("AppLang")
+    $appDeployMainScriptParameters.Remove("AppRevision")
 	Show-InstallationPrompt @appDeployMainScriptParameters
 	Exit 0
 }
@@ -4786,7 +4810,12 @@ If ($showInstallationRestartPrompt -eq $true) {
 	$deployModeSilent = $true
 	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationRestartPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationRestartPrompt")
-	$appDeployMainScriptParameters.Remove("ReferringApplication")
+	$appDeployMainScriptParameters.Remove("AppVendor")
+    $appDeployMainScriptParameters.Remove("AppName")
+    $appDeployMainScriptParameters.Remove("AppVersion")
+    $appDeployMainScriptParameters.Remove("AppArch")
+    $appDeployMainScriptParameters.Remove("AppLang")
+    $appDeployMainScriptParameters.Remove("AppRevision")
 	Show-InstallationRestartPrompt @appDeployMainScriptParameters
 	Exit 0
 }

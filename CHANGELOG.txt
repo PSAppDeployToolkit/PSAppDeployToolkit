@@ -7,6 +7,7 @@ Version 3.1.6 [07/08/2014]
 	Added Test-MsiExecMutex - used by Execute-MSI (also available to Execute-Process) to check if an in-progress MSI installation is preventing an MSI from installing and waits up to 10 minutes - this reduces instances of MSI error code 1618. (Thanks to mmashwani)
 	Improved exception handling in Write-Log
 	Added error handling when the toolkit fails to dot source, i.e. no more "The term 'Write-Log' is not recognized as the name of a cmdlet"
+	The install title format on asynchronous UI elements will now match that on the main UI elements.
 
 Version 3.1.5 [01/08/2014]
 	Added Send-Keys function to send a sequence of keys to an application window (Thanks to mmashwani)
