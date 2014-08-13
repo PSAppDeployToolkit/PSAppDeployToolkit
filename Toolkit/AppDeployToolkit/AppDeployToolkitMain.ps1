@@ -13,6 +13,9 @@
 .PARAMETER InstallTitle
     Title of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER InstallName
+    Title of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .NOTES
 	The other parameters specified for this script that do not are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously
 .LINK
@@ -25,12 +28,8 @@ Param (
 	[switch] $CleanupBlockedApps = $false,
 	[switch] $ShowBlockedAppDialog = $false,
 	[switch] $DisableLogging = $false,
-	[string] $appVendor = $Null,
-	[string] $appName = $Null,
-	[string] $appVersion = $Null,
-	[string] $appArch = $Null,
-	[string] $appLang = $Null,
-	[string] $appRevision = $Null,
+	[string] $installTitle = $Null,
+	[string] $installName = $Null,
 	[string] $Message = $null,
 	[string] $MessageAlignment = $null,
 	[string] $ButtonRightText = $null,
@@ -57,7 +56,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.6"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.6"
-$appDeployMainScriptDate = "08/09/2014"
+$appDeployMainScriptDate = "08/13/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -230,19 +229,22 @@ $deferHistory = $deferTimes = $deferDays = $null
 $shell = New-Object -ComObject WScript.Shell -ErrorAction SilentlyContinue
 $shellApp = New-Object -ComObject Shell.Application -ErrorAction SilentlyContinue
 
-# Set up sample variables if Dot Sourcing the script or app details have not been specified
-If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
-	$appVendor = "PS"
-	$appName = $appDeployMainScriptFriendlyName
-	$appVersion = $appDeployMainScriptVersion
-	$appLang = $currentLanguage
-	$appRevision = "01"
-	$appArch = ""
+# Set up sample variables if Dot Sourcing the script, app details have not been specified or InstallName not passed as parameter to the script
+If (!($appDeployMainScriptParameters.InstallName)) {
+    If ((!$appVendor) -and (!$appName) -and (!$appVersion)) {
+	    $appVendor = "PS"
+	    $appName = $appDeployMainScriptFriendlyName
+	    $appVersion = $appDeployMainScriptVersion
+	    $appLang = $currentLanguage
+	    $appRevision = "01"
+	    $appArch = ""
+    }
 }
 
-# Build the Application Title and Name
-$installTitle = "$appVendor $appName $appVersion"
-
+# Build the Installation Title if not already passed as parameter to the script
+If (!($appDeployMainScriptParameters.InstallTitle)) {
+    $installTitle = "$appVendor $appName $appVersion"
+}
 # Sanitize the application details, as they can cause issues in the script
 $invalidFileNameChars = [IO.Path]::GetInvalidFileNamechars()
 $appVendor = $appVendor -replace "[$invalidFileNameChars]","" -replace " ",""
@@ -252,12 +254,14 @@ $appArch = $appArch -replace "[$invalidFileNameChars]","" -replace " ",""
 $appLang = $appLang -replace "[$invalidFileNameChars]","" -replace " ",""
 $appRevision = $appRevision -replace "[$invalidFileNameChars]","" -replace " ",""
 
-# Build the Installation Name
-If ($appArch -ne "") {
-	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision"
-}
-Else {
-	$installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision"
+# Build the Installation Name if not already passed as parameter to the script
+If (!($appDeployMainScriptParameters.InstallName)) {
+    If ($appArch -ne "") {
+	    $installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appArch" + "_" + "$appLang" + "_" + "$appRevision"
+    }
+    Else {
+	    $installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision"
+    }
 }
 
 # Variables: Registry Keys
@@ -762,7 +766,7 @@ Function Show-InstallationPrompt {
 		$installPromptParameters.Remove("NoWait")
 		# Format the parameters as a string
 		$installPromptParameters = ($installPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -InstallTitle `"$installTitle`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -InstallTitle `"$installTitle`" -InstallName `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	# Otherwise show the prompt synchronously, and keep showing it if the user cancels it until the respond using one of the buttons
 	Else {
@@ -2425,7 +2429,7 @@ Function Block-AppExecution {
 	Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude "thumbs.db" -Force -Recurse -ErrorAction SilentlyContinue
 
 	# Built the debugger block value
-	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -InstallTitle `'$installTitle`'`""
+	$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -InstallTitle `'$installTitle`' -InstallName `'$installName`'`""
 
 	# Create a scheduled task to run on startup to call this script and cleanup blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 	Write-Log "Creating Scheduled task to cleanup blocked applications in case installation is interrupted..."
@@ -2433,7 +2437,7 @@ Function Block-AppExecution {
 		Write-Log "Scheduled task $schTaskBlockedAppsName already exists."
 	}
 	Else { 
-		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -InstallTitle `'$installTitle`'`"" -PassThru
+		$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU System /SC ONSTART /TR `"powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `'$dirAppDeployTemp\$scriptFileName`' -CleanupBlockedApps -InstallTitle `'$installTitle`' -InstallName `'$installName`'`"" -PassThru
 	}
 
 	$blockProcessName = $processName
@@ -3669,7 +3673,7 @@ Function Show-InstallationRestartPrompt {
 			Write-Log "Invoking Show-InstallationRestartPrompt asynchronously with [$countDownSeconds] countdown seconds..."
 		}
         $installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | % { "-$($_.Key) `"$($_.Value)`""}) -join " "
-		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -InstallTitle `'$installTitle`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
+		Start-Process $PSHOME\powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -InstallTitle `"$installTitle`" -InstallName `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction SilentlyContinue
 	}
 	Else {
 		If ($NoCountdown -eq $true) {
@@ -4784,7 +4788,8 @@ If ($showInstallationPrompt -eq $true) {
    	Write-Log "$appDeployMainScriptFriendlyName called with switch ShowInstallationPrompt"
 	$appDeployMainScriptParameters.Remove("ShowInstallationPrompt")
 	$appDeployMainScriptParameters.Remove("installTitle")
-	Show-InstallationPrompt @appDeployMainScriptParameters
+	$appDeployMainScriptParameters.Remove("installName")
+    Show-InstallationPrompt @appDeployMainScriptParameters
 	Exit 0
 }
 

@@ -7,7 +7,8 @@ Version 3.1.6 [09/08/2014]
 	Added Test-MsiExecMutex - used by Execute-MSI (also available to Execute-Process) to check if an in-progress MSI installation is preventing an MSI from installing and waits up to 10 minutes - this reduces instances of MSI error code 1618.
 	Added error message to clarify when the toolkit fails to dot source and functions are not available
 	Improved exception handling in Write-Log
-	The install title format on asynchronous UI elements will now match that on the main UI elements.
+	The install title format on asynchronous UI elements will now match the synchronous UI elements
+	Asynchronous toolkit invocations now write to the same log file as synchronous
 	
 	(Thanks to mmashwani for his excellent contributions to this release)
 
