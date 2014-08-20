@@ -56,7 +56,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.1.6"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.1.6"
-$appDeployMainScriptDate = "08/13/2014"
+$appDeployMainScriptDate = "08/20/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -4342,25 +4342,39 @@ Function Install-MSUpdates ($Directory) {
 	# Get all hotfixes and install if required
 	$files = Get-ChildItem $Directory -Recurse -Include @("*.exe", "*.msu", "*.msp")
 	ForEach ($file in $files) {
-		# Get the KB number of the file
-		$kbNumber = [regex]::match($file, $kbPattern).ToString()
-		If ($kbNumber -eq "" -or $kbNumber -eq $null) { Continue }
-		# Check to see whether the KB is already installed
-		If ((Test-MSUpdates -kbNumber $kbNumber) -eq $false) {
-			Write-Log "$kbNumber was not detected and will be installed."
-			Switch ($file.Extension) {
-				# Installation type for executables (ie, Microsoft Office Updates)
-				".exe" { Execute-Process -FilePath $file -Arguments "/quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
-				# Installation type for Windows updates using Windows Update Standalone Installer
-				".msu" { Execute-Process -FilePath "wusa.exe" -Arguments "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
-				# Installation type for Windows Installer Patch
-				".msp" { Execute-MSI -Action "Patch" -Path $file -ContinueOnError $true }
-			}
-		}
-		Else {
-			Write-Log "$kbNumber was already installed. Skipping..."
-		}
-	}
+        If ($file.Name -match "redist") {
+            [version]$redistVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($file).ProductVersion
+            $redistDescription = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($file).FileDescription
+            Write-Log "Installing $redistDescription $redistVersion..."
+            # Handle older redistributables (ie, VC++ 2005)
+            If ($redistDescription -match "Win32 Cabinet Self-Extractor") {
+                Execute-Process -FilePath $file -Arguments "/q" -WindowStyle Hidden -ContinueOnError $true
+            }
+            Else {
+                Execute-Process -FilePath $file -Arguments "/quiet /norestart" -WindowStyle Hidden -ContinueOnError $true
+            }
+        }
+        Else {
+		    # Get the KB number of the file
+		    $kbNumber = [regex]::match($file, $kbPattern).ToString()
+		    If ($kbNumber -eq "" -or $kbNumber -eq $null) { Continue }
+		    # Check to see whether the KB is already installed
+		    If ((Test-MSUpdates -kbNumber $kbNumber) -eq $false) {
+			    Write-Log "$kbNumber was not detected and will be installed."
+			    Switch ($file.Extension) {
+				    # Installation type for executables (ie, Microsoft Office Updates)
+				    ".exe" { Execute-Process -FilePath $file -Arguments "/quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
+				    # Installation type for Windows updates using Windows Update Standalone Installer
+				    ".msu" { Execute-Process -FilePath "wusa.exe" -Arguments "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
+				    # Installation type for Windows Installer Patch
+				    ".msp" { Execute-MSI -Action "Patch" -Path $file -ContinueOnError $true }
+			    }
+		    }
+		    Else {
+			    Write-Log "$kbNumber was already installed. Skipping..."
+		    }
+	    }
+    }
 }
 
 Function Send-Keys
