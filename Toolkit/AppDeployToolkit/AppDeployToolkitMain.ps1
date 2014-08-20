@@ -2263,6 +2263,7 @@ Function New-Shortcut {
 		[Parameter(Mandatory = $true)]
 		[string] $TargetPath,
 		[string] $Arguments,
+		[Parameter(Mandatory = $true)]
 		[string] $IconLocation,
 		[string] $Description,
 		[string] $WorkingDirectory,
