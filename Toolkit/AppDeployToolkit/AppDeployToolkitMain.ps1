@@ -54,9 +54,9 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 
 # Variables: Script
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
-$appDeployMainScriptVersion = [version]"3.1.6"
-$appDeployMainScriptMinimumConfigVersion = [version]"3.1.6"
-$appDeployMainScriptDate = "08/20/2014"
+$appDeployMainScriptVersion = [version]"3.2.0"
+$appDeployMainScriptMinimumConfigVersion = [version]"3.2.0"
+$appDeployMainScriptDate = "08/22/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1023,8 +1023,10 @@ Function Get-InstalledApplication {
 	Get-InstalledApplication -Name "Adobe Flash"
 .EXAMPLE
 	Get-InstalledApplication -ProductCode "{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}"
-.PARAMETER ApplicationName
+.PARAMETER Name
 	The name of the application you want to retrieve information on. Performs a wildcard match on the application display name.
+.PARAMETER Exact
+	Specifies to only match the exact name of the application.
 .PARAMETER ProductCode
 	The product code of the application you want to retrieve information on.
 .NOTES
@@ -1033,6 +1035,7 @@ Function Get-InstalledApplication {
 #>
 	Param (
 		[array] $Name = "",
+        [switch] $Exact = $null,
 		[string] $ProductCode = ""
 	)
 
@@ -1047,7 +1050,7 @@ Function Get-InstalledApplication {
 	$installedApplication = @()
 	Foreach ($regKey in $regKeyApplications ) {
 		If (Test-Path $regKey -ErrorAction SilentlyContinue) {
-		$regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty -LiteralPath $_.PsPath }
+		    $regKeyApplication = Get-ChildItem $regKey -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty -LiteralPath $_.PsPath }
 			Foreach ($regKeyApp in $regKeyApplication) {
 				$appDisplayName = $null
 				$appDisplayVersion = $null
@@ -1082,10 +1085,22 @@ Function Get-InstalledApplication {
 				If ($name -ne "") {
 					# Verify if there is a match with the application name(s) passed to the script
 					Foreach ($application in $applications) {
-						If (($regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket") -match $application ) {
-							Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
-							$regKeyApp.DisplayName = $regKeyApp.DisplayName
-							$installedApplication += New-Object PSObject -Property @{
+                        $applicationMatched = $false
+						$regKeyAppDisplayName = $regKeyApp.DisplayName -replace "\.","dot" -replace "\*","asterix" -replace "\+","plus" -replace "\(","openbracket" -replace "\)","closebracket" -replace "\[","opensquarebracket" -replace "\]","closesquarebracket"
+                        If ($exact) {
+                            # Check for an exact application name match
+                            If ($regKeyAppDisplayName -eq $application ) {
+                                $applicationMatched = $true
+							    Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] exactly matching application name [$application]"
+                            }
+                        }
+                        # Check for a partial application name match
+                        ElseIf ($regKeyAppDisplayName -match $application) {
+                            $applicationMatched = $true
+                            Write-Log "Found installed application [$($appDisplayName)] version [$($appDisplayVersion)] matching application name [$application]"
+                        }
+                        If ($applicationMatched -eq $true) {
+                            $installedApplication += New-Object PSObject -Property @{
 								ProductCode	=		$regKeyApp.PSChildName
 								DisplayName =		$appDisplayName
 								DisplayVersion =	$appDisplayVersion
@@ -1094,11 +1109,11 @@ Function Get-InstalledApplication {
 								InstallLocation =	$regKeyApp.InstallLocation
 								InstallDate =		$regKeyApp.InstallDate
 								Publisher =			$appPublisher
-							}
-						}
-					}
-				}
-			}
+						    } 
+               		    }                    
+    			    }
+ 			    }
+            }
 		}
 	}
 	Return $installedApplication
@@ -1268,6 +1283,8 @@ Function Remove-MSIApplications {
 	Removes all versions of software that match the name "Adobe"
 .PARAMETER Name
 	The name of the application you want to uninstall.
+.PARAMETER Exact
+    Specifies whether to exactly match the name of the application
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognised by the App Deploy Toolkit.
 .NOTES
@@ -1277,11 +1294,18 @@ Function Remove-MSIApplications {
 	Param(
 		[Parameter(Mandatory = $true)]
 		[string] $Name,
+        [switch] $Exact = $null,
 		[boolean] $ContinueOnError = $true
 	)
+    
+    If ($Exact) {
+        $installedApplications = Get-InstalledApplication $name -Exact
+    }
+    Else {
+        $installedApplications = Get-InstalledApplication $name
+    }
 
-	$installedApplications = Get-InstalledApplication $name
-	If ($installedApplications -ne "") {
+    If ($installedApplications -ne "") {
 		Foreach ($installedApplication in $installedApplications) {
 			If ($installedApplication.UninstallString -match "msiexec") {
 				Write-Log "Removing Application [$($installedApplication.DisplayName) $($installedApplication.Version)]..."

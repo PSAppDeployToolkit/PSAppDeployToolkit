@@ -1,10 +1,11 @@
 Version 4.0 [xx/xx/2014]
 	When running as SYSTEM, the toolkit will automatically break out of Session 0 to the logged on user context in order to provide user interaction. If a task sequence is running, no user is logged on, or non-interactive deployment mode has been specified then the toolkit will run silently.
 
-Version 3.1.6 [09/08/2014]
+Version 3.2.0 [22/08/2014]
 	Further optimizations/best practice changes to Execute-Process to improve parameter validation, object and exception handling.
 	Added Get-MsiExitCodeMessage - used by Execute-MSI (also available to Execute-Process) to get MSI exit code description if not handled by default.
 	Added Test-MsiExecMutex - used by Execute-MSI (also available to Execute-Process) to check if an in-progress MSI installation is preventing an MSI from installing and waits up to 10 minutes - this reduces instances of MSI error code 1618.
+	Get-InstalledApplication and Remove-MSIApplication now support exact application name matching
 	Added error message to clarify when the toolkit fails to dot source and functions are not available
 	Improved exception handling in Write-Log
 	The install title format on asynchronous UI elements will now match the synchronous UI elements
