@@ -56,7 +56,7 @@ $appDeployToolkitName = "PSAppDeployToolkit"
 $appDeployMainScriptFriendlyName = "App Deploy Toolkit Main"
 $appDeployMainScriptVersion = [version]"3.2.0"
 $appDeployMainScriptMinimumConfigVersion = [version]"3.2.0"
-$appDeployMainScriptDate = "08/22/2014"
+$appDeployMainScriptDate = "09/01/2014"
 $appDeployMainScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -1703,7 +1703,7 @@ Function Test-MsiExecMutex
 			    // For more info: http://msdn.microsoft.com/en-us/library/aa372909(VS.85).aspx
 			    const string installerServiceMutexName = "Global\\_MSIExecute";
 			    Mutex MSIExecuteMutex = null;
-			    var isMsiExecFree = false;
+			    bool isMsiExecFree = false;
 				
 			    try
 			    {

@@ -63,7 +63,7 @@ $appScriptAuthor = "<author name>"
 
 $deployAppScriptFriendlyName = "Deploy Application"
 $deployAppScriptVersion = [version]"3.2.0"
-$deployAppScriptDate = "08/22/2014"
+$deployAppScriptDate = "09/01/2014"
 $deployAppScriptParameters = $psBoundParameters
 
 # Variables: Environment
@@ -106,8 +106,8 @@ $installPhase = "Post-Installation"
 	Show-InstallationPrompt -Message "You can customise text to appear at the end of an install, or remove it completely for unattended installations." -ButtonRightText "Ok" -Icon Information -NoWait
 
 #*===============================================
-#* UNINSTALLATION
-} ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"
+#* PRE-UNINSTALLATION
+} ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Pre-Uninstallation"
 #*===============================================
 
 	# Show Welcome Message, close Internet Explorer if required with a 60 second countdown before automatically closing
@@ -116,7 +116,19 @@ $installPhase = "Post-Installation"
 	# Show Progress Message (with the default message)
 	Show-InstallationProgress
 
+#*===============================================
+#* UNINSTALLATION
+$installPhase = "Uninstallation"
+#*===============================================
+
 	# Perform uninstallation tasks here
+
+#*===============================================
+#* POST-UNINSTALLATION
+$installPhase = "Post-Uninstallation"
+#*===============================================
+
+	# Perform post-uninstallation tasks here
 
 #*===============================================
 #* END SCRIPT BODY
