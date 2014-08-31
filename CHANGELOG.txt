@@ -11,6 +11,8 @@ Version 3.2.0 [22/08/2014]
 	The install title format on asynchronous UI elements will now match the synchronous UI elements
 	Asynchronous toolkit invocations now write to the same log file as synchronous
 	Install-MSUpdates now handles re-distributables such as the VC++ runtime redistributables
+	Added additional uninstallation sections to Deploy-Application.ps1 template to mirror installation sections
+	Added Dutch translations
 	
 	(Thanks to mmashwani for his excellent contributions to this release)
 
