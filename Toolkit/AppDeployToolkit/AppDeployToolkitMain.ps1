@@ -1406,7 +1406,7 @@ Function Execute-Process {
 		$returnCode = $null
 		
 		# If the file is in the Files subdirectory of the App Deploy Toolkit, set the full path to the file
-	    If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction Stop) -ErrorAction Stop) {
+	    If (Test-Path (Join-Path $dirFiles $FilePath -ErrorAction Stop)) {
 	        $FilePath = (Join-Path $dirFiles $FilePath -ErrorAction Stop)
 	    }
 
