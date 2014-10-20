@@ -1,5 +1,12 @@
-Version 4.0 [xx/xx/2014]
+Version 4.0 [xx/xx/2014] (In planning)
 	When running as SYSTEM, the toolkit will automatically break out of Session 0 to the logged on user context in order to provide user interaction. If a task sequence is running, no user is logged on, or non-interactive deployment mode has been specified then the toolkit will run silently.
+
+Version 3.2.1 [xx/xx/xxxx]
+Improved Norweigan translations
+Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
+Added cosmetic improvement for empty application variables
+Fixed issue with Remove-MSIApplications executing for empty objects
+Changed Restart Prompt default selected button to Restart Later
 
 Version 3.2.0 [22/08/2014]
 	Added further optimization and best practice enhancements to Execute-Process to improve parameter validation, object and exception handling.

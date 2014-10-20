@@ -262,6 +262,7 @@ If (!($appDeployMainScriptParameters.InstallName)) {
     Else {
 	    $installName = "$appVendor" + "_" + "$appName" + "_" + "$appVersion" + "_" + "$appLang" + "_" + "$appRevision"
     }
+    $installName = $installName.Trim("_") -replace "[_]+", "_"
 }
 
 # Variables: Registry Keys
@@ -1247,10 +1248,10 @@ Function Execute-MSI {
 	$mstFile = "`"$transform`""
 
 	If ($transform -and $Parameters) {
-		$argsMSI = "$option $msiFile TRANSFORMS=$mstFile $Parameters $configMSILoggingOptions $msiLogFile"
+		$argsMSI = "$option $msiFile TRANSFORMS=$mstFile TRANSFORMSSECURE=1 $Parameters $configMSILoggingOptions $msiLogFile"
 	}
 	ElseIf ($transform) {
-		$argsMSI = "$option $msiFile TRANSFORMS=$mstFile $msiDefaultParams $configMSILoggingOptions $msiLogFile"
+		$argsMSI = "$option $msiFile TRANSFORMS=$mstFile TRANSFORMSSECURE=1 $msiDefaultParams $configMSILoggingOptions $msiLogFile"
 	}
 	ElseIf ($Parameters) {
 		$argsMSI = "$option $msiFile $Parameters $configMSILoggingOptions $msiLogFile"
@@ -1300,12 +1301,14 @@ Function Remove-MSIApplications {
     
     If ($Exact) {
         $installedApplications = Get-InstalledApplication $name -Exact
+        [psobject[]]$installedApplications = Get-InstalledApplication -Name $name -Exact
     }
     Else {
         $installedApplications = Get-InstalledApplication $name
+        [psobject[]]$installedApplications = Get-InstalledApplication -Name $name
     }
 
-    If ($installedApplications -ne "") {
+    If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 		Foreach ($installedApplication in $installedApplications) {
 			If ($installedApplication.UninstallString -match "msiexec") {
 				Write-Log "Removing Application [$($installedApplication.DisplayName) $($installedApplication.Version)]..."
@@ -3656,7 +3659,7 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartLater.Location = '20, 216'
 	$buttonRestartLater.Name = "buttonRestartLater"
 	$buttonRestartLater.Size = '159, 23'
-	$buttonRestartLater.TabIndex = 2
+	$buttonRestartLater.TabIndex = 0
 	$buttonRestartLater.Text = $configRestartPromptButtonRestartLater
 	$buttonRestartLater.UseVisualStyleBackColor = $True
 	$buttonRestartLater.add_Click($buttonRestartLater_Click)
@@ -3666,7 +3669,7 @@ Function Show-InstallationRestartPrompt {
 	$buttonRestartNow.Location = '265, 216'
 	$buttonRestartNow.Name = "buttonRestartNow"
 	$buttonRestartNow.Size = '159, 23'
-	$buttonRestartNow.TabIndex = 0
+	$buttonRestartNow.TabIndex = 2
 	$buttonRestartNow.Text = $configRestartPromptButtonRestartNow
 	$buttonRestartNow.UseVisualStyleBackColor = $True
 	$buttonRestartNow.add_Click($buttonRestartNow_Click)
