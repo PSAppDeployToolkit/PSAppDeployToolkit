@@ -1,14 +1,36 @@
-Version 4.0 [xx/xx/2014] (In planning)
-	When running as SYSTEM, the toolkit will automatically break out of Session 0 to the logged on user context in order to provide user interaction. If a task sequence is running, no user is logged on, or non-interactive deployment mode has been specified then the toolkit will run silently.
+Version 3.5.0 [10/31/2014]
+	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
+	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Set-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
+	Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
+	Added ability for Test-PowerPoint to actually detect if user is presenting slideshow in fullscreen mode
+	Added Refresh-SessionEnvironmentVariables to allow reloading of newly created environment variables for the current process
+	Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
+	Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
+	Added ability to detect active console user (user with control of the monitor, keyboard, mouse)
+	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
+	Changed Restart Prompt default selected button to Restart Later
+	Improved detection of change.exe failures for TerminalServerInstallMode
+	Improved detection of logged in users
+	Improved error trapping and logging of messages throughout script. Modified messages for clarity and consistency.
+	Improved parameter validation on all functions to simplify function logic and give standard error messages when function parameters not specified properly, also helps make clear which parameters are mandatory and which are not
+	Improved Set-PinnedApplication to detect when one of the chosen actions is not available on an operating system (such as pinning items to Start Menu on Windows 8)
+	Improved session 0 detection
+	Show-InstallationWelcome, Show-InstallationPrompt: Fixed clipping of text when non-default DPI settings used
+	Fixed creation of URL shortcuts in New-Shortcut
+	Fixed detection of when script is running from a task sequence
+	Fixed issue in Get-InstalledApplication where an "Invalid Cast" error was thrown if registry contains a value with invalid data
+	Fixed issue in New-Shortcut where an error would be thrown if no icon was specified
+	Fixed issue in Test-Battery where the incorrect information would be returned if the battery was failing
+	Fixed issue in Send-Keys where there was an improper script exit upon failure
+	Fixed issue in Exit-Script where BaloonTip was not disposed before exit
+	Fixed issue where Block-Execution would display an error creating the scheduled task if the Application Name was too long (command was longer than 261 characters)
+	Fixed issue where Block-Execution was not showing a message windows when user tries to open a blocked app
+	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute
+	Fixed issue where AppDeployToolkitHelp.ps1 threw an error when executed
+	Updated Deploy-Application template to be consistent with the rest of the toolkit. Scripts from previous versions are fully backwards compatible
+	Updated Norweigan translations
 
-Version 3.2.1 [xx/xx/xxxx]
-Improved Norweigan translations
-Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
-Added cosmetic improvement for empty application variables
-Fixed issue with Remove-MSIApplications executing for empty objects
-Changed Restart Prompt default selected button to Restart Later
-
-Version 3.2.0 [22/08/2014]
+Version 3.2.0 [08/22/2014]
 	Added further optimization and best practice enhancements to Execute-Process to improve parameter validation, object and exception handling.
 	Added a check for in-progress MSI installations preventing an MSI from installing and waits up to 10 minutes - this reduces instances of MSI error code 1618 (Test-MsiExecMutex)
 	Added Get-MsiExitCodeMessage - used by Execute-MSI (also available to Execute-Process) to get MSI exit code description if not handled by default.
@@ -20,10 +42,9 @@ Version 3.2.0 [22/08/2014]
 	Install-MSUpdates now handles re-distributables such as the VC++ runtime redistributables
 	Added additional uninstallation sections to Deploy-Application.ps1 template to mirror installation sections
 	Added Dutch translations
-	
 	(Thanks to mmashwani for his excellent contributions to this release)
 
-Version 3.1.5 [01/08/2014]
+Version 3.1.5 [08/01/2014]
 	Added Send-Keys function to send a sequence of keys to an application window (Thanks to mmashwani)
 	Added 3 optimization/stability improvements to Execute-Process following MS best practice (Thanks to mmashwani)
 	Fixed issue where Execute-MSI did not use value from XML file for uninstall but instead ran all uninstalls silently by default
@@ -60,14 +81,14 @@ Version 3.1.2 [04/30/2014]
 	Updated French translations
 	Updated Japanese translations
 
-Version 3.1.1 [27/03/2014]
+Version 3.1.1 [03/27/2014]
 	Added -NoCountdown parameter to Show-InstallationRestartPrompt to provide an option for just displaying the restart now or restart later buttons. The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 	Fixed issue whereby the restart prompt could be closed from the task bar
 	Added Recurse parameter to Copy-File function
 	Fixed exact process match on Show-InstallationWelcome was broken in a recent release
 	Fixed MinimizeWindows parameter which was broken in a recent release
 
-Version 3.1.0 [25/02/2014]
+Version 3.1.0 [02/25/2014]
 	Re-coded BlockExecution to be more stable and prevent issues unblocking execution
 	Added support for installating applications on Remote Desktop Session Host/Citrix servers
 	Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to noninteractive
@@ -76,7 +97,7 @@ Version 3.1.0 [25/02/2014]
 	Fixed issue with detection of Session 0 on XP which resulted in no UI being displayed
 	Fixed issue where Working Directory wouldn't be set correctly if using a subfolder in $dirFiles
 
-Version 3.0.12 [17/01/2014]
+Version 3.0.12 [01/17/2014]
 	Fixed error handling of Pin To Start in Win 8 (not programatically supported in Win 8.1)
 	Fixed issue where user generated thumbs.db file in AppDeployToolkit folder could cause BlockExecution to fail
 	Fixed issue where uninstalls would fail if there was a blackslash in the MSI DisplayName
@@ -84,17 +105,17 @@ Version 3.0.12 [17/01/2014]
 	Fixed issue where DeferDays or in some scenarios DeferDeadline values would be erroneously converted to a different timezone.
 	Fixed issue where Remove-MSIApplications and Get-InstalledApplication wouldn't find a match if the application name contained square brackets
 
-Version 3.0.11 [07/01/2014]
+Version 3.0.11 [01/07/2014]
 	Changed persistent prompt interval to default to 60 seconds
 	Fixed issue with false Session 0 detected on some XP machines
 	Fixed minimum configuration version checking
 	Fixed Set-RegistryValue not accepting arrays
 
-Version 3.0.10 12/05/2013
+Version 3.0.10 [12/05/2013]
 	Improved process matching in CloseApps, Remove-MSIApplications & Get-InstalledApplication (for support of apps with special characters, like NotePad++)
 	Revert change that prevented AllowDefer and CloseAppsCountdown from working together
 
-Version 3.0.9 11/29/2013
+Version 3.0.9 [11/29/2013]
 	Note	We recently attempted to add a killer new feature and release 3.1.0. We thought we had nailed it but ended up hitting problems once we went into production environments.
 			Worse still, we ended up causing a bunch of problems in 3.0.8 trying to reverse out all of these changes. 
 			We've prided ourselves on getting to be a really stable toolkit that works well in an enterprise environment. 
@@ -107,7 +128,7 @@ Version 3.0.9 11/29/2013
 	Fixed CloseAppsCountdown that got broken in v3.0.8
 	Fixed DeployMode handling that got broken in v3.0.8
 
-Version 3.0.8 11/26/2013
+Version 3.0.8 [11/26/2013]
 	Show-InstallationWelcome now supports exact process matching by specifying .exe after process name.
 	Added Swedish translation & improved German translation.
 	Changed Write-Log function to use StreamWriter, which is faster
@@ -119,7 +140,7 @@ Version 3.0.8 11/26/2013
 	Fixed UI timeout resetting on Show-InstallationWelcome prompt when continue button is clicked
 	Fixed UI timeout not decrementing deferrals remaining.
 
-Version 3.0.7 10/24/2013
+Version 3.0.7 [10/24/2013]
 	Fixed issue where Session 0 was not detected correctly, resulting in issues when attempting to display a UI when none was allowed
 	Fixed Installation Prompt and Installation Restart Prompt appearing when deploy mode was non-interactive or silent
 	Fixed issue where defer prompt is displayed after force closing multiple applications
@@ -130,7 +151,7 @@ Version 3.0.7 10/24/2013
 	Fixed "Restart Now" button text not using text from config file
 	Corrected the window properties of the countdown-no-hide phase of restart prompt to be topmost.
 
-Version 3.0.6 10/10/2013
+Version 3.0.6 [10/10/2013]
 	Added PersistPrompt parameter to Show-InstallationWelcome and Show-InstallationPrompt. Prompt window is persistently returned to center screen after interval specified in config file (default 10 seconds). For Show-InstallationWelcome, this only takes effect if deferral is not available to user. The user will have no option but to respond to the prompt - resistance is futile!
 	Added example advanced Office 2010 deployment script
 	Asynchronous actions now write to the same log file as synchronous actions
@@ -142,7 +163,7 @@ Version 3.0.6 10/10/2013
 	Updated documentation with information on how to use advanced Office 2010 deployment script
 	Updated documentation with important information on how deferrals work with SCCM 2007 and differences with SCCM 2012
 
-Version 3.0.5 09/27/2013
+Version 3.0.5 [09/27/2013]
 	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.
 	Fixed issue with Show-InstallationRestartPrompt closing with the parent process.
 	Fixed issue matching application names with brackets in Remove-MSIApplications.	
@@ -161,7 +182,7 @@ Version 3.0.5 09/27/2013
 		- Configure temporary path for caching toolkit files
 		- Configure registry path for storing deferral information
 
-Version 3.0.4 09/13/2013
+Version 3.0.4 [09/13/2013]
 	Added parameter to Show-InstallationWelcome called "AllowDeferCloseApps" which only provides a deferral option if there are running applications that need to be closed.
 	Added ability to configure the timeout period for Show-InstallationPrompt
 	Added option to position progress window in bottom right of screen (above task bar) and specify whether it is topmost.
@@ -174,12 +195,12 @@ Version 3.0.4 09/13/2013
 	Removed default ButtonRightText "OK" value on Show-InstallationPrompt to allow prompts with only the middle button.
 	The exit code used for UI timeouts or deferrals can now be configured in XML (default is 1618).
 
-Version 3.0.3 09/05/2013
+Version 3.0.3 [09/05/2013]
 	Fixed issue where spaces in the file path would cause block execution prompt not to work
 	Fixed issue where non-English UIs which were not already localized would fail to fall back on English as a default
 	Fixed issue with uninstalling applications with non-ascii characters in the name or version
 
-Version 3.0.2 08/29/2013
+Version 3.0.2 [08/29/2013]
 
 	Added CheckDiskSpace and RequiredDiskSpace parameters to Show-InstallationWelcome
 		If CheckDiskSpace parameter is used, disk space will be evaluated before showing the Welcome screen. If disk space requirements are not met, an error message will be displayed and a Fast Retry (1618) exit code generated. The disk space requirements are calculated automatically based on the size of the source files or by specifying the required space in MB using the RequiredDiskSpace parameter. 
@@ -193,7 +214,7 @@ Version 3.0.2 08/29/2013
 	Cosmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
 	Fixed issue where user would not be granted their last deferral.
 
-Version 3.0.1 - 08/28/2013
+Version 3.0.1 [08/28/2013]
 	Fixed issue where using NonInteractive DeployMode would cause a bluescreen (!!!)
 	Fixed issue where Remove-MSIApplications would only remove the first application if multiple matches were made
 	Fixed issue where automatic timeout of Welcome screen was not triggered
@@ -203,7 +224,7 @@ Version 3.0.1 - 08/28/2013
 	Minor fixes to the help information and default template
 	Updated French translation
 
-Version 3.0.0 - 08/23/2013
+Version 3.0.0 [08/23/2013]
 	Each UI element now has a customizable banner
 	Show-InstallationWelcome function
 		Replaces Stop-RunningApplications (deprecated) and presents a unified welcome screen
@@ -235,13 +256,12 @@ Version 3.0.0 - 08/23/2013
 		Update-SCCMInventory
 		Update-SCCMDeployments
 
-Version 2.0.1 - 08/15/201
+Version 2.0.1 [08/15/2013]
 	New Show-DialogBox parameters: TopMost and DefaultButton. Specify whether dialog box is topmost (new default) and specify default selected button.
 	Fixed issue with long file names when removing certain types of software using Remove-MSIApplications.
 	Added ability to turn automatic balloon notifications on or off in the XML config file.
 	Attempted to fix issue with stale balloon notifications.
 	Attempted to fix issue with installation progress not updating or hanging.
 
-Version 2.0.0 - 08/07/2013
+Version 2.0.0 [08/07/2013]
 	Initial Public Release.	
-
