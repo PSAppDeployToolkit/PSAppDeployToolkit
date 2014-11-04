@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/03/2014'
+[string]$appDeployMainScriptDate = '11/04/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7399,7 +7399,7 @@ If ($invokingScript) {
 				## Check if we are running in the logged in user context (i.e., PowerShell is running in the same context as Explorer).
 				#  Find the path to the Windows Shell. By default this should be "explorer.exe". This may, for example, be different during imaging if the there is a custom GUI presented to user and explorer.exe is not loaded.
 				[string]$WindowsShell = Get-RegistryKey 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Value 'Shell'
-				If ($WindowsShell) { [string]$WindowsShell = 'explorer.exe' }
+				If (-not $WindowsShell) { [string]$WindowsShell = 'explorer.exe' }
 				Write-Log -Message "The Windows Shell is set to [$WindowsShell]" -Source $appDeployToolkitName
 				[string]$WindowsShellOwner = Get-WmiObject -Class Win32_Process -Filter "Name='$WindowsShell' and SessionID='$ActiveConsoleSessionID'" | Select-Object -Property @{ n = 'ProcessOwner'; e = { "$($_.GetOwner().Domain)\$($_.GetOwner().User)" } } -Unique | Select-Object -ExpandProperty ProcessOwner
 				[string]$CurrentProcessOwner = $ProcessNTAccount
