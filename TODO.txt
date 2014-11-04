@@ -1,24 +1,19 @@
-3.1
+Proposed / Planned Features:
+
+- PowerShell ISE integration - potentially...
+	- Wizard-based script creation
+	- Hhelp system integration
+- Handling of UI when running in Session 0. Either through...
+	- Client / Server architecture using Named Pipes. Main script runs in Session 0 and spawns UI / user specific tasks to user session
+	- Process elevation in user session using token impersonation (same method as ServiceUI.exe)
+- Detection of RDP users, basically get the same results as quser.exe but using Win32 APIs so it works on Windows flavors where quser.exe doesn't exist
 - Detect toolkit log file location from XML for deploy-application.exe
 - Add Debug param to help section in deploy-application.ps1 script
-- Verify environment variables in XP:
-$envProgramFilesx86 = "${env:ProgramFiles(x86)}"
-$envCommonProgramFiles = $env:CommonProgramFiles
-$envCommonProgramFilesX86 = "${env:CommonProgramFiles(x86)}"
-- Fix blank process issue
-- Fix cast issue with Remove-MSIApplications
-- Change welcome UI layout
-- Update documentation and Codeplex
-- Add German translation
 
-Add Features:
+Outstanding Issues:
 
-* Detect RDP users, basically get the same results as quser.exe but using Win32 APIs so it works on Windows flavors where quser.exe doesn't exist
-* Possible to trigger invocation of the scheduled task when the PowerShell process exits?
-* Show prompt after restart to indicate success.
-* Add CM12 example to documentation
+-
 
-Bug Fixes:
+Administration:
 
-
-Documentation:
+- Update documentation (recurring)
