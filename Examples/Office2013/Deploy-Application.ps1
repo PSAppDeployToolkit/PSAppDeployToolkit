@@ -1,246 +1,292 @@
 ﻿<#
 .SYNOPSIS
-	This script performs the installation or uninstallation of an application(s).  
+	This script performs the installation or uninstallation of an application(s).
 .DESCRIPTION
-	The script is provided as a template to perform an install or uninstall of an application(s). 
+	The script is provided as a template to perform an install or uninstall of an application(s).
 	The script either performs an "Install" deployment type or an "Uninstall" deployment type.
-	The install deployment type is broken down in to 3 main sections/phases: Pre-Install, Install, and Post-Install.
+	The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 	The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
-	To access the help section,
+.PARAMETER DeploymentType
+	The type of deployment to perform. Default is: Install.
+.PARAMETER DeployMode
+	Specifies whether the installation should be run in Interactive, Silent, or NonInteractive mode. Default is: Interactive. Options: Interactive = Shows dialogs, Silent = No dialogs, NonInteractive = Very silent, i.e. no blocking apps. NonInteractive mode is automatically set if it is detected that the process is not user interactive.
+.PARAMETER AllowRebootPassThru
+	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
+.PARAMETER TerminalServerMode
+	Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Destkop Session Hosts/Citrix servers.
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
-	Deploy-Application.ps1 -DeploymentMode "Silent"
+	Deploy-Application.ps1 -DeployMode 'Silent'
 .EXAMPLE
 	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
-	Deploy-Application.ps1 -Uninstall 
-.PARAMETER DeploymentType
-	The type of deployment to perform. [Default is "Install"]
-.PARAMETER DeployMode
-	Specifies whether the installation should be run in Interactive, Silent or NonInteractive mode.
-	Interactive = Default mode
-	Silent = No dialogs
-	NonInteractive = Very silent, i.e. no blocking apps. Noninteractive mode is automatically set if an SCCM task sequence or session 0 is detected.
-.PARAMETER AllowRebootPassThru
-	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. 
-	If 3010 is passed back to SCCM a reboot prompt will be triggered.
-.PARAMETER TerminalServerMode
-	Changes to user install mode and back to user execute mode for installing/uninstalling applications on Remote Destkop Session Host/Citrix servers
+	Deploy-Application.ps1 -DeploymentType Uninstall
 .NOTES
-.LINK 
-	Http://psappdeploytoolkit.codeplex.com
-"#>
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+[CmdletBinding()]
 Param (
-	[ValidateSet("Install","Uninstall")] 
-	[string] $DeploymentType = "Install",
-	[ValidateSet("Interactive","Silent","NonInteractive")]
-	[string] $DeployMode = "Interactive",
-	[switch] $AllowRebootPassThru = $false,
-	[switch] $TerminalServerMode = $false,
-	[string] $addComponentsOnly = $false, # Specify whether running in Component Only Mode
-	[string] $addInfoPath = $false, # Add InfoPath to the install
-	[string] $addOneNote = $false, # Add OneNote to the install
-	[string] $addOutlook = $false, # Add Outlook to the install
-	[string] $addPublisher = $false, # Add Publisher to the install
-	[string] $addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
+	[Parameter(Mandatory=$false)]
+	[ValidateSet('Install','Uninstall')]
+	[string]$DeploymentType = 'Install',
+	[Parameter(Mandatory=$false)]
+	[ValidateSet('Interactive','Silent','NonInteractive')]
+	[string]$DeployMode = 'Interactive',
+	[Parameter(Mandatory=$false)]
+	[switch]$AllowRebootPassThru = $false,
+	[Parameter(Mandatory=$false)]
+	[switch]$TerminalServerMode = $false,
+	[bloolean]$addComponentsOnly = $false, # Specify whether running in Component Only Mode
+	[bloolean]$addInfoPath = $false, # Add InfoPath to the install
+	[bloolean]$addOneNote = $false, # Add OneNote to the install
+	[bloolean]$addOutlook = $false, # Add Outlook to the install
+	[bloolean]$addPublisher = $false, # Add Publisher to the install
+	[bloolean]$addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
 )
 
-#*===============================================
-#* VARIABLE DECLARATION
 Try {
-#*===============================================
-
-#*===============================================
-# Variables: Application
-
-$appVendor = "Microsoft"
-$appName = "Office"
-$appVersion = "2013 SP1"
-$appArch = "x86"
-$appLang = "EN"
-$appRevision = "01"
-$appScriptVersion = "2.0.2"
-$appScriptDate = "04/30/2014"
-$appScriptAuthor = "Dan Cunningham"
-
-#*===============================================
-# Variables: Script - Do not modify this section
-
-$deployAppScriptFriendlyName = "Deploy Application"
-$deployAppScriptVersion = [version]"3.1.2"
-$deployAppScriptDate = "04/30/2014"
-$deployAppScriptParameters = $psBoundParameters
-
-# Variables: Environment
-$scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
-# Dot source the App Deploy Toolkit Functions
-."$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
-
-# Office Directory
-$dirOffice = Join-Path "$envProgramFilesX86" "Microsoft Office"
-
-#*===============================================
-#* END VARIABLE DECLARATION
-#*===============================================
-
-#*===============================================
-#* PRE-INSTALLATION
-If ($deploymentType -ne "uninstall") { $installPhase = "Pre-Installation"
-#*===============================================
-
-	# Check whether running in Add Components Only mode
-	If ($addComponentsOnly -eq $true) {
-		# Verify that components were specified on the command-line
-		If ($addInfoPath -eq $false -and $addSharepointWorkspace -eq $false -and $addOneNote -eq $false -and $addOutlook -eq $false -and $addPublisher -eq $false) {
-			Show-InstallationPrompt -message "No addon components were specified" -ButtonRightText "OK" -Icon "Error"
-			Exit-Script 9
-		}
-		
-		# Verify that Office 2013 is already installed
-		$officeVersion = Get-ItemProperty 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90150000-0011-0000-0000-0000000FF1CE}' -ErrorAction SilentlyContinue | Select DisplayName -ExpandProperty DisplayName
-		
-		# If not found, display an error and exit
-		If ($officeVersion -eq $null) {
-			Show-InstallationPrompt -message "Unable to add the requested components as Office 2013 is not currently installed" -ButtonRightText "OK" -Icon "Error"
-		}
+	## Set the script execution policy for this process
+	Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'SilentlyContinue'
+	
+	##*===============================================
+	##* VARIABLE DECLARATION
+	##*===============================================
+	## Variables: Application
+	[string]$appVendor = 'Microsoft'
+	[string]$appName = 'Office'
+	[string]$appVersion = '2013 SP1'
+	[string]$appArch = 'x86'
+	[string]$appLang = 'EN'
+	[string]$appRevision = '01'
+	[string]$appScriptVersion = '3.5.0'
+	[string]$appScriptDate = '11/03/2014'
+	[string]$appScriptAuthor = 'Dan Cunningham'
+	##*===============================================
+	
+	##* Do not modify section below
+	#region DoNotModify
+	
+	## Variables: Exit Code
+	[int32]$mainExitCode = 0
+	
+	## Variables: Script
+	[string]$deployAppScriptFriendlyName = 'Deploy Application'
+	[version]$deployAppScriptVersion = [version]'3.5.0'
+	[string]$deployAppScriptDate = '11/03/2014'
+	[hashtable]$deployAppScriptParameters = $psBoundParameters
+	
+	## Variables: Environment
+	[string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+	
+	## Dot source the required App Deploy Toolkit Functions
+	Try {
+		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
+		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw 'Module does not exist at the specified location [$moduleAppDeployToolkitMain].' }
+		. $moduleAppDeployToolkitMain
 	}
-
-	# Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, and verify there is enough disk space to complete the install
-	Show-InstallationWelcome -CloseApps "excel,groove,onenote,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio" -AllowDefer -DeferTimes 3 -CheckDiskSpace
-
-	# Check whether anything might prevent us from running the cleanup
-	If (($addComponentsOnly -eq $true) -or ($isServerOS -eq $true)) {
-		Write-Log "Installation of components has been skipped as one of the following options are enabled. addComponentsOnly: $addComponentsOnly isServerOS: $isServerOS"
+	Catch {
+		[int32]$mainExitCode = 1
+		Write-Output "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message) `n$($_.InvocationInfo.PositionMessage)"
+		Exit $mainExitCode
 	}
-	Else {
-		# Check for components and make sure we reinstall them during the upgrade if necessary
-		$officeFolders = @("Office12", "Office13", "Office14", "Office15")
-		ForEach ($officeFolder in $officeFolders) {
-			If (Test-Path (Join-Path $dirOffice "$officeFolder\Groove.Exe")) { 
-				Write-Log "Sharepoint Workspace / Groove was previously installed. Will be reinstalled"
-				$addSharepointWorkspace = $true 
+	
+	## Handle ServiceUI Invocation
+	If ($serviceUIExitCode) { Exit-Script -ExitCode $serviceUIExitCode }
+	
+	#endregion
+	##* Do not modify section above
+	##*===============================================
+	##* END VARIABLE DECLARATION
+	##*===============================================
+	
+	If ($deploymentType -ine 'Uninstall') {
+		##*===============================================
+		##* PRE-INSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Pre-Installation'
+		
+		## Check whether running in Add Components Only mode
+		If ($addComponentsOnly) {
+			#  Verify that components were specified on the command-line
+			If ((-not $addInfoPath) -and (-not $addSharepointWorkspace) -and (-not $addOneNote) -and (-not $addOutlook) -and (-not $addPublisher)) {
+				Show-InstallationPrompt -Message 'No addon components were specified' -ButtonRightText 'OK' -Icon 'Error'
+				Exit-Script -ExitCode 9
 			}
-			If (Test-Path (Join-Path $dirOffice "$officeFolder\Infopath.Exe")) { 
-				Write-Log "InfoPath was previously installed. Will be reinstalled"
-				$addInfoPath = $true 
-			}
-			If (Test-Path (Join-Path $dirOffice "$officeFolder\OneNote.Exe")) { 
-				Write-Log "OneNote was previously installed. Will be reinstalled"
-				$addOneNote = $true
-			}
-			If (Test-Path (Join-Path $dirOffice "$officeFolder\Outlook.Exe")) { 
-				Write-Log "Outlook was previously installed. Will be reinstalled"
-				$addOutlook = $true
-			}
-			If (Test-Path (Join-Path $dirOffice "$officeFolder\MSPub.Exe")) { 
-				Write-Log "Publisher was previously installed. Will be reinstalled"
-				$addPublisher = $true
+			
+			#  Verify that Office 2013 is already installed
+			$officeVersion = Get-ItemProperty -Path 'HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90150000-0011-0000-0000-0000000FF1CE}' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty DisplayName
+			
+			#  If not found, display an error and exit
+			If (-not $officeVersion) {
+				Show-InstallationPrompt -Message 'Unable to add the requested components as Office 2013 is not currently installed' -ButtonRightText 'OK' -Icon 'Error'
 			}
 		}
 		
-		# Display Pre-Install cleanup status
-		Show-InstallationProgress "Performing Pre-Install cleanup. This may take some time. Please wait..."
-
-		# Remove any previous version of Office (if required)
-		$officeExecutables = @("excel.exe", "groove.exe", "onenote.exe", "infopath.exe", "onenote.exe", "outlook.exe", "mspub.exe", "powerpnt.exe", "winword.exe", "winproj.exe" ,"visio.exe")
-		ForEach ($officeExecutable in $officeExecutables) {
-			If (Test-Path (Join-Path $dirOffice "Office12\$officeExecutable")) { 
-				Write-Log "Microsoft Office 2007 was detected. Will be uninstalled."
-				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
-				Break
+		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, and verify there is enough disk space to complete the install
+		Show-InstallationWelcome -CloseApps "excel,groove,onenote,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio" -AllowDefer -DeferTimes 3 -CheckDiskSpace
+		
+		## Check whether anything might prevent us from running the cleanup
+		If (($addComponentsOnly) -or ($isServerOS)) {
+			Write-Log -Message "Installation of components has been skipped as one of the following options are enabled. addComponentsOnly: $addComponentsOnly isServerOS: $isServerOS" -Source $deployAppScriptFriendlyName
+		}
+		Else {
+			## Check for components and make sure we reinstall them during the upgrade if necessary
+			[string[]]$officeFolders = 'Office12', 'Office13', 'Office14', 'Office15'
+			ForEach ($officeFolder in $officeFolders) {
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\groove.exe") -PathType Leaf) {
+					Write-Log -Message 'Sharepoint Workspace / Groove was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
+					$addSharepointWorkspace = $true
+				}
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\infopath.exe") -PathType Leaf) {
+					Write-Log -Message 'InfoPath was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
+					$addInfoPath = $true
+				}
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\onenote.exe") -PathType Leaf) {
+					Write-Log -Message 'OneNote was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
+					$addOneNote = $true
+				}
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\outlook.exe") -PathType Leaf) {
+					Write-Log -Message 'Outlook was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
+					$addOutlook = $true
+				}
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\mspub.exe") -PathType Leaf) {
+					Write-Log -Message 'Publisher was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
+					$addPublisher = $true
+				}
+			}
+			
+			## Display Pre-Install cleanup status
+			Show-InstallationProgress -StatusMessage 'Performing Pre-Install cleanup. This may take some time. Please wait...'
+			
+			# Remove any previous version of Office (if required)
+			[string[]]$officeExecutables = 'excel.exe', 'groove.exe', 'onenote.exe', 'infopath.exe', 'onenote.exe', 'outlook.exe', 'mspub.exe', 'powerpnt.exe', 'winword.exe', 'winproj.exe', 'visio.exe'
+			ForEach ($officeExecutable in $officeExecutables) {
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office12\$officeExecutable") -PathType Leaf) {
+					Write-Log -Message 'Microsoft Office 2007 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
+					Execute-Process -FilePath 'cscript.exe' -Arguments "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Break
+				}
+			}
+			ForEach ($officeExecutable in $officeExecutables) {
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office14\$officeExecutable") -PathType Leaf) {
+					Write-Log -Message 'Microsoft Office 2010 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
+					Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Break
+				}
+			}
+			ForEach ($officeExecutable in $officeExecutables) {
+				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office15\$officeExecutable") -PathType Leaf) {
+					Write-Log -Message 'Microsoft Office 2013 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
+					Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Break
+				}
 			}
 		}
-		ForEach ($officeExecutable in $officeExecutables) {
-			If (Test-Path (Join-Path $dirOffice "Office14\$officeExecutable")) { 
-				Write-Log "Microsoft Office 2010 was detected. Will be uninstalled."
-				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
-				Break
+		
+		
+		##*===============================================
+		##* INSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Installation'
+		
+		## Check whether running in Add Components Only mode
+		If (-not $addComponentsOnly) {
+	  		Show-InstallationProgress -StatusMessage 'Installing Office Professional. This may take some time. Please wait...'
+			Execute-Process -FilePath "$dirFiles\Office\Setup.exe" -Arguments "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes '3010'
+		}
+		
+		# Install InfoPath if required
+		If ($addInfoPath) {
+			Show-InstallationProgress -StatusMessage 'Installing Office Infopath. This may take some time. Please wait...'
+			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden
+		}
+		
+		# Install Sharepoint Designer if required
+		If ($addSharepointWorkspace) {
+			Show-InstallationProgress -StatusMessage 'Installing Office Sharepoint Workspace. This may take some time. Please wait...'
+			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden
+		}
+		
+		# Install OneNote if required
+		If ($addOneNote) {
+			Show-InstallationProgress -StatusMessage "Installing Office OneNote. This may take some time. Please wait..."
+			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden
+		}
+		
+		# Install Outlook if required
+		If ($addOutlook) {
+			Show-InstallationProgress -StatusMessage 'Installing Office Outlook. This may take some time. Please wait...'
+			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden
+		}
+		
+		# Install Publisher if required
+		If ($addPublisher) {
+			Show-InstallationProgress -StatusMessage 'Installing Office Publisher. This may take some time. Please wait...'
+			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden
+		}
+		
+		
+		##*===============================================
+		##* POST-INSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Post-Installation'
+		
+		# Activate Office components (if running as a user)
+		If (-not $osdMode) {
+			If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType Leaf) {
+				Show-InstallationProgress -StatusMessage 'Activating Microsoft Office components. This may take some time. Please wait...'
+				Execute-Process -FilePath 'cscript.exe' -Arguments "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
 			}
 		}
-		ForEach ($officeExecutable in $officeExecutables) {
-			If (Test-Path (Join-Path $dirOffice "Office15\$officeExecutable")) { 
-				Write-Log "Microsoft Office 2013 was detected. Will be uninstalled."
-				Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
-				Break
-			}
+		
+		# Prompt for a restart (if running as a user, not installing components and not running on a server)
+		If ((-not $addComponentsOnly) -and ($deployMode -eq 'Interactive') -and (-not $IsServerOS)) {
+			Show-InstallationRestartPrompt
 		}
 	}
+	ElseIf ($deploymentType -ieq 'Uninstall')
+	{
+		##*===============================================
+		##* PRE-UNINSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Pre-Uninstallation'
+		
+		## Show Welcome Message, close applications that cause uninstall to fail
+		Show-InstallationWelcome -CloseApps 'excel,groove,onenote,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio'
+		
+		## Show Progress Message (with the default message)
+		Show-InstallationProgress
 
-#*===============================================
-#* INSTALLATION 
-$installPhase = "Installation"
-#*===============================================
 
-	# Check whether running in Add Components Only mode
-	If ($addComponentsOnly -eq $false) {
-  		Show-InstallationProgress "Installing Office Professional. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Office\Setup.exe" -Arguments "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes "3010"
+		##*===============================================
+		##* UNINSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Uninstallation'
+
+		Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+		
+		
+		##*===============================================
+		##* POST-UNINSTALLATION
+		##*===============================================
+		[string]$installPhase = 'Post-Uninstallation'
+		
+		## <Perform Post-Uninstallation tasks here>
 	}
+	
+	##*===============================================
+	##* END SCRIPT BODY
+	##*===============================================
 
-	# Install InfoPath if required
-	If ($addInfoPath -eq $true) {
-		Show-InstallationProgress "Installing Office Infopath. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden
-	}
-
-	# Install Sharepoint Designer if required
-	If ($addSharepointWorkspace -eq $true) {
-		Show-InstallationProgress "Installing Office Sharepoint Workspace. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden
-	}
-
-	# Install OneNote if required
-	If ($addOneNote -eq $true) {
-		Show-InstallationProgress "Installing Office OneNote. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden
-	}
-
-	# Install Outlook if required
-	If ($addOutlook -eq $true) {
-		Show-InstallationProgress "Installing Office Outlook. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden
-	}
-
-	# Install Publisher if required
-	If ($addPublisher -eq $true) {
-		Show-InstallationProgress "Installing Office Publisher. This may take some time. Please wait..."
-		Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden
-	}
-
-#*===============================================
-#* POST-INSTALLATION
-$installPhase = "Post-Installation"
-#*===============================================
-
-	# Activate Office components (if running as a user)
-	If ($osdMode -eq $false) {
-		If (Test-Path (Join-Path $dirOffice "Office15\OSPP.VBS")) { 
-			Show-InstallationProgress "Activating Microsoft Office components. This may take some time. Please wait..."
-			Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
-		}
-	}
-
-	# Prompt for a restart (if running as a user, not installing components and not running on a server)
-	If (($addComponentsOnly -eq $false) -and ($deployMode -eq "Interactive") -and ($IsServerOS -eq $false)) {
-		Show-InstallationRestartPrompt
-	}
-
-#*===============================================
-#* UNINSTALLATION
-} ElseIf ($deploymentType -eq "uninstall") { $installPhase = "Uninstallation"
-#*===============================================
-
-	# Show Welcome Message, close applications if required with a 60 second countdown before automatically closing
-	Show-InstallationWelcome -CloseApps "excel,groove,onenote,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio"
-
-	# Show Progress Message (with the default message)
-	Show-InstallationProgress
-
-	Execute-Process -FilePath "CScript.Exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes "1,2,3"
-
-#*===============================================
-#* END SCRIPT BODY
-} } Catch {$exceptionMessage = "$($_.Exception.Message) `($($_.ScriptStackTrace)`)"; Write-Log "$exceptionMessage"; Show-DialogBox -Text $exceptionMessage -Icon "Stop"; Exit-Script -ExitCode 1} # Catch any errors in this script 
-Exit-Script -ExitCode 0 # Otherwise call the Exit-Script function to perform final cleanup operations
-#*===============================================
+	## Call the Exit-Script function to perform final cleanup operations
+	Exit-Script -ExitCode $mainExitCode
+}
+Catch {
+	[int32]$mainExitCode = 1
+	[string]$mainErrorMessage = "$(Resolve-Error)"
+	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
+	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
+	Exit-Script -ExitCode $mainExitCode
+}
