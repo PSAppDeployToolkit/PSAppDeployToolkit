@@ -4253,7 +4253,7 @@ Function Show-InstallationWelcome {
 .PARAMETER CloseAppsCountdown
 	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER ForceCloseAppsCountdown
-	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes regardless of whether deferral is allowed.
+	Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
 .PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
