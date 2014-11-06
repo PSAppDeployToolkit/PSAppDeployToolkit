@@ -1,8 +1,9 @@
-Version 3.5.0 [10/31/2014]
+Version 3.5.0 [11/06/2014]
 	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
 	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Set-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
 	Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
 	Added ability for Test-PowerPoint to actually detect if user is presenting slideshow in fullscreen mode
+	Added Get-LoggedOnUser to get session details for all local and RDP logged on users.
 	Added Refresh-SessionEnvironmentVariables to allow reloading of newly created environment variables for the current process
 	Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
 	Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
@@ -10,7 +11,7 @@ Version 3.5.0 [10/31/2014]
 	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
 	Changed Restart Prompt default selected button to Restart Later
 	Improved detection of change.exe failures for TerminalServerInstallMode
-	Improved detection of logged in users
+	Improved detection of logged in users, including users connected through RDP
 	Improved error trapping and logging of messages throughout script. Modified messages for clarity and consistency.
 	Improved parameter validation on all functions to simplify function logic and give standard error messages when function parameters not specified properly, also helps make clear which parameters are mandatory and which are not
 	Improved Set-PinnedApplication to detect when one of the chosen actions is not available on an operating system (such as pinning items to Start Menu on Windows 8)
@@ -28,6 +29,7 @@ Version 3.5.0 [10/31/2014]
 	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute
 	Fixed issue where AppDeployToolkitHelp.ps1 threw an error when executed
 	Updated Deploy-Application template to be consistent with the rest of the toolkit. Scripts from previous versions are fully backwards compatible
+	Updated German translatoins
 	Updated Norweigan translations
 
 Version 3.2.0 [08/22/2014]
