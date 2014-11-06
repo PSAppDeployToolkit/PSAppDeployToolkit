@@ -1162,6 +1162,7 @@ Function Show-InstallationPrompt {
 		$System_Drawing_Size.Height = 50
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
+        $pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
@@ -4251,6 +4252,8 @@ Function Show-InstallationWelcome {
 	Stop processes without prompting the user.
 .PARAMETER CloseAppsCountdown
 	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
+.PARAMETER ForceCloseAppsCountdown
+	Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes regardless of whether deferral is allowed.
 .PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
@@ -4317,6 +4320,10 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$CloseAppsCountdown = 0,
+        ## Specify a countdown to display before automatically closing applications whether or not deferral is allowed
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$ForceCloseAppsCountdown = 0,
 		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
 		[Parameter(Mandatory=$false)]
 		[switch]$PersistPrompt = $false,
@@ -4467,7 +4474,13 @@ Function Show-InstallationWelcome {
 		
 		## Prompt the user to close running applications and optionally defer if enabled
 		If (-not ($deployModeSilent) -and (-not ($silent))) {
-			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
+			If ($forceCloseAppsCountdown -gt 0) {
+                # Keep the same variable for countdown to simplify the code:
+                $closeAppsCountdown = $forceCloseAppsCountdown
+                # Change this variable to a boolean now to switch the countdown on even with deferral
+                [boolean]$forceCloseAppsCountdown = $true
+            }
+            Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While ((Get-RunningProcesses -ProcessObjects $processObjects | Select-Object -Property * -OutVariable RunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
 				[string]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
@@ -4478,12 +4491,12 @@ Function Show-InstallationWelcome {
 					}
 					#  Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
 					ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions -ne '') -and ($promptResult -ne 'Continue'))) {
-						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
+						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
 					}
 				}
 				#  If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 				ElseIf ($runningProcessDescriptions -ne '') {
-					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
+					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
 				}
 				#  If there is no deferral and no processes running, break the while loop
 				Else {
@@ -4612,7 +4625,9 @@ Function Show-WelcomePrompt {
 .PARAMETER ProcessDescriptions
 	The descriptive names of the applications that are running and need to be closed.
 .PARAMETER CloseAppsCountdown
-	Specify the countdown time in seconds before running applications are automatically closed.
+	Specify the countdown time in seconds before running applications are automatically closed when deferral is not allowed or expired.
+.PARAMETER ForceCloseAppsCountdown
+	Specify whether to show the countdown regardless of whether deferral is allowed.
 .PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds.
 .PARAMETER AllowDefer
@@ -4636,6 +4651,9 @@ Function Show-WelcomePrompt {
 		[string]$ProcessDescriptions,
 		[Parameter(Mandatory=$false)]
 		[int32]$CloseAppsCountdown,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+        [boolean]$ForceCloseAppsCountdown,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$PersistPrompt = $false,
@@ -4673,11 +4691,11 @@ Function Show-WelcomePrompt {
 		}
 		
 		## Initial form layout: Close Applications / Allow Deferral
-		If ($ProcessDescriptions) {
+		If ($processDescriptions) {
 			Write-Log -Message "Prompt user to close application(s) [$runningProcessDescriptions]..." -Source ${CmdletName}
 			$showCloseApps = $true
 		}
-		If (($AllowDefer) -and (($DeferTimes -ge 0) -or ($deferDeadline))) {
+		If (($allowDefer) -and (($deferTimes -ge 0) -or ($deferDeadline))) {
 			Write-Log -Message 'User has the option to defer.' -Source ${CmdletName}
 			$showDefer = $true
 			If ($deferDeadline) {
@@ -4690,14 +4708,20 @@ Function Show-WelcomePrompt {
 		
 		## If deferral is not being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
 		If (-not $showDefer) {
-			If ($CloseAppsCountdown -gt 0) {
-				Write-Log -Message "Close applications countdown has [$CloseAppsCountdown] seconds remaining." -Source ${CmdletName}
+			If ($closeAppsCountdown -gt 0) {
+				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
 			}
-			If ($PersistPrompt) { $persistWindow = $true }
+			If ($persistPrompt) { $persistWindow = $true }
+		}
+        
+        ## If 'force close apps countdown' was specified, enable that feature.
+		If ($forceCloseAppsCountdown -eq $true) {
+			Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
+			$showCountdown = $true
 		}
 		
-		[string[]]$ProcessDescriptions = $ProcessDescriptions.Split(',')
+		[string[]]$processDescriptions = $processDescriptions.Split(',')
 		[System.Windows.Forms.Application]::EnableVisualStyles()
 		
 		$formWelcome = New-Object -TypeName System.Windows.Forms.Form
@@ -4834,7 +4858,8 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Size.Height = 50
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
-		$pictureBanner.Margin = $paddingNone
+		$pictureBanner.SizeMode = 'CenterImage'
+        $pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
 		
@@ -4943,7 +4968,7 @@ Function Show-WelcomePrompt {
 		If ($showDefer) {
 			$flowLayoutPanel.Controls.Add($labelDefer)
 		}
-		ElseIf ($showCountdown) {
+		If ($showCloseApps -and $showCountdown) {
 			$flowLayoutPanel.Controls.Add($labelCountdown)
 		}
 		
@@ -5279,7 +5304,7 @@ Function Show-InstallationRestartPrompt {
 		$picturebox.Location = '0,0'
 		$picturebox.Name = 'picturebox'
 		$picturebox.Size = '450,50'
-		$picturebox.SizeMode = 'AutoSize'
+		$picturebox.SizeMode = 'CenterImage'
 		$picturebox.TabIndex = 1
 		$picturebox.TabStop = $false
 		
