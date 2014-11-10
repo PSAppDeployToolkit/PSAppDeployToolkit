@@ -29,6 +29,7 @@ Version 3.5.0 [11/06/2014]
 	Fixed issue where Block-Execution was not showing a message windows when user tries to open a blocked app
 	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute
 	Fixed issue where AppDeployToolkitHelp.ps1 threw an error when executed
+	Fixed centering of Show-InstallationProgress window where DPI scale is not 100%
 	Fixed centering of toolkit banner in UI elements where the full length banner is not used
 	Updated Deploy-Application template to be consistent with the rest of the toolkit. Scripts from previous versions are fully backwards compatible
 	Updated German translatoins

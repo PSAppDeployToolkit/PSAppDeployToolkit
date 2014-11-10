@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/04/2014'
+[string]$appDeployMainScriptDate = '11/10/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -5574,6 +5574,7 @@ Function Show-InstallationProgress {
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
+            $global:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
@@ -5634,19 +5635,20 @@ Function Show-InstallationProgress {
 '@
 				
 				## Set the configurable values using variables addded to the runspace from the parent thread
-				#  Calculate the position on the screen where the progress dialog should be placed
+                #  Calculate the position on the screen where the progress dialog should be placed
 				$screen = [System.Windows.Forms.Screen]::PrimaryScreen
 				$screenWorkingArea = $screen.WorkingArea
 				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty Width
 				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty Height
-				#  Set the start position of the Window based on the screen size
+                #  Set the start position of the Window based on the screen size
 				If ($windowLocation -eq 'BottomRight') {
 					$xamlProgress.Window.Left = [string]($screenWidth - $xamlProgress.Window.Width - 10)
 					$xamlProgress.Window.Top = [string]($screenHeight - $xamlProgress.Window.Height - 10)
 				}
 				#  Show the default location (Top center)
 				Else {
-					$xamlProgress.Window.Left = [string](($screenWidth / 2) - ($xamlProgress.Window.Width / 2))
+                    # Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
+					$xamlProgress.Window.Left = [string](($screenWidth / (2 * ($dpiscale / 100) )) - (($xamlProgress.Window.Width / 2)))
 					$xamlProgress.Window.Top = [string]($screenHeight / 9.5)
 				}
 				$xamlProgress.Window.TopMost = $topMost
@@ -7632,6 +7634,20 @@ Write-Log -Message "Hardware Platform is [$(Get-HardwarePlatform)]" -Source $app
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+
+# Get the DPI scaling from HKCU registry (WMI and HKLM not updated if settings changed after logoff)
+If (Test-Path "HKCU:\Control Panel\Desktop" -ErrorAction SilentlyContinue ) { 
+    [int32]$dpiPixels = Get-RegistryKey "HKEY_CURRENT_USER\Control Panel\Desktop" | Select Logpixels -ExpandProperty Logpixels
+}
+Else {
+    [int32]$dpiPixels = Get-RegistryKey "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select Logpixels -ExpandProperty Logpixels
+    }
+Switch ($dpiPixels) {
+    "96" { [int32]$dpiScale = "100" }
+    "120" { [int32]$dpiScale = "125" }
+    "144" { [int32]$dpiScale = "150" }
+    "192" { [int32]$dpiScale = "200" }
+}
 
 ## Check deployment type (install/uninstall)
 Switch ($deploymentType) {

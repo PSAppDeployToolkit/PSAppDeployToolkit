@@ -68,7 +68,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/06/2014'
+	[string]$deployAppScriptDate = '11/10/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -106,7 +106,7 @@ Try {
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
-		
+
 		## <Perform Pre-Installation tasks here>
 		
 		
