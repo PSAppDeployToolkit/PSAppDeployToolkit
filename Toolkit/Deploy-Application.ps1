@@ -68,7 +68,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/10/2014'
+	[string]$deployAppScriptDate = '11/11/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -78,7 +78,7 @@ Try {
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw 'Module does not exist at the specified location [$moduleAppDeployToolkitMain].' }
-		. $moduleAppDeployToolkitMain
+		    . $moduleAppDeployToolkitMain
 	}
 	Catch {
 		[int32]$mainExitCode = 1
@@ -104,7 +104,7 @@ Try {
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
 		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 		
-		## Show Progress Message (with the default message)
+        ## Show Progress Message (with the default message)
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
@@ -149,7 +149,7 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
 		
-		# <Perform Uninstallation tasks here>
+		## <Perform Uninstallation tasks here>
 		
 		
 		##*===============================================
