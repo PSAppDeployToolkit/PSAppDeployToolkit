@@ -440,7 +440,7 @@ Function Write-FunctionHeaderOrFooter {
 Function Write-Log {
 <#
 .SYNOPSIS
-	Write messages to a log file in CMTrace.exe compatible format or standard file format.
+	Write messages to a log file in CMTrace.exe compatible format or Legacy text file format.
 .DESCRIPTION
 	Write messages to a log file in CMTrace.exe compatible format or Legacy text file format and optionally display in the console.
 .PARAMETER Message
@@ -453,13 +453,13 @@ Function Write-Log {
 .PARAMETER ScriptSection
 	The heading for the portion of the script that is being executed. Default is: $script:installPhase.
 .PARAMETER LogType
-	Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.	
+	Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
 .PARAMETER LogFileDirectory
 	Set the directory where the log file will be saved.
 .PARAMETER LogFileName
 	Set the name of the log file.	
 .PARAMETER MaxLogFileSizeMB
-	Maximum file size limit for log file in megabytes (MB). Default is 10 MB.	
+	Maximum file size limit for log file in megabytes (MB). Default is 10 MB.
 .PARAMETER WriteHost
 	Write the log message to the console.
 .PARAMETER ContinueOnError
@@ -737,7 +737,7 @@ Function Exit-Script {
 	
 	If ($installSuccess) {
 		If (Test-Path -Path $regKeyDeferHistory -ErrorAction 'SilentlyContinue') {
-			Write-Log -Message 'Removing deferral history...' -Source ${CmdletName}
+			Write-Log -Message 'Remove deferral history...' -Source ${CmdletName}
 			Remove-RegistryKey -Key $regKeyDeferHistory
 		}
 		
@@ -827,7 +827,7 @@ Function Resolve-Error {
 .PARAMETER GetErrorException
 	Get error record exception details as represented by $_.Exception.
 .PARAMETER GetErrorInnerException
-	Get error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more then one.
+	Get error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
 .EXAMPLE
 	Resolve-Error
 .EXAMPLE
@@ -1016,7 +1016,7 @@ Function Show-InstallationPrompt {
 .PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt. Default: $false.
 .PARAMETER Timeout
-	Specifies the period in seconds; after which the prompt should timeout. Default: UI timeout value set in the config XML file.
+	Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
 .PARAMETER ExitOnTimeout
 	Specifies whether to exit the script if the UI times out. Default: $true.
 .EXAMPLE
@@ -1950,6 +1950,7 @@ Function Execute-MSI {
 			$argsMSI = "$option $msiFile $msiDefaultParams $configMSILoggingOptions $msiLogFile"
 		}
 		
+<<<<<<< HEAD
 		## Check if the MSI is already installed and exit function if true
 		If ($action -eq "install") {
 			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
@@ -1971,10 +1972,30 @@ Function Execute-MSI {
 		Else {
 			If ($WorkingDirectory) {
 				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
+=======
+		## Check if the MSI is already installed
+		[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
+			Write-Log -Message 'The MSI is already installed on this system. Skipping action [$Action]...' -Source ${CmdletName}
+		}
+		ElseIf ($IsMsiInstalled) {
+			## Call the Execute-Process function
+			Write-Log -Message 'The MSI is installed on this system. Executing action [$Action]...' -Source ${CmdletName}
+			If ($ContinueOnError) {
+				If ($WorkingDirectory) {
+					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
+				}
+				Else {
+					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal -ContinueOnError $true
+				}
+>>>>>>> dbc12770cb06e61215d05bc582515f7c1fe1e75c
 			}
 			Else {
 				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal
 			}
+		}
+		Else {
+			Write-Log -Message 'The MSI is not installed on this system. Skipping action [$Action]...' -Source ${CmdletName}
 		}
 	}
 	End {
@@ -1993,7 +2014,7 @@ Function Remove-MSIApplications {
 	Removes all MSI applications matching the specified application name.
 	Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code, provided the uninstall string matches "msiexec".
 .PARAMETER Name
-	The name of the application you want to uninstall.
+	The name of the application to uninstall.
 .PARAMETER Exact
 	Specifies whether to exactly match the name of the application
 .PARAMETER ContinueOnError
@@ -2061,7 +2082,7 @@ Function Remove-MSIApplications {
 Function Execute-Process {
 <#
 .SYNOPSIS
-	Function to execute a process, with optional arguments, working directory, window style.
+	Execute a process with optional arguments, working directory, window style.
 .DESCRIPTION
 	Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine.
 	Provides various options for handling the return codes (see Parameters).
@@ -2084,7 +2105,7 @@ Function Execute-Process {
 .PARAMETER MsiExecWaitTime
 	Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
-	List the exit codes you want to ignore.
+	List the exit codes to ignore.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by the process that is not recognised by the App Deploy Toolkit. Default: $false (fail on error).
 .EXAMPLE
@@ -2362,10 +2383,10 @@ Function Get-MsiExitCodeMessage {
 				LOAD_WITH_ALTERED_SEARCH_PATH       = 0x00000008
 			}
 			
-			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 			static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, LoadLibraryFlags dwFlags);
 			
-			[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+			[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 			static extern int LoadString(IntPtr hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
 			
 			// Get MSI exit code message from msimsg.dll resource dll
@@ -2526,7 +2547,7 @@ Function New-Folder {
 .DESCRIPTION
 	Create a new folder if it does not exist.
 .PARAMETER Path
-	Path of the folder you want to create
+	Path to the new folder to create.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
@@ -2582,7 +2603,7 @@ Function Remove-Folder {
 .DESCRIPTION
 	Remove folder and all files recursively in a given path.
 .PARAMETER Path
-	Path of the folder you want to remove
+	Path to the folder to remove.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
@@ -2771,7 +2792,7 @@ Function Convert-RegistryPath {
 	Path to the registry key to convert (can be a registry hive or fully qualified path)
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
-	Specify this parameter from the Set-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 .EXAMPLE
 	Convert-RegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 .EXAMPLE
@@ -2857,7 +2878,7 @@ Function Get-RegistryKey {
 	Value to retrieve (optional).
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
-	Specify this parameter from the Set-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -2964,7 +2985,7 @@ Function Set-RegistryKey {
 	The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
-	Specify this parameter from the Set-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -3071,9 +3092,11 @@ Function Remove-RegistryKey {
 	Path of the registry key to delete.
 .PARAMETER Name
 	Name of the registry key value to delete.
+.PARAMETER Recurse
+	Delete registry key recursively.
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
-	Specify this parameter from the Set-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -3154,8 +3177,8 @@ Function Remove-RegistryKey {
 #endregion
 
 
-#region Function Set-HKCURegistrySettingsForAllUsers
-Function Set-HKCURegistrySettingsForAllUsers {
+#region Function Invoke-HKCURegistrySettingsForAllUsers
+Function Invoke-HKCURegistrySettingsForAllUsers {
 <#
 .SYNOPSIS
 	Set current user registry settings for all current users and any new users in the future.
@@ -3174,7 +3197,7 @@ Function Set-HKCURegistrySettingsForAllUsers {
 		Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
 		Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
 	}
-	Set-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
+	Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -3720,13 +3743,13 @@ Function Refresh-Desktop {
 		private const int WM_SETTINGCHANGE = 0x1a;
 		private const int SMTO_ABORTIFHUNG = 0x0002;
 		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		static extern bool SendNotifyMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, string lParam, int fuFlags, int uTimeout, IntPtr lpdwResult);
 		
-		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
 		
 		public static void Refresh()
@@ -3764,7 +3787,7 @@ Function Refresh-Desktop {
 Function Refresh-SessionEnvironmentVariables {
 <#
 .SYNOPSIS
-	Updates the environment variables for the current PowerShell session with any environment variable changes that may have occured during script execution.
+	Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
 .DESCRIPTION
 	Environment variable changes that take place during script execution are not visible to the current PowerShell session.
 	Use this function to refresh the current PowerShell session with all environment variable settings.
@@ -4240,7 +4263,7 @@ Function Get-RunningProcesses {
 Function Show-InstallationWelcome {
 <#
 .SYNOPSIS
-	This function provides a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
+	Show a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
 .DESCRIPTION
 	The following prompts can be included in the welcome dialog:
 	 a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
@@ -4618,7 +4641,7 @@ Function Show-InstallationWelcome {
 Function Show-WelcomePrompt {
 <#
 .SYNOPSIS
-	This function is called by Show-InstallationWelcome to prompt the user to optionally do the following:
+	Called by Show-InstallationWelcome to prompt the user to optionally do the following:
 	 1) Close the specified running applications.
 	 2) Provide an option to defer the installation.
 	 3) Show a countdown before applications are automatically closed.
@@ -5653,7 +5676,7 @@ Function Show-InstallationProgress {
 				}
 				#  Show the default location (Top center)
 				Else {
-                    # Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
+                    #  Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
 					$xamlProgress.Window.Left = [string](($screenWidth / (2 * ($dpiscale / 100) )) - (($xamlProgress.Window.Width / 2)))
 					$xamlProgress.Window.Top = [string]($screenHeight / 9.5)
 				}
@@ -5800,10 +5823,10 @@ Function Set-PinnedApplication {
 			{
 				public sealed class Load
 				{
-					[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+					[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 					public static extern int LoadString(IntPtr h, int id, StringBuilder sb, int maxBuffer);
 					
-					[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+					[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 					public static extern IntPtr LoadLibrary(string s);
 					
 					public static string PinVerb(int VerbId)
@@ -5916,7 +5939,7 @@ Function Get-IniValue {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered.
 .EXAMPLE
-	Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'.
+	Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -5950,7 +5973,7 @@ Function Get-IniValue {
 		{
 			public sealed class GetValue
 			{
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				public static extern int GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, int nSize, string lpFileName);
 				
 				public static string GetIniValue(string section, string key, string filepath)
@@ -6050,7 +6073,7 @@ Function Set-IniValue {
 		{
 			public sealed class SetValue
 			{
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				[return: MarshalAs(UnmanagedType.Bool)]
 				public static extern bool WritePrivateProfileString(string lpAppName, string lpKeyName, StringBuilder lpString, string lpFileName);
 				
@@ -6466,7 +6489,7 @@ Function Test-MSUpdates {
 .PARAMETER KBNumber
 	KBNumber of the update.
 .EXAMPLE
-	Test-MSUpdates 'KB2549864'
+	Test-MSUpdates -KBNumber 'KB2549864'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -6650,7 +6673,7 @@ Function Send-Keys {
 			using System.Runtime.InteropServices;
 			public class GUIWindow
 			{
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				[return: MarshalAs(UnmanagedType.Bool)]
 				public static extern bool SetForegroundWindow(IntPtr hWnd);
 			}
@@ -6864,19 +6887,19 @@ Function Test-PowerPoint {
 			
 			public class FullScreen
 			{
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				private static extern IntPtr GetForegroundWindow();
 				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				private static extern IntPtr GetDesktopWindow();
 				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				private static extern IntPtr GetShellWindow();
 				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				private static extern int GetWindowRect(IntPtr hWnd, out RECT rc);
 				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 				
 				private static IntPtr desktopHandle;
@@ -7044,9 +7067,9 @@ Function Invoke-SCCMTask {
 Function Install-SCCMSoftwareUpdates {
 <#
 .SYNOPSIS
-	Scans for outstanding SCCM updates to be installed and installed the pending updates.
+	Scans for outstanding SCCM updates to be installed and installs the pending updates.
 .DESCRIPTION
-	Scans for outstanding SCCM updates to be installed and installed the pending updates.
+	Scans for outstanding SCCM updates to be installed and installs the pending updates.
 	This function can take several minutes to run.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered.
@@ -7641,18 +7664,23 @@ Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHo
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 
-# Get the DPI scaling from HKCU registry (WMI and HKLM not updated if settings changed after logoff)
-If (Test-Path "HKCU:\Control Panel\Desktop" -ErrorAction SilentlyContinue ) { 
-    [int32]$dpiPixels = Get-RegistryKey "HKEY_CURRENT_USER\Control Panel\Desktop" | Select Logpixels -ExpandProperty Logpixels
+## Get the DPI scaling from HKCU registry (WMI and HKLM not updated if settings changed after logoff)
+Try {
+	If (Test-Path -Path "HKCU:Control Panel\Desktop" -ErrorAction 'SilentlyContinue') { 
+		[int32]$dpiPixels = Get-RegistryKey -Key "HKCU:Control Panel\Desktop" | Select-Object -ExpandProperty LogPixels -ErrorAction 'Stop'
+	}
+	Else {
+		[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
+	}
 }
-Else {
-    [int32]$dpiPixels = Get-RegistryKey "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select Logpixels -ExpandProperty Logpixels
-    }
+Catch {
+	[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
+}
 Switch ($dpiPixels) {
-    "96" { [int32]$dpiScale = "100" }
-    "120" { [int32]$dpiScale = "125" }
-    "144" { [int32]$dpiScale = "150" }
-    "192" { [int32]$dpiScale = "200" }
+	96 { [int32]$dpiScale = 100 }
+	120 { [int32]$dpiScale = 125 }
+	144 { [int32]$dpiScale = 150 }
+	192 { [int32]$dpiScale = 200 }
 }
 
 ## Check deployment type (install/uninstall)
@@ -7733,7 +7761,13 @@ If ($invokingScript) {
 					Write-Log -Message "Session 0 detected, process not running in user interactive mode: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 				}
 				Else {
-					Write-Log -Message "Session 0 detected, process running in user interactive mode: deployment mode will not be set to [NonInteractive]" -Source $appDeployToolkitName
+					If (-not $usersLoggedOn) {
+					    $deployMode = 'NonInteractive'
+					    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+					}
+					Else {
+					    Write-Log -Message "Session 0 detected, process running in user interactive mode." -Source $appDeployToolkitName
+					}
 				}
 			}
 		}
