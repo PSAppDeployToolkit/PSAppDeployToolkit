@@ -1628,14 +1628,12 @@ Function Get-InstalledApplication {
 .DESCRIPTION
 	Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
 	Returns information about application publisher, name & version, product code, uninstall string, install source, location, and date.
-.PARAMETER ApplicationName
-	The name of the application you want to retrieve information on. Performs a wildcard match on the application display name.
 .PARAMETER Name
-	The name of the application you want to retrieve information on. Performs a wildcard match on the application display name.
+	The name of the application to retrieve information for. Performs a wildcard match on the application display name.
 .PARAMETER Exact
 	Specifies to only match the exact name of the application.
 .PARAMETER ProductCode
-	The product code of the application you want to retrieve information on.
+	The product code of the application to retrieve information for.
 .PARAMETER IncludeUpdatesAndHotfixes
 	Include matches against updates and hotfixes in results.
 .EXAMPLE
@@ -2050,6 +2048,9 @@ Function Remove-MSIApplications {
 					Write-Log -Message "[$($installedApplication.DisplayName)] uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`", so removal will not proceed." -Severity 2 -Source ${CmdletName}
 				}
 			}
+		}
+		Else {
+			Write-Log -Message "No applications found for removal. Continue..." -Source ${CmdletName}
 		}
 	}
 	End {
