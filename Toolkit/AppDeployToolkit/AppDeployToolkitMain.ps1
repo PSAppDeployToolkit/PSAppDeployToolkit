@@ -1105,8 +1105,8 @@ Function Show-InstallationPrompt {
 				$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
 				$timer.remove_Tick($timer_Tick)
-                $timer.dispose()
-                $timer = $null
+				$timer.dispose()
+				$timer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
 				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
@@ -1950,29 +1950,6 @@ Function Execute-MSI {
 			$argsMSI = "$option $msiFile $msiDefaultParams $configMSILoggingOptions $msiLogFile"
 		}
 		
-<<<<<<< HEAD
-		## Check if the MSI is already installed and exit function if true
-		If ($action -eq "install") {
-			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
-            If ($IsMsiInstalled) {
-		        Write-Log -Message 'The MSI is already installed on this system. Skipping installation...' -Source ${CmdletName}
-                Return    
-    		}
-        }
-
-		## Call the Execute-Process function
-		If ($ContinueOnError) {
-			If ($WorkingDirectory) {
-				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
-			}
-			Else {
-				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal -ContinueOnError $true
-			}
-		}
-		Else {
-			If ($WorkingDirectory) {
-				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
-=======
 		## Check if the MSI is already installed
 		[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
@@ -1988,10 +1965,14 @@ Function Execute-MSI {
 				Else {
 					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal -ContinueOnError $true
 				}
->>>>>>> dbc12770cb06e61215d05bc582515f7c1fe1e75c
 			}
 			Else {
-				Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal
+				If ($WorkingDirectory) {
+					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
+				}
+				Else {
+					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal
+				}
 			}
 		}
 		Else {
@@ -4775,8 +4756,8 @@ Function Show-WelcomePrompt {
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
 				$script:welcomeTimer.remove_Tick($timer_Tick)
-                $welcomeTimer.dispose()
-                $welcomeTimer = $null
+				$welcomeTimer.dispose()
+				$welcomeTimer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
 				$formWelcome.remove_Load($Form_StateCorrection_Load)
 				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
