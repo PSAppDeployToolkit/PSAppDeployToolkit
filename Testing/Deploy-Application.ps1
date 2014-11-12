@@ -83,7 +83,7 @@ Try {
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
-		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw 'Module does not exist at the specified location [$moduleAppDeployToolkitMain].' }
+		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
 		. $moduleAppDeployToolkitMain
 	}
 	Catch {
