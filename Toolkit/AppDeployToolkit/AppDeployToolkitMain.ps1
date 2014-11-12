@@ -1951,11 +1951,11 @@ Function Execute-MSI {
 		## Check if the MSI is already installed
 		[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
-			Write-Log -Message 'The MSI is already installed on this system. Skipping action [$Action]...' -Source ${CmdletName}
+			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
-		ElseIf ($IsMsiInstalled) {
+		ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
 			## Call the Execute-Process function
-			Write-Log -Message 'The MSI is installed on this system. Executing action [$Action]...' -Source ${CmdletName}
+			Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
 			If ($ContinueOnError) {
 				If ($WorkingDirectory) {
 					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
@@ -1974,7 +1974,7 @@ Function Execute-MSI {
 			}
 		}
 		Else {
-			Write-Log -Message 'The MSI is not installed on this system. Skipping action [$Action]...' -Source ${CmdletName}
+			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
 	}
 	End {
