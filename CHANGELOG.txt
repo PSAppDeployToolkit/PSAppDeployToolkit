@@ -8,7 +8,8 @@ Version 3.5.0 [11/06/2014]
 	Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
 	Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
 	Added ability to detect active console user (user with control of the monitor, keyboard, mouse)
-	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed
+	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed	
+	Added Patch parameter to Execute-MSI to allow an MSP file to be specified on the command line with an MSI installation
 	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
 	Changed Restart Prompt default selected button to Restart Later
 	Improved detection of change.exe failures for TerminalServerInstallMode

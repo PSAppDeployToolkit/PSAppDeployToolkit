@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/11/2014'
+[string]$appDeployMainScriptDate = '11/12/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1781,7 +1781,9 @@ Function Execute-MSI {
 .PARAMETER Path
 	The path to the MSI/MSP file or the product code of the installed MSI.
 .PARAMETER Transform
-	The name of the transform file(s). The transform file is expected to be in the same directory as the MSI file.
+	The name of the transform file(s) to be applied to the MSI. The transform file is expected to be in the same directory as the MSI file.
+.PARAMETER Patch
+	The name of the patch (msp) file(s) to be applied to the MSI for use with the "Install" action. The patch file is expected to be in the same directory as the MSI file.
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER LogName
@@ -1821,6 +1823,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Parameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Patch,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LogName,
@@ -1934,20 +1939,30 @@ Function Execute-MSI {
 		[string]$msiFile = "`"$msiFile`""
 		## Enclose the MST file in quotes to avoid issues with spaces when running msiexec
 		[string]$mstFile = "`"$transform`""
-		
-		If ($transform -and $Parameters) {
-			$argsMSI = "$option $msiFile TRANSFORMS=$mstFile TRANSFORMSSECURE=1 $Parameters $configMSILoggingOptions $msiLogFile"
+        ## Enclose the MSP file in quotes to avoid issues with spaces when running msiexec
+		[string]$mspFile = "`"$patch`""		
+
+        ## Start building the MsiExec command line starting with the base action and file
+        $argsMSI = "$option $msiFile"
+        # Add MST
+		If ($transform) {
+            $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
+        }
+        # Add MSP
+		If ($patch) {
+            $argsMSI = "$argsMSI PATCH=$mspFile"
+        }
+        # Add custom Params
+        If ($Parameters) {
+			$argsMSI = "$argsMSI $Parameters"
 		}
-		ElseIf ($transform) {
-			$argsMSI = "$option $msiFile TRANSFORMS=$mstFile TRANSFORMSSECURE=1 $msiDefaultParams $configMSILoggingOptions $msiLogFile"
+        # Otherwise add Default Params
+        Else {
+        	$argsMSI = "$argsMSI $msiDefaultParams"
 		}
-		ElseIf ($Parameters) {
-			$argsMSI = "$option $msiFile $Parameters $configMSILoggingOptions $msiLogFile"
-		}
-		Else {
-			$argsMSI = "$option $msiFile $msiDefaultParams $configMSILoggingOptions $msiLogFile"
-		}
-		
+		# Finally add the logging options
+		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
+			
 		## Check if the MSI is already installed
 		[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
