@@ -7698,6 +7698,7 @@ If ($invokingScript) {
 	Else {
 		#  Get a list of all users logged on to the system (both local and RDP users)
 		[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
+		Write-Log -Message "Logged on user session details: `n$LoggedOnUserSessions" -Source $appDeployToolkitName
 		[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
 		
 		If ($usersLoggedOn) {
@@ -7707,7 +7708,7 @@ If ($invokingScript) {
 			[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
 			
 			#  Check if the current process is running in the context of one of the logged in users
-			If ($null -ne $CurrentLoggedOnUserSession) {
+			If ($CurrentLoggedOnUserSession) {
 				[boolean]$runningAsLoggedOnUser = $true
 				Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
 			}
