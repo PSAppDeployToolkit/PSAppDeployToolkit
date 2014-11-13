@@ -1327,7 +1327,7 @@ Function Show-InstallationPrompt {
 			$showDialog = $true
 			While ($showDialog) {
 				# Minimize all other windows
-				If ($minimizeWindows) { $shellApp.MinimizeAll() }
+				If ($minimizeWindows) { $shellApp.MinimizeAll() | Out-Null }
 				# Show the Form
 				$result = $formInstallationPrompt.ShowDialog()
 				If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
@@ -1341,7 +1341,7 @@ Function Show-InstallationPrompt {
 				'Ignore' { Write-Output $buttonMiddleText }
 				'Abort' {
 					# Restore minimized windows
-					$shellApp.UndoMinimizeAll()
+					$shellApp.UndoMinimizeAll() | Out-Null
 					If ($ExitOnTimeout) {
 						Exit-Script $configInstallationUIExitCode
 					}
@@ -4554,7 +4554,7 @@ Function Show-InstallationWelcome {
 					}
 					
 					#  Restore minimized windows
-					$shellApp.UndoMinimizeAll()
+					$shellApp.UndoMinimizeAll() | Out-Null
 					
 					Exit-Script $configInstallationUIExitCode
 				}
@@ -4566,7 +4566,7 @@ Function Show-InstallationWelcome {
 					Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					
 					#  Restore minimized windows
-					$shellApp.UndoMinimizeAll()
+					$shellApp.UndoMinimizeAll() | Out-Null
 					
 					Exit-Script $configInstallationDeferExitCode
 				}
@@ -5108,7 +5108,7 @@ Function Show-WelcomePrompt {
 		}
 		
 		## Minimize all other windows
-		If ($minimizeWindows) { $shellApp.MinimizeAll() }
+		If ($minimizeWindows) { $shellApp.MinimizeAll() | Out-Null }
 		
 		## Show the form
 		$result = $formWelcome.ShowDialog()
