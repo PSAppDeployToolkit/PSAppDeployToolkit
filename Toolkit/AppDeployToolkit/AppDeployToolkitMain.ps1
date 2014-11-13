@@ -7698,7 +7698,7 @@ If ($invokingScript) {
 	Else {
 		#  Get a list of all users logged on to the system (both local and RDP users)
 		[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-		Write-Log -Message "Logged on user session details: `n$LoggedOnUserSessions" -Source $appDeployToolkitName
+		Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
 		[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
 		
 		If ($usersLoggedOn) {
