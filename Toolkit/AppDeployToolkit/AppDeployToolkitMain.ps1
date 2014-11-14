@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/13/2014'
+[string]$appDeployMainScriptDate = '11/14/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -793,7 +793,7 @@ Function Exit-Script {
 	}
 	
 	## Dispose of any previous balloon tip notifications
-	If ($NotifyIcon) {
+	If (($NotifyIcon) -and (-not $deployModeSilent)) {
 		Start-Sleep -Seconds 10
 		Try {
 			If ($NotifyIcon) { $NotifyIcon.Dispose() }
@@ -1164,7 +1164,7 @@ Function Show-InstallationPrompt {
 		$System_Drawing_Size.Height = 50
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
-        $pictureBanner.SizeMode = 'CenterImage'
+		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
@@ -1939,26 +1939,26 @@ Function Execute-MSI {
 		[string]$msiFile = "`"$msiFile`""
 		## Enclose the MST file in quotes to avoid issues with spaces when running msiexec
 		[string]$mstFile = "`"$transform`""
-        ## Enclose the MSP file in quotes to avoid issues with spaces when running msiexec
+		## Enclose the MSP file in quotes to avoid issues with spaces when running msiexec
 		[string]$mspFile = "`"$patch`""		
 
-        ## Start building the MsiExec command line starting with the base action and file
-        $argsMSI = "$option $msiFile"
-        # Add MST
+		## Start building the MsiExec command line starting with the base action and file
+		$argsMSI = "$option $msiFile"
+		# Add MST
 		If ($transform) {
-            $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
-        }
-        # Add MSP
+			$argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
+		}
+		# Add MSP
 		If ($patch) {
-            $argsMSI = "$argsMSI PATCH=$mspFile"
-        }
-        # Add custom Params
-        If ($Parameters) {
+			$argsMSI = "$argsMSI PATCH=$mspFile"
+		}
+		# Add custom Params
+		If ($Parameters) {
 			$argsMSI = "$argsMSI $Parameters"
 		}
-        # Otherwise add Default Params
-        Else {
-        	$argsMSI = "$argsMSI $msiDefaultParams"
+		# Otherwise add Default Params
+		Else {
+			$argsMSI = "$argsMSI $msiDefaultParams"
 		}
 		# Finally add the logging options
 		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
@@ -3446,10 +3446,10 @@ Function Get-UserProfiles {
 			If ($ExcludeSystemProfiles) {
 				[string[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
 				[psobject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
-            }
+			}
 			If ($ExcludeNTAccount) {
 				[psobject[]]$UserProfiles = $UserProfiles | Where-Object { $ExcludeNTAccount -notcontains $_.NTAccount }
-            }
+			}
 			
 			[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
 			
@@ -4344,7 +4344,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$CloseAppsCountdown = 0,
-        ## Specify a countdown to display before automatically closing applications whether or not deferral is allowed
+		## Specify a countdown to display before automatically closing applications whether or not deferral is allowed
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCloseAppsCountdown = 0,
@@ -4499,12 +4499,12 @@ Function Show-InstallationWelcome {
 		## Prompt the user to close running applications and optionally defer if enabled
 		If (-not ($deployModeSilent) -and (-not ($silent))) {
 			If ($forceCloseAppsCountdown -gt 0) {
-                # Keep the same variable for countdown to simplify the code:
-                $closeAppsCountdown = $forceCloseAppsCountdown
-                # Change this variable to a boolean now to switch the countdown on even with deferral
-                [boolean]$forceCloseAppsCountdown = $true
-            }
-            Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
+				# Keep the same variable for countdown to simplify the code:
+				$closeAppsCountdown = $forceCloseAppsCountdown
+				# Change this variable to a boolean now to switch the countdown on even with deferral
+				[boolean]$forceCloseAppsCountdown = $true
+			}
+			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While ((Get-RunningProcesses -ProcessObjects $processObjects | Select-Object -Property * -OutVariable RunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
 				[string]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
@@ -4677,7 +4677,7 @@ Function Show-WelcomePrompt {
 		[int32]$CloseAppsCountdown,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-        [boolean]$ForceCloseAppsCountdown,
+		[boolean]$ForceCloseAppsCountdown,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$PersistPrompt = $false,
@@ -4738,8 +4738,8 @@ Function Show-WelcomePrompt {
 			}
 			If ($persistPrompt) { $persistWindow = $true }
 		}
-        
-        ## If 'force close apps countdown' was specified, enable that feature.
+		
+		## If 'force close apps countdown' was specified, enable that feature.
 		If ($forceCloseAppsCountdown -eq $true) {
 			Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 			$showCountdown = $true
@@ -4885,7 +4885,7 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
-        $pictureBanner.Margin = $paddingNone
+		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
 		
@@ -5600,7 +5600,7 @@ Function Show-InstallationProgress {
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
 			$global:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
-            $global:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
+			$global:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
@@ -5661,19 +5661,19 @@ Function Show-InstallationProgress {
 '@
 				
 				## Set the configurable values using variables addded to the runspace from the parent thread
-                #  Calculate the position on the screen where the progress dialog should be placed
+				#  Calculate the position on the screen where the progress dialog should be placed
 				$screen = [System.Windows.Forms.Screen]::PrimaryScreen
 				$screenWorkingArea = $screen.WorkingArea
 				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty Width
 				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty Height
-                #  Set the start position of the Window based on the screen size
+				#  Set the start position of the Window based on the screen size
 				If ($windowLocation -eq 'BottomRight') {
 					$xamlProgress.Window.Left = [string]($screenWidth - $xamlProgress.Window.Width - 10)
 					$xamlProgress.Window.Top = [string]($screenHeight - $xamlProgress.Window.Height - 10)
 				}
 				#  Show the default location (Top center)
 				Else {
-                    #  Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
+					#  Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
 					$xamlProgress.Window.Left = [string](($screenWidth / (2 * ($dpiscale / 100) )) - (($xamlProgress.Window.Width / 2)))
 					$xamlProgress.Window.Top = [string]($screenHeight / 9.5)
 				}
@@ -6179,16 +6179,16 @@ Function Get-PEFileArchitecture {
 				Else {
 					Write-Output $PEArchitecture
 				}
-		    }
+			}
 			Catch {
 				Write-Log -Message "Failed to get the PE file architecture. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to get the PE file architecture: $($_.Exception.Message)"
 				}
 				Continue
-		    }
-        }
-    }
+			}
+		}
+	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
@@ -6236,29 +6236,29 @@ Function Register-DLL {
 			[string]$DLLFileBitness = Get-PEFileArchitecture -FilePath $filePath -ContinueOnError $false -ErrorAction 'Stop'
 			If (($DLLFileBitness -ne '64BIT') -and ($DLLFileBitness -ne '32BIT')) {
 				Throw "File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be registered."
-        	}
+			}
 			
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
 						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
-                    }
+					}
 					Else {
 						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\sysnative\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
-                    }
-                }
+					}
+				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
 					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\SysWOW64\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
-                }
-            }
+				}
+			}
 			Else {
 				If ($DLLFileBitness -eq '64BIT') {
 					Throw "File [$filePath] cannot be registered because it is a 64-bit file on a 32-bit operating system."
-                }
+				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
 					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
-                }
-            }
+				}
+			}
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
 				If ($ExecuteResult.ExitCode -eq 999) {
@@ -6323,29 +6323,29 @@ Function Unregister-DLL {
 			[string]$DLLFileBitness = Get-PEFileArchitecture -FilePath $filePath -ContinueOnError $false -ErrorAction 'Stop'
 			If (($DLLFileBitness -ne '64BIT') -and ($DLLFileBitness -ne '32BIT')) {
 				Throw "File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be unregistered."
-        	}
+			}
 			
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
 						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
-                    }
+					}
 					Else {
 						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\sysnative\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
-                    }
-                }
+					}
+				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
 					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\SysWOW64\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
-                }
-            }
+				}
+			}
 			Else {
 				If ($DLLFileBitness -eq '64BIT') {
 					Throw "File [$filePath] cannot be unregistered because it is a 64-bit file on a 32-bit operating system."
-                }
+				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
 					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
-                }
-            }
+				}
+			}
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
 				If ($ExecuteResult.ExitCode -eq 999) {
@@ -6355,7 +6355,7 @@ Function Unregister-DLL {
 					Throw "regsvr32.exe failed with exit code [$($ExecuteResult.ExitCode)]."
 				}
 			}
-        }
+		}
 		Catch {
 			Write-Log -Message "Failed to unregister DLL file. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
@@ -7308,7 +7308,7 @@ Function Get-LoggedOnUser {
 		using System.Collections.Generic;
 		using System.Text;
 		using System.Runtime.InteropServices;
-        using System.ComponentModel;
+		using System.ComponentModel;
 		using FILETIME=System.Runtime.InteropServices.ComTypes.FILETIME;
 		namespace QueryUser
 		{
@@ -7325,11 +7325,11 @@ Function Get-LoggedOnUser {
 				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				public static extern void WTSFreeMemory(IntPtr pMemory);
 				[DllImport("winsta.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		        public static extern int WinStationQueryInformation(IntPtr hServer, int sessionId, int information, ref WINSTATIONINFORMATIONW pBuffer, int bufferLength, ref int returnedLength);
+				public static extern int WinStationQueryInformation(IntPtr hServer, int sessionId, int information, ref WINSTATIONINFORMATIONW pBuffer, int bufferLength, ref int returnedLength);
 				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-			    public static extern int GetCurrentProcessId();
-			    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-			    public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
+				public static extern int GetCurrentProcessId();
+				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+				public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
 
 				[StructLayout(LayoutKind.Sequential)]
 				private struct WTS_SESSION_INFO
@@ -7338,18 +7338,18 @@ Function Get-LoggedOnUser {
 				}
 
 				[StructLayout(LayoutKind.Sequential)]
-			    public struct WINSTATIONINFORMATIONW
-			    {
-			        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 70)] private byte[] Reserved1;
-			        public int SessionId;
-			        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)] private byte[] Reserved2;
-			        public FILETIME ConnectTime;
-			        public FILETIME DisconnectTime;
-			        public FILETIME LastInputTime;
-			        public FILETIME LoginTime;
-			        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1096)] private byte[] Reserved3;
-			        public FILETIME CurrentTime;
-			    }
+				public struct WINSTATIONINFORMATIONW
+				{
+					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 70)] private byte[] Reserved1;
+					public int SessionId;
+					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)] private byte[] Reserved2;
+					public FILETIME ConnectTime;
+					public FILETIME DisconnectTime;
+					public FILETIME LastInputTime;
+					public FILETIME LoginTime;
+					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1096)] private byte[] Reserved3;
+					public FILETIME CurrentTime;
+				}
 
 				public enum WINSTATIONINFOCLASS { WinStationInformation = 8 }
 				public enum WTS_CONNECTSTATE_CLASS { Active, Connected, ConnectQuery, Shadow, Disconnected, Idle, Listen, Reset, Down, Init }
@@ -7357,31 +7357,31 @@ Function Get-LoggedOnUser {
 
 				private static IntPtr OpenServer(string Name) { IntPtr server = WTSOpenServer(Name); return server; }
 				private static void CloseServer(IntPtr ServerHandle) { WTSCloseServer(ServerHandle); }
-                
-                private static IList<T> PtrToStructureList<T>(IntPtr ppList, int count) where T : struct
-                {
-                    List<T> result = new List<T>(); long pointer = ppList.ToInt64(); int sizeOf = Marshal.SizeOf(typeof(T));
-                    for (int index = 0; index < count; index++)
-                    {
-                        T item = (T) Marshal.PtrToStructure(new IntPtr(pointer), typeof(T)); result.Add(item); pointer += sizeOf;
-                    }
-                    return result;
-                }
+				
+				private static IList<T> PtrToStructureList<T>(IntPtr ppList, int count) where T : struct
+				{
+					List<T> result = new List<T>(); long pointer = ppList.ToInt64(); int sizeOf = Marshal.SizeOf(typeof(T));
+					for (int index = 0; index < count; index++)
+					{
+						T item = (T) Marshal.PtrToStructure(new IntPtr(pointer), typeof(T)); result.Add(item); pointer += sizeOf;
+					}
+					return result;
+				}
 
 				public static DateTime? FileTimeToDateTime(FILETIME ft)
-		        {
-		            if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0) { return null; }
-		            long hFT = (((long) ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
-		            return DateTime.FromFileTime(hFT);
-		        }
+				{
+					if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0) { return null; }
+					long hFT = (((long) ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+					return DateTime.FromFileTime(hFT);
+				}
 
 				public static WINSTATIONINFORMATIONW GetWinStationInformation(IntPtr server, int sessionId)
-		        {
-		            int retLen = 0;
-		            WINSTATIONINFORMATIONW wsInfo = new WINSTATIONINFORMATIONW();
-		            WinStationQueryInformation(server, sessionId, (int) WINSTATIONINFOCLASS.WinStationInformation, ref wsInfo, Marshal.SizeOf(typeof(WINSTATIONINFORMATIONW)), ref retLen);
-		            return wsInfo;
-		        }
+				{
+					int retLen = 0;
+					WINSTATIONINFORMATIONW wsInfo = new WINSTATIONINFORMATIONW();
+					WinStationQueryInformation(server, sessionId, (int) WINSTATIONINFOCLASS.WinStationInformation, ref wsInfo, Marshal.SizeOf(typeof(WINSTATIONINFORMATIONW)), ref retLen);
+					return wsInfo;
+				}
 				
 				public static TerminalSessionData[] ListSessions(string ServerName)
 				{
@@ -7391,17 +7391,17 @@ Function Get-LoggedOnUser {
 					try
 					{
 						IntPtr ppSessionInfo = IntPtr.Zero; int count; bool _isUserSession = false; IList<WTS_SESSION_INFO> sessionsInfo;
-                        
+						
 						if (WTSEnumerateSessions(server, 0, 1, out ppSessionInfo, out count) == 0) { throw new Win32Exception(); }
-                        try { sessionsInfo = PtrToStructureList<WTS_SESSION_INFO>(ppSessionInfo, count); }
-                        finally { WTSFreeMemory(ppSessionInfo); }
-                        
-                        foreach (WTS_SESSION_INFO sessionInfo in sessionsInfo)
-                        {
-                            if (sessionInfo.SessionName != "Services" && sessionInfo.SessionName != "RDP-Tcp") { _isUserSession = true; }
-                            results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
-                            _isUserSession = false;
-                        }
+						try { sessionsInfo = PtrToStructureList<WTS_SESSION_INFO>(ppSessionInfo, count); }
+						finally { WTSFreeMemory(ppSessionInfo); }
+						
+						foreach (WTS_SESSION_INFO sessionInfo in sessionsInfo)
+						{
+							if (sessionInfo.SessionName != "Services" && sessionInfo.SessionName != "RDP-Tcp") { _isUserSession = true; }
+							results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
+							_isUserSession = false;
+						}
 					}
 					finally { CloseServer(server); }
 					TerminalSessionData[] returnData = results.ToArray();
@@ -7470,12 +7470,12 @@ Function Get-LoggedOnUser {
 						WINSTATIONINFORMATIONW wsInfo = GetWinStationInformation(server, SessionId);
 						DateTime? _loginTime = FileTimeToDateTime(wsInfo.LoginTime);
 						DateTime? _lastInputTime = FileTimeToDateTime(wsInfo.LastInputTime);
-		                DateTime? _disconnectTime = FileTimeToDateTime(wsInfo.DisconnectTime);
+						DateTime? _disconnectTime = FileTimeToDateTime(wsInfo.DisconnectTime);
 						DateTime? _currentTime = FileTimeToDateTime(wsInfo.CurrentTime);
 						TimeSpan? _idleTime = (_currentTime != null && _lastInputTime != null) ? _currentTime.Value - _lastInputTime.Value : TimeSpan.Zero;
 						data.LogonTime = _loginTime;
 						data.IdleTime = _idleTime;
-		                data.DisconnectTime = _disconnectTime;
+						data.DisconnectTime = _disconnectTime;
 
 						if (currentSessionID == SessionId) { _IsCurrentSessionId = true; }
 						data.IsCurrentSession = _IsCurrentSessionId;
@@ -7738,7 +7738,7 @@ If ($invokingScript) {
 		}
 		Catch {
 			Write-Log -Message 'Unable to load COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-		    $runningTaskSequence = $false
+			$runningTaskSequence = $false
 		}
 		
 		## Check if script is running in session zero
@@ -7760,11 +7760,11 @@ If ($invokingScript) {
 				}
 				Else {
 					If (-not $usersLoggedOn) {
-					    $deployMode = 'NonInteractive'
-					    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+						$deployMode = 'NonInteractive'
+						Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 					}
 					Else {
-					    Write-Log -Message "Session 0 detected, process running in user interactive mode." -Source $appDeployToolkitName
+						Write-Log -Message "Session 0 detected, process running in user interactive mode." -Source $appDeployToolkitName
 					}
 				}
 			}
