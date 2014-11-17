@@ -1319,7 +1319,7 @@ Function Show-InstallationPrompt {
 			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
-			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) `"$($_.Value)`"" }) -join ' '
+			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
@@ -5146,7 +5146,7 @@ Function Show-InstallationRestartPrompt {
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
-	Show-InstallationRestartPrompt -NoCountdow
+	Show-InstallationRestartPrompt -NoCountdown
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -5402,7 +5402,7 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) '$($_.Value)'" }) -join ' '
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {$_.Value})" }) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
@@ -7628,9 +7628,9 @@ If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = $deployAppScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $($_.Value)" } }
-If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = $appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $($_.Value)" } }
-If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = $appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $($_.Value)" } }
+If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
+If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
+If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
 
 ## Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
