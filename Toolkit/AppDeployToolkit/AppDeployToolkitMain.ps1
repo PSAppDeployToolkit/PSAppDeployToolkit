@@ -1716,16 +1716,15 @@ Function Get-InstalledApplication {
 								## Verify if there is a match with the application name(s) passed to the script
 								ForEach ($application in $Name) {
 									$applicationMatched = $false
-									$regKeyAppDisplayName = [regex]::Escape($regKeyApp.DisplayName)
 									If ($exact) {
 										#  Check for an exact application name match
-										If ($regKeyAppDisplayName -eq [regex]::Escape($application)) {
+										If ($regKeyApp.DisplayName -eq [regex]::Escape($application)) {
 											$applicationMatched = $true
 											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] exactly matching application name [$application]" -Source ${CmdletName}
 										}
 									}
 									#  Check for a partial application name match
-									ElseIf ($regKeyAppDisplayName -match [regex]::Escape($application)) {
+									ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
 										$applicationMatched = $true
 										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching application name [$application]" -Source ${CmdletName}
 									}
