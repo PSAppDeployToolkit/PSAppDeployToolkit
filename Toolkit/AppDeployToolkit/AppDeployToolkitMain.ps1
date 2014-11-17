@@ -1697,7 +1697,7 @@ Function Get-InstalledApplication {
 							
 							If ($ProductCode) {
 								## Verify if there is a match with the product code passed to the script
-								If ([regex]::Escape($regKeyApp.PSChildName) -match [regex]::Escape($productCode)) {
+								If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
 									Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]" -Source ${CmdletName}
 									$installedApplication += New-Object -TypeName PSObject -Property @{
 										ProductCode = $regKeyApp.PSChildName
