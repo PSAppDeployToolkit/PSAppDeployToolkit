@@ -164,7 +164,7 @@ Try {
 		
 		## Execute Process test
 		Show-InstallationProgress -StatusMessage 'Execute Process Test: Close Notepad to proceed...'
-		Execute-Process -Path 'Notepad'
+		Execute-Process -FilePath 'Notepad'
 		
 		## Installation Prompt With NoWait Test
 		Show-InstallationPrompt -Message 'Asynchronous Installation Prompt Test: The installation should complete in the background. Click OK to dismiss...' -ButtonRightText 'OK' -Icon 'Information' -NoWait
