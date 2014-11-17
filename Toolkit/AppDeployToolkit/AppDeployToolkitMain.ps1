@@ -1695,6 +1695,9 @@ Function Get-InstalledApplication {
 							$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
 							$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
 							$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
+
+							## Determine if application is a 64-bit application
+							[boolean]$Is64BitApp = If (($is64Bit) -and ($regKey -notmatch '^HKLM:SOFTWARE\\Wow6432Node')) { $true } Else { $false }
 							
 							If ($ProductCode) {
 								## Verify if there is a match with the product code passed to the script
@@ -1709,6 +1712,7 @@ Function Get-InstalledApplication {
 										InstallLocation = $regKeyApp.InstallLocation
 										InstallDate = $regKeyApp.InstallDate
 										Publisher = $appPublisher
+										64BitApplication = $Is64BitApp
 									}
 								}
 							}
@@ -1740,6 +1744,7 @@ Function Get-InstalledApplication {
 											InstallLocation = $regKeyApp.InstallLocation
 											InstallDate = $regKeyApp.InstallDate
 											Publisher = $appPublisher
+											64BitApplication = $Is64BitApp
 										}
 									}
 								}
