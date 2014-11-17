@@ -1537,7 +1537,7 @@ Function Get-HardwarePlatform {
 	}
 	Process {
 		Try {
-			Write-Log -Message "Retrieve hardware platform information." -Source ${CmdletName}
+			Write-Log -Message 'Retrieve hardware platform information.' -Source ${CmdletName}
 			$hwBios = Get-WmiObject -Class Win32_BIOS -ErrorAction 'Stop' | Select-Object -Property Version, SerialNnumber
 			$hwMakeModel = Get-WMIObject -Class Win32_ComputerSystem -ErrorAction 'Stop' | Select-Object -Property Model, Manufacturer
 			
@@ -1603,7 +1603,8 @@ Function Get-FreeDiskSpace {
 			Write-Log -Message "Retrieve free disk space for drive [$Drive]." -Source ${CmdletName}
 			$disk = Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
 			[double]$freeDiskSpace = [math]::Round($disk.FreeSpace / 1MB)
-			
+
+			Write-Log -Message "Free disk space for drive [$Drive]: [$freeDiskSpace]." -Source ${CmdletName}
 			Write-Output $freeDiskSpace
 		}
 		Catch {
@@ -2066,7 +2067,7 @@ Function Remove-MSIApplications {
 			}
 		}
 		Else {
-			Write-Log -Message "No applications found for removal. Continue..." -Source ${CmdletName}
+			Write-Log -Message 'No applications found for removal. Continue...' -Source ${CmdletName}
 		}
 	}
 	End {
@@ -3251,7 +3252,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				## Execute ScriptBlock which contains code to manipulate HKCU registry.
 				#  Make sure read/write calls to the HKCU registry hive specify the -SID parameter or settings will not be changed for all users.
 				#  Example: Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
-				Write-Log -Message "Execute ScriptBlock to modify HKCU registry settings for all users." -Source ${CmdletName}
+				Write-Log -Message 'Execute ScriptBlock to modify HKCU registry settings for all users.' -Source ${CmdletName}
 				&$RegistrySettings
 			}
 			Catch {
@@ -3371,7 +3372,7 @@ Function ConvertTo-NTAccountOrSID {
 						$DomainSid = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ($DomainSidInBinary[0], 0)
 					}
 					Catch {
-						Write-Log -Message "Unable to get Domain SID from Active Directory. Setting Domain SID to `$null." -Severity 2 -Source ${CmdletName}
+						Write-Log -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2 -Source ${CmdletName}
 						$DomainSid = $null
 					}
 					
@@ -3680,7 +3681,7 @@ Function New-Shortcut {
 				
 				## Set shortcut to run program as administrator
 				If ($RunAsAdmin) {
-					Write-Log -Message "Set shortcut to run program as administrator." -Source ${CmdletName}
+					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
 					$TempFileName = [System.IO.Path]::GetRandomFileName()
 					$TempFile = [System.IO.FileInfo][IO.Path]::Combine($Path.Directory, $TempFileName)
 					$Writer = New-Object -TypeName System.IO.FileStream -ArgumentList ($TempFile, ([System.IO.FileMode]::Create)) -ErrorAction 'Stop'
@@ -3956,7 +3957,7 @@ Function Block-AppExecution {
 		[string]$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-		Write-Log -Message "Create scheduled task to cleanup blocked applications in case installation is interrupted." -Source ${CmdletName}
+		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
 		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property TaskName | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
 		}
@@ -5898,7 +5899,7 @@ Function Set-PinnedApplication {
 			Write-Log -Message "Execute action [$Action] for file [$FilePath]." -Source ${CmdletName}
 			
 			If (-not (Test-Path -Path $FilePath -PathType Leaf -ErrorAction 'Stop')) {
-				Throw "Path [$filePath] does not exist. Action [$Action] will not be performed."
+				Throw "Path [$filePath] does not exist."
 			}
 			
 			If (-not ($Verbs.$Action)) {
@@ -7726,7 +7727,7 @@ If ($invokingScript) {
 				Write-Log -Message "The following user is the console user [[$($CurrentConsoleUserSession.NTAccount)]] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
 			}
 			Else {
-				Write-Log -Message "There is no console user logged in (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
+				Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
 			}
 		}
 		Else {
@@ -7767,7 +7768,7 @@ If ($invokingScript) {
 						Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 					}
 					Else {
-						Write-Log -Message "Session 0 detected, process running in user interactive mode." -Source $appDeployToolkitName
+						Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
 					}
 				}
 			}
