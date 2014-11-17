@@ -18,6 +18,7 @@ Version 3.5.0 [11/17/2014]
 	Improved parameter validation on all functions to simplify function logic and give standard error messages when function parameters not specified properly, also helps make clear which parameters are mandatory and which are not
 	Improved Set-PinnedApplication to detect when one of the chosen actions is not available on an operating system (such as pinning items to Start Menu on Windows 8)
 	Improved session 0 detection
+	Improved Execute-MSI and Execute-Process to sync parameter names for -Path and -Parameters and add alias for backwards compatibility
 	Show-InstallationWelcome, Show-InstallationPrompt: Fixed clipping of text when non-default DPI settings used
 	Fixed creation of URL shortcuts in New-Shortcut
 	Fixed detection of when script is running from a task sequence
