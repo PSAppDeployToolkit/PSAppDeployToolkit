@@ -1934,7 +1934,12 @@ Function Execute-MSI {
 			[string]$MSIProductCode = $path
 		}
 		Else {
-			[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' | Select-Object -ExpandProperty ProductCode
+			Try {
+				[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' -ContinueOnError $false | Select-Object -ExpandProperty ProductCode -ErrorAction 'Stop'
+			}
+			Catch {
+				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
+			}
 		}
 		
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
@@ -1965,8 +1970,19 @@ Function Execute-MSI {
 		# Finally add the logging options
 		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
 			
-		## Check if the MSI is already installed
-		[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
+		If ($MSIProductCode) {
+			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+		}
+		Else {
+			If ($Action -eq 'Install') {
+				[boolean]$IsMsiInstalled = $false
+			}
+			Else {
+				[boolean]$IsMsiInstalled = $true
+			}
+		}
+		
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
 			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
