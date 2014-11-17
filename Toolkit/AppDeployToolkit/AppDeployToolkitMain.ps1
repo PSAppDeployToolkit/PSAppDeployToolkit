@@ -1814,12 +1814,14 @@ Function Execute-MSI {
 		[ValidateSet('Install','Uninstall','Patch','Repair','ActiveSetup')]
 		[string]$Action,
 		[Parameter(Mandatory=$true,HelpMessage='Please enter either the path to the MSI/MSP file or the ProductCode')]
+		[Alias('FilePath')]
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Transform,
 		[Parameter(Mandatory=$false)]
+		[Alias('Arguments')]
 		[ValidateNotNullorEmpty()]
 		[string]$Parameters,
 		[Parameter(Mandatory=$false)]
@@ -1972,18 +1974,18 @@ Function Execute-MSI {
 			Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
 			If ($ContinueOnError) {
 				If ($WorkingDirectory) {
-					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
+					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
 				}
 				Else {
-					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal -ContinueOnError $true
+					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WindowStyle Normal -ContinueOnError $true
 				}
 			}
 			Else {
 				If ($WorkingDirectory) {
-					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
+					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
 				}
 				Else {
-					Execute-Process -FilePath $exeMsiexec -Arguments $argsMSI -WindowStyle Normal
+					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WindowStyle Normal
 				}
 			}
 		}
@@ -2082,10 +2084,10 @@ Function Execute-Process {
 .DESCRIPTION
 	Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine.
 	Provides various options for handling the return codes (see Parameters).
-.PARAMETER FilePath
+.PARAMETER Path
 	Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 	Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
-.PARAMETER Arguments
+.PARAMETER Parameters
 	Arguments to be passed to the executable
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
@@ -2105,12 +2107,12 @@ Function Execute-Process {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false (fail on error).
 .EXAMPLE
-	Execute-Process -FilePath 'uninstall_flash_player_64bit.exe' -Arguments '/uninstall' -WindowStyle Hidden
+	Execute-Process -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle Hidden
 	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 .EXAMPLE
-	Execute-Process -FilePath "$dirFiles\Bin\setup.exe" -Arguments '/S' -WindowStyle Hidden
+	Execute-Process -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle Hidden
 .EXAMPLE
-	Execute-Process -FilePath 'setup.exe' -Arguments '/S' -IgnoreExitCodes '1,2'
+	Execute-Process -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes '1,2'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -2118,11 +2120,13 @@ Function Execute-Process {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
+		[Alias('FilePath')]
 		[ValidateNotNullorEmpty()]
-		[string]$FilePath,
+		[string]$Path,
 		[Parameter(Mandatory=$false)]
+		[Alias('Arguments')]
 		[ValidateNotNullorEmpty()]
-		[string[]]$Arguments,
+		[string[]]$Parameters,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
@@ -2155,9 +2159,9 @@ Function Execute-Process {
 		Try {
 			$returnCode = $null
 			
-			## Validate and find the fully qualified path for the $FilePath variable.
-			If (Test-Path -Path $FilePath -PathType Leaf -ErrorAction 'Stop') {
-				Write-Log -Message "[$FilePath] is a valid path, continue" -Source ${CmdletName}
+			## Validate and find the fully qualified path for the $Path variable.
+			If (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop') {
+				Write-Log -Message "[$Path] is a valid path, continue" -Source ${CmdletName}
 			}
 			Else {
 				#  The first directory to search will be the 'Files' subdirectory of the script directory
@@ -2168,36 +2172,36 @@ Function Execute-Process {
 				$env:PATH = $PathFolders + ';' + $env:PATH
 				
 				#  Get the fully qualified path for the file. Get-Command searches PATH environment variable to find this value.
-				[string]$FullyQualifiedPath = Get-Command -Name $FilePath -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'SilentlyContinue'
+				[string]$FullyQualifiedPath = Get-Command -Name $Path -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'SilentlyContinue'
 				
 				#  Revert the PATH environment variable to it's original value
 				$env:PATH = $env:PATH -replace [regex]::Escape(($PathFolders + ';')), ''
 				
 				If ($FullyQualifiedPath) {
-					Write-Log -Message "[$FilePath] successfully resolved to fully qualified path [$FullyQualifiedPath]." -Source ${CmdletName}
-					$FilePath = $FullyQualifiedPath
+					Write-Log -Message "[$Path] successfully resolved to fully qualified path [$FullyQualifiedPath]." -Source ${CmdletName}
+					$Path = $FullyQualifiedPath
 				}
 				Else {
-					Throw "[$FilePath] contains an invalid path or file name."
+					Throw "[$Path] contains an invalid path or file name."
 				}
 			}
 			
 			## Set the Working directory (if not specified)
-			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop' }
+			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -Path $Path -Parent -ErrorAction 'Stop' }
 			
 			$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
-			$processStartInfo.FileName = $FilePath
+			$processStartInfo.FileName = $Path
 			$processStartInfo.WorkingDirectory = $WorkingDirectory
 			$processStartInfo.UseShellExecute = $false
 			$processStartInfo.RedirectStandardOutput = $true
 			$processStartInfo.RedirectStandardError = $true
-			If ($Arguments) { $processStartInfo.Arguments = $Arguments }
+			If ($Parameters) { $processStartInfo.Arguments = $Parameters }
 			If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
 			
 			## If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
 			##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
-			If (($FilePath -match 'msiexec') -or ($WaitForMsiExec)) {
+			If (($Path -match 'msiexec') -or ($WaitForMsiExec)) {
 				[boolean]$MsiExecAvailable = Test-MsiExecMutex -MsiExecWaitTime $MsiExecWaitTime
 				Start-Sleep -Seconds 1
 				If (-not $MsiExecAvailable) {
@@ -2212,11 +2216,11 @@ Function Execute-Process {
 				$env:SEE_MASK_NOZONECHECKS = 1
 				
 				Write-Log -Message "Working Directory is [$WorkingDirectory]" -Source ${CmdletName}
-				If ($Arguments) {
-					Write-Log -Message "Executing [$FilePath $Arguments]..." -Source ${CmdletName}
+				If ($Parameters) {
+					Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
 				}
 				Else {
-					Write-Log -Message "Executing [$FilePath]..." -Source ${CmdletName}
+					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
 				}
 				
 				## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
@@ -2282,13 +2286,13 @@ Function Execute-Process {
 					Write-Log -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2 -Source ${CmdletName}
 					Set-Variable -Name msiRebootDetected -Value $true -Scope Script
 				}
-				ElseIf (($returnCode -eq 1605) -and ($filePath -match 'msiexec')) {
+				ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
 					Write-Log -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3 -Source ${CmdletName}
 				}
-				ElseIf (($returnCode -eq -2145124329) -and ($filePath -match 'wusa')) {
+				ElseIf (($returnCode -eq -2145124329) -and ($Path -match 'wusa')) {
 					Write-Log -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
 				}
-				ElseIf (($returnCode -eq 17025) -and ($filePath -match 'fullfile')) {
+				ElseIf (($returnCode -eq 17025) -and ($Path -match 'fullfile')) {
 					Write-Log -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
 				}
 				ElseIf ($returnCode -eq 0) {
@@ -2296,7 +2300,7 @@ Function Execute-Process {
 				}
 				Else {
 					[string]$MsiExitCodeMessage = ''
-					If ($FilePath -match 'msiexec') {
+					If ($Path -match 'msiexec') {
 						[string]$MsiExitCodeMessage = Get-MsiExitCodeMessage -MsiExitCode $returnCode
 					}
 					
@@ -3960,7 +3964,7 @@ Function Block-AppExecution {
 			[string[]]$schTaskCreationBatchFile = '@ECHO OFF'
 			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
 			$schTaskCreationBatchFile | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat" -Force -Encoding default -ErrorAction 'SilentlyContinue'
-			$schTaskCreation = Execute-Process -FilePath $exeSchTasks -Arguments "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
+			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
 		}
 		
 		[string[]]$blockProcessName = $processName
@@ -4028,7 +4032,7 @@ Function Unblock-AppExecution {
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property TaskName | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
-			Execute-Process -FilePath $exeSchTasks -Arguments "/Delete /TN $schTaskBlockedAppsName /F"
+			Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
 		}
 	}
 	End {
@@ -6240,14 +6244,14 @@ Function Register-DLL {
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
-						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
 					}
 					Else {
-						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\sysnative\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\sysnative\regsvr32.exe" -Parameters "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
 					}
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\SysWOW64\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
 				}
 			}
 			Else {
@@ -6255,7 +6259,7 @@ Function Register-DLL {
 					Throw "File [$filePath] cannot be registered because it is a 64-bit file on a 32-bit operating system."
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
+					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters "/s `"$FilePath`"" -WindowStyle Hidden -PassThru
 				}
 			}
 			
@@ -6327,14 +6331,14 @@ Function Unregister-DLL {
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
-						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
+						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
 					}
 					Else {
-						[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\sysnative\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
+						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\sysnative\regsvr32.exe" -Parameters "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
 					}
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\SysWOW64\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
+					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
 				}
 			}
 			Else {
@@ -6342,7 +6346,7 @@ Function Unregister-DLL {
 					Throw "File [$filePath] cannot be unregistered because it is a 64-bit file on a 32-bit operating system."
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -FilePath "$envWinDir\system32\regsvr32.exe" -Arguments "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
+					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters "/s /u `"$FilePath`"" -WindowStyle Hidden -PassThru
 				}
 			}
 			
@@ -6583,10 +6587,10 @@ Function Install-MSUpdates {
 				Write-Log -Message "Install [$redistDescription $redistVersion]..." -Source ${CmdletName}
 				#  Handle older redistributables (ie, VC++ 2005)
 				If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
-					Execute-Process -FilePath $file -Arguments '/q' -WindowStyle Hidden -ContinueOnError $true
+					Execute-Process -Path $file -Parameters '/q' -WindowStyle Hidden -ContinueOnError $true
 				}
 				Else {
-					Execute-Process -FilePath $file -Arguments '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true
+					Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true
 				}
 			}
 			Else {
@@ -6599,9 +6603,9 @@ Function Install-MSUpdates {
 					Write-Log -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
 					Switch ($file.Extension) {
 						#  Installation type for executables (i.e., Microsoft Office Updates)
-						'.exe' { Execute-Process -FilePath $file -Arguments '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true }
+						'.exe' { Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true }
 						#  Installation type for Windows updates using Windows Update Standalone Installer
-						'.msu' { Execute-Process -FilePath 'wusa.exe' -Arguments "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
+						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
 						#  Installation type for Windows Installer Patch
 						'.msp' { Execute-MSI -Action 'Patch' -Path $file -ContinueOnError $true }
 					}
@@ -7154,7 +7158,7 @@ Function Update-GroupPolicy {
 					[string]$InstallMsg = 'Update Group Policies for the User'
 					Write-Log -Message $InstallMsg -Source ${CmdletName}
 				}
-				[psobject]$ExecuteResult = Execute-Process -FilePath "$envWindir\system32\cmd.exe" -Arguments $GPUpdateCmd -WindowStyle Hidden -PassThru
+				[psobject]$ExecuteResult = Execute-Process -Path "$envWindir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle Hidden -PassThru
 				
 				If ($ExecuteResult.ExitCode -ne 0) {
 					If ($ExecuteResult.ExitCode -eq 999) {

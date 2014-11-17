@@ -168,21 +168,21 @@ Try {
 			ForEach ($officeExecutable in $officeExecutables) {
 				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office12\$officeExecutable") -PathType Leaf) {
 					Write-Log -Message 'Microsoft Office 2007 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
-					Execute-Process -FilePath 'cscript.exe' -Arguments "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Execute-Process -Path 'cscript.exe' -Parameters "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
 				}
 			}
 			ForEach ($officeExecutable in $officeExecutables) {
 				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office14\$officeExecutable") -PathType Leaf) {
 					Write-Log -Message 'Microsoft Office 2010 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
-					Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
 				}
 			}
 			ForEach ($officeExecutable in $officeExecutables) {
 				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office15\$officeExecutable") -PathType Leaf) {
 					Write-Log -Message 'Microsoft Office 2013 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
-					Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+					Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
 				}
 			}
@@ -197,37 +197,37 @@ Try {
 		## Check whether running in Add Components Only mode
 		If (-not $addComponentsOnly) {
 	  		Show-InstallationProgress -StatusMessage 'Installing Office Professional. This may take some time. Please wait...'
-			Execute-Process -FilePath "$dirFiles\Office\Setup.exe" -Arguments "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes '3010'
+			Execute-Process -Path "$dirFiles\Office\Setup.exe" -Parameters "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes '3010'
 		}
 		
 		# Install InfoPath if required
 		If ($addInfoPath) {
 			Show-InstallationProgress -StatusMessage 'Installing Office Infopath. This may take some time. Please wait...'
-			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/modify ProPlus /config `"$dirSupportFiles\AddInfoPath.xml`"" -WindowStyle Hidden
 		}
 		
 		# Install Sharepoint Designer if required
 		If ($addSharepointWorkspace) {
 			Show-InstallationProgress -StatusMessage 'Installing Office Sharepoint Workspace. This may take some time. Please wait...'
-			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/modify ProPlus /config `"$dirSupportFiles\AddSharePointWorkspace.xml`"" -WindowStyle Hidden
 		}
 		
 		# Install OneNote if required
 		If ($addOneNote) {
 			Show-InstallationProgress -StatusMessage "Installing Office OneNote. This may take some time. Please wait..."
-			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/modify ProPlus /config `"$dirSupportFiles\AddOneNote.xml`"" -WindowStyle Hidden
 		}
 		
 		# Install Outlook if required
 		If ($addOutlook) {
 			Show-InstallationProgress -StatusMessage 'Installing Office Outlook. This may take some time. Please wait...'
-			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/modify ProPlus /config `"$dirSupportFiles\AddOutlook.xml`"" -WindowStyle Hidden
 		}
 		
 		# Install Publisher if required
 		If ($addPublisher) {
 			Show-InstallationProgress -StatusMessage 'Installing Office Publisher. This may take some time. Please wait...'
-			Execute-Process -FilePath "$dirFiles\Setup.exe" -Arguments "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/modify ProPlus /config `"$dirSupportFiles\AddPublisher.xml`"" -WindowStyle Hidden
 		}
 		
 		
@@ -240,7 +240,7 @@ Try {
 		If (-not $osdMode) {
 			If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType Leaf) {
 				Show-InstallationProgress -StatusMessage 'Activating Microsoft Office components. This may take some time. Please wait...'
-				Execute-Process -FilePath 'cscript.exe' -Arguments "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
+				Execute-Process -Path 'cscript.exe' -Parameters "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
 			}
 		}
 		
@@ -268,7 +268,7 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
 
-		Execute-Process -FilePath "cscript.exe" -Arguments "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+		Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 		
 		
 		##*===============================================
