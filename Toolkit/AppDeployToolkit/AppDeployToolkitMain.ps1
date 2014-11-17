@@ -1712,7 +1712,7 @@ Function Get-InstalledApplication {
 										InstallLocation = $regKeyApp.InstallLocation
 										InstallDate = $regKeyApp.InstallDate
 										Publisher = $appPublisher
-										64BitApplication = $Is64BitApp
+										"64BitApplication" = $Is64BitApp
 									}
 								}
 							}
@@ -1744,7 +1744,7 @@ Function Get-InstalledApplication {
 											InstallLocation = $regKeyApp.InstallLocation
 											InstallDate = $regKeyApp.InstallDate
 											Publisher = $appPublisher
-											64BitApplication = $Is64BitApp
+											"64BitApplication" = $Is64BitApp
 										}
 									}
 								}
@@ -7703,6 +7703,7 @@ Switch ($dpiPixels) {
 	120 { [int32]$dpiScale = 125 }
 	144 { [int32]$dpiScale = 150 }
 	192 { [int32]$dpiScale = 200 }
+    Default { [int32]$dpiScale = 100 }
 }
 
 ## Check deployment type (install/uninstall)
