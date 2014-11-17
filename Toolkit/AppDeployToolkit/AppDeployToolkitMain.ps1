@@ -534,7 +534,7 @@ Function Write-Log {
 		## Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		
-		## Initialize $DisableLogging varaible to avoid error if 'Set-StrictMode' is set
+		## Initialize $DisableLogging variable to avoid error if 'Set-StrictMode' is set
 		If (-not (Test-Path -Path 'variable:DisableLogging')) { $DisableLogging = $false }
 		
 		## Create script block for generating CMTrace.exe compatible log entry
@@ -816,7 +816,7 @@ Function Resolve-Error {
 .DESCRIPTION
 	Enumerate an error record, or a collection of error record, properties. By default, the details for the last error will be enumerated.
 .PARAMETER ErrorRecord
-	The error record to resolve. The default error record is the lastest one: $global:Error[0]. This parameter will also accept an array of error records.
+	The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
 .PARAMETER Property
 	The list of properties to display from the error record. Use "*" to display all properties.
 	Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
@@ -859,7 +859,7 @@ Function Resolve-Error {
 	)
 	
 	Begin {
-		## If function was called without specifying an error record, then choose the latest error that occured
+		## If function was called without specifying an error record, then choose the latest error that occurred
 		If (-not $ErrorRecord) {
 			If ($global:Error.Count -eq 0) {
 				#Write-Warning -Message "The `$Error collection is empty"
@@ -1024,7 +1024,7 @@ Function Show-InstallationPrompt {
 .EXAMPLE
 	Show-InstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 .EXAMPLE
-	Show-InstallationPrompt -Message 'You can customise text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
+	Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -1384,7 +1384,7 @@ Function Show-DialogBox {
 .EXAMPLE
 	Show-DialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
 .EXAMPLE
-	Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 mintues. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600
+	Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -1629,7 +1629,7 @@ Function Get-InstalledApplication {
 	Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
 	Returns information about application publisher, name & version, product code, uninstall string, install source, location, and date.
 .PARAMETER Name
-	The name of the application to retrieve information for. Performs a wildcard match on the application display name.
+	The name of the application to retrieve information for. Performs a wild card match on the application display name.
 .PARAMETER Exact
 	Specifies to only match the exact name of the application.
 .PARAMETER ProductCode
@@ -1690,7 +1690,7 @@ Function Get-InstalledApplication {
 								If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
 							}
 							
-							## Remove any control characters which may interfere logging and with creating file path names from these variables
+							## Remove any control characters which may interfere with logging and creating file path names from these variables
 							$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
 							$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
 							$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
@@ -1792,7 +1792,7 @@ Function Execute-MSI {
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognised by the App Deploy Toolkit.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
 	Execute-MSI -Action Install -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
@@ -2012,7 +2012,7 @@ Function Remove-MSIApplications {
 .PARAMETER Exact
 	Specifies whether to exactly match the name of the application
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognised by the App Deploy Toolkit.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
 	Remove-MSIApplications -Name 'Adobe Flash'
 	Removes all versions of software that match the name "Adobe Flash"
@@ -2104,7 +2104,7 @@ Function Execute-Process {
 .PARAMETER IgnoreExitCodes
 	List the exit codes to ignore.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by the process that is not recognised by the App Deploy Toolkit. Default: $false (fail on error).
+	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false (fail on error).
 .EXAMPLE
 	Execute-Process -FilePath 'uninstall_flash_player_64bit.exe' -Arguments '/uninstall' -WindowStyle Hidden
 	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
@@ -2168,7 +2168,7 @@ Function Execute-Process {
 				#  Add the new path locations to the PATH environment variable
 				$env:PATH = $PathFolders + ';' + $env:PATH
 				
-				#  Get the fully qualified path for the file. Get-Command searchs PATH environment variable to find this value.
+				#  Get the fully qualified path for the file. Get-Command searches PATH environment variable to find this value.
 				[string]$FullyQualifiedPath = Get-Command -Name $FilePath -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'SilentlyContinue'
 				
 				#  Revert the PATH environment variable to it's original value
@@ -3712,9 +3712,9 @@ Function New-Shortcut {
 Function Refresh-Desktop {
 <#
 .SYNOPSIS
-	Refresh the Windows Exporer Shell, which causes the desktop icons and the environment variables to be reloaded.
+	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 .DESCRIPTION
-	Refresh the Windows Exporer Shell, which causes the desktop icons and the environment variables to be reloaded.	
+	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.	
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -3827,7 +3827,7 @@ Function Refresh-SessionEnvironmentVariables {
 			## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
 			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty Property | ForEach-Object { Set-Item -Path "env:$($_)" -Value (Get-ItemProperty -Path $envRegPath -Name $_).$_ } }
 			
-			## Set PATH environment variable seperately because it is a combination of the user and machine environment variables
+			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
 			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (&$GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
 			$env:PATH = $PathFolders -join ';'
 		}
@@ -3992,7 +3992,7 @@ Function Unblock-AppExecution {
 	UnblockAppExecution
 .NOTES
 	This is an internal script function and should typically not be called directly.
-	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the acitons performed by Block-AppExecution.
+	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
@@ -4166,9 +4166,9 @@ Function Get-UniversalDate {
 			Write-Output $universalDateTime
 		}
 		Catch {
-			Write-Log -Message "The specified date/time [$DateTime] is not in a format recognised by the current culture [$($culture.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
-				Throw "The specified date/time [$DateTime] is not in a format recognised by the current culture: $($_.Exception.Message)"
+				Throw "The specified date/time [$DateTime] is not in a format recognized by the current culture: $($_.Exception.Message)"
 			}
 		}
 	}
@@ -4211,7 +4211,7 @@ Function Get-RunningProcesses {
 			[string]$runningAppsCheck = ($processObjects | ForEach-Object { $_.ProcessName }) -join ','
 			Write-Log -Message "Check for running application(s) [$runningAppsCheck]..." -Source ${CmdletName}
 			
-			## Escape special characters that interfere with Regex and might cause false positive matches
+			## Escape special characters that interfere with regex and might cause false positive matches
 			## Join the process names with the regex operator '|' to perform "or" match against multiple applications
 			[string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
 			
@@ -4340,7 +4340,7 @@ Function Show-InstallationWelcome {
 		## Specify whether to prompt user or force close the applications
 		[Parameter(Mandatory=$false)]
 		[switch]$Silent = $false,
-		## Specify a countdown to display before automatically closing applications where defferal is not allowed or has expired
+		## Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$CloseAppsCountdown = 0,
@@ -5497,7 +5497,7 @@ Function Show-BalloonTip {
 		
 		Set-Variable -Name NotifyIcon -Value $NotifyIcon -Scope Global
 		
-		Write-Log -Message "Display baloon tip notification with message [$BalloonTipText]" -Source ${CmdletName}
+		Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]" -Source ${CmdletName}
 		$NotifyIcon.ShowBalloonTip($BalloonTipTime)
 		
 		Switch ($Host.Runspace.ApartmentState) {
@@ -5524,7 +5524,7 @@ Function Show-BalloonTip {
 Function Show-InstallationProgress {
 <#
 .SYNOPSIS
-	Displays a progress dialog in a separate thread with an updatable custom message.
+	Displays a progress dialog in a separate thread with an updateable custom message.
 .DESCRIPTION
 	Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated.
 	The status message supports line breaks.
@@ -5534,7 +5534,7 @@ Function Show-InstallationProgress {
 .PARAMETER WindowLocation
 	The location of the progress window. Default: just below top, centered.
 .PARAMETER TopMost
-	Specificies whether the progress window should be topmost. Default: $true.
+	Specifies whether the progress window should be topmost. Default: $true.
 .EXAMPLE
 	Show-InstallationProgress
 	Uses the default status message from the XML configuration file.
@@ -5569,7 +5569,7 @@ Function Show-InstallationProgress {
 	Process {
 		If ($deployModeSilent) { Return }
 		
-		## If the default progress message hasn't been overriden and the deployment type is uninstall, use the default uninstallation message
+		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
 		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Uninstall')) {
 			$StatusMessage = $configProgressMessageUninstall
 		}
@@ -5660,7 +5660,7 @@ Function Show-InstallationProgress {
 							</Window>
 '@
 				
-				## Set the configurable values using variables addded to the runspace from the parent thread
+				## Set the configurable values using variables added to the runspace from the parent thread
 				#  Calculate the position on the screen where the progress dialog should be placed
 				$screen = [System.Windows.Forms.Screen]::PrimaryScreen
 				$screenWorkingArea = $screen.WorkingArea
@@ -6545,9 +6545,9 @@ Function Test-MSUpdates {
 Function Install-MSUpdates {
 <#
 .SYNOPSIS
-	Install all Microsft Updates in a given directory.
+	Install all Microsoft Updates in a given directory.
 .DESCRIPTION
-	Install all Microsft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory).
+	Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory).
 .PARAMETER Directory
 	Directory containing the updates.
 .EXAMPLE
@@ -6756,7 +6756,7 @@ Function Test-Battery {
 		## Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
 		[string]$BatteryChargeStatus = $PowerStatus.BatteryChargeStatus
 		
-		## Get the approximate amount,from 0.00 to 1.0, of full battery charge remaining.
+		## Get the approximate amount, from 0.00 to 1.0, of full battery charge remaining.
 		#  This property can report 1.0 when the battery is damaged and Windows can't detect a battery.
 		#  Therefore, this property is only indicative of battery charge remaining if 'BatteryChargeStatus' property is not reporting 'NoSystemBattery' or 'Unknown'.
 		[single]$BatteryLifePercent = $PowerStatus.BatteryLifePercent
@@ -6769,7 +6769,7 @@ Function Test-Battery {
 		
 		## Get the manufacturer reported full charge lifetime of the primary battery power source in seconds.
 		#  The reported number of seconds of battery life available when the battery is fully charged, or -1 if it is unknown.
-		#  This will only be reported if the battery supports reporting this information. You will most likely get -1, indicationg unknown.
+		#  This will only be reported if the battery supports reporting this information. You will most likely get -1, indicating unknown.
 		[int32]$BatteryFullLifetime = $PowerStatus.BatteryFullLifetime
 		
 		## Determine if the system is using AC power
@@ -6956,7 +6956,7 @@ Function Test-PowerPoint {
 			If (Get-Process -Name 'POWERPNT' -ErrorAction 'SilentlyContinue') {
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 				
-				#  Case insensitive match for "PowerPoint Slide Show" at start of window title using Regex matching
+				#  Case insensitive match for "PowerPoint Slide Show" at start of window title using regex matching
 				[boolean]$IsPowerPointFullScreen = [ScreenDetection.FullScreen]::IsFullScreenWindow('^PowerPoint Slide Show')
 				
 				Write-Log -Message "PowerPoint is running in fullscreen mode: $IsPowerPointFullScreen" -Source ${CmdletName}
