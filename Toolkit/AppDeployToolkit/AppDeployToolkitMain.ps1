@@ -4215,7 +4215,7 @@ Function Get-RunningProcesses {
 			[string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { [regex]::Escape($_.ProcessName) -match $processNames }
+			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $_.ProcessName -match $processNames }
 			
 			[array]$runningProcesses = $runningProcesses | ForEach-Object { $_ } | Select-Object -Property ProcessName, Description, ID
 			If ($runningProcesses) {
