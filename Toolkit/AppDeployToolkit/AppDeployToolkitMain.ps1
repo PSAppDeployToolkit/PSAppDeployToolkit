@@ -1628,7 +1628,7 @@ Function Get-InstalledApplication {
 	Retrieves information about installed applications.
 .DESCRIPTION
 	Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
-	Returns information about application publisher, name & version, product code, uninstall string, install source, location, and date.
+	Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 .PARAMETER Name
 	The name of the application to retrieve information for. Performs a wild card match on the application display name.
 .PARAMETER Exact
