@@ -42,10 +42,7 @@ Param (
 
 Try {
 	## Set the script execution policy for this process
-	Try {
-		Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop'
-	}
-	Catch {}
+	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
 	
 	##*===============================================
 	##* VARIABLE DECLARATION
@@ -58,7 +55,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '3.5.0'
-	[string]$appScriptDate = '11/12/2014'
+	[string]$appScriptDate = '11/17/2014'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	

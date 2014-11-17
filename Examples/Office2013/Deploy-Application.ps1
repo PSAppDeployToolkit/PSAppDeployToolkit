@@ -48,10 +48,7 @@ Param (
 
 Try {
 	## Set the script execution policy for this process
-	Try {
-		Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop'
-	}
-	Catch {}
+	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
 	
 	##*===============================================
 	##* VARIABLE DECLARATION
@@ -77,7 +74,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/13/2014'
+	[string]$deployAppScriptDate = '11/17/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
