@@ -7718,7 +7718,7 @@ If ($invokingScript) {
 			}
 			
 			#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-			[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleUser }
+			[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
 			If ($CurrentConsoleUserSession) {
 				Write-Log -Message "The following user is the console user [[$($CurrentConsoleUserSession.NTAccount)]] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
 			}
