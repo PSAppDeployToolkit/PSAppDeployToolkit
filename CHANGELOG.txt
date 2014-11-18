@@ -1,4 +1,4 @@
-Version 3.5.0 [11/17/2014]
+Version 3.5.0 [11/18/2014]
 	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
 	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Invoke-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
 	Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
@@ -20,6 +20,7 @@ Version 3.5.0 [11/17/2014]
 	Improved Set-PinnedApplication to detect when one of the chosen actions is not available on an operating system (such as pinning items to Start Menu on Windows 8)
 	Improved session 0 detection
 	Improved Execute-MSI and Execute-Process to sync parameter names for -Path and -Parameters and add alias for backwards compatibility
+	Improved method of detecting OS architecture so that detection works on some non-English operatings systems
 	Show-InstallationWelcome, Show-InstallationPrompt: Fixed clipping of text when non-default DPI settings used
 	Fixed creation of URL shortcuts in New-Shortcut
 	Fixed detection of when script is running from a task sequence

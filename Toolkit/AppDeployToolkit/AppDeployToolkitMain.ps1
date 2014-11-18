@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/17/2014'
+[string]$appDeployMainScriptDate = '11/18/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -141,7 +141,7 @@ ElseIf ($IsWorkStationOS) {
 	[string]$envOSProductTypeName = 'Workstation'
 }
 #  Get the OS Architecture
-[boolean]$Is64Bit = [boolean]($envOSArchitecture -eq '64-bit')
+[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class Win32_Processor | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty AddressWidth) -eq '64')
 
 ## Variables: Current Process Architecture
 [string]$psArchitecture = 'x86'
