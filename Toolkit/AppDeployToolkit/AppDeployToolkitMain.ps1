@@ -1712,7 +1712,7 @@ Function Get-InstalledApplication {
 										InstallLocation = $regKeyApp.InstallLocation
 										InstallDate = $regKeyApp.InstallDate
 										Publisher = $appPublisher
-										"64BitApplication" = $Is64BitApp
+										Is64BitApplication = $Is64BitApp
 									}
 								}
 							}
@@ -1744,7 +1744,7 @@ Function Get-InstalledApplication {
 											InstallLocation = $regKeyApp.InstallLocation
 											InstallDate = $regKeyApp.InstallDate
 											Publisher = $appPublisher
-											"64BitApplication" = $Is64BitApp
+											Is64BitApplication = $Is64BitApp
 										}
 									}
 								}
