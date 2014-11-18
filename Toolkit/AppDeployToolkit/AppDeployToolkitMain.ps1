@@ -1311,7 +1311,7 @@ Function Show-InstallationPrompt {
 		## Close the Installation Progress Dialog if running
 		Close-InstallationProgress
 		
-		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { "($($_.Key)=$($_.Value))" }) -join ' '
+		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
 		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]..." -Source ${CmdletName}
 		
 		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
@@ -1319,7 +1319,7 @@ Function Show-InstallationPrompt {
 			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
-			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' '
+			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
@@ -5199,7 +5199,6 @@ Function Show-InstallationRestartPrompt {
 			Write-Log -Message "Bypass Installation Restart Prompt [Mode: $deployMode]" -Source ${CmdletName}
 			Return
 		}
-		
 		## Get the parameters passed to the function for invoking the function asynchronously
 		[hashtable]$installRestartPromptParameters = $psBoundParameters
 		
@@ -5427,7 +5426,7 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {$_.Value})" }) -join ' '
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
@@ -7653,9 +7652,9 @@ If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
-If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
-If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { "-$($_.Key) $(If ($_.Value.GetType().Name -eq 'Boolean') {'$' + $_.Value} Else {'"' + $_.Value + '"'})" }) -join ' ' }
+If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
 
 ## Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
