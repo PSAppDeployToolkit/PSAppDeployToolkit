@@ -1604,7 +1604,7 @@ Function Get-FreeDiskSpace {
 			$disk = Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
 			[double]$freeDiskSpace = [math]::Round($disk.FreeSpace / 1MB)
 
-			Write-Log -Message "Free disk space for drive [$Drive]: [$freeDiskSpace]." -Source ${CmdletName}
+			Write-Log -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]." -Source ${CmdletName}
 			Write-Output $freeDiskSpace
 		}
 		Catch {
