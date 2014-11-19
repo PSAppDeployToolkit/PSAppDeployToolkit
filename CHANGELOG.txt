@@ -28,7 +28,7 @@ Version 3.5.0 [11/18/2014]
 	Fixed issue in New-Shortcut where an error would be thrown if no icon was specified
 	Fixed issue in Test-Battery where the incorrect information would be returned if the battery was failing
 	Fixed issue in Send-Keys where there was an improper script exit upon failure
-	Fixed issue in Exit-Script where BaloonTip was not disposed before exit
+	Fixed issue with Show-BalloonTip where icon was not disposed before exit
 	Fixed issue where Block-Execution would display an error creating the scheduled task if the Application Name was too long (command was longer than 261 characters)
 	Fixed issue where Block-Execution was not showing a message windows when user tries to open a blocked app
 	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute

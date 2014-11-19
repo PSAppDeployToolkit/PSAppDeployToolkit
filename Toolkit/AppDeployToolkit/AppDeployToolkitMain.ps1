@@ -5499,44 +5499,69 @@ Function Show-BalloonTip {
 	Process {
 		## Skip balloon if in silent mode
 		If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) { Return }
+        
+        Write-Log -Message "Display balloon tip notification in new PowerShell process with message [$BalloonTipText]" -Source ${CmdletName}
 		
-		## Dispose of any previous balloon tip notifications
-		If ($notifyIcon) {
-			Try {
-				$NotifyIcon.Dispose()
-			}
-			Catch {
-			}
-		}
-		
-		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-		$NotifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
-			BalloonTipIcon = $BalloonTipIcon
-			BalloonTipText = $BalloonTipText
-			BalloonTipTitle = $BalloonTipTitle
-			Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
-			Text = -join $BalloonTipText[0..62]
-			Visible = $true
-		}
-		
-		Set-Variable -Name NotifyIcon -Value $NotifyIcon -Scope Global
-		
-		Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]" -Source ${CmdletName}
-		$NotifyIcon.ShowBalloonTip($BalloonTipTime)
-		
-		Switch ($Host.Runspace.ApartmentState) {
-			STA {
-				## Register a click event with action to take based on event for balloon message clicked
-				Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClicked -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
+        ## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip on closure without having to make the deployment script wait   
+      	$scriptBlock = {
+            Param (
+		    [Parameter(Mandatory=$true,Position=0)]
+		    [ValidateNotNullOrEmpty()]
+		    [string]$BalloonTipText,
+		    [Parameter(Mandatory=$false,Position=1)]
+		    [ValidateNotNullorEmpty()]
+		    [string]$BalloonTipTitle,
+		    [Parameter(Mandatory=$false,Position=2)]
+		    [ValidateSet('Error','Info','None','Warning')]
+		    $BalloonTipIcon, # don't cast object type here as system.drawing assembly not yet loaded in asynchronous scriptblock so will throw error
+		    [Parameter(Mandatory=$false,Position=3)]
+		    [ValidateNotNullorEmpty()]
+		    [int32]$BalloonTipTime,
+            [Parameter(Mandatory=$false,Position=4)]
+            [ValidateNotNullorEmpty()]
+            [string]$AppDeployLogoIcon
+	        )	
+		                   
+            ## Load assembly containing class System.Windows.Forms and System.Drawing
+		    Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+		    Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'    		
+		    	
+            [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
+		    $NotifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
+			    BalloonTipIcon = $BalloonTipIcon
+			    BalloonTipText = $BalloonTipText
+			    BalloonTipTitle = $BalloonTipTitle
+			    Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+			    Text = -join $BalloonTipText[0..62]
+			    Visible = $true
+		    }
+	        
+            ## Display the balloon tip notification
+		    $NotifyIcon.ShowBalloonTip($BalloonTipTime)
+            	
+		    Switch ($Host.Runspace.ApartmentState) {
+			    STA {
+				    ## Register a click event with action to take based on event for balloon message clicked
+				    Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClicked -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
 				
-				## Register a click event with action to take based on event for balloon message closed
-				Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClosed -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
-			}
-			Default {
-				Continue
-			}
-		}
-	}
+				    ## Register a click event with action to take based on event for balloon message closed
+				    Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClosed -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
+			    }
+			    Default {
+				    Continue
+			    }
+		    }
+			## Keep the asynchronous PowerShell process running for 20 seconds so that we can dispose of the balloon tip icon and account for queueing of balloon tips and extended display periods
+            Sleep -Seconds 20
+        }
+
+        ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
+        Try {
+            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait	   
+        }
+        Catch {
+        }
+    }
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
