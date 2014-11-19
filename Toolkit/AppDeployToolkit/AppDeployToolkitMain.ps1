@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/18/2014'
+[string]$appDeployMainScriptDate = '11/19/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -791,17 +791,7 @@ Function Exit-Script {
 			Write-Log -Message "Failed to compress the log file(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
-	
-	## Dispose of any previous balloon tip notifications
-	If (($NotifyIcon) -and (-not $deployModeSilent)) {
-		Start-Sleep -Seconds 10
-		Try {
-			If ($NotifyIcon) { $NotifyIcon.Dispose() }
-		}
-		Catch {
-		}
-	}
-	
+		
 	## Exit the script, returning the exit code to SCCM
 	Exit $exitCode
 }
@@ -2113,6 +2103,8 @@ Function Execute-Process {
 	Arguments to be passed to the executable
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
+.PARAMETER CreateNoWindow
+    Specifies whether the process should be started with a new window to contain it. Default is false.
 .PARAMETER WorkingDirectory
 	The working directory used for executing the process. Defaults to the directory of the file being executed.
 .PARAMETER NoWait
@@ -2152,7 +2144,10 @@ Function Execute-Process {
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
-		[Parameter(Mandatory=$false)]
+        [Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]		
+        [boolean]$CreateNoWindow = $false,
+        [Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$WorkingDirectory,
 		[Parameter(Mandatory=$false)]
@@ -2217,6 +2212,7 @@ Function Execute-Process {
 			$processStartInfo.UseShellExecute = $false
 			$processStartInfo.RedirectStandardOutput = $true
 			$processStartInfo.RedirectStandardError = $true
+            $processStartInfo.CreateNoWindow = $CreateNoWindow
 			If ($Parameters) { $processStartInfo.Arguments = $Parameters }
 			If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
 			
@@ -5557,7 +5553,7 @@ Function Show-BalloonTip {
 
         ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
         Try {
-            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait	   
+            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow $true
         }
         Catch {
         }

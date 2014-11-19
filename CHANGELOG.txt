@@ -11,6 +11,7 @@ Version 3.5.0 [11/18/2014]
 	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed	
 	Added Patch parameter to Execute-MSI to allow an MSP file to be specified on the command line with an MSI installation
 	Added ability to detect if it is a 64-bit or 32-bit application in Get-InstalledApplication
+	Added CreateNoWindow parameter to Execute-Process
 	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
 	Changed Restart Prompt default selected button to Restart Later
 	Improved detection of change.exe failures for TerminalServerInstallMode
