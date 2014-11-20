@@ -2146,7 +2146,7 @@ Function Execute-Process {
 		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
         [Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]		
-        [boolean]$CreateNoWindow = $false,
+        [switch]$CreateNoWindow = $false,
         [Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$WorkingDirectory,
@@ -5558,7 +5558,7 @@ Function Show-BalloonTip {
 
         ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
         Try {
-            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow $true
+            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
         }
         Catch {
         }
