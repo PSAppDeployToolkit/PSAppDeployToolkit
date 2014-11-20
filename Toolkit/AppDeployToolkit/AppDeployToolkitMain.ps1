@@ -2235,7 +2235,12 @@ Function Execute-Process {
 				
 				Write-Log -Message "Working Directory is [$WorkingDirectory]" -Source ${CmdletName}
 				If ($Parameters) {
-					Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+                    If ($parameters -match "-Command \&") {
+                        Write-Log -Message "Executing [$Path [PowerShell scriptBlock]]..." -Source ${CmdletName}
+                        }
+                    Else{    
+					    Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+                    }
 				}
 				Else {
 					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
