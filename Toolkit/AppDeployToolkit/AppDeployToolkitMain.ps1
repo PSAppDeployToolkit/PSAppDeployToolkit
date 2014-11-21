@@ -1277,7 +1277,7 @@ Function Show-InstallationPrompt {
 		
 		## Persistence Timer
 		If ($persistPrompt) {
-           $timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+            $timerPersist = New-Object -TypeName System.Windows.Forms.Timer
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationPrompt }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -5491,7 +5491,7 @@ Function Show-BalloonTip {
 		[System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
-		[int32]$BalloonTipTime = 500
+		[int32]$BalloonTipTime = 10000
 	)
 	
 	Begin {
@@ -5530,7 +5530,7 @@ Function Show-BalloonTip {
 		    Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'    		
 		    	
             [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-		    $NotifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
+		    $notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
 			    BalloonTipIcon = $BalloonTipIcon
 			    BalloonTipText = $BalloonTipText
 			    BalloonTipTitle = $BalloonTipTitle
@@ -5541,21 +5541,11 @@ Function Show-BalloonTip {
 	        
             ## Display the balloon tip notification
 		    $NotifyIcon.ShowBalloonTip($BalloonTipTime)
-            	
-		    Switch ($Host.Runspace.ApartmentState) {
-			    STA {
-				    ## Register a click event with action to take based on event for balloon message clicked
-				    Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClicked -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
-				
-				    ## Register a click event with action to take based on event for balloon message closed
-				    Register-ObjectEvent -InputObject $NotifyIcon -EventName BalloonTipClosed -Action { $sender.Visible = $false; $NotifyIcon.Dispose(); Unregister-Event -SourceIdentifier $EventSubscriber.SourceIdentifier; Remove-Job -Job $EventSubscriber.Action; $sender.Dispose() } | Out-Null
-			    }
-			    Default {
-				    Continue
-			    }
-		    }
-			## Keep the asynchronous PowerShell process running for 20 seconds so that we can dispose of the balloon tip icon and account for queueing of balloon tips and extended display periods
-            Sleep -Seconds 20
+    
+        	## Keep the asynchronous PowerShell process runnings so that we can dispose of the balloon tip icon allowing time for both start and finish icons to display
+            Sleep -Milliseconds ($BalloonTipTime * 2)
+             
+            $notifyIcon.Dispose()
         }
 
         ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
