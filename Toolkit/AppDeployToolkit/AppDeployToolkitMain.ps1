@@ -1098,6 +1098,8 @@ Function Show-InstallationPrompt {
 				$timer.dispose()
 				$timer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
+                $timerPersist.dispose()
+                $timerPersist = $null
 				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
@@ -1275,7 +1277,7 @@ Function Show-InstallationPrompt {
 		
 		## Persistence Timer
 		If ($persistPrompt) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+           $timerPersist = New-Object -TypeName System.Windows.Forms.Timer
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationPrompt }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -1293,7 +1295,7 @@ Function Show-InstallationPrompt {
 		$timer.Start()
 		
 		Function Refresh-InstallationPrompt {
-			$formInstallationPrompt.BringToFront()
+            $formInstallationPrompt.BringToFront()
 			$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 			$formInstallationPrompt.Refresh()
 		}
@@ -4756,8 +4758,8 @@ Function Show-WelcomePrompt {
 			}
 		}
 		
-		## If deferral is not being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
-		If (-not $showDefer) {
+		## If deferral is being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
+		If ($showDefer) {
 			If ($closeAppsCountdown -gt 0) {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
@@ -4863,7 +4865,7 @@ Function Show-WelcomePrompt {
 		
 		## Persistence Timer
 		If ($persistWindow) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+   			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationWelcome }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -5128,7 +5130,7 @@ Function Show-WelcomePrompt {
 		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
 		
 		Function Refresh-InstallationWelcome {
-			$formWelcome.BringToFront()
+            $formWelcome.BringToFront()
 			$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 			$formWelcome.Refresh()
 		}

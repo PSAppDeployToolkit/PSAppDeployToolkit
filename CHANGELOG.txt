@@ -34,6 +34,7 @@ Version 3.5.0 [11/18/2014]
 	Fixed issue where Block-Execution was not showing a message windows when user tries to open a blocked app
 	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute
 	Fixed issue where AppDeployToolkitHelp.ps1 threw an error when executed
+	Fixed CloseAppsCountdown and PersistPrompt in Show-InstallationWelcome (bug introduced in v3.2)
 	Fixed issue in Show-InstallationPrompt and Show-InstallationWelcome where timeout object was not disposed and would cause timeout of subsequent UI components
 	Fixed issue with enumerating hashtable boolean parameters into string format
 	Fixed centering of Show-InstallationProgress window where DPI scale is not 100%
