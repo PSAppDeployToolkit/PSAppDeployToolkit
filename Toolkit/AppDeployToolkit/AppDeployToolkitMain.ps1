@@ -1098,8 +1098,8 @@ Function Show-InstallationPrompt {
 				$timer.dispose()
 				$timer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
-                $timerPersist.dispose()
-                $timerPersist = $null
+				$timerPersist.dispose()
+				$timerPersist = $null
 				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
@@ -1277,7 +1277,7 @@ Function Show-InstallationPrompt {
 		
 		## Persistence Timer
 		If ($persistPrompt) {
-            $timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationPrompt }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -1295,7 +1295,7 @@ Function Show-InstallationPrompt {
 		$timer.Start()
 		
 		Function Refresh-InstallationPrompt {
-            $formInstallationPrompt.BringToFront()
+			$formInstallationPrompt.BringToFront()
 			$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 			$formInstallationPrompt.Refresh()
 		}
@@ -2106,7 +2106,7 @@ Function Execute-Process {
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
 .PARAMETER CreateNoWindow
-    Specifies whether the process should be started with a new window to contain it. Default is false.
+	Specifies whether the process should be started with a new window to contain it. Default is false.
 .PARAMETER WorkingDirectory
 	The working directory used for executing the process. Defaults to the directory of the file being executed.
 .PARAMETER NoWait
@@ -2146,10 +2146,10 @@ Function Execute-Process {
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
-        [Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]		
-        [switch]$CreateNoWindow = $false,
-        [Parameter(Mandatory=$false)]
+		[switch]$CreateNoWindow = $false,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$WorkingDirectory,
 		[Parameter(Mandatory=$false)]
@@ -2214,7 +2214,7 @@ Function Execute-Process {
 			$processStartInfo.UseShellExecute = $false
 			$processStartInfo.RedirectStandardOutput = $true
 			$processStartInfo.RedirectStandardError = $true
-            $processStartInfo.CreateNoWindow = $CreateNoWindow
+			$processStartInfo.CreateNoWindow = $CreateNoWindow
 			If ($Parameters) { $processStartInfo.Arguments = $Parameters }
 			If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
 			
@@ -2237,12 +2237,12 @@ Function Execute-Process {
 				
 				Write-Log -Message "Working Directory is [$WorkingDirectory]" -Source ${CmdletName}
 				If ($Parameters) {
-                    If ($parameters -match "-Command \&") {
-                        Write-Log -Message "Executing [$Path [PowerShell scriptBlock]]..." -Source ${CmdletName}
-                        }
-                    Else{    
-					    Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
-                    }
+					If ($parameters -match "-Command \&") {
+						Write-Log -Message "Executing [$Path [PowerShell scriptBlock]]..." -Source ${CmdletName}
+						}
+					Else{    
+						Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+					}
 				}
 				Else {
 					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
@@ -4865,7 +4865,7 @@ Function Show-WelcomePrompt {
 		
 		## Persistence Timer
 		If ($persistWindow) {
-   			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationWelcome }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -5130,7 +5130,7 @@ Function Show-WelcomePrompt {
 		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
 		
 		Function Refresh-InstallationWelcome {
-            $formWelcome.BringToFront()
+			$formWelcome.BringToFront()
 			$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 			$formWelcome.Refresh()
 		}
@@ -5502,59 +5502,59 @@ Function Show-BalloonTip {
 	Process {
 		## Skip balloon if in silent mode
 		If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) { Return }
-        
-        Write-Log -Message "Display balloon tip notification in new PowerShell process with message [$BalloonTipText]" -Source ${CmdletName}
 		
-        ## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip on closure without having to make the deployment script wait   
-      	$scriptBlock = {
-            Param (
-		    [Parameter(Mandatory=$true,Position=0)]
-		    [ValidateNotNullOrEmpty()]
-		    [string]$BalloonTipText,
-		    [Parameter(Mandatory=$false,Position=1)]
-		    [ValidateNotNullorEmpty()]
-		    [string]$BalloonTipTitle,
-		    [Parameter(Mandatory=$false,Position=2)]
-		    [ValidateSet('Error','Info','None','Warning')]
-		    $BalloonTipIcon, # don't cast object type here as system.drawing assembly not yet loaded in asynchronous scriptblock so will throw error
-		    [Parameter(Mandatory=$false,Position=3)]
-		    [ValidateNotNullorEmpty()]
-		    [int32]$BalloonTipTime,
-            [Parameter(Mandatory=$false,Position=4)]
-            [ValidateNotNullorEmpty()]
-            [string]$AppDeployLogoIcon
-	        )	
-		                   
-            ## Load assembly containing class System.Windows.Forms and System.Drawing
-		    Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
-		    Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'    		
-		    	
-            [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-		    $notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
-			    BalloonTipIcon = $BalloonTipIcon
-			    BalloonTipText = $BalloonTipText
-			    BalloonTipTitle = $BalloonTipTitle
-			    Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
-			    Text = -join $BalloonTipText[0..62]
-			    Visible = $true
-		    }
-	        
-            ## Display the balloon tip notification
-		    $NotifyIcon.ShowBalloonTip($BalloonTipTime)
-    
-        	## Keep the asynchronous PowerShell process runnings so that we can dispose of the balloon tip icon allowing time for both start and finish icons to display
-            Sleep -Milliseconds ($BalloonTipTime * 2)
-             
-            $notifyIcon.Dispose()
-        }
-
-        ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
-        Try {
-            Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
-        }
-        Catch {
-        }
-    }
+		Write-Log -Message "Display balloon tip notification in new PowerShell process with message [$BalloonTipText]" -Source ${CmdletName}
+		
+		## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip on closure without having to make the deployment script wait   
+		$scriptBlock = {
+			Param (
+			[Parameter(Mandatory=$true,Position=0)]
+			[ValidateNotNullOrEmpty()]
+			[string]$BalloonTipText,
+			[Parameter(Mandatory=$false,Position=1)]
+			[ValidateNotNullorEmpty()]
+			[string]$BalloonTipTitle,
+			[Parameter(Mandatory=$false,Position=2)]
+			[ValidateSet('Error','Info','None','Warning')]
+			$BalloonTipIcon, # don't cast object type here as system.drawing assembly not yet loaded in asynchronous scriptblock so will throw error
+			[Parameter(Mandatory=$false,Position=3)]
+			[ValidateNotNullorEmpty()]
+			[int32]$BalloonTipTime,
+			[Parameter(Mandatory=$false,Position=4)]
+			[ValidateNotNullorEmpty()]
+			[string]$AppDeployLogoIcon
+			)
+			
+			## Load assembly containing class System.Windows.Forms and System.Drawing
+			Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+			Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'    		
+				
+			[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
+			$notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
+				BalloonTipIcon = $BalloonTipIcon
+				BalloonTipText = $BalloonTipText
+				BalloonTipTitle = $BalloonTipTitle
+				Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+				Text = -join $BalloonTipText[0..62]
+				Visible = $true
+			}
+			
+			## Display the balloon tip notification
+			$NotifyIcon.ShowBalloonTip($BalloonTipTime)
+			
+			## Keep the asynchronous PowerShell process runnings so that we can dispose of the balloon tip icon allowing time for both start and finish icons to display
+			Sleep -Milliseconds ($BalloonTipTime * 2)
+			 
+			$notifyIcon.Dispose()
+		}
+		
+		## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
+		Try {
+			Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
+		}
+		Catch {
+		}
+	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
@@ -7720,7 +7720,7 @@ Switch ($dpiPixels) {
 	120 { [int32]$dpiScale = 125 }
 	144 { [int32]$dpiScale = 150 }
 	192 { [int32]$dpiScale = 200 }
-    Default { [int32]$dpiScale = 100 }
+	Default { [int32]$dpiScale = 100 }
 }
 
 ## Check deployment type (install/uninstall)
