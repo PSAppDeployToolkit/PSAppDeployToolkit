@@ -119,7 +119,6 @@ Else {
 [psobject]$envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction 'SilentlyContinue'
 [string]$envOSName = $envOS.Caption.Trim()
 [string]$envOSServicePack = $envOS.CSDVersion
-[string]$envOSArchitecture = $envOS.OSArchitecture
 [version]$envOSVersion = [System.Environment]::OSVersion.Version
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
@@ -142,6 +141,7 @@ ElseIf ($IsWorkStationOS) {
 }
 #  Get the OS Architecture
 [boolean]$Is64Bit = [boolean]((Get-WmiObject -Class Win32_Processor | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty AddressWidth) -eq '64')
+If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
 [string]$psArchitecture = 'x86'
