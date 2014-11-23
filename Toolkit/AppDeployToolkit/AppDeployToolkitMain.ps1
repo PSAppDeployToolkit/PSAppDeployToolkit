@@ -2208,16 +2208,6 @@ Function Execute-Process {
 			## Set the Working directory (if not specified)
 			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -Path $Path -Parent -ErrorAction 'Stop' }
 			
-			$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
-			$processStartInfo.FileName = $Path
-			$processStartInfo.WorkingDirectory = $WorkingDirectory
-			$processStartInfo.UseShellExecute = $false
-			$processStartInfo.RedirectStandardOutput = $true
-			$processStartInfo.RedirectStandardError = $true
-			$processStartInfo.CreateNoWindow = $CreateNoWindow
-			If ($Parameters) { $processStartInfo.Arguments = $Parameters }
-			If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
-			
 			## If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
 			##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
@@ -2235,49 +2225,72 @@ Function Execute-Process {
 				## Disable Zone checking to prevent warnings when running executables
 				$env:SEE_MASK_NOZONECHECKS = 1
 				
+				## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
+				$private:ErrorActionPreference = 'Stop'
+				
+				## Define process
+				$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
+				$processStartInfo.FileName = $Path
+				$processStartInfo.WorkingDirectory = $WorkingDirectory
+				$processStartInfo.UseShellExecute = $false
+				$processStartInfo.ErrorDialog = $false
+				$processStartInfo.RedirectStandardOutput = $true
+				$processStartInfo.RedirectStandardError = $true
+				$processStartInfo.CreateNoWindow = $CreateNoWindow
+				If ($Parameters) { $processStartInfo.Arguments = $Parameters }
+				If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
+				$process = New-Object -TypeName System.Diagnostics.Process -ErrorAction 'Stop'
+				$process.StartInfo = $processStartInfo
+				
+				## Add event handler for process standard output redirection
+				[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
+				$stdOutBuilder = New-Object -TypeName System.Text.StringBuilder -ArgumentList ''
+				$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
+				
+				## Start Process
 				Write-Log -Message "Working Directory is [$WorkingDirectory]" -Source ${CmdletName}
 				If ($Parameters) {
-					If ($parameters -match "-Command \&") {
-						Write-Log -Message "Executing [$Path [PowerShell scriptBlock]]..." -Source ${CmdletName}
-						}
-					Else{    
+					If ($Parameters -match '-Command \&') {
+						Write-Log -Message "Executing [$Path [PowerShell ScriptBlock]]..." -Source ${CmdletName}
+					}
+					Else{
 						Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
 					}
 				}
 				Else {
 					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
 				}
-				
-				## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
-				$private:ErrorActionPreference = 'Stop'
-				
-				## Start Process
-				$process = [System.Diagnostics.Process]::Start($processStartInfo)
+				[boolean]$processStarted = $process.Start()
 				
 				If ($NoWait) {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
 				}
 				Else {
-					$stdOut = $process.BeginOutputReadLine() -replace $null,''
-					$stdErr = $process.StandardError.ReadToEnd() -replace $null,''
-					$processName = $process.ProcessName
+					$process.BeginOutputReadLine()
+					$stdErr = $($process.StandardError.ReadToEnd()).ToString() -replace $null,''
 					
 					## Instructs the Process component to wait indefinitely for the associated process to exit.
 					$process.WaitForExit()
-					Do {
-						## HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
-						If (-not $process.HasExited) { Start-Sleep -Seconds 1 }
-					} Until ($process.HasExited)
+					
+					## HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
+					While (-not ($process.HasExited)) { $process.Refresh(); Start-Sleep -Seconds 1 }
 					
 					## Get the exit code for the process
 					[int32]$returnCode = $process.ExitCode
 					
+					## Unregister standard output event to retrieve process output
+					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
+					$stdOut = $stdOutBuilder.ToString() -replace $null,''
+					
 					If ($stdErr.Length -gt 0) {
-						Write-Log -Message "Standard error output from the process [$processName]: $stdErr" -Severity 3 -Source ${CmdletName}
+						Write-Log -Message "Standard error output from the process: $stdErr" -Severity 3 -Source ${CmdletName}
 					}
 				}
 			}
 			Finally {
+				## Make sure the standard output event is unregistered
+				If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'}
+				
 				## Free resources associated with the process, this does not cause process to exit
 				If ($process) { $process.Close() }
 				
@@ -5508,21 +5521,21 @@ Function Show-BalloonTip {
 		## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip on closure without having to make the deployment script wait   
 		$scriptBlock = {
 			Param (
-			[Parameter(Mandatory=$true,Position=0)]
-			[ValidateNotNullOrEmpty()]
-			[string]$BalloonTipText,
-			[Parameter(Mandatory=$false,Position=1)]
-			[ValidateNotNullorEmpty()]
-			[string]$BalloonTipTitle,
-			[Parameter(Mandatory=$false,Position=2)]
-			[ValidateSet('Error','Info','None','Warning')]
-			$BalloonTipIcon, # don't cast object type here as system.drawing assembly not yet loaded in asynchronous scriptblock so will throw error
-			[Parameter(Mandatory=$false,Position=3)]
-			[ValidateNotNullorEmpty()]
-			[int32]$BalloonTipTime,
-			[Parameter(Mandatory=$false,Position=4)]
-			[ValidateNotNullorEmpty()]
-			[string]$AppDeployLogoIcon
+				[Parameter(Mandatory=$true,Position=0)]
+				[ValidateNotNullOrEmpty()]
+				[string]$BalloonTipText,
+				[Parameter(Mandatory=$false,Position=1)]
+				[ValidateNotNullorEmpty()]
+				[string]$BalloonTipTitle,
+				[Parameter(Mandatory=$false,Position=2)]
+				[ValidateSet('Error','Info','None','Warning')]
+				$BalloonTipIcon, # Don't strongly type variable as System.Drawing; assembly not loaded yet in asynchronous scriptblock so will throw error
+				[Parameter(Mandatory=$false,Position=3)]
+				[ValidateNotNullorEmpty()]
+				[int32]$BalloonTipTime,
+				[Parameter(Mandatory=$false,Position=4)]
+				[ValidateNotNullorEmpty()]
+				[string]$AppDeployLogoIcon
 			)
 			
 			## Load assembly containing class System.Windows.Forms and System.Drawing
@@ -5547,7 +5560,7 @@ Function Show-BalloonTip {
 			 
 			$notifyIcon.Dispose()
 		}
-		
+
 		## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
 		Try {
 			Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
@@ -7588,7 +7601,7 @@ Function Get-LoggedOnUser {
 #region ScriptBody
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
-If ($ReferringApplication -ne '') {
+If ($ReferringApplication) {
 	$installName = $ReferringApplication
 	$installTitle = $ReferringApplication -replace '_',' '
 	$installPhase = 'Asynchronous'
@@ -7661,7 +7674,8 @@ If ($showBlockedAppDialog) {
 
 ## Initialization Logging
 $installPhase = 'Initialization'
-
+$scriptSeparator = '*' * 79
+Write-Log -Message ($scriptSeparator,$scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
 ## Dot Source script extensions
@@ -7698,10 +7712,11 @@ Else {
 }
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
 Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
-Write-Log -Message "Hardware Platform is [$(Get-HardwarePlatform)]" -Source $appDeployToolkitName
+Write-Log -Message "Hardware Platform is [$($DisableLogging = $true; Get-HardwarePlatform; $DisableLogging = $false)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Get the DPI scaling from HKCU registry (WMI and HKLM not updated if settings changed after logoff)
 Try {
