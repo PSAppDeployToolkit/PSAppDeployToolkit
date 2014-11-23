@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/22/2014'
+[string]$appDeployMainScriptDate = '11/23/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1312,7 +1312,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -3990,8 +3990,13 @@ Function Block-AppExecution {
 		}
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
-		## Build the debugger block value
-		[string]$debuggerBlockValue = "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -ShowBlockedAppDialog -ReferringApplication `"$installName`""
+		## Build the debugger block value script
+		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -ReferringApplication `" & chr(34) & `"$installName`" & chr(34)"
+		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
+		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
+		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
+		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding default -ErrorAction 'SilentlyContinue'
+		[string]$debuggerBlockValue = "wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
@@ -4000,7 +4005,7 @@ Function Block-AppExecution {
 		}
 		Else {
 			[string[]]$schTaskCreationBatchFile = '@ECHO OFF'
-			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
+			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
 			$schTaskCreationBatchFile | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat" -Force -Encoding default -ErrorAction 'SilentlyContinue'
 			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
 		}
@@ -4053,7 +4058,7 @@ Function Unblock-AppExecution {
 			Return
 		}
 		
-		[psobject[]]$unblockProcessName = Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.Debugger -like '*ShowBlockedAppDialog*' }
+		[psobject[]]$unblockProcessName = Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' }
 		
 		ForEach ($unblockProcess in $unblockProcessName) {
 			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
@@ -5443,7 +5448,7 @@ Function Show-InstallationRestartPrompt {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -5563,7 +5568,7 @@ Function Show-BalloonTip {
 
 		## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification
 		Try {
-			Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
+			Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
 		}
 		Catch {
 		}
