@@ -4598,6 +4598,15 @@ Function Show-InstallationWelcome {
 					If (($deferTimes) -or ($deferDeadlineUniversal)) {
 						Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					}
+                    ## Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period    
+                    If ($script:welcomeTimer) {
+                        Try {
+                            $script:welcomeTimer.dispose()
+				            $script:welcomeTimer = $null
+                        }
+                        Catch {
+                        }
+                    }
 					
 					#  Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
@@ -4818,8 +4827,6 @@ Function Show-WelcomePrompt {
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
 				$script:welcomeTimer.remove_Tick($timer_Tick)
-				$welcomeTimer.dispose()
-				$welcomeTimer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
 				$formWelcome.remove_Load($Form_StateCorrection_Load)
 				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
@@ -5531,12 +5538,15 @@ Function Show-BalloonTip {
         }
 		
         ## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
-        $callingFunction = (Get-Variable MyInvocation -Scope 1).Value.MyCommand.Name		
-
-        If ($callingFunction -eq "Exit-Script") {
+        Try {
+            [string]$callingFunction = (Get-Variable MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name		
+        }
+        Catch {
+        }
+        If ([string]$callingFunction -eq "Exit-Script") {
             Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]" -Source ${CmdletName}			
 		    ## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait   
-		    $scriptBlock = {
+		    [scriptblock]$scriptBlock = {
 			    Param (
 				    [Parameter(Mandatory=$true,Position=0)]
 				    [ValidateNotNullOrEmpty()]
@@ -5586,7 +5596,7 @@ Function Show-BalloonTip {
         }
         ## Otherwise create the balloontip icon synchronously
         Else {
-            Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]" -Source ${CmdletName}
+            Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]" -Source ${CmdletName}
             [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 		    $global:notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
 			    BalloonTipIcon = $BalloonTipIcon
