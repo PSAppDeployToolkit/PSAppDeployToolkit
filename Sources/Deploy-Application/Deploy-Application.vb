@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Xml
 
 Module DeployApplication
 
@@ -7,11 +8,13 @@ Module DeployApplication
         ' Set up variables
         Dim strAppFolder As String = My.Application.Info.DirectoryPath
         Dim strToolkitFolder As String = Path.Combine(strAppFolder, "AppDeployToolkit")
+        Dim strToolkitXMLFile As String = Path.Combine(strToolkitFolder, "AppDeployToolkitConfig.xml")
         Dim strPowerShellExecutable As String = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\WindowsPowerShell\v1.0\PowerShell.exe")
         Dim strPowerShellArguments As String = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden"
         Dim strCommandLineArguments As String() = Environment.GetCommandLineArgs
         Dim strCommandLineArgumentsJoined As String = ""
         Dim blnForcex86Mode As Boolean = False
+        Dim blnRequireAdmin As Boolean = False
 
         ' Get OS Architecture
         Dim blnIs64Bit As Boolean = False
@@ -54,11 +57,26 @@ Module DeployApplication
                 Throw New Exception("A critical component of the App Deployment Toolkit is missing." & vbNewLine & vbNewLine & "Unable to find the 'AppDeployToolkit' folder." & vbNewLine & vbNewLine & "Please ensure you have all of the required files available to start the installation.")
             End If
 
+            ' Verify the toolkit XML exists
+            If Not My.Computer.FileSystem.FileExists(strToolkitXMLFile) Then
+                Throw New Exception("A critical component of the App Deployment Toolkit is missing." & vbNewLine & vbNewLine & "Unable to find the 'AppDeployToolkitConfig.xml' file." & vbNewLine & vbNewLine & "Please ensure you have all of the required files available to start the installation.")
+            Else
+                ' Read the XML and determine whether we need Admin Rights
+                Dim xml As New XmlDocument
+                xml.Load(strToolkitXMLFile)
+                Dim xmlNode As XmlNode
+                Dim xmlRoot As XmlElement = xml.DocumentElement
+                xmlNode = xmlRoot.SelectSingleNode("/AppDeployToolkit_Config/Toolkit_Options/Toolkit_RequireAdmin")
+                blnRequireAdmin = Convert.ToBoolean(xmlNode.InnerText)
+                If blnRequireAdmin Then
+                    sub_DebugMessage("Admin Rights are required...")
+                End If
+            End If
+
             ' Switch to x86 PowerShell if required
             If blnIs64Bit And blnForcex86Mode Then
                 strPowerShellExecutable = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe")
             End If
-
 
             ' Start PowerShell and wait for completion\
             Dim process As Process = New Process
@@ -66,6 +84,10 @@ Module DeployApplication
             process.StartInfo.Arguments = strPowerShellArguments
             process.StartInfo.WorkingDirectory = strAppFolder
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden
+            ' Set the RunAs flag if the XML specifically calls for Admin Rights
+            If blnRequireAdmin Then
+                process.StartInfo.Verb = "runas"
+            End If
             process.Start()
             process.WaitForExit()
 
