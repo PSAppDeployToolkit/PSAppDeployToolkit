@@ -13,9 +13,9 @@ Version 3.5.0 [11/24/2014]
 	Added ability to Get-InstalledApplication to detect whether a 64-bit or 32-bit application
 	Added CreateNoWindow parameter to Execute-Process
 	Changed Deploy-Application.exe to new executable built in VB.NET
-	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
+	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method checked for membership in the BuiltInAdministrator group
 	Changed Restart Prompt default selected button to Restart Later
-	Changed $envOSArchitecture variable so that it reported consistent value regardless of OS language
+	Changed $envOSArchitecture variable so that it reports consistent value regardless of OS language
 	Improved detection of change.exe failures for TerminalServerInstallMode
 	Improved detection of logged in users, including users connected through RDP
 	Improved error trapping and logging of messages throughout script. Modified messages for clarity and consistency.
@@ -34,7 +34,7 @@ Version 3.5.0 [11/24/2014]
 	Fixed issue in Send-Keys where there was an improper script exit upon failure
 	Fixed issue with Show-BalloonTip where icon was not disposed before exit
 	Fixed issue where Block-Execution would display an error creating the scheduled task if the Application Name was too long (command was longer than 261 characters)
-	Fixed issue where Block-Execution was not showing a message windows when user tries to open a blocked app
+	Fixed issue where Block-Execution was not showing a message window when user tried to open a blocked app
 	Fixed issue where Block-Execution was creating a scheduled task to clean up blocked apps which would not execute
 	Fixed issue where AppDeployToolkitHelp.ps1 threw an error when executed
 	Fixed CloseAppsCountdown and PersistPrompt in Show-InstallationWelcome (bug introduced in v3.2)
