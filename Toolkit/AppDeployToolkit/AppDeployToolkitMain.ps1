@@ -5579,7 +5579,7 @@ Function Show-BalloonTip {
 
 		    ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 		    Try {
-			    Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -NoExit -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
+			    Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command & {$ScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
 		    }
 		    Catch {
 		    }
