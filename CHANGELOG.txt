@@ -1,4 +1,4 @@
-Version 3.5.0 [11/23/2014]
+Version 3.5.0 [11/24/2014]
 	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
 	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Invoke-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
 	Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
@@ -12,6 +12,7 @@ Version 3.5.0 [11/23/2014]
 	Added Patch parameter to Execute-MSI to allow an MSP file to be specified on the command line with an MSI installation
 	Added ability to detect if it is a 64-bit or 32-bit application in Get-InstalledApplication
 	Added CreateNoWindow parameter to Execute-Process
+	Changed Deploy-Application.exe to new executable built in VB.NET
 	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
 	Changed Restart Prompt default selected button to Restart Later
 	Changed $envOSArchitecture variable so that it reported consistent value regardless of OS language
@@ -43,7 +44,6 @@ Version 3.5.0 [11/23/2014]
 	Fixed centering of toolkit banner in UI elements where the full length banner is not used
 	Fixed issue where MinimizeAll() and UndoMinimizeAll() method cals were inserting a $null into the pipeline
 	Fixed issue in Execute-Process to asynchronously capture process Standard Output
-	Fixed issue with Deploy-Application.wse/Deploy-Application.exe so that it would honor /32 switch to launch 32-bit PowerShell on 64-bit systems
 	Updated Deploy-Application template to be consistent with the rest of the toolkit. Scripts from previous versions are fully backwards compatible
 	Updated German translations
 	Updated Norweigan translations

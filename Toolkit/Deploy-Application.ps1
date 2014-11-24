@@ -48,9 +48,9 @@ Try {
 	##* VARIABLE DECLARATION
 	##*===============================================
 	## Variables: Application
-	[string]$appVendor = '<app vendor>'
-	[string]$appName = '<app name>'
-	[string]$appVersion = '<app version>'
+	[string]$appVendor = ''
+	[string]$appName = ''
+	[string]$appVersion = ''
 	[string]$appArch = ''
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'

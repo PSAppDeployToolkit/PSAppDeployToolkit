@@ -7855,8 +7855,9 @@ Switch ($deployMode) {
 If ($configToolkitRequireAdmin) {
 	#  Check if the current process is running with elevated administrator permissions
 	If ((-not $IsAdmin) -and (-not $ShowBlockedAppDialog)) {
-		[string]$AdminPermissionErr = "[$appDeployMainScriptFriendlyName] requires Administrator rights to function. Please re-run the deployment script as an Administrator."
+		[string]$AdminPermissionErr = "[$appDeployToolkitName] requires Administrator rights to function. Please re-run the deployment script as an Administrator."
 		Write-Log -Message $AdminPermissionErr -Severity 3 -Source $appDeployToolkitName
+		Show-DialogBox -Text $AdminPermissionErr -Icon 'Stop'
 		Throw $AdminPermissionErr
 	}
 }
