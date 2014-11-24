@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.5.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.0'
-[string]$appDeployMainScriptDate = '11/23/2014'
+[string]$appDeployMainScriptDate = '11/24/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7723,18 +7723,8 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Get the DPI scaling from HKCU registry (WMI and HKLM not updated if settings changed after logoff)
-Try {
-	If (Test-Path -Path "HKCU:Control Panel\Desktop" -ErrorAction 'SilentlyContinue') { 
-		[int32]$dpiPixels = Get-RegistryKey -Key "HKCU:Control Panel\Desktop" | Select-Object -ExpandProperty LogPixels -ErrorAction 'Stop'
-	}
-	Else {
-		[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
-	}
-}
-Catch {
-	[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
-}
+## Get the DPI scaling
+[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
 Switch ($dpiPixels) {
 	96 { [int32]$dpiScale = 100 }
 	120 { [int32]$dpiScale = 125 }
