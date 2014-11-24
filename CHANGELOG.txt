@@ -3,14 +3,14 @@ Version 3.5.0 [11/24/2014]
 	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Invoke-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
 	Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
 	Added ability for Test-PowerPoint to actually detect if user is presenting slideshow in fullscreen mode
-	Added Get-LoggedOnUser to get session details for all local and RDP logged on users.
+	Added Get-LoggedOnUser to get session details for all local and RDP logged on users
 	Added Refresh-SessionEnvironmentVariables to allow reloading of newly created environment variables for the current process
 	Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
 	Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
 	Added ability to detect active console user (user with control of the monitor, keyboard, mouse)
 	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed	
 	Added Patch parameter to Execute-MSI to allow an MSP file to be specified on the command line with an MSI installation
-	Added ability to detect if it is a 64-bit or 32-bit application in Get-InstalledApplication
+	Added ability to Get-InstalledApplication to detect whether a 64-bit or 32-bit application
 	Added CreateNoWindow parameter to Execute-Process
 	Changed Deploy-Application.exe to new executable built in VB.NET
 	Changed detection of Admin rights by looking for Admin SID on the current processes access token, previous method check for membership in the BuiltInAdministrator group
@@ -47,7 +47,7 @@ Version 3.5.0 [11/24/2014]
 	Updated Deploy-Application template to be consistent with the rest of the toolkit. Scripts from previous versions are fully backwards compatible
 	Updated German translations
 	Updated Norweigan translations
-	Updated documentation.
+	Updated documentation
 
 Version 3.2.0 [08/22/2014]
 	Added further optimization and best practice enhancements to Execute-Process to improve parameter validation, object and exception handling.
