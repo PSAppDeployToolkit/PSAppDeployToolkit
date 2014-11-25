@@ -7,6 +7,7 @@ Module DeployApplication
 
         ' Set up variables
         Dim strAppFolder As String = My.Application.Info.DirectoryPath
+        Dim strDeployScript As String = Path.Combine(strAppFolder, "Deploy-Application.ps1")
         Dim strToolkitFolder As String = Path.Combine(strAppFolder, "AppDeployToolkit")
         Dim strToolkitXMLFile As String = Path.Combine(strToolkitFolder, "AppDeployToolkitConfig.xml")
         Dim strPowerShellExecutable As String = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\WindowsPowerShell\v1.0\PowerShell.exe")
@@ -30,7 +31,7 @@ Module DeployApplication
                 strCommandLineArgumentsJoined = Join(strCommandLineArguments, " ")
             End If
 
-            ' CHeck for x86 Mode
+            ' Check for x86 Mode
             If My.Application.CommandLineArgs.Contains("/32") Then
                 blnForcex86Mode = True
                 sub_DebugMessage("'/32' parameter specified on command-line. Running in Forced x86 Mode...")
@@ -44,7 +45,16 @@ Module DeployApplication
                 strPowerShellArguments = strPowerShellArguments & " -File " & strCommandLineArgumentsJoined
                 sub_DebugMessage(".ps1 specified on command-line. Adding '-File'...")
             Else
-                strPowerShellArguments = strPowerShellArguments & " -File Deploy-Application.ps1 " & strCommandLineArgumentsJoined
+                ' Verify the Deploy-Application.ps1 script exists
+                If Not My.Computer.FileSystem.FileExists(strDeployScript) Then
+                    Throw New Exception("A critical component of the App Deployment Toolkit is missing." & vbNewLine & vbNewLine & "Unable to find the 'Deploy-Application.ps1' file." & vbNewLine & vbNewLine & "Please ensure you have all of the required files available to start the installation.")
+                End If
+
+                If (strCommandLineArgumentsJoined.Length) Then
+                    strPowerShellArguments = strPowerShellArguments & " -File """ & strDeployScript & """ " & strCommandLineArgumentsJoined
+                Else
+                    strPowerShellArguments = strPowerShellArguments & " -File """ & strDeployScript & """"
+                End If
                 sub_DebugMessage("No '-File' parameter specified on command-line. Adding '-File Deploy-Application.ps1'...")
             End If
 
@@ -69,7 +79,7 @@ Module DeployApplication
                 xmlNode = xmlRoot.SelectSingleNode("/AppDeployToolkit_Config/Toolkit_Options/Toolkit_RequireAdmin")
                 blnRequireAdmin = Convert.ToBoolean(xmlNode.InnerText)
                 If blnRequireAdmin Then
-                    sub_DebugMessage("Admin Rights are required...")
+                    sub_DebugMessage("Administrator rights are required...")
                 End If
             End If
 
@@ -78,26 +88,42 @@ Module DeployApplication
                 strPowerShellExecutable = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "SysWOW64\WindowsPowerShell\v1.0\PowerShell.exe")
             End If
 
-            ' Start PowerShell and wait for completion\
-            Dim process As Process = New Process
-            process.StartInfo.FileName = strPowerShellExecutable
-            process.StartInfo.Arguments = strPowerShellArguments
-            process.StartInfo.WorkingDirectory = strAppFolder
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden
+            ' Define PowerShell process
+            Dim processStartInfo As ProcessStartInfo = New ProcessStartInfo
+            processStartInfo.FileName = """" & strPowerShellExecutable & """"
+            processStartInfo.Arguments = strPowerShellArguments
+            processStartInfo.WorkingDirectory = """" & Path.GetDirectoryName(strPowerShellExecutable) & """"
+            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden
+            processStartInfo.UseShellExecute = True
             ' Set the RunAs flag if the XML specifically calls for Admin Rights
-            If blnRequireAdmin Then
-                process.StartInfo.Verb = "runas"
+            If ((blnRequireAdmin) And (Environment.OSVersion.Version.Major >= 6)) Then
+                processStartInfo.Verb = "runas"
             End If
-            process.Start()
-            process.WaitForExit()
+
+            ' Start the PowerShell process and wait for completion
+            Dim processExitCode As Integer = -1
+            Dim process As Process = New Process
+            Try
+                process.StartInfo = processStartInfo
+                process.Start()
+                process.WaitForExit()
+                processExitCode = process.ExitCode
+            Catch ex As Exception
+                Throw
+            Finally
+                If Not (process Is Nothing) Then
+                    process.Dispose()
+                End If
+            End Try
 
             ' Exit
-            sub_DebugMessage("Exit Code: " & process.ExitCode)
-            Environment.Exit(process.ExitCode)
+            sub_DebugMessage("Exit Code: " & processExitCode)
+            Environment.Exit(processExitCode)
 
         Catch ex As Exception
             sub_DebugMessage(ex.Message, True, MsgBoxStyle.Critical)
             Environment.Exit(10)
+
         End Try
 
     End Sub
