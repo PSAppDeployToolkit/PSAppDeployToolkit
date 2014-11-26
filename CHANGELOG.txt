@@ -1,3 +1,6 @@
+Version 3.5.1 [11/25/2014]
+	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
+
 Version 3.5.0 [11/24/2014]
 	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
 	Added ability to modify HKCU registry settings for all users on a machine by loading registry hives. Added functions to support this: Invoke-HKCURegistrySettingsForAllUsers, Get-UserProfiles, ConvertTo-NTAccountOrSID. Modified functions to support this: Convert-RegistryPath, Get-RegistryKey, Set-RegistryKey, Remove-RegistryKey
