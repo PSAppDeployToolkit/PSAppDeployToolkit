@@ -1,6 +1,7 @@
-Version 3.5.1 [11/25/2014]
+Version 3.5.1 [11/26/2014]
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
+	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
 
 Version 3.5.0 [11/24/2014]
 	Added CMTrace compatible log files to Write-Log (now the default). Legacy log format still available through configuration in XML config file
