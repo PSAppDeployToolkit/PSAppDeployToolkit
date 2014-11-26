@@ -7756,8 +7756,8 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Get the DPI scaling
-[int32]$dpiPixels = Get-RegistryKey -Key "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI" | Select-Object -ExpandProperty LogPixels
+## Get the DPI scaling, property only exists if DPI scaling has been changed on the system at least once
+[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
 Switch ($dpiPixels) {
 	96 { [int32]$dpiScale = 100 }
 	120 { [int32]$dpiScale = 125 }
