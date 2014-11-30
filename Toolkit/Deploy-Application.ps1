@@ -86,7 +86,7 @@ Try {
 		Exit $mainExitCode
 	}
 	
-    ## Handle Execute Toolkit As User Invocation
+	## Handle Execute Toolkit As User Invocation
 	If ($executeToolkitAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeToolkitAsUserExitCode }
 	
 	#endregion
@@ -106,7 +106,7 @@ Try {
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
-
+		
 		## <Perform Pre-Installation tasks here>
 		
 		
@@ -122,9 +122,9 @@ Try {
 		##* POST-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Installation'
-
+		
 		## <Perform Post-Installation tasks here>
-
+		
 		## Display a message at the end of the install
 		Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
 	}

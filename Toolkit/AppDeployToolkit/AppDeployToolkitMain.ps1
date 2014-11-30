@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '11/29/2014'
+[string]$appDeployMainScriptDate = '11/30/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3754,13 +3754,13 @@ Function Execute-ToolkitAsUser {
 .SYNOPSIS
 	Run the toolkit as a user from the system context to provide interaction 
 .DESCRIPTION
-    Runs the toolkit as user with administrator privileges to provide interaction in the system session
+	Runs the toolkit as user with administrator privileges to provide interaction in the system session
 .PARAMETER UserName
 	Username under which to run the toolkit from the system context
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
-    Execute-ToolkitAsUser -UserName <UserName>
+	Execute-ToolkitAsUser -UserName <UserName>
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -3774,162 +3774,164 @@ Function Execute-ToolkitAsUser {
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
-
-    Begin {
-	    ## Get the name of this function and write header
-	    [string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-	    Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header     
-   
-    }
-    Process {
-        ## Reset exit code variable
-        $global:executeToolkitAsUserExitCode = $null
-
-        ## Confirm if the toolkit is running with administrator privileges
-        If (-not $IsAdmin) {
-            Write-Log "The function ${CmdletName} requires the toolkit to be running with administrator privileges" -Severity 2 -Source ${CmdletName}
-            If ([boolean]$ContinueOnError -eq $true) {
-                Return
-            }
-            Else {
-                [int32]$global:executeToolkitAsUserExitCode = 1
-                Exit
-            }
-        }
-
-        [string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
-
-        ## Build the file path including and use the command parameter to include the lastexitcode variable ensuring the return code is passed to the task scheduler and can be parsed 
-        [string]$filePath = "$PSHOME\powershell.exe"
-
-        ## Determine if there were parameters passed to the script to be passed on to the scheduled task execution
-        If ([string]$deployAppScriptParameters -ne $null) { [string]$userArguments = $deployAppScriptParameters }
-
-        ## Specify the scheduled task configuration in XML format
-        [string]$xmlSchTask = @"
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		## Reset exit code variable
+		If (Test-Path -Path 'variable:executeToolkitAsUserExitCode') { Remove-Variable -Name executeToolkitAsUserExitCode -Scope Global}
+		$global:executeToolkitAsUserExitCode = $null
+		
+		## Confirm if the toolkit is running with administrator privileges
+		If (-not $IsAdmin) {
+			Write-Log "The function ${CmdletName} requires the toolkit to be running with administrator privileges" -Severity 2 -Source ${CmdletName}
+			If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = 1
+				Exit
+			}
+		}
+		
+		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
+		
+		## Build the file path including and use the command parameter to include the lastexitcode variable ensuring the return code is passed to the task scheduler and can be parsed
+		[string]$filePath = "$PSHOME\powershell.exe"
+		
+		## Determine if there were parameters passed to the script to be passed on to the scheduled task execution
+		If ($deployAppScriptParameters) { [string]$userArguments = $deployAppScriptParameters }
+		
+		## Specify the scheduled task configuration in XML format
+		[string]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo />
   <Triggers />
   <Settings>
-    <MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>false</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <IdleSettings />
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <RunOnlyIfIdle>false</RunOnlyIfIdle>
-    <WakeToRun>false</WakeToRun>
-    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
-    <Priority>7</Priority>
+	<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
+	<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+	<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+	<AllowHardTerminate>true</AllowHardTerminate>
+	<StartWhenAvailable>false</StartWhenAvailable>
+	<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+	<IdleSettings />
+	<AllowStartOnDemand>true</AllowStartOnDemand>
+	<Enabled>true</Enabled>
+	<Hidden>false</Hidden>
+	<RunOnlyIfIdle>false</RunOnlyIfIdle>
+	<WakeToRun>false</WakeToRun>
+	<ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+	<Priority>7</Priority>
   </Settings>
   <Actions Context="Author">
-    <Exec>
-      <Command>$filepath</Command>
-      <Arguments>-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
-    </Exec>
+	<Exec>
+	  <Command>$filepath</Command>
+	  <Arguments>-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
+	</Exec>
   </Actions>
   <Principals>
-    <Principal id="Author">
-      <UserId>$username</UserId>
-      <LogonType>InteractiveToken</LogonType>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
+	<Principal id="Author">
+	  <UserId>$username</UserId>
+	  <LogonType>InteractiveToken</LogonType>
+	  <RunLevel>HighestAvailable</RunLevel>
+	</Principal>
   </Principals>
 </Task>
 "@
-
-        ## Specify the filename to export the XML to
-        [string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
-
-        ## Export the XML to file
-        Try {
-            [string]$xmlSchTask | Out-File $xmlSchTaskFile -ErrorAction Stop
-        }
-        Catch {
-            Write-Log -Message "Failed to export scheduled task xml file. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-            If ([boolean]$ContinueOnError -eq $true) {
-                Return              
-            }
-            Else {
-                [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-                Exit
-            }
-        }
-
-        Try {
-            ## Create Scheduled Task to run PSADT in logged on user context with highest privileges
-            Write-Log "Creating scheduled task to run the toolkit as the logged in user..." -Severity 3 -Source ${CmdletName}
-            [pscustomobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -Passthru
-            If ($schTaskResult.ExitCode -ne '0') {
-                If ([boolean]$ContinueOnError -eq $true) {
-                    Return
-                }
-                Else {
-                    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-                    Exit
-                }
-            }
-        }
-        Catch {
-            Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-            If ([boolean]$ContinueOnError -eq $true) {
-                Return
-            }
-            Else {
-                [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-                Exit
-            }
-        }
-        Try {
-            ## Trigger Scheduled Task
-            Write-Log "Triggering execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Severity 3 -Source ${CmdletName}
-            [pscustomobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
-            If ($schTaskResult.ExitCode -ne '0') {
-                If ([boolean]$ContinueOnError -eq $true) {
-                    Return
-                }
-                Else {
-                    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-                    Exit
-                }
-            }
-        }
-        Catch {
-            Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-             If ($ContinueOnError -eq $true) {
-                Return
-            }
-            Else {
-                [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-                Exit
-            }
-        }
-            Write-Log -Message "Waiting for scheduled task invocation of toolkit as user to complete (this may take some time)... " -Severity 3 -Source ${CmdletName}
-            Sleep -Seconds 2
-            # Wait for the scheduled task to complete
-            While ((& schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object "Status" -ExpandProperty "Status" | Select -First 1) -eq "Running") {
-                Sleep -Seconds 3
-            }
-            # Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
-            [int32]$global:executeToolkitAsUserExitCode = & schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object "Last Result" -ExpandProperty "Last Result" | Select -First 1
-            Write-Log "Return code from ${CmdletName} [[int32]$global:executeToolkitAsUserExitCode]" -Severity 3 -Source ${CmdletName}
-        Try {
-            # Delete Scheduled Task
-            Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
-        }
-        Catch {
-            Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-        }
-    }
+		
+		## Specify the filename to export the XML to
+		[string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
+		
+		## Export the XML to file
+		Try {
+			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFile -ErrorAction Stop
+		}
+		Catch {
+			Write-Log -Message "Failed to export scheduled task xml file. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
+		
+		Try {
+			## Create Scheduled Task to run PSADT in logged on user context with highest privileges
+			Write-Log 'Create scheduled task to run the toolkit as the logged in user...' -Severity 3 -Source ${CmdletName}
+			[psobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -PassThru
+			If ($schTaskResult.ExitCode -ne 0) {
+				If ($ContinueOnError) {
+					Return
+				}
+				Else {
+					[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+					Exit
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
+		Try {
+			## Trigger Scheduled Task
+			Write-Log "Trigger execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Severity 3 -Source ${CmdletName}
+			[psobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
+			If ($schTaskResult.ExitCode -ne 0) {
+				If ($ContinueOnError) {
+					Return
+				}
+				Else {
+					[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+					Exit
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			 If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
+		
+		Write-Log -Message 'Waiting for scheduled task invocation of toolkit as user to complete (this may take some time)...' -Severity 3 -Source ${CmdletName}
+		Start-Sleep -Seconds 2
+		# Wait for the scheduled task to complete
+		While ((& schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+			Start-Sleep -Seconds 3
+		}
+		# Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
+		[int32]$global:executeToolkitAsUserExitCode = & schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+		Write-Log "Return code from ${CmdletName} [$global:executeToolkitAsUserExitCode]" -Severity 3 -Source ${CmdletName}
+		
+		Try {
+			# Delete Scheduled Task
+			Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
+		}
+		Catch {
+			Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-        # Exit the main toolkit dot sourcing invocation back to the Deploy-Application.ps1 script which will check for the exit code from the scheduled task trigger
-        Exit
+		# Exit the main toolkit dot sourcing invocation back to the Deploy-Application.ps1 script which will check for the exit code from the scheduled task trigger
+		Exit
 	}
 }
 #endregion
@@ -8028,19 +8030,19 @@ If ($invokingScript) {
 			Else {
 				#  If the process is not able to display a UI, enable NonInteractive mode
 				If (-not $IsProcessUserInteractive) {
-					 Write-Log -Message "Session 0 detected, process not running in user interactive mode." -Source $appDeployToolkitName
-					If ([boolean]$configToolkitAllowSystemInteraction -eq $true) {
-    			        Write-Log "Invoking Execute-ToolkitAsUser to provide interaction in the system session..." -Source $appDeployToolkitName
-                        Execute-ToolkitAsUser -UserName ($usersLoggedOn | Select -first 1) -ContinueOnError $configToolkitAllowSystemInteractionFallback
-                        ## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
-                        Write-Log "Execute-ToolkitAsUser failed to execute successfully. AllowSystemInteractionFallback specified, falling back to system context with no interaction..." -Source $appDeployToolkitName
-                        $deployMode = 'NonInteractive'
-					    Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-                    }
-                    Else {
-                        $deployMode = 'NonInteractive'
-					    Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-                    }
+					Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
+					If ($configToolkitAllowSystemInteraction) {
+						Write-Log 'Invoking Execute-ToolkitAsUser to provide interaction in the SYSTEM context...' -Source $appDeployToolkitName
+						Execute-ToolkitAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -ContinueOnError $configToolkitAllowSystemInteractionFallback
+						## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
+						Write-Log 'Execute-ToolkitAsUser failed to execute successfully. AllowSystemInteractionFallback specified, falling back to SYSTEM context with no interaction...' -Source $appDeployToolkitName
+						$deployMode = 'NonInteractive'
+						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+					}
+					Else {
+						$deployMode = 'NonInteractive'
+						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+					}
 				}
 				Else {
 					If (-not $usersLoggedOn) {
