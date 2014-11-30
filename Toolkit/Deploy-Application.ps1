@@ -67,8 +67,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/17/2014'
+	[version]$deployAppScriptVersion = [version]'4.0.0'
+	[string]$deployAppScriptDate = '11/29/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -86,8 +86,8 @@ Try {
 		Exit $mainExitCode
 	}
 	
-	## Handle ServiceUI Invocation
-	If ($serviceUIExitCode) { Exit-Script -ExitCode $serviceUIExitCode }
+    ## Handle Execute Toolkit As User Invocation
+	If ($executeToolkitAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeToolkitAsUserExitCode }
 	
 	#endregion
 	##* Do not modify section above
