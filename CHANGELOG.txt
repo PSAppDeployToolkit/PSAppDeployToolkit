@@ -1,3 +1,6 @@
+Version 4.0.0 [11/30/2014]
+	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ToolkitAsUser to support this feature.
+
 Version 3.5.1 [11/30/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter

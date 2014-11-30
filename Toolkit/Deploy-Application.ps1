@@ -87,7 +87,10 @@ Try {
 	}
 	
 	## Handle Execute Toolkit As User Invocation
-	If ($executeToolkitAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeToolkitAsUserExitCode }
+	If ($executeToolkitAsUserExitCode -ne $null) {
+	    Write-Log -Message "Return code from Execute-ToolkitAsUser [$executeToolkitAsUserExitCode]" -Severity 3 -Source $deployAppScriptFriendlyName 
+        Exit-Script -ExitCode $executeToolkitAsUserExitCode 
+    }
 	
 	#endregion
 	##* Do not modify section above
