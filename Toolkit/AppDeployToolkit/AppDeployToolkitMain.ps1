@@ -253,7 +253,6 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
 [string]$configProgressMessageInstall = $xmlUIMessages.Progress_MessageInstall
 [string]$configProgressMessageUninstall = $xmlUIMessages.Progress_MessageUninstall
-[string]$configClosePromptConfirm = $xmlUIMessages.ClosePrompt_Confirm
 [string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
 [string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
 [string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
@@ -263,9 +262,7 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
 [string]$configDeferPromptWarningMessage = $xmlUIMessages.DeferPrompt_WarningMessage
 [string]$configDeferPromptRemainingDeferrals = $xmlUIMessages.DeferPrompt_RemainingDeferrals
-[string]$configDeferPromptRemainingDays = $xmlUIMessages.DeferPrompt_RemainingDays
 [string]$configDeferPromptDeadline = $xmlUIMessages.DeferPrompt_Deadline
-[string]$configDeferPromptNoDeadline = $xmlUIMessages.DeferPrompt_NoDeadline
 [string]$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
 [string]$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
 [string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
@@ -285,14 +282,12 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$dirBlockedApps = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockedApps'
 
 ## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
-If ((-not $appVendor) -and (-not $appName) -and (-not $appVersion)) {
-		[string]$appVendor = 'PS'
-		[string]$appName = $appDeployMainScriptFriendlyName
-		[string]$appVersion = $appDeployMainScriptVersion
-		[string]$appLang = $currentLanguage
-		[string]$appRevision = '01'
-		[string]$appArch = ''
-}
+If (-not $appVendor) { [string]$appVendor = 'PS' }
+If (-not $appName) { [string]$appName = $appDeployMainScriptFriendlyName }
+If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
+If (-not $appLang) { [string]$appLang = $currentLanguage }
+If (-not $appRevision) { [string]$appRevision = '01' }
+If (-not $appArch) { [string]$appArch = '' }
 [string]$installTitle = "$appVendor $appName $appVersion"
 
 ## Sanitize the application details, as they can cause issues in the script
@@ -2181,8 +2176,11 @@ Function Execute-Process {
 			$returnCode = $null
 			
 			## Validate and find the fully qualified path for the $Path variable.
-			If (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop') {
-				Write-Log -Message "[$Path] is a valid path, continue" -Source ${CmdletName}
+			If (([System.IO.Path]::IsPathRooted($Path)) -and ([System.IO.Path]::HasExtension($Path))) {
+				Write-Log -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
+				If (-not (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop')) {
+					Throw "File [$Path] not found."
+				}
 			}
 			Else {
 				#  The first directory to search will be the 'Files' subdirectory of the script directory
