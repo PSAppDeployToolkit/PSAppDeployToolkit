@@ -3784,16 +3784,13 @@ Function Execute-ToolkitAsUser {
 	Process {
 		## Reset exit code variable
 		If (Test-Path -Path 'variable:executeToolkitAsUserExitCode') { Remove-Variable -Name executeToolkitAsUserExitCode -Scope Global}
-		[int32]$global:executeToolkitAsUserExitCode = $null
-        ## Initiate variable to indicate whether we have encountered an error in the function and need to return back to the main script (the dot-sourcing of the main toolkit)
-        ## We can't use the Return statement here because it will exit back to the deployment script instead of the main script
-        [boolean]$executeToolkitAsUserReturn = $false
+		$global:executeToolkitAsUserExitCode = $null
 		
 		## Confirm if the toolkit is running with administrator privileges
 		If (-not $IsAdmin) {
 			Write-Log "The function ${CmdletName} requires the toolkit to be running with administrator privileges" -Severity 2 -Source ${CmdletName}
 			If ($ContinueOnError) {
-			    $executeToolkitAsUserReturn = $true
+				Return
 			}
 			Else {
 				[int32]$global:executeToolkitAsUserExitCode = 1
@@ -3802,14 +3799,18 @@ Function Execute-ToolkitAsUser {
 		}
         
         ## Build the scheduled task XML
-        If ($executeToolkitAsUserReturn -ne $true) {
-		    [string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"	
-		    ## Build the file path including and use the command parameter to include the lastexitcode variable ensuring the return code is passed to the task scheduler and can be parsed
-		    [string]$filePath = "$PSHOME\powershell.exe"
-		    ## Determine if there were parameters passed to the script to be passed on to the scheduled task execution
-		    If ($deployAppScriptParameters) { [string]$userArguments = $deployAppScriptParameters }
-		    ## Specify the scheduled task configuration in XML format
-		    [string]$xmlSchTask = @"
+        [string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"	
+		
+		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
+		
+		## Build the file path including and use the command parameter to include the lastexitcode variable ensuring the return code is passed to the task scheduler and can be parsed
+		[string]$filePath = "$PSHOME\powershell.exe"
+		
+		## Determine if there were parameters passed to the script to be passed on to the scheduled task execution
+		If ($deployAppScriptParameters) { [string]$userArguments = $deployAppScriptParameters }
+		
+		## Specify the scheduled task configuration in XML format
+		[string]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo />
@@ -3846,104 +3847,104 @@ Function Execute-ToolkitAsUser {
 </Task>
 "@
         
-		    ## Specify the filename to export the XML to
-		    [string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
+		## Specify the filename to export the XML to
+		[string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
         
-	        ## Export the XML to file
-		    Try {
-			    [string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFile -ErrorAction Stop
-		    }
-		    Catch {
-			    Write-Log -Message "Failed to export scheduled task xml file. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-			    If ($ContinueOnError) {
-				    $executeToolkitAsUserReturn = $true
-			    }
-			    Else {
-				    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-				    Exit
-			    }
-		    }
-        }
+	    ## Export the XML to file
+		Try {
+            # Create the temporary folder if it doesn't already exist
+            If (-not (Test-Path $configToolkitTempPath)) {
+                New-Item -Path $configToolkitTempPath -ItemType Directory -Force -ErrorAction Stop
+            }
+			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFile -Force -ErrorAction Stop
+		}
+		Catch {
+			Write-Log -Message "Failed to export scheduled task xml file. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
 
         ## Create Scheduled Task to run PSADT in logged on user context with highest privileges
-        If ($executeToolkitAsUserReturn -ne $true) { 
-            Try {
-			    Write-Log 'Create scheduled task to run the toolkit as the logged in user...' -Severity 3 -Source ${CmdletName}
-			    [psobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -PassThru
-			    If ($schTaskResult.ExitCode -ne 0) {
-				    If ($ContinueOnError) {
-                        $executeToolkitAsUserReturn = $true
-				    }
-				    Else {
-					    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-					    Exit
-				    }
-			    }
-		    }
-		    Catch {
-			    Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-			    If ($ContinueOnError) {
-				    $executeToolkitAsUserReturn = $true
-			    }
-			    Else {
-				    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-				    Exit
-			    }
-		    }
-        }
+        Try {
+			Write-Log 'Create scheduled task to run the toolkit as the logged in user...' -Severity 3 -Source ${CmdletName}
+			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -PassThru
+			If ($schTaskResult.ExitCode -ne 0) {
+				If ($ContinueOnError) {
+                    Return
+				}
+				Else {
+					[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+					Exit
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
 
         ## Trigger the Scheduled Task	   
-		If ($executeToolkitAsUserReturn -ne $true) {         
-            Try {
-			    Write-Log "Trigger execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Severity 3 -Source ${CmdletName}
-			    [psobject]$schTaskResult = Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
-			    If ($schTaskResult.ExitCode -ne 0) {
-				    If ($ContinueOnError) {
-					    $executeToolkitAsUserReturn = $true
-				    }
-				    Else {
-					    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-					    Exit
-				    }
-			    }
-		    }
-		    Catch {
-			    Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-			     If ($ContinueOnError) {
-				    $executeToolkitAsUserReturn = $true
-			    }
-			    Else {
-				    [int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
-				    Exit
-			    }
-		    }
-		}        
-        
-        ## Check the result of the Scheduled Task and delete it when done
-		If ($executeToolkitAsUserReturn -ne $true) {
-		    Write-Log -Message 'Waiting for scheduled task invocation of toolkit as user to complete (this may take some time)...' -Severity 3 -Source ${CmdletName}
-		    Start-Sleep -Seconds 1
-		    # Wait for the scheduled task to complete
-		    While ((& schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
-			    Start-Sleep -Seconds 3
-		    }
-		    # Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
-		    [int32]$global:executeToolkitAsUserExitCode = & schtasks.exe /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
-		    Write-Log "Return code from ${CmdletName} [$global:executeToolkitAsUserExitCode]" -Severity 3 -Source ${CmdletName}
+		Try {
+			Write-Log "Trigger execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Severity 3 -Source ${CmdletName}
+			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
+			If ($schTaskResult.ExitCode -ne 0) {
+				If ($ContinueOnError) {
+					Return
+				}
+				Else {
+					[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+					Exit
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+            # Delete Scheduled Task
+			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
+			    If ($ContinueOnError) {
+				Return
+			}
+			Else {
+				[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
+				Exit
+			}
+		}
 		
-		    Try {
-			    # Delete Scheduled Task
-			    Execute-Process -FilePath "$envWinDir\System32\schtasks.exe" -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
-		    }
-		    Catch {
-			    Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-		    }
-        }
+        ## Check the result of the Scheduled Task and delete it when done
+		Write-Log -Message 'Waiting for scheduled task invocation of toolkit as user to complete (this may take some time)...' -Severity 3 -Source ${CmdletName}
+		Start-Sleep -Seconds 1
+		# Wait for the scheduled task to complete
+		While ((& $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+			Start-Sleep -Seconds 3
+		}
+		# Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
+		[int32]$global:executeToolkitAsUserExitCode = & $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+		Write-Log "Return code from ${CmdletName} [$global:executeToolkitAsUserExitCode]" -Severity 3 -Source ${CmdletName}
+		
+		Try {
+			# Delete Scheduled Task
+			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
+		}
+		Catch {
+			Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+        ## Exit back to the deployment script which will read the ExecuteToolkitAsUserExitCode value to determine the exit code from this function. 
+        ## We need to use the Exit function because calling Exit-Script directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
+        Exit
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-		# Exit the main toolkit dot sourcing invocation back to the Deploy-Application.ps1 script which will check for the exit code from the scheduled task trigger
-		Exit
 	}
 }
 #endregion
