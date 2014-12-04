@@ -3753,9 +3753,9 @@ Function New-Shortcut {
 Function Execute-ProcessAsUser {
 <#
 .SYNOPSIS
-	Execute a process with a logged in user account to provide interaction in the SYSTEM context.
+	Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
 .DESCRIPTION
-	Execute a process with a logged in user account by using a scheduled task. Allows interaction with user when running in SYSTEM context.
+	Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
 .PARAMETER UserName
 	Logged in Username under which to run the process from.
 .PARAMETER Path
@@ -3764,12 +3764,14 @@ Function Execute-ProcessAsUser {
 	Arguments to be passed to the executable.
 .PARAMETER RunLevel
 	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are: 
-	- HighestAvailable: Tasks run by using the highest (admin) privileges. Default value.
+	- HighestAvailable: Tasks run by using the highest (admin) privileges. This works even if the user is not an Admin. Default value.
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
+.PARAMETER Wait
+	Wait for the process, launched by the scheduled task, to complete execution before accepting more input. Default is $false.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ToolkitAsUser -UserName <UserName> -Path "$PSHOME\powershell.exe" -Parameters <parameters>
+	Execute-ProcessAsUser -UserName <UserName> -Path "$PSHOME\powershell.exe" -Parameters <parameters> -Wait
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -3790,6 +3792,9 @@ Function Execute-ProcessAsUser {
 		[string]$RunLevel = 'HighestAvailable',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
+		[switch]$Wait = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
 	
@@ -3805,7 +3810,7 @@ Function Execute-ProcessAsUser {
 		
 		## Confirm if the toolkit is running with administrator privileges
 		If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
-			Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with administrator privileges" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3845,7 +3850,7 @@ Function Execute-ProcessAsUser {
 		  </Actions>
 		  <Principals>
 			<Principal id="Author">
-			  <UserId>$username</UserId>
+			  <UserId>$UserName</UserId>
 			  <LogonType>InteractiveToken</LogonType>
 			  <RunLevel>$RunLevel</RunLevel>
 			</Principal>
@@ -3939,24 +3944,27 @@ Function Execute-ProcessAsUser {
 			}
 		}
 		
-		## Check the result of the Scheduled Task and delete it when done
-		Write-Log -Message 'Waiting for scheduled task invocation of process with user the logged on user account to complete (this may take some time)...' -Source ${CmdletName}
-		Start-Sleep -Seconds 1
-		#  Wait for the scheduled task to complete
-		While ((& $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
-			Start-Sleep -Seconds 3
+		## Wait for the process launched by the scheduled task to complete execution
+		If ($Wait) {
+			Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
+			Start-Sleep -Seconds 1
+			While ((Start-Process -FilePath $exeSchTasks -ArgumentList "/query /TN $schTaskName /V /FO CSV" -NoNewWindow -Wait | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+				Start-Sleep -Seconds 5
+			}
+			#  Get the exit code from the process launched by the scheduled task
+			[int32]$global:executeProcessAsUserExitCode = Start-Process -FilePath $exeSchTasks -ArgumentList "/query /TN $schTaskName /V /FO CSV" -NoNewWindow -Wait | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			Write-Log -Message "Exit code from process launched by scheduled task [$global:executeProcessAsUserExitCode]" -Source ${CmdletName}
 		}
-		#  Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
-		[int32]$global:executeProcessAsUserExitCode = & $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
-		Write-Log -Message "Return code from ${CmdletName} [$global:executeProcessAsUserExitCode]" -Source ${CmdletName}
 		
+		## Delete scheduled task
 		Try {
-			#  Delete Scheduled Task
+			Write-Log -Message "Delete scheduled task [$schTaskName]." -Source ${CmdletName}
 			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ErrorAction 'Stop'
 		}
 		Catch {
-			Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
+		
 		## Exit back to the deployment script which will read the ExecuteProcessAsUserExitCode value to determine the exit code from this function.
 		## We need to use the Exit function because calling Exit-Script directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
 		Exit
@@ -8079,16 +8087,16 @@ If ($invokingScript) {
 							## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
 							If ($CurrentConsoleUserSession) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
+								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
+								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							Else {
 								Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
 							}
-
+							
 							## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
 							Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
 							$deployMode = 'NonInteractive'
