@@ -3788,7 +3788,7 @@ Function Execute-ToolkitAsUser {
 		
 		## Confirm if the toolkit is running with administrator privileges
 		If (-not $IsAdmin) {
-			Write-Log "The function ${CmdletName} requires the toolkit to be running with administrator privileges" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with administrator privileges" -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3797,9 +3797,9 @@ Function Execute-ToolkitAsUser {
 				Exit
 			}
 		}
-        
-        ## Build the scheduled task XML
-        [string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"	
+		
+		## Build the scheduled task XML
+		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 		
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 		
@@ -3834,7 +3834,7 @@ Function Execute-ToolkitAsUser {
   <Actions Context="Author">
 	<Exec>
 	  <Command>$filepath</Command>
-	  <Arguments>-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
+	  <Arguments>-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
 	</Exec>
   </Actions>
   <Principals>
@@ -3846,20 +3846,19 @@ Function Execute-ToolkitAsUser {
   </Principals>
 </Task>
 "@
-        
 		## Specify the filename to export the XML to
 		[string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
-        
-	    ## Export the XML to file
+		
+		## Export the XML to file
 		Try {
-            # Create the temporary folder if it doesn't already exist
-            If (-not (Test-Path $configToolkitTempPath)) {
-                New-Item -Path $configToolkitTempPath -ItemType Directory -Force -ErrorAction Stop
-            }
+			#  Create the temporary folder if it doesn't already exist
+			If (-not (Test-Path -Path $configToolkitTempPath -PathType Container)) {
+				New-Item -Path $configToolkitTempPath -ItemType Directory -Force -ErrorAction 'Stop'
+			}
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFile -Force -ErrorAction Stop
 		}
 		Catch {
-			Write-Log -Message "Failed to export scheduled task xml file. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "Failed to export the scheduled task XML file. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3868,14 +3867,14 @@ Function Execute-ToolkitAsUser {
 				Exit
 			}
 		}
-
-        ## Create Scheduled Task to run PSADT in logged on user context with highest privileges
-        Try {
-			Write-Log 'Create scheduled task to run the toolkit as the logged in user...' -Severity 3 -Source ${CmdletName}
+		
+		## Create Scheduled Task to run PSADT in logged on user context with highest privileges
+		Try {
+			Write-Log -Message 'Create scheduled task to run the toolkit as the logged in user...' -Source ${CmdletName}
 			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
-                    Return
+					Return
 				}
 				Else {
 					[int32]$global:executeToolkitAsUserExitCode = $schTaskResult.ExitCode
@@ -3884,7 +3883,7 @@ Function Execute-ToolkitAsUser {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3893,10 +3892,10 @@ Function Execute-ToolkitAsUser {
 				Exit
 			}
 		}
-
-        ## Trigger the Scheduled Task	   
+		
+		## Trigger the Scheduled Task	   
 		Try {
-			Write-Log "Trigger execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Trigger execution of scheduled task with command [$FilePath $userArguments] as the logged on user [$userName]..." -Source ${CmdletName}
 			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
@@ -3909,10 +3908,10 @@ Function Execute-ToolkitAsUser {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
-            # Delete Scheduled Task
-			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
-			    If ($ContinueOnError) {
+			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			#  Delete Scheduled Task
+			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -PassThru
+			If ($ContinueOnError) {
 				Return
 			}
 			Else {
@@ -3921,27 +3920,27 @@ Function Execute-ToolkitAsUser {
 			}
 		}
 		
-        ## Check the result of the Scheduled Task and delete it when done
-		Write-Log -Message 'Waiting for scheduled task invocation of toolkit as user to complete (this may take some time)...' -Severity 3 -Source ${CmdletName}
+		## Check the result of the Scheduled Task and delete it when done
+		Write-Log -Message 'Waiting for scheduled task invocation of toolkit with user account to complete (this may take some time)...' -Source ${CmdletName}
 		Start-Sleep -Seconds 1
-		# Wait for the scheduled task to complete
+		#  Wait for the scheduled task to complete
 		While ((& $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
 			Start-Sleep -Seconds 3
 		}
-		# Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
+		#  Get the last result of the scheduled task and store in a global variable that can be read by the Deploy-Application.ps1 script
 		[int32]$global:executeToolkitAsUserExitCode = & $exeSchTasks /query /TN $schTaskName /V /FO CSV | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
-		Write-Log "Return code from ${CmdletName} [$global:executeToolkitAsUserExitCode]" -Severity 3 -Source ${CmdletName}
+		Write-Log -Message "Return code from ${CmdletName} [$global:executeToolkitAsUserExitCode]" -Source ${CmdletName}
 		
 		Try {
-			# Delete Scheduled Task
-			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow
+			#  Delete Scheduled Task
+			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ErrorAction 'Stop'
 		}
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
-        ## Exit back to the deployment script which will read the ExecuteToolkitAsUserExitCode value to determine the exit code from this function. 
-        ## We need to use the Exit function because calling Exit-Script directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
-        Exit
+		## Exit back to the deployment script which will read the ExecuteToolkitAsUserExitCode value to determine the exit code from this function.
+		## We need to use the Exit function because calling Exit-Script directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
+		Exit
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -8045,30 +8044,30 @@ If ($invokingScript) {
 				If (-not $IsProcessUserInteractive) {
 					Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
 					If ($configToolkitAllowSystemInteraction) {
-                        Write-Log -Message 'Allow System Interaction option is enabled.' -Source $appDeployToolkitName
-                        If ($usersLoggedOn) {
-                            If ($CurrentConsoleUserSession) {
-		                	    Write-Log "Invoking Execute-ToolkitAsUser to provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-						        Execute-ToolkitAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -ContinueOnError $configToolkitAllowSystemInteractionFallback
-						    }
-                            ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-                                Write-Log "Invoking Execute-ToolkitAsUser to provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-						        Execute-ToolkitAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -ContinueOnError $configToolkitAllowSystemInteractionFallback
-						    }
-                            Else {
-                                Write-Log 'Allow System Interaction for non console user is disabled in the XML configuration.' -Source $appDeployToolkitName
-                            }
-                            ## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
-						    Write-Log 'Execute-ToolkitAsUser failed to execute successfully. AllowSystemInteractionFallback specified, falling back to SYSTEM context with no interaction...' -Source $appDeployToolkitName
-						    $deployMode = 'NonInteractive'
-						    Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName   
-                        }
-                        Else {
-                            Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
-                        }
-                    }
+						Write-Log -Message 'Allow System Interaction option is enabled.' -Source $appDeployToolkitName
+						If ($usersLoggedOn) {
+							If ($CurrentConsoleUserSession) {
+								Write-Log -Message "Invoking Execute-ToolkitAsUser to provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
+								Execute-ToolkitAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -ContinueOnError $configToolkitAllowSystemInteractionFallback
+							}
+							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
+								Write-Log -Message "Invoking Execute-ToolkitAsUser to provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
+								Execute-ToolkitAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -ContinueOnError $configToolkitAllowSystemInteractionFallback
+							}
+							Else {
+								Write-Log -Message 'Allow System Interaction for non console user is disabled in the XML configuration.' -Source $appDeployToolkitName
+							}
+							## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
+							Write-Log -Message 'Execute-ToolkitAsUser failed to execute successfully. AllowSystemInteractionFallback specified, falling back to SYSTEM context with no interaction...' -Source $appDeployToolkitName
+							$deployMode = 'NonInteractive'
+							Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName   
+						}
+						Else {
+							Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
+						}
+					}
 					Else {
-                        Write-Log -Message "Allow System interaction option is disabled." -Source $appDeployToolkitName
+						Write-Log -Message "Allow System interaction option is disabled." -Source $appDeployToolkitName
 						$deployMode = 'NonInteractive'
 						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 					}
