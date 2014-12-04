@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/03/2014'
+[string]$appDeployMainScriptDate = '12/04/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8063,9 +8063,9 @@ If ($invokingScript) {
 				If (-not $IsProcessUserInteractive) {
 					Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
 					If ($configToolkitAllowSystemInteraction) {
-						Write-Log -Message 'Allow System Interaction option is enabled.' -Source $appDeployToolkitName
+						Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XMl file." -Source $appDeployToolkitName
 						
-						## Build the file path and the parameters for relaunching toolkit with user account. Use the command parameter to include the `$LASTEXITCODE variable ensuring the return code is passed to the task scheduler and can be parsed.
+						## Build the file path and the parameters for relaunching toolkit with user account. Use the -Command parameter to include the `$LastExitCode variable to ensure the exit code is passed to the task scheduler and can be parsed.
 						[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
 						#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
 						If ($deployAppScriptParameters) {
@@ -8076,6 +8076,7 @@ If ($invokingScript) {
 						}
 						
 						If ($usersLoggedOn) {
+							## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
 							If ($CurrentConsoleUserSession) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
 								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
@@ -8085,9 +8086,10 @@ If ($invokingScript) {
 								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							Else {
-								Write-Log -Message 'Allow System Interaction for non console user is disabled in the XML configuration.' -Source $appDeployToolkitName
+								Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
 							}
-							## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
+
+							## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
 							Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
 							$deployMode = 'NonInteractive'
 							Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
@@ -8097,7 +8099,7 @@ If ($invokingScript) {
 						}
 					}
 					Else {
-						Write-Log -Message "Allow System interaction option is disabled." -Source $appDeployToolkitName
+						Write-Log -Message "'Allow System Interaction' option is disabled in the toolkit config XML file." -Source $appDeployToolkitName
 						$deployMode = 'NonInteractive'
 						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 					}
