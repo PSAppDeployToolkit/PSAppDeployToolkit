@@ -3764,7 +3764,7 @@ Function Execute-ProcessAsUser {
 	Arguments to be passed to the executable.
 .PARAMETER RunLevel
 	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are: 
-	- HighestAvailable: Tasks run by using the highest (admin) privileges.
+	- HighestAvailable: Tasks run by using the highest (admin) privileges. Default value.
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
