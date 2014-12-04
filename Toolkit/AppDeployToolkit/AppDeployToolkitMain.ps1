@@ -3811,40 +3811,40 @@ Function Execute-ToolkitAsUser {
 		
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
-<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo />
-  <Triggers />
-  <Settings>
-	<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
-	<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-	<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-	<AllowHardTerminate>true</AllowHardTerminate>
-	<StartWhenAvailable>false</StartWhenAvailable>
-	<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-	<IdleSettings />
-	<AllowStartOnDemand>true</AllowStartOnDemand>
-	<Enabled>true</Enabled>
-	<Hidden>false</Hidden>
-	<RunOnlyIfIdle>false</RunOnlyIfIdle>
-	<WakeToRun>false</WakeToRun>
-	<ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
-	<Priority>7</Priority>
-  </Settings>
-  <Actions Context="Author">
-	<Exec>
-	  <Command>$filepath</Command>
-	  <Arguments>-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
-	</Exec>
-  </Actions>
-  <Principals>
-	<Principal id="Author">
-	  <UserId>$username</UserId>
-	  <LogonType>InteractiveToken</LogonType>
-	  <RunLevel>HighestAvailable</RunLevel>
-	</Principal>
-  </Principals>
-</Task>
+		<?xml version="1.0" encoding="UTF-16"?>
+		<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+		  <RegistrationInfo />
+		  <Triggers />
+		  <Settings>
+			<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
+			<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+			<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+			<AllowHardTerminate>true</AllowHardTerminate>
+			<StartWhenAvailable>false</StartWhenAvailable>
+			<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+			<IdleSettings />
+			<AllowStartOnDemand>true</AllowStartOnDemand>
+			<Enabled>true</Enabled>
+			<Hidden>false</Hidden>
+			<RunOnlyIfIdle>false</RunOnlyIfIdle>
+			<WakeToRun>false</WakeToRun>
+			<ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+			<Priority>7</Priority>
+		  </Settings>
+		  <Actions Context="Author">
+			<Exec>
+			  <Command>$filepath</Command>
+			  <Arguments>-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $userArguments; exit `$LASTEXITCODE`</Arguments>
+			</Exec>
+		  </Actions>
+		  <Principals>
+			<Principal id="Author">
+			  <UserId>$username</UserId>
+			  <LogonType>InteractiveToken</LogonType>
+			  <RunLevel>HighestAvailable</RunLevel>
+			</Principal>
+		  </Principals>
+		</Task>
 "@
 		## Specify the filename to export the XML to
 		[string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
@@ -8060,7 +8060,7 @@ If ($invokingScript) {
 							## If the script is still running at this point it means we are falling back to run in the system context so we need to reset the deployment mode
 							Write-Log -Message 'Execute-ToolkitAsUser failed to execute successfully. AllowSystemInteractionFallback specified, falling back to SYSTEM context with no interaction...' -Source $appDeployToolkitName
 							$deployMode = 'NonInteractive'
-							Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName   
+							Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 						}
 						Else {
 							Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
