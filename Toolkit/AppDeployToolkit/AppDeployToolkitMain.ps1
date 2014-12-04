@@ -3883,10 +3883,10 @@ Function Execute-ProcessAsUser {
 		## Create Scheduled Task to run the process with a logged-on user account
 		Try {
 			If ($Parameters) {
-				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			Else {
-				Write-Log -Message "Create scheduled task to run the process [$Path] as the logged on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			
 			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml $xmlSchTaskFilePath" -WindowStyle Hidden -CreateNoWindow -PassThru
@@ -3914,10 +3914,10 @@ Function Execute-ProcessAsUser {
 		## Trigger the Scheduled Task
 		Try {
 			If ($Parameters) {
-				Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			Else {
-				Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
 			If ($schTaskResult.ExitCode -ne 0) {
