@@ -8069,10 +8069,10 @@ If ($invokingScript) {
 						[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
 						#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
 						If ($deployAppScriptParameters) {
-							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $deployAppScriptParameters; exit `$LASTEXITCODE"
+							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $deployAppScriptParameters; Exit `$LastExitCode"
 						}
 						Else {
-							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript; exit `$LASTEXITCODE"
+							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript; Exit `$LastExitCode"
 						}
 						
 						If ($usersLoggedOn) {
