@@ -8068,7 +8068,6 @@ If ($invokingScript) {
 							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript; exit `$LASTEXITCODE"
 						}
 						
-						
 						If ($usersLoggedOn) {
 							If ($CurrentConsoleUserSession) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
