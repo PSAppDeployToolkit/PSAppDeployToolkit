@@ -8063,7 +8063,7 @@ If ($invokingScript) {
 				If (-not $IsProcessUserInteractive) {
 					Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
 					If ($configToolkitAllowSystemInteraction) {
-						Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XMl file." -Source $appDeployToolkitName
+						Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XML file." -Source $appDeployToolkitName
 						
 						## Build the file path and the parameters for relaunching toolkit with user account. Use the -Command parameter to include the `$LastExitCode variable to ensure the exit code is passed to the task scheduler and can be parsed.
 						[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
