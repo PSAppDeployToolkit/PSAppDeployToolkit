@@ -86,8 +86,8 @@ Try {
 		Exit $mainExitCode
 	}
 	
-	## Handle Execute Toolkit As User Invocation
-	If ($executeToolkitAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeToolkitAsUserExitCode }
+	## Handle Execute-ProcessAsUser Invocation of the Toolkit
+	If ($executeProcessAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeProcessAsUserExitCode }
 	#endregion
 	##* Do not modify section above
 	##*===============================================
