@@ -3880,7 +3880,7 @@ Function Execute-ProcessAsUser {
 			}
 		}
 		
-		## Create Scheduled Task to run the process in logged on user context with highest privileges
+		## Create Scheduled Task to run the process with a logged-on user account
 		Try {
 			If ($Parameters) {
 				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged on user [$userName]..." -Source ${CmdletName}
@@ -3934,7 +3934,7 @@ Function Execute-ProcessAsUser {
 			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
 			Write-Log -Message 'Delete the scheduled task which did not to trigger.' -Source ${CmdletName}
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -PassThru
+			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ContinueOnError $true
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3965,8 +3965,8 @@ Function Execute-ProcessAsUser {
 			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 		
-		## Exit back to the deployment script which will read the ExecuteProcessAsUserExitCode value to determine the exit code from this function.
-		## We need to use the Exit function because calling Exit-Script directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
+		## Exit back to the deployment script which will read the $global:executeProcessAsUserExitCode value to determine the exit code from this function.
+		## We need to call 'Exit' because calling 'Exit-Script' directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
 		Exit
 	}
 	End {
