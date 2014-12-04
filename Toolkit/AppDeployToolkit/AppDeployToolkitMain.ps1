@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '11/30/2014'
+[string]$appDeployMainScriptDate = '12/03/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8129,7 +8129,7 @@ Switch ($deployMode) {
 If ($configToolkitRequireAdmin) {
 	#  Check if the current process is running with elevated administrator permissions
 	If ((-not $IsAdmin) -and (-not $ShowBlockedAppDialog)) {
-		[string]$AdminPermissionErr = "[$appDeployToolkitName] requires Administrator rights to function. Please re-run the deployment script as an Administrator."
+		[string]$AdminPermissionErr = "[$appDeployToolkitName] has an XML config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the XML config file to not require Administrator rights."
 		Write-Log -Message $AdminPermissionErr -Severity 3 -Source $appDeployToolkitName
 		Show-DialogBox -Text $AdminPermissionErr -Icon 'Stop'
 		Throw $AdminPermissionErr
