@@ -3762,6 +3762,10 @@ Function Execute-ProcessAsUser {
 	Path to the file to be executed.
 .PARAMETER Parameters
 	Arguments to be passed to the executable.
+.PARAMETER RunLevel
+	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are: 
+	- HighestAvailable: Tasks run by using the highest (admin) privileges.
+	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
@@ -3782,6 +3786,9 @@ Function Execute-ProcessAsUser {
 		[ValidateNotNullorEmpty()]
 		[string]$Parameters = '',
 		[Parameter(Mandatory=$false)]
+		[ValidateSet('HighestAvailable','LeastPrivilege')]
+		[string]$RunLevel = 'HighestAvailable',
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -3797,7 +3804,7 @@ Function Execute-ProcessAsUser {
 		$global:executeProcessAsUserExitCode = $null
 		
 		## Confirm if the toolkit is running with administrator privileges
-		If (-not $IsAdmin) {
+		If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
 			Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with administrator privileges" -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
@@ -3840,7 +3847,7 @@ Function Execute-ProcessAsUser {
 			<Principal id="Author">
 			  <UserId>$username</UserId>
 			  <LogonType>InteractiveToken</LogonType>
-			  <RunLevel>HighestAvailable</RunLevel>
+			  <RunLevel>$RunLevel</RunLevel>
 			</Principal>
 		  </Principals>
 		</Task>
@@ -8071,11 +8078,11 @@ If ($invokingScript) {
 						If ($usersLoggedOn) {
 							If ($CurrentConsoleUserSession) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -ContinueOnError $configToolkitAllowSystemInteractionFallback
+								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -ContinueOnError $configToolkitAllowSystemInteractionFallback
+								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							Else {
 								Write-Log -Message 'Allow System Interaction for non console user is disabled in the XML configuration.' -Source $appDeployToolkitName
