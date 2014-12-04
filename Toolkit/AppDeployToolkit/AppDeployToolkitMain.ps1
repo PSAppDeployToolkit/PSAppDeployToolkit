@@ -3798,11 +3798,6 @@ Function Execute-ToolkitAsUser {
 			}
 		}
 		
-		## Build the scheduled task XML
-		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
-		
-		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
-		
 		## Build the file path including and use the command parameter to include the lastexitcode variable ensuring the return code is passed to the task scheduler and can be parsed
 		[string]$filePath = "$PSHOME\powershell.exe"
 		
@@ -3846,16 +3841,17 @@ Function Execute-ToolkitAsUser {
 		  </Principals>
 		</Task>
 "@
-		## Specify the filename to export the XML to
-		[string]$xmlSchTaskFile = "$configToolkitTempPath\$schTaskName.xml"
-		
 		## Export the XML to file
 		Try {
 			#  Create the temporary folder if it doesn't already exist
 			If (-not (Test-Path -Path $configToolkitTempPath -PathType Container)) {
 				New-Item -Path $configToolkitTempPath -ItemType Directory -Force -ErrorAction 'Stop'
 			}
-			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFile -Force -ErrorAction Stop
+			#  Build the scheduled task XML name
+			[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
+			#  Specify the filename to export the XML to
+			[string]$xmlSchTaskFilePath = "$configToolkitTempPath\$schTaskName.xml"
+			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
 		}
 		Catch {
 			Write-Log -Message "Failed to export the scheduled task XML file. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -3871,7 +3867,7 @@ Function Execute-ToolkitAsUser {
 		## Create Scheduled Task to run PSADT in logged on user context with highest privileges
 		Try {
 			Write-Log -Message 'Create scheduled task to run the toolkit as the logged in user...' -Source ${CmdletName}
-			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFile" -WindowStyle Hidden -CreateNoWindow -PassThru
+			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFilePath" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
 					Return
