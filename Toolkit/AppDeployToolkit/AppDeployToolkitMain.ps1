@@ -3877,7 +3877,7 @@ Function Execute-ProcessAsUser {
 				Write-Log -Message "Create scheduled task to run the process [$Path] as the logged on user [$userName]..." -Source ${CmdletName}
 			}
 			
-			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/create /f /tn $schTaskName /xml $xmlSchTaskFilePath" -WindowStyle Hidden -CreateNoWindow -PassThru
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml $xmlSchTaskFilePath" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
 					Return
@@ -3907,7 +3907,7 @@ Function Execute-ProcessAsUser {
 			Else {
 				Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged on user [$userName]..." -Source ${CmdletName}
 			}
-			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
 					Return
@@ -3922,7 +3922,7 @@ Function Execute-ProcessAsUser {
 			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
 			Write-Log -Message 'Delete the scheduled task which did not to trigger.' -Source ${CmdletName}
-			[psobject]$schTaskResult = Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -PassThru
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3945,7 +3945,7 @@ Function Execute-ProcessAsUser {
 		
 		Try {
 			#  Delete Scheduled Task
-			Execute-Process -FilePath $exeSchTasks -Arguments "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ErrorAction 'Stop'
+			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ErrorAction 'Stop'
 		}
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
