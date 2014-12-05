@@ -3,12 +3,10 @@ Proposed / Planned Features:
 - PowerShell ISE integration - potentially...
 	- Wizard-based script creation
 	- Help system integration
-- Handling of UI when running in Session 0. Either through...
-	- Client / Server architecture using Named Pipes. Main script runs in Session 0 and spawns UI / user specific tasks to user session
-	- Process elevation in user session using token impersonation (same method as ServiceUI.exe)
 - Detect toolkit log file location from XML for deploy-application.exe
 - Add Debug param to help section in deploy-application.ps1 script
-- Add Set-ActiveSetup function
+- Standardize exit codes in toolkit in a high range to avoid conficts with other applications and document it
+- Develop more reliable method of detecting network connection for function Test-NetworkConnection, by using INetworkListManager interface
 
 Outstanding Issues:
 
