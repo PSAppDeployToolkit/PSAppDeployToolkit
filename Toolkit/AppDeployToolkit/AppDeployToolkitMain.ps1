@@ -3455,6 +3455,8 @@ Function Get-UserProfiles {
 	Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 .PARAMETER ExcludeSystemProfiles
 	Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+.PARAMETER ExcludeDefaultUser
+	Exclude the Default User. Default is: $false.
 .EXAMPLE
 	Get-UserProfiles
 .EXAMPLE
@@ -3470,7 +3472,10 @@ Function Get-UserProfiles {
 		[string[]]$ExcludeNTAccount,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[boolean]$ExcludeSystemProfiles = $true
+		[boolean]$ExcludeSystemProfiles = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$ExcludeDefaultUser = $false
 	)
 	
 	Begin {
@@ -3497,33 +3502,35 @@ Function Get-UserProfiles {
 				[psobject[]]$UserProfiles = $UserProfiles | Where-Object { $ExcludeNTAccount -notcontains $_.NTAccount }
 			}
 			
-			[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
-			
 			## Find the path to the Default User profile
-			#  On Windows Vista or higher
-			If ([System.Environment]::OSVersion.Version.Major -gt 5) {
-				# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
-				[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
-			}
-			#  On Windows XP or lower
-			Else {
-				#  Default User Profile Name: By default, 'Default User'
-				[string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUsersProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUsersProfile'
+			If (-not $ExcludeDefaultUser) {
+				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
+
+				#  On Windows Vista or higher
+				If ([System.Environment]::OSVersion.Version.Major -gt 5) {
+					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
+					[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
+				}
+				#  On Windows XP or lower
+				Else {
+					#  Default User Profile Name: By default, 'Default User'
+					[string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUsersProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUsersProfile'
+					
+					#  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
+					[string]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
+				}
 				
-				#  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
-				[string]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
+				## Create a custom object for the Default User profile.
+				#  Since the Default User is not an actual User account, it does not have a username or a SID.
+				#  We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
+				$DefaultUserProfile = New-Object -TypeName PSObject
+				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name NTAccount -Value 'Default User' -Force -ErrorAction 'Stop'
+				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name SID -Value 'S-1-5-21-Default-User' -Force -ErrorAction 'Stop'
+				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name ProfilePath -Value $DefaultUserProfileDirectory -Force -ErrorAction 'Stop'
+				
+				## Add the Default User custom object to the User Profile list.
+				$UserProfiles += $DefaultUserProfile
 			}
-			
-			## Create a custom object for the Default User profile.
-			#  Since the Default User is not an actual User account, it does not have a username or a SID.
-			#  We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-			$DefaultUserProfile = New-Object -TypeName PSObject
-			$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name NTAccount -Value 'Default User' -Force -ErrorAction 'Stop'
-			$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name SID -Value 'S-1-5-21-Default-User' -Force -ErrorAction 'Stop'
-			$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name ProfilePath -Value $DefaultUserProfileDirectory -Force -ErrorAction 'Stop'
-			
-			## Add the Default User custom object to the User Profile list.
-			$UserProfiles += $DefaultUserProfile
 			
 			Write-Output $UserProfiles
 		}
