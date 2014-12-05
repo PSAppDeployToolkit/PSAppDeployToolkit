@@ -88,6 +88,7 @@ Try {
 	
 	## Handle Execute-ProcessAsUser Invocation of the Toolkit
 	If ($executeProcessAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeProcessAsUserExitCode }
+	
 	#endregion
 	##* Do not modify section above
 	##*===============================================

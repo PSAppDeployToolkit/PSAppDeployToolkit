@@ -2195,7 +2195,7 @@ Function Execute-Process {
 				[string]$FullyQualifiedPath = Get-Command -Name $Path -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'SilentlyContinue'
 				
 				#  Revert the PATH environment variable to it's original value
-				$env:PATH = $env:PATH -replace [regex]::Escape(($PathFolders + ';')), ''
+				$env:PATH = $env:PATH -replace [regex]::Escape($PathFolders + ';'), ''
 				
 				If ($FullyQualifiedPath) {
 					Write-Log -Message "[$Path] successfully resolved to fully qualified path [$FullyQualifiedPath]." -Source ${CmdletName}
@@ -2502,12 +2502,9 @@ Function Test-MsiExecMutex {
 		{
 			public static bool IsMsiExecFree(TimeSpan maxWaitTime)
 			{
-				/// Wait (up to a timeout) for the MSI installer service to become free.
-				/// Returns true for a successful wait, when the installer service has become free.
-				/// Returns false when waiting for the installer service has exceeded the timeout.
-				
-				// The _MSIExecute mutex is used by the MSI installer service to serialize installations and prevent multiple MSI based installations happening at the same time.
-				// For more info: http://msdn.microsoft.com/en-us/library/aa372909(VS.85).aspx
+				// Wait (up to a timeout) for the MSI installer service to become free.
+				// Returns true for a successful wait, when the installer service has become free.
+				// Returns false when waiting for the installer service has exceeded the timeout.
 				const string installerServiceMutexName = "Global\\_MSIExecute";
 				Mutex MSIExecuteMutex = null;
 				bool isMsiExecFree = false;
@@ -2532,7 +2529,6 @@ Function Test-MsiExecMutex {
 					if (MSIExecuteMutex != null && isMsiExecFree)
 					MSIExecuteMutex.ReleaseMutex();
 				}
-				
 				return isMsiExecFree;
 			}
 		}
@@ -2739,11 +2735,11 @@ Function Copy-File {
 			
 			If ($Recurse) {
 				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]" -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $destination -ErrorAction 'Stop' -Force -Recurse | Out-Null
+				Copy-Item -Path $Path -Destination $destination -Force -Recurse -ErrorAction 'Stop' | Out-Null
 			}
 			Else {
 				Write-Log -Message "Copy file in path [$path] to destination [$destination]" -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $destination -ErrorAction 'Stop' -Force | Out-Null
+				Copy-Item -Path $Path -Destination $destination -Force -ErrorAction 'Stop' | Out-Null
 			}
 		}
 		Catch {
@@ -8232,7 +8228,7 @@ If ($invokingScript) {
 		Else {
 			Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
 		}
-
+		
 		## Check if calling process is associated with a Terminal Services client session
 		[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
 		Write-Log -Message "The process is running in a terminal server session: $IsTerminalServerSession." -Source $appDeployToolkitName
