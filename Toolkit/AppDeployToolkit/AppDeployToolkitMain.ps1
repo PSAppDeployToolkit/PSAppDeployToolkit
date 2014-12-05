@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/04/2014'
+[string]$appDeployMainScriptDate = '12/05/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3763,9 +3763,9 @@ Function Execute-ProcessAsUser {
 .PARAMETER UserName
 	Logged in Username under which to run the process from.
 .PARAMETER Path
-	Path to the file to be executed.
+	Path to the file being executed.
 .PARAMETER Parameters
-	Arguments to be passed to the executable.
+	Arguments to be passed to the file being executed.
 .PARAMETER RunLevel
 	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are: 
 	- HighestAvailable: Tasks run by using the highest (admin) privileges. This works even if the user is not an Admin. Default value.
@@ -3775,7 +3775,7 @@ Function Execute-ProcessAsUser {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ProcessAsUser -UserName <UserName> -Path "$PSHOME\powershell.exe" -Parameters <parameters> -Wait
+	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-Command `"C:\Test\Script.ps1`"' -Wait
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
