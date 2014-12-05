@@ -2733,6 +2733,10 @@ Function Copy-File {
 	}
 	Process {
 		Try {
+			If (-not (Test-Path -Path $Destination -PathType Container)) {
+				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+			}
+			
 			If ($Recurse) {
 				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]" -Source ${CmdletName}
 				Copy-Item -Path $Path -Destination $destination -ErrorAction 'Stop' -Force -Recurse | Out-Null
@@ -3822,40 +3826,40 @@ Function Execute-ProcessAsUser {
 		
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
-		<?xml version="1.0" encoding="UTF-16"?>
-		<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-		  <RegistrationInfo />
-		  <Triggers />
-		  <Settings>
-			<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
-			<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-			<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-			<AllowHardTerminate>true</AllowHardTerminate>
-			<StartWhenAvailable>false</StartWhenAvailable>
-			<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-			<IdleSettings />
-			<AllowStartOnDemand>true</AllowStartOnDemand>
-			<Enabled>true</Enabled>
-			<Hidden>false</Hidden>
-			<RunOnlyIfIdle>false</RunOnlyIfIdle>
-			<WakeToRun>false</WakeToRun>
-			<ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
-			<Priority>7</Priority>
-		  </Settings>
-		  <Actions Context="Author">
-			<Exec>
-			  <Command>$Path</Command>
-			  <Arguments>$Parameters</Arguments>
-			</Exec>
-		  </Actions>
-		  <Principals>
-			<Principal id="Author">
-			  <UserId>$UserName</UserId>
-			  <LogonType>InteractiveToken</LogonType>
-			  <RunLevel>$RunLevel</RunLevel>
-			</Principal>
-		  </Principals>
-		</Task>
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo />
+  <Triggers />
+  <Settings>
+	<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>
+	<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+	<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+	<AllowHardTerminate>true</AllowHardTerminate>
+	<StartWhenAvailable>false</StartWhenAvailable>
+	<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+	<IdleSettings />
+	<AllowStartOnDemand>true</AllowStartOnDemand>
+	<Enabled>true</Enabled>
+	<Hidden>false</Hidden>
+	<RunOnlyIfIdle>false</RunOnlyIfIdle>
+	<WakeToRun>false</WakeToRun>
+	<ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+	<Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+	<Exec>
+	  <Command>$Path</Command>
+	  <Arguments>$Parameters</Arguments>
+	</Exec>
+  </Actions>
+  <Principals>
+	<Principal id="Author">
+	  <UserId>$UserName</UserId>
+	  <LogonType>InteractiveToken</LogonType>
+	  <RunLevel>$RunLevel</RunLevel>
+	</Principal>
+  </Principals>
+</Task>
 "@
 		## Export the XML to file
 		Try {
@@ -8034,7 +8038,7 @@ If ($invokingScript) {
 			#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
 			[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
 			If ($CurrentConsoleUserSession) {
-				Write-Log -Message "The following user is the console user [[$($CurrentConsoleUserSession.NTAccount)]] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
+				Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
 			}
 			Else {
 				Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
@@ -8086,11 +8090,11 @@ If ($invokingScript) {
 						If ($usersLoggedOn) {
 							## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
 							If ($CurrentConsoleUserSession) {
-								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
+								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
 								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-in user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
+								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
 								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							Else {
