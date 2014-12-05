@@ -8268,7 +8268,7 @@ If ($invokingScript) {
 							## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
 							If ($CurrentConsoleUserSession) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($($CurrentConsoleUserSession.NTAccount)) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+								Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 							}
 							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
 								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
