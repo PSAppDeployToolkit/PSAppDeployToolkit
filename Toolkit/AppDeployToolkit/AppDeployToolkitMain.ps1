@@ -2243,7 +2243,7 @@ Function Execute-Process {
 				$process = New-Object -TypeName System.Diagnostics.Process -ErrorAction 'Stop'
 				$process.StartInfo = $processStartInfo
 				
-				## Add event handler for process standard output redirection
+				## Add event handler to capture process's standard output redirection
 				[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
 				$stdOutBuilder = New-Object -TypeName System.Text.StringBuilder -ArgumentList ''
 				$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
