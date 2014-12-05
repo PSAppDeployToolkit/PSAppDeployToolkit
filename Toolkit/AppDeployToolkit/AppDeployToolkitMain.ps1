@@ -8235,6 +8235,7 @@ If ($invokingScript) {
 
 		## Check if calling process is associated with a Terminal Services client session
 		[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
+		Write-Log -Message "The process is running in a terminal server session: $IsTerminalServerSession." -Source $appDeployToolkitName
 		
 		## Check if script is running from a SCCM Task Sequence
 		Try {
