@@ -3080,7 +3080,7 @@ Function Set-RegistryKey {
 					New-Item -Path $key -ItemType Registry -Force -ErrorAction 'Stop' | Out-Null
 				}
 				Catch {
-					Throw $_
+					Throw
 				}
 			}
 			
@@ -3694,7 +3694,7 @@ Function New-Shortcut {
 			}
 			Catch {
 				Write-Log -Message "Failed to create shortcut directory [$PathDirectory]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-				Throw $_
+				Throw
 			}
 			
 			Write-Log -Message "Create shortcut [$($path.FullName)]" -Source ${CmdletName}
@@ -7762,7 +7762,7 @@ Function Set-ActiveSetup {
 				Write-Log -Message 'Session 0 detected: Will not execute Active Setup StubPath file. Users will have to log off and log back into their account to execute Active Setup entry.' -Source ${CmdletName}
 			}
 			Else {
-				Write-Log -Message 'Execute Active Setup StubPath file for the current user' -Source ${CmdletName}
+				Write-Log -Message 'Execute Active Setup StubPath file for the current user.' -Source ${CmdletName}
 				If ($CUArguments) {
 					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Arguments $CUArguments -PassThru
 				}
@@ -7774,7 +7774,7 @@ Function Set-ActiveSetup {
 		Catch {
 			Write-Log -Message "Failed to set Active Setup registry entry. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
-				Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)."
+				Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)"
 			}
 		}
 	}
