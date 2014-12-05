@@ -8224,6 +8224,9 @@ If ($invokingScript) {
 		Else {
 			Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
 		}
+
+		## Check if calling process is associated with a Terminal Services client session
+		[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
 		
 		## Check if script is running from a SCCM Task Sequence
 		Try {

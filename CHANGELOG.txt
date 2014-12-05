@@ -2,6 +2,7 @@ Version 4.0.0 [12/05/2014]
 	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4.
 	Added function Set-ActiveSetup to allow creation/purging of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Updated documentation
+	Added variable to determine if running in terminal server session
 
 Version 3.5.1 [12/05/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
