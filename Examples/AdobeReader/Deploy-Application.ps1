@@ -86,8 +86,8 @@ Try {
 		Exit $mainExitCode
 	}
 	
-	## Handle ServiceUI Invocation
-	If ($serviceUIExitCode) { Exit-Script -ExitCode $serviceUIExitCode }
+	## Handle Execute-ProcessAsUser Invocation of the Toolkit
+	If ($executeProcessAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeProcessAsUserExitCode }
 	
 	#endregion
 	##* Do not modify section above
