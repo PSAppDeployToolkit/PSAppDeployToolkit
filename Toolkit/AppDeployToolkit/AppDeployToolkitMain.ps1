@@ -2733,7 +2733,7 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-			If (-not (Test-Path -Path $Destination -PathType Container)) {
+			If ((-not ([System.IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType Container))) {
 				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
 			
@@ -2802,11 +2802,11 @@ Function Remove-File {
 		Try {
 			If ($Recurse) {
 				Write-Log -Message "Delete file(s) recursively in path [$path]..." -Source ${CmdletName}
-				Remove-Item -Path $path -ErrorAction 'Stop' -Force -Recurse | Out-Null
+				Remove-Item -Path $path -Force -Recurse -ErrorAction 'Stop' | Out-Null
 			}
 			Else {
 				Write-Log -Message "Delete file in path [$path]..." -Source ${CmdletName}
-				Remove-Item -Path $path -ErrorAction 'Stop' -Force | Out-Null
+				Remove-Item -Path $path -Force -ErrorAction 'Stop' | Out-Null
 			}
 		}
 		Catch {
@@ -4288,11 +4288,12 @@ Function Unblock-AppExecution {
 			Return
 		}
 		
-		[psobject[]]$unblockProcessName = Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' }
-		
-		ForEach ($unblockProcess in $unblockProcessName) {
-			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
-			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'
+		## Remove Debugger values to unblock processes 
+		[psobject[]]$unblockProcesses = $null 
+		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | Foreach-Object { Get-ItemProperty -LiteralPath $_.PSPath })
+		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) { 
+			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName} 
+			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'                     
 		}
 		
 		## If block execution variable is $true, set it to $false
