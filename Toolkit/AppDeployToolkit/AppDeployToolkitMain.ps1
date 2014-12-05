@@ -7603,6 +7603,183 @@ Function Disable-TerminalServerInstallMode {
 }
 #endregion
 
+#region Function Set-ActiveSetup
+Function Set-ActiveSetup {
+<#
+.SYNOPSIS
+	Creates an Active Setup entry in the registry to execute a file for each user upon login.
+.DESCRIPTION
+	Active Setup allows handling of per-user changes registry/file changes upon login.
+	A registry key is created in the HKLM registry hive which gets replicated to the HKCU hive when a user logs in.
+	If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
+	This Function:
+	- Creates the registry entries in HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$installName.
+	- Creates StubPath value depending on the file extension of the $StubExePath parameter.
+	- Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
+	- Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
+	- Executes the StubPath file for the current user as long as not in Session 0 (no need to logout/login to trigger Active Setup).
+.PARAMETER StubExePath
+	Full destination path to the file that will be executed for each user that logs in.
+	If this file exists in the 'Files' subdirectory of the script directory, it will be copied to the destination path.
+.PARAMETER Arguments
+	Arguments to pass to the file being executed.
+.PARAMETER Description
+	Description for the Active Setup. Users will see "Setting up personalised settings for: $Description" at logon. Default is: $installName.
+.PARAMETER Key
+	Name of the registry key for the Active Setup entry. Default is: $installName.
+.PARAMETER Version
+	Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation.
+.PARAMETER Locale
+	Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
+.PARAMETER PurgeActiveSetupKey
+	Will load each logon user's HKCU registry hive to remove Active Setup entry.
+.PARAMETER DisableActiveSetup
+	Disables the Active Setup entry so that the StubPath file will not be executed.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered.
+.EXAMPLE
+	Set-ActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
+.EXAMPLE
+	Set-ActiveSetup -StubExePath 'C:\Program Files\MyApp\MyApp_v1r1_HKCU.exe'
+.NOTES
+	Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[string]$StubExePath,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Arguments,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Description = $installName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Key = $installName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Locale,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$DisableActiveSetup = $false,
+		[Parameter(Mandatory=$false)]
+		[switch]$PurgeActiveSetupKey,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			[string]$ActiveSetupKey = "HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
+			[string]$HKCUActiveSetupKey = "HKCU:Software\Microsoft\Active Setup\Installed Components\$Key"
+			
+			## Delete Active Setup registry entry for all logon user registry hives on the system
+			If ($PurgeActiveSetupKey) {
+				Write-Log -Message "Remove Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
+				[scriptblock]$RemoveHKCUActiveSetupKey = { Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID }
+				Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey
+				Return
+			}
+			
+			## Verify a file with a supported file extension was specified in $StubExePath
+			[string[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.ps1', '.js'
+			[string]$StubExeExt = [System.IO.Path]::GetExtension($StubExePath)
+			If ($StubExePathFileExtensions -notcontains $StubExeExt) {
+				Throw "Unsupported Active Setup StubPath file extension [$StubExeExt]."
+			}
+			
+			## Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there)
+			[string]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
+			[string]$ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath)
+			[string]$StubExeFile = Join-Path -Path $dirFiles -ChildPath $ActiveSetupFileName
+			If (Test-Path -Path $StubExeFile -PathType Leaf) {
+				#  This will overwrite the StubPath file if $StubExePath already exists on target
+				Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
+			}
+			
+			## Check if the $StubExePath file exists
+			If (-not (Test-Path -Path $StubExePath -PathType Leaf)) { Throw "Active Setup StubPath file [$ActiveSetupFileName] is missing." }
+			
+			## Define Active Setup StubPath according to file extension of $StubExePath
+			Switch ($StubExeExt) {
+				'.exe' {
+					[string]$CUStubExePath = $StubExePath
+					[string]$CUArguments = $Arguments
+					[string]$StubPath = "$CUStubExePath"
+				}
+				{'.vbs','.js' -contains $StubExeExt} {
+					[string]$CUStubExePath = "$envWinDir\system32\cscript.exe"
+					[string]$CUArguments = "//nologo `"$StubExePath`""
+					[string]$StubPath = "$CUStubExePath $CUArguments"
+				}
+				'.cmd' {
+					[string]$CUStubExePath = "$envWinDir\system32\CMD.exe"
+					[string]$CUArguments = "/C `"$StubExePath`""
+					[string]$StubPath = "$CUStubExePath $CUArguments"
+				}
+				'.ps1' {
+					[string]$CUStubExePath = "$PSHOME\powershell.exe"
+					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+					[string]$StubPath = "$CUStubExePath $CUArguments"
+				}
+			}
+			If ($Arguments) {
+				[string]$StubPath = "$StubPath $Arguments"
+				If ($StubExeExt -ne '.exe') { [string]$CUArguments = "$CUArguments $Arguments" }
+			}
+			
+			## Create the Active Setup entry in the registry
+			Set-RegistryKey -Key $ActiveSetupKey -Name '(Default)' -Value $Description -ContinueOnError $false
+			Set-RegistryKey -Key $ActiveSetupKey -Name 'StubPath' -Value $StubPath -Type 'ExpandString' -ContinueOnError $false
+			Set-RegistryKey -Key $ActiveSetupKey -Name 'Version' -Value $Version -ContinueOnError $false
+			If ($Locale) { Set-RegistryKey -Key $ActiveSetupKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
+			If ($DisableActiveSetup) {
+				Set-RegistryKey -Key $ActiveSetupKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
+			}
+			Else {
+				Set-RegistryKey -Key $ActiveSetupKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
+			}
+			
+			## Execute the StubPath file for the current user as long as not in Session 0
+			If ($SessionZero) {
+				Write-Log -Message 'Session 0 detected: Will not execute Active Setup StubPath file. Users will have to log off and log back into their account to execute Active Setup entry.' -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message 'Execute Active Setup StubPath file for the current user' -Source ${CmdletName}
+				If ($CUArguments) {
+					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Arguments $CUArguments -PassThru
+				}
+				Else {
+					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to set Active Setup registry entry. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)."
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
 
 #region Function Get-LoggedOnUser
 Function Get-LoggedOnUser {
