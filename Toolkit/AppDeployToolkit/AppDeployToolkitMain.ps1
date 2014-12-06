@@ -8149,6 +8149,7 @@ If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw $XMLConfigVersionErr
 }
 
+## Log system information
 If ($appScriptVersion) { Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName }
 If ($deployAppScriptFriendlyName) { Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName }
 If ($deployAppScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName }
@@ -8172,14 +8173,6 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Check deployment type (install/uninstall)
-Switch ($deploymentType) {
-	'Install'   { $deploymentTypeName = $configDeploymentTypeInstall }
-	'Uninstall' { $deploymentTypeName = $configDeploymentTypeUnInstall }
-	Default { $deploymentTypeName = $configDeploymentTypeInstall }
-}
-If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTypeName]" -Source $appDeployToolkitName }
-
 ## Check how the script was invoked
 If ($invokingScript) {
 	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
@@ -8189,16 +8182,6 @@ If ($invokingScript) {
 }
 Else {
 	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
-}
-
-## Get the DPI scaling, property only exists if DPI scaling has been changed on the system at least once
-[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
-Switch ($dpiPixels) {
-	96 { [int32]$dpiScale = 100 }
-	120 { [int32]$dpiScale = 125 }
-	144 { [int32]$dpiScale = 150 }
-	192 { [int32]$dpiScale = 200 }
-	Default { [int32]$dpiScale = 100 }
 }
 
 ## Get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
@@ -8322,6 +8305,15 @@ Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
 }
 
+## Get the DPI scaling, property only exists if DPI scaling has been changed on the system at least once
+[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
+Switch ($dpiPixels) {
+	96 { [int32]$dpiScale = 100 }
+	120 { [int32]$dpiScale = 125 }
+	144 { [int32]$dpiScale = 150 }
+	192 { [int32]$dpiScale = 200 }
+	Default { [int32]$dpiScale = 100 }
+}
 
 ## Set Deploy Mode switches
 If ($deployMode) {
@@ -8332,6 +8324,14 @@ Switch ($deployMode) {
 	'NonInteractive' { $deployModeNonInteractive = $true; $deployModeSilent = $true }
 	Default { $deployModeNonInteractive = $false; $deployModeSilent = $false }
 }
+
+## Check deployment type (install/uninstall)
+Switch ($deploymentType) {
+	'Install'   { $deploymentTypeName = $configDeploymentTypeInstall }
+	'Uninstall' { $deploymentTypeName = $configDeploymentTypeUnInstall }
+	Default { $deploymentTypeName = $configDeploymentTypeInstall }
+}
+If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTypeName]" -Source $appDeployToolkitName }
 
 ## Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {
