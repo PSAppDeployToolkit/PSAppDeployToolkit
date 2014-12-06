@@ -8193,136 +8193,135 @@ If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTy
 ## Check how the script was invoked
 If ($invokingScript) {
 	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
-	# If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
-	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') {
-		Return
-	}
-	Else {
-		#  Get a list of all users logged on to the system (both local and RDP users)
-		[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-		Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
-		[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
-		
-		If ($usersLoggedOn) {
-			Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
-			
-			#  Get account and session details for the current process if it is running as a logged in user
-			[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
-			
-			#  Check if the current process is running in the context of one of the logged in users
-			If ($CurrentLoggedOnUserSession) {
-				[boolean]$runningAsLoggedOnUser = $true
-				Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
-			}
-			Else {
-				[boolean]$runningAsLoggedOnUser = $false
-				Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
-			}
-			
-			#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-			[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
-			If ($CurrentConsoleUserSession) {
-				Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
-			}
-			Else {
-				Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
-			}
-		}
-		Else {
-			Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
-		}
-		
-		## Check if calling process is associated with a Terminal Services client session
-		[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
-		Write-Log -Message "The process is running in a terminal server session: $IsTerminalServerSession." -Source $appDeployToolkitName
-		
-		## Check if script is running from a SCCM Task Sequence
-		Try {
-			[__comobject]$SMSTSEnvironment = New-Object -ComObject Microsoft.SMS.TSEnvironment -ErrorAction 'Stop'
-			Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-			$runningTaskSequence = $true
-		}
-		Catch {
-			Write-Log -Message 'Unable to load COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-			$runningTaskSequence = $false
-		}
-		
-		## Check if script is running in session zero
-		If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) {
-			$SessionZero = $true
-		}
-		
-		## If script is running in session zero
-		If ($SessionZero) {
-			##  If the script was launched with deployment mode set to NonInteractive, then continue
-			If ($deployMode -eq 'NonInteractive') {
-				Write-Log -Message "Session 0 detected but deployment mode was manually set to [$deployMode]." -Source $appDeployToolkitName
-			}
-			Else {
-				##  If the process is not able to display a UI, enable NonInteractive mode
-				If (-not $IsProcessUserInteractive) {
-					Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
-					If ($configToolkitAllowSystemInteraction) {
-						Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XML file." -Source $appDeployToolkitName
-						
-						## Build the file path and the parameters for relaunching toolkit with user account. Use the -Command parameter to include the `$LastExitCode variable to ensure the exit code is passed to the task scheduler and can be parsed.
-						[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
-						#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
-						If ($deployAppScriptParameters) {
-							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $deployAppScriptParameters; Exit `$LastExitCode"
-						}
-						Else {
-							[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript; Exit `$LastExitCode"
-						}
-						
-						If ($usersLoggedOn) {
-							## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
-							If ($CurrentConsoleUserSession) {
-								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-							}
-							ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-							}
-							Else {
-								Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
-							}
-							
-							## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
-							Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
-							$deployMode = 'NonInteractive'
-							Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-						}
-						Else {
-							Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
-						}
-					}
-					Else {
-						Write-Log -Message "'Allow System Interaction' option is disabled in the toolkit config XML file." -Source $appDeployToolkitName
-						$deployMode = 'NonInteractive'
-						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-					}
-				}
-				Else {
-					If (-not $usersLoggedOn) {
-						$deployMode = 'NonInteractive'
-						Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-					}
-					Else {
-						Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
-					}
-				}
-			}
-		}
-		Else {
-			Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
-		}
-	}
+
+	#  If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
+	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
 }
 Else {
 	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
 }
+
+## Get a list of all users logged on to the system (both local and RDP users)
+[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
+Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
+[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
+
+If ($usersLoggedOn) {
+	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
+	
+	#  Get account and session details for the current process if it is running as a logged in user
+	[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
+	
+	#  Check if the current process is running in the context of one of the logged in users
+	If ($CurrentLoggedOnUserSession) {
+		[boolean]$runningAsLoggedOnUser = $true
+		Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
+	}
+	Else {
+		[boolean]$runningAsLoggedOnUser = $false
+		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
+	}
+	
+	#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+	[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
+	If ($CurrentConsoleUserSession) {
+		Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
+	}
+	Else {
+		Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
+	}
+}
+Else {
+	Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
+}
+
+## Check if script is running on a Terminal Services client session
+[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
+Write-Log -Message "The process is running in a terminal server session: $IsTerminalServerSession." -Source $appDeployToolkitName
+
+## Check if script is running from a SCCM Task Sequence
+Try {
+	[__comobject]$SMSTSEnvironment = New-Object -ComObject Microsoft.SMS.TSEnvironment -ErrorAction 'Stop'
+	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
+	$runningTaskSequence = $true
+}
+Catch {
+	Write-Log -Message 'Unable to load COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
+	$runningTaskSequence = $false
+}
+
+## Check if script is running in session zero
+If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) {
+	$SessionZero = $true
+}
+
+## If script is running in session zero
+If ($SessionZero) {
+	##  If the script was launched with deployment mode set to NonInteractive, then continue
+	If ($deployMode -eq 'NonInteractive') {
+		Write-Log -Message "Session 0 detected but deployment mode was manually set to [$deployMode]." -Source $appDeployToolkitName
+	}
+	Else {
+		##  If the process is not able to display a UI, enable NonInteractive mode
+		If (-not $IsProcessUserInteractive) {
+			Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
+			If ($configToolkitAllowSystemInteraction) {
+				Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XML file." -Source $appDeployToolkitName
+				
+				## Build the file path and the parameters for relaunching toolkit with user account. Use the -Command parameter to include the `$LastExitCode variable to ensure the exit code is passed to the task scheduler and can be parsed.
+				[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
+				#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
+				If ($deployAppScriptParameters) {
+					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript $deployAppScriptParameters; Exit `$LastExitCode"
+				}
+				Else {
+					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command . $invokingScript; Exit `$LastExitCode"
+				}
+				
+				If ($usersLoggedOn) {
+					## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
+					If ($CurrentConsoleUserSession) {
+						Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
+						Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+					}
+					ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
+						Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
+						Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+					}
+					Else {
+						Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
+					}
+					
+					## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
+					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
+					$deployMode = 'NonInteractive'
+					Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+				}
+				Else {
+					Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
+				}
+			}
+			Else {
+				Write-Log -Message "'Allow System Interaction' option is disabled in the toolkit config XML file." -Source $appDeployToolkitName
+				$deployMode = 'NonInteractive'
+				Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+			}
+		}
+		Else {
+			If (-not $usersLoggedOn) {
+				$deployMode = 'NonInteractive'
+				Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+			}
+			Else {
+				Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
+			}
+		}
+	}
+}
+Else {
+	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
+}
+
 
 ## Set Deploy Mode switches
 If ($deployMode) {
