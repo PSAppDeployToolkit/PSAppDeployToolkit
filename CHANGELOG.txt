@@ -3,6 +3,7 @@ Version 4.0.0 [12/05/2014]
 	Added function Set-ActiveSetup to allow creation/purging of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Updated documentation
 	Added variable to determine if running in terminal server session
+	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 
 Version 3.5.1 [12/05/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
