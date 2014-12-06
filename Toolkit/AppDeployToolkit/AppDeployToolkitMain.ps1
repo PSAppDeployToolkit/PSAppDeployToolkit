@@ -6569,7 +6569,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
-		## Get the name that was used to invoke this function in case the 'Register-DLL' or 'Unregister-DLL' alias was used
+		## Get name used to invoke this function in case the 'Register-DLL' or 'Unregister-DLL' alias was used and set the correct DLL action
 		[string]${InvokedCmdletName} = $MyInvocation.InvocationName
 		#  Set the correct register/unregister action based on the alias used to invoke this function
 		If (${InvokedCmdletName} -ne ${CmdletName}) {
