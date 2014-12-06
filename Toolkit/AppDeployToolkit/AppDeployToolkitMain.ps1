@@ -7694,7 +7694,7 @@ Function Set-ActiveSetup {
 			If ($PurgeActiveSetupKey) {
 				Write-Log -Message "Remove Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
 				Remove-RegistryKey -Key $ActiveSetupKey
-
+				
 				Write-Log -Message "Remove Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
 				[scriptblock]$RemoveHKCUActiveSetupKey = { Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID }
 				Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)
@@ -8194,7 +8194,7 @@ If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTy
 If ($invokingScript) {
 	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
 	# If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
-	If ($invokingScript -match 'Help') {
+	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') {
 		Return
 	}
 	Else {
