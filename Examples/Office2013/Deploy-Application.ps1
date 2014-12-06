@@ -38,12 +38,12 @@ Param (
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
 	[switch]$TerminalServerMode = $false,
-	[bloolean]$addComponentsOnly = $false, # Specify whether running in Component Only Mode
-	[bloolean]$addInfoPath = $false, # Add InfoPath to the install
-	[bloolean]$addOneNote = $false, # Add OneNote to the install
-	[bloolean]$addOutlook = $false, # Add Outlook to the install
-	[bloolean]$addPublisher = $false, # Add Publisher to the install
-	[bloolean]$addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
+	[switch]$addComponentsOnly = $false, # Specify whether running in Component Only Mode
+	[switch]$addInfoPath = $false, # Add InfoPath to the install
+	[switch]$addOneNote = $false, # Add OneNote to the install
+	[switch]$addOutlook = $false, # Add Outlook to the install
+	[switch]$addPublisher = $false, # Add Publisher to the install
+	[switch]$addSharepointWorkspace = $false # Add Sharepoint Workspace to the install
 )
 
 Try {
@@ -60,7 +60,7 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '3.5.0'
+	[string]$appScriptVersion = '3.5.1'
 	[string]$appScriptDate = '12/05/2014'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
@@ -100,6 +100,9 @@ Try {
 	##*===============================================
 	##* END VARIABLE DECLARATION
 	##*===============================================
+	
+	#  Set the initial Office folder
+	[string] $dirOffice = Join-Path -Path "$envProgramFilesX86" -ChildPath "Microsoft Office"
 	
 	If ($deploymentType -ine 'Uninstall') {
 		##*===============================================
@@ -161,7 +164,7 @@ Try {
 			Show-InstallationProgress -StatusMessage 'Performing Pre-Install cleanup. This may take some time. Please wait...'
 			
 			# Remove any previous version of Office (if required)
-			[string[]]$officeExecutables = 'excel.exe', 'groove.exe', 'onenote.exe', 'infopath.exe', 'onenote.exe', 'outlook.exe', 'mspub.exe', 'powerpnt.exe', 'winword.exe', 'winproj.exe', 'visio.exe'
+			[string[]]$officeExecutables = 'excel.exe', 'groove.exe', 'infopath.exe', 'onenote.exe', 'outlook.exe', 'mspub.exe', 'powerpnt.exe', 'winword.exe', 'winproj.exe', 'visio.exe'
 			ForEach ($officeExecutable in $officeExecutables) {
 				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office12\$officeExecutable") -PathType Leaf) {
 					Write-Log -Message 'Microsoft Office 2007 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
@@ -194,7 +197,7 @@ Try {
 		## Check whether running in Add Components Only mode
 		If (-not $addComponentsOnly) {
 	  		Show-InstallationProgress -StatusMessage 'Installing Office Professional. This may take some time. Please wait...'
-			Execute-Process -Path "$dirFiles\Office\Setup.exe" -Parameters "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes '3010'
+			Execute-Process -Path "$dirFiles\Setup.exe" -Parameters "/adminfile `"$dirFiles\Config\Office2013ProPlus.MSP`" /config `"$dirFiles\ProPlus.WW\Config.xml`"" -WindowStyle Hidden -IgnoreExitCodes '3010'
 		}
 		
 		# Install InfoPath if required
@@ -254,18 +257,18 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close applications that cause uninstall to fail
-		Show-InstallationWelcome -CloseApps 'excel,groove,onenote,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio'
+		Show-InstallationWelcome -CloseApps 'excel,groove,infopath,onenote,outlook,mspub,powerpnt,winword,winproj,visio'
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
-
-
+		
+		
 		##*===============================================
 		##* UNINSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
-
-		Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
+		
+		Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 		
 		
 		##*===============================================
@@ -275,7 +278,7 @@ Try {
 		
 		## <Perform Post-Uninstallation tasks here>
 	}
-	
+
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================

@@ -14,6 +14,7 @@ Version 3.5.1 [12/05/2014]
 	Fixed issue in Copy-File where operation would fail if destination folder was not created before operation when using wildcards in -Path parameter
 	Fixed issue in Unblock-AppExecution on some systems where process failed to unblock if only one process was initially blocked
 	Fixed issue with Deploy-Application.exe not executing on systems where only .NET 4 or higher installed by adding App.config file
+	Fixed a number of issues with the Office 2013 example script
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
 	Improved defining default values for script variables not defined
 	Improved path validation in Execute-Process
