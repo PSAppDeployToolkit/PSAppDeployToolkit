@@ -8132,6 +8132,14 @@ $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator,$scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
+## Check how the script was invoked
+If ($invokingScript) {
+	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
+}
+
 ## Dot Source script extensions
 If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType Leaf) {
 	. "$scriptRoot\$appDeployToolkitDotSourceExtensions"
@@ -8149,7 +8157,7 @@ If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 	Throw $XMLConfigVersionErr
 }
 
-## Log system information
+## Log system/script information
 If ($appScriptVersion) { Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName }
 If ($deployAppScriptFriendlyName) { Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName }
 If ($deployAppScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName }
@@ -8173,15 +8181,9 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Check how the script was invoked
+## If the script was invoked by the Help console, exit the script now
 If ($invokingScript) {
-	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
-
-	#  If the script was invoked by the Help console, exit the script now because we don't need to initialize logging.
 	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
-}
-Else {
-	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
 }
 
 ## Get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
@@ -8234,9 +8236,7 @@ Catch {
 }
 
 ## Check if script is running in session zero
-If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) {
-	$SessionZero = $true
-}
+If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true }
 
 ## If script is running in session zero
 If ($SessionZero) {
@@ -8306,7 +8306,7 @@ Else {
 }
 
 ## Get the DPI scaling, property only exists if DPI scaling has been changed on the system at least once
-[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
+[int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
 Switch ($dpiPixels) {
 	96 { [int32]$dpiScale = 100 }
 	120 { [int32]$dpiScale = 125 }
@@ -8314,6 +8314,7 @@ Switch ($dpiPixels) {
 	192 { [int32]$dpiScale = 200 }
 	Default { [int32]$dpiScale = 100 }
 }
+Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 
 ## Set Deploy Mode switches
 If ($deployMode) {
