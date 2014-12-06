@@ -8054,6 +8054,11 @@ Function Get-LoggedOnUser {
 ##*=============================================
 #region ScriptBody
 
+## If the script was invoked by the Help Console, exit the script now
+If ($invokingScript) {
+	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
+}
+
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($ReferringApplication) {
 	$installName = $ReferringApplication
@@ -8180,11 +8185,6 @@ Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHo
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
-
-## If the script was invoked by the Help console, exit the script now
-If ($invokingScript) {
-	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
-}
 
 ## Get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
 [psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
