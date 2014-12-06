@@ -2441,7 +2441,7 @@ Function Get-MsiExitCodeMessage {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MsiExitCode').Type) {
-			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp
+			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -2534,7 +2534,7 @@ Function Test-MsiExecMutex {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MsiExec').Type) {
-			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp
+			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -4032,7 +4032,7 @@ Function Refresh-Desktop {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MyWinAPI.Explorer').Type) {
-			Add-Type -MemberDefinition $refreshDesktopSource -Namespace MyWinAPI -Name Explorer -Language CSharp
+			Add-Type -MemberDefinition $refreshDesktopSource -Namespace MyWinAPI -Name Explorer -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -4293,7 +4293,7 @@ Function Unblock-AppExecution {
 		
 		## Remove Debugger values to unblock processes 
 		[psobject[]]$unblockProcesses = $null 
-		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | Foreach-Object { Get-ItemProperty -LiteralPath $_.PSPath })
+		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue'})
 		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) { 
 			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName} 
 			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'                     
@@ -6168,7 +6168,7 @@ Function Set-PinnedApplication {
 			}
 '@
 			If (-not ([System.Management.Automation.PSTypeName]'Verb.Load').Type) {
-				Add-Type -TypeDefinition $GetPinVerbSource -Language CSharp
+				Add-Type -TypeDefinition $GetPinVerbSource -Language CSharp -ErrorAction 'Stop'
 			}
 			
 			Write-Log -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
@@ -6315,7 +6315,7 @@ Function Get-IniValue {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'IniFile.GetValue').Type) {
-			Add-Type -TypeDefinition $GetIniValueSource -Language CSharp
+			Add-Type -TypeDefinition $GetIniValueSource -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -6411,7 +6411,7 @@ Function Set-IniValue {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'IniFile.SetValue').Type) {
-			Add-Type -TypeDefinition $SetIniValueSource -Language CSharp
+			Add-Type -TypeDefinition $SetIniValueSource -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -7275,7 +7275,7 @@ Function Test-PowerPoint {
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'ScreenDetection.FullScreen').Type) {
 			[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms'
-			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp
+			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -7636,7 +7636,7 @@ Function Set-ActiveSetup {
 .PARAMETER Locale
 	Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
 .PARAMETER PurgeActiveSetupKey
-	Will load each logon user's HKCU registry hive to remove Active Setup entry.
+	Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry.
 .PARAMETER DisableActiveSetup
 	Disables the Active Setup entry so that the StubPath file will not be executed.
 .PARAMETER ContinueOnError
@@ -7690,8 +7690,11 @@ Function Set-ActiveSetup {
 			[string]$ActiveSetupKey = "HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
 			[string]$HKCUActiveSetupKey = "HKCU:Software\Microsoft\Active Setup\Installed Components\$Key"
 			
-			## Delete Active Setup registry entry for all logon user registry hives on the system
+			## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
 			If ($PurgeActiveSetupKey) {
+				Write-Log -Message "Remove Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
+				Remove-RegistryKey -Key $ActiveSetupKey
+
 				Write-Log -Message "Remove Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
 				[scriptblock]$RemoveHKCUActiveSetupKey = { Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID }
 				Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)
@@ -8013,7 +8016,7 @@ Function Get-LoggedOnUser {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'QueryUser.Session').Type) {
-			Add-Type -TypeDefinition $QueryUserSessionSource -Language CSharp
+			Add-Type -TypeDefinition $QueryUserSessionSource -Language CSharp -ErrorAction 'Stop'
 		}
 	}
 	Process {
