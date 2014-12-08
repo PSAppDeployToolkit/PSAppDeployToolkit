@@ -8001,6 +8001,10 @@ Function Start-ServiceAndDependencies {
 			## Discover if the service is currently stopped
 			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]" -Source ${CmdletName}
 			If ($Service.Status -ne 'Running') {
+				#  Start the parent service
+				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
+				[System.ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+				
 				#  Discover all dependent services that are stopped and start them
 				If (-not $SkipDependentServices) {
 					Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
@@ -8021,9 +8025,6 @@ Function Start-ServiceAndDependencies {
 						Write-Log -Message "Dependent service(s) were not discovered for service [$Name]" -Source ${CmdletName}
 					}
 				}
-				#  Start the parent service
-				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
-				[System.ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -8647,7 +8648,7 @@ If ($IsLocalSystemAccount) {
 	& $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the Task Scheduler service
 	& $TestServiceHealth -ServiceName 'Schedule'
-	
+
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 }
 
