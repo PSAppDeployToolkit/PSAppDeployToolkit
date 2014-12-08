@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/05/2014'
+[string]$appDeployMainScriptDate = '12/08/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7551,6 +7551,7 @@ Function Disable-TerminalServerInstallMode {
 }
 #endregion
 
+
 #region Function Set-ActiveSetup
 Function Set-ActiveSetup {
 <#
@@ -7722,6 +7723,440 @@ Function Set-ActiveSetup {
 			Write-Log -Message "Failed to set Active Setup registry entry. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Test-ServiceExists
+Function Test-ServiceExists {
+<#
+.SYNOPSIS
+	Check to see if a service exists.
+.DESCRIPTION
+	Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
+.PARAMETER Name
+	Specify the name of the service.
+.PARAMETER ComputerName
+	Specify the name of the computer. Default is: the local computer.
+.PARAMETER PassThru
+	Return the WMI service object.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Test-ServiceExists -Name 'wuauserv'
+.EXAMPLE
+	Test-ServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
+	Check if a service exists and then delete it by using the -PassThru parameter.
+.NOTES
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Name,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$ComputerName = $env:ComputerName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$PassThru,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	Begin {
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop'
+			If ($ServiceObject) {
+				Write-Log -Message "Service [$Name] exists" -Source ${CmdletName}
+				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $true }
+			}
+			Else {
+				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName}
+				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $false }
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed check to see if service [$Name] exists." -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed check to see if service [$Name] exists: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Stop-ServiceAndDependencies
+Function Stop-ServiceAndDependencies {
+<#
+.SYNOPSIS
+	Stop Windows service and its dependencies.
+.DESCRIPTION
+	Stop Windows service and its dependencies.
+.PARAMETER Name
+	Specify the name of the service.
+.PARAMETER ComputerName
+	Specify the name of the computer. Default is: the local computer.
+.PARAMETER SkipServiceExistsTest
+	Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
+.PARAMETER SkipDependentServices
+	Choose to skip checking for and stopping dependent services. Default is: $false.
+.PARAMETER PassThru
+	Return the System.ServiceProcess.ServiceController service object.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Stop-ServiceAndDependencies -Name 'wuauserv'
+.NOTES
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Name,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$ComputerName = $env:ComputerName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$SkipServiceExistsTest,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$SkipDependentServices,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$PassThru,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	Begin {
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			## Check to see if the service exists
+			If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
+				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName} -Severity 2
+				Throw "Service [$Name] does not exist."
+			}
+			
+			## Get the service object
+			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
+			[System.ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+			## Wait up to 60 seconds if service is in a pending state
+			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
+			If ($PendingStatus -contains $Service.Status) {
+				Switch ($Service.Status) {
+					{'ContinuePending'} { $DesiredStatus = 'Running' }
+					{'PausePending'} { $DesiredStatus = 'Paused' }
+					{'StartPending'} { $DesiredStatus = 'Running' }
+					{'StopPending'} { $DesiredStatus = 'Stopped' }
+				}
+				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
+				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+				$Service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				$Service.Refresh()
+			}
+			## Discover if the service is currently running
+			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]" -Source ${CmdletName}
+			If ($Service.Status -ne 'Stopped') {
+				#  Discover all dependent services that are running and stop them
+				If (-not $SkipDependentServices) {
+					Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Stopped'." -Source ${CmdletName}
+					[System.ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
+					If ($DependentServices) {
+						ForEach ($DependentService in $DependentServices) {
+							Write-Log -Message "Stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
+							Try {
+								Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $DependentService.ServiceName -ErrorAction 'Stop') -Force -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+							}
+							Catch {
+								Write-Log -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
+								Continue
+							}
+						}
+					}
+					Else {
+						Write-Log -Message "Dependent service(s) were not discovered for service [$Name]" -Source ${CmdletName}
+					}
+				}
+				#  Stop the parent service
+				Write-Log -Message "Stop parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
+				[System.ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to stop the service [$Name]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			If (-not $ContinueOnError) {
+				Throw "Failed to stop the service [$Name]: $($_.Exception.Message)"
+			}
+		}
+		Finally {
+			#  Return the service object if option selected
+			If ($PassThru -and $Service) { Write-Output $Service }
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Start-ServiceAndDependencies
+Function Start-ServiceAndDependencies {
+<#
+.SYNOPSIS
+	Start Windows service and its dependencies.
+.DESCRIPTION
+	Start Windows service and its dependencies.
+.PARAMETER Name
+	Specify the name of the service.
+.PARAMETER ComputerName
+	Specify the name of the computer. Default is: the local computer.
+.PARAMETER SkipServiceExistsTest
+	Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
+.PARAMETER SkipDependentServices
+	Choose to skip checking for and starting dependent services. Default is: $false.
+.PARAMETER PassThru
+	Return the System.ServiceProcess.ServiceController service object.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Start-ServiceAndDependencies -Name 'wuauserv'
+.NOTES
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Name,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$ComputerName = $env:ComputerName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$SkipServiceExistsTest,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$SkipDependentServices,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$PassThru,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	Begin {
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			## Check to see if the service exists
+			If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
+				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName} -Severity 2
+				Throw "Service [$Name] does not exist."
+			}
+			
+			## Get the service object
+			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
+			[System.ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+			## Wait up to 60 seconds if service is in a pending state
+			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
+			If ($PendingStatus -contains $Service.Status) {
+				Switch ($Service.Status) {
+					'ContinuePending' { $DesiredStatus = 'Running' }
+					'PausePending' { $DesiredStatus = 'Paused' }
+					'StartPending' { $DesiredStatus = 'Running' }
+					'StopPending' { $DesiredStatus = 'Stopped' }
+				}
+				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
+				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+				$Service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				$Service.Refresh()
+			}
+			## Discover if the service is currently stopped
+			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]" -Source ${CmdletName}
+			If ($Service.Status -ne 'Running') {
+				#  Discover all dependent services that are stopped and start them
+				If (-not $SkipDependentServices) {
+					Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
+					[System.ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
+					If ($DependentServices) {
+						ForEach ($DependentService in $DependentServices) {
+							Write-Log -Message "Start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
+							Try {
+								Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $DependentService.ServiceName -ErrorAction 'Stop') -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+							}
+							Catch {
+								Write-Log -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
+								Continue
+							}
+						}
+					}
+					Else {
+						Write-Log -Message "Dependent service(s) were not discovered for service [$Name]" -Source ${CmdletName}
+					}
+				}
+				#  Start the parent service
+				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
+				[System.ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to start the service [$Name]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			If (-not $ContinueOnError) {
+				Throw "Failed to start the service [$Name]: $($_.Exception.Message)"
+			}
+		}
+		Finally {
+			#  Return the service object if option selected
+			If ($PassThru -and $Service) { Write-Output $Service }
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Get-ServiceStartMode
+Function Get-ServiceStartMode
+{
+<#
+.SYNOPSIS
+	Get the service startup mode.
+.DESCRIPTION
+	Get the service startup mode.
+.PARAMETER Name
+	Specify the name of the service.
+.PARAMETER ComputerName
+	Specify the name of the computer. Default is: the local computer.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Get-ServiceStartMode -Name 'wuauserv'
+.NOTES
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdLetBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Name,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$ComputerName = $env:ComputerName,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	Begin {
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			Write-Log -Message "Get the service [$Name] startup mode." -Source ${CmdletName}
+			[string]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
+			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]" -Source ${CmdletName}
+			Write-Output $ServiceStartMode
+		}
+		Catch {
+			Write-Log -Message "Failed to get the service [$Name] startup mode. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			If (-not $ContinueOnError) {
+				Throw "Failed to get the service [$Name] startup mode: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Set-ServiceStartMode
+Function Set-ServiceStartMode
+{
+<#
+.SYNOPSIS
+	Set the service startup mode.
+.DESCRIPTION
+	Set the service startup mode.
+.PARAMETER Name
+	Specify the name of the service.
+.PARAMETER ComputerName
+	Specify the name of the computer. Default is: the local computer.
+.PARAMETER StartMode
+	Specify startup mode for the service. Options: Automatic, Manual, Disabled, Boot, System.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Set-ServiceStartMode -Name 'wuauserv' -StartMode 'Automatic'
+.NOTES
+.LINK
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdLetBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Name,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$ComputerName = $env:ComputerName,
+		[Parameter(Mandatory=$true)]
+		[ValidateSet('Automatic','Manual','Disabled','Boot','System')]
+		[string]$StartMode,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	Begin {
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
+			$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
+			If($ChangeStartMode.ReturnValue -eq 0) {
+				Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
+			}
+			Else {
+				Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			If (-not $ContinueOnError) {
+				Throw "Failed to set service [$Name] startup mode to [$StartMode]: $($_.Exception.Message)"
 			}
 		}
 	}
