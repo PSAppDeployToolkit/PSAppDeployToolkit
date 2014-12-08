@@ -8084,6 +8084,8 @@ Function Get-ServiceStartMode
 		Try {
 			Write-Log -Message "Get the service [$Name] startup mode." -Source ${CmdletName}
 			[string]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
+			## If service start mode is set to 'Auto', change value to 'Automatic' to be consistent with 'Set-ServiceStartMode' function
+			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
 			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]" -Source ${CmdletName}
 			Write-Output $ServiceStartMode
 		}
