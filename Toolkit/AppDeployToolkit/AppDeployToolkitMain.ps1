@@ -1333,7 +1333,7 @@ Function Show-InstallationPrompt {
 					# Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
 					If ($ExitOnTimeout) {
-						Exit-Script $configInstallationUIExitCode
+						Exit-Script -ExitCode $configInstallationUIExitCode
 					}
 					Else {
 						Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
@@ -2349,7 +2349,7 @@ Function Execute-Process {
 					Else {
 						Write-Log -Message "Execution failed with exit code [$returnCode]" -Severity 3 -Source ${CmdletName}
 					}
-					Exit-Script $returnCode
+					Exit-Script -ExitCode $returnCode
 				}
 			}
 		}
@@ -2366,7 +2366,7 @@ Function Execute-Process {
 				Write-Output $ExecutionResults
 			}
 			Else {
-				Exit-Script $returnCode
+				Exit-Script -ExitCode $returnCode
 			}
 		}
 	}
@@ -4692,7 +4692,7 @@ Function Show-InstallationWelcome {
 				If (-not $Silent) {
 					Show-InstallationPrompt -Message ($configDiskSpaceMessage -f $installTitle, $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
 				}
-				Exit-Script $configInstallationUIExitCode
+				Exit-Script -ExitCode $configInstallationUIExitCode
 			}
 			Else {
 				Write-Log -Message 'Successfully passed minimum disk space requirement check.' -Source ${CmdletName}
@@ -4845,7 +4845,7 @@ Function Show-InstallationWelcome {
 					#  Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
 					
-					Exit-Script $configInstallationUIExitCode
+					Exit-Script -ExitCode $configInstallationUIExitCode
 				}
 				#  Stop the script (user chose to defer)
 				ElseIf ($promptResult -eq 'Defer') {
@@ -4857,7 +4857,7 @@ Function Show-InstallationWelcome {
 					#  Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
 					
-					Exit-Script $configInstallationDeferExitCode
+					Exit-Script -ExitCode $configInstallationDeferExitCode
 				}
 			}
 		}
@@ -8464,7 +8464,7 @@ Catch {
 		Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]" -Source $appDeployToolkitName
 	}
 	Else {
-		Exit-Script 1
+		Exit-Script -ExitCode 1
 	}
 }
 
