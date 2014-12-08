@@ -5,6 +5,7 @@ Version 4.0.0 [12/08/2014]
 	Added variable to determine if running in terminal server session
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Added functions to handle Windows services: Test-ServiceExists, Stop-ServiceAndDependencies, Start-ServiceAndDependencies, Get-ServiceStartMode, Set-ServiceStartMode
+	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
 
 Version 3.5.1 [12/05/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher

@@ -8616,6 +8616,40 @@ Catch {
 	$runningTaskSequence = $false
 }
 
+## Check to see if the Task Scheduler service is in a healthy state
+## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
+[boolean]$IsTaskSchedulerHealthy = $true
+If ($IsLocalSystemAccount) {
+	[scriptblock]$TestServiceHealth = {
+		Param (
+			[string]$ServiceName
+		)
+		Try {
+				If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
+				If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
+					Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
+				}
+				Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
+			}
+			Else {
+				[boolean]$IsTaskSchedulerHealthy = $false
+			}
+		}
+		Catch {
+			[boolean]$IsTaskSchedulerHealthy = $false
+		}
+	}
+	#  Check the health of the 'COM+ Event System' service
+	& $TestServiceHealth -ServiceName 'EventSystem'
+	#  Check the health of the 'Remote Procedure Call (RPC)' service
+	& $TestServiceHealth -ServiceName 'RpcSs'
+	#  Check the health of the 'Windows Event Log' service
+	& $TestServiceHealth -ServiceName 'EventLog'
+	#  Check the health of the Task Scheduler service
+	& $TestServiceHealth -ServiceName 'Schedule'
+}
+Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
+
 ## Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true }
 
@@ -8644,20 +8678,22 @@ If ($SessionZero) {
 				
 				If ($usersLoggedOn) {
 					## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
-					If ($CurrentConsoleUserSession) {
-						Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-						Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-					}
-					ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-						Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-						Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-					}
-					Else {
-						Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
+					If ($IsTaskSchedulerHealthy) {
+						If ($CurrentConsoleUserSession) {
+							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
+							Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+						}
+						ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
+							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
+							Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+						}
+						Else {
+							Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
+						}
 					}
 					
 					## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
-					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
+					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully or the Task Scheduler service is not in a healthy state. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
 					$deployMode = 'NonInteractive'
 					Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 				}
