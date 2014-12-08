@@ -8647,8 +8647,9 @@ If ($IsLocalSystemAccount) {
 	& $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the Task Scheduler service
 	& $TestServiceHealth -ServiceName 'Schedule'
+	
+	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 }
-Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 
 ## Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true }
