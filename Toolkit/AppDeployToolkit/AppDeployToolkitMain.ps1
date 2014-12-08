@@ -8625,7 +8625,7 @@ If ($IsLocalSystemAccount) {
 			[string]$ServiceName
 		)
 		Try {
-				If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
+			If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
 				If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
 					Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
 				}
