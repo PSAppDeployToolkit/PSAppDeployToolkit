@@ -3896,7 +3896,7 @@ Function Execute-ProcessAsUser {
 				Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml $xmlSchTaskFilePath" -WindowStyle Hidden -CreateNoWindow -PassThru
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
 				If ($ContinueOnError) {
 					Return
