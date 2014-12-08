@@ -1,11 +1,11 @@
 Version 4.0.0 [12/08/2014]
 	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4.
-	Added function Set-ActiveSetup to allow creation/purging of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
-	Updated documentation
+	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
-	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Added functions to handle Windows services: Test-ServiceExists, Stop-ServiceAndDependencies, Start-ServiceAndDependencies, Get-ServiceStartMode, Set-ServiceStartMode
 	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
+	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
+	Updated documentation
 
 Version 3.5.1 [12/05/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
