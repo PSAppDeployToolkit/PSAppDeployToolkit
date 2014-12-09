@@ -3955,11 +3955,11 @@ Function Execute-ProcessAsUser {
 		If ($Wait) {
 			Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
 			Start-Sleep -Seconds 1
-			While ((Start-Process -FilePath $exeSchTasks -ArgumentList "/query /TN $schTaskName /V /FO CSV" -NoNewWindow -Wait | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+			While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
 				Start-Sleep -Seconds 5
 			}
 			#  Get the exit code from the process launched by the scheduled task
-			[int32]$global:executeProcessAsUserExitCode = Start-Process -FilePath $exeSchTasks -ArgumentList "/query /TN $schTaskName /V /FO CSV" -NoNewWindow -Wait | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			[int32]$global:executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
 			Write-Log -Message "Exit code from process launched by scheduled task [$global:executeProcessAsUserExitCode]" -Source ${CmdletName}
 		}
 		
