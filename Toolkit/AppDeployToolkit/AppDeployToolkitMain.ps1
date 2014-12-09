@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/08/2014'
+[string]$appDeployMainScriptDate = '12/09/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2391,7 +2391,7 @@ Function Get-MsiExitCodeMessage {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://msdn.microsoft.com/en-us/library/aa368542(v=vs.85).aspx        
+	http://msdn.microsoft.com/en-us/library/aa368542(v=vs.85).aspx
 	http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
