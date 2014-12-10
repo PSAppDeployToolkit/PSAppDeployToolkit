@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/09/2014'
+[string]$appDeployMainScriptDate = '12/10/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -455,7 +455,7 @@ Function Write-Log {
 .PARAMETER LogFileDirectory
 	Set the directory where the log file will be saved.
 .PARAMETER LogFileName
-	Set the name of the log file.	
+	Set the name of the log file.
 .PARAMETER MaxLogFileSizeMB
 	Maximum file size limit for log file in megabytes (MB). Default is 10 MB.
 .PARAMETER WriteHost
@@ -1942,7 +1942,7 @@ Function Execute-MSI {
 		## Enclose the MST file in quotes to avoid issues with spaces when running msiexec
 		[string]$mstFile = "`"$transform`""
 		## Enclose the MSP file in quotes to avoid issues with spaces when running msiexec
-		[string]$mspFile = "`"$patch`""		
+		[string]$mspFile = "`"$patch`""
 
 		## Start building the MsiExec command line starting with the base action and file
 		$argsMSI = "$option $msiFile"
@@ -2145,7 +2145,7 @@ Function Execute-Process {
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
 		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]		
+		[ValidateNotNullorEmpty()]
 		[switch]$CreateNoWindow = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -2576,7 +2576,7 @@ Function Test-MsiExecMutex {
 
 #region Function New-Folder
 Function New-Folder {
-<# 
+<#
 .SYNOPSIS
 	Create a new folder.
 .DESCRIPTION
@@ -3629,9 +3629,9 @@ Function New-Shortcut {
 	Description of the shortcut
 .PARAMETER WorkingDirectory
 	Working Directory to be used for the target path
-.PARAMETER WindowStyle 
+.PARAMETER WindowStyle
 	Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
-.PARAMETER RunAsAdmin 
+.PARAMETER RunAsAdmin
 	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
@@ -3770,7 +3770,7 @@ Function Execute-ProcessAsUser {
 .PARAMETER Parameters
 	Arguments to be passed to the file being executed.
 .PARAMETER RunLevel
-	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are: 
+	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are:
 	- HighestAvailable: Tasks run by using the highest (admin) privileges. This works even if the user is not an Admin. Default value.
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER Wait
@@ -3988,7 +3988,7 @@ Function Refresh-Desktop {
 .SYNOPSIS
 	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 .DESCRIPTION
-	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.	
+	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -4291,12 +4291,12 @@ Function Unblock-AppExecution {
 			Return
 		}
 		
-		## Remove Debugger values to unblock processes 
-		[psobject[]]$unblockProcesses = $null 
+		## Remove Debugger values to unblock processes
+		[psobject[]]$unblockProcesses = $null
 		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue'})
-		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) { 
+		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
 			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName} 
-			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'                     
+			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'
 		}
 		
 		## If block execution variable is $true, set it to $false
@@ -4832,7 +4832,7 @@ Function Show-InstallationWelcome {
 					If (($deferTimes) -or ($deferDeadlineUniversal)) {
 						Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					}
-					## Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period    
+					## Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period
 					If ($script:welcomeTimer) {
 						Try {
 							$script:welcomeTimer.Dispose()
@@ -5430,7 +5430,7 @@ Function Show-InstallationRestartPrompt {
 .PARAMETER CountdownNoHideSeconds
 	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 .PARAMETER NoCountdown
-	Specifies not to show a countdown, just the Restart Now and Restart Later buttons. 
+	Specifies not to show a countdown, just the Restart Now and Restart Later buttons.
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
@@ -6899,7 +6899,7 @@ Function Send-Keys {
 .SYNOPSIS
 	Send a sequence of keys to an application window.
 .DESCRIPTION
-	Send a sequence of keys to an application window. 
+	Send a sequence of keys to an application window.
 .PARAMETER WindowTitle
 	The title of the application window. This can be a partial title.
 .PARAMETER Keys
