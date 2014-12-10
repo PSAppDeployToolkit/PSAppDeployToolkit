@@ -3822,6 +3822,26 @@ Function Execute-ProcessAsUser {
 			}
 		}
 		
+		## Build the scheduled task XML name
+		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
+		
+		##  Create the temporary folder if it doesn't already exist
+		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container)) {
+			New-Item -Path $dirAppDeployTemp -ItemType Directory -Force -ErrorAction 'Stop'
+		}
+		
+		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
+		If ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe') {
+			[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"'
+			[string[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
+			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
+			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
+			$executeProcessAsUserScript += 'WScript.Quit intReturn'
+			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding default -ErrorAction 'SilentlyContinue'
+			$Path = 'wscript.exe'
+			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
+		}
+		
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -3861,14 +3881,8 @@ Function Execute-ProcessAsUser {
 "@
 		## Export the XML to file
 		Try {
-			#  Create the temporary folder if it doesn't already exist
-			If (-not (Test-Path -Path $configToolkitTempPath -PathType Container)) {
-				New-Item -Path $configToolkitTempPath -ItemType Directory -Force -ErrorAction 'Stop'
-			}
-			#  Build the scheduled task XML name
-			[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 			#  Specify the filename to export the XML to
-			[string]$xmlSchTaskFilePath = "$configToolkitTempPath\$schTaskName.xml"
+			[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
 		}
 		Catch {
