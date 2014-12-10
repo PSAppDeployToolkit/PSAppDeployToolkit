@@ -12,26 +12,26 @@ namespace PSAppDeployToolkit
     {
         public static void Main()
         {
-            // Set up variables
-            string currentAppPath = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            string currentAppFolder = Path.GetDirectoryName(currentAppPath);
-            string appDeployScriptPath = Path.Combine(currentAppFolder, "Deploy-Application.ps1");
-            string appDeployToolkitFolder = Path.Combine(currentAppFolder, "AppDeployToolkit");
-            string appDeployToolkitXMLPath = Path.Combine(appDeployToolkitFolder, "AppDeployToolkitConfig.xml");
-            string powershellExePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
-            string powershellArgs = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
-            List<string> commandLineArgs = new List<string>(Environment.GetCommandLineArgs());
-            bool isForceX86Mode = false;
-            bool isRequireAdmin = false;
-
-            // Get OS Architecture. Check does not return correct value when running in x86 process on x64 system but it works for our purpose.
-            // To get correct OS architecture when running in x86 process on x64 system, we would also have to check environment variable: PROCESSOR_ARCHITEW6432.
-            bool is64BitOS = false;
-            if (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").Contains("64"))
-                is64BitOS = true;
-
             try
             {
+                // Set up variables
+                string currentAppPath = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+                string currentAppFolder = Path.GetDirectoryName(currentAppPath);
+                string appDeployScriptPath = Path.Combine(currentAppFolder, "Deploy-Application.ps1");
+                string appDeployToolkitFolder = Path.Combine(currentAppFolder, "AppDeployToolkit");
+                string appDeployToolkitXMLPath = Path.Combine(appDeployToolkitFolder, "AppDeployToolkitConfig.xml");
+                string powershellExePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
+                string powershellArgs = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
+                List<string> commandLineArgs = new List<string>(Environment.GetCommandLineArgs());
+                bool isForceX86Mode = false;
+                bool isRequireAdmin = false;
+
+                // Get OS Architecture. Check does not return correct value when running in x86 process on x64 system but it works for our purpose.
+                // To get correct OS architecture when running in x86 process on x64 system, we would also have to check environment variable: PROCESSOR_ARCHITEW6432.
+                bool is64BitOS = false;
+                if (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").Contains("64"))
+                    is64BitOS = true;
+
                 // Trim ending & starting empty space from each element in the command-line
                 commandLineArgs = commandLineArgs.ConvertAll(s => s.Trim());
                 // Remove first command-line argument as this is always the executable name
@@ -76,11 +76,12 @@ namespace PSAppDeployToolkit
                 }
 
                 // Define the command line arguments to pass to PowerShell
-                powershellArgs = powershellArgs + " -Command \"" + appDeployScriptPath + "\"";
+                powershellArgs = powershellArgs + " -Command & { & '" + appDeployScriptPath + "'";
                 if (commandLineArgs.Count > 0)
                 {
                     powershellArgs = powershellArgs + " " + string.Join(" ", commandLineArgs.ToArray());
                 }
+                powershellArgs = powershellArgs + "; Exit $LastExitCode }";
 
                 // Verify if the App Deploy script file exists
                 if (!File.Exists(appDeployScriptPath))
@@ -121,6 +122,8 @@ namespace PSAppDeployToolkit
                 }
 
                 // Define PowerShell process
+                WriteDebugMessage("PowerShell Path: " + powershellExePath);
+                WriteDebugMessage("PowerShell Parameters: " + powershellArgs);
                 ProcessStartInfo processStartInfo = new ProcessStartInfo();
                 processStartInfo.FileName = powershellExePath;
                 processStartInfo.Arguments = powershellArgs;
