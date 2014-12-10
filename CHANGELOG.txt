@@ -4,11 +4,6 @@ Version 4.0.0 [12/10/2014]
 	Added variable to determine if running in terminal server session
 	Added functions to handle Windows services: Test-ServiceExists, Stop-ServiceAndDependencies, Start-ServiceAndDependencies, Get-ServiceStartMode, Set-ServiceStartMode
 	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
-	Improved Get-ScheduledTask to retrieve all scheduled task details, remove spaces and colons from property names, allow retrieval of details for a specific task name
-	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
-	Updated documentation
-
-Version 3.5.1 [12/10/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
@@ -25,7 +20,10 @@ Version 3.5.1 [12/10/2014]
 	Improved error message when toolkit launched without admin permissions
 	Improved detection of when invoking script is the Help script to avoid false positives
 	Improved Deploy-Application.ps1 to use Write-Error instead of Write-Output when toolkit fails to dot source
+	Improved Get-ScheduledTask to retrieve all scheduled task details, remove spaces and colons from property names, allow retrieval of details for a specific task name, and remove lines with column headers from results
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
+	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
+	Updated documentation
 	Updated Italian translations
 
 Version 3.5.0 [11/24/2014]
