@@ -97,16 +97,15 @@ If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $env:PROGRAMFILES 
 [boolean]$IsMachinePartOfDomain = (Get-WmiObject Win32_ComputerSystem -ErrorAction 'SilentlyContinue').PartOfDomain
 [string]$envMachineWorkgroup = ''
 [string]$envMachineADDomain = ''
+[string]$envLogonServer = ''
+[string]$MachineDomainController = ''
 If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain.ToLower()
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
 		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
-	Catch {
-		If (-not $MachineDomainController) { $MachineDomainController = '' }
-		If (-not $envLogonServer) { $envLogonServer = '' }
-	}
+	Catch { }
 }
 Else {
 	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain.ToUpper()
@@ -130,14 +129,10 @@ Else {
 [boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
 [boolean]$IsDomainControllerOS = [boolean]($envOSProductType -eq 2)
 [boolean]$IsWorkStationOS = [boolean]($envOSProductType -eq 1)
-If ($IsServerOS) {
-	[string]$envOSProductTypeName = 'Server'
-}
-ElseIf ($IsDomainControllerOS) {
-	[string]$envOSProductTypeName = 'Domain Controller'
-}
-ElseIf ($IsWorkStationOS) {
-	[string]$envOSProductTypeName = 'Workstation'
+Switch ($envOSProductType) {
+	3 { [string]$envOSProductTypeName = 'Server' }
+	2 { [string]$envOSProductTypeName = 'Domain Controller' }
+	1 { [string]$envOSProductTypeName = 'Workstation' }
 }
 #  Get the OS Architecture
 [boolean]$Is64Bit = [boolean]((Get-WmiObject -Class Win32_Processor | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty AddressWidth) -eq '64')
@@ -190,7 +185,7 @@ If ($invokingScript) {
 	[string]$scriptParentPath = Split-Path -Path $invokingScript -Parent
 }
 Else {
-	#  If this script was not invoked by another script, fall back on the directory one level above this script
+	#  If this script was not invoked by another script, fall back to the directory one level above this script
 	[string]$scriptParentPath = (Get-Item -Path $scriptRoot).Parent.FullName
 }
 
