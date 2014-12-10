@@ -1,4 +1,4 @@
-Version 4.0.0 [12/08/2014]
+Version 4.0.0 [12/09/2014]
 	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
@@ -7,7 +7,7 @@ Version 4.0.0 [12/08/2014]
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Updated documentation
 
-Version 3.5.1 [12/05/2014]
+Version 3.5.1 [12/09/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
@@ -16,6 +16,7 @@ Version 3.5.1 [12/05/2014]
 	Fixed issue in Copy-File where operation would fail if destination folder was not created before operation when using wildcards in -Path parameter
 	Fixed issue in Unblock-AppExecution on some systems where process failed to unblock if only one process was initially blocked
 	Fixed issue with Deploy-Application.exe not executing on systems where only .NET 4 or higher installed by adding App.config file
+	Fixed issue with Deploy-Application.exe by using -Command parameter instead of -File to avoid bug in PowerShell 2.0 where incorrect exit code might be returned if -File parameter used
 	Fixed a number of issues with the Office 2013 example script
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
 	Improved defining default values for script variables not defined
