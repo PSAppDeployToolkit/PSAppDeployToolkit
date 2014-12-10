@@ -51,12 +51,16 @@ namespace PSAppDeployToolkit
                 string commandLineAppDeployScriptPath = String.Empty;
                 if (commandLineArgs.Exists(x => x.StartsWith("-File ")))
                 {
-                    commandLineAppDeployScriptFileArg = commandLineArgs.Find(x => x.StartsWith("-File "));
-                    appDeployScriptPath = commandLineAppDeployScriptFileArg.Replace("-File ", String.Empty).Replace("\"", String.Empty);
+                    throw new Exception("'-File' parameter was specified on the command-line. Please use the '-Command' parameter instead because using the '-File' parameter can return the incorrect exit code in PowerShell 2.0.");
+                }
+                else if (commandLineArgs.Exists(x => x.StartsWith("-Command ")))
+                {
+                    commandLineAppDeployScriptFileArg = commandLineArgs.Find(x => x.StartsWith("-Command "));
+                    appDeployScriptPath = commandLineAppDeployScriptFileArg.Replace("-Command ", String.Empty).Replace("\"", String.Empty);
                     if (!Path.IsPathRooted(appDeployScriptPath))
                         appDeployScriptPath = Path.Combine(currentAppFolder, appDeployScriptPath);
-                    commandLineArgs.RemoveAt(commandLineArgs.FindIndex(x => x.StartsWith("-File")));
-                    WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
+                    commandLineArgs.RemoveAt(commandLineArgs.FindIndex(x => x.StartsWith("-Command")));
+                    WriteDebugMessage("'-Command' parameter specified on command-line. Passing command-line untouched...");
                 }
                 else if (commandLineArgs.Exists(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")))
                 {
@@ -64,15 +68,15 @@ namespace PSAppDeployToolkit
                     if (!Path.IsPathRooted(appDeployScriptPath))
                         appDeployScriptPath = Path.Combine(currentAppFolder, appDeployScriptPath);
                     commandLineArgs.RemoveAt(commandLineArgs.FindIndex(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")));
-                    WriteDebugMessage(".ps1 file specified on command-line. Appending '-File' parameter name...");
+                    WriteDebugMessage(".ps1 file specified on command-line. Appending '-Command' parameter name...");
                 }
                 else
                 {
-                    WriteDebugMessage("No '-File' parameter specified on command-line. Adding parameter '-File \"" + appDeployScriptPath + "\"'...");
+                    WriteDebugMessage("No '-Command' parameter specified on command-line. Adding parameter '-Command \"" + appDeployScriptPath + "\"'...");
                 }
 
                 // Define the command line arguments to pass to PowerShell
-                powershellArgs = powershellArgs + " -File \"" + appDeployScriptPath + "\"";
+                powershellArgs = powershellArgs + " -Command \"" + appDeployScriptPath + "\"";
                 if (commandLineArgs.Count > 0)
                 {
                     powershellArgs = powershellArgs + " " + string.Join(" ", commandLineArgs.ToArray());
