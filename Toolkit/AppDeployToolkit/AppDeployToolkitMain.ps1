@@ -133,6 +133,7 @@ Switch ($envOSProductType) {
 	3 { [string]$envOSProductTypeName = 'Server' }
 	2 { [string]$envOSProductTypeName = 'Domain Controller' }
 	1 { [string]$envOSProductTypeName = 'Workstation' }
+	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
 #  Get the OS Architecture
 [boolean]$Is64Bit = [boolean]((Get-WmiObject -Class Win32_Processor | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty AddressWidth) -eq '64')
