@@ -272,7 +272,6 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
 
 ## Variables: Directories
-[string]$dirAppDeployFiles = Join-Path -Path $scriptParentPath -ChildPath 'AppDeployToolkitFiles'
 [string]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
 [string]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
 [string]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
