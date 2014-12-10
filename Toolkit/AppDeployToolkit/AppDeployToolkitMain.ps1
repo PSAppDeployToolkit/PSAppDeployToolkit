@@ -4119,19 +4119,31 @@ Function Refresh-SessionEnvironmentVariables {
 Function Get-ScheduledTask {
 <#
 .SYNOPSIS
-	Retrieves a list of the scheduled tasks on the local computer
+	Retrieve all details for scheduled tasks on the local computer.
 .DESCRIPTION
-	Retrieves a list of the scheduled tasks on the local computer and returns them as an array
+	Retrieve all details for scheduled tasks on the local computer using schtasks.exe. All property names have spaces and colons removed.
+.PARAMETER TaskName
+	Specify the name of the scheduled task to retrieve details for. Uses regex match to find scheduled task.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default: $false.
 .EXAMPLE
 	Get-ScheduledTask
+	To display a list of all scheduled task properties.
+.EXAMPLE
+	Get-ScheduledTask | Out-GridView
+	To display a grid view of all scheduled task properties.
+.EXAMPLE
+	Get-ScheduledTask | Select-Object -Property TaskName
+	To display a list of all scheduled task names.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$TaskName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -4143,15 +4155,33 @@ Function Get-ScheduledTask {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		If (-not $exeSchTasks) { [string]$exeSchTasks = "$env:WINDIR\system32\schtasks.exe" }
+		[psobject[]]$ScheduledTasks = @()
 	}
 	Process {
 		Try {
 			Write-Log -Message 'Retrieve Scheduled Tasks' -Source ${CmdletName}
-			[string[]]$exeSchTasksResults = &$exeSchTasks /Query /FO CSV
+			[string[]]$exeSchtasksResults = & $exeSchTasks /Query /V /FO CSV
+			If ($global:LastExitCode -ne 0) { Throw "Failed to retrieve scheduled tasks using [$exeSchTasks]." }
+			[psobject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-CSV
 			
-			If ($global:LastExitCode -ne 0) { Throw 'Failed to retrieve scheduled tasks using [$exeSchTasks].' }
-			
-			$exeSchTasksResults | ConvertFrom-Csv -Header 'TaskName' -ErrorAction 'Stop'
+			If ($SchtasksResults) {
+				ForEach ($SchtasksResult in $SchtasksResults) {
+					If ($SchtasksResult.TaskName -match $TaskName) {
+						$SchtasksResult  | Get-Member -MemberType Properties |
+						ForEach -Begin { 
+							[hashtable]$Task = @{}
+						} -Process {
+							## Remove spaces and colons in property names. Do not set property value if line being processed is a column header.
+							($Task.($($_.Name).Replace(' ','').Replace(':',''))) = If ($_.Name -ne $SchtasksResult.($_.Name)) { $SchtasksResult.($_.Name) }
+						} -End {
+							## Only add task to the custom object if all property values are not empty
+							If (($Task.Values | Select-Object -Unique | Measure-Object).Count) {
+								$ScheduledTasks += New-Object -TypeName PSObject -Property $Task
+							}
+						}
+					}
+				}
+			}
 		}
 		Catch {
 			Write-Log -Message "Failed to retrieve scheduled tasks. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -4161,6 +4191,7 @@ Function Get-ScheduledTask {
 		}
 	}
 	End {
+		Write-Output $ScheduledTasks
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }

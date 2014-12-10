@@ -4,6 +4,7 @@ Version 4.0.0 [12/10/2014]
 	Added variable to determine if running in terminal server session
 	Added functions to handle Windows services: Test-ServiceExists, Stop-ServiceAndDependencies, Start-ServiceAndDependencies, Get-ServiceStartMode, Set-ServiceStartMode
 	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
+	Improved Get-ScheduledTask to retrieve all scheduled task details, remove spaces and colons from property names, allow retrieval of details for a specific task name
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Updated documentation
 
