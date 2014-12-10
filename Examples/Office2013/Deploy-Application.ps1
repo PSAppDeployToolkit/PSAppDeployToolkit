@@ -74,7 +74,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/17/2014'
+	[string]$deployAppScriptDate = '12/10/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -88,7 +88,7 @@ Try {
 	}
 	Catch {
 		[int32]$mainExitCode = 1
-		Write-Output "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message) `n$($_.InvocationInfo.PositionMessage)"
+		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
 	

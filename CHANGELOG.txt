@@ -1,4 +1,4 @@
-Version 4.0.0 [12/09/2014]
+Version 4.0.0 [12/10/2014]
 	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
@@ -7,7 +7,7 @@ Version 4.0.0 [12/09/2014]
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Updated documentation
 
-Version 3.5.1 [12/09/2014]
+Version 3.5.1 [12/10/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
@@ -23,6 +23,7 @@ Version 3.5.1 [12/09/2014]
 	Improved path validation in Execute-Process
 	Improved error message when toolkit launched without admin permissions
 	Improved detection of when invoking script is the Help script to avoid false positives
+	Improved Deploy-Application.ps1 to use Write-Error instead of Write-Output when toolkit fails to dot source
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
 	Updated Italian translations
 

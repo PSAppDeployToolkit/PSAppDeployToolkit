@@ -2,7 +2,7 @@
 .SYNOPSIS
 	This script performs the installation or uninstallation of an application(s).
 .DESCRIPTION
-	The script is provided as a template to perform an install or uninstall of an application(s). 
+	The script is provided as a template to perform an install or uninstall of an application(s).
 	The script either performs an "Install" deployment type or an "Uninstall" deployment type.
 	The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 	The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
@@ -34,7 +34,7 @@
 [CmdletBinding()]
 Param (
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Install','Uninstall')] 
+	[ValidateSet('Install','Uninstall')]
 	[string]$DeploymentType = 'Install',
 	[Parameter(Mandatory=$false)]
 	[ValidateSet('Interactive','Silent','NonInteractive')]
@@ -61,7 +61,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '3.5.0'
-	[string]$appScriptDate = '11/17/2014'
+	[string]$appScriptDate = '12/10/2014'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	
 	##*===============================================
@@ -88,7 +88,7 @@ Try {
 	}
 	Catch {
 		[int32]$mainExitCode = 1
-		Write-Output "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message) `n$($_.InvocationInfo.PositionMessage)"
+		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
 	
