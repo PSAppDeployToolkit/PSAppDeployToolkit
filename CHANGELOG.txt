@@ -11,7 +11,7 @@ Version 4.0.0 [12/10/2014]
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
 	Fixed issue in Copy-File where operation would fail if destination folder was not created before operation when using wildcards in -Path parameter
 	Fixed issue in Unblock-AppExecution on some systems where process failed to unblock if only one process was initially blocked
-	Fixed issue with Deploy-Application.exe not executing on systems where only .NET 4 or higher installed by adding App.config file
+	Fixed issue with Deploy-Application.exe not executing on systems where only .NET 4 or higher installed by adding Deploy-Application.exe.config file
 	Fixed issue with Deploy-Application.exe by using -Command parameter instead of -File to avoid bug in PowerShell 2.0 where incorrect exit code might be returned if -File parameter used
 	Fixed a number of issues with the Office 2013 example script
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
