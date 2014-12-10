@@ -4162,7 +4162,7 @@ Function Get-ScheduledTask {
 			Write-Log -Message 'Retrieve Scheduled Tasks' -Source ${CmdletName}
 			[string[]]$exeSchtasksResults = & $exeSchTasks /Query /V /FO CSV
 			If ($global:LastExitCode -ne 0) { Throw "Failed to retrieve scheduled tasks using [$exeSchTasks]." }
-			[psobject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-CSV
+			[psobject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-CSV -ErrorAction 'Stop'
 			
 			If ($SchtasksResults) {
 				ForEach ($SchtasksResult in $SchtasksResults) {
