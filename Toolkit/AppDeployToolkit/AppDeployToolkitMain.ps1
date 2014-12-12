@@ -3751,6 +3751,7 @@ Function New-Shortcut {
 }
 #endregion
 
+
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
 <#
@@ -3990,6 +3991,7 @@ Function Execute-ProcessAsUser {
 	}
 }
 #endregion
+
 
 #region Function Refresh-Desktop
 Function Refresh-Desktop {
@@ -8085,7 +8087,7 @@ Function Start-ServiceAndDependencies {
 #endregion
 
 
-#region Function Get-ServiceStartMode
+﻿#region Function Get-ServiceStartMode
 Function Get-ServiceStartMode
 {
 <#
@@ -8127,6 +8129,19 @@ Function Get-ServiceStartMode
 			[string]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
 			## If service start mode is set to 'Auto', change value to 'Automatic' to be consistent with 'Set-ServiceStartMode' function
 			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
+			
+			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
+			If ([System.Environment]::OSVersion.Version.Major -gt 5) {
+				[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
+				Try {
+					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
+					If (($ServiceStartMode -eq 'Automatic') -and ($DelayedAutoStart -eq 1)) {
+						$ServiceStartMode = 'Automatic (Delayed Start)'
+					}
+				}
+				Catch { }
+			}
+			
 			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]" -Source ${CmdletName}
 			Write-Output $ServiceStartMode
 		}
@@ -8157,11 +8172,11 @@ Function Set-ServiceStartMode
 .PARAMETER ComputerName
 	Specify the name of the computer. Default is: the local computer.
 .PARAMETER StartMode
-	Specify startup mode for the service. Options: Automatic, Manual, Disabled, Boot, System.
+	Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Set-ServiceStartMode -Name 'wuauserv' -StartMode 'Automatic'
+	Set-ServiceStartMode -Name 'wuauserv' -StartMode 'Automatic (Delayed Start)'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -8175,7 +8190,7 @@ Function Set-ServiceStartMode
 		[ValidateNotNullOrEmpty()]
 		[string]$ComputerName = $env:ComputerName,
 		[Parameter(Mandatory=$true)]
-		[ValidateSet('Automatic','Manual','Disabled','Boot','System')]
+		[ValidateSet('Automatic','Automatic (Delayed Start)','Manual','Disabled','Boot','System')]
 		[string]$StartMode,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
@@ -8187,14 +8202,25 @@ Function Set-ServiceStartMode
 	}
 	Process {
 		Try {
+			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
+			If (([System.Environment]::OSVersion.Version.Major -lt 6) -and ($StartMode -eq 'Automatic (Delayed Start)')) {
+				$StartMode = 'Automatic'
+			}
+			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
-			$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
-			If($ChangeStartMode.ReturnValue -eq 0) {
-				Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
+			If ($StartMode -eq 'Automatic (Delayed Start)') {
+				$ChangeStartMode = & sc.exe config $Name start= delayed-auto
+				If ($global:LastExitCode -ne 0) {
+					Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
+				}
 			}
 			Else {
-				Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
+				$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
+				If($ChangeStartMode.ReturnValue -ne 0) {
+					Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
+				}
 			}
+			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
 		}
 		Catch {
 			Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
