@@ -8453,14 +8453,13 @@ Function Get-LoggedOnUser {
 				[string[]]$LocalAdminGroupUserName = ''
 				$LocalAdminGroupMembers | ForEach { [string[]]$LocalAdminGroupUserName += $_.GetType().InvokeMember('Name', 'GetProperty', $null, $_, $null) }
 				[string[]]$LocalAdminGroupUserName = $LocalAdminGroupUserName | Where-Object { -not [string]::IsNullOrEmpty($_) }
-				[string[]]$LocalAdminGroupNTAccount = $LocalAdminGroupUserName | ForEach-Object { (New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $_).Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount]).Value }
-				[psobject[]]$LocalAdmins = @()
-				$LocalAdminGroupNTAccount | ForEach { [psobject]$LocalAdmin = New-Object PSObject -Property @{ LocalGroup = $LocalAdminGroupName; NTAccount = $_ }; [psobject[]]$LocalAdmins += $LocalAdmin }
+				[string[]]$LocalAdminGroupNTAccounts = @()
+				[string[]]$LocalAdminGroupNTAccounts = $LocalAdminGroupUserName | ForEach-Object { (New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $_).Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount]).Value }
 				[boolean]$IsLocalAdminCheckSuccess = $true
 			}
 			Catch {
 				[boolean]$IsLocalAdminCheckSuccess = $false
-				[psobject[]]$LocalAdmins = @()
+				[string[]]$LocalAdminGroupNTAccounts = @()
 			}
 			
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
@@ -8470,7 +8469,7 @@ Function Get-LoggedOnUser {
 					[psobject]$SessionInfo = [QueryUser.Session]::GetSessionInfo('localhost', $TerminalSession.SessionId)
 					If ($SessionInfo.UserName) {
 						If ($IsLocalAdminCheckSuccess) {
-							If ($LocalAdmins -contains $SessionInfo.NTAccount) {
+							If ($LocalAdminGroupNTAccounts -contains $SessionInfo.NTAccount) {
 								$SessionInfo.IsLocalAdmin = $true
 							}
 							Else {
