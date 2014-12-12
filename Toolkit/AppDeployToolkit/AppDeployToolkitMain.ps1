@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/10/2014'
+[string]$appDeployMainScriptDate = '12/12/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8218,7 +8218,7 @@ Function Get-LoggedOnUser {
 .DESCRIPTION
 	Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
 	 NTAccount, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession,
-	 LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
+	 IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
 .EXAMPLE
 	Get-LoggedOnUser
 .NOTES
@@ -8432,7 +8432,7 @@ Function Get-LoggedOnUser {
 			{
 				public string NTAccount; public string UserName; public string DomainName; public int SessionId; public string SessionName;
 				public Session.WTS_CONNECTSTATE_CLASS ConnectState; public bool IsCurrentSession; public bool IsConsoleSession;
-				public bool IsUserSession; public DateTime? LogonTime; public TimeSpan? IdleTime; public DateTime? DisconnectTime;
+				public bool IsUserSession; public bool IsLocalAdmin; public DateTime? LogonTime; public TimeSpan? IdleTime; public DateTime? DisconnectTime;
 				public string ClientName; public string ClientProtocolType; public string ClientDirectory; public int ClientBuildNumber;
 			}
 		}
@@ -8443,13 +8443,41 @@ Function Get-LoggedOnUser {
 	}
 	Process {
 		Try {
+			Try {
+				## Get NTAccount names in DOMAIN\Username format for the local Administrators security group
+				$LocalAdminGroupSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList 'S-1-5-32-544'
+				$LocalAdminGroupNTAccount = $LocalAdminGroupSID.Translate([System.Security.Principal.NTAccount])
+				$LocalAdminGroupName = ($LocalAdminGroupNTAccount.Value).Split('\')[1]
+				$LocalAdminGroup =[ADSI]"WinNT://$($env:COMPUTERNAME)/$LocalAdminGroupName" 
+				$LocalAdminGroupMembers = @($LocalAdminGroup.PSBase.Invoke('Members'))
+				[string[]]$LocalAdminGroupUserName = ''
+				$LocalAdminGroupMembers | ForEach { [string[]]$LocalAdminGroupUserName += $_.GetType().InvokeMember('Name', 'GetProperty', $null, $_, $null) }
+				[string[]]$LocalAdminGroupUserName = $LocalAdminGroupUserName | Where-Object { -not [string]::IsNullOrEmpty($_) }
+				[string[]]$LocalAdminGroupNTAccount = $LocalAdminGroupUserName | ForEach-Object { (New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $_).Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount]).Value }
+				[psobject[]]$LocalAdmins = @()
+				$LocalAdminGroupNTAccount | ForEach { [psobject]$LocalAdmin = New-Object PSObject -Property @{ LocalGroup = $LocalAdminGroupName; NTAccount = $_ }; [psobject[]]$LocalAdmins += $LocalAdmin }
+				[boolean]$IsLocalAdminCheckSuccess = $true
+			}
+			Catch {
+				[boolean]$IsLocalAdminCheckSuccess = $false
+				[psobject[]]$LocalAdmins = @()
+			}
+			
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
 			[psobject[]]$TerminalSessions = [QueryUser.Session]::ListSessions('localhost')
 			ForEach ($TerminalSession in $TerminalSessions) {
 				If (($TerminalSession.IsUserSession)) {
 					[psobject]$SessionInfo = [QueryUser.Session]::GetSessionInfo('localhost', $TerminalSession.SessionId)
 					If ($SessionInfo.UserName) {
-						[psobject[]]$TerminalSessionInfo += $SessionInfo
+						If ($IsLocalAdminCheckSuccess) {
+							If ($LocalAdmins -contains $SessionInfo.NTAccount) {
+								$SessionInfo.IsLocalAdmin = $true
+							}
+							Else {
+								$SessionInfo.IsLocalAdmin = $false
+							}
+							[psobject[]]$TerminalSessionInfo += $SessionInfo
+						}
 					}
 				}
 			}

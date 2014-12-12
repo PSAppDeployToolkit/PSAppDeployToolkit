@@ -1,4 +1,4 @@
-Version 4.0.0 [12/10/2014]
+Version 4.0.0 [12/12/2014]
 	Added the ability to run the toolkit as the current logged on user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
@@ -6,6 +6,7 @@ Version 4.0.0 [12/10/2014]
 	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
+	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
