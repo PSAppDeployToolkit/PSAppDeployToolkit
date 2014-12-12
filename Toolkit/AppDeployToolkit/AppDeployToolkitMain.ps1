@@ -8131,13 +8131,11 @@ Function Get-ServiceStartMode
 			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
 			
 			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-			If ([System.Environment]::OSVersion.Version.Major -gt 5) {
-				[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
+			If (($ServiceStartMode -eq 'Automatic') -and ([System.Environment]::OSVersion.Version.Major -gt 5)) {
 				Try {
+					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
 					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
-					If (($ServiceStartMode -eq 'Automatic') -and ($DelayedAutoStart -eq 1)) {
-						$ServiceStartMode = 'Automatic (Delayed Start)'
-					}
+					If ($DelayedAutoStart -eq 1) { $ServiceStartMode = 'Automatic (Delayed Start)' }
 				}
 				Catch { }
 			}
@@ -8203,9 +8201,7 @@ Function Set-ServiceStartMode
 	Process {
 		Try {
 			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-			If (([System.Environment]::OSVersion.Version.Major -lt 6) -and ($StartMode -eq 'Automatic (Delayed Start)')) {
-				$StartMode = 'Automatic'
-			}
+			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([System.Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
 			If ($StartMode -eq 'Automatic (Delayed Start)') {
