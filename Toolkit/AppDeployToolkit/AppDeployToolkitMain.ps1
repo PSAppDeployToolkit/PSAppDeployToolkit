@@ -3586,7 +3586,7 @@ Function Get-FileVersion {
 				}
 			}
 			Else {
-				Throw 'File path [$file] does not exist.'
+				Throw "File path [$file] does not exist."
 			}
 		}
 		Catch {
