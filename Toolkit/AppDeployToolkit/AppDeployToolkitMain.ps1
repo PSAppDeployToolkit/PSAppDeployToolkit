@@ -8087,7 +8087,7 @@ Function Start-ServiceAndDependencies {
 #endregion
 
 
-﻿#region Function Get-ServiceStartMode
+#region Function Get-ServiceStartMode
 Function Get-ServiceStartMode
 {
 <#
