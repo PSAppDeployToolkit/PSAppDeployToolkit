@@ -111,8 +111,8 @@ Else {
 	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain.ToUpper()
 }
 [string]$envMachineDNSDomain = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName.ToLower()
-[string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $null -ne $_ } | ForEach-Object { $_.ToLower() }
-[string]$envUserDomain = $env:USERDOMAIN.ToUpper()
+[string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+[string]$envUserDomain = $env:USERDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 
 ## Variables: Operating System
 [psobject]$envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction 'SilentlyContinue'
