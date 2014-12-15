@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'4.0.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'4.0.0'
-[string]$appDeployMainScriptDate = '12/12/2014'
+[string]$appDeployMainScriptDate = '12/15/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1708,7 +1708,7 @@ Function Get-InstalledApplication {
 									$applicationMatched = $false
 									If ($exact) {
 										#  Check for an exact application name match
-										If ($regKeyApp.DisplayName -eq [regex]::Escape($application)) {
+										If ($regKeyApp.DisplayName -eq $application) {
 											$applicationMatched = $true
 											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] exactly matching application name [$application]" -Source ${CmdletName}
 										}
