@@ -55,7 +55,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '01/01/2014'
+	[string]$appScriptDate = '12/15/2014'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
 	
@@ -67,8 +67,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'4.0.0'
-	[string]$deployAppScriptDate = '12/10/2014'
+	[version]$deployAppScriptVersion = [version]'3.5.6'
+	[string]$deployAppScriptDate = '12/15/2014'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
