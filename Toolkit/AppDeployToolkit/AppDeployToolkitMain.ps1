@@ -54,8 +54,8 @@ Param
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.5.6'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.5.6'
+[version]$appDeployMainScriptVersion = [version]'3.6.0'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
 [string]$appDeployMainScriptDate = '12/15/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
