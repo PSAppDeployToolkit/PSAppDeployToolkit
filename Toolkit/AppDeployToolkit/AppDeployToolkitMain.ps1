@@ -2962,22 +2962,23 @@ Function Get-RegistryKey {
 			## Check if the registry key exists
 			If (-not (Test-Path -Path $key -ErrorAction 'Stop')) {
 				Write-Log -Message "Registry key [$key] does not exist" -Severity 2 -Source ${CmdletName}
-				Return $null
-			}
-			
-			If (-not $Value) {
-				#  Get the registry key and all property values
-				Write-Log -Message "Get registry key [$key] and all property values" -Source ${CmdletName}
-				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop'
-				If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
-					Write-Log -Message "No property values found for registry key. Get registry key [$key]" -Source ${CmdletName}
-					$regKeyValue = Get-Item -Path $key -Force -ErrorAction 'Stop'
-				}
+				$regKeyValue = $null
 			}
 			Else {
-				#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-				Write-Log -Message "Get registry key [$key] value [$value]" -Source ${CmdletName}
-				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+				If (-not $Value) {
+					#  Get the registry key and all property values
+					Write-Log -Message "Get registry key [$key] and all property values" -Source ${CmdletName}
+					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop'
+					If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
+						Write-Log -Message "No property values found for registry key. Get registry key [$key]" -Source ${CmdletName}
+						$regKeyValue = Get-Item -Path $key -Force -ErrorAction 'Stop'
+					}
+				}
+				Else {
+					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
+					Write-Log -Message "Get registry key [$key] value [$value]" -Source ${CmdletName}
+					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+				}
 			}
 			
 			If ($regKeyValue) { Write-Output $regKeyValue } Else { Write-Output $null }
