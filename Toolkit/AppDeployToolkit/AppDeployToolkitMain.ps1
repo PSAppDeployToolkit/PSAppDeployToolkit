@@ -73,7 +73,7 @@ Param
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
 [string]$envCommonProgramFiles = $env:CommonProgramFiles
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
-[string]$envComputerName = $env:COMPUTERNAME.ToUpper()
+[string]$envComputerName = $env:COMPUTERNAME | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 [string]$envComputerNameFQDN = ([System.Net.Dns]::GetHostEntry('')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
 [string]$envHomePath = $env:HOMEPATH
