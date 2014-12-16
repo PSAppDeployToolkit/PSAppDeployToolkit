@@ -100,7 +100,7 @@ If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $env:PROGRAMFILES 
 [string]$envLogonServer = ''
 [string]$MachineDomainController = ''
 If ($IsMachinePartOfDomain) {
-	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain.ToLower()
+	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
 		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
@@ -108,9 +108,9 @@ If ($IsMachinePartOfDomain) {
 	Catch { }
 }
 Else {
-	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain.ToUpper()
+	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 }
-[string]$envMachineDNSDomain = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName.ToLower()
+[string]$envMachineDNSDomain = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDomain = $env:USERDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 
