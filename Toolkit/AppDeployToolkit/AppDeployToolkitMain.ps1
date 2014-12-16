@@ -2977,7 +2977,7 @@ Function Get-RegistryKey {
 			Else {
 				#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 				Write-Log -Message "Get registry key [$key] value [$value]" -Source ${CmdletName}
-				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'Stop'
+				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
 			}
 			
 			If ($regKeyValue) { Write-Output $regKeyValue } Else { Write-Output $null }
