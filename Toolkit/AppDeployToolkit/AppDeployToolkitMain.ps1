@@ -274,7 +274,6 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
 [string]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
 [string]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
-[string]$dirBlockedApps = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockedApps'
 
 ## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
 If (-not $appVendor) { [string]$appVendor = 'PS' }
