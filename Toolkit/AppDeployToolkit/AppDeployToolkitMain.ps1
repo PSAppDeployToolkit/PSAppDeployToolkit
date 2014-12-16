@@ -140,9 +140,8 @@ Switch ($envOSProductType) {
 If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
-[string]$psArchitecture = 'x86'
 [boolean]$Is64BitProcess = [boolean]([System.IntPtr]::Size -eq 8)
-If ($Is64BitProcess) { [string]$psArchitecture = 'x64' }
+If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
 
 ## Variables: PowerShell And CLR (.NET) Versions
 [hashtable]$envPSVersionTable = $PSVersionTable
