@@ -2905,7 +2905,7 @@ Function Get-RegistryKey {
 	Retrieves value names and value data for a specified registry key or optionally, a specific value.
 .DESCRIPTION
 	Retrieves value names and value data for a specified registry key or optionally, a specific value.
-	If the registry key does not exist or contain any values, the function will return $null. To test for existence of a registry key path, use built-in Test-Path cmdlet.
+	If the registry key does not exist or contain any values, the function will return $null by default. To test for existence of a registry key path, use built-in Test-Path cmdlet.
 .PARAMETER Key
 	Path of the registry key.
 .PARAMETER Value
@@ -2913,6 +2913,8 @@ Function Get-RegistryKey {
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+.PARAMETER ReturnEmptyKeyIfExists
+	Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -2936,6 +2938,9 @@ Function Get-RegistryKey {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$SID,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$ReturnEmptyKeyIfExists,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -2963,22 +2968,21 @@ Function Get-RegistryKey {
 			}
 			
 			If (-not $Value) {
-				#  Get the Key
-				Write-Log -Message "Get registry key [$key]" -Source ${CmdletName}
+				#  Get the registry key and all property values
+				Write-Log -Message "Get registry key [$key] and all property values" -Source ${CmdletName}
 				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop'
+				If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
+					Write-Log -Message "No property values found for registry key. Get registry key [$key]" -Source ${CmdletName}
+					$regKeyValue = Get-Item -Path $key -Force -ErrorAction 'Stop'
+				}
 			}
 			Else {
 				#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 				Write-Log -Message "Get registry key [$key] value [$value]" -Source ${CmdletName}
-				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value
+				$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'Stop'
 			}
 			
-			If ($regKeyValue) {
-				Write-Output $regKeyValue
-			}
-			Else {
-				Write-Output $null
-			}
+			If ($regKeyValue) { Write-Output $regKeyValue } Else { Write-Output $null }
 		}
 		Catch {
 			If (-not $Value) {

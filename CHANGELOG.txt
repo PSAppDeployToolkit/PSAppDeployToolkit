@@ -7,6 +7,7 @@ Version 4.0.0 [12/15/2014]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
+	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
