@@ -8771,15 +8771,16 @@ If ($SessionZero) {
 				}
 				
 				If ($usersLoggedOn) {
-					## Relaunch the toolkit with a logged-in user account and an Administrator privileged RunLevel token.
+					## Relaunch the toolkit with a logged-in user account which is a local admin
 					If ($IsTaskSchedulerHealthy) {
-						If ($CurrentConsoleUserSession) {
-							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
+						[string]$FirstLoggedInNonConsoleLocalAdmin = $LoggedOnUserSessions | Where-Object { $LoggedOnUserSessions.IsLocalAdmin } | Select-Object -First 1 | ForEach-Object { $_.NTAccount }
+						If (($CurrentConsoleUserSession) -and ($CurrentConsoleUserSession.IsLocalAdmin)) {
+							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on local admin user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
 							Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 						}
-						ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on user account and provide interaction in the SYSTEM context for a non console user [$($usersLoggedOn | Select-Object -First 1)]..." -Source $appDeployToolkitName
-							Execute-ProcessAsUser -UserName ($usersLoggedOn | Select-Object -First 1) -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
+						ElseIf (($configToolkitAllowSystemInteractionForNonConsoleUser) -and ($FirstLoggedInNonConsoleLocalAdmin)) {
+							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on local admin user account and provide interaction in the SYSTEM context for a non console user [$FirstLoggedInNonConsoleLocalAdmin]..." -Source $appDeployToolkitName
+							Execute-ProcessAsUser -UserName $FirstLoggedInNonConsoleLocalAdmin -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
 						}
 						Else {
 							Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
@@ -8787,7 +8788,7 @@ If ($SessionZero) {
 					}
 					
 					## If the script is still running at this point it means we are falling back to run in the SYSTEM context so we need to reset the deployment mode
-					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully or the Task Scheduler service is not in a healthy state. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
+					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully, or the Task Scheduler service is not in a healthy state, or no local admins are currently logged in to allow relaunching the toolkit under an admin account. [AllowSystemInteractionFallback] specified, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
 					$deployMode = 'NonInteractive'
 					Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 				}
