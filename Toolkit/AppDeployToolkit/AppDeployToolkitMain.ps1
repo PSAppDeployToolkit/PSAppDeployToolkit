@@ -517,7 +517,7 @@ Function Write-Log {
 		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
 		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
 		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) {
-			[int32]$script:LogTimeZoneBias = $(Get-WmiObject -ComputerName $env:COMPUTERNAME -Query 'SELECT Bias FROM Win32_TimeZone' -ErrorAction 'SilentlyContinue').Bias
+			[int32]$script:LogTimeZoneBias = (Get-WmiObject -Class Win32_TimeZone -ErrorAction 'SilentlyContinue').Bias
 		}
 		#  Add the timezone bias to the log time
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
