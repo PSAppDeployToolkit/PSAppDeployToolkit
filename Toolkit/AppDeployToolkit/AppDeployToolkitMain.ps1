@@ -2437,7 +2437,7 @@ Function Get-MsiExitCodeMessage {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MsiExitCode').Type) {
-			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -2530,7 +2530,7 @@ Function Test-MsiExecMutex {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MsiExec').Type) {
-			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -4049,7 +4049,7 @@ Function Refresh-Desktop {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'MyWinAPI.Explorer').Type) {
-			Add-Type -MemberDefinition $refreshDesktopSource -Namespace MyWinAPI -Name Explorer -Language CSharp -ErrorAction 'Stop'
+			Add-Type -MemberDefinition $refreshDesktopSource -Namespace MyWinAPI -Name Explorer -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -6216,7 +6216,7 @@ Function Set-PinnedApplication {
 			}
 '@
 			If (-not ([System.Management.Automation.PSTypeName]'Verb.Load').Type) {
-				Add-Type -TypeDefinition $GetPinVerbSource -Language CSharp -ErrorAction 'Stop'
+				Add-Type -TypeDefinition $GetPinVerbSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 			}
 			
 			Write-Log -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
@@ -6363,7 +6363,7 @@ Function Get-IniValue {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'IniFile.GetValue').Type) {
-			Add-Type -TypeDefinition $GetIniValueSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $GetIniValueSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -6459,7 +6459,7 @@ Function Set-IniValue {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'IniFile.SetValue').Type) {
-			Add-Type -TypeDefinition $SetIniValueSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $SetIniValueSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -6997,7 +6997,7 @@ Function Send-Keys {
 			}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'GUIWindow').Type) {
-			Add-Type -TypeDefinition $SetForegroundWindowSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $SetForegroundWindowSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -7267,7 +7267,7 @@ Function Test-PowerPoint {
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'ScreenDetection.FullScreen').Type) {
 			[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms'
-			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
@@ -8466,7 +8466,7 @@ Function Get-LoggedOnUser {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'QueryUser.Session').Type) {
-			Add-Type -TypeDefinition $QueryUserSessionSource -Language CSharp -ErrorAction 'Stop'
+			Add-Type -TypeDefinition $QueryUserSessionSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
