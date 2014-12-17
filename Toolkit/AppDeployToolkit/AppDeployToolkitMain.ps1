@@ -310,6 +310,9 @@ If (-not $deploymentType) { [string]$deploymentType = 'Install' }
 [string]$exeMsiexec = 'msiexec.exe' # Installs MSI Installers
 [string]$exeSchTasks = "$envWinDir\System32\schtasks.exe" # Manages Scheduled Tasks
 
+## Variables: RegEx Patterns
+[string]$MSIProductCodeRegExPattern = '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$'
+
 ## Variables: Registry Keys
 #  Registry keys for native and WOW64 applications
 [string[]]$regKeyApplications = 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -1775,7 +1778,7 @@ Function Execute-MSI {
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER LogName
-	Overrides the default log file name. The default log file name is generated from the MSI file name.
+	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
 	For uninstallations, the product code is resolved to the displayname and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
@@ -1803,8 +1806,8 @@ Function Execute-MSI {
 		[ValidateSet('Install','Uninstall','Patch','Repair','ActiveSetup')]
 		[string]$Action,
 		[Parameter(Mandatory=$true,HelpMessage='Please enter either the path to the MSI/MSP file or the ProductCode')]
+		[ValidateScript({($_ -match $MSIProductCodeRegExPattern) -or ('.msi','.msp' -contains [System.IO.Path]::GetExtension($_))})]
 		[Alias('FilePath')]
-		[ValidateNotNullorEmpty()]
 		[string]$Path,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -1837,7 +1840,7 @@ Function Execute-MSI {
 		[boolean]$PathIsProductCode = $false
 		
 		## If the path matches a product code
-		If ($Path -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') {
+		If ($Path -match $MSIProductCodeRegExPattern) {
 			#  Set variable indicating that $Path variable is a Product Code
 			[boolean]$PathIsProductCode = $true
 			

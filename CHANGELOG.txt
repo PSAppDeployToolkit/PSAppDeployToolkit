@@ -1,4 +1,4 @@
-Version 3.6.0 [12/15/2014]
+Version 3.6.0 [12/17/2014]
 	Added the ability to run the toolkit as the current logged on local admin user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4. Note: this feature will only work for users that are local admins.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
@@ -8,6 +8,7 @@ Version 3.6.0 [12/15/2014]
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
+	Added validation for -Path parameter in Execute-MSI function
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
