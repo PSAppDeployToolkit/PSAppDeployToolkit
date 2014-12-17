@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '12/15/2014'
+[string]$appDeployMainScriptDate = '12/17/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -4468,7 +4468,7 @@ Function Get-UniversalDate {
 		#  Get the current date
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$DateTime = (Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern),
+		[string]$DateTime = ((Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern).ToString()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		$ContinueOnError = $false
@@ -4482,12 +4482,12 @@ Function Get-UniversalDate {
 	Process {
 		Try {
 			## If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-			If ($dateTime -match 'Z$') { $dateTime = $dateTime -replace 'Z$', '' }
-			$dateTime = [DateTime]::Parse($dateTime, $culture)
+			If ($DateTime -match 'Z$') { $DateTime = $DateTime -replace 'Z$', '' }
+			[datetime]$DateTime = [datetime]::Parse($DateTime, $culture)
 			
 			## Convert the date to a universal sortable date time pattern based on the current culture
 			Write-Log -Message "Convert the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($culture.Name)]" -Source ${CmdletName}
-			[string]$universalDateTime = Get-Date -Date $DateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop'
+			[string]$universalDateTime = (Get-Date -Date $DateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
 			Write-Output $universalDateTime
 		}
 		Catch {
