@@ -8680,8 +8680,8 @@ Else {
 }
 
 ## Check if script is running on a Terminal Services client session
-[boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession
-Write-Log -Message "The process is running in a terminal server session: $IsTerminalServerSession." -Source $appDeployToolkitName
+Try { [boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
+Write-Log -Message "The process is running in a terminal server session: [$IsTerminalServerSession]." -Source $appDeployToolkitName
 
 ## Check if script is running from a SCCM Task Sequence
 Try {
