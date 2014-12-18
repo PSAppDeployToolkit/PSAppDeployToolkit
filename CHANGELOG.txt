@@ -1,4 +1,4 @@
-Version 3.6.0 [12/17/2014]
+Version 3.6.0 [12/18/2014]
 	Added the ability to run the toolkit as the current logged on local admin user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4. Note: this feature will only work for users that are local admins.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added variable to determine if running in terminal server session
@@ -19,6 +19,7 @@ Version 3.6.0 [12/17/2014]
 	Fixed a number of issues with the Office 2013 example script
 	Fixed issue in Get-InstalledApplication to properly detect applications when -Exact parameter used
 	Fixed issue in Get-UniversalDate where function would fail for some valid date formats under some culture settings
+	Fixed issue in Write-Log where it was not possible to change logfile name and directory after the first time these paths were set
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
 	Improved defining default values for script variables not defined
 	Improved path validation in Execute-Process

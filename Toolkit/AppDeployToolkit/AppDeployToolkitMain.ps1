@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '12/17/2014'
+[string]$appDeployMainScriptDate = '12/18/2014'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -563,32 +563,28 @@ Function Write-Log {
 			}
 		}
 		
-		## Upon first execution of below If block, script variable is created so this block is not executed more than once.
-		If (-not (Test-Path -Path 'variable:OutLogFile')) {
-			#  Create the directory where the log file will be saved
-			If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
-				Try {
-					New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
-				}
-				Catch {
-					#  If error creating directory, write message to console
-					If (-not $ContinueOnError) {
-						Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
-					}
-					Return
-				}
+		#  Create the directory where the log file will be saved
+		[boolean]$LogDirectoryCreateError = $false
+		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
+			Try {
+				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
-			
-			#  Assemble the fully qualified path to the log file
-			[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
-			
-			#  Set variable so that this 'If' block is not executed again during the execution of this script
-			Set-Variable -Name 'OutLogFile' -Value $LogFilePath -Scope 'Script'
+			Catch {
+				[boolean]$LogDirectoryCreateError = $true
+				#  If error creating directory, write message to console
+				If (-not $ContinueOnError) {
+					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+				}
+				Return
+			}
 		}
+		
+		#  Assemble the fully qualified path to the log file
+		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 	}
 	Process {
 		## Exit function if it is a debug message and 'LogDebugMessage' option is not $true, or if the log directory was not successfully created in 'Begin' block.
-		If ((($DebugMessage) -and (-not $LogDebugMessage)) -or (-not (Test-Path -Path 'variable:OutLogFile'))) { Return }
+		If ((($DebugMessage) -and (-not $LogDebugMessage)) -or ($LogDirectoryCreateError)) { Return }
 		
 		ForEach ($Msg in $Message) {
 			## If the message is not $null or empty, create the log entry for the different logging methods
@@ -634,11 +630,11 @@ Function Write-Log {
 			## Write the log entry to the log file if logging is not currently disabled
 			If (-not $DisableLogging) {
 				Try {
-					$LogLine | Out-File -FilePath $OutLogFile -Append -NoClobber -Force -Encoding default -ErrorAction 'Stop'
+					$LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding default -ErrorAction 'Stop'
 				}
 				Catch {
 					If (-not $ContinueOnError) {
-						Write-Host "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$OutLogFile]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+						Write-Host "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `n$(Resolve-Error)" -ForegroundColor 'Red'
 					}
 				}
 			}
@@ -650,19 +646,19 @@ Function Write-Log {
 	End {
 		## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
 		Try {
-			[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $OutLogFile -ErrorAction 'Stop'
+			[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
 			[decimal]$LogFileSizeMB = $LogFile.Length/1MB
 			If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
 				## Change the file extension to "lo_"
-				[string]$ArchivedOutLogFile = [System.IO.Path]::ChangeExtension($OutLogFile, 'lo_')
-				[hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $OutLogFile; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
+				[string]$ArchivedOutLogFile = [System.IO.Path]::ChangeExtension($LogFilePath, 'lo_')
+				[hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFilePath; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
 				
 				## Log message about archiving the log file
 				$ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedOutLogFile]."
 				Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
 				
 				## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
-				Move-Item -Path $OutLogFile -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
+				Move-Item -Path $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
 				
 				## Start new log file and Log message about archiving the old log file
 				$NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
