@@ -1820,7 +1820,7 @@ Function Execute-MSI {
 		[string]$Patch,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$LogName,
+		[string]$private:LogName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$WorkingDirectory,
@@ -1864,8 +1864,8 @@ Function Execute-MSI {
 			}
 		}
 		Else {
-			#  Build the log file name
-			If (-not $logName) { $logName = ([System.IO.FileInfo]$path).BaseName }
+			#  Get the log file name without file extension
+			If (-not $logName) { $logName = ([System.IO.FileInfo]$path).BaseName } ElseIf ('.log','.txt' -contains [System.IO.Path]::GetExtension($logName)) { $logName = [System.IO.Path]::GetFileNameWithoutExtension($logName) }
 		}
 		
 		If ($configToolkitCompressLogs) {
@@ -1900,8 +1900,8 @@ Function Execute-MSI {
 			'ActiveSetup' { $option = '/fups'; [string]$msiLogFile = "$logPath" + '_ActiveSetup' }
 		}
 		
-		## Append .log to the logfile path and enclose in quotes
-		If (([System.IO.FileInfo]$msiLogFile).Extension -ne 'log') {
+		## Append ".log" to the MSI logfile path and enclose in quotes
+		If ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log') {
 			[string]$msiLogFile = $msiLogFile + '.log'
 			[string]$msiLogFile = "`"$msiLogFile`""
 		}
