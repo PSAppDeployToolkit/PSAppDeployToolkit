@@ -1915,9 +1915,7 @@ Function Execute-MSI {
 		}
 		
 		## Set the working directory of the MSI
-		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) {
-			[string]$workingDirectory = Split-Path -Path $msiFile -Parent
-		}
+		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
 		
 		## Get the ProductCode of the MSI
 		If ($PathIsProductCode) {
@@ -1940,23 +1938,13 @@ Function Execute-MSI {
 		[string]$mspFile = "`"$patch`""
 
 		## Start building the MsiExec command line starting with the base action and file
-		$argsMSI = "$option $msiFile"
+		[string]$argsMSI = "$option $msiFile"
 		# Add MST
-		If ($transform) {
-			$argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
-		}
+		If ($transform) { $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1" }
 		# Add MSP
-		If ($patch) {
-			$argsMSI = "$argsMSI PATCH=$mspFile"
-		}
-		# Add custom Params
-		If ($Parameters) {
-			$argsMSI = "$argsMSI $Parameters"
-		}
-		# Otherwise add Default Params
-		Else {
-			$argsMSI = "$argsMSI $msiDefaultParams"
-		}
+		If ($patch) { $argsMSI = "$argsMSI PATCH=$mspFile" }
+		# Add custom Params if specified. Otherwise, add Default Params.
+		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
 		# Finally add the logging options
 		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
 			
@@ -1965,12 +1953,7 @@ Function Execute-MSI {
 			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
 		}
 		Else {
-			If ($Action -eq 'Install') {
-				[boolean]$IsMsiInstalled = $false
-			}
-			Else {
-				[boolean]$IsMsiInstalled = $true
-			}
+			If ($Action -eq 'Install') { [boolean]$IsMsiInstalled = $false } Else { [boolean]$IsMsiInstalled = $true }
 		}
 		
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
