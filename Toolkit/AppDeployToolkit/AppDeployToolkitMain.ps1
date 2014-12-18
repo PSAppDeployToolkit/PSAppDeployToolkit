@@ -527,7 +527,7 @@ Function Write-Log {
 		
 		## Get the file name of the source script
 		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
-
+		
 		## Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		
@@ -620,7 +620,7 @@ Function Write-Log {
 			}
 			
 			## Execute script block to create the CMTrace.exe compatible log entry
-			[string]$CMTraceLogLine = &$CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity
+			[string]$CMTraceLogLine = & $CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity
 			
 			## Choose which log type to write to file
 			If ($LogType -ieq 'CMTrace') {
@@ -643,7 +643,7 @@ Function Write-Log {
 			}
 			
 			## Execute script block to write the log entry to the console if $WriteHost is $true
-			&$WriteLogLineToHost -lTextLogLine $ConsoleLogLine -lSeverity $Severity
+			& $WriteLogLineToHost -lTextLogLine $ConsoleLogLine -lSeverity $Severity
 		}
 	}
 	End {
@@ -889,14 +889,14 @@ Function Resolve-Error {
 		ForEach ($ErrRecord in $ErrorRecord) {
 			## Capture Error Record
 			If ($GetErrorRecord) {
-				[string[]]$SelectedProperties = &$SelectProperty -InputObject $ErrRecord -Property $Property
+				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord -Property $Property
 				$LogErrorRecordMsg = $ErrRecord | Select-Object -Property $SelectedProperties
 			}
 			
 			## Error Invocation Information
 			If ($GetErrorInvocation) {
 				If ($ErrRecord.InvocationInfo) {
-					[string[]]$SelectedProperties = &$SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
+					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
 					$LogErrorInvocationMsg = $ErrRecord.InvocationInfo | Select-Object -Property $SelectedProperties
 				}
 			}
@@ -904,7 +904,7 @@ Function Resolve-Error {
 			## Capture Error Exception
 			If ($GetErrorException) {
 				If ($ErrRecord.Exception) {
-					[string[]]$SelectedProperties = &$SelectProperty -InputObject $ErrRecord.Exception -Property $Property
+					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
 					$LogErrorExceptionMsg = $ErrRecord.Exception | Select-Object -Property $SelectedProperties
 				}
 			}
@@ -942,7 +942,7 @@ Function Resolve-Error {
 					While ($ErrorInnerException) {
 						[string]$InnerExceptionSeperator = '~' * 40
 						
-						[string[]]$SelectedProperties = &$SelectProperty -InputObject $ErrorInnerException -Property $Property
+						[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrorInnerException -Property $Property
 						$LogErrorInnerExceptionMsg = $ErrorInnerException | Select-Object -Property $SelectedProperties | Format-List | Out-String
 						
 						If ($Count -gt 0) { $LogInnerMessage += $InnerExceptionSeperator }
@@ -3254,7 +3254,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 					#  Load the User registry hive if the registry hive file exists
 					If (Test-Path -Path $UserRegistryHiveFile -PathType Leaf) {
 						Write-Log -Message "Load the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]" -Source ${CmdletName}
-						[string]$HiveLoadResult = &reg.exe load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
+						[string]$HiveLoadResult = & reg.exe load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 						
 						If ($global:LastExitCode -ne 0) {
 							Throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
@@ -3274,7 +3274,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				#  Make sure read/write calls to the HKCU registry hive specify the -SID parameter or settings will not be changed for all users.
 				#  Example: Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
 				Write-Log -Message 'Execute ScriptBlock to modify HKCU registry settings for all users.' -Source ${CmdletName}
-				&$RegistrySettings
+				& $RegistrySettings
 			}
 			Catch {
 				Write-Log -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -3283,7 +3283,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				If ($ManuallyLoadedRegHive) {
 					Try {
 						Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]" -Source ${CmdletName}
-						[string]$HiveLoadResult = &reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
+						[string]$HiveLoadResult = & reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
 						
 						If ($global:LastExitCode -ne 0) { Throw "$HiveLoadResult" }
 					}
@@ -4101,7 +4101,7 @@ Function Refresh-SessionEnvironmentVariables {
 			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty Property | ForEach-Object { Set-Item -Path "env:$($_)" -Value (Get-ItemProperty -Path $envRegPath -Name $_).$_ } }
 			
 			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
-			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (&$GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
+			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
 			$env:PATH = $PathFolders -join ';'
 		}
 		Catch {
@@ -6753,9 +6753,9 @@ Function Get-MsiTableProperty {
 			## If the first row was successfully retrieved, then save data and loop through the entire table
 			While ($Record) {
 				#  Add property and value to custom object
-				$TableProperties | Add-Member -MemberType NoteProperty -Name (&$GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (&$GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2))
+				$TableProperties | Add-Member -MemberType NoteProperty -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2))
 				#  Retrieve the next row in the table
-				[__comobject]$Record = &$InvokeMethod -Object $View -MethodName 'Fetch'
+				[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
 			}
 			
 			Write-Output $TableProperties
@@ -6768,7 +6768,7 @@ Function Get-MsiTableProperty {
 		}
 		Finally {
 			If ($View) {
-				&$InvokeMethod -Object $View -MethodName 'Close' -ArgumentList @() | Out-Null
+				& $InvokeMethod -Object $View -MethodName 'Close' -ArgumentList @() | Out-Null
 			}
 		}
 	}
