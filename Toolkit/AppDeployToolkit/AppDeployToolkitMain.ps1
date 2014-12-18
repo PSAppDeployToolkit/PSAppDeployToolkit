@@ -62,7 +62,7 @@ Param
 ## Variables: Datetime and Culture
 [string]$currentTime = (Get-Date -UFormat '%T').ToString()
 [string]$currentDate = (Get-Date -UFormat '%d-%m-%Y').ToString()
-[int32]$currentTimeZoneBias = (Get-WmiObject -Class Win32_TimeZone -ErrorAction 'SilentlyContinue').Bias
+[timespan]$currentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
 
@@ -178,7 +178,7 @@ If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchi
 [string]$scriptName = [System.IO.Path]::GetFileNameWithoutExtension($scriptPath)
 [string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
 [string]$scriptRoot = Split-Path -Path $scriptPath -Parent
-[string]$invokingScript = ((Get-Variable -Name MyInvocation).Value).ScriptName
+[string]$invokingScript = (Get-Variable -Name MyInvocation).Value.ScriptName
 #  Get the invoking script directory
 If ($invokingScript) {
 	#  If this script was invoked by another script
@@ -520,11 +520,14 @@ Function Write-Log {
 		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
 		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
 		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) {
-			[int32]$script:LogTimeZoneBias = (Get-WmiObject -Class Win32_TimeZone -ErrorAction 'SilentlyContinue').Bias
+			[int32]$script:LogTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes
 		}
 		#  Add the timezone bias to the log time
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		
+		## Get the file name of the source script
+		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
+
 		## Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		
@@ -538,7 +541,7 @@ Function Write-Log {
 				[string]$lSource,
 				[int16]$lSeverity
 			)
-			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"`" " + "type=`"$lSeverity`" " + "thread=`"1`" " + "file=`"`">"
+			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$([Threading.Thread]::CurrentThread.ManagedThreadId)`" " + "file=`"$ScriptSource`">"
 		}
 		
 		## Create script block for writing log entry to the console
@@ -630,7 +633,7 @@ Function Write-Log {
 			## Write the log entry to the log file if logging is not currently disabled
 			If (-not $DisableLogging) {
 				Try {
-					$LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding default -ErrorAction 'Stop'
+					$LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding 'UTF8' -ErrorAction 'Stop'
 				}
 				Catch {
 					If (-not $ContinueOnError) {

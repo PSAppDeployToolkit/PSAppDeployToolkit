@@ -28,6 +28,7 @@ Version 3.6.0 [12/18/2014]
 	Improved Deploy-Application.ps1 to use Write-Error instead of Write-Output when toolkit fails to dot source
 	Improved Get-ScheduledTask to retrieve all scheduled task details, remove spaces and colons from property names, allow retrieval of details for a specific task name, and remove lines with column headers from results
 	Improved compilation of custom C# code by using -IgnoreWarnings switch with Add-Type cmdlet so that toolkit does not fail to run because of a warning
+	Improved Write-Log to log following for CMTrace log type: thread id, file name of source script
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Updated documentation
