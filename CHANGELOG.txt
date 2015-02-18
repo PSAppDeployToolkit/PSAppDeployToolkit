@@ -23,6 +23,8 @@ Version 3.6.0 [02/xx/2015]
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
 	Improved defining default values for script variables not defined
 	Improved path validation in Execute-Process
+	Improved path validation in Execute-MSI
+	Improved working directory validation in Execute-MSI
 	Improved error message when toolkit launched without admin permissions
 	Improved detection of when invoking script is the Help script to avoid false positives
 	Improved Deploy-Application.ps1 to use Write-Error instead of Write-Output when toolkit fails to dot source

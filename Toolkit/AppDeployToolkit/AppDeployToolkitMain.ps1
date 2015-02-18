@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '12/18/2014'
+[string]$appDeployMainScriptDate = '02/18/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1910,9 +1910,21 @@ Function Execute-MSI {
 		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType Leaf -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
 		}
-		Else {
-			[string]$msiFile = $Path
+		ElseIf (Test-Path -Path $Path -ErrorAction 'SilentlyContinue') {
+			[string]$msiFile = (Get-Item -Path $Path).FullName
 		}
+		Else {
+			Write-Log -Message "Failed to find MSI file [$path]." -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to find MSI file [$path]."
+			}
+			Continue
+		}
+		# Set the working directory if required
+		If ($WorkingDirectory -eq $null) {
+			$WorkingDirectory = (Get-Item -Path $msiFile).Parent.FullName
+		}
+
 		
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
