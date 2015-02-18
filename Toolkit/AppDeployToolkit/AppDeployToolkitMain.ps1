@@ -3125,7 +3125,7 @@ Function Remove-RegistryKey {
 .PARAMETER Key
 	Path of the registry key to delete.
 .PARAMETER Name
-	Name of the registry key value to delete.
+	Name of the registry value to delete.
 .PARAMETER Recurse
 	Delete registry key recursively.
 .PARAMETER SID
