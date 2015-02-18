@@ -1803,7 +1803,7 @@ Function Execute-MSI {
 	Param (
 		[Parameter(Mandatory=$true)]
 		[ValidateSet('Install','Uninstall','Patch','Repair','ActiveSetup')]
-		[string]$Action,
+		[string]$Action = 'Install',
 		[Parameter(Mandatory=$true,HelpMessage='Please enter either the path to the MSI/MSP file or the ProductCode')]
 		[ValidateScript({($_ -match $MSIProductCodeRegExPattern) -or ('.msi','.msp' -contains [System.IO.Path]::GetExtension($_))})]
 		[Alias('FilePath')]
