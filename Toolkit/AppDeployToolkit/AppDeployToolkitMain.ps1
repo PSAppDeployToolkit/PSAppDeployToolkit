@@ -1920,15 +1920,11 @@ Function Execute-MSI {
 			}
 			Continue
 		}
-		# Set the working directory if required
-		If ($WorkingDirectory -eq $null) {
-			$WorkingDirectory = (Get-Item -Path $msiFile).Parent.FullName
-		}
-
 		
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
-		
+		Write-Log -Message "Working Directory has been set to [$WorkingDirectory]." -Source ${CmdletName}
+
 		## Get the ProductCode of the MSI
 		If ($PathIsProductCode) {
 			[string]$MSIProductCode = $path
