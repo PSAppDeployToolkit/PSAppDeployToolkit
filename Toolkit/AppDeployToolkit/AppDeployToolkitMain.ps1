@@ -1937,32 +1937,36 @@ Function Execute-MSI {
 			}
 		}
 		
-		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
-		[string]$msiFile = "`"$msiFile`""
-
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
-		[string[]]$transforms = $transform -split(",")
-		0..($transforms.Length - 1) | % {
-			If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
-				$transforms[$_] = "`"$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])`""
-			}
-			Else {
-				$transforms[$_] = "`"$($transforms[$_])`"" 
-			}
-		}
-		$mstFile = $transforms -join ";"
+        If ($transform) {
+		    [string[]]$transforms = $transform -split(',')
+		    0..($transforms.Length - 1) | % {
+			    If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
+				    $transforms[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_].Replace('.\',''))"
+			    }
+			    Else {
+				    $transforms[$_] = $transforms[$_]
+			    }
+		    }
+		    $mstFile = "`"$($transforms -join ';')`""
+        }
 
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
-		[string[]]$patches = $patch -split(",")
-		0..($patches.Length - 1) | % {
-			If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
-				$patches[$_] = "`"$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])`""
-			}
-			Else {
-				$patches[$_] = "`"$($patches[$_])`"" 
-			}
-		}
-		$mspFile = $patches -join ";"
+        If ($patch) { 
+		    [string[]]$patches = $patch -split(',')
+		    0..($patches.Length - 1) | % {
+			    If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
+				    $patches[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_].Replace('.\',''))"
+			    }
+			    Else {
+				    $patches[$_] = $patches[$_]
+			    }
+		    }
+		    $mspFile = "`"$($patches -join ';')`""
+        }
+
+		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
+		[string]$msiFile = "`"$msiFile`""
 
 		## Start building the MsiExec command line starting with the base action and file
 		[string]$argsMSI = "$option $msiFile"
