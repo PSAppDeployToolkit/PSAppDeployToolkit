@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '02/18/2015'
+[string]$appDeployMainScriptDate = '02/20/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1923,7 +1923,6 @@ Function Execute-MSI {
 		
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
-		Write-Log -Message "Working Directory has been set to [$WorkingDirectory]." -Source ${CmdletName}
 
 		## Get the ProductCode of the MSI
 		If ($PathIsProductCode) {
@@ -1940,10 +1939,30 @@ Function Execute-MSI {
 		
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
 		[string]$msiFile = "`"$msiFile`""
-		## Enclose the MST file in quotes to avoid issues with spaces when running msiexec
-		[string]$mstFile = "`"$transform`""
-		## Enclose the MSP file in quotes to avoid issues with spaces when running msiexec
-		[string]$mspFile = "`"$patch`""
+
+		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
+		[string[]]$transforms = $transform -split(",")
+		0..($transforms.Length - 1) | % {
+			If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
+				$transforms[$_] = "`"$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])`""
+			}
+			Else {
+				$transforms[$_] = "`"$($transforms[$_])`"" 
+			}
+		}
+		$mstFile = $transforms -join ";"
+
+		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
+		[string[]]$patches = $patch -split(",")
+		0..($patches.Length - 1) | % {
+			If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
+				$patches[$_] = "`"$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])`""
+			}
+			Else {
+				$patches[$_] = "`"$($patches[$_])`"" 
+			}
+		}
+		$mspFile = $patches -join ";"
 
 		## Start building the MsiExec command line starting with the base action and file
 		[string]$argsMSI = "$option $msiFile"
