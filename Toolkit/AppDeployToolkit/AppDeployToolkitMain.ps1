@@ -1913,7 +1913,7 @@ Function Execute-MSI {
 		ElseIf (Test-Path -Path $Path -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = (Get-Item -Path $Path).FullName
 		}
-		Else {
+		ElseIf (-not $PathIsProductCode) {
 			Write-Log -Message "Failed to find MSI file [$path]." -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to find MSI file [$path]."
