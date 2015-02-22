@@ -1828,7 +1828,7 @@ Function Execute-MSI {
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
 	)
-	
+
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
@@ -1837,7 +1837,7 @@ Function Execute-MSI {
 	Process {
 		## Initialize variable indicating whether $Path variable is a Product Code or not
 		[boolean]$PathIsProductCode = $false
-		
+
 		## If the path matches a product code
 		If ($Path -match $MSIProductCodeRegExPattern) {
 			#  Set variable indicating that $Path variable is a Product Code
@@ -1846,7 +1846,7 @@ Function Execute-MSI {
 			#  Resolve the product code to a publisher, application name, and version
 			Write-Log -Message 'Resolve product code to a publisher, application name, and version.' -Source ${CmdletName}
 			[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction 'SilentlyContinue'
-			
+
 			#  Build the log file name
 			If (-not $logName) {
 				If ($productCodeNameVersion) {
@@ -1867,7 +1867,7 @@ Function Execute-MSI {
 			#  Get the log file name without file extension
 			If (-not $logName) { $logName = ([System.IO.FileInfo]$path).BaseName } ElseIf ('.log','.txt' -contains [System.IO.Path]::GetExtension($logName)) { $logName = [System.IO.Path]::GetFileNameWithoutExtension($logName) }
 		}
-		
+
 		If ($configToolkitCompressLogs) {
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $logTempFolder -ChildPath $logName
@@ -1880,7 +1880,7 @@ Function Execute-MSI {
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
 		}
-		
+
 		## Set the installation Parameters
 		If ($deployModeSilent) {
 			$msiInstallDefaultParams = $configMSISilentParams
@@ -1890,7 +1890,7 @@ Function Execute-MSI {
 			$msiInstallDefaultParams = $configMSIInstallParams
 			$msiUninstallDefaultParams = $configMSIUninstallParams
 		}
-		
+
 		## Build the MSI Parameters
 		Switch ($action) {
 			'Install' { $option = '/i'; [string]$msiLogFile = "$logPath" + '_Install'; $msiDefaultParams = $msiInstallDefaultParams }
@@ -1899,13 +1899,13 @@ Function Execute-MSI {
 			'Repair' { $option = '/f'; [string]$msiLogFile = "$logPath" + '_Repair'; $msiDefaultParams = $msiInstallDefaultParams }
 			'ActiveSetup' { $option = '/fups'; [string]$msiLogFile = "$logPath" + '_ActiveSetup' }
 		}
-		
+
 		## Append ".log" to the MSI logfile path and enclose in quotes
 		If ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log') {
 			[string]$msiLogFile = $msiLogFile + '.log'
 			[string]$msiLogFile = "`"$msiLogFile`""
 		}
-		
+
 		## If the MSI is in the Files directory, set the full path to the MSI
 		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType Leaf -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
@@ -1913,14 +1913,17 @@ Function Execute-MSI {
 		ElseIf (Test-Path -Path $Path -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = (Get-Item -Path $Path).FullName
 		}
-		ElseIf (-not $PathIsProductCode) {
+		ElseIf ($PathIsProductCode) {
+			[string]$msiFile = $Path
+		}
+		Else {
 			Write-Log -Message "Failed to find MSI file [$path]." -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to find MSI file [$path]."
 			}
 			Continue
 		}
-		
+
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
 
@@ -1936,34 +1939,34 @@ Function Execute-MSI {
 				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
 			}
 		}
-		
+
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
-        If ($transform) {
-		    [string[]]$transforms = $transform -split(',')
-		    0..($transforms.Length - 1) | % {
-			    If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
-				    $transforms[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_].Replace('.\',''))"
-			    }
-			    Else {
-				    $transforms[$_] = $transforms[$_]
-			    }
-		    }
-		    $mstFile = "`"$($transforms -join ';')`""
-        }
+		If ($transform) {
+			[string[]]$transforms = $transform -split(',')
+			0..($transforms.Length - 1) | % {
+				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
+					$transforms[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_].Replace('.\',''))"
+				}
+				Else {
+					$transforms[$_] = $transforms[$_]
+				}
+			}
+			$mstFile = "`"$($transforms -join ';')`""
+		}
 
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
-        If ($patch) { 
-		    [string[]]$patches = $patch -split(',')
-		    0..($patches.Length - 1) | % {
-			    If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
-				    $patches[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_].Replace('.\',''))"
-			    }
-			    Else {
-				    $patches[$_] = $patches[$_]
-			    }
-		    }
-		    $mspFile = "`"$($patches -join ';')`""
-        }
+		If ($patch) { 
+			[string[]]$patches = $patch -split(',')
+			0..($patches.Length - 1) | % {
+				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
+					$patches[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_].Replace('.\',''))"
+				}
+				Else {
+					$patches[$_] = $patches[$_]
+				}
+			}
+			$mspFile = "`"$($patches -join ';')`""
+		}
 
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
 		[string]$msiFile = "`"$msiFile`""
@@ -1978,7 +1981,7 @@ Function Execute-MSI {
 		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
 		# Finally add the logging options
 		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
-			
+
 		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
 		If ($MSIProductCode) {
 			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
@@ -1986,7 +1989,7 @@ Function Execute-MSI {
 		Else {
 			If ($Action -eq 'Install') { [boolean]$IsMsiInstalled = $false } Else { [boolean]$IsMsiInstalled = $true }
 		}
-		
+
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
 			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
@@ -2423,12 +2426,12 @@ Function Get-MsiExitCodeMessage {
 		{
 			enum LoadLibraryFlags : int
 			{
-				DONT_RESOLVE_DLL_REFERENCES         = 0x00000001,
-				LOAD_IGNORE_CODE_AUTHZ_LEVEL        = 0x00000010,
-				LOAD_LIBRARY_AS_DATAFILE            = 0x00000002,
+				DONT_RESOLVE_DLL_REFERENCES		 = 0x00000001,
+				LOAD_IGNORE_CODE_AUTHZ_LEVEL		= 0x00000010,
+				LOAD_LIBRARY_AS_DATAFILE			= 0x00000002,
 				LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE  = 0x00000040,
-				LOAD_LIBRARY_AS_IMAGE_RESOURCE      = 0x00000020,
-				LOAD_WITH_ALTERED_SEARCH_PATH       = 0x00000008
+				LOAD_LIBRARY_AS_IMAGE_RESOURCE	  = 0x00000020,
+				LOAD_WITH_ALTERED_SEARCH_PATH	   = 0x00000008
 			}
 			
 			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -6365,7 +6368,7 @@ Function Get-IniValue {
 				
 				public static string GetIniValue(string section, string key, string filepath)
 				{
-					string sDefault    = "";
+					string sDefault	= "";
 					const int  nChars  = 1024;
 					StringBuilder Buff = new StringBuilder(nChars);
 					
@@ -7082,9 +7085,9 @@ Function Test-Battery {
 		[System.Windows.Forms.PowerStatus]$PowerStatus = [System.Windows.Forms.SystemInformation]::PowerStatus
 		
 		## Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
-		#    Offline : The system is not using AC power.
-		#    Online  : The system is using AC power.
-		#    Unknown : The power status of the system is unknown.
+		#	Offline : The system is not using AC power.
+		#	Online  : The system is using AC power.
+		#	Unknown : The power status of the system is unknown.
 		[string]$PowerLineStatus = $PowerStatus.PowerLineStatus
 		
 		## Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
