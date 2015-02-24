@@ -22,6 +22,7 @@ Version 3.6.0 [02/xx/2015]
 	Fixed issue in Get-InstalledApplication to properly detect applications when -Exact parameter used
 	Fixed issue in Get-UniversalDate where function would fail for some valid date formats under some culture settings
 	Fixed issue in Write-Log where it was not possible to change logfile name and directory after the first time these paths were set
+	Fixed issue with Deploy-Application.ps1 where variable expansion wouldn't work in Show-InstallationPrompt example
 	Improved path validation in Deploy-Application.exe, rewrote utility in C#
 	Improved defining default values for script variables not defined
 	Improved path validation in Execute-Process

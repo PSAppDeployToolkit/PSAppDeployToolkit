@@ -22,7 +22,7 @@
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
-	Deploy-Application.ps1 -DeployMode 'Silent'
+	Deploy-Application.ps1 -DeployMode "Silent"
 .EXAMPLE
 	Deploy-Application.ps1 -AllowRebootPassThru -AllowDefer
 .EXAMPLE
@@ -34,11 +34,11 @@
 [CmdletBinding()]
 Param (
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Install','Uninstall')]
-	[string]$DeploymentType = 'Install',
+	[ValidateSet("Install","Uninstall")]
+	[string]$DeploymentType = "Install",
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Interactive','Silent','NonInteractive')]
-	[string]$DeployMode = 'Interactive',
+	[ValidateSet("Interactive","Silent","NonInteractive")]
+	[string]$DeployMode = "Interactive",
 	[Parameter(Mandatory=$false)]
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
@@ -47,22 +47,22 @@ Param (
 
 Try {
 	## Set the script execution policy for this process
-	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
+	Try { Set-ExecutionPolicy -ExecutionPolicy "ByPass" -Scope "Process" -Force -ErrorAction "Stop" } Catch {}
 	
 	##*===============================================
 	##* VARIABLE DECLARATION
 	##*===============================================
 	
 	## Variables: Application
-	[string]$appVendor = 'PSAppDeployToolkit'
-	[string]$appName = 'Test Script'
-	[string]$appVersion = '1.0'
-	[string]$appArch = ''
-	[string]$appLang = 'EN'
-	[string]$appRevision = '01'
-	[string]$appScriptVersion = '3.6.0'
-	[string]$appScriptDate = '12/15/2014'
-	[string]$appScriptAuthor = 'Dan Cunningham'
+	[string]$appVendor = "PSAppDeployToolkit"
+	[string]$appName = "Test Script"
+	[string]$appVersion = "1.0"
+	[string]$appArch = ""
+	[string]$appLang = "EN"
+	[string]$appRevision = "01"
+	[string]$appScriptVersion = "3.6.0"
+	[string]$appScriptDate = "02/24/2015"
+	[string]$appScriptAuthor = "Dan Cunningham"
 	
 	##*===============================================
 	##* Do not modify section below
@@ -72,13 +72,14 @@ Try {
 	[int32]$mainExitCode = 0
 	
 	## Variables: Script
-	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.6.0'
-	[string]$deployAppScriptDate = '12/15/2014'
+	[string]$deployAppScriptFriendlyName = "Deploy Application"
+	[version]$deployAppScriptVersion = [version]"3.6.0"
+	[string]$deployAppScriptDate = "02/24/2015"
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
 	[string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+	If (-not (Test-Path -Path $scriptDirectory -PathType Leaf)) { [string]$scriptDirectory = Join-Path (Split-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) -Parent) "Toolkit" }
 	
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
@@ -88,7 +89,7 @@ Try {
 	}
 	Catch {
 		[int32]$mainExitCode = 1
-		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
+		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction "Continue"
 		Exit $mainExitCode
 	}
 	
@@ -103,104 +104,104 @@ Try {
 	##* END VARIABLE DECLARATION
 	##*===============================================
 	
-	If ($deploymentType -ine 'Uninstall') {
+	If ($deploymentType -ine "Uninstall") {
 		##*===============================================
 		##* PRE-INSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Pre-Installation'
+		[string]$installPhase = "Pre-Installation"
 		
 		## Installation Welcome: Defer test
 		Show-InstallationWelcome -AllowDefer -DeferTimes 100
 		
 		## Installation Welcome: CloseApps, CloseAppsCountdown, Defer, CheckDiskspace, PersistentPrompt and BlockExecution test
-		Show-InstallationWelcome -CloseApps 'iexplore,winword,excel,powerpnt' -CloseAppsCountdown 60 -CheckDiskSpace -PersistPrompt -BlockExecution
+		Show-InstallationWelcome -CloseApps "iexplore,winword,excel,powerpnt" -CloseAppsCountdown 60 -CheckDiskSpace -PersistPrompt -BlockExecution
 		
 		
 		##*===============================================
 		##* INSTALLATION 
 		##*===============================================
-		[string]$installPhase = 'Installation'
+		[string]$installPhase = "Installation"
 		
 		## Progress Message and Block Execution Test
-		Show-InstallationProgress -StatusMessage 'BlockExecution Test: Open Internet Explorer or an Office application within 10 seconds...'
+		Show-InstallationProgress -StatusMessage "BlockExecution Test: Open Internet Explorer or an Office application within 10 seconds..."
 		Start-Sleep -Seconds 10
 		
 		## MSI Installation and Removal Test
-		Show-InstallationProgress -StatusMessage 'MSI Installation And Removal Test...'
-		Execute-MSI -Action Install -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
-		Remove-MSIApplications -Name 'Test Installation (Testing) [Testing]'
+		Show-InstallationProgress -StatusMessage "MSI Installation And Removal Test..."
+		Execute-MSI -Action Install -Path "PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi"
+		Remove-MSIApplications -Name "Test Installation (Testing) [Testing]"
 		
 		## x86 File Manipulation and DLL Registration Test
-		Show-InstallationProgress -StatusMessage 'x86 File Manipulation And DLL Registration Test...'
+		Show-InstallationProgress -StatusMessage "x86 File Manipulation And DLL Registration Test..."
 		Copy-File -Path "$dirSupportFiles\AutoItX3.dll" -Destination "$envWinDir\SysWOW64\AutoItx3.dll"
 		Register-DLL -FilePath "$envWinDir\SysWOW64\AutoItx3.dll"
 		Unregister-DLL -FilePath "$envWinDir\SysWOW64\AutoItx3.dll"
 		Remove-File -Path "$envWinDir\SysWOW64\AutoItx3.dll"
 		
 		## x64 File Manipulation and DLL Registration Test
-		Show-InstallationProgress -StatusMessage 'x64 File Manipulation And DLL Registration Test...'
+		Show-InstallationProgress -StatusMessage "x64 File Manipulation And DLL Registration Test..."
 		Copy-File -Path "$dirSupportFiles\AutoItX3_x64.dll" -Destination "$envWinDir\System32\AutoItx3.dll"
 		Register-DLL -FilePath "$envWinDir\System32\AutoItx3.dll"
 		Unregister-DLL -FilePath "$envWinDir\System32\AutoItx3.dll"
 		Remove-File -Path "$envWinDir\System32\AutoItx3.dll"
 		
 		## Create Shortcut Test
-		Show-InstallationProgress -StatusMessage 'Shortcut Creation Test...'
-		New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+		Show-InstallationProgress -StatusMessage "Shortcut Creation Test..."
+		New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description "Notepad" -WorkingDirectory "$envHomeDrive\$envHomePath"
 		
 		## Pin to Start Menu Test
-		Show-InstallationProgress -StatusMessage 'Pinned Application Test...'
-		Set-PinnedApplication -Action 'PintoStartMenu' -FilePath "$envWinDir\Notepad.exe"
-		Set-PinnedApplication -Action 'PintoTaskBar' -FilePath "$envWinDir\Notepad.exe"
+		Show-InstallationProgress -StatusMessage "Pinned Application Test..."
+		Set-PinnedApplication -Action "PintoStartMenu" -FilePath "$envWinDir\Notepad.exe"
+		Set-PinnedApplication -Action "PintoTaskBar" -FilePath "$envWinDir\Notepad.exe"
 		
 		
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Post-Installation'
+		[string]$installPhase = "Post-Installation"
 		
 		## Execute Process test
-		Show-InstallationProgress -StatusMessage 'Execute Process Test: Close Notepad to proceed...'
-		Execute-Process -Path 'Notepad'
+		Show-InstallationProgress -StatusMessage "Execute Process Test: Close Notepad to proceed..."
+		Execute-Process -Path "Notepad"
 		
 		## Installation Prompt With NoWait Test
-		Show-InstallationPrompt -Message 'Asynchronous Installation Prompt Test: The installation should complete in the background. Click OK to dismiss...' -ButtonRightText 'OK' -Icon 'Information' -NoWait
+		Show-InstallationPrompt -Message "Asynchronous Installation Prompt Test: The installation should complete in the background. Click OK to dismiss..." -ButtonRightText "OK" -Icon "Information" -NoWait
 		Start-Sleep -Seconds 10
 		
 		## Remove Shortcut
 		Remove-File -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
 		
 		## Unpin From Start Menu
-		Set-PinnedApplication -Action 'UnPinFromStartMenu' -FilePath "$envWinDir\Notepad.exe"
-		Set-PinnedApplication -Action 'UnPinFromTaskBar' -FilePath "$envWinDir\Notepad.exe"
+		Set-PinnedApplication -Action "UnPinFromStartMenu" -FilePath "$envWinDir\Notepad.exe"
+		Set-PinnedApplication -Action "UnPinFromTaskBar" -FilePath "$envWinDir\Notepad.exe"
 		
 		## Installation Restart Prompt Test
 #		Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 	}
-	ElseIf ($deploymentType -ieq 'Uninstall') {
+	ElseIf ($deploymentType -ieq "Uninstall") {
 		##*===============================================
 		##* PRE-UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Pre-Uninstallation'
+		[string]$installPhase = "Pre-Uninstallation"
 		
 		## Installation Welcome: CloseApps and CloseAppsCountdown Test
-		Show-InstallationWelcome -CloseApps 'iexplore,winword,excel,powerpnt' -CloseAppsCountdown 60
+		Show-InstallationWelcome -CloseApps "iexplore,winword,excel,powerpnt" -CloseAppsCountdown 60
 		
 		
 		##*===============================================
 		##* UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Uninstallation'
+		[string]$installPhase = "Uninstallation"
 		
 		## MSI Removal Test
-		Show-InstallationProgress -StatusMessage 'MSI Uninstallation Test...'
-		Execute-MSI -Action Uninstall -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
+		Show-InstallationProgress -StatusMessage "MSI Uninstallation Test..."
+		Execute-MSI -Action Uninstall -Path "PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi"
 		
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Post-Uninstallation'
+		[string]$installPhase = "Post-Uninstallation"
 		
 		## Perform post-uninstallation tasks here
 	}
@@ -217,6 +218,6 @@ Catch {
 	[int32]$mainExitCode = 1
 	[string]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
-	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
+	Show-DialogBox -Text $mainErrorMessage -Icon "Stop"
 	Exit-Script -ExitCode $mainExitCode
 }
