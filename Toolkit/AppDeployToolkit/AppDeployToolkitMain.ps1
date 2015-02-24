@@ -5103,14 +5103,15 @@ Function Show-WelcomePrompt {
 		}
 		
 		## If deferral is being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
-		If ($showDefer) {
+		If (!($showDefer)) {
 			If ($closeAppsCountdown -gt 0) {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
 			}
+		}
+		If ($showDefer) {
 			If ($persistPrompt) { $persistWindow = $true }
 		}
-		
 		## If 'force close apps countdown' was specified, enable that feature.
 		If ($forceCloseAppsCountdown -eq $true) {
 			Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
