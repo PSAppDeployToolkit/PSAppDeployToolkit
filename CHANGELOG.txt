@@ -8,6 +8,7 @@ Version 3.6.0 [02/xx/2015]
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
+	Added -LoggingOptions parameter to Execute-MSI to allow overriding the default logging options specified in the config file
 	Added validation for -Path parameter in Execute-MSI function
 	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
 	Added default action of Install to Execute-MSI

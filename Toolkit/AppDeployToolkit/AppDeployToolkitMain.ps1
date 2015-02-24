@@ -1305,7 +1305,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -1776,6 +1776,8 @@ Function Execute-MSI {
 	The name of the patch (msp) file(s) to be applied to the MSI for use with the "Install" action. The patch file is expected to be in the same directory as the MSI file.
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER LoggingOptions
+	Overrides the default logging options specified in the XML configuration file. Install default is: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
 	For uninstallations, the product code is resolved to the displayname and version of the application.
@@ -1820,6 +1822,8 @@ Function Execute-MSI {
 		[string]$Patch,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
+		[string]$LoggingOptions,
+		[Parameter(Mandatory=$false)]
 		[string]$private:LogName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -1979,8 +1983,8 @@ Function Execute-MSI {
 		If ($patch) { $argsMSI = "$argsMSI PATCH=$mspFile" }
 		# Add custom Params if specified. Otherwise, add Default Params.
 		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
-		# Finally add the logging options
-		$argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
+		# Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
+		If ($LoggingOptions) { $argsMSI = "$argsMSI $LoggingOptions $msiLogFile" } Else { $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile" }
 
 		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
 		If ($MSIProductCode) {
@@ -3796,7 +3800,7 @@ Function Execute-ProcessAsUser {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-Command `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -5755,7 +5759,7 @@ Function Show-InstallationRestartPrompt {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -7748,7 +7752,7 @@ Function Set-ActiveSetup {
 				}
 				'.ps1' {
 					[string]$CUStubExePath = "$PSHOME\powershell.exe"
-					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$StubExePath`""
+					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
 					[string]$StubPath = "$CUStubExePath $CUArguments"
 				}
 			}
@@ -8783,10 +8787,10 @@ If ($SessionZero) {
 				[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
 				#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
 				If ($deployAppScriptParameters) {
-					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$invokingScript`" $deployAppScriptParameters; Exit `$LastExitCode"
+					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$invokingScript`" $deployAppScriptParameters; Exit `$LastExitCode"
 				}
 				Else {
-					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$invokingScript`"; Exit `$LastExitCode"
+					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$invokingScript`"; Exit `$LastExitCode"
 				}
 				
 				If ($usersLoggedOn) {
