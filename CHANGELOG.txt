@@ -9,6 +9,7 @@ Version 3.6.0 [02/xx/2015]
 	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
 	Added -LoggingOptions parameter to Execute-MSI to allow overriding the default logging options specified in the config file
+	Added -TopMost parameter to Show-InstallationWelcome to allow the ability for the user to move the welcome screen to the background
 	Added validation for -Path parameter in Execute-MSI function
 	Fixed issue where Show-InstallationRestartPrompt and Show-InstallationPrompt with -NoWait parameter didn't work
 	Added default action of Install to Execute-MSI

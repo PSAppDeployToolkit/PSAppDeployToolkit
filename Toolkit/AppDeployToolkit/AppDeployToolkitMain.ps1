@@ -4652,6 +4652,8 @@ Function Show-InstallationWelcome {
 	Specify required disk space in MB, used in combination with CheckDiskSpace.
 .PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt. Default: $true.
+.PARAMETER TopMost
+	Specifies whether the windows is the topmost window. Default: $true.
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps 'iexplore,winword,excel'
 	Prompt the user to close Internet Explorer, Word and Excel.
@@ -4730,7 +4732,11 @@ Function Show-InstallationWelcome {
 		## Specify whether to minimize other windows when displaying prompt
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$MinimizeWindows = $true
+		[boolean]$MinimizeWindows = $true,
+		## Specifies whether the window is the topmost window
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 	
 	Begin {
@@ -4864,12 +4870,12 @@ Function Show-InstallationWelcome {
 					}
 					#  Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
 					ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions -ne '') -and ($promptResult -ne 'Continue'))) {
-						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $minimizeWindows
+						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -TopMost $TopMost
 					}
 				}
 				#  If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
 				ElseIf ($runningProcessDescriptions -ne '') {
-					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows
+					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -TopMost $TopMost
 				}
 				#  If there is no deferral and no processes running, break the while loop
 				Else {
@@ -5022,6 +5028,8 @@ Function Show-WelcomePrompt {
 	Specify the deadline date before the user is allowed to defer.
 .PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt. Default: $true.
+.PARAMETER TopMost
+	Specifies whether the windows is the topmost window. Default: $true.
 .EXAMPLE
 	Show-WelcomePrompt -ProcessDescriptions 'Lotus Notes, Microsoft Word' -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
 .NOTES
@@ -5049,7 +5057,11 @@ Function Show-WelcomePrompt {
 		[string]$DeferDeadline,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$minimizeWindows = $true
+		[boolean]$MinimizeWindows = $true,
+		## Specifies whether the window is the topmost window
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 	
 	Begin {
@@ -5420,7 +5432,7 @@ Function Show-WelcomePrompt {
 		$formWelcome.FormBorderStyle = 'FixedDialog'
 		$formWelcome.MaximizeBox = $false
 		$formWelcome.MinimizeBox = $false
-		$formWelcome.TopMost = $true
+		$formWelcome.TopMost = $TopMost
 		$formWelcome.TopLevel = $true
 		$formWelcome.Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
 		$formWelcome.AutoSize = $true
