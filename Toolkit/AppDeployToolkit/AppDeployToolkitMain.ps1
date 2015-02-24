@@ -6078,8 +6078,8 @@ Function Show-InstallationProgress {
 				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty Height
 				#  Set the start position of the Window based on the screen size
 				If ($windowLocation -eq 'BottomRight') {
-					$xamlProgress.Window.Left = [string]($screenWidth - $xamlProgress.Window.Width - 10)
-					$xamlProgress.Window.Top = [string]($screenHeight - $xamlProgress.Window.Height - 10)
+					$xamlProgress.Window.Left = [string](($screenWidth / ($dpiscale / 100)) - ($xamlProgress.Window.Width))
+					$xamlProgress.Window.Top = [string](($screenHeight / ($dpiscale / 100)) - ($xamlProgress.Window.Height))
 				}
 				#  Show the default location (Top center)
 				Else {
