@@ -10,7 +10,8 @@
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
-	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+	This parameter is passed to the script when it is called externally,
+	 e.g. from a scheduled task or asynchronously.
 .PARAMETER ReferringApplication
 	Title of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
@@ -56,7 +57,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '02/20/2015'
+[string]$appDeployMainScriptDate = '02/24/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2371,7 +2372,7 @@ Function Execute-Process {
 		}
 		Catch {
 			If ([string]::IsNullOrEmpty([string]$returnCode)) {
-				[int32]$returnCode = 999
+				[int32]$returnCode = 60002
 				Write-Log -Message "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 			Else {
@@ -3844,7 +3845,7 @@ Function Execute-ProcessAsUser {
 				Return
 			}
 			Else {
-				[int32]$global:executeProcessAsUserExitCode = 1
+				[int32]$global:executeProcessAsUserExitCode = 60003
 				Exit
 			}
 		}
@@ -6687,7 +6688,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 			}
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
-				If ($ExecuteResult.ExitCode -eq 999) {
+				If ($ExecuteResult.ExitCode -eq 60002) {
 					Throw "Execute-Process function failed with exit code [$($ExecuteResult.ExitCode)]."
 				}
 				Else {
@@ -7499,7 +7500,7 @@ Function Update-GroupPolicy {
 				[psobject]$ExecuteResult = Execute-Process -Path "$envWindir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle Hidden -PassThru
 				
 				If ($ExecuteResult.ExitCode -ne 0) {
-					If ($ExecuteResult.ExitCode -eq 999) {
+					If ($ExecuteResult.ExitCode -eq 60002) {
 						Throw "Execute-Process function failed with exit code [$($ExecuteResult.ExitCode)]."
 					}
 					Else {
@@ -8579,7 +8580,7 @@ Catch {
 		Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]" -Source $appDeployToolkitName
 	}
 	Else {
-		Exit-Script -ExitCode 1
+		Exit-Script -ExitCode 60004
 	}
 }
 
@@ -8624,7 +8625,7 @@ If ($showBlockedAppDialog) {
 		$InstallPromptErrMsg = "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)"
 		Write-Log -Message $InstallPromptErrMsg -Severity 3 -Source $appDeployToolkitName
 		Show-DialogBox -Text $InstallPromptErrMsg -Icon 'Stop'
-		Exit 1
+		Exit 60005
 	}
 }
 
@@ -8833,7 +8834,7 @@ If ($SessionZero) {
 					}
 					Else {
 						Write-Log -Message '[AllowSystemInteractionFallback] option was not selected in the config XML file, so toolkit will not fall back to SYSTEM context with no interaction. Exiting script...' -Severity 2 -Source $appDeployToolkitName
-						Exit 1
+						Exit 60006
 					}
 				}
 				Else {

@@ -168,7 +168,7 @@ Try {
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {
-	[int32]$mainExitCode = 1
+	[int32]$mainExitCode = 60001
 	[string]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'

@@ -10,7 +10,7 @@ Version 3.6.0 [02/xx/2015]
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
 	Added -LoggingOptions parameter to Execute-MSI to allow overriding the default logging options specified in the config file
 	Added validation for -Path parameter in Execute-MSI function
-	Fixed issue in Show-InstallationPrompt and Show-InstallationRestartPrompt with how switch parameters with explicitly defined boolean values were passed to powershell.exe when used with the -File parameter
+	Fixed issue where Show-InstallationRestartPrompt and Show-InstallationPrompt with -NoWait parameter didn't work
 	Added default action of Install to Execute-MSI
 	Added ability to specify multiple transforms and patches in Execute-MSI using a comma separated list
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
@@ -35,6 +35,7 @@ Version 3.6.0 [02/xx/2015]
 	Improved Get-ScheduledTask to retrieve all scheduled task details, remove spaces and colons from property names, allow retrieval of details for a specific task name, and remove lines with column headers from results
 	Improved compilation of custom C# code by using -IgnoreWarnings switch with Add-Type cmdlet so that toolkit does not fail to run because of a warning
 	Improved Write-Log to log following for CMTrace log type: thread id, file name of source script
+	Changed default Exit Codes for internal Toolkit functions. The range of 60000 is used for internal, and 70000 should be used for custom extensions
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
 	Updated documentation
