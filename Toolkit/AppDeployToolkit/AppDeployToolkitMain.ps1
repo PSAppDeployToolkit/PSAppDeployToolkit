@@ -1825,6 +1825,7 @@ Function Execute-MSI {
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
 		[Parameter(Mandatory=$false)]
+		[Alias('LogName')]
 		[string]$private:LogName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
