@@ -7,6 +7,7 @@ Version 3.6.0 [02/xx/2015]
 	Added ability in Deploy-Application.exe to read if Admin rights required from XML file and then automatically prompt to elevate on Vista or higher
 	Added -ExcludeDefaultUser parameter to Get-UserProfiles to allow exclusion of the Default User profile
 	Added IsLocalAdmin property to results from Get-LoggedOnUser function to determine if the user account is in the local Administrators security group
+	Added -AddParameters parameter to Execute-MSI to allow augmenting of parametrs instead of replacing them
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
 	Added -LoggingOptions parameter to Execute-MSI to allow overriding the default logging options specified in the config file
 	Added -TopMost parameter to Show-InstallationWelcome to allow the ability for the user to move the welcome screen to the background

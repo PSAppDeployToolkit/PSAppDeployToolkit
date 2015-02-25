@@ -1777,6 +1777,8 @@ Function Execute-MSI {
 	The name of the patch (msp) file(s) to be applied to the MSI for use with the "Install" action. The patch file is expected to be in the same directory as the MSI file.
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER AddParameters
+	Adds to the default parameters specified in the XML configuration file.
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Install default is: "/L*v".
 .PARAMETER LogName
@@ -1818,6 +1820,9 @@ Function Execute-MSI {
 		[Alias('Arguments')]
 		[ValidateNotNullorEmpty()]
 		[string]$Parameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$AddParameters,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Patch,
@@ -1983,8 +1988,10 @@ Function Execute-MSI {
 		If ($transform) { $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1" }
 		# Add MSP
 		If ($patch) { $argsMSI = "$argsMSI PATCH=$mspFile" }
-		# Add custom Params if specified. Otherwise, add Default Params.
+		# Replace Params if specified. Otherwise, add Default Params.
 		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
+		# Add to Default Params if specified
+		If ($AddParameters) { $argsMSI = "$argsMSI $AddParameters" }
 		# Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
 		If ($LoggingOptions) { $argsMSI = "$argsMSI $LoggingOptions $msiLogFile" } Else { $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile" }
 
