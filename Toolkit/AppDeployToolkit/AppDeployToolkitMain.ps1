@@ -2252,7 +2252,8 @@ Function Execute-Process {
 				$env:SEE_MASK_NOZONECHECKS = 1
 				
 				## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
-				$private:ErrorActionPreference = 'Stop'
+                $private:previousErrorActionPreference = $ErrorActionPreference
+                $ErrorActionPreference = 'Stop'
 				
 				## Define process
 				$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
@@ -2392,6 +2393,11 @@ Function Execute-Process {
 			}
 			Else {
 				Exit-Script -ExitCode $returnCode
+			}
+		}
+        Finally {
+            If ($private:previousErrorActionPreference) {
+                $ErrorActionPreference = $private:previousErrorActionPreference
 			}
 		}
 	}
