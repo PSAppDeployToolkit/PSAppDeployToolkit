@@ -25,6 +25,8 @@ Version 3.6.0 [02/xx/2015]
 	Fixed issue with Deploy-Application.exe not executing on systems where only .NET 4 or higher installed by adding Deploy-Application.exe.config file
 	Fixed issue with Deploy-Application.exe by using -Command parameter instead of -File to avoid bug in PowerShell 2.0 where incorrect exit code might be returned if -File parameter used
 	Fixed a number of issues with the Office 2013 example script
+	Fixed issue whereby pressing enter would default to a hidden Abort button on Show-installationWelcome and Show-Installation Prompt
+	Fixed aesthetic issue whereby use of DeferDays or DeferDeadline without DeferTimes would show a deferal count of 1 remaining
 	Fixed issue in Get-InstalledApplication to properly detect applications when -Exact parameter used
 	Fixed issue in Get-UniversalDate where function would fail for some valid date formats under some culture settings
 	Fixed issue in Write-Log where it was not possible to change logfile name and directory after the first time these paths were set

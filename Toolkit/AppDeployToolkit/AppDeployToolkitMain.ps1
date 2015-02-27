@@ -5061,7 +5061,7 @@ Function Show-WelcomePrompt {
 		[Parameter(Mandatory=$false)]
 		[switch]$AllowDefer = $false,
 		[Parameter(Mandatory=$false)]
-		[int32]$DeferTimes,
+		[string]$DeferTimes,
 		[Parameter(Mandatory=$false)]
 		[string]$DeferDeadline,
 		[Parameter(Mandatory=$false)]
@@ -5327,8 +5327,9 @@ Function Show-WelcomePrompt {
 		$labelDefer.Padding = $labelPadding
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
+
 		If ($deferTimes -ge 0) {
-			$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $($deferTimes + 1)"
+			$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $([int32]$deferTimes + 1)"
 		}
 		If ($deferDeadline) {
 			$deferralText = "$deferralText `n$configDeferPromptDeadline $deferDeadline"
