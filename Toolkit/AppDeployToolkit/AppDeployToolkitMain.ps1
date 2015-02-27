@@ -1231,6 +1231,7 @@ Function Show-InstallationPrompt {
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
+        $buttonAbort.Visible = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
 		$buttonAbort.UseVisualStyleBackColor = $true
@@ -5422,6 +5423,7 @@ Function Show-WelcomePrompt {
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
+        $buttonAbort.Visible = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
 		$buttonAbort.UseVisualStyleBackColor = $true
