@@ -15,6 +15,7 @@ Version 3.6.0 [02/xx/2015]
 	Fixed issue where Show-InstallationRestartPrompt and Show-InstallationPrompt with -NoWait parameter didn't work
 	Added default action of Install to Execute-MSI
 	Added ability to specify multiple transforms and patches in Execute-MSI using a comma separated list
+	Added ability in XML configuration to override the detected language with a statically defined language for installation UI elements
 	Fixed issue in Show-InstallationProgress where -BottomRight paramater would cause prompt to be placed off screen where DPI is > 100%
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed

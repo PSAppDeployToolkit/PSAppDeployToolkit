@@ -232,6 +232,7 @@ $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
 #  Get UI Options
 $xmlConfigUIOptions = $xmlConfig.UI_Options
+[string]$configInstallationUILanguageOverride = $xmlConfigUIOptions.InstallationUI_LanguageOverride
 [boolean]$configShowBalloonNotifications = [boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
 [int32]$configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
 [int32]$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
@@ -241,6 +242,8 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 #  Get Message UI Language Options (default for English if no localization found)
 [string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
 If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
+#  Override the detected language if the override option was specified in the XML config file
+If ($configInstallationUILanguageOverride -ne "") { [string]$xmlUIMessageLanguage = "UI_Messages_" + $configInstallationUILanguageOverride }
 $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 [string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
