@@ -239,6 +239,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [int32]$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
 [int32]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 [int32]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
+[int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
 #  Get Message UI Language Options (default for English if no localization found)
 [string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
 If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
@@ -4574,12 +4575,11 @@ Function Get-RunningProcesses {
 			
 			## Escape special characters that interfere with regex and might cause false positive matches
 			## Join the process names with the regex operator '|' to perform "or" match against multiple applications
-			[string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
+		    [string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
 			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $_.ProcessName -match $processNames }
 			
-			[array]$runningProcesses = $runningProcesses | ForEach-Object { $_ } | Select-Object -Property ProcessName, Description, ID
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
 				Write-Log -Message "The following processes are running: [$runningProcessList]" -Source ${CmdletName}
@@ -4590,7 +4590,8 @@ Function Get-RunningProcesses {
 				#  3. Fall back on the process name.
 				ForEach ($runningProcess in $runningProcesses) {
 					ForEach ($processObject in $processObjects) {
-						If ($runningProcess.ProcessName -eq ($processObject.ProcessName -replace '.exe', '')) {
+                        $processNameRoot = $processObject.ProcessName -replace '.exe', ''
+						If ($runningProcess.ProcessName -eq $processNameRoot) {
 							If ($processObject.ProcessDescription) {
 								$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
 							}
@@ -4598,7 +4599,7 @@ Function Get-RunningProcesses {
 					}
 					#  Fall back on the process name if no description is provided by the process or as a parameter to the function
 					If (-not ($runningProcess.Description)) {
-						$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
+					    $runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 					}
 				}
 			}
@@ -4607,7 +4608,7 @@ Function Get-RunningProcesses {
 			}
 			
 			Write-Log -Message 'Finished checking running application(s).' -Source ${CmdletName}
-			Write-Output $runningProcesses
+            Write-Output $runningProcesses
 		}
 	}
 	End {
@@ -4711,6 +4712,9 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCloseAppsCountdown = 0,
+        ## Specify whether to prompt to save working documents when the users selects to close applications
+		[Parameter(Mandatory=$false)]
+		[switch]$PromptToSave = $false,
 		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
 		[Parameter(Mandatory=$false)]
 		[switch]$PersistPrompt = $false,
@@ -4872,7 +4876,7 @@ Function Show-InstallationWelcome {
 				[boolean]$forceCloseAppsCountdown = $true
 			}
 			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
-			While ((Get-RunningProcesses -ProcessObjects $processObjects | Select-Object -Property * -OutVariable RunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
+			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
 				[string]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
@@ -4905,9 +4909,21 @@ Function Show-InstallationWelcome {
 				#  Force the applications to close
 				ElseIf ($promptResult -eq 'Close') {
 					Write-Log -Message 'User selected to force the application(s) to close...' -Source ${CmdletName}
-					ForEach ($runningProcess in $runningProcesses) {
-						Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
-						Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
+	                    ForEach ($runningProcess in $runningProcesses) {
+                        # If the PromptToSave parameter was specified and the window has a handle and work to be saved, prompt the user to save the work
+                        If ($PromptToSave -and (($runningProcess | Select-Object MainWindowHandle -ExpandProperty MainWindowHandle) -ne 0)) {
+                            Write-Log -Message "Stop process $($runningProcess.Name) and prompt to save..." -Source ${CmdletName}
+						    Try {
+                                $runningProcess.CloseMainWindow() | Out-Null
+                                Wait-Process -Id $runningProcess.Id -Timeout $configInstallationPromptToSave -ErrorAction SilentlyContinue
+                            }
+                            Catch {
+                            }
+						} 
+                        Else {	
+		                    Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
+						    Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
+                        }
 					}
 					Start-Sleep -Seconds 2
 				}
