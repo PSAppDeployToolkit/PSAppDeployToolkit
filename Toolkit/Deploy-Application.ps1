@@ -85,10 +85,7 @@ Try {
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
-	
-	## Handle Execute-ProcessAsUser Invocation of the Toolkit
-	If ($executeProcessAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeProcessAsUserExitCode }
-	
+		
 	#endregion
 	##* Do not modify section above
 	##*===============================================

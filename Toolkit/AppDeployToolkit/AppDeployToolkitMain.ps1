@@ -211,9 +211,6 @@ $configConfigDetails = $xmlConfig.Config_File
 #  Get Toolkit Options
 $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [boolean]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[boolean]$configToolkitAllowSystemInteraction = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteraction)
-[boolean]$configToolkitAllowSystemInteractionFallback = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteractionFallback)
-[boolean]$configToolkitAllowSystemInteractionForNonConsoleUser = [boolean]::Parse($xmlToolkitOptions.Toolkit_AllowSystemInteractionForNonConsoleUser)
 [string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
 [string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
@@ -8848,83 +8845,17 @@ If ($SessionZero) {
 	Else {
 		##  If the process is not able to display a UI, enable NonInteractive mode
 		If (-not $IsProcessUserInteractive) {
-			Write-Log -Message 'Session 0 detected, process not running in user interactive mode.' -Source $appDeployToolkitName
-			If ($configToolkitAllowSystemInteraction) {
-				Write-Log -Message "'Allow System Interaction' option is enabled in the toolkit config XML file." -Source $appDeployToolkitName
-				
-				## Build the file path and the parameters for relaunching toolkit with user account. Use the -Command parameter to include the `$LastExitCode variable to ensure the exit code is passed to the task scheduler and can be parsed.
-				[string]$executeToolkitAsUserExePath = "$PSHOME\powershell.exe"
-				#  Determine if there were parameters passed to the script to be passed on to the scheduled task execution
-				If ($deployAppScriptParameters) {
-					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$invokingScript`" $deployAppScriptParameters; Exit `$LastExitCode"
-				}
-				Else {
-					[string]$executeToolkitAsUserParameters = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$invokingScript`"; Exit `$LastExitCode"
-				}
-				
-				If ($usersLoggedOn) {
-					## Relaunch the toolkit with a logged-in user account which is a local admin
-					If ($IsTaskSchedulerHealthy) {
-						If ($CurrentConsoleUserSession) {
-							If (-not ($CurrentConsoleUserSession.IsLocalAdmin)) {
-								Write-Log -Message "The currently logged-on console user $($CurrentConsoleUserSession.NTAccount) is not a local admin and cannot be used to relaunch the toolkit to provide interaction in the SYSTEM context." -Source $appDeployToolkitName
-							}
-						}
-						If (($CurrentConsoleUserSession) -and ($CurrentConsoleUserSession.IsLocalAdmin)) {
-							Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on local admin user account and provide interaction in the SYSTEM context for the console user [$($CurrentConsoleUserSession.NTAccount)]..." -Source $appDeployToolkitName
-							Execute-ProcessAsUser -UserName $CurrentConsoleUserSession.NTAccount -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-						}
-						ElseIf ($configToolkitAllowSystemInteractionForNonConsoleUser) {
-							Write-Log -Message "'Allow System Interaction' for non console user is enabled in the toolkit config XML file." -Source $appDeployToolkitName
-							[string]$FirstLoggedInNonConsoleLocalAdmin = $LoggedOnUserSessions | Where-Object { $LoggedOnUserSessions.IsLocalAdmin } | Select-Object -First 1 | ForEach-Object { $_.NTAccount }
-							If ($FirstLoggedInNonConsoleLocalAdmin) {
-								Write-Log -Message "Invoking [Execute-ProcessAsUser] to relaunch toolkit with a logged-on local admin user account and provide interaction in the SYSTEM context for a non console user [$FirstLoggedInNonConsoleLocalAdmin]..." -Source $appDeployToolkitName
-								Execute-ProcessAsUser -UserName $FirstLoggedInNonConsoleLocalAdmin -Path $executeToolkitAsUserExePath -Parameters $executeToolkitAsUserParameters -RunLevel 'HighestAvailable' -Wait -ContinueOnError $configToolkitAllowSystemInteractionFallback
-							}
-							Else {
-								Write-Log -Message 'No local admins are currently logged in to allow relaunching the toolkit under an admin account to provide interaction in the SYSTEM context.' -Source $appDeployToolkitName
-							}
-						}
-						Else {
-							Write-Log -Message "'Allow System Interaction' for non console user is disabled in the toolkit config XML file." -Source $appDeployToolkitName
-						}
-					}
-					Else {
-						Write-Log -Message 'The task scheduler service is not in a healthy state. Toolkit cannot be relaunched with a logged-on local admin user account to provide interaction in the SYSTEM context.' -Source $appDeployToolkitName
-					}
-					
-					## If the script is still running at this point it means we need to fall back to run in the SYSTEM context, if the option was selected, and also reset the deployment mode
-					Write-Log -Message 'Function [Execute-ProcessAsUser] failed to execute successfully, or the Task Scheduler service is not in a healthy state, or no local admins are currently logged in to allow relaunching the toolkit under an admin account.' -Severity 2 -Source $appDeployToolkitName
-					If ($configToolkitAllowSystemInteractionFallback) {
-						Write-Log -Message '[AllowSystemInteractionFallback] option selected in the config XML file, falling back to SYSTEM context with no interaction...' -Severity 2 -Source $appDeployToolkitName
-						$deployMode = 'NonInteractive'
-						Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-					}
-					Else {
-						Write-Log -Message '[AllowSystemInteractionFallback] option was not selected in the config XML file, so toolkit will not fall back to SYSTEM context with no interaction. Exiting script...' -Severity 2 -Source $appDeployToolkitName
-						Exit 60006
-					}
-				}
-				Else {
-					Write-Log -Message 'No users are logged on to be able to run in interactive mode.' -Source $appDeployToolkitName
-				}
-			}
-			Else {
-				Write-Log -Message "'Allow System Interaction' option is disabled in the toolkit config XML file." -Source $appDeployToolkitName
-				$deployMode = 'NonInteractive'
-				Write-Log -Message "Deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-			}
+		    $deployMode = 'NonInteractive'			
+            Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+		}
+		ElseIf (-not $usersLoggedOn) {
+			$deployMode = 'NonInteractive'
+			Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 		}
 		Else {
-			If (-not $usersLoggedOn) {
-				$deployMode = 'NonInteractive'
-				Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in: deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-			}
-			Else {
-				Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
+			Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
 			}
 		}
-	}
 }
 Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName

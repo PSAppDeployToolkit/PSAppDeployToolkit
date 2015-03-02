@@ -1,6 +1,8 @@
 Version 3.6.0 [02/xx/2015]
-	Added the ability to run the toolkit as the current logged on local admin user with administrator credentials to provide interaction in the system context. Added function Execute-ProcessAsUser to support this feature. Note: this feature is backwards compatible with deployment scripts created with earlier versions of the toolkit but requires one modification by adding the line after the comment "## Handle Execute-ProcessAsUser Invocation of the Toolkit" from the Deploy-Application.ps1 script included in v4. Note: this feature will only work for users that are local admins.
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
+	Added function Execute-ProcessAsUser to support running processes as the current logged on user to provide interaction in the system context. Note: if the user is not a local admin the process launched in user context will not inherit admin rights.
+	Added -PromptToSave parameter to Show-InstallationWelcome to prompt to save working documents when the users selects to close running applications
+	Added -TopMost parameter to Show-InstallationWelcome to allow the ability for the user to move the welcome screen to the background
 	Added variable to determine if running in terminal server session
 	Added functions to handle Windows services: Test-ServiceExists, Stop-ServiceAndDependencies, Start-ServiceAndDependencies, Get-ServiceStartMode, Set-ServiceStartMode
 	Added check to test whether or not the Windows Task Scheduler service is in a healthy state and fix any issues if possible. If it is not in a healthy state, the Toolkit cannot be relaunched with a user account when in the SYSTEM account.
@@ -10,8 +12,6 @@ Version 3.6.0 [02/xx/2015]
 	Added -AddParameters parameter to Execute-MSI to allow augmenting of parametrs instead of replacing them
 	Added -ReturnEmptyKeyIfExists parameter to Get-RegistryKey to allow returning empty registry keys if they exist
 	Added -LoggingOptions parameter to Execute-MSI to allow overriding the default logging options specified in the config file
-	Added -PromptToSave parameter to Show-InstallationWelcome to prompt to save working documents when the users selects to close running applications
-	Added -TopMost parameter to Show-InstallationWelcome to allow the ability for the user to move the welcome screen to the background
 	Added validation for -Path parameter in Execute-MSI function
 	Fixed issue where Show-InstallationRestartPrompt and Show-InstallationPrompt with -NoWait parameter didn't work
 	Added default action of Install to Execute-MSI
