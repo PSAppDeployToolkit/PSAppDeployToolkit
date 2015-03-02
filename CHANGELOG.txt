@@ -47,6 +47,7 @@ Version 3.6.0 [02/xx/2015]
 	Changed default Exit Codes for internal Toolkit functions. The range of 60000 is used for internal, and 70000 should be used for custom extensions
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
+	Changed Notes process termination using NSD to only run if Notes processes are running
 	Updated documentation
 	Added Polish translations
 	Updated German translations
