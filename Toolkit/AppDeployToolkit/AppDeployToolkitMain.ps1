@@ -1235,7 +1235,7 @@ Function Show-InstallationPrompt {
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
-        $buttonAbort.Visible = $false
+		$buttonAbort.Visible = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
 		$buttonAbort.UseVisualStyleBackColor = $true
@@ -4575,7 +4575,7 @@ Function Get-RunningProcesses {
 			
 			## Escape special characters that interfere with regex and might cause false positive matches
 			## Join the process names with the regex operator '|' to perform "or" match against multiple applications
-		    [string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
+			[string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
 			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $_.ProcessName -match $processNames }
@@ -4590,7 +4590,7 @@ Function Get-RunningProcesses {
 				#  3. Fall back on the process name.
 				ForEach ($runningProcess in $runningProcesses) {
 					ForEach ($processObject in $processObjects) {
-                        $processNameRoot = $processObject.ProcessName -replace '.exe', ''
+						$processNameRoot = $processObject.ProcessName -replace '.exe', ''
 						If ($runningProcess.ProcessName -eq $processNameRoot) {
 							If ($processObject.ProcessDescription) {
 								$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
@@ -4599,7 +4599,7 @@ Function Get-RunningProcesses {
 					}
 					#  Fall back on the process name if no description is provided by the process or as a parameter to the function
 					If (-not ($runningProcess.Description)) {
-					    $runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
+						$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 					}
 				}
 			}
@@ -4608,7 +4608,7 @@ Function Get-RunningProcesses {
 			}
 			
 			Write-Log -Message 'Finished checking running application(s).' -Source ${CmdletName}
-            Write-Output $runningProcesses
+			Write-Output $runningProcesses
 		}
 	}
 	End {
@@ -4712,7 +4712,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCloseAppsCountdown = 0,
-        ## Specify whether to prompt to save working documents when the users selects to close applications
+		## Specify whether to prompt to save working documents when the users selects to close applications
 		[Parameter(Mandatory=$false)]
 		[switch]$PromptToSave = $false,
 		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
@@ -4909,21 +4909,21 @@ Function Show-InstallationWelcome {
 				#  Force the applications to close
 				ElseIf ($promptResult -eq 'Close') {
 					Write-Log -Message 'User selected to force the application(s) to close...' -Source ${CmdletName}
-	                    ForEach ($runningProcess in $runningProcesses) {
-                        # If the PromptToSave parameter was specified and the window has a handle and work to be saved, prompt the user to save the work
-                        If ($PromptToSave -and (($runningProcess | Select-Object MainWindowHandle -ExpandProperty MainWindowHandle) -ne 0)) {
-                            Write-Log -Message "Stop process $($runningProcess.Name) and prompt to save..." -Source ${CmdletName}
-						    Try {
-                                $runningProcess.CloseMainWindow() | Out-Null
-                                Wait-Process -Id $runningProcess.Id -Timeout $configInstallationPromptToSave -ErrorAction SilentlyContinue
-                            }
-                            Catch {
-                            }
+						ForEach ($runningProcess in $runningProcesses) {
+						# If the PromptToSave parameter was specified and the window has a handle and work to be saved, prompt the user to save the work
+						If ($PromptToSave -and (($runningProcess | Select-Object MainWindowHandle -ExpandProperty MainWindowHandle) -ne 0)) {
+							Write-Log -Message "Stop process $($runningProcess.Name) and prompt to save..." -Source ${CmdletName}
+							Try {
+								$runningProcess.CloseMainWindow() | Out-Null
+								Wait-Process -Id $runningProcess.Id -Timeout $configInstallationPromptToSave -ErrorAction SilentlyContinue
+							}
+							Catch {
+							}
 						} 
-                        Else {	
-		                    Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
-						    Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
-                        }
+						Else {	
+							Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
+							Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
+						}
 					}
 					Start-Sleep -Seconds 2
 				}
@@ -5447,7 +5447,7 @@ Function Show-WelcomePrompt {
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
-        $buttonAbort.Visible = $false
+		$buttonAbort.Visible = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
 		$buttonAbort.UseVisualStyleBackColor = $true
@@ -7478,22 +7478,40 @@ Function Install-SCCMSoftwareUpdates {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		## Scan for updates
-		Write-Log -Message 'Scan for pending SCCM software updates...' -Source ${CmdletName}
-		Invoke-SCCMTask -ScheduleId 'SoftwareUpdatesScan'
-		
-		Write-Log -Message 'Sleep for 180 seconds...' -Source ${CmdletName}
-		Start-Sleep -Seconds 180
-		
-		Write-Log -Message 'Install pending software updates...' -Source ${CmdletName}
 		Try {
-			[System.Management.ManagementClass]$SmsSoftwareUpdates = [WMIClass]'ROOT\CCM:SMS_Client'
-			$SmsSoftwareUpdates.InstallUpdates([System.Management.ManagementObject[]](Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query 'SELECT * FROM CCM_SoftwareUpdate' -ErrorAction 'Stop')) | Out-Null
+			$StartTime = Get-Date
+			## Trigger SCCM client scan for Software Updates
+			Write-Log -Message 'Trigger SCCM client scan for Software Updates...' -Source ${CmdletName}
+			Invoke-SCCMTask -ScheduleId 'SoftwareUpdatesScan'
+			
+			$WaitingSeconds = 180
+			Write-Log -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$WaitingSeconds] seconds to let the update scan finish." -Source ${CmdletName}
+			Start-Sleep -Seconds $WaitingSeconds
+			
+			## Find the number of missing updates 
+			[System.Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'")
+			
+			## Install missing updates and wait for pending updates to finish installing
+			If ($CMMissingUpdates.Count) {
+				#  Install missing updates
+				Write-Log -Message "Install missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]." -Source ${CmdletName}
+				$CMInstallMissingUpdates = (Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Class 'CCM_SoftwareUpdatesManager' -List).InstallUpdates($CMMissingUpdates)
+				
+				#  Wait for pending updates to finish installing. Timeout in 45 minutes.
+				Do {
+					Start-Sleep -Seconds $WaitingSeconds
+					[array]$CMInstallPendingUpdates = @(Get-WmiObject -Namespace "ROOT\CCM\ClientSDK" -Query "SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7")
+					Write-Log -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]." -Source ${CmdletName}
+				} While (($CMInstallPendingUpdates.Count -ne 0) -and ((New-TimeSpan -Start $StartTime -End $(Get-Date)) -lt '00:45:00'))
+			}
+			Else {
+				Write-Log -Message 'There are no missing updates.' -Source ${CmdletName}
+			}
 		}
 		Catch {
-			Write-Log -Message "Failed to trigger installation of pending SCCM software updates. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to trigger installation of missing software updates. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
-				Throw "Failed to trigger installation of pending SCCM software updates: $($_.Exception.Message)"
+				Throw "Failed to trigger installation of missing software updates: $($_.Exception.Message)"
 			}
 		}
 	}
