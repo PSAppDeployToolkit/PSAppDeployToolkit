@@ -4830,7 +4830,7 @@ Function Show-InstallationWelcome {
 				}
 			}
 			Else {
-				[string]$DeferTimes = ''
+				$DeferTimes = $null
 			}
 			If ($checkDeferDays -and $allowDefer) {
 				If ($deferHistoryDeadline) {
