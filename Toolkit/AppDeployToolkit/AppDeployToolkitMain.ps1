@@ -5806,8 +5806,22 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { 
+                If ($_.Value.GetType().Name -eq 'SwitchParameter') { 
+                    "-$($_.Key)" 
+                } 
+                ElseIf ($_.Value.GetType().Name -eq 'Boolean') { 
+                    "-$($_.Key) `$" + "$($_.Value)".ToLower() 
+                } 
+                ElseIf ($_.Value.GetType().Name -eq 'Int32') { 
+                    "-$($_.Key) $($_.Value)" 
+                } 
+                Else 
+                { 
+                    "-$($_.Key) `"$($_.Value)`"" 
+                } 
+                }) -join ' '
+            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -8848,14 +8862,16 @@ If ($SessionZero) {
 		    $deployMode = 'NonInteractive'			
             Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 		}
-		ElseIf (-not $usersLoggedOn) {
-			$deployMode = 'NonInteractive'
-			Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-		}
 		Else {
-			Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
+            If (-not $usersLoggedOn) {
+			    $deployMode = 'NonInteractive'
+			    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+		    }
+		    Else {
+			    Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
 			}
-		}
+	    }	
+    }
 }
 Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
