@@ -4319,7 +4319,7 @@ Function Block-AppExecution {
 			[string[]]$schTaskCreationBatchFile = '@ECHO OFF'
 			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
 			$schTaskCreationBatchFile | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat" -Force -Encoding default -ErrorAction 'SilentlyContinue'
-			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
+			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /F /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
 		}
 		
 		[string[]]$blockProcessName = $processName
