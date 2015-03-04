@@ -1808,7 +1808,7 @@ Function Execute-MSI {
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$false)]
 		[ValidateSet('Install','Uninstall','Patch','Repair','ActiveSetup')]
 		[string]$Action = 'Install',
 		[Parameter(Mandatory=$true,HelpMessage='Please enter either the path to the MSI/MSP file or the ProductCode')]
