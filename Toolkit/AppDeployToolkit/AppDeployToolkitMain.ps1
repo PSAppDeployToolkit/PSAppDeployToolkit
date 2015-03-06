@@ -104,6 +104,8 @@ If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
+        # If running in system context, fall back on the logonserver value stored in the registry
+        If ($envLogonServer = "") { $envLogonServer = Get-RegistryKey -Key "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History" -Value "DCName"}    
 		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
@@ -4300,6 +4302,7 @@ Function Block-AppExecution {
 		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container -ErrorAction 'SilentlyContinue')) {
 			New-Item -Path $dirAppDeployTemp -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
 		}
+
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
@@ -5821,7 +5824,7 @@ Function Show-InstallationRestartPrompt {
                     "-$($_.Key) `"$($_.Value)`"" 
                 } 
                 }) -join ' '
-            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
