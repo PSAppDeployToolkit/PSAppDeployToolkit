@@ -104,6 +104,8 @@ If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
+        # If running in system context, fall back on the logonserver value stored in the registry
+        If ($envLogonServer = "") { $envLogonServer = Get-RegistryKey -Key "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History" -Value "DCName"}    
 		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
@@ -4306,6 +4308,7 @@ Function Block-AppExecution {
 		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container -ErrorAction 'SilentlyContinue')) {
 			New-Item -Path $dirAppDeployTemp -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
 		}
+
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
@@ -4325,7 +4328,7 @@ Function Block-AppExecution {
 			[string[]]$schTaskCreationBatchFile = '@ECHO OFF'
 			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
 			$schTaskCreationBatchFile | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat" -Force -Encoding default -ErrorAction 'SilentlyContinue'
-			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
+			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /F /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
 		}
 		
 		[string[]]$blockProcessName = $processName
@@ -4836,7 +4839,7 @@ Function Show-InstallationWelcome {
 				}
 			}
 			Else {
-				[string]$DeferTimes = ''
+				$DeferTimes = $null
 			}
 			If ($checkDeferDays -and $allowDefer) {
 				If ($deferHistoryDeadline) {
@@ -5812,8 +5815,22 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { 
+                If ($_.Value.GetType().Name -eq 'SwitchParameter') { 
+                    "-$($_.Key)" 
+                } 
+                ElseIf ($_.Value.GetType().Name -eq 'Boolean') { 
+                    "-$($_.Key) `$" + "$($_.Value)".ToLower() 
+                } 
+                ElseIf ($_.Value.GetType().Name -eq 'Int32') { 
+                    "-$($_.Key) $($_.Value)" 
+                } 
+                Else 
+                { 
+                    "-$($_.Key) `"$($_.Value)`"" 
+                } 
+                }) -join ' '
+            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -8854,14 +8871,16 @@ If ($SessionZero) {
 		    $deployMode = 'NonInteractive'			
             Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 		}
-		ElseIf (-not $usersLoggedOn) {
-			$deployMode = 'NonInteractive'
-			Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-		}
 		Else {
-			Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
+            If (-not $usersLoggedOn) {
+			    $deployMode = 'NonInteractive'
+			    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+		    }
+		    Else {
+			    Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
 			}
-		}
+	    }	
+    }
 }
 Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
