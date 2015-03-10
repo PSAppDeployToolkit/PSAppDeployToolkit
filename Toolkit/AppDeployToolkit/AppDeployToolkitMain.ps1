@@ -520,15 +520,32 @@ Function Write-Log {
 		## Get the name of this function
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		
-		## Initialize the date/time variables
+		## Initialize variables
 		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
 		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
-		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) {
-			[int32]$script:LogTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes
-		}
+		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
 		#  Add the timezone bias to the log time
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
+		[boolean]$ExitLoggingFunction = $false
+
+		## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
+		If (($DebugMessage) -and (-not $LogDebugMessage)) { [boolean]$ExitLoggingFunction = $true; Return }
 		
+		#  Create the directory where the log file will be saved
+		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
+			Try {
+				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+			}
+			Catch {
+				[boolean]$ExitLoggingFunction = $true
+				#  If error creating directory, write message to console
+				If (-not $ContinueOnError) {
+					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+				}
+				Return
+			}
+		}
+
 		## Get the file name of the source script
 		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
 		
@@ -545,7 +562,7 @@ Function Write-Log {
 				[string]$lSource,
 				[int16]$lSeverity
 			)
-			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$([Threading.Thread]::CurrentThread.ManagedThreadId)`" " + "file=`"$ScriptSource`">"
+			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
 		}
 		
 		## Create script block for writing log entry to the console
@@ -570,28 +587,12 @@ Function Write-Log {
 			}
 		}
 		
-		#  Create the directory where the log file will be saved
-		[boolean]$LogDirectoryCreateError = $false
-		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
-			Try {
-				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
-			}
-			Catch {
-				[boolean]$LogDirectoryCreateError = $true
-				#  If error creating directory, write message to console
-				If (-not $ContinueOnError) {
-					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
-				}
-				Return
-			}
-		}
-		
 		#  Assemble the fully qualified path to the log file
 		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 	}
 	Process {
-		## Exit function if it is a debug message and 'LogDebugMessage' option is not $true, or if the log directory was not successfully created in 'Begin' block.
-		If ((($DebugMessage) -and (-not $LogDebugMessage)) -or ($LogDirectoryCreateError)) { Return }
+		## Exit function if logging is disabled or if the log directory was not successfully created in 'Begin' block.
+		If ($ExitLoggingFunction) { Return }
 		
 		ForEach ($Msg in $Message) {
 			## If the message is not $null or empty, create the log entry for the different logging methods
@@ -653,23 +654,25 @@ Function Write-Log {
 	End {
 		## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
 		Try {
-			[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
-			[decimal]$LogFileSizeMB = $LogFile.Length/1MB
-			If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
-				## Change the file extension to "lo_"
-				[string]$ArchivedOutLogFile = [System.IO.Path]::ChangeExtension($LogFilePath, 'lo_')
-				[hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFilePath; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
-				
-				## Log message about archiving the log file
-				$ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedOutLogFile]."
-				Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
-				
-				## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
-				Move-Item -Path $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
-				
-				## Start new log file and Log message about archiving the old log file
-				$NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
-				Write-Log -Message $NewLogMessage @ArchiveLogParams
+			If (-not $ExitLoggingFunction) {
+				[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
+				[decimal]$LogFileSizeMB = $LogFile.Length/1MB
+				If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
+					## Change the file extension to "lo_"
+					[string]$ArchivedOutLogFile = [System.IO.Path]::ChangeExtension($LogFilePath, 'lo_')
+					[hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFilePath; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
+					
+					## Log message about archiving the log file
+					$ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedOutLogFile]."
+					Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
+					
+					## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
+					Move-Item -Path $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
+					
+					## Start new log file and Log message about archiving the old log file
+					$NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
+					Write-Log -Message $NewLogMessage @ArchiveLogParams
+				}
 			}
 		}
 		Catch {
@@ -5183,7 +5186,7 @@ Function Show-WelcomePrompt {
 		}
 		
 		## If deferral is being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
-		If (!($showDefer)) {
+		If (-not $showDefer) {
 			If ($closeAppsCountdown -gt 0) {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
