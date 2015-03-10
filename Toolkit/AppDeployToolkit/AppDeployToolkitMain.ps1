@@ -527,7 +527,7 @@ Function Write-Log {
 		#  Add the timezone bias to the log time
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		[boolean]$ExitLoggingFunction = $false
-
+		
 		## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
 		If (($DebugMessage) -and (-not $LogDebugMessage)) { [boolean]$ExitLoggingFunction = $true; Return }
 		
@@ -545,7 +545,7 @@ Function Write-Log {
 				Return
 			}
 		}
-
+		
 		## Get the file name of the source script
 		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
 		
