@@ -57,7 +57,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '02/24/2015'
+[string]$appDeployMainScriptDate = '03/10/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -104,8 +104,8 @@ If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
-        # If running in system context, fall back on the logonserver value stored in the registry
-        If ($envLogonServer = "") { $envLogonServer = Get-RegistryKey -Key "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History" -Value "DCName"}    
+		# If running in system context, fall back on the logonserver value stored in the registry
+		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
 		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
@@ -346,7 +346,7 @@ If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 
 ## Variables: Log Files
-[string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log'
+If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
 [string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
 If ($configToolkitCompressLogs) {
 	## If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder after being zipped.
@@ -1685,7 +1685,7 @@ Function Get-InstalledApplication {
 							$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
 							$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
 							$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
-
+							
 							## Determine if application is a 64-bit application
 							[boolean]$Is64BitApp = If (($is64Bit) -and ($regKey -notmatch '^HKLM:SOFTWARE\\Wow6432Node')) { $true } Else { $false }
 							
@@ -1843,7 +1843,7 @@ Function Execute-MSI {
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
 	)
-
+	
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
@@ -1852,7 +1852,7 @@ Function Execute-MSI {
 	Process {
 		## Initialize variable indicating whether $Path variable is a Product Code or not
 		[boolean]$PathIsProductCode = $false
-
+		
 		## If the path matches a product code
 		If ($Path -match $MSIProductCodeRegExPattern) {
 			#  Set variable indicating that $Path variable is a Product Code
@@ -1861,7 +1861,7 @@ Function Execute-MSI {
 			#  Resolve the product code to a publisher, application name, and version
 			Write-Log -Message 'Resolve product code to a publisher, application name, and version.' -Source ${CmdletName}
 			[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction 'SilentlyContinue'
-
+			
 			#  Build the log file name
 			If (-not $logName) {
 				If ($productCodeNameVersion) {
@@ -1882,7 +1882,7 @@ Function Execute-MSI {
 			#  Get the log file name without file extension
 			If (-not $logName) { $logName = ([System.IO.FileInfo]$path).BaseName } ElseIf ('.log','.txt' -contains [System.IO.Path]::GetExtension($logName)) { $logName = [System.IO.Path]::GetFileNameWithoutExtension($logName) }
 		}
-
+		
 		If ($configToolkitCompressLogs) {
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $logTempFolder -ChildPath $logName
@@ -1895,7 +1895,7 @@ Function Execute-MSI {
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
 		}
-
+		
 		## Set the installation Parameters
 		If ($deployModeSilent) {
 			$msiInstallDefaultParams = $configMSISilentParams
@@ -1905,7 +1905,7 @@ Function Execute-MSI {
 			$msiInstallDefaultParams = $configMSIInstallParams
 			$msiUninstallDefaultParams = $configMSIUninstallParams
 		}
-
+		
 		## Build the MSI Parameters
 		Switch ($action) {
 			'Install' { $option = '/i'; [string]$msiLogFile = "$logPath" + '_Install'; $msiDefaultParams = $msiInstallDefaultParams }
@@ -1914,13 +1914,13 @@ Function Execute-MSI {
 			'Repair' { $option = '/f'; [string]$msiLogFile = "$logPath" + '_Repair'; $msiDefaultParams = $msiInstallDefaultParams }
 			'ActiveSetup' { $option = '/fups'; [string]$msiLogFile = "$logPath" + '_ActiveSetup' }
 		}
-
+		
 		## Append ".log" to the MSI logfile path and enclose in quotes
 		If ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log') {
 			[string]$msiLogFile = $msiLogFile + '.log'
 			[string]$msiLogFile = "`"$msiLogFile`""
 		}
-
+		
 		## If the MSI is in the Files directory, set the full path to the MSI
 		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType Leaf -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
@@ -1938,10 +1938,10 @@ Function Execute-MSI {
 			}
 			Continue
 		}
-
+		
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
-
+		
 		## Get the ProductCode of the MSI
 		If ($PathIsProductCode) {
 			[string]$MSIProductCode = $path
@@ -1954,7 +1954,7 @@ Function Execute-MSI {
 				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
 			}
 		}
-
+		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[string[]]$transforms = $transform -split(',')
@@ -1968,7 +1968,7 @@ Function Execute-MSI {
 			}
 			$mstFile = "`"$($transforms -join ';')`""
 		}
-
+		
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
 		If ($patch) { 
 			[string[]]$patches = $patch -split(',')
@@ -1982,10 +1982,10 @@ Function Execute-MSI {
 			}
 			$mspFile = "`"$($patches -join ';')`""
 		}
-
+		
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
 		[string]$msiFile = "`"$msiFile`""
-
+		
 		## Start building the MsiExec command line starting with the base action and file
 		[string]$argsMSI = "$option $msiFile"
 		# Add MST
@@ -1998,7 +1998,7 @@ Function Execute-MSI {
 		If ($AddParameters) { $argsMSI = "$argsMSI $AddParameters" }
 		# Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
 		If ($LoggingOptions) { $argsMSI = "$argsMSI $LoggingOptions $msiLogFile" } Else { $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile" }
-
+		
 		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
 		If ($MSIProductCode) {
 			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
@@ -2006,7 +2006,7 @@ Function Execute-MSI {
 		Else {
 			If ($Action -eq 'Install') { [boolean]$IsMsiInstalled = $false } Else { [boolean]$IsMsiInstalled = $true }
 		}
-
+		
 		If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
 			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
@@ -2256,8 +2256,8 @@ Function Execute-Process {
 				$env:SEE_MASK_NOZONECHECKS = 1
 				
 				## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
-                $private:previousErrorActionPreference = $ErrorActionPreference
-                $ErrorActionPreference = 'Stop'
+				$private:previousErrorActionPreference = $ErrorActionPreference
+				$ErrorActionPreference = 'Stop'
 				
 				## Define process
 				$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
@@ -2327,6 +2327,8 @@ Function Execute-Process {
 				
 				## Re-enable Zone checking
 				Remove-Item -Path env:SEE_MASK_NOZONECHECKS -ErrorAction 'SilentlyContinue'
+				
+				If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 			}
 			
 			If (-not $NoWait) {
@@ -2397,11 +2399,6 @@ Function Execute-Process {
 			}
 			Else {
 				Exit-Script -ExitCode $returnCode
-			}
-		}
-        Finally {
-            If ($private:previousErrorActionPreference) {
-                $ErrorActionPreference = $private:previousErrorActionPreference
 			}
 		}
 	}
@@ -3541,7 +3538,7 @@ Function Get-UserProfiles {
 			## Find the path to the Default User profile
 			If (-not $ExcludeDefaultUser) {
 				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
-
+				
 				#  On Windows Vista or higher
 				If ([System.Environment]::OSVersion.Version.Major -gt 5) {
 					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
@@ -4308,7 +4305,7 @@ Function Block-AppExecution {
 		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container -ErrorAction 'SilentlyContinue')) {
 			New-Item -Path $dirAppDeployTemp -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
 		}
-
+		
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
@@ -4950,27 +4947,27 @@ Function Show-InstallationWelcome {
 						Catch {
 						}
 					}
-
+					
 					#  Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
-
+					
 					Exit-Script -ExitCode $configInstallationUIExitCode
 				}
 				#  Stop the script (user chose to defer)
 				ElseIf ($promptResult -eq 'Defer') {
 					Write-Log -Message 'Installation deferred by the user.' -Source ${CmdletName}
 					$BlockExecution = $false
-
+					
 					Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
-
+					
 					#  Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
-
+					
 					Exit-Script -ExitCode $configInstallationDeferExitCode
 				}
 			}
 		}
-
+		
 		## Force the processes to close silently, without prompting the user
 		If (($Silent -or $deployModeSilent) -and $CloseApps) {
 			[array]$runningProcesses = $null
@@ -4982,12 +4979,12 @@ Function Show-InstallationWelcome {
 				Start-Sleep -Seconds 2
 			}
 		}
-
+		
 		## Force nsd.exe to stop if Notes is one of the required applications to close
 		If (($processObjects | ForEach-Object { $_.ProcessName }) -match 'notes') {
 			#  Get a list of all the executables in the Notes folder
 			[string[]]$notesPathExes = Get-ChildItem -Path $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty BaseName | Sort-Object
-
+			
 			## Ensure we aren't running as a Local System Account
 			If (-not $IsLocalSystemAccount) {
 				## Check for running Notes executables and run NSD if any are found
@@ -5009,16 +5006,16 @@ Function Show-InstallationWelcome {
 						Catch {
 							Write-Log -Message "Failed to launch [$notesNSDExecutable]. `n$(Resolve-Error)" -Source ${CmdletName}
 						}
-
+						
 						Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.Exitcode)]" -Source ${CmdletName}
-
+						
 						#  Force NSD process to stop in case the previous command was not successful
 						Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
 					}
 				Break
 				}}
 			}
-
+			
 			#  Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
 			If ($notesPathExes) {
 				[array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select-Object -ExpandProperty ProcessName | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | Where-Object { ($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes') } | Select-Object -ExpandProperty InputObject
@@ -5359,7 +5356,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.Padding = $labelPadding
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
-
+		
 		If ($deferTimes -ge 0) {
 			$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $([int32]$deferTimes + 1)"
 		}
@@ -5816,21 +5813,21 @@ Function Show-InstallationRestartPrompt {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { 
-                If ($_.Value.GetType().Name -eq 'SwitchParameter') { 
-                    "-$($_.Key)" 
-                } 
-                ElseIf ($_.Value.GetType().Name -eq 'Boolean') { 
-                    "-$($_.Key) `$" + "$($_.Value)".ToLower() 
-                } 
-                ElseIf ($_.Value.GetType().Name -eq 'Int32') { 
-                    "-$($_.Key) $($_.Value)" 
-                } 
-                Else 
-                { 
-                    "-$($_.Key) `"$($_.Value)`"" 
-                } 
-                }) -join ' '
-            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+				If ($_.Value.GetType().Name -eq 'SwitchParameter') { 
+					"-$($_.Key)" 
+				} 
+				ElseIf ($_.Value.GetType().Name -eq 'Boolean') { 
+					"-$($_.Key) `$" + "$($_.Value)".ToLower() 
+				} 
+				ElseIf ($_.Value.GetType().Name -eq 'Int32') { 
+					"-$($_.Key) $($_.Value)" 
+				} 
+				Else 
+				{ 
+					"-$($_.Key) `"$($_.Value)`"" 
+				} 
+				}) -join ' '
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -8868,19 +8865,19 @@ If ($SessionZero) {
 	Else {
 		##  If the process is not able to display a UI, enable NonInteractive mode
 		If (-not $IsProcessUserInteractive) {
-		    $deployMode = 'NonInteractive'			
-            Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
+			$deployMode = 'NonInteractive'
+			Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 		}
 		Else {
-            If (-not $usersLoggedOn) {
-			    $deployMode = 'NonInteractive'
-			    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
-		    }
-		    Else {
-			    Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
+			If (-not $usersLoggedOn) {
+				$deployMode = 'NonInteractive'
+				Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 			}
-	    }	
-    }
+			Else {
+				Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
+			}
+		}	
+	}
 }
 Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
