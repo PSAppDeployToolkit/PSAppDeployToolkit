@@ -1324,7 +1324,8 @@ Function Show-InstallationPrompt {
 					$showDialog = $false
 				}
 			}
-			
+			$formInstallationPrompt.Dispose()
+
 			Switch ($result) {
 				'Yes' { Write-Output $buttonRightText }
 				'No' { Write-Output $buttonLeftText }
@@ -5564,6 +5565,7 @@ Function Show-WelcomePrompt {
 		
 		## Show the form
 		$result = $formWelcome.ShowDialog()
+		$formWelcome.Dispose()
 		
 		Switch ($result) {
 			OK { $result = 'Continue' }
@@ -5880,6 +5882,7 @@ Function Show-InstallationRestartPrompt {
 			
 			#  Show the Form
 			Write-Output $formRestart.ShowDialog()
+			$formRestart.Dispose()
 			
 			#  Activate the Window
 			[System.Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
