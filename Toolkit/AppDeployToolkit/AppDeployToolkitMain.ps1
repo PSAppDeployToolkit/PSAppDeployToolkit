@@ -3813,10 +3813,12 @@ Function Execute-ProcessAsUser {
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER Wait
 	Wait for the process, launched by the scheduled task, to complete execution before accepting more input. Default is $false.
+.PARAMETER CheckTaskSchedulerHealth
+	Check task schedule service to see if in a healty state and make healthy if not.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait -CheckTaskSchedulerHealth
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -3840,6 +3842,9 @@ Function Execute-ProcessAsUser {
 		[switch]$Wait = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
+		[switch]$CheckTaskSchedulerHealth = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
 	
@@ -3847,6 +3852,42 @@ Function Execute-ProcessAsUser {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+		## Run health check for task scheduler service
+		## Check to see if the Task Scheduler service is in a healthy state
+		## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
+		[boolean]$IsTaskSchedulerHealthy = $true
+		If ($IsLocalSystemAccount -and $CheckTaskSchedulerHealth) {
+			[scriptblock]$TestServiceHealth = {
+				Param (
+					[string]$ServiceName
+				)
+				Try {
+					If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
+						If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
+							Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
+						}
+						Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
+					}
+					Else {
+						[boolean]$IsTaskSchedulerHealthy = $false
+					}
+				}
+				Catch {
+					[boolean]$IsTaskSchedulerHealthy = $false
+				}
+			}
+			#  Check the health of the 'COM+ Event System' service
+			& $TestServiceHealth -ServiceName 'EventSystem'
+			#  Check the health of the 'Remote Procedure Call (RPC)' service
+			& $TestServiceHealth -ServiceName 'RpcSs'
+			#  Check the health of the 'Windows Event Log' service
+			& $TestServiceHealth -ServiceName 'EventLog'
+			#  Check the health of the Task Scheduler service
+			& $TestServiceHealth -ServiceName 'Schedule'
+			
+			Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
+		}
 	}
 	Process {
 		## Reset exit code variable
@@ -8818,40 +8859,6 @@ Catch {
 	$runningTaskSequence = $false
 }
 
-## Check to see if the Task Scheduler service is in a healthy state
-## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
-[boolean]$IsTaskSchedulerHealthy = $true
-If ($IsLocalSystemAccount) {
-	[scriptblock]$TestServiceHealth = {
-		Param (
-			[string]$ServiceName
-		)
-		Try {
-			If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-				If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
-					Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
-				}
-				Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
-			}
-			Else {
-				[boolean]$IsTaskSchedulerHealthy = $false
-			}
-		}
-		Catch {
-			[boolean]$IsTaskSchedulerHealthy = $false
-		}
-	}
-	#  Check the health of the 'COM+ Event System' service
-	& $TestServiceHealth -ServiceName 'EventSystem'
-	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	& $TestServiceHealth -ServiceName 'RpcSs'
-	#  Check the health of the 'Windows Event Log' service
-	& $TestServiceHealth -ServiceName 'EventLog'
-	#  Check the health of the Task Scheduler service
-	& $TestServiceHealth -ServiceName 'Schedule'
-
-	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
-}
 
 ## Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true }
