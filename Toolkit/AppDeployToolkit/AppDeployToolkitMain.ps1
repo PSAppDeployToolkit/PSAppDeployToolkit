@@ -7775,6 +7775,9 @@ Function Set-ActiveSetup {
 	Set-ActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
 .EXAMPLE
 	Set-ActiveSetup -StubExePath 'C:\Program Files\MyApp\MyApp_v1r1_HKCU.exe'
+.EXAMPLE
+	Set-ActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
+	Deletes "ProgramUserConfig" active setup entry from all registry hives.
 .NOTES
 	Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 .LINK
