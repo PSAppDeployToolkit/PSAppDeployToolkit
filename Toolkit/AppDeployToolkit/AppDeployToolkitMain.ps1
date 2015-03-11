@@ -3229,38 +3229,48 @@ Function Remove-RegistryKey {
 		Try {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
 			If ($PSBoundParameters.ContainsKey('SID')) {
-				[string]$key = Convert-RegistryPath -Key $key -SID $SID
+				[string]$Key = Convert-RegistryPath -Key $Key -SID $SID
 			}
 			Else {
-				[string]$key = Convert-RegistryPath -Key $key
+				[string]$Key = Convert-RegistryPath -Key $Key
 			}
 			
-			If (-not ($name)) {
-				If ($Recurse) {
-					Write-Log -Message "Delete registry key recursively [$key]" -Source ${CmdletName}
-					Remove-Item -Path $Key -ErrorAction 'Stop' -Force -Recurse | Out-Null
+			If (-not ($Name)) {
+				If (Test-Path -Path $Key -ErrorAction 'Stop') {
+					If ($Recurse) {
+						Write-Log -Message "Delete registry key recursively [$Key]" -Source ${CmdletName}
+						Remove-Item -Path $Key -ErrorAction 'Stop' -Force -Recurse | Out-Null
+					}
+					Else {
+						Write-Log -Message "Delete registry key [$Key]" -Source ${CmdletName}
+						Remove-Item -Path $Key -ErrorAction 'Stop' -Force | Out-Null
+					}
 				}
 				Else {
-					Write-Log -Message "Delete registry key [$key]" -Source ${CmdletName}
-					Remove-Item -Path $Key -ErrorAction 'Stop' -Force | Out-Null
+					Write-Log -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2 -Source ${CmdletName}
 				}
 			}
 			Else {
-				Write-Log -Message "Delete registry value [$key] [$name]" -Source ${CmdletName}
-				Remove-ItemProperty -Path $Key -Name $Name -ErrorAction 'Stop' -Force | Out-Null
+				If (Test-Path -Path $Key -ErrorAction 'Stop') {
+					Write-Log -Message "Delete registry value [$Key] [$Name]" -Source ${CmdletName}
+					Remove-ItemProperty -Path $Key -Name $Name -ErrorAction 'Stop' -Force | Out-Null
+				}
+				Else {
+					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registery key does not exist." -Severity 2 -Source ${CmdletName}
+				}
 			}
 		}
 		Catch {
-			If (-not ($name)) {
-				Write-Log -Message "Failed to delete registry key [$key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not ($Name)) {
+				Write-Log -Message "Failed to delete registry key [$Key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
-					Throw "Failed to delete registry key [$key]: $($_.Exception.Message)"
+					Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
 				}
 			}
 			Else {
-				Write-Log -Message "Failed to delete registry value [$key] [$name]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to delete registry value [$Key] [$Name]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
-					Throw "Failed to delete registry value [$key] [$name]: $($_.Exception.Message)"
+					Throw "Failed to delete registry value [$Key] [$Name]: $($_.Exception.Message)"
 				}
 			}
 		}
