@@ -747,35 +747,38 @@ Function Exit-Script {
 		Default { $installSuccess = $false }
 	}
 	
+	## Determine if baloon notification should be shown
+	If ($deployModeSilent) { [boolean]$configShowBalloonNotifications = $false }
+	
 	If ($installSuccess) {
 		If (Test-Path -Path $regKeyDeferHistory -ErrorAction 'SilentlyContinue') {
 			Write-Log -Message 'Remove deferral history...' -Source ${CmdletName}
 			Remove-RegistryKey -Key $regKeyDeferHistory
 		}
 		
-		$balloonText = "$deploymentTypeName $configBalloonTextComplete"
+		[string]$balloonText = "$deploymentTypeName $configBalloonTextComplete"
 		## Handle reboot prompts on successful script completion
 		If (($msiRebootDetected) -and ($AllowRebootPassThru)) {
 			Write-Log -Message 'A restart has been flagged as required.' -Source ${CmdletName}
-			$balloonText = "$deploymentTypeName $configBalloonTextRestartRequired"
-			$exitCode = 3010
+			[string]$balloonText = "$deploymentTypeName $configBalloonTextRestartRequired"
+			[int32]$exitCode = 3010
 		}
 		Else {
-			$exitCode = 0
+			[int32]$exitCode = 0
 		}
 		
 		Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
-		Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
+		If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText }
 	}
 	ElseIf (-not $installSuccess) {
 		Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
 		If (($exitCode -eq $configInstallationUIExitCode) -or ($exitCode -eq $configInstallationDeferExitCode)) {
-			$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
-			Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText
+			[string]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
+			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText }
 		}
 		Else {
-			$balloonText = "$deploymentTypeName $configBalloonTextError"
-			Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText
+			[string]$balloonText = "$deploymentTypeName $configBalloonTextError"
+			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText }
 		}
 	}
 	
