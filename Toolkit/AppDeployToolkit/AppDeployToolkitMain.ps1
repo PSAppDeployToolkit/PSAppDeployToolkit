@@ -245,7 +245,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
 If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
 #  Override the detected language if the override option was specified in the XML config file
-If ($configInstallationUILanguageOverride -ne "") { [string]$xmlUIMessageLanguage = "UI_Messages_" + $configInstallationUILanguageOverride }
+If ($configInstallationUILanguageOverride) { [string]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride" }
 $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 [string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
@@ -806,7 +806,7 @@ Function Exit-Script {
 			Write-Log -Message "Failed to compress the log file(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
-		
+	
 	## Exit the script, returning the exit code to SCCM
 	Exit $exitCode
 }
@@ -4734,7 +4734,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCloseAppsCountdown = 0,
-		## Specify whether to prompt to save working documents when the users selects to close applications
+		## Specify whether to prompt to save working documents when the user chooses to close applications
 		[Parameter(Mandatory=$false)]
 		[switch]$PromptToSave = $false,
 		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
