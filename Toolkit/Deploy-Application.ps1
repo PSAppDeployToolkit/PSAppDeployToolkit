@@ -68,7 +68,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.0'
-	[string]$deployAppScriptDate = '12/15/2014'
+	[string]$deployAppScriptDate = '03/11/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
