@@ -57,7 +57,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/10/2015'
+[string]$appDeployMainScriptDate = '03/11/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -175,6 +175,8 @@ If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchi
 [boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6')
 [boolean]$IsProcessUserInteractive = [System.Environment]::UserInteractive
 [string]$LocalSystemNTAccount = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+#  Check if script is running in session zero
+If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
 ## Variables: Script Name and Script Paths
 [string]$scriptPath = $MyInvocation.MyCommand.Definition
@@ -344,6 +346,16 @@ If (Test-Path -Path 'variable:welcomeTimer') { Remove-Variable -Name welcomeTime
 If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name deferHistory }
 If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
+
+## Variables: DPI Scale (property only exists if DPI scaling has been changed on the system at least once)
+[int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
+Switch ($dpiPixels) {
+	96 { [int32]$dpiScale = 100 }
+	120 { [int32]$dpiScale = 125 }
+	144 { [int32]$dpiScale = 150 }
+	192 { [int32]$dpiScale = 200 }
+	Default { [int32]$dpiScale = 100 }
+}
 
 ## Variables: Log Files
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
@@ -3817,12 +3829,10 @@ Function Execute-ProcessAsUser {
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER Wait
 	Wait for the process, launched by the scheduled task, to complete execution before accepting more input. Default is $false.
-.PARAMETER CheckTaskSchedulerHealth
-	Check task schedule service to see if in a healty state and make healthy if not.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait -CheckTaskSchedulerHealth
+	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -3846,9 +3856,6 @@ Function Execute-ProcessAsUser {
 		[switch]$Wait = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[switch]$CheckTaskSchedulerHealth = $false,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
 	
@@ -3856,42 +3863,6 @@ Function Execute-ProcessAsUser {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-		## Run health check for task scheduler service
-		## Check to see if the Task Scheduler service is in a healthy state
-		## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
-		[boolean]$IsTaskSchedulerHealthy = $true
-		If ($IsLocalSystemAccount -and $CheckTaskSchedulerHealth) {
-			[scriptblock]$TestServiceHealth = {
-				Param (
-					[string]$ServiceName
-				)
-				Try {
-					If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-						If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
-							Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
-						}
-						Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
-					}
-					Else {
-						[boolean]$IsTaskSchedulerHealthy = $false
-					}
-				}
-				Catch {
-					[boolean]$IsTaskSchedulerHealthy = $false
-				}
-			}
-			#  Check the health of the 'COM+ Event System' service
-			& $TestServiceHealth -ServiceName 'EventSystem'
-			#  Check the health of the 'Remote Procedure Call (RPC)' service
-			& $TestServiceHealth -ServiceName 'RpcSs'
-			#  Check the health of the 'Windows Event Log' service
-			& $TestServiceHealth -ServiceName 'EventLog'
-			#  Check the health of the Task Scheduler service
-			& $TestServiceHealth -ServiceName 'Schedule'
-			
-			Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
-		}
 	}
 	Process {
 		## Reset exit code variable
@@ -8811,6 +8782,7 @@ Else {
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
 Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
 Write-Log -Message "Hardware Platform is [$($DisableLogging = $true; Get-HardwarePlatform; $DisableLogging = $false)]" -Source $appDeployToolkitName
+Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
@@ -8866,8 +8838,40 @@ Catch {
 }
 
 
-## Check if script is running in session zero
-If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true }
+## Check to see if the Task Scheduler service is in a healthy state
+## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
+[boolean]$IsTaskSchedulerHealthy = $true
+If ($IsLocalSystemAccount) {
+	[scriptblock]$TestServiceHealth = {
+		Param (
+			[string]$ServiceName
+		)
+		Try {
+			If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
+				If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
+					Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
+				}
+				Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
+			}
+			Else {
+				[boolean]$IsTaskSchedulerHealthy = $false
+			}
+		}
+		Catch {
+			[boolean]$IsTaskSchedulerHealthy = $false
+		}
+	}
+	#  Check the health of the 'COM+ Event System' service
+	& $TestServiceHealth -ServiceName 'EventSystem'
+	#  Check the health of the 'Remote Procedure Call (RPC)' service
+	& $TestServiceHealth -ServiceName 'RpcSs'
+	#  Check the health of the 'Windows Event Log' service
+	& $TestServiceHealth -ServiceName 'EventLog'
+	#  Check the health of the Task Scheduler service
+	& $TestServiceHealth -ServiceName 'Schedule'
+	
+	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
+}
 
 ## If script is running in session zero
 If ($SessionZero) {
@@ -8895,17 +8899,6 @@ If ($SessionZero) {
 Else {
 	Write-Log -Message 'Session 0 not detected.' -Source $appDeployToolkitName
 }
-
-## Get the DPI scaling, property only exists if DPI scaling has been changed on the system at least once
-[int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
-Switch ($dpiPixels) {
-	96 { [int32]$dpiScale = 100 }
-	120 { [int32]$dpiScale = 125 }
-	144 { [int32]$dpiScale = 150 }
-	192 { [int32]$dpiScale = 200 }
-	Default { [int32]$dpiScale = 100 }
-}
-Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 
 ## Set Deploy Mode switches
 If ($deployMode) {
