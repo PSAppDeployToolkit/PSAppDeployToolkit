@@ -1,4 +1,4 @@
-Version 3.6.0 [02/xx/2015]
+Version 3.6.0 [03/11/2015]
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added function Execute-ProcessAsUser to support running processes as the current logged on user to provide interaction in the system context. Note: if the user is not a local admin the process launched in user context will not inherit admin rights.
 	Added -PromptToSave parameter to Show-InstallationWelcome to prompt to save working documents when the users selects to close running applications
