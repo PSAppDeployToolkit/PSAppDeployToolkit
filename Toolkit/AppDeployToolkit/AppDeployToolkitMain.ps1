@@ -55,9 +55,9 @@ Param
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.0'
+[version]$appDeployMainScriptVersion = [version]'3.7.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/11/2015'
+[string]$appDeployMainScriptDate = '03/15/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7032,7 +7032,7 @@ Function Install-MSUpdates {
 			}
 			Else {
 				#  Get the KB number of the file
-				[string]$kbNumber = [regex]::Match($file, $kbPattern).ToString()
+				[string]$kbNumber = [regex]::Match($file.Name, $kbPattern).ToString()
 				If (-not $kbNumber) { Continue }
 				
 				#  Check to see whether the KB is already installed
