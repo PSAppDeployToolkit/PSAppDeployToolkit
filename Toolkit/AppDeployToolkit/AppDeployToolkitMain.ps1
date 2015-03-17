@@ -339,7 +339,6 @@ Else {
 [boolean]$msiRebootDetected = $false
 [boolean]$BlockExecution = $false
 [boolean]$installationStarted = $false
-[boolean]$sessionZero = $false
 [boolean]$runningTaskSequence = $false
 If (Test-Path -Path 'variable:welcomeTimer') { Remove-Variable -Name welcomeTimer -Scope Script}
 #  Reset the deferral history
