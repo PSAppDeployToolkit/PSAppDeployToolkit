@@ -1,5 +1,6 @@
 Version 3.7.0 [xx/xx/2015]
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
+	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist
 Version 3.6.0 [03/11/2015]
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added function Execute-ProcessAsUser to support running processes as the current logged on user to provide interaction in the system context. Note: if the user is not a local admin the process launched in user context will not inherit admin rights.
