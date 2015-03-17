@@ -20,7 +20,7 @@ Version 3.6.0 [03/11/2015]
 	Added default action of Install to Execute-MSI
 	Added ability to specify multiple transforms and patches in Execute-MSI using a comma separated list
 	Added ability in XML configuration to override the detected language with a statically defined language for installation UI elements
-	Fixed issue in Show-InstallationProgress where -BottomRight paramater would cause prompt to be placed off screen where DPI is > 100%
+	Fixed issue in Show-InstallationProgress where -BottomRight parameter would cause prompt to be placed off screen where DPI is > 100%
 	Fixed issue with error being thrown when reading the DPI scale from the registry if the property doesn't exist
 	Fixed issue with Show-InstallationWelcome failing if "notes" specified with -CloseApps parameter when Notes application not installed
 	Fixed issue in Execute-MSI where LogName parameter did not work correctly
@@ -51,7 +51,7 @@ Version 3.6.0 [03/11/2015]
 	Improved Write-Log to log following for CMTrace log type: thread id, file name of source script
 	Improved environment variable population when running in system context
 	Improved Write-Log to log PID and log source for CMTrace log type
-	Improved Remove-RegistryKey to check if a key exists befre trying to delete it and log a warning if key does not exist
+	Improved Remove-RegistryKey to check if a key exists before trying to delete it and log a warning if key does not exist
 	Changed default Exit Codes for internal Toolkit functions. The range of 60000 is used for internal, and 70000 should be used for custom extensions
 	Changed toolkit to remove unused variables which did not exist and were being read from XML file
 	Changed Register-DLL/Unregister-DLL function to combine them into one function called Invoke-RegisterOrUnregisterDLL. Created Aliases for new function name to maintain backwards compatibility.
