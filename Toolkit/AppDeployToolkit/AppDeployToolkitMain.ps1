@@ -7529,6 +7529,20 @@ Function Install-SCCMSoftwareUpdates {
 	}
 	Process {
 		Try {
+			## Determine the SCCM Client Version
+			Try {
+				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
+				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]" -Source ${CmdletName}
+				#  If SCCM 2007 Client or lower, exit function
+				If ($SCCMClientVersion.Major -le 4) {
+					Write-Log -Message "SCCM 2007 or lower was dectected on this system. This method of installing software updates is only compatible with SCCM 2012 or higher. Continue." -Severity 2 -Source ${CmdletName}
+					Return
+				}
+			}
+			Catch {
+				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			}
+			
 			$StartTime = Get-Date
 			## Trigger SCCM client scan for Software Updates
 			Write-Log -Message 'Trigger SCCM client scan for Software Updates...' -Source ${CmdletName}
@@ -7538,8 +7552,13 @@ Function Install-SCCMSoftwareUpdates {
 			Write-Log -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$WaitingSeconds] seconds to let the update scan finish." -Source ${CmdletName}
 			Start-Sleep -Seconds $WaitingSeconds
 			
-			## Find the number of missing updates 
-			[System.Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'")
+			## Find the number of missing updates
+			Try {
+				[System.Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'" -ErrorAction 'Stop')
+			}
+			Catch {
+				Write-Log -Message "Failed to find the number of missing software updates. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			}
 			
 			## Install missing updates and wait for pending updates to finish installing
 			If ($CMMissingUpdates.Count) {
