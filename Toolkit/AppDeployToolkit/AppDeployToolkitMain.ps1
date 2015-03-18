@@ -7371,7 +7371,7 @@ Function Test-PowerPoint {
 							{
 								GetWindowRect(hWnd, out appBounds);
 								screenBounds = System.Windows.Forms.Screen.FromHandle(hWnd).Bounds;
-								if ((appBounds.Bottom - appBounds.Top) == screenBounds.Height && (appBounds.Right - appBounds.Left) == screenBounds.Width)
+								if ((appBounds.Bottom + appBounds.Top) == screenBounds.Height && (appBounds.Right + appBounds.Left) == screenBounds.Width)
 								{
 									runningFullScreen = true;
 								}
