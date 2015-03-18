@@ -347,7 +347,7 @@ If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 
 ## Variables: DPI Scale (property only exists if DPI scaling has been changed on the system at least once)
-[int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty LogPixels -ErrorAction 'SilentlyContinue'
+Try { [int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'Stop' | Select-Object -ExpandProperty LogPixels -ErrorAction 'Stop' } Catch { }
 Switch ($dpiPixels) {
 	96 { [int32]$dpiScale = 100 }
 	120 { [int32]$dpiScale = 125 }
@@ -8095,10 +8095,10 @@ Function Stop-ServiceAndDependencies {
 			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
 			If ($PendingStatus -contains $Service.Status) {
 				Switch ($Service.Status) {
-					{'ContinuePending'} { $DesiredStatus = 'Running' }
-					{'PausePending'} { $DesiredStatus = 'Paused' }
-					{'StartPending'} { $DesiredStatus = 'Running' }
-					{'StopPending'} { $DesiredStatus = 'Stopped' }
+					'ContinuePending' { $DesiredStatus = 'Running' }
+					'PausePending' { $DesiredStatus = 'Paused' }
+					'StartPending' { $DesiredStatus = 'Running' }
+					'StopPending' { $DesiredStatus = 'Stopped' }
 				}
 				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
 				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
@@ -8320,7 +8320,7 @@ Function Get-ServiceStartMode
 			If (($ServiceStartMode -eq 'Automatic') -and ([System.Environment]::OSVersion.Version.Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
-					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'SilentlyContinue'
+					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
 					If ($DelayedAutoStart -eq 1) { $ServiceStartMode = 'Automatic (Delayed Start)' }
 				}
 				Catch { }
