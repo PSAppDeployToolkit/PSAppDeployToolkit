@@ -8430,6 +8430,19 @@ Function Get-LoggedOnUser {
 .EXAMPLE
 	Get-LoggedOnUser
 .NOTES
+	Description of ConnectState property:
+	Value		 Description
+	-----		 -----------
+	Active		 A user is logged on to the session.
+	ConnectQuery The session is in the process of connecting to a client.
+	Connected	 A client is connected to the session).
+	Disconnected The session is active, but the client has disconnected from it.
+	Down		 The session is down due to an error.
+	Idle		 The session is waiting for a client to connect.
+	Initializing The session is initializing.
+	Listening 	 The session is listening for connections.
+	Reset		 The session is being reset.
+	Shadowing	 This session is shadowing another session.
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
@@ -8837,7 +8850,7 @@ Else {
 }
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
 Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
-Write-Log -Message "Hardware Platform is [$($DisableLogging = $true; Get-HardwarePlatform; $DisableLogging = $false)]" -Source $appDeployToolkitName
+Write-Log -Message "Hardware Platform is [$($OldDisableLoggingValue = $DisableLogging; $DisableLogging = $true; Get-HardwarePlatform; $DisableLogging = $OldDisableLoggingValue)]" -Source $appDeployToolkitName
 Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName

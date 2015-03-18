@@ -14,6 +14,8 @@
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 .PARAMETER TerminalServerMode
 	Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Destkop Session Hosts/Citrix servers.
+.PARAMETER DisableLogging
+	Disables logging to file for the script. Default is: $false.
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
@@ -37,7 +39,9 @@ Param (
 	[Parameter(Mandatory=$false)]
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
-	[switch]$TerminalServerMode = $false
+	[switch]$TerminalServerMode = $false,
+	[Parameter(Mandatory=$false)]
+	[switch]$DisableLogging = $false
 )
 
 Try {
@@ -67,8 +71,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.6.0'
-	[string]$deployAppScriptDate = '03/11/2015'
+	[version]$deployAppScriptVersion = [version]'3.6.1'
+	[string]$deployAppScriptDate = '03/17/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -78,14 +82,14 @@ Try {
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
-		. $moduleAppDeployToolkitMain
+		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
 		[int32]$mainExitCode = 1
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
-		
+	
 	#endregion
 	##* Do not modify section above
 	##*===============================================
@@ -123,7 +127,7 @@ Try {
 		## <Perform Post-Installation tasks here>
 		
 		## Display a message at the end of the install
-		Show-InstallationPrompt -Message "You can customize text to appear at the end of an install or remove it completely for unattended installations." -ButtonRightText 'OK' -Icon Information -NoWait
+		Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
