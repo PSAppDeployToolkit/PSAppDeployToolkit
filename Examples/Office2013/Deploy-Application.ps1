@@ -14,6 +14,8 @@
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 .PARAMETER TerminalServerMode
 	Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Destkop Session Hosts/Citrix servers.
+.PARAMETER DisableLogging
+	Disables logging to file for the script. Default is: $false.
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
@@ -38,6 +40,8 @@ Param (
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
 	[switch]$TerminalServerMode = $false,
+	[Parameter(Mandatory=$false)]
+	[switch]$DisableLogging = $false,
 	[switch]$addComponentsOnly = $false, # Specify whether running in Component Only Mode
 	[switch]$addInfoPath = $false, # Add InfoPath to the install
 	[switch]$addOneNote = $false, # Add OneNote to the install
@@ -60,8 +64,8 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '3.6.0'
-	[string]$appScriptDate = '12/15/2014'
+	[string]$appScriptVersion = '3.6.1'
+	[string]$appScriptDate = '03/18/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
@@ -73,8 +77,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.6.0'
-	[string]$deployAppScriptDate = '12/15/2014'
+	[version]$deployAppScriptVersion = [version]'3.6.1'
+	[string]$deployAppScriptDate = '03/18/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -84,7 +88,7 @@ Try {
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
-		. $moduleAppDeployToolkitMain
+		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
 		[int32]$mainExitCode = 1

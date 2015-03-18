@@ -1,4 +1,4 @@
-Version 3.7.0 [xx/xx/2015]
+Version 3.6.1 [xx/xx/2015]
 	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
 	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist
