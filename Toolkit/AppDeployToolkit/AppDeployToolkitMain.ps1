@@ -276,7 +276,7 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
 [string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
 
-## Variables: Directories
+## Variables: Script Directories
 [string]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
 [string]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
 [string]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
@@ -291,7 +291,7 @@ If (-not $appArch) { [string]$appArch = '' }
 [string]$installTitle = "$appVendor $appName $appVersion"
 
 ## Sanitize the application details, as they can cause issues in the script
-[char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNamechars()
+[char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
 [string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
 [string]$appName = $appName -replace "[$invalidFileNameChars]",'' -replace ' ',''
 [string]$appVersion = $appVersion -replace "[$invalidFileNameChars]",'' -replace ' ',''
@@ -8870,11 +8870,9 @@ If ($usersLoggedOn) {
 	
 	#  Check if the current process is running in the context of one of the logged in users
 	If ($CurrentLoggedOnUserSession) {
-		[boolean]$runningAsLoggedOnUser = $true
 		Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
 	}
 	Else {
-		[boolean]$runningAsLoggedOnUser = $false
 		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
 	}
 	

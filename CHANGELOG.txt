@@ -1,11 +1,12 @@
 Version 3.7.0 [xx/xx/2015]
+	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
 	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist
 	Fixed issue introduced in 3.6.0 where $sessionZero was incorrectly set to $false after being set to the correct value
 	Improved Install-SCCMSoftwareUpdates to only execute if SCCM 2012 or higher installed because method is not compatible with SCCM 2007 or lower
 	Improved Install-SCCMSoftwareUpdates to check if SCCM client service is installed and running before trying to install updates
 	Improved Invoke-SCCMTask to check if SCCM client service is installed and running before invoking task
-	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
+	Improved documentation
 Version 3.6.0 [03/11/2015]
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)
 	Added function Execute-ProcessAsUser to support running processes as the current logged on user to provide interaction in the system context. Note: if the user is not a local admin the process launched in user context will not inherit admin rights.
