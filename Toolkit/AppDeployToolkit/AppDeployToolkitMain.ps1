@@ -7479,6 +7479,16 @@ Function Invoke-SCCMTask {
 	}
 	Process {
 		Write-Log -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..." -Source ${CmdletName}
+			
+		## Make sure SCCM client is installed and running
+		Write-Log -Message 'Check to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
+		If (Test-ServiceExists -Name 'ccmexec') {
+			If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
+				Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
+			}
+		} Else {
+			Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
+		}
 		
 		## Trigger SCCM task
 		Try {
@@ -7529,18 +7539,29 @@ Function Install-SCCMSoftwareUpdates {
 	}
 	Process {
 		Try {
+			Write-Log -Message 'Scan for and install pending SCCM software updates.' -Source ${CmdletName}
+			
+			## Make sure SCCM client is installed and running
+			Write-Log -Message 'Check to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
+			If (Test-ServiceExists -Name 'ccmexec') {
+				If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
+					Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
+				}
+			} Else {
+				Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
+			}
+			
 			## Determine the SCCM Client Version
 			Try {
 				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
 				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]" -Source ${CmdletName}
-				#  If SCCM 2007 Client or lower, exit function
-				If ($SCCMClientVersion.Major -le 4) {
-					Write-Log -Message "SCCM 2007 or lower was dectected on this system. This method of installing software updates is only compatible with SCCM 2012 or higher. Continue." -Severity 2 -Source ${CmdletName}
-					Return
-				}
 			}
 			Catch {
 				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			}
+			#  If SCCM 2007 Client or lower, exit function
+			If ($SCCMClientVersion.Major -le 4) {
+				Throw "SCCM 2007 or lower, which is incompatible with this function, was dectected on this system."
 			}
 			
 			$StartTime = Get-Date
