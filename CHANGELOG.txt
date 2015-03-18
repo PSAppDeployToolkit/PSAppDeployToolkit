@@ -6,6 +6,7 @@ Version 3.7.0 [xx/xx/2015]
 	Improved Install-SCCMSoftwareUpdates to only execute if SCCM 2012 or higher installed because method is not compatible with SCCM 2007 or lower
 	Improved Install-SCCMSoftwareUpdates to check if SCCM client service is installed and running before trying to install updates
 	Improved Invoke-SCCMTask to check if SCCM client service is installed and running before invoking task
+	Improved Invoke-SCCMTask to add a few more SCCM 2012 client compatible schedule ids and to only allow execution of a schedule id compatible with the installed version of the client
 	Improved documentation
 Version 3.6.0 [03/11/2015]
 	Added function Set-ActiveSetup to allow creation/deletion of Active Setup entries (thanks to Denis St-Pierre, Todd MacNaught for code)

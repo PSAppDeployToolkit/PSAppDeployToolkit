@@ -7440,7 +7440,7 @@ Function Invoke-SCCMTask {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
-		[ValidateSet('HardwareInventory','SoftwareInventory','HeartbeatDiscovery','SoftwareInventoryFileCollection','RequestMachinePolicy','EvaluateMachinePolicy','LocationServicesCleanup','SoftwareMeteringReport','SourceUpdate','PolicyAgentCleanup','RequestMachinePolicy2','CertificateMaintenance','PeerDistributionPointStatus','PeerDistributionPointProvisioning','ComplianceIntervalEnforcement','SoftwareUpdatesAgentAssignmentEvaluation','UploadStateMessage','StateMessageManager','SoftwareUpdatesScan','AMTProvisionCycle')]
+		[ValidateSet('HardwareInventory','SoftwareInventory','HeartbeatDiscovery','SoftwareInventoryFileCollection','RequestMachinePolicy','EvaluateMachinePolicy','LocationServicesCleanup','SoftwareMeteringReport','SourceUpdate','PolicyAgentCleanup','RequestMachinePolicy2','CertificateMaintenance','PeerDistributionPointStatus','PeerDistributionPointProvisioning','ComplianceIntervalEnforcement','SoftwareUpdatesAgentAssignmentEvaluation','UploadStateMessage','StateMessageManager','SoftwareUpdatesScan','AMTProvisionCycle','UpdateStorePolicy','StateSystemBulkSend','ApplicationManagerPolicyAction','PowerManagementStartSummeraizer')]
 		[string]$ScheduleID,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -7451,7 +7451,30 @@ Function Invoke-SCCMTask {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Write-Log -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..." -Source ${CmdletName}
+			
+		## Make sure SCCM client is installed and running
+		Write-Log -Message 'Check to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
+		If (Test-ServiceExists -Name 'ccmexec') {
+			If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
+				Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
+			}
+		} Else {
+			Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
+		}
+
+		## Determine the SCCM Client Version
+		Try {
+			[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
+			Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]" -Source ${CmdletName}
+		}
+		Catch {
+			Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+		}
 		
+		## Create a hashtable of Schedule IDs compatible with SCCM Client 2007
 		[hashtable]$ScheduleIds = @{
 			HardwareInventory = '{00000000-0000-0000-0000-000000000001}'; # Hardware Inventory Collection Task
 			SoftwareInventory = '{00000000-0000-0000-0000-000000000002}'; # Software Inventory Collection Task
@@ -7476,18 +7499,21 @@ Function Invoke-SCCMTask {
 			SoftwareUpdatesScan = '{00000000-0000-0000-0000-000000000113}'; # Force Update Scan
 			AMTProvisionCycle = '{00000000-0000-0000-0000-000000000120}'; # AMT Provision Cycle
 		}
-	}
-	Process {
-		Write-Log -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..." -Source ${CmdletName}
-			
-		## Make sure SCCM client is installed and running
-		Write-Log -Message 'Check to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
-		If (Test-ServiceExists -Name 'ccmexec') {
-			If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
-				Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
-			}
-		} Else {
-			Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
+		
+		## If SCCM 2012 Client or higher, modify hashtabe containing Schedule IDs so that it only has the ones compatible with this version of the SCCM client
+		If ($SCCMClientVersion.Major -ge 5) {
+			$ScheduleIds.Remove('PeerDistributionPointStatus')
+			$ScheduleIds.Remove('PeerDistributionPointProvisioning')
+			$ScheduleIds.Remove('ComplianceIntervalEnforcement')
+			$ScheduleIds.Add('UpdateStorePolicy','{00000000-0000-0000-0000-000000000114}')
+			$ScheduleIds.Add('StateSystemBulkSend','{00000000-0000-0000-0000-000000000116}')
+			$ScheduleIds.Add('ApplicationManagerPolicyAction','{00000000-0000-0000-0000-000000000121}')
+			$ScheduleIds.Add('PowerManagementStartSummeraizer','{00000000-0000-0000-0000-000000000131}')
+		}
+
+		## Determine if the requested Schedule ID is available on this version of the SCCM Client
+		If (-not ($ScheduleIds.ContainsKey($ScheduleId))) {
+			Throw "The requested ScheduleId [$ScheduleId] is not available with this version of the SCCM Client [$SCCMClientVersion]."
 		}
 		
 		## Trigger SCCM task
