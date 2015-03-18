@@ -7440,7 +7440,7 @@ Function Invoke-SCCMTask {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
-		[ValidateSet('HardwareInventory','SoftwareInventory','HeartbeatDiscovery','SoftwareInventoryFileCollection','RequestMachinePolicy','EvaluateMachinePolicy','LocationServicesCleanup','SoftwareMeteringReport','SourceUpdate','PolicyAgentCleanup','RequestMachinePolicy2','CertificateMaintenance','PeerDistributionPointStatus','PeerDistributionPointProvisioning','ComplianceIntervalEnforcement','SoftwareUpdatesAgentAssignmentEvaluation','UploadStateMessage','StateMessageManager','SoftwareUpdatesScan','AMTProvisionCycle','UpdateStorePolicy','StateSystemBulkSend','ApplicationManagerPolicyAction','PowerManagementStartSummeraizer')]
+		[ValidateSet('HardwareInventory','SoftwareInventory','HeartbeatDiscovery','SoftwareInventoryFileCollection','RequestMachinePolicy','EvaluateMachinePolicy','LocationServicesCleanup','SoftwareMeteringReport','SourceUpdate','PolicyAgentCleanup','RequestMachinePolicy2','CertificateMaintenance','PeerDistributionPointStatus','PeerDistributionPointProvisioning','ComplianceIntervalEnforcement','SoftwareUpdatesAgentAssignmentEvaluation','UploadStateMessage','StateMessageManager','SoftwareUpdatesScan','AMTProvisionCycle','UpdateStorePolicy','StateSystemBulkSend','ApplicationManagerPolicyAction','PowerManagementStartSummarizer')]
 		[string]$ScheduleID,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -7505,10 +7505,10 @@ Function Invoke-SCCMTask {
 			$ScheduleIds.Remove('PeerDistributionPointStatus')
 			$ScheduleIds.Remove('PeerDistributionPointProvisioning')
 			$ScheduleIds.Remove('ComplianceIntervalEnforcement')
-			$ScheduleIds.Add('UpdateStorePolicy','{00000000-0000-0000-0000-000000000114}')
-			$ScheduleIds.Add('StateSystemBulkSend','{00000000-0000-0000-0000-000000000116}')
-			$ScheduleIds.Add('ApplicationManagerPolicyAction','{00000000-0000-0000-0000-000000000121}')
-			$ScheduleIds.Add('PowerManagementStartSummeraizer','{00000000-0000-0000-0000-000000000131}')
+			$ScheduleIds.Add('UpdateStorePolicy','{00000000-0000-0000-0000-000000000114}') # Update Store Policy
+			$ScheduleIds.Add('StateSystemBulkSend','{00000000-0000-0000-0000-000000000116}') # State System Policy Bulk Send Low
+			$ScheduleIds.Add('ApplicationManagerPolicyAction','{00000000-0000-0000-0000-000000000121}') # Application Manager Policy Action
+			$ScheduleIds.Add('PowerManagementStartSummarizer','{00000000-0000-0000-0000-000000000131}') # Power Management Start Summarizer
 		}
 
 		## Determine if the requested Schedule ID is available on this version of the SCCM Client
