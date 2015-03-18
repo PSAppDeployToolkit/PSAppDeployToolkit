@@ -7492,6 +7492,7 @@ Function Invoke-SCCMTask {
 		
 		## Trigger SCCM task
 		Try {
+			Write-Log -Message "Trigger SCCM Task ID [$ScheduleId]" -Source ${CmdletName}
 			[System.Management.ManagementClass]$SmsClient = [WMIClass]'ROOT\CCM:SMS_Client'
 			$SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID) | Out-Null
 		}
