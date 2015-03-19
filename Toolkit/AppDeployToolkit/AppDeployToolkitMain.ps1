@@ -10,8 +10,7 @@
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
-	This parameter is passed to the script when it is called externally,
-	 e.g. from a scheduled task or asynchronously.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
 .PARAMETER ReferringApplication
 	Title of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
