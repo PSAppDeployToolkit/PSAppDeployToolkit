@@ -1638,9 +1638,11 @@ Function Get-InstalledApplication {
 	Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
 	Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 .PARAMETER Name
-	The name of the application to retrieve information for. Performs a wild card match on the application display name.
+	The name of the application to retrieve information for. Performs a regex match on the application display name by default.
 .PARAMETER Exact
-	Specifies to only match the exact name of the application.
+	Specifies that the named application must be matched using the exact name.
+.PARAMETER WildCard
+	Specifies that the named application must be matched using a wildcard search.
 .PARAMETER ProductCode
 	The product code of the application to retrieve information for.
 .PARAMETER IncludeUpdatesAndHotfixes
@@ -1660,6 +1662,8 @@ Function Get-InstalledApplication {
 		[string[]]$Name,
 		[Parameter(Mandatory=$false)]
 		[switch]$Exact = $false,
+		[Parameter(Mandatory=$false)]
+		[switch]$WildCard = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$ProductCode,
@@ -1733,13 +1737,20 @@ Function Get-InstalledApplication {
 										#  Check for an exact application name match
 										If ($regKeyApp.DisplayName -eq $application) {
 											$applicationMatched = $true
-											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] exactly matching application name [$application]" -Source ${CmdletName}
+											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching forapplication name [$application]" -Source ${CmdletName}
 										}
 									}
-									#  Check for a partial application name match
+									ElseIf ($WildCard) {
+										#  Check for wildcard application name match
+										If ($regKeyApp.DisplayName -like $application) {
+											$applicationMatched = $true
+											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for application name [$application]" -Source ${CmdletName}
+										}
+									}
+									#  Check for a regex application name match
 									ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
 										$applicationMatched = $true
-										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching application name [$application]" -Source ${CmdletName}
+										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for application name [$application]" -Source ${CmdletName}
 									}
 									
 									If ($applicationMatched) {
@@ -2068,9 +2079,11 @@ Function Remove-MSIApplications {
 	Removes all MSI applications matching the specified application name.
 	Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code, provided the uninstall string matches "msiexec".
 .PARAMETER Name
-	The name of the application to uninstall.
+	The name of the application to uninstall. Performs a regex match on the application display name by default.
 .PARAMETER Exact
-	Specifies whether to exactly match the name of the application
+	Specifies that the named application must be matched using the exact name.
+.PARAMETER WildCard
+	Specifies that the named application must be matched using a wildcard search.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
@@ -2091,6 +2104,8 @@ Function Remove-MSIApplications {
 		[Parameter(Mandatory=$false)]
 		[switch]$Exact = $false,
 		[Parameter(Mandatory=$false)]
+		[switch]$WildCard = $false,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -2103,6 +2118,9 @@ Function Remove-MSIApplications {
 	Process {
 		If ($Exact) {
 			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name -Exact
+		}
+		ElseIf ($WildCard) {
+			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name -WildCard
 		}
 		Else {
 			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name
