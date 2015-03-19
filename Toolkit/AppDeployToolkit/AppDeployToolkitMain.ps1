@@ -7266,13 +7266,22 @@ Function Test-Battery {
 		}
 		$SystemTypePowerStatus.Add('IsUsingACPower', $OnACPower)
 		
-		## Determine if the system is a IsLaptop
+		## Determine if the system is a laptop
+		[boolean]$IsLaptop = $false
 		If (($BatteryChargeStatus -eq 'NoSystemBattery') -or ($BatteryChargeStatus -eq 'Unknown')) {
-			$SystemTypePowerStatus.Add('IsLaptop', $false)
+			$IsLaptop = $false
 		}
 		Else {
-			$SystemTypePowerStatus.Add('IsLaptop', $true)
+			$IsLaptop = $true
 		}
+		#  Chassis Types
+		[int32]$ChassisType = Get-WmiObject -Class Win32_SystemEnclosure | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
+		Switch ($ChassisType) {
+			{ $_ -eq 9 -or $_ -eq 10 -or $_ -eq 14 } { $IsLaptop = $true } # 9=Laptop, 10=Notebook, 14=Sub Notebook
+			{ $_ -eq 3 } { $IsLaptop = $false } # 3=Desktop
+		}
+		#  Add IsLaptop property to hashtable
+		$SystemTypePowerStatus.Add('IsLaptop', $IsLaptop)
 		
 		If ($PassThru) {
 			Write-Output $SystemTypePowerStatus
