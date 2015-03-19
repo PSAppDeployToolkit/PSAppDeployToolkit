@@ -7623,7 +7623,7 @@ Function Install-SCCMSoftwareUpdates {
 				Write-Log -Message "Install missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]." -Source ${CmdletName}
 				$CMInstallMissingUpdates = (Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Class 'CCM_SoftwareUpdatesManager' -List).InstallUpdates($CMMissingUpdates)
 				
-				#  Wait for pending updates to finish installing. Timeout in 45 minutes.
+				#  Wait for pending updates to finish installing or the timeout value to expire
 				Do {
 					Start-Sleep -Seconds 60
 					[array]$CMInstallPendingUpdates = @(Get-WmiObject -Namespace "ROOT\CCM\ClientSDK" -Query "SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7")
