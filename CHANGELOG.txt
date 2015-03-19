@@ -2,6 +2,7 @@ Version 3.6.1 [xx/xx/2015]
 	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
 	Added -SoftwareUpdatesScanWaitInSeconds and -WaitForPendingUpdatesTimeout parameters to Install-SCCMSoftwareUpdates
 	Added -WildCard search option to Get-InstalledApplication and Remove-MSIApplications
+	Added -PassThru option to Test-Battery which will return the following properties: IsLaptop, IsUsingACPower, ACPowerLineStatus, BatteryChargeStatus, BatteryLifePercent, BatteryLifeRemaining, BatteryFullLifetime
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
 	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist
 	Fixed issue introduced in 3.6.0 where $sessionZero was incorrectly set to $false after being set to the correct value
