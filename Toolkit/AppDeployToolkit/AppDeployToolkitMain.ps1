@@ -7544,6 +7544,10 @@ Function Install-SCCMSoftwareUpdates {
 .DESCRIPTION
 	Scans for outstanding SCCM updates to be installed and installs the pending updates.
 	Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
+.PARAMETER SoftwareUpdatesScanWaitInSeconds
+	The amount of time to wait in seconds for the software updates scan to complete. Default is: 180 seconds.
+.PARAMETER WaitForPendingUpdatesTimeout
+	The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered.
 .EXAMPLE
@@ -7554,6 +7558,12 @@ Function Install-SCCMSoftwareUpdates {
 #>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$SoftwareUpdatesScanWaitInSeconds = 180,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[timespan]$WaitForPendingUpdatesTimeout = $(New-TimeSpan -Minutes 45),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -7596,9 +7606,8 @@ Function Install-SCCMSoftwareUpdates {
 			Write-Log -Message 'Trigger SCCM client scan for Software Updates...' -Source ${CmdletName}
 			Invoke-SCCMTask -ScheduleId 'SoftwareUpdatesScan'
 			
-			$WaitingSeconds = 180
-			Write-Log -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$WaitingSeconds] seconds to let the update scan finish." -Source ${CmdletName}
-			Start-Sleep -Seconds $WaitingSeconds
+			Write-Log -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish." -Source ${CmdletName}
+			Start-Sleep -Seconds $SoftwareUpdatesScanWaitInSeconds
 			
 			## Find the number of missing updates
 			Try {
@@ -7616,10 +7625,10 @@ Function Install-SCCMSoftwareUpdates {
 				
 				#  Wait for pending updates to finish installing. Timeout in 45 minutes.
 				Do {
-					Start-Sleep -Seconds $WaitingSeconds
+					Start-Sleep -Seconds 60
 					[array]$CMInstallPendingUpdates = @(Get-WmiObject -Namespace "ROOT\CCM\ClientSDK" -Query "SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7")
 					Write-Log -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]." -Source ${CmdletName}
-				} While (($CMInstallPendingUpdates.Count -ne 0) -and ((New-TimeSpan -Start $StartTime -End $(Get-Date)) -lt '00:45:00'))
+				} While (($CMInstallPendingUpdates.Count -ne 0) -and ((New-TimeSpan -Start $StartTime -End $(Get-Date)) -lt $WaitForPendingUpdatesTimeout))
 			}
 			Else {
 				Write-Log -Message 'There are no missing updates.' -Source ${CmdletName}
