@@ -6897,13 +6897,13 @@ Function Get-MsiTableProperty {
 			[__comobject]$Installer = New-Object -ComObject WindowsInstaller.Installer -ErrorAction 'Stop'
 			## Open MSI database in read only mode
 			[int32]$OpenMSIReadOnly = 0
-			[__comobject]$Database = &$InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $OpenMSIReadOnly)
+			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $OpenMSIReadOnly)
 			## Open the "Property" table view
-			[__comobject]$View = &$InvokeMethod -Object $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
-			&$InvokeMethod -Object $View -MethodName 'Execute' | Out-Null
+			[__comobject]$View = & $InvokeMethod -Object $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
+			& $InvokeMethod -Object $View -MethodName 'Execute' | Out-Null
 			
 			## Retrieve the first row from the "Properties" table
-			[__comobject]$Record = &$InvokeMethod -Object $View -MethodName 'Fetch'
+			[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
 			## If the first row was successfully retrieved, then save data and loop through the entire table
 			While ($Record) {
 				#  Add property and value to custom object
@@ -7483,7 +7483,7 @@ Function Invoke-SCCMTask {
 			} Else {
 				Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
 			}
-
+			
 			## Determine the SCCM Client Version
 			Try {
 				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
@@ -7764,7 +7764,7 @@ Function Enable-TerminalServerInstallMode {
 	Process {
 		Try {
 			Write-Log -Message 'Change terminal server into user install mode...' -Source ${CmdletName}
-			$terminalServerResult = change.exe User /Install
+			$terminalServerResult = & change.exe User /Install
 			
 			If ($global:LastExitCode -ne 0) { Throw $terminalServerResult }
 		}
@@ -7812,7 +7812,7 @@ Function Disable-TerminalServerInstallMode {
 	Process {
 		Try {
 			Write-Log -Message 'Change terminal server into user execute mode...' -Source ${CmdletName}
-			$terminalServerResult = change.exe User /Execute
+			$terminalServerResult = & change.exe User /Execute
 			
 			If ($global:LastExitCode -ne 0) { Throw $terminalServerResult }
 		}
