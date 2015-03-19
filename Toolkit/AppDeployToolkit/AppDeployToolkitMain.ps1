@@ -8048,7 +8048,7 @@ Function Test-ServiceExists {
 		[string]$ComputerName = $env:ComputerName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[string]$PassThru,
+		[switch]$PassThru,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -8124,7 +8124,7 @@ Function Stop-ServiceAndDependencies {
 		[switch]$SkipDependentServices,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[string]$PassThru,
+		[switch]$PassThru,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -8245,7 +8245,7 @@ Function Start-ServiceAndDependencies {
 		[switch]$SkipDependentServices,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[string]$PassThru,
+		[switch]$PassThru,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
