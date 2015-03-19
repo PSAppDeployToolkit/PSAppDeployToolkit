@@ -7275,10 +7275,13 @@ Function Test-Battery {
 			$IsLaptop = $true
 		}
 		#  Chassis Types
-		[int32]$ChassisType = Get-WmiObject -Class Win32_SystemEnclosure | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
-		Switch ($ChassisType) {
-			{ $_ -eq 9 -or $_ -eq 10 -or $_ -eq 14 } { $IsLaptop = $true } # 9=Laptop, 10=Notebook, 14=Sub Notebook
-			{ $_ -eq 3 } { $IsLaptop = $false } # 3=Desktop
+		[int32[]]$ChassisTypes = Get-WmiObject -Class Win32_SystemEnclosure | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
+		Write-Log -Message "The following system chassis types were detected [$($ChassisTypes -join ',')]" -Source ${CmdletName}
+		ForEach ($ChassisType in $ChassisTypes) {
+			Switch ($ChassisType) {
+				{ $_ -eq 9 -or $_ -eq 10 -or $_ -eq 14 } { $IsLaptop = $true } # 9=Laptop, 10=Notebook, 14=Sub Notebook
+				{ $_ -eq 3 } { $IsLaptop = $false } # 3=Desktop
+			}
 		}
 		#  Add IsLaptop property to hashtable
 		$SystemTypePowerStatus.Add('IsLaptop', $IsLaptop)
