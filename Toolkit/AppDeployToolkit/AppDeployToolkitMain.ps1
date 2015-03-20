@@ -2038,24 +2038,16 @@ Function Execute-MSI {
 			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
 		ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
-			## Call the Execute-Process function
+			
 			Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
-			If ($ContinueOnError) {
-				If ($WorkingDirectory) {
-					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal -ContinueOnError $true
-				}
-				Else {
-					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WindowStyle Normal -ContinueOnError $true
-				}
-			}
-			Else {
-				If ($WorkingDirectory) {
-					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WorkingDirectory $WorkingDirectory -WindowStyle Normal
-				}
-				Else {
-					Execute-Process -Path $exeMsiexec -Parameters $argsMSI -WindowStyle Normal
-				}
-			}
+			## Build the hashtable with the options that will be passed to Execute-Process using splatting
+			[hashtable]$ExecuteProcessSplat =  @{ Path = $exeMsiexec }
+			$ExecuteProcessSplat.Add( 'Parameters', $argsMSI)
+			$ExecuteProcessSplat.Add( 'WindowStyle', 'Normal')
+			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
+			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
+			## Call the Execute-Process function
+			Execute-Process @ExecuteProcessSplat
 		}
 		Else {
 			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
