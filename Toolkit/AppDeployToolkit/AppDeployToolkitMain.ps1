@@ -1795,6 +1795,7 @@ Function Execute-MSI {
 	Executes msiexec.exe to perform the following actions for MSI & MSP files and MSI product codes: install, uninstall, patch, repair, active setup.
 .DESCRIPTION
 	Executes msiexec.exe to perform the following actions for MSI & MSP files and MSI product codes: install, uninstall, patch, repair, active setup.
+	If the -Action parameter is set to "Install" and the MSI is already installed, the function will exit.
 	Sets default switches to be passed to msiexec based on the preferences in the XML configuration file.
 	Automatically generates a log file name and creates a verbose log file for all msiexec operations.
 	Expects the MSI or MSP file to be located in the "Files" sub directory of the App Deploy Toolkit. Expects transform files to be in the same directory as the MSI file.
