@@ -2038,15 +2038,14 @@ Function Execute-MSI {
 			Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
 		ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
-			
 			Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
-			## Build the hashtable with the options that will be passed to Execute-Process using splatting
+			#  Build the hashtable with the options that will be passed to Execute-Process using splatting
 			[hashtable]$ExecuteProcessSplat =  @{ Path = $exeMsiexec }
 			$ExecuteProcessSplat.Add( 'Parameters', $argsMSI)
 			$ExecuteProcessSplat.Add( 'WindowStyle', 'Normal')
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
-			## Call the Execute-Process function
+			#  Call the Execute-Process function
 			Execute-Process @ExecuteProcessSplat
 		}
 		Else {
