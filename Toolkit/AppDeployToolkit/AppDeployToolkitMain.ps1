@@ -4893,6 +4893,7 @@ Function Show-InstallationWelcome {
 				}
 			}
 			Else {
+				If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 				$DeferTimes = $null
 			}
 			If ($checkDeferDays -and $allowDefer) {
