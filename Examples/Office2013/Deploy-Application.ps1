@@ -65,7 +65,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '3.6.1'
-	[string]$appScriptDate = '03/18/2015'
+	[string]$appScriptDate = '03/20/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
@@ -78,7 +78,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.1'
-	[string]$deployAppScriptDate = '03/18/2015'
+	[string]$deployAppScriptDate = '03/20/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -91,13 +91,10 @@ Try {
 		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
-		[int32]$mainExitCode = 1
+		[int32]$mainExitCode = 60008
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
-	
-	## Handle Execute-ProcessAsUser Invocation of the Toolkit
-	If ($executeProcessAsUserExitCode -ne $null) { Exit-Script -ExitCode $executeProcessAsUserExitCode }
 	
 	#endregion
 	##* Do not modify section above
