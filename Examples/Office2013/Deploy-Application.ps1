@@ -25,6 +25,10 @@
 .EXAMPLE
 	Deploy-Application.ps1 -DeploymentType Uninstall
 .NOTES
+	Toolkit Exit Code Ranges:
+	60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+	69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
+	70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
