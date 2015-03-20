@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/19/2015'
+[string]$appDeployMainScriptDate = '03/20/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1251,7 +1251,7 @@ Function Show-InstallationPrompt {
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
 		$buttonAbort.DialogResult = 'Abort'
-        $buttonAbort.TabStop = $false
+		$buttonAbort.TabStop = $false
 		$buttonAbort.UseVisualStyleBackColor = $true
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 		
@@ -3955,7 +3955,10 @@ Function Execute-ProcessAsUser {
 	<AllowHardTerminate>true</AllowHardTerminate>
 	<StartWhenAvailable>false</StartWhenAvailable>
 	<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-	<IdleSettings />
+	<IdleSettings>
+	  <StopOnIdleEnd>false</StopOnIdleEnd>
+	  <RestartOnIdle>false</RestartOnIdle>
+	</IdleSettings>
 	<AllowStartOnDemand>true</AllowStartOnDemand>
 	<Enabled>true</Enabled>
 	<Hidden>false</Hidden>
@@ -3986,7 +3989,7 @@ Function Execute-ProcessAsUser {
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
 		}
 		Catch {
-			Write-Log -Message "Failed to export the scheduled task XML file. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -3997,27 +4000,15 @@ Function Execute-ProcessAsUser {
 		}
 		
 		## Create Scheduled Task to run the process with a logged-on user account
-		Try {
-			If ($Parameters) {
-				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
-			}
-			
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
-			If ($schTaskResult.ExitCode -ne 0) {
-				If ($ContinueOnError) {
-					Return
-				}
-				Else {
-					[int32]$global:executeProcessAsUserExitCode = $schTaskResult.ExitCode
-					Exit
-				}
-			}
+		If ($Parameters) {
+			Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
 		}
-		Catch {
-			Write-Log -Message "Failed to create scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		Else {
+			Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+		}
+		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
+		If ($schTaskResult.ExitCode -ne 0) {
+			Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
 			If ($ContinueOnError) {
 				Return
 			}
@@ -4028,26 +4019,15 @@ Function Execute-ProcessAsUser {
 		}
 		
 		## Trigger the Scheduled Task
-		Try {
-			If ($Parameters) {
-				Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
-			}
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
-			If ($schTaskResult.ExitCode -ne 0) {
-				If ($ContinueOnError) {
-					Return
-				}
-				Else {
-					[int32]$global:executeProcessAsUserExitCode = $schTaskResult.ExitCode
-					Exit
-				}
-			}
+		If ($Parameters) {
+			Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
 		}
-		Catch {
-			Write-Log -Message "Failed to trigger scheduled task. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		Else {
+			Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+		}
+		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
+		If ($schTaskResult.ExitCode -ne 0) {
+			Write-Log -Message "Failed to trigger scheduled task." -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
 			Write-Log -Message 'Delete the scheduled task which did not to trigger.' -Source ${CmdletName}
 			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ContinueOnError $true
@@ -4348,6 +4328,49 @@ Function Block-AppExecution {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+		## Specify the scheduled task configuration in XML format
+		[string]$schTaskUnblockAppsCommand += "powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
+		[string]$xmlUnblockAppsSchTask = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+	<RegistrationInfo></RegistrationInfo>
+	<Triggers>
+		<BootTrigger>
+			<Enabled>true</Enabled>
+		</BootTrigger>
+	</Triggers>
+	<Principals>
+		<Principal id="Author">
+			<UserId>S-1-5-18</UserId>
+		</Principal>
+	</Principals>
+	<Settings>
+		<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+		<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+		<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+		<AllowHardTerminate>true</AllowHardTerminate>
+		<StartWhenAvailable>false</StartWhenAvailable>
+		<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+		<IdleSettings>
+			<StopOnIdleEnd>false</StopOnIdleEnd>
+			<RestartOnIdle>false</RestartOnIdle>
+		</IdleSettings>
+		<AllowStartOnDemand>true</AllowStartOnDemand>
+		<Enabled>true</Enabled>
+		<Hidden>false</Hidden>
+		<RunOnlyIfIdle>false</RunOnlyIfIdle>
+		<WakeToRun>false</WakeToRun>
+		<ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
+		<Priority>7</Priority>
+	</Settings>
+	<Actions Context="Author">
+		<Exec>
+			<Command>$schTaskUnblockAppsCommand</Command>
+		</Exec>
+	</Actions>
+</Task>
+"@
 	}
 	Process {
 		## Bypass if in NonInteractive mode
@@ -4379,10 +4402,23 @@ Function Block-AppExecution {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
 		}
 		Else {
-			[string[]]$schTaskCreationBatchFile = '@ECHO OFF'
-			$schTaskCreationBatchFile += "powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$installName`""
-			$schTaskCreationBatchFile | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat" -Force -Encoding default -ErrorAction 'SilentlyContinue'
-			$schTaskCreation = Execute-Process -Path $exeSchTasks -Parameters "/Create /TN $schTaskBlockedAppsName /RU `"$LocalSystemNTAccount`" /SC ONSTART /F /TR `"$dirAppDeployTemp\AppDeployToolkit_UnBlockApps.bat`"" -PassThru
+			## Export the scheduled task XML to file
+			Try {
+				#  Specify the filename to export the XML to
+				[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
+			}
+			Catch {
+				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Return
+			}
+			
+			## Import the Scheduled Task XML file to create the Scheduled Task
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
+			If ($schTaskResult.ExitCode -ne 0) {
+				Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
+				Return
+			}
 		}
 		
 		[string[]]$blockProcessName = $processName
