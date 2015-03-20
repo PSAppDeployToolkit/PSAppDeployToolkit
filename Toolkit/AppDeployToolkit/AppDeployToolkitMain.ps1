@@ -7922,7 +7922,7 @@ Function Set-ActiveSetup {
 .EXAMPLE
 	Set-ActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
 .EXAMPLE
-	Set-ActiveSetup -StubExePath 'C:\Program Files\MyApp\MyApp_v1r1_HKCU.exe'
+	Set-ActiveSetup -StubExePath "$envWinDir\regedit.exe" -Arguments "/S `"%SystemDrive%\Program Files (x86)\PS App Deploy\PSAppDeployHKCUSettings.reg`"" -Description 'PS App Deploy Config' -Key 'PS_App_Deploy_Config' -ContinueOnError $true
 .EXAMPLE
 	Set-ActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
 	Deletes "ProgramUserConfig" active setup entry from all registry hives.
