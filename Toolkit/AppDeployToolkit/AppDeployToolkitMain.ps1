@@ -2136,21 +2136,17 @@ Function Remove-MSIApplications {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		If ($Exact) {
-			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name -Exact
-		}
-		ElseIf ($WildCard) {
-			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name -WildCard
-		}
-		Else {
-			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name
-		}
+		## Build the hashtable with the options that will be passed to Get-InstalledApplication using splatting
+		[hashtable]$GetInstalledApplicationSplat = @{ Name = $name }
+		If ($Exact) { $GetInstalledApplicationSplat.Add( 'Exact', $Exact) }
+		ElseIf ($WildCard) { $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard) }
+		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
 		
 		## Build the hashtable with the options that will be passed to Execute-MSI using splatting
 		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall' }
 		If ($ContinueOnError) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
 		If ($Parameters) { $ExecuteMSISplat.Add( 'Parameters', $Parameters) }
-		If ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
+		ElseIf ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
 		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
 		
