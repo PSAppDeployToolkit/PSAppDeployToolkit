@@ -2180,6 +2180,7 @@ Function Execute-Process {
 	Arguments to be passed to the executable
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
+	Note: Not all processes honor the "Hidden" flag. If it it not working, then check the command line options for the process being executed to see it has a silent option.
 .PARAMETER CreateNoWindow
 	Specifies whether the process should be started with a new window to contain it. Default is false.
 .PARAMETER WorkingDirectory
