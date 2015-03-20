@@ -2040,9 +2040,9 @@ Function Execute-MSI {
 		ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
 			Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
 			#  Build the hashtable with the options that will be passed to Execute-Process using splatting
-			[hashtable]$ExecuteProcessSplat =  @{ Path = $exeMsiexec }
-			$ExecuteProcessSplat.Add( 'Parameters', $argsMSI)
-			$ExecuteProcessSplat.Add( 'WindowStyle', 'Normal')
+			[hashtable]$ExecuteProcessSplat =  @{ Path = $exeMsiexec
+												  Parameters = $argsMSI
+												  WindowStyle = 'Normal' }
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
 			#  Call the Execute-Process function
