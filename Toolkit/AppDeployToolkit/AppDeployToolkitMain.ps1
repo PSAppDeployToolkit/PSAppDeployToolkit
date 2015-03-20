@@ -8117,6 +8117,7 @@ Function Test-ServiceExists {
 	Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
 .PARAMETER Name
 	Specify the name of the service.
+	Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
 .PARAMETER ComputerName
 	Specify the name of the computer. Default is: the local computer.
 .PARAMETER PassThru
