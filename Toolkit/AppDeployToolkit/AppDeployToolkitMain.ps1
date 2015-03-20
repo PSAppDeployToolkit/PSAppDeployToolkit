@@ -1809,12 +1809,12 @@ Function Execute-MSI {
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
-	Adds to the default parameters specified in the XML configuration file.
+	Adds to the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER LoggingOptions
-	Overrides the default logging options specified in the XML configuration file. Install default is: "/L*v".
+	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-	For uninstallations, the product code is resolved to the displayname and version of the application.
+	For uninstallations, by default the product code is resolved to the displayname and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER ContinueOnError
@@ -2015,15 +2015,15 @@ Function Execute-MSI {
 		
 		## Start building the MsiExec command line starting with the base action and file
 		[string]$argsMSI = "$option $msiFile"
-		# Add MST
+		#  Add MST
 		If ($transform) { $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1" }
-		# Add MSP
+		#  Add MSP
 		If ($patch) { $argsMSI = "$argsMSI PATCH=$mspFile" }
-		# Replace Params if specified. Otherwise, add Default Params.
+		#  Replace default parameters if specified.
 		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
-		# Add to Default Params if specified
+		#  Append parameters to default parameters if specified.
 		If ($AddParameters) { $argsMSI = "$argsMSI $AddParameters" }
-		# Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
+		#  Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
 		If ($LoggingOptions) { $argsMSI = "$argsMSI $LoggingOptions $msiLogFile" } Else { $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile" }
 		
 		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
@@ -2082,6 +2082,15 @@ Function Remove-MSIApplications {
 	Specifies that the named application must be matched using the exact name.
 .PARAMETER WildCard
 	Specifies that the named application must be matched using a wildcard search.
+.PARAMETER Parameters
+	Overrides the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER AddParameters
+	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER LoggingOptions
+	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
+.PARAMETER LogName
+	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+	For uninstallations, by default the product code is resolved to the displayname and version of the application.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
@@ -2104,6 +2113,19 @@ Function Remove-MSIApplications {
 		[Parameter(Mandatory=$false)]
 		[switch]$WildCard = $false,
 		[Parameter(Mandatory=$false)]
+		[Alias('Arguments')]
+		[ValidateNotNullorEmpty()]
+		[string]$Parameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$AddParameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$LoggingOptions,
+		[Parameter(Mandatory=$false)]
+		[Alias('LogName')]
+		[string]$private:LogName,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -2124,16 +2146,20 @@ Function Remove-MSIApplications {
 			[psobject[]]$installedApplications = Get-InstalledApplication -Name $name
 		}
 		
+		## Build the hashtable with the options that will be passed to Execute-MSI using splatting
+		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall' }
+		If ($ContinueOnError) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
+		If ($Parameters) { $ExecuteMSISplat.Add( 'Parameters', $Parameters) }
+		If ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
+		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
+		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
+		
 		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -match 'msiexec') {
 					Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
-					If ($ContinueOnError) {
-						Execute-MSI -Action Uninstall -Path $installedApplication.ProductCode -ContinueOnError $true
-					}
-					Else {
-						Execute-MSI -Action Uninstall -Path $installedApplication.ProductCode
-					}
+					$ExecuteMSISplat.Add( 'Path', $installedApplication.ProductCode)
+					Execute-MSI @ExecuteMSISplat
 				}
 				Else {
 					Write-Log -Message "[$($installedApplication.DisplayName)] uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`", so removal will not proceed." -Severity 2 -Source ${CmdletName}
