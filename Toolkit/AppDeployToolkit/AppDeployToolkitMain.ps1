@@ -3870,6 +3870,8 @@ Function Execute-ProcessAsUser {
 	- LeastPrivilege: Tasks run by using the least-privileged user account (LUA) privileges.
 .PARAMETER Wait
 	Wait for the process, launched by the scheduled task, to complete execution before accepting more input. Default is $false.
+.PARAMETER PassThru
+	Returns the exit code from this function or the process launched by the scheduled task.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
@@ -3896,6 +3898,8 @@ Function Execute-ProcessAsUser {
 		[ValidateNotNullOrEmpty()]
 		[switch]$Wait = $false,
 		[Parameter(Mandatory=$false)]
+		[switch]$PassThru = $false,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -3906,26 +3910,25 @@ Function Execute-ProcessAsUser {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		## Reset exit code variable
-		If (Test-Path -Path 'variable:executeProcessAsUserExitCode') { Remove-Variable -Name executeProcessAsUserExitCode -Scope Global}
-		$global:executeProcessAsUserExitCode = $null
+		## Initialize exit code variable
+		[int32]$executeProcessAsUserExitCode = 0
 		
 		## Confirm if the toolkit is running with administrator privileges
 		If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
+			[int32]$executeProcessAsUserExitCode = 60003
 			Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
-			If ($ContinueOnError) {
-				Return
+			If (-not $ContinueOnError) {
+				Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
 			}
 			Else {
-				[int32]$global:executeProcessAsUserExitCode = 60003
-				Exit
+				Return
 			}
 		}
 		
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 		
-		##  Create the temporary folder if it doesn't already exist
+		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
 		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container)) {
 			New-Item -Path $dirAppDeployTemp -ItemType Directory -Force -ErrorAction 'Stop'
 		}
@@ -3989,13 +3992,13 @@ Function Execute-ProcessAsUser {
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
 		}
 		Catch {
+			[int32]$executeProcessAsUserExitCode = 60007
 			Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			If ($ContinueOnError) {
-				Return
+			If (-not $ContinueOnError) {
+				Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
 			}
 			Else {
-				[int32]$global:executeProcessAsUserExitCode = $schTaskResult.ExitCode
-				Exit
+				Return
 			}
 		}
 		
@@ -4008,13 +4011,13 @@ Function Execute-ProcessAsUser {
 		}
 		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
 		If ($schTaskResult.ExitCode -ne 0) {
+			[int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
 			Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
-			If ($ContinueOnError) {
-				Return
+			If (-not $ContinueOnError) {
+				Throw "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]."
 			}
 			Else {
-				[int32]$global:executeProcessAsUserExitCode = $schTaskResult.ExitCode
-				Exit
+				Return
 			}
 		}
 		
@@ -4027,16 +4030,16 @@ Function Execute-ProcessAsUser {
 		}
 		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
 		If ($schTaskResult.ExitCode -ne 0) {
-			Write-Log -Message "Failed to trigger scheduled task." -Severity 3 -Source ${CmdletName}
+			[int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
+			Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
-			Write-Log -Message 'Delete the scheduled task which did not to trigger.' -Source ${CmdletName}
+			Write-Log -Message 'Delete the scheduled task which did not trigger.' -Source ${CmdletName}
 			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ContinueOnError $true
-			If ($ContinueOnError) {
-				Return
+			If (-not $ContinueOnError) {
+				Throw "Failed to trigger scheduled task [$schTaskName]."
 			}
 			Else {
-				[int32]$global:executeProcessAsUserExitCode = $schTaskResult.ExitCode
-				Exit
+				Return
 			}
 		}
 		
@@ -4048,8 +4051,8 @@ Function Execute-ProcessAsUser {
 				Start-Sleep -Seconds 5
 			}
 			#  Get the exit code from the process launched by the scheduled task
-			[int32]$global:executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
-			Write-Log -Message "Exit code from process launched by scheduled task [$global:executeProcessAsUserExitCode]" -Source ${CmdletName}
+			[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]" -Source ${CmdletName}
 		}
 		
 		## Delete scheduled task
@@ -4060,12 +4063,10 @@ Function Execute-ProcessAsUser {
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
-		
-		## Exit back to the deployment script which will read the $global:executeProcessAsUserExitCode value to determine the exit code from this function.
-		## We need to call 'Exit' because calling 'Exit-Script' directly from the dot-sourced script will only return to the deployment script without exiting the script successfully.
-		Exit
 	}
 	End {
+		If ($PassThru) { Write-Output $executeProcessAsUserExitCode }
+		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -4416,7 +4417,7 @@ Function Block-AppExecution {
 			## Import the Scheduled Task XML file to create the Scheduled Task
 			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
-				Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
 				Return
 			}
 		}
