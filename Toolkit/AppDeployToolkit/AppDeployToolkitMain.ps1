@@ -9051,6 +9051,7 @@ If ($usersLoggedOn) {
 	}
 	
 	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+	#  One liner to get this info: [string]$RunAsActiveUserNTAccount = Get-LoggedOnUser | Where-Object { $_ } | ForEach-Object { If($_.IsCurrentSession) { $_.NTAccount } Else { $_[0].NTAccount } }
 	If ($CurrentConsoleUserSession) {
 		[string]$RunAsActiveUserNTAccount = $CurrentConsoleUserSession.NTAccount
 	}
