@@ -3606,7 +3606,7 @@ Function Get-UserProfiles {
 				#  On Windows XP or lower
 				Else {
 					#  Default User Profile Name: By default, 'Default User'
-					[string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUsersProfile'
+					[string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUserProfile'
 					
 					#  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
 					[string]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
