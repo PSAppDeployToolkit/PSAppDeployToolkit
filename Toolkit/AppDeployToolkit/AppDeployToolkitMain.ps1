@@ -3861,7 +3861,7 @@ Function Execute-ProcessAsUser {
 .DESCRIPTION
 	Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
 .PARAMETER UserName
-	Logged in Username under which to run the process from.
+	Logged in Username under which to run the process from. Default is: The active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
 .PARAMETER Path
 	Path to the file being executed.
 .PARAMETER Parameters
@@ -3878,15 +3878,19 @@ Function Execute-ProcessAsUser {
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
 	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute process under a user account by specifying a username under which to execute it.
+.EXAMPLE
+	Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute process under a user account by using the default active logged in user that was detected when the toolkit was launched.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$UserName,
+		[string]$UserName = $RunAsActiveUserNTAccount,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
@@ -3914,6 +3918,18 @@ Function Execute-ProcessAsUser {
 	Process {
 		## Initialize exit code variable
 		[int32]$executeProcessAsUserExitCode = 0
+		
+		## Confirm that the username field is not empty
+		If (-not $UserName) {
+			[int32]$executeProcessAsUserExitCode = 60009
+			Write-Log -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
+			}
+			Else {
+				Return
+			}
+		}
 		
 		## Confirm if the toolkit is running with administrator privileges
 		If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
@@ -9009,6 +9025,7 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 [psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
 Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
 [string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
+[string]$RunAsActiveUserNTAccount = ''
 
 If ($usersLoggedOn) {
 	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
@@ -9031,6 +9048,16 @@ If ($usersLoggedOn) {
 	}
 	Else {
 		Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
+	}
+	
+	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+	If ($CurrentConsoleUserSession) {
+		[string]$RunAsActiveUserNTAccount = $CurrentConsoleUserSession.NTAccount
+	}
+	Else {
+		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
+		[string]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Select-Object -First 1
+		If ($FirstLoggedInNonConsoleUser) { [string]$RunAsActiveUserNTAccount = $FirstLoggedInNonConsoleUser.NTAccount }
 	}
 }
 Else {
