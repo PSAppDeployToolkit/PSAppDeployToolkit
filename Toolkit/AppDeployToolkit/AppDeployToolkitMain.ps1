@@ -1818,6 +1818,8 @@ Function Execute-MSI {
 	For uninstallations, by default the product code is resolved to the displayname and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
+.PARAMETER SkipMSIAlreadyInstalledCheck
+	Skips the check to determine if the MSI is already installed on the system. Default is: $false.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
@@ -1867,6 +1869,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$WorkingDirectory,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$SkipMSIAlreadyInstalledCheck = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2029,7 +2034,13 @@ Function Execute-MSI {
 		
 		## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
 		If ($MSIProductCode) {
-			[psobject]$IsMsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+			If ($SkipMSIAlreadyInstalledCheck) {
+				[boolean]$IsMsiInstalled = $false
+			}
+			Else {
+				[psobject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+				If ($MsiInstalled) { [boolean]$IsMsiInstalled = $true }
+			}
 		}
 		Else {
 			If ($Action -eq 'Install') { [boolean]$IsMsiInstalled = $false } Else { [boolean]$IsMsiInstalled = $true }
