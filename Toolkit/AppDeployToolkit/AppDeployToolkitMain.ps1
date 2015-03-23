@@ -9055,13 +9055,13 @@ If ($usersLoggedOn) {
 	}
 	
 	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-	#  One liner to get this info: [string]$RunAsActiveUserNTAccount = Get-LoggedOnUser | Where-Object { $_ } | ForEach-Object { If($_.IsCurrentSession) { $_.NTAccount } Else { $_[0].NTAccount } }
+	#  One liner to get this info: [string]$RunAsActiveUserNTAccount = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { $_.ConnectState -eq 'Active' } | ForEach-Object { If($_.IsCurrentSession) { $_.NTAccount } Else { $_[0].NTAccount } }
 	If ($CurrentConsoleUserSession) {
 		[string]$RunAsActiveUserNTAccount = $CurrentConsoleUserSession.NTAccount
 	}
 	Else {
 		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-		[string]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Select-Object -First 1
+		[string]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
 		If ($FirstLoggedInNonConsoleUser) { [string]$RunAsActiveUserNTAccount = $FirstLoggedInNonConsoleUser.NTAccount }
 	}
 }
