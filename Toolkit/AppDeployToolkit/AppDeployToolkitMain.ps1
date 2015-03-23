@@ -5008,7 +5008,7 @@ Function Show-InstallationWelcome {
 			}
 			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -5101,7 +5101,7 @@ Function Show-InstallationWelcome {
 			[array]$runningProcesses = $null
 			[array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
 				Write-Log -Message "Force close application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
 				$runningProcesses | Stop-Process -Force -ErrorAction 'SilentlyContinue'
 				Start-Sleep -Seconds 2
