@@ -107,7 +107,12 @@ Try {
 		[string]$installPhase = 'Pre-Installation'
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		If ($useDefaultMsi) {
+			Show-InstallationWelcome -CloseApps $defaultMsiExecutablesList -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		}
+		Else {
+			Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		}
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -121,7 +126,14 @@ Try {
 		[string]$installPhase = 'Installation'
 		
 		## <Perform Installation tasks here>
-		
+		If ($useDefaultMsi) {
+			If ($useDefaultMst) { 
+				Execute-MSI -Action Install -Path $defaultMsiFile -Transform $defaultMstFile
+			}
+			Else {
+				Execute-MSI -Action Install -Path $defaultMsiFile
+			}
+		}
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -131,7 +143,9 @@ Try {
 		## <Perform Post-Installation tasks here>
 		
 		## Display a message at the end of the install
-		Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
+		If (-not $useDefaultMsi) {
+			Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
+		}
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -141,7 +155,12 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
+		If ($useDefaultMsi) {
+			Show-InstallationWelcome -CloseApps $defaultMsiExecutablesList -CloseAppsCountdown 60
+		}
+		Else {
+			Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
+		}
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -155,7 +174,9 @@ Try {
 		[string]$installPhase = 'Uninstallation'
 		
 		# <Perform Uninstallation tasks here>
-		
+		If ($useDefaultMsi) {
+			Execute-MSI -Action Uninstall -Path $defaultMsiFile -Transform $defaultMstFile
+		}
 		
 		##*===============================================
 		##* POST-UNINSTALLATION

@@ -1,4 +1,5 @@
 Version 3.6.1 [03/xx/2015]
+	Added Zero-Config deployment for MSI files. No need to customise anything. Drop your MSI in the Files folder and run the toolkit. Information is pulled from the MSI to branding, logging, and closing in-use processes.
 	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
 	Added -SoftwareUpdatesScanWaitInSeconds and -WaitForPendingUpdatesTimeout parameters to Install-SCCMSoftwareUpdates
 	Added -WildCard search option to Get-InstalledApplication and Remove-MSIApplications

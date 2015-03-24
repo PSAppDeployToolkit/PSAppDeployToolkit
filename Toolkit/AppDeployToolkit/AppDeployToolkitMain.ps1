@@ -280,33 +280,6 @@ $xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 [string]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
 [string]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
 
-## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
-If (-not $appVendor) { [string]$appVendor = 'PS' }
-If (-not $appName) { [string]$appName = $appDeployMainScriptFriendlyName }
-If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
-If (-not $appLang) { [string]$appLang = $currentLanguage }
-If (-not $appRevision) { [string]$appRevision = '01' }
-If (-not $appArch) { [string]$appArch = '' }
-[string]$installTitle = "$appVendor $appName $appVersion"
-
-## Sanitize the application details, as they can cause issues in the script
-[char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
-[string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appName = $appName -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appVersion = $appVersion -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appArch = $appArch -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appLang = $appLang -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
-
-## Build the Installation Name
-If ($appArch) {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
-}
-Else {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
-}
-[string]$installName = $installName.Trim('_') -replace '[_]+','_'
-
 ## Set the deployment type to "Install" if it has not been specified
 If (-not $deploymentType) { [string]$deploymentType = 'Install' }
 
@@ -354,28 +327,6 @@ Switch ($dpiPixels) {
 	192 { [int32]$dpiScale = 200 }
 	Default { [int32]$dpiScale = 100 }
 }
-
-## Variables: Log Files
-If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
-[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
-If ($configToolkitCompressLogs) {
-	## If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder after being zipped.
-	#  Set log file directory to temp log folder
-	[string]$logDirectory = $logTempFolder
-	#  The path to the zipped log file in the actual logs folder defined in App Deploy XML config file
-	[string]$zipFileDate = (Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()
-	[string]$zipFileName = Join-Path -Path $configToolkitLogDir -ChildPath ($installName + '_' + $deploymentType + '_' + $zipFileDate + '.zip')
-	
-	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
-	If (Test-Path -Path $logTempFolder -PathType Container -ErrorAction 'SilentlyContinue') {
-		Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
-	}
-}
-Else {
-	## Path to log directory defined in AppDeploy XML config file
-	[string]$logDirectory = $configToolkitLogDir
-}
-
 #endregion
 ##*=============================================
 ##* END VARIABLE DECLARATION
@@ -8995,7 +8946,6 @@ Function Get-LoggedOnUser {
 }
 #endregion
 
-
 #endregion
 ##*=============================================
 ##* END FUNCTION LISTINGS
@@ -9010,6 +8960,79 @@ Function Get-LoggedOnUser {
 If ($invokingScript) {
 	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
 }
+
+## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
+If (-not $appName) { 
+	# Find the first MSI file in the Files folder and use that as our install
+	$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction SilentlyContinue | Where-Object { !$PsIsContainer -and [System.IO.Path]::GetFileName($_.Name) -match ".msi" } | Select-Object FullName -ExpandProperty FullName -First 1
+	If ($defaultMsiFile -ne $null) {
+		[boolean]$useDefaultMsi = $true
+		Write-Host "Discovered installation [$defaultMsiFile] which will be used for installation."
+		## Find the first MST file in the Files folder and use that as our install (If available)
+		$defaultMstFile = Get-ChildItem -Path -$dirFiles -ErrorAction SilentlyContinue | Where-Object { !$PsIsContainer -and [System.IO.Path]::GetFileName($_.Name) -match ".mst" } | Select-Object FullName -ExpandProperty FullName -First 1
+		If ($defaultMstFile -ne $null) {
+			[boolean]$useDefaultMst = $true
+			Write-Host "Discovered installation transform [$defaultMstFile] which will be used for installation."
+		}
+		## Read the MSI and get the installation details
+		$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table Property
+		$appVendor = $defaultMsiPropertyList.Manufacturer
+		$appName = $defaultMsiPropertyList.ProductName
+		$appVersion = $defaultMsiPropertyList.ProductVersion
+		$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table File
+		$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select Name -ExpandProperty Name | Where {$_ -Match '.exe'}
+		$defaultMsiExecutablesList = [System.String]::Join(",", $defaultMsiExecutables)
+	}
+}
+
+## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
+If (-not $appVendor) { [string]$appVendor = 'PS' }
+If (-not $appName) { [string]$appName = $appDeployMainScriptFriendlyName }
+If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
+If (-not $appLang) { [string]$appLang = $currentLanguage }
+If (-not $appRevision) { [string]$appRevision = '01' }
+If (-not $appArch) { [string]$appArch = '' }
+[string]$installTitle = "$appVendor $appName $appVersion"
+
+## Sanitize the application details, as they can cause issues in the script
+[char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
+[string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appName = $appName -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appVersion = $appVersion -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appArch = $appArch -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appLang = $appLang -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
+
+## Build the Installation Name
+If ($appArch) {
+	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
+}
+Else {
+	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
+}
+[string]$installName = $installName.Trim('_') -replace '[_]+','_'
+
+## Variables: Log Files
+If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
+[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
+If ($configToolkitCompressLogs) {
+	## If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder after being zipped.
+	#  Set log file directory to temp log folder
+	[string]$logDirectory = $logTempFolder
+	#  The path to the zipped log file in the actual logs folder defined in App Deploy XML config file
+	[string]$zipFileDate = (Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()
+	[string]$zipFileName = Join-Path -Path $configToolkitLogDir -ChildPath ($installName + '_' + $deploymentType + '_' + $zipFileDate + '.zip')
+	
+	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
+	If (Test-Path -Path $logTempFolder -PathType Container -ErrorAction 'SilentlyContinue') {
+		Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
+	}
+}
+Else {
+	## Path to log directory defined in AppDeploy XML config file
+	[string]$logDirectory = $configToolkitLogDir
+}
+
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($ReferringApplication) {
