@@ -6894,13 +6894,18 @@ Function Get-MsiTableProperty {
 		[string]$Table = 'Property',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$ContinueOnError = $true
+		[boolean]$ContinueOnError = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$DisableLogging = $false
 	)
 	
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		If (-not $DisableLogging) {
+			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		}
 		
 		[scriptblock]$InvokeMethod = {
 			Param (
@@ -6922,7 +6927,9 @@ Function Get-MsiTableProperty {
 	}
 	Process {
 		Try {
-			Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]" -Source ${CmdletName}
+			If (-not $DisableLogging) {
+				Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]" -Source ${CmdletName}
+			}
 			
 			## Create an empty object to store properties in
 			[psobject]$TableProperties = New-Object -TypeName PSObject
@@ -6948,7 +6955,9 @@ Function Get-MsiTableProperty {
 			Write-Output $TableProperties
 		}
 		Catch {
-			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $DisableLogging) {
+				Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
 			}
@@ -6960,7 +6969,9 @@ Function Get-MsiTableProperty {
 		}
 	}
 	End {
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		If (-not $DisableLogging) {
+			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		}
 	}
 }
 #endregion
@@ -8975,13 +8986,14 @@ If (-not $appName) {
 			Write-Host "Discovered installation transform [$defaultMstFile] which will be used for installation."
 		}
 		## Read the MSI and get the installation details
-		$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table Property
+		$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table Property -DisableLogging $true
 		$appVendor = $defaultMsiPropertyList.Manufacturer
 		$appName = $defaultMsiPropertyList.ProductName
 		$appVersion = $defaultMsiPropertyList.ProductVersion
-		$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table File
+		$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table File -DisableLogging $true
 		$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select Name -ExpandProperty Name | Where {$_ -Match '.exe'}
 		$defaultMsiExecutablesList = [System.String]::Join(",", $defaultMsiExecutables)
+		write-host $defaultMsiFile
 	}
 }
 
