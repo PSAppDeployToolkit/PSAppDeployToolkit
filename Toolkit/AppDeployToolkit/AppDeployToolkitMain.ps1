@@ -7163,21 +7163,26 @@ Function Install-MSUpdates {
 Function Send-Keys {
 <#
 .SYNOPSIS
-	Send a sequence of keys to an application window.
+	Send a sequence of keys to one or more application windows.
 .DESCRIPTION
-	Send a sequence of keys to an application window.
+	Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the keys sent.
 .PARAMETER WindowTitle
-	The title of the application window. This can be a partial title.
+	The title of the application window to search for using regex matching.
 .PARAMETER Keys
-	The sequence of keys to send.
+	The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 .PARAMETER WaitSeconds
 	An optional number of seconds to wait after the sending of the keys.
+.PARAMETER WaitSeconds
+	Returns the following properties for each window that matched the search terms in -WindowTitle parameter: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle.
 .EXAMPLE
 	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world'
 	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
 .EXAMPLE
 	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world' -WaitSeconds 5
 	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
+.EXAMPLE
+	Send-Keys -WindowTitle 'Microsoft Word' -PassThru
+	Function returns details about all Microsoft Word windows that are open and does not send any keys to those windows.
 .NOTES
 .LINK
 	http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
@@ -7188,12 +7193,15 @@ Function Send-Keys {
 		[Parameter(Mandatory=$true,Position=0)]
 		[ValidateNotNullorEmpty()]
 		[string]$WindowTitle,
-		[Parameter(Mandatory=$true,Position=1)]
+		[Parameter(Mandatory=$false,Position=1)]
 		[ValidateNotNullorEmpty()]
 		[string]$Keys,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNullorEmpty()]
-		[int32]$WaitSeconds
+		[int32]$WaitSeconds,
+		[Parameter(Mandatory=$false,Position=3)]
+		[ValidateNotNullorEmpty()]
+		[switch]$PassThru
 	)
 	
 	Begin {
@@ -7204,52 +7212,147 @@ Function Send-Keys {
 		## Load assembly containing class System.Windows.Forms.SendKeys
 		Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
 		
-		$SetForegroundWindowSource = @'
-			using System;
-			using System.Runtime.InteropServices;
-			public class GUIWindow
-			{
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				[return: MarshalAs(UnmanagedType.Bool)]
-				public static extern bool SetForegroundWindow(IntPtr hWnd);
+		$PSADTUiAutomationSource = @'
+		using System;
+		using System.Runtime.InteropServices;
+		using System.Collections.Generic;
+		using System.Text;
+		namespace PSADTUiAutomation {
+			public class Windows {
+				public enum GetWindow_Cmd : int {
+					GW_HWNDFIRST = 0, GW_HWNDLAST = 1, GW_HWNDNEXT = 2, GW_HWNDPREV = 3, GW_OWNER = 4, GW_CHILD = 5, GW_ENABLEDPOPUP = 6
+				}
+				public enum ShowWindowEnum {
+					Hide = 0, ShowNormal = 1, ShowMinimized = 2, ShowMaximized = 3, Maximize = 3, ShowNormalNoActivate = 4, Show = 5, Minimize = 6, ShowMinNoActivate = 7, ShowNoActivate = 8, Restore = 9, ShowDefault = 10, ForceMinimized = 11
+				}
+
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool EnumWindows(EnumWindowsProcD lpEnumFunc, ref IntPtr lParam);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern int GetWindowTextLength(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool IsWindowEnabled(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern bool IsWindowVisible(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool IsIconic(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum flags);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern IntPtr SetActiveWindow(IntPtr hwnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool SetForegroundWindow(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern Int32 GetWindowThreadProcessId(IntPtr hWnd, out Int32 lpdwProcessId);
+				public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
+				
+				public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems) {
+					if(hWnd != IntPtr.Zero) {
+						GCHandle hItems = GCHandle.FromIntPtr(lItems);
+						List<IntPtr> items = hItems.Target as List<IntPtr>;
+						items.Add(hWnd);
+						return true;
+					} else {
+						return false;
+					}
+				}
+				
+				public static List<IntPtr> EnumWindows() {
+					try {
+						List<IntPtr> items = new List<IntPtr>();
+						EnumWindowsProcD CallBackPtr = new EnumWindowsProcD(EnumWindowsProc);
+						GCHandle hItems = GCHandle.Alloc(items);
+						IntPtr lItems = GCHandle.ToIntPtr(hItems);
+						EnumWindows(CallBackPtr, ref lItems);
+						return items;
+					} catch (Exception ex) {
+						throw new Exception("An error occured during window enumeration: " + ex.Message);
+					}
+				}
+				
+				public static string GetWindowText(IntPtr hWnd) {
+					int iTextLength = GetWindowTextLength(hWnd);
+					if(iTextLength > 0) {
+						StringBuilder sb = new StringBuilder(iTextLength);
+						GetWindowText(hWnd, sb, iTextLength + 1);
+						return sb.ToString();
+					} else {
+						return String.Empty;
+					}
+				}
+				
+				public static bool BringWindowToFront(IntPtr mainWindowHandle) {
+					bool breturn = false;
+					if (IsIconic(mainWindowHandle)) {
+						// Show minimized window because SetForegroundWindow does not work for minimized windows
+						ShowWindow(mainWindowHandle, ShowWindowEnum.ShowMaximized);
+					}
+					breturn = SetForegroundWindow(mainWindowHandle);
+					return breturn;
+				}
+				
+				public static Int32 GetWindowThreadProcessId(IntPtr windowHandle) {
+					Int32 processID = 0;
+					GetWindowThreadProcessId(windowHandle, out processID);
+					return processID;
+				}
 			}
+		}
 '@
-		If (-not ([System.Management.Automation.PSTypeName]'GUIWindow').Type) {
-			Add-Type -TypeDefinition $SetForegroundWindowSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
+		If (-not ([System.Management.Automation.PSTypeName]'PSADTUiAutomation.Windows').Type) {
+			Add-Type -TypeDefinition $PSADTUiAutomationSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
 		Try {
-			## Get the process with the specified window title
-			[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.MainWindowTitle.Contains($WindowTitle) }
-			If ($Process) {
-				Write-Log -Message "Match window title found running under process [$($process.name)]..." -Source ${CmdletName}
-				## Get the window handle of the first process only if there is more than one process returned
-				[IntPtr]$ProcessHandle = $Process[0].MainWindowHandle
-				
-				Write-Log -Message 'Bring window to foreground.' -Source ${CmdletName}
-				## Bring the process to the foreground
-				[boolean]$ActivateWindow = [GUIWindow]::SetForegroundWindow($ProcessHandle)
-				
-				## Send the Key sequence
-				#  Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
-				If ($ActivateWindow) {
-					Write-Log -Message 'Send key(s) [$Keys] to window.' -Source ${CmdletName}
-					[System.Windows.Forms.SendKeys]::SendWait($Keys)
+			[IntPtr[]]$VisibleWindowHandles = [PSADTUiAutomation.Windows]::EnumWindows() | Where-Object { [PSADTUiAutomation.Windows]::IsWindowVisible($_) }
+			ForEach ($VisibleWindowHandle in $VisibleWindowHandles) {
+				[string]$VisibleWindowTitle = [PSADTUiAutomation.Windows]::GetWindowText($VisibleWindowHandle)
+				If ($VisibleWindowTitle) {
+					[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADTUiAutomation.Windows]::GetWindowThreadProcessId($VisibleWindowHandle) }
+					If ($Process) {
+						[psobject]$VisibleWindow = New-Object -TypeName PSObject -Property @{
+							WindowTitle = $VisibleWindowTitle
+							WindowHandle = $VisibleWindowHandle
+							ParentProcess= $Process[0].Name
+							ParentProcessMainWindowHandle = $Process[0].MainWindowHandle
+						}
+						
+						If ($WindowTitle) {
+							If ($VisibleWindow.WindowTitle -match $WindowTitle) {
+								[psobject[]]$VisibleWindows += $VisibleWindow
+								
+								## Bring the process to the foreground
+								[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($VisibleWindow.ParentProcessMainWindowHandle)
+								If (-not $IsBringWindowToFrontSuccess) { Throw 'Failed to bring window to foreground.'}
+								
+								## Send the Key sequence
+								If ($Keys) {
+									[System.Windows.Forms.SendKeys]::SendWait($Keys)
+									Write-Log -Message "Sent key(s) [$Keys] to window [$VisibleWindow.WindowTitle]." -Source ${CmdletName}
+									If ($WaitSeconds) {
+										Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
+										Start-Sleep -Seconds $WaitSeconds
+									}
+								}
+							}
+						}
+						Else {
+							[psobject[]]$VisibleWindows += $VisibleWindow
+						}
+					}
 				}
-				Else {
-					Write-Log -Message 'Failed to bring window to foreground.' -Source ${CmdletName}
-					# Failed to bring the window to the foreground. Do nothing.
-				}
-				
-				If ($WaitSeconds) { Start-Sleep -Seconds $WaitSeconds }
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to send keys to window [$WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to send keys to window with window title [$WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
+		If ($PassThru) { Write-Output $VisibleWindows }
+
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
