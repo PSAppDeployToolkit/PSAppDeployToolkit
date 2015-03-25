@@ -702,7 +702,7 @@ Function Exit-Script {
 	If ($installSuccess) {
 		If (Test-Path -Path $regKeyDeferHistory -ErrorAction 'SilentlyContinue') {
 			Write-Log -Message 'Remove deferral history...' -Source ${CmdletName}
-			Remove-RegistryKey -Key $regKeyDeferHistory
+			Remove-RegistryKey -Key $regKeyDeferHistory -Recurse
 		}
 		
 		[string]$balloonText = "$deploymentTypeName $configBalloonTextComplete"
@@ -1940,7 +1940,7 @@ Function Execute-MSI {
 		}
 		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
-		If ($transform) {
+		If ($transform -and $transform -ne '') {
 			[string[]]$transforms = $transform -split(',')
 			0..($transforms.Length - 1) | % {
 				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
@@ -4844,6 +4844,9 @@ Function Show-InstallationWelcome {
 	Process {
 		## If running in NonInteractive mode, force the processes to close silently
 		If ($deployModeNonInteractive) { $Silent = $true }
+		
+		## If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
+		If ($useDefaultMsi) { $CloseApps = "$CloseApps,$defaultMsiExecutablesList" }
 		
 		## Check disk space requirements if specified
 		If ($CheckDiskSpace) {
@@ -8109,10 +8112,10 @@ Function Set-ActiveSetup {
 			## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
 			If ($PurgeActiveSetupKey) {
 				Write-Log -Message "Remove Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
-				Remove-RegistryKey -Key $ActiveSetupKey
+				Remove-RegistryKey -Key $ActiveSetupKey -Recurse
 				
 				Write-Log -Message "Remove Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
-				[scriptblock]$RemoveHKCUActiveSetupKey = { Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID }
+				[scriptblock]$RemoveHKCUActiveSetupKey = { Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Recurse }
 				Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)
 				Return
 			}
@@ -8979,12 +8982,6 @@ If (-not $appName) {
 	If ($defaultMsiFile -ne $null) {
 		[boolean]$useDefaultMsi = $true
 		Write-Host "Discovered installation [$defaultMsiFile] which will be used for installation."
-		## Find the first MST file in the Files folder and use that as our install (If available)
-		$defaultMstFile = Get-ChildItem -Path -$dirFiles -ErrorAction SilentlyContinue | Where-Object { !$PsIsContainer -and [System.IO.Path]::GetFileName($_.Name) -match ".mst" } | Select-Object FullName -ExpandProperty FullName -First 1
-		If ($defaultMstFile -ne $null) {
-			[boolean]$useDefaultMst = $true
-			Write-Host "Discovered installation transform [$defaultMstFile] which will be used for installation."
-		}
 		## Read the MSI and get the installation details
 		$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table Property -DisableLogging $true
 		$appVendor = $defaultMsiPropertyList.Manufacturer
@@ -8993,7 +8990,7 @@ If (-not $appName) {
 		$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table File -DisableLogging $true
 		$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select Name -ExpandProperty Name | Where {$_ -Match '.exe'}
 		$defaultMsiExecutablesList = [System.String]::Join(",", $defaultMsiExecutables)
-		write-host $defaultMsiFile
+		$defaultMsiExecutablesList = $defaultMsiExecutablesList -replace ".exe", ""
 	}
 }
 

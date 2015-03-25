@@ -63,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '03/20/2015'
+	[string]$appScriptDate = '03/25/2015'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
 	
@@ -76,7 +76,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.1'
-	[string]$deployAppScriptDate = '03/20/2015'
+	[string]$deployAppScriptDate = '03/25/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -107,12 +107,7 @@ Try {
 		[string]$installPhase = 'Pre-Installation'
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		If ($useDefaultMsi) {
-			Show-InstallationWelcome -CloseApps $defaultMsiExecutablesList -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
-		}
-		Else {
-			Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
-		}
+		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -125,15 +120,11 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Installation'
 		
+		## Handle Zero-Config MSI Installations
+		If ($useDefaultMsi) { Execute-MSI -Action Install -Path $defaultMsiFile }
+		
 		## <Perform Installation tasks here>
-		If ($useDefaultMsi) {
-			If ($useDefaultMst) { 
-				Execute-MSI -Action Install -Path $defaultMsiFile -Transform $defaultMstFile
-			}
-			Else {
-				Execute-MSI -Action Install -Path $defaultMsiFile
-			}
-		}
+		
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -143,9 +134,7 @@ Try {
 		## <Perform Post-Installation tasks here>
 		
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) {
-			Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
-		}
+		If (!$useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -155,12 +144,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		If ($useDefaultMsi) {
-			Show-InstallationWelcome -CloseApps $defaultMsiExecutablesList -CloseAppsCountdown 60
-		}
-		Else {
-			Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
-		}
+		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -173,10 +157,11 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
 		
+		## Handle Zero-Config MSI Uninstallations
+		If ($useDefaultMsi) { Execute-MSI -Action Uninstall -Path $defaultMsiFile }
+		
 		# <Perform Uninstallation tasks here>
-		If ($useDefaultMsi) {
-			Execute-MSI -Action Uninstall -Path $defaultMsiFile -Transform $defaultMstFile
-		}
+		
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -184,6 +169,8 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
+		
+		
 	}
 	
 	##*===============================================
