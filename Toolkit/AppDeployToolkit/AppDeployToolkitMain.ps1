@@ -492,21 +492,6 @@ Function Write-Log {
 		## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
 		If (($DebugMessage) -and (-not $LogDebugMessage)) { [boolean]$ExitLoggingFunction = $true; Return }
 		
-		#  Create the directory where the log file will be saved
-		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
-			Try {
-				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
-			}
-			Catch {
-				[boolean]$ExitLoggingFunction = $true
-				#  If error creating directory, write message to console
-				If (-not $ContinueOnError) {
-					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
-				}
-				Return
-			}
-		}
-		
 		## Get the file name of the source script
 		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
 		
@@ -548,11 +533,9 @@ Function Write-Log {
 			}
 		}
 		
-		#  Assemble the fully qualified path to the log file
-		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 	}
 	Process {
-		## Exit function if logging is disabled or if the log directory was not successfully created in 'Begin' block.
+		## Exit function if logging is disabled.
 		If ($ExitLoggingFunction) { Return }
 		
 		ForEach ($Msg in $Message) {
@@ -598,6 +581,22 @@ Function Write-Log {
 			
 			## Write the log entry to the log file if logging is not currently disabled
 			If (-not $DisableLogging) {
+				#  Create the directory where the log file will be saved
+				If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
+					Try {
+						New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+					}
+					Catch {
+						[boolean]$ExitLoggingFunction = $true
+						#  If error creating directory, write message to console
+						If (-not $ContinueOnError) {
+							Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+						}
+						Return
+					}
+				}
+				#  Assemble the fully qualified path to the log file
+				[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 				Try {
 					$LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding 'UTF8' -ErrorAction 'Stop'
 				}
@@ -8961,6 +8960,9 @@ Function Get-LoggedOnUser {
 ##*=============================================
 #region ScriptBody
 
+# Disable logging until log file details are available
+$OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true
+
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
 	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
@@ -8971,18 +8973,26 @@ If (-not $appName) {
 	# Find the first MSI file in the Files folder and use that as our install
 	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $PsIsContainer) -and ([System.IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
 	If ($defaultMsiFile) {
-		[boolean]$useDefaultMsi = $true
-		## Read the MSI and get the installation details
-		$OldDisableLoggingValue = $DisableLogging
-		$DisableLogging = $true
-		[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property'
-		[string]$appVendor = $defaultMsiPropertyList.Manufacturer
-		[string]$appName = $defaultMsiPropertyList.ProductName
-		[string]$appVersion = $defaultMsiPropertyList.ProductVersion
-		[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File'
-		$DisableLogging = $OldDisableLoggingValue
-		[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select-Object -ExpandProperty 'Name' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
-		[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
+		Try {
+			[boolean]$useDefaultMsi = $true
+			Write-Log -Message "Discovered installation [$defaultMsiFile] which will be used for installation." -Source $appDeployToolkitName
+			## Read the MSI and get the installation details
+			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property'
+			[string]$appVendor = $defaultMsiPropertyList.Manufacturer
+			[string]$appName = $defaultMsiPropertyList.ProductName
+			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
+			[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File'
+			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select-Object -ExpandProperty 'Name' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
+			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
+			Write-Log -Message "App Vendor [$appVendor]" -Source $appDeployToolkitName
+			Write-Log -Message "App Name [$appName]" -Source $appDeployToolkitName
+			Write-Log -Message "App Version [$appVersion]" -Source $appDeployToolkitName
+			Write-Log -Message "MSI Executable List [$defaultMsiExecutablesList]" -Source $appDeployToolkitName
+		}
+		Catch {
+			Write-Log -Message "Failed to process Zero-Config MSI Deployment. `n$(Resolve-Error)" -Source $appDeployToolkitName
+			$useDefaultMsi = $false ; $DisableLogging = $OldDisableLoggingValue ; $appVendor = '' ; $appName = '' ; $appVersion = ''
+}
 	}
 }
 
@@ -9033,7 +9043,8 @@ Else {
 	## Path to log directory defined in AppDeploy XML config file
 	[string]$logDirectory = $configToolkitLogDir
 }
-
+# Switch logging to previous value
+$DisableLogging = $OldDisableLoggingValue
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($ReferringApplication) {
