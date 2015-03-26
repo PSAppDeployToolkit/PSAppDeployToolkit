@@ -481,25 +481,21 @@ Function Write-Log {
 		## Get the name of this function
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		
-		## Initialize variables
+		## Logging Variables
+		#  Log file date/time
 		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
 		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
 		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
-		#  Add the timezone bias to the log time
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
+		#  Initialize variables
 		[boolean]$ExitLoggingFunction = $false
-		
-		## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
-		If (($DebugMessage) -and (-not $LogDebugMessage)) { [boolean]$ExitLoggingFunction = $true; Return }
-		
-		## Get the file name of the source script
-		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
-		
-		## Check if the script section is defined
-		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
-		
-		## Initialize $DisableLogging variable to avoid error if 'Set-StrictMode' is set
 		If (-not (Test-Path -Path 'variable:DisableLogging')) { $DisableLogging = $false }
+		#  Assemble the fully qualified path to the log file
+		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
+		#  Check if the script section is defined
+		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
+		#  Get the file name of the source script
+		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
 		
 		## Create script block for generating CMTrace.exe compatible log entry
 		[scriptblock]$CMTraceLogString = {
@@ -533,9 +529,30 @@ Function Write-Log {
 			}
 		}
 		
+		## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
+		If (($DebugMessage) -and (-not $LogDebugMessage)) { [boolean]$ExitLoggingFunction = $true; Return }
+		## Exit function if logging to file is disabled and logging to console host is disabled
+		If (($DisableLogging) -and (-not $WriteHost)) { [boolean]$ExitLoggingFunction = $true; Return }
+		## Exit Begin block if logging is disabled
+		If ($DisableLogging) { Return }
+		
+		## Create the directory where the log file will be saved
+		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
+			Try {
+				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+			}
+			Catch {
+				[boolean]$ExitLoggingFunction = $true
+				#  If error creating directory, write message to console
+				If (-not $ContinueOnError) {
+					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+				}
+				Return
+			}
+		}
 	}
 	Process {
-		## Exit function if logging is disabled.
+		## Exit function if logging is disabled
 		If ($ExitLoggingFunction) { Return }
 		
 		ForEach ($Msg in $Message) {
@@ -581,22 +598,6 @@ Function Write-Log {
 			
 			## Write the log entry to the log file if logging is not currently disabled
 			If (-not $DisableLogging) {
-				#  Create the directory where the log file will be saved
-				If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
-					Try {
-						New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
-					}
-					Catch {
-						[boolean]$ExitLoggingFunction = $true
-						#  If error creating directory, write message to console
-						If (-not $ContinueOnError) {
-							Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
-						}
-						Return
-					}
-				}
-				#  Assemble the fully qualified path to the log file
-				[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 				Try {
 					$LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding 'UTF8' -ErrorAction 'Stop'
 				}
@@ -614,7 +615,7 @@ Function Write-Log {
 	End {
 		## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
 		Try {
-			If (-not $ExitLoggingFunction) {
+			If ((-not $ExitLoggingFunction) -and (-not $DisableLogging)) {
 				[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
 				[decimal]$LogFileSizeMB = $LogFile.Length/1MB
 				If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
