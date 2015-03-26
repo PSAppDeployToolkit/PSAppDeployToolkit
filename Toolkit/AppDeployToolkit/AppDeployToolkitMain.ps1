@@ -1940,7 +1940,7 @@ Function Execute-MSI {
 		}
 		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
-		If ($transform -and $transform -ne '') {
+		If ($transform) {
 			[string[]]$transforms = $transform -split ','
 			0..($transforms.Length - 1) | % {
 				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
