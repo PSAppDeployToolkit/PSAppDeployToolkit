@@ -63,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '03/25/2015'
+	[string]$appScriptDate = '03/26/2015'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
 	
@@ -76,7 +76,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.1'
-	[string]$deployAppScriptDate = '03/25/2015'
+	[string]$deployAppScriptDate = '03/26/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -121,7 +121,7 @@ Try {
 		[string]$installPhase = 'Installation'
 		
 		## Handle Zero-Config MSI Installations
-		If ($useDefaultMsi) { Execute-MSI -Action Install -Path $defaultMsiFile }
+		If ($useDefaultMsi) { Execute-MSI -Action 'Install' -Path $defaultMsiFile }
 		
 		## <Perform Installation tasks here>
 		
@@ -134,7 +134,7 @@ Try {
 		## <Perform Post-Installation tasks here>
 		
 		## Display a message at the end of the install
-		If (!$useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
+		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -158,7 +158,7 @@ Try {
 		[string]$installPhase = 'Uninstallation'
 		
 		## Handle Zero-Config MSI Uninstallations
-		If ($useDefaultMsi) { Execute-MSI -Action Uninstall -Path $defaultMsiFile }
+		If ($useDefaultMsi) { Execute-MSI -Action 'Uninstall' -Path $defaultMsiFile }
 		
 		# <Perform Uninstallation tasks here>
 		

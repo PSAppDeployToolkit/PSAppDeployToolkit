@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/23/2015'
+[string]$appDeployMainScriptDate = '03/26/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1941,7 +1941,7 @@ Function Execute-MSI {
 		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform -and $transform -ne '') {
-			[string[]]$transforms = $transform -split(',')
+			[string[]]$transforms = $transform -split ','
 			0..($transforms.Length - 1) | % {
 				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
 					$transforms[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_].Replace('.\',''))"
@@ -1955,7 +1955,7 @@ Function Execute-MSI {
 		
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
 		If ($patch) { 
-			[string[]]$patches = $patch -split(',')
+			[string[]]$patches = $patch -split ','
 			0..($patches.Length - 1) | % {
 				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
 					$patches[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_].Replace('.\',''))"
@@ -6897,18 +6897,14 @@ Function Get-MsiTableProperty {
 		[string]$Table = 'Property',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$ContinueOnError = $true,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[boolean]$DisableLogging = $false
+		[boolean]$ContinueOnError = $true
 	)
 	
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		If (-not $DisableLogging) {
-			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		}
+
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		[scriptblock]$InvokeMethod = {
 			Param (
@@ -6930,9 +6926,7 @@ Function Get-MsiTableProperty {
 	}
 	Process {
 		Try {
-			If (-not $DisableLogging) {
-				Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]" -Source ${CmdletName}
-			}
+			Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]" -Source ${CmdletName}
 			
 			## Create an empty object to store properties in
 			[psobject]$TableProperties = New-Object -TypeName PSObject
@@ -6958,9 +6952,8 @@ Function Get-MsiTableProperty {
 			Write-Output $TableProperties
 		}
 		Catch {
-			If (-not $DisableLogging) {
-				Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			}
+			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
 			}
@@ -6972,9 +6965,7 @@ Function Get-MsiTableProperty {
 		}
 	}
 	End {
-		If (-not $DisableLogging) {
-			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-		}
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion
@@ -8976,21 +8967,22 @@ If ($invokingScript) {
 }
 
 ## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
-If (-not $appName) { 
+If (-not $appName) {
 	# Find the first MSI file in the Files folder and use that as our install
-	$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction SilentlyContinue | Where-Object { !$PsIsContainer -and [System.IO.Path]::GetFileName($_.Name) -match ".msi" } | Select-Object FullName -ExpandProperty FullName -First 1
-	If ($defaultMsiFile -ne $null) {
+	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $PsIsContainer) -and ([System.IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
+	If ($defaultMsiFile) {
 		[boolean]$useDefaultMsi = $true
-		Write-Host "Discovered installation [$defaultMsiFile] which will be used for installation."
 		## Read the MSI and get the installation details
-		$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table Property -DisableLogging $true
-		$appVendor = $defaultMsiPropertyList.Manufacturer
-		$appName = $defaultMsiPropertyList.ProductName
-		$appVersion = $defaultMsiPropertyList.ProductVersion
-		$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table File -DisableLogging $true
-		$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select Name -ExpandProperty Name | Where {$_ -Match '.exe'}
-		$defaultMsiExecutablesList = [System.String]::Join(",", $defaultMsiExecutables)
-		$defaultMsiExecutablesList = $defaultMsiExecutablesList -replace ".exe", ""
+		$OldDisableLoggingValue = $DisableLogging
+		$DisableLogging = $true
+		[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property'
+		[string]$appVendor = $defaultMsiPropertyList.Manufacturer
+		[string]$appName = $defaultMsiPropertyList.ProductName
+		[string]$appVersion = $defaultMsiPropertyList.ProductVersion
+		[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File'
+		$DisableLogging = $OldDisableLoggingValue
+		[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select-Object -ExpandProperty 'Name' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
+		[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
 	}
 }
 
@@ -9310,6 +9302,8 @@ Switch ($deploymentType) {
 	Default { $deploymentTypeName = $configDeploymentTypeInstall }
 }
 If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTypeName]" -Source $appDeployToolkitName }
+
+If ($useDefaultMsi) { Write-Log -Message "Discovered zero-config MSI installation with file [$defaultMsiFile]." -Source $appDeployToolkitName }
 
 ## Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {
