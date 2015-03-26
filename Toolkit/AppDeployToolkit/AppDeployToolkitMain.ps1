@@ -8961,7 +8961,7 @@ Function Get-LoggedOnUser {
 ##*=============================================
 #region ScriptBody
 
-# Disable logging until log file details are available
+## Disable logging until log file details are available
 $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true
 
 ## If the script was invoked by the Help Console, exit the script now
@@ -8971,19 +8971,19 @@ If ($invokingScript) {
 
 ## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
 If (-not $appName) {
-	# Find the first MSI file in the Files folder and use that as our install
+	#  Find the first MSI file in the Files folder and use that as our install
 	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $PsIsContainer) -and ([System.IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
 	If ($defaultMsiFile) {
 		Try {
 			[boolean]$useDefaultMsi = $true
-			Write-Log -Message "Discovered installation [$defaultMsiFile] which will be used for installation." -Source $appDeployToolkitName
+			Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
 			## Read the MSI and get the installation details
-			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property'
+			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property' -ContinueOnError $false -ErrorAction 'Stop'
 			[string]$appVendor = $defaultMsiPropertyList.Manufacturer
 			[string]$appName = $defaultMsiPropertyList.ProductName
 			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
-			[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File'
-			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList | Select-Object -ExpandProperty 'Name' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
+			[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File' -ContinueOnError $false -ErrorAction 'Stop'
+			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
 			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
 			Write-Log -Message "App Vendor [$appVendor]" -Source $appDeployToolkitName
 			Write-Log -Message "App Name [$appName]" -Source $appDeployToolkitName
@@ -8992,8 +8992,8 @@ If (-not $appName) {
 		}
 		Catch {
 			Write-Log -Message "Failed to process Zero-Config MSI Deployment. `n$(Resolve-Error)" -Source $appDeployToolkitName
-			$useDefaultMsi = $false ; $DisableLogging = $OldDisableLoggingValue ; $appVendor = '' ; $appName = '' ; $appVersion = ''
-}
+			$useDefaultMsi = $false ; $appVendor = '' ; $appName = '' ; $appVersion = ''
+		}
 	}
 }
 
@@ -9044,7 +9044,8 @@ Else {
 	## Path to log directory defined in AppDeploy XML config file
 	[string]$logDirectory = $configToolkitLogDir
 }
-# Switch logging to previous value
+
+## Switch logging to previous value
 $DisableLogging = $OldDisableLoggingValue
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
@@ -9315,7 +9316,7 @@ Switch ($deploymentType) {
 }
 If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTypeName]" -Source $appDeployToolkitName }
 
-If ($useDefaultMsi) { Write-Log -Message "Discovered zero-config MSI installation with file [$defaultMsiFile]." -Source $appDeployToolkitName }
+If ($useDefaultMsi) { Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName }
 
 ## Check current permissions and exit if not running with Administrator rights
 If ($configToolkitRequireAdmin) {
