@@ -7670,11 +7670,12 @@ Function Invoke-SCCMTask {
 			
 			## Determine the SCCM Client Version
 			Try {
-				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
+				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -ExpandProperty 'Version' -ErrorAction 'Stop'
 				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]" -Source ${CmdletName}
 			}
 			Catch {
 				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Throw 'Failed to determine the SCCM client version number.'
 			}
 			
 			## Create a hashtable of Schedule IDs compatible with SCCM Client 2007
@@ -7792,15 +7793,16 @@ Function Install-SCCMSoftwareUpdates {
 			
 			## Determine the SCCM Client Version
 			Try {
-				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -Property 'Version' -ErrorAction 'Stop'
+				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -ExpandProperty 'Version' -ErrorAction 'Stop'
 				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]" -Source ${CmdletName}
 			}
 			Catch {
 				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Throw 'Failed to determine the SCCM client version number.'
 			}
 			#  If SCCM 2007 Client or lower, exit function
 			If ($SCCMClientVersion.Major -le 4) {
-				Throw "SCCM 2007 or lower, which is incompatible with this function, was dectected on this system."
+				Throw 'SCCM 2007 or lower, which is incompatible with this function, was detcected on this system.'
 			}
 			
 			$StartTime = Get-Date
@@ -7817,6 +7819,7 @@ Function Install-SCCMSoftwareUpdates {
 			}
 			Catch {
 				Write-Log -Message "Failed to find the number of missing software updates. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Throw 'Failed to find the number of missing software updates.'
 			}
 			
 			## Install missing updates and wait for pending updates to finish installing
