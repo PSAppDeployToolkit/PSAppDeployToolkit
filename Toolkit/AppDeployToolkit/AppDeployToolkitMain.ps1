@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/26/2015'
+[string]$appDeployMainScriptDate = '03/27/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7802,7 +7802,7 @@ Function Install-SCCMSoftwareUpdates {
 			}
 			#  If SCCM 2007 Client or lower, exit function
 			If ($SCCMClientVersion.Major -le 4) {
-				Throw 'SCCM 2007 or lower, which is incompatible with this function, was detcected on this system.'
+				Throw 'SCCM 2007 or lower, which is incompatible with this function, was detected on this system.'
 			}
 			
 			$StartTime = Get-Date
