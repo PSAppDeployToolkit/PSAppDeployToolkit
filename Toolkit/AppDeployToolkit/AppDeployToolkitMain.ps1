@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/27/2015'
+[string]$appDeployMainScriptDate = '03/28/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3856,7 +3856,7 @@ Function Execute-ProcessAsUser {
 	Param (
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$UserName = $RunAsActiveUserNTAccount,
+		[string]$UserName = $RunAsActiveUser.NTAccount,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
@@ -4137,6 +4137,8 @@ Function Refresh-SessionEnvironmentVariables {
 .DESCRIPTION
 	Environment variable changes that take place during script execution are not visible to the current PowerShell session.
 	Use this function to refresh the current PowerShell session with all environment variable settings.
+.PARAMETER LoadLoggedOnUserEnvironmentVariables
+	If script is running in SYSTEM context, this option allows loading environment variables from the active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
@@ -4147,6 +4149,9 @@ Function Refresh-SessionEnvironmentVariables {
 #>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[switch]$LoadLoggedOnUserEnvironmentVariables = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -4169,7 +4174,12 @@ Function Refresh-SessionEnvironmentVariables {
 		Try {
 			Write-Log -Message 'Refresh the environment variables for this PowerShell session.' -Source ${CmdletName}
 			
-			[string]$CurrentUserEnvironmentSID = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+			If ($LoadLoggedOnUserEnvironmentVariables -and $RunAsActiveUser) {
+				[string]$CurrentUserEnvironmentSID = $RunAsActiveUser.SID
+			}
+			Else {
+				[string]$CurrentUserEnvironmentSID = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+			}
 			[string]$MachineEnvironmentVars = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
 			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 			
@@ -8666,7 +8676,7 @@ Function Get-LoggedOnUser {
 	Get session details for all local and RDP logged on users.
 .DESCRIPTION
 	Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
-	 NTAccount, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession,
+	 NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession,
 	 IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
 .EXAMPLE
 	Get-LoggedOnUser
@@ -8892,7 +8902,7 @@ Function Get-LoggedOnUser {
 
 			public class TerminalSessionInfo
 			{
-				public string NTAccount; public string UserName; public string DomainName; public int SessionId; public string SessionName;
+				public string NTAccount; public string SID; public string UserName; public string DomainName; public int SessionId; public string SessionName;
 				public Session.WTS_CONNECTSTATE_CLASS ConnectState; public bool IsCurrentSession; public bool IsConsoleSession;
 				public bool IsUserSession; public bool IsLocalAdmin; public DateTime? LogonTime; public TimeSpan? IdleTime; public DateTime? DisconnectTime;
 				public string ClientName; public string ClientProtocolType; public string ClientDirectory; public int ClientBuildNumber;
@@ -8930,6 +8940,7 @@ Function Get-LoggedOnUser {
 				If (($TerminalSession.IsUserSession)) {
 					[psobject]$SessionInfo = [QueryUser.Session]::GetSessionInfo('localhost', $TerminalSession.SessionId)
 					If ($SessionInfo.UserName) {
+						#  Add IsLocalAdmin property
 						If ($IsLocalAdminCheckSuccess) {
 							If ($LocalAdminGroupNTAccounts -contains $SessionInfo.NTAccount) {
 								$SessionInfo.IsLocalAdmin = $true
@@ -8939,6 +8950,8 @@ Function Get-LoggedOnUser {
 							}
 							[psobject[]]$TerminalSessionInfo += $SessionInfo
 						}
+						#  Add SID property
+						$SessionInfo.SID = $(New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $SessionInfo.NTAccount).Translate([System.Security.Principal.SecurityIdentifier]).Value
 					}
 				}
 			}
@@ -9183,7 +9196,7 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 [psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
 Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
 [string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
-[string]$RunAsActiveUserNTAccount = ''
+[psobject]$RunAsActiveUser = $null
 
 If ($usersLoggedOn) {
 	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
@@ -9209,14 +9222,14 @@ If ($usersLoggedOn) {
 	}
 	
 	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-	#  One liner to get this info: [string]$RunAsActiveUserNTAccount = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { $_.ConnectState -eq 'Active' } | ForEach-Object { If($_.IsCurrentSession) { $_.NTAccount } Else { $_[0].NTAccount } }
+	#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { $_.ConnectState -eq 'Active' } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
 	If ($CurrentConsoleUserSession) {
-		[string]$RunAsActiveUserNTAccount = $CurrentConsoleUserSession.NTAccount
+		[psobject]$RunAsActiveUser = $CurrentConsoleUserSession
 	}
 	Else {
 		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-		[string]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
-		If ($FirstLoggedInNonConsoleUser) { [string]$RunAsActiveUserNTAccount = $FirstLoggedInNonConsoleUser.NTAccount }
+		[psobject]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
+		If ($FirstLoggedInNonConsoleUser) { [psobject]$RunAsActiveUser = $FirstLoggedInNonConsoleUser }
 	}
 }
 Else {

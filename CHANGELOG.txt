@@ -7,6 +7,8 @@ Version 3.6.1 [03/xx/2015]
 	Added following parameters to Remove-MSIApplications to match those in Execute-MSI: -Parameters, -AddParameters, -LoggingOptions, -LogName
 	Added default active username for -UserName parameter in Execute-ProcessAsUser
 	Added -SkipMSIAlreadyInstalledCheck parameter to Execute-MSI function to allow ability to skip the check that determines if an MSI is already installed on the system
+	Added SID property to Get-LoggedOnUser function results
+	Added -LoadLoggedOnUserEnvironmentVariables parameter to Refresh-SessionEnvironmentVariables function to allow loading user environment variables when running in the SYSTEM context
 	Fixed issue introduced in 3.6 whereby the toolkit timeout would not be triggered resulting in the wrong exit code being passed
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
 	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist
