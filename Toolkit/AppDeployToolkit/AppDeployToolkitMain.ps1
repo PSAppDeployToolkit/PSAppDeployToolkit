@@ -8185,12 +8185,17 @@ Function Set-ActiveSetup {
 			
 			## Execute the StubPath file for the current user as long as not in Session 0
 			If ($SessionZero) {
-				Write-Log -Message "Session 0 detected: Execute Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
-				If ($CUArguments) {
-					Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
+				If ($RunAsActiveUser) {
+					Write-Log -Message "Session 0 detected: Execute Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source 
+					If ($CUArguments) {
+						Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
+					}
+					Else {
+						Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
+					}
 				}
 				Else {
-					Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
+					Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
 				}
 			}
 			Else {
