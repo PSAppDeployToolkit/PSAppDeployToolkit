@@ -9228,8 +9228,7 @@ If ($usersLoggedOn) {
 	}
 	Else {
 		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-		[psobject]$FirstLoggedInNonConsoleUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
-		If ($FirstLoggedInNonConsoleUser) { [psobject]$RunAsActiveUser = $FirstLoggedInNonConsoleUser }
+		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
 	}
 }
 Else {
