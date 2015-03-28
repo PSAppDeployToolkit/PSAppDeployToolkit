@@ -2214,7 +2214,7 @@ Function Execute-Process {
 	}
 	Process {
 		Try {
-			$returnCode = $null
+			$private:returnCode = $null
 			
 			## Validate and find the fully qualified path for the $Path variable.
 			If (([System.IO.Path]::IsPathRooted($Path)) -and ([System.IO.Path]::HasExtension($Path))) {
