@@ -9001,7 +9001,8 @@ Function Get-LoggedOnUser {
 #region ScriptBody
 
 ## Disable logging until log file details are available
-$OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true
+[scriptblock]$DisableScriptLogging { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
+. $DisableScriptLogging
 
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
@@ -9085,7 +9086,8 @@ Else {
 }
 
 ## Switch logging to previous value
-$DisableLogging = $OldDisableLoggingValue
+[scriptblock]$RevertScriptLogging { $DisableLogging = $OldDisableLoggingValue }
+. $RevertScriptLogging
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($ReferringApplication) {
@@ -9144,7 +9146,7 @@ If ($cleanupBlockedApps) {
 
 ## If the ShowBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog) {
-	$DisableLogging = $true
+	. $DisableScriptLogging
 	Try {
 		$deployModeSilent = $true
 		Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]" -Source $appDeployToolkitName
@@ -9208,7 +9210,7 @@ Else {
 }
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
 Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
-Write-Log -Message "Hardware Platform is [$($OldDisableLoggingValue = $DisableLogging; $DisableLogging = $true; Get-HardwarePlatform; $DisableLogging = $OldDisableLoggingValue)]" -Source $appDeployToolkitName
+Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
 Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
@@ -9259,7 +9261,7 @@ Else {
 }
 
 ## Load XML UI messages by dot sourcing ScriptBlock
-$OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true; . $xmlLoadLocalizedUIMessages; $DisableLogging = $OldDisableLoggingValue
+. $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
 ## Check if script is running on a Terminal Services client session
