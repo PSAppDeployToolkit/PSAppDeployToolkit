@@ -8757,13 +8757,13 @@ Function Get-LoggedOnUser {
 				public static extern int GetCurrentProcessId();
 				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
-
+				
 				[StructLayout(LayoutKind.Sequential)]
 				private struct WTS_SESSION_INFO
 				{
 					public Int32 SessionId; [MarshalAs(UnmanagedType.LPStr)] public string SessionName; public WTS_CONNECTSTATE_CLASS State;
 				}
-
+				
 				[StructLayout(LayoutKind.Sequential)]
 				public struct WINSTATIONINFORMATIONW
 				{
@@ -8777,11 +8777,11 @@ Function Get-LoggedOnUser {
 					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1096)] private byte[] Reserved3;
 					public FILETIME CurrentTime;
 				}
-
+				
 				public enum WINSTATIONINFOCLASS { WinStationInformation = 8 }
 				public enum WTS_CONNECTSTATE_CLASS { Active, Connected, ConnectQuery, Shadow, Disconnected, Idle, Listen, Reset, Down, Init }
 				public enum WTS_INFO_CLASS { SessionId=4, UserName, SessionName, DomainName, ConnectState, ClientBuildNumber, ClientName, ClientDirectory, ClientProtocolType=16 }
-
+				
 				private static IntPtr OpenServer(string Name) { IntPtr server = WTSOpenServer(Name); return server; }
 				private static void CloseServer(IntPtr ServerHandle) { WTSCloseServer(ServerHandle); }
 				
@@ -8794,14 +8794,14 @@ Function Get-LoggedOnUser {
 					}
 					return result;
 				}
-
+				
 				public static DateTime? FileTimeToDateTime(FILETIME ft)
 				{
 					if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0) { return null; }
 					long hFT = (((long) ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
 					return DateTime.FromFileTime(hFT);
 				}
-
+				
 				public static WINSTATIONINFORMATIONW GetWinStationInformation(IntPtr server, int sessionId)
 				{
 					int retLen = 0;
@@ -8846,7 +8846,7 @@ Function Get-LoggedOnUser {
 					bool _IsUserSession = false;
 					int currentSessionID = 0;
 					string _NTAccount = String.Empty;
-
+					
 					if (ServerName != "localhost" && ServerName != String.Empty) { server = OpenServer(ServerName); }
 					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
 					try
@@ -8854,38 +8854,38 @@ Function Get-LoggedOnUser {
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientBuildNumber, out buffer, out bytesReturned) == false) { return data; }
 						int lData = Marshal.ReadInt32(buffer);
 						data.ClientBuildNumber = lData;
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientDirectory, out buffer, out bytesReturned) == false) { return data; }
 						string strData = Marshal.PtrToStringAnsi(buffer);
 						data.ClientDirectory = strData;
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
 						data.ClientName = strData;
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientProtocolType, out buffer, out bytesReturned) == false) { return data; }
 						Int16 intData = Marshal.ReadInt16(buffer);
 						if (intData == 2) {strData = "RDP";} else {strData = "";}
 						data.ClientProtocolType = strData;
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned) == false) { return data; }
 						lData = Marshal.ReadInt32(buffer);
 						data.ConnectState = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), lData);
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionId, out buffer, out bytesReturned) == false) { return data; }
 						lData = Marshal.ReadInt32(buffer);
 						data.SessionId = lData;
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.DomainName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
 						data.DomainName = strData;
 						if (strData != String.Empty) {_NTAccount = strData;}
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.UserName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
 						data.UserName = strData;
 						if (strData != String.Empty) {data.NTAccount = _NTAccount + "\\" + strData;}
-
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
 						data.SessionName = strData;
@@ -8893,7 +8893,7 @@ Function Get-LoggedOnUser {
 						data.IsUserSession = _IsUserSession;
 						if (strData == "Console") { _IsConsoleSession = true; }
 						data.IsConsoleSession = _IsConsoleSession;
-
+						
 						WINSTATIONINFORMATIONW wsInfo = GetWinStationInformation(server, SessionId);
 						DateTime? _loginTime = FileTimeToDateTime(wsInfo.LoginTime);
 						DateTime? _lastInputTime = FileTimeToDateTime(wsInfo.LastInputTime);
@@ -8903,7 +8903,7 @@ Function Get-LoggedOnUser {
 						data.LogonTime = _loginTime;
 						data.IdleTime = _idleTime;
 						data.DisconnectTime = _disconnectTime;
-
+						
 						if (currentSessionID == SessionId) { _IsCurrentSessionId = true; }
 						data.IsCurrentSession = _IsCurrentSessionId;
 					}
@@ -8914,7 +8914,7 @@ Function Get-LoggedOnUser {
 					return data;
 				}
 			}
-
+			
 			public class TerminalSessionData
 			{
 				public int SessionId; public Session.WTS_CONNECTSTATE_CLASS ConnectionState; public string SessionName; public bool IsUserSession;
@@ -8923,7 +8923,7 @@ Function Get-LoggedOnUser {
 					SessionId = sessionId; ConnectionState = connState; SessionName = sessionName; IsUserSession = isUserSession;
 				}
 			}
-
+			
 			public class TerminalSessionInfo
 			{
 				public string NTAccount; public string SID; public string UserName; public string DomainName; public int SessionId; public string SessionName;
@@ -9250,13 +9250,13 @@ If ($usersLoggedOn) {
 	}
 	
 	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-	#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { $_.ConnectState -eq 'Active' } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
+	#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { 'Active','Connected' -contains $_.ConnectState } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
 	If ($CurrentConsoleUserSession) {
 		[psobject]$RunAsActiveUser = $CurrentConsoleUserSession
 	}
 	Else {
 		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.ConnectState -eq 'Active' } | Select-Object -First 1
+		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { 'Active','Connected' -contains $_.ConnectState } | Select-Object -First 1
 	}
 }
 Else {
