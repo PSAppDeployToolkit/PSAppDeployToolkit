@@ -9006,8 +9006,8 @@ If ($invokingScript) {
 }
 
 ## Define ScriptBlocks to disable/revert script logging
-[scriptblock]$DisableScriptLogging { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
-[scriptblock]$RevertScriptLogging { $DisableLogging = $OldDisableLoggingValue }
+[scriptblock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
+[scriptblock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
 
 ## Disable logging until log file details are available
 . $DisableScriptLogging
