@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/28/2015'
+[string]$appDeployMainScriptDate = '03/29/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -240,40 +240,53 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [int32]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 [int32]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
 [int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
-#  Get Message UI Language Options (default for English if no localization found)
-[string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
-If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
-#  Override the detected language if the override option was specified in the XML config file
-If ($configInstallationUILanguageOverride) { [string]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride" }
-$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
-[string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
-[string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
-[string]$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
-[string]$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
-[string]$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
-[string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
-[string]$configProgressMessageInstall = $xmlUIMessages.Progress_MessageInstall
-[string]$configProgressMessageUninstall = $xmlUIMessages.Progress_MessageUninstall
-[string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
-[string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
-[string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
-[string]$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
-[string]$configClosePromptCountdownMessage = $xmlUIMessages.ClosePrompt_CountdownMessage
-[string]$configDeferPromptWelcomeMessage = $xmlUIMessages.DeferPrompt_WelcomeMessage
-[string]$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
-[string]$configDeferPromptWarningMessage = $xmlUIMessages.DeferPrompt_WarningMessage
-[string]$configDeferPromptRemainingDeferrals = $xmlUIMessages.DeferPrompt_RemainingDeferrals
-[string]$configDeferPromptDeadline = $xmlUIMessages.DeferPrompt_Deadline
-[string]$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
-[string]$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
-[string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
-[string]$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
-[string]$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
-[string]$configRestartPromptMessageTime = $xmlUIMessages.RestartPrompt_MessageTime
-[string]$configRestartPromptMessageRestart = $xmlUIMessages.RestartPrompt_MessageRestart
-[string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
-[string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
-[string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
+#  Define ScriptBlock for Loading Message UI Language Options (default for English if no localization found)
+[scriptblock]$xmlLoadLocalizedUIMessages = {
+	#  If running in session zero and a user is logged on, then get primary UI language for logged on user
+	If ($SessionZero -and $RunAsActiveUser) {
+		[string[]]$HKULanguages = Get-RegistryKey -SID $RunAsActiveUser.SID 'HKCU\Control Panel\International\User Profile' -Value 'Languages'
+		[string]$HKUPrimaryLanguageShort = $HKULanguages[0].SubString(0,2).ToUpper()
+		[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
+	}
+	#  Default to UI language of the account executing current process (even if it is the SYSTEM account)
+	Else {
+		[string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
+	}
+	#  Default to English if the detected UI language is not available in the XMl config file
+	If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
+	#  Override the detected language if the override option was specified in the XML config file
+	If ($configInstallationUILanguageOverride) { [string]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride" }
+
+	$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
+	[string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
+	[string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
+	[string]$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
+	[string]$configBalloonTextRestartRequired = $xmlUIMessages.BalloonText_RestartRequired
+	[string]$configBalloonTextFastRetry = $xmlUIMessages.BalloonText_FastRetry
+	[string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
+	[string]$configProgressMessageInstall = $xmlUIMessages.Progress_MessageInstall
+	[string]$configProgressMessageUninstall = $xmlUIMessages.Progress_MessageUninstall
+	[string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
+	[string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
+	[string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
+	[string]$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
+	[string]$configClosePromptCountdownMessage = $xmlUIMessages.ClosePrompt_CountdownMessage
+	[string]$configDeferPromptWelcomeMessage = $xmlUIMessages.DeferPrompt_WelcomeMessage
+	[string]$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
+	[string]$configDeferPromptWarningMessage = $xmlUIMessages.DeferPrompt_WarningMessage
+	[string]$configDeferPromptRemainingDeferrals = $xmlUIMessages.DeferPrompt_RemainingDeferrals
+	[string]$configDeferPromptDeadline = $xmlUIMessages.DeferPrompt_Deadline
+	[string]$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
+	[string]$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
+	[string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
+	[string]$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
+	[string]$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
+	[string]$configRestartPromptMessageTime = $xmlUIMessages.RestartPrompt_MessageTime
+	[string]$configRestartPromptMessageRestart = $xmlUIMessages.RestartPrompt_MessageRestart
+	[string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
+	[string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
+	[string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
+}
 
 ## Variables: Script Directories
 [string]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
@@ -2457,12 +2470,12 @@ Function Get-MsiExitCodeMessage {
 		{
 			enum LoadLibraryFlags : int
 			{
-				DONT_RESOLVE_DLL_REFERENCES		 	= 0x00000001,
+				DONT_RESOLVE_DLL_REFERENCES 		= 0x00000001,
 				LOAD_IGNORE_CODE_AUTHZ_LEVEL		= 0x00000010,
 				LOAD_LIBRARY_AS_DATAFILE			= 0x00000002,
-				LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE  = 0x00000040,
-				LOAD_LIBRARY_AS_IMAGE_RESOURCE	  	= 0x00000020,
-				LOAD_WITH_ALTERED_SEARCH_PATH	   	= 0x00000008
+				LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE	= 0x00000040,
+				LOAD_LIBRARY_AS_IMAGE_RESOURCE  	= 0x00000020,
+				LOAD_WITH_ALTERED_SEARCH_PATH 		= 0x00000008
 			}
 			
 			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -3030,7 +3043,6 @@ Function Get-RegistryKey {
 					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
 				}
 			}
-			
 			If ($regKeyValue) { Write-Output $regKeyValue } Else { Write-Output $null }
 		}
 		Catch {
@@ -9245,6 +9257,10 @@ If ($usersLoggedOn) {
 Else {
 	Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
 }
+
+## Load XML UI messages by dot sourcing script block
+$OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true; . $xmlLoadLocalizedUIMessages; $DisableLogging = $OldDisableLoggingValue
+If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
 ## Check if script is running on a Terminal Services client session
 Try { [boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
