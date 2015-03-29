@@ -256,7 +256,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 	If (-not ($xmlConfig.$xmlUIMessageLanguage)) { [string]$xmlUIMessageLanguage = 'UI_Messages_EN' }
 	#  Override the detected language if the override option was specified in the XML config file
 	If ($configInstallationUILanguageOverride) { [string]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride" }
-
+	
 	$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 	[string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 	[string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
@@ -9258,7 +9258,7 @@ Else {
 	Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
 }
 
-## Load XML UI messages by dot sourcing script block
+## Load XML UI messages by dot sourcing ScriptBlock
 $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true; . $xmlLoadLocalizedUIMessages; $DisableLogging = $OldDisableLoggingValue
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
