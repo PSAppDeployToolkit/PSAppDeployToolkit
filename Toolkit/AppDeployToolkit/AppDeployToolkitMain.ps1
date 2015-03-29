@@ -9000,14 +9000,17 @@ Function Get-LoggedOnUser {
 ##*=============================================
 #region ScriptBody
 
-## Disable logging until log file details are available
-[scriptblock]$DisableScriptLogging { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
-. $DisableScriptLogging
-
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
 	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
 }
+
+## Define ScriptBlocks to disable/revert script logging
+[scriptblock]$DisableScriptLogging { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
+[scriptblock]$RevertScriptLogging { $DisableLogging = $OldDisableLoggingValue }
+
+## Disable logging until log file details are available
+. $DisableScriptLogging
 
 ## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
 If (-not $appName) {
@@ -9085,8 +9088,7 @@ Else {
 	[string]$logDirectory = $configToolkitLogDir
 }
 
-## Switch logging to previous value
-[scriptblock]$RevertScriptLogging { $DisableLogging = $OldDisableLoggingValue }
+## Revert script logging to original setting
 . $RevertScriptLogging
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
