@@ -503,8 +503,6 @@ Function Write-Log {
 		#  Initialize variables
 		[boolean]$ExitLoggingFunction = $false
 		If (-not (Test-Path -Path 'variable:DisableLogging')) { $DisableLogging = $false }
-		#  Assemble the fully qualified path to the log file
-		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 		#  Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
@@ -563,6 +561,9 @@ Function Write-Log {
 				Return
 			}
 		}
+
+		## Assemble the fully qualified path to the log file
+		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 	}
 	Process {
 		## Exit function if logging is disabled
