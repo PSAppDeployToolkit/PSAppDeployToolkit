@@ -7425,7 +7425,10 @@ Function Send-Keys {
 				If ($GetAllWindowTitles) { $GetWindowTitleSplat.Add( 'GetAllWindowTitles', $GetAllWindowTitles) }
 				Else { $GetWindowTitleSplat.Add( 'WindowTitle', $WindowTitle) }
 				[psobject[]]$AllWindows = Get-WindowTitle @GetWindowTitleSplat
-				If (-not $AllWindows) { Return }
+				If (-not $AllWindows) {
+					Write-Log -Message 'No windows with the specified details were discovered.' -Source ${CmdletName}
+					Return
+				}
 				
 				ForEach ($Window in $AllWindows) {
 					& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
