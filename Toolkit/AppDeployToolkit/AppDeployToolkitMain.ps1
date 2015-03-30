@@ -1968,7 +1968,7 @@ Function Execute-MSI {
 		}
 		
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
-		If ($patch) { 
+		If ($patch) {
 			[string[]]$patches = $patch -split ','
 			0..($patches.Length - 1) | % {
 				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
@@ -5027,8 +5027,8 @@ Function Show-InstallationWelcome {
 							}
 							Catch {
 							}
-						} 
-						Else {	
+						}
+						Else {
 							Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
 							Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
 						}
@@ -5918,21 +5918,20 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { 
-				If ($_.Value.GetType().Name -eq 'SwitchParameter') { 
-					"-$($_.Key)" 
-				} 
-				ElseIf ($_.Value.GetType().Name -eq 'Boolean') { 
-					"-$($_.Key) `$" + "$($_.Value)".ToLower() 
-				} 
-				ElseIf ($_.Value.GetType().Name -eq 'Int32') { 
-					"-$($_.Key) $($_.Value)" 
-				} 
-				Else 
-				{ 
-					"-$($_.Key) `"$($_.Value)`"" 
-				} 
-				}) -join ' '
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
+				If ($_.Value.GetType().Name -eq 'SwitchParameter') {
+					"-$($_.Key)"
+				}
+				ElseIf ($_.Value.GetType().Name -eq 'Boolean') {
+					"-$($_.Key) `$" + "$($_.Value)".ToLower()
+				}
+				ElseIf ($_.Value.GetType().Name -eq 'Int32') {
+					"-$($_.Key) $($_.Value)"
+				}
+				Else {
+					"-$($_.Key) `"$($_.Value)`""
+				}
+			}) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
 		}
 		Else {
@@ -8310,7 +8309,7 @@ Function Set-ActiveSetup {
 			## Execute the StubPath file for the current user as long as not in Session 0
 			If ($SessionZero) {
 				If ($RunAsActiveUser) {
-					Write-Log -Message "Session 0 detected: Execute Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source 
+					Write-Log -Message "Session 0 detected: Execute Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 					If ($CUArguments) {
 						Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
 					}
@@ -9055,7 +9054,7 @@ Function Get-LoggedOnUser {
 				$LocalAdminGroupSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList 'S-1-5-32-544'
 				$LocalAdminGroupNTAccount = $LocalAdminGroupSID.Translate([System.Security.Principal.NTAccount])
 				$LocalAdminGroupName = ($LocalAdminGroupNTAccount.Value).Split('\')[1]
-				$LocalAdminGroup =[ADSI]"WinNT://$($env:COMPUTERNAME)/$LocalAdminGroupName" 
+				$LocalAdminGroup =[ADSI]"WinNT://$($env:COMPUTERNAME)/$LocalAdminGroupName"
 				$LocalAdminGroupMembers = @($LocalAdminGroup.PSBase.Invoke('Members'))
 				[string[]]$LocalAdminGroupUserName = ''
 				$LocalAdminGroupMembers | ForEach { [string[]]$LocalAdminGroupUserName += $_.GetType().InvokeMember('Name', 'GetProperty', $null, $_, $null) }
@@ -9449,7 +9448,7 @@ If ($SessionZero) {
 			Else {
 				Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
 			}
-		}	
+		}
 	}
 }
 Else {
