@@ -7398,12 +7398,8 @@ Function Send-Keys {
 				## Send the Key sequence
 				If ($Keys) {
 					[System.Windows.Forms.SendKeys]::SendWait($Keys)
-					If ($Window.WindowTitle) {
-						Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
-					}
-					Else {
-						Write-Log -Message "Sent key(s) [$Keys] to window with handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
-					}
+					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
+
 					If ($WaitSeconds) {
 						Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
 						Start-Sleep -Seconds $WaitSeconds
@@ -7411,18 +7407,19 @@ Function Send-Keys {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to send keys to window with handle [$SendKeysToMainWindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 	}
 	Process {
 		Try {
 			If ($MainWindowHandle) {
-				## First make call to Get-WindowTitle to make sure [PSADTUiAutomation.Windows] assembly is compiled and available
-				If (-not ([System.Management.Automation.PSTypeName]'PSADTUiAutomation.Windows').Type) {
-					[psobject[]]$AllWindows = Get-WindowTitle -GetAllWindowTitles
+				[psobject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcessMainWindowHandle -eq $MainWindowHandle }
+				If (-not $Window) {
+					Write-Log -Message "No windows with with MainWindowHandle [$MainWindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
+					Return
 				}
-				& $SendKeys -SendKeysToMainWindowHandle $MainWindowHandle
+				& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
 			}
 			Else {
 				[hashtable]$GetWindowTitleSplat = @{}
@@ -7430,7 +7427,7 @@ Function Send-Keys {
 				Else { $GetWindowTitleSplat.Add( 'WindowTitle', $WindowTitle) }
 				[psobject[]]$AllWindows = Get-WindowTitle @GetWindowTitleSplat
 				If (-not $AllWindows) {
-					Write-Log -Message 'No windows with the specified details were discovered.' -Source ${CmdletName}
+					Write-Log -Message 'No windows with the specified details were discovered.' -Severity 2 -Source ${CmdletName}
 					Return
 				}
 				
