@@ -7416,7 +7416,7 @@ Function Send-Keys {
 			If ($MainWindowHandle) {
 				[psobject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcessMainWindowHandle -eq $MainWindowHandle }
 				If (-not $Window) {
-					Write-Log -Message "No windows with with MainWindowHandle [$MainWindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "No windows with MainWindowHandle [$MainWindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
 					Return
 				}
 				& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
