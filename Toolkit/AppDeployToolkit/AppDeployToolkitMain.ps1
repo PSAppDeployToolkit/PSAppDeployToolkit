@@ -7398,7 +7398,12 @@ Function Send-Keys {
 				## Send the Key sequence
 				If ($Keys) {
 					[System.Windows.Forms.SendKeys]::SendWait($Keys)
-					Write-Log -Message "Sent key(s) [$Keys] to window [$Window.WindowTitle]." -Source ${CmdletName}
+					If ($Window.WindowTitle) {
+						Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
+					}
+					Else {
+						Write-Log -Message "Sent key(s) [$Keys] to window with handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
+					}
 					If ($WaitSeconds) {
 						Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
 						Start-Sleep -Seconds $WaitSeconds
@@ -7406,7 +7411,7 @@ Function Send-Keys {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to send keys to window with window title [$Window.WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to send keys to window with handle [$SendKeysToMainWindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 	}
@@ -7428,7 +7433,7 @@ Function Send-Keys {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to send keys to window with window title [$Window.WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to send keys to specified window. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
