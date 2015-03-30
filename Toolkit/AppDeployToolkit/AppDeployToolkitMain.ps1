@@ -7419,7 +7419,9 @@ Function Send-Keys {
 		Try {
 			If ($MainWindowHandle) {
 				## First make call to Get-WindowTitle to make sure [PSADTUiAutomation.Windows] assembly is compiled and available
-				[psobject[]]$AllWindows = Get-WindowTitle -GetAllWindowTitles
+				If (-not ([System.Management.Automation.PSTypeName]'PSADTUiAutomation.Windows').Type) {
+					[psobject[]]$AllWindows = Get-WindowTitle -GetAllWindowTitles
+				}
 				& $SendKeys -SendKeysToMainWindowHandle $MainWindowHandle
 			}
 			Else {
