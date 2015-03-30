@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/29/2015'
+[string]$appDeployMainScriptDate = '03/30/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7138,58 +7138,45 @@ Function Install-MSUpdates {
 #endregion
 
 
-#region Function Send-Keys
-Function Send-Keys {
+#region Function Get-WindowTitle
+Function Get-WindowTitle {
 <#
 .SYNOPSIS
-	Send a sequence of keys to one or more application windows.
+	Search for an open window title and return details about the window.
 .DESCRIPTION
-	Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the keys sent.
+	Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
+	Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle.
 .PARAMETER WindowTitle
 	The title of the application window to search for using regex matching.
-.PARAMETER Keys
-	The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
-.PARAMETER WaitSeconds
-	An optional number of seconds to wait after the sending of the keys.
-.PARAMETER WaitSeconds
-	Returns the following properties for each window that matched the search terms in -WindowTitle parameter: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle.
+.PARAMETER GetAllWindowTitles
+	Get titles for all open windows on the system.
 .EXAMPLE
-	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world'
-	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
+	Get-WindowTitle -WindowTitle 'Microsoft Word'
+	Gets details for each window that has the words "Microsoft Word" in the title.
 .EXAMPLE
-	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world' -WaitSeconds 5
-	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
+	Get-WindowTitle -GetAllWindowTitles
+	Gets details for all windows with a title.
 .EXAMPLE
-	Send-Keys -WindowTitle 'Microsoft Word' -PassThru
-	Function returns details about all Microsoft Word windows that are open and does not send any keys to those windows.
+	Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
+	Get details for all windows belonging to Microsoft Word process with name "WINWORD".
 .NOTES
 .LINK
-	http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 	http://psappdeploytoolkit.codeplex.com
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true,Position=0)]
-		[ValidateNotNullorEmpty()]
+		[Parameter(Mandatory=$true,ParameterSetName='SearchWinTitle')]
+		[AllowEmptyString()]
 		[string]$WindowTitle,
-		[Parameter(Mandatory=$false,Position=1)]
+		[Parameter(Mandatory=$true,ParameterSetName='GetAllWinTitles')]
 		[ValidateNotNullorEmpty()]
-		[string]$Keys,
-		[Parameter(Mandatory=$false,Position=2)]
-		[ValidateNotNullorEmpty()]
-		[int32]$WaitSeconds,
-		[Parameter(Mandatory=$false,Position=3)]
-		[ValidateNotNullorEmpty()]
-		[switch]$PassThru
+		[switch]$GetAllWindowTitles = $false
 	)
 	
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		## Load assembly containing class System.Windows.Forms.SendKeys
-		Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
 		
 		$PSADTUiAutomationSource = @'
 		using System;
@@ -7204,7 +7191,7 @@ Function Send-Keys {
 				public enum ShowWindowEnum {
 					Hide = 0, ShowNormal = 1, ShowMinimized = 2, ShowMaximized = 3, Maximize = 3, ShowNormalNoActivate = 4, Show = 5, Minimize = 6, ShowMinNoActivate = 7, ShowNoActivate = 8, Restore = 9, ShowDefault = 10, ForceMinimized = 11
 				}
-
+				
 				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
 				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool EnumWindows(EnumWindowsProcD lpEnumFunc, ref IntPtr lParam);
 				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
@@ -7286,39 +7273,41 @@ Function Send-Keys {
 	}
 	Process {
 		Try {
+			If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
+				Write-Log -Message "Find open window title(s) [$WindowTitle] using regex matching." -Source ${CmdletName}
+			}
+			ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
+				Write-Log -Message 'Find all open window title(s).' -Source ${CmdletName}
+			}
+			
+			## Get all window handles for visible windows
 			[IntPtr[]]$VisibleWindowHandles = [PSADTUiAutomation.Windows]::EnumWindows() | Where-Object { [PSADTUiAutomation.Windows]::IsWindowVisible($_) }
+			
+			## Discover details about each visible window that was discovered
 			ForEach ($VisibleWindowHandle in $VisibleWindowHandles) {
+				If (-not $VisibleWindowHandle) { Continue }
+				## Get the window title
 				[string]$VisibleWindowTitle = [PSADTUiAutomation.Windows]::GetWindowText($VisibleWindowHandle)
 				If ($VisibleWindowTitle) {
+					## Get the process that spawned the window
 					[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADTUiAutomation.Windows]::GetWindowThreadProcessId($VisibleWindowHandle) }
 					If ($Process) {
+						## Build custom object with details about the window and the process
 						[psobject]$VisibleWindow = New-Object -TypeName PSObject -Property @{
 							WindowTitle = $VisibleWindowTitle
 							WindowHandle = $VisibleWindowHandle
-							ParentProcess= $Process[0].Name
-							ParentProcessMainWindowHandle = $Process[0].MainWindowHandle
+							ParentProcess= $Process.Name
+							ParentProcessMainWindowHandle = $Process.MainWindowHandle
 						}
 						
-						If ($WindowTitle) {
-							If ($VisibleWindow.WindowTitle -match $WindowTitle) {
+						## Only save/return the window and process details which match the search criteria
+						If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
+							$MatchResult = $VisibleWindow.WindowTitle -match $WindowTitle
+							If ($MatchResult) {
 								[psobject[]]$VisibleWindows += $VisibleWindow
-								
-								## Bring the process to the foreground
-								[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($VisibleWindow.ParentProcessMainWindowHandle)
-								If (-not $IsBringWindowToFrontSuccess) { Throw 'Failed to bring window to foreground.'}
-								
-								## Send the Key sequence
-								If ($Keys) {
-									[System.Windows.Forms.SendKeys]::SendWait($Keys)
-									Write-Log -Message "Sent key(s) [$Keys] to window [$VisibleWindow.WindowTitle]." -Source ${CmdletName}
-									If ($WaitSeconds) {
-										Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
-										Start-Sleep -Seconds $WaitSeconds
-									}
-								}
 							}
 						}
-						Else {
+						ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
 							[psobject[]]$VisibleWindows += $VisibleWindow
 						}
 					}
@@ -7326,12 +7315,123 @@ Function Send-Keys {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to send keys to window with window title [$WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get requested window title(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
-		If ($PassThru) { Write-Output $VisibleWindows }
+		Write-Output $VisibleWindows
+		
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
 
+
+#region Function Send-Keys
+Function Send-Keys {
+<#
+.SYNOPSIS
+	Send a sequence of keys to one or more application windows.
+.DESCRIPTION
+	Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the sent keys.
+.PARAMETER WindowTitle
+	The title of the application window to search for using regex matching.
+.PARAMETER GetAllWindowTitles
+	Get titles for all open windows on the system.
+.PARAMETER MainWindowHandle
+	Send keys to a specific window where the MainWindowHandle is already known.
+.PARAMETER Keys
+	The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+.PARAMETER WaitSeconds
+	An optional number of seconds to wait after the sending of the keys.
+.EXAMPLE
+	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world'
+	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
+.EXAMPLE
+	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world' -WaitSeconds 5
+	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
+.EXAMPLE
+	Send-Keys -MainWindowHandle ([IntPtr]17368294) -Key 'Hello world'
+	Send the sequence of keys "Hello world" to the application with a MainWindowHandle of '17368294'.
+.NOTES
+.LINK
+	http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+	http://psappdeploytoolkit.codeplex.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$false,Position=0)]
+		[AllowEmptyString()]
+		[ValidateNotNull()]
+		[string]$WindowTitle,
+		[Parameter(Mandatory=$false,Position=1)]
+		[ValidateNotNullorEmpty()]
+		[switch]$GetAllWindowTitles = $false,
+		[Parameter(Mandatory=$false,Position=2)]
+		[ValidateNotNullorEmpty()]
+		[IntPtr]$MainWindowHandle,
+		[Parameter(Mandatory=$false,Position=3)]
+		[ValidateNotNullorEmpty()]
+		[string]$Keys,
+		[Parameter(Mandatory=$false,Position=4)]
+		[ValidateNotNullorEmpty()]
+		[int32]$WaitSeconds
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		
+		## Load assembly containing class System.Windows.Forms.SendKeys
+		Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+		
+		[scriptblock]$SendKeys = {
+			Param (
+				[IntPtr]$SendKeysMainToWindowHandle
+			)
+			Try {
+				## Bring the process to the foreground
+				[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($SendKeysToMainWindowHandle)
+				If (-not $IsBringWindowToFrontSuccess) { Throw 'Failed to bring window to foreground.'}
+				
+				## Send the Key sequence
+				If ($Keys) {
+					[System.Windows.Forms.SendKeys]::SendWait($Keys)
+					Write-Log -Message "Sent key(s) [$Keys] to window [$Window.WindowTitle]." -Source ${CmdletName}
+					If ($WaitSeconds) {
+						Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
+						Start-Sleep -Seconds $WaitSeconds
+					}
+				}
+			}
+			Catch {
+				Write-Log -Message "Failed to send keys to window with window title [$Window.WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
+		}
+	}
+	Process {
+		Try {
+			If ($MainWindowHandle) {
+				& $SendKeys -SendKeysToMainWindowHandle $MainWindowHandle
+			}
+			Else {
+				[hashtable]$GetWindowTitleSplat = @{}
+				If ($GetAllWindowTitles) { $GetWindowTitleSplat.Add( 'GetAllWindowTitles', $GetAllWindowTitles) }
+				Else { $GetWindowTitleSplat.Add( 'WindowTitle', $WindowTitle) }
+				[psobject[]]$AllWindows = Get-WindowTitle @GetWindowTitleSplat
+				If (-not $AllWindows) { Return }
+				
+				ForEach ($Window in $AllWindows) {
+					& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to send keys to window with window title [$Window.WindowTitle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+	}
+	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
