@@ -7146,6 +7146,7 @@ Function Get-WindowTitle {
 .DESCRIPTION
 	Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
 	Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle.
+	Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER WindowTitle
 	The title of the application window to search for using regex matching.
 .PARAMETER GetAllWindowTitles
@@ -7334,6 +7335,7 @@ Function Send-Keys {
 	Send a sequence of keys to one or more application windows.
 .DESCRIPTION
 	Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the sent keys.
+	Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER WindowTitle
 	The title of the application window to search for using regex matching.
 .PARAMETER GetAllWindowTitles
