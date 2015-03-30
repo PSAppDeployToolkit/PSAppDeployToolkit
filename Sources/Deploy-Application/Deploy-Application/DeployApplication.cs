@@ -15,6 +15,7 @@ namespace PSAppDeployToolkit
             try
             {
                 // Set up variables
+                int processExitCode = 60010;
                 string currentAppPath = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
                 string currentAppFolder = Path.GetDirectoryName(currentAppPath);
                 string appDeployScriptPath = Path.Combine(currentAppFolder, "Deploy-Application.ps1");
@@ -137,7 +138,7 @@ namespace PSAppDeployToolkit
                 }
 
                 // Start the PowerShell process and wait for completion
-                int processExitCode = -1;
+                processExitCode = 60011;
                 Process process = new Process();
                 try
                 {
@@ -165,7 +166,7 @@ namespace PSAppDeployToolkit
             catch (Exception ex)
             {
                 WriteDebugMessage(ex.Message, true, MessageBoxIcon.Error);
-                Environment.Exit(10);
+                Environment.Exit(processExitCode);
             }
         }
 
@@ -196,5 +197,7 @@ namespace PSAppDeployToolkit
 
             private IntPtr _hwnd;
         }
+
+        public static int processExitCode { get; set; }
     }
 }
