@@ -9437,13 +9437,13 @@ If ($IsLocalSystemAccount) {
 		}
 	}
 	#  Check the health of the 'COM+ Event System' service
-	& $TestServiceHealth -ServiceName 'EventSystem'
+	. $TestServiceHealth -ServiceName 'EventSystem'
 	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	& $TestServiceHealth -ServiceName 'RpcSs'
+	. $TestServiceHealth -ServiceName 'RpcSs'
 	#  Check the health of the 'Windows Event Log' service
-	& $TestServiceHealth -ServiceName 'EventLog'
+	. $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the Task Scheduler service
-	& $TestServiceHealth -ServiceName 'Schedule'
+	. $TestServiceHealth -ServiceName 'Schedule'
 	
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 }
