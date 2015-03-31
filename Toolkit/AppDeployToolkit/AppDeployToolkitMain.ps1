@@ -7367,7 +7367,7 @@ Function Send-Keys {
 .SYNOPSIS
 	Send a sequence of keys to one or more application windows.
 .DESCRIPTION
-	Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the sent keys.
+	Send a sequence of keys to one or more application windows. If window title searched for returns more than one window, then all of them will receive the sent keys.
 	Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER WindowTitle
 	The title of the application window to search for using regex matching.
