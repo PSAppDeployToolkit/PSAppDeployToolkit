@@ -13,6 +13,7 @@ Version 3.6.1 [03/xx/2015]
 	Added ability to detect Primary UI language of active logged in user when running under the SYSTEM account
 	Added function Get-WindowTitle to add abiility to search for an open window title and return details about the window
 	Added -MainWindowHandle and -GetAllWindowTitles parameters to Send-Keys function
+	Added ability to detect display scale factor for currently logged on user when running under the SYSTEM account
 	Fixed issue introduced in 3.6 whereby the toolkit timeout would not be triggered resulting in the wrong exit code being passed
 	Fixed issue in Install-MSUpdates where a folder path with a KB number in the folder name would force the regex to only detect that one KB in the folder
 	Fixed issue in Get-ServiceStartMode to avoid error when DelayedAutoStart property does not exist

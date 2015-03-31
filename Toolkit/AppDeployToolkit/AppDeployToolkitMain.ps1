@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/30/2015'
+[string]$appDeployMainScriptDate = '03/31/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -242,9 +242,9 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
 #  Define ScriptBlock for Loading Message UI Language Options (default for English if no localization found)
 [scriptblock]$xmlLoadLocalizedUIMessages = {
-	#  If running in session zero and a user is logged on, then get primary UI language for logged on user
-	If ($SessionZero -and $RunAsActiveUser) {
-		[string[]]$HKULanguages = Get-RegistryKey -SID $RunAsActiveUser.SID 'HKCU\Control Panel\International\User Profile' -Value 'Languages'
+	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
+	If ($RunAsActiveUser) {
+		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
 		[string]$HKUPrimaryLanguageShort = $HKULanguages[0].SubString(0,2).ToUpper()
 		[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
 	}
@@ -331,14 +331,26 @@ If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name deferHistor
 If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 
-## Variables: DPI Scale (property only exists if DPI scaling has been changed on the system at least once)
-Try { [int32]$dpiPixels = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction 'Stop' | Select-Object -ExpandProperty LogPixels -ErrorAction 'Stop' } Catch { }
-Switch ($dpiPixels) {
-	96 { [int32]$dpiScale = 100 }
-	120 { [int32]$dpiScale = 125 }
-	144 { [int32]$dpiScale = 150 }
-	192 { [int32]$dpiScale = 200 }
-	Default { [int32]$dpiScale = 100 }
+## Variables: Display Scale Factor
+[scriptblock]$GetDisplayScaleFactor = {
+	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
+	[boolean]$UserDisplayScaleFactor = $false
+	If ($RunAsActiveUser) {
+		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\ControlPanel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
+		[boolean]$UserDisplayScaleFactor = $true
+	}
+	If (-not [string]$dpiPixels) {
+		#  This registry setting only exists if system scale factor has been changed at least once
+		[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
+		[boolean]$UserDisplayScaleFactor = $false
+	}
+	Switch ($dpiPixels) {
+		96 { [int32]$dpiScale = 100 }
+		120 { [int32]$dpiScale = 125 }
+		144 { [int32]$dpiScale = 150 }
+		192 { [int32]$dpiScale = 200 }
+		Default { [int32]$dpiScale = 100 }
+	}
 }
 #endregion
 ##*=============================================
@@ -9324,7 +9336,6 @@ Else {
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
 Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
 Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
-Write-Log -Message "System has a DPI scale of [$dpiScale]." -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
@@ -9376,6 +9387,15 @@ Else {
 ## Load XML UI messages by dot sourcing ScriptBlock
 . $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
+
+## Get display scale factor by dot sourcing ScriptBlock
+. $DisableScriptLogging; . $GetDisplayScaleFactor; . $RevertScriptLogging
+If ($UserDisplayScaleFactor) {
+	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "The System has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
+}
 
 ## Check if script is running on a Terminal Services client session
 Try { [boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
