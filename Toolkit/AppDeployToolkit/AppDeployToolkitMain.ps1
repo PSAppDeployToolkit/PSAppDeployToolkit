@@ -9394,7 +9394,7 @@ If ($UserDisplayScaleFactor) {
 	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
 }
 Else {
-	Write-Log -Message "The System has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
+	Write-Log -Message "The system has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
 }
 
 ## Check if script is running on a Terminal Services client session
