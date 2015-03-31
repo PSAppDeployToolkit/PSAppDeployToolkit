@@ -7755,7 +7755,7 @@ Function Test-PowerPoint {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'ScreenDetection.FullScreen').Type) {
-			[string]$ReferencedAssemblies = 'System.Drawing'
+			[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms'
 			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
