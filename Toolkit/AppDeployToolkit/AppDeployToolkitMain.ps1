@@ -7223,7 +7223,17 @@ Function Get-WindowTitle {
 				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
 				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool SetForegroundWindow(IntPtr hWnd);
 				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern Int32 GetWindowThreadProcessId(IntPtr hWnd, out Int32 lpdwProcessId);
+				public static extern IntPtr GetForegroundWindow();
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern IntPtr SetFocus(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern bool BringWindowToTop(IntPtr hWnd);
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+				[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern int GetCurrentThreadId();
+				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern bool AttachThreadInput(int idAttach, int idAttachTo, bool fAttach);
 				public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 				
 				public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems) {
@@ -7252,7 +7262,7 @@ Function Get-WindowTitle {
 				
 				public static string GetWindowText(IntPtr hWnd) {
 					int iTextLength = GetWindowTextLength(hWnd);
-					if(iTextLength > 0) {
+					if (iTextLength > 0) {
 						StringBuilder sb = new StringBuilder(iTextLength);
 						GetWindowText(hWnd, sb, iTextLength + 1);
 						return sb.ToString();
@@ -7261,18 +7271,30 @@ Function Get-WindowTitle {
 					}
 				}
 				
-				public static bool BringWindowToFront(IntPtr mainWindowHandle) {
+				public static bool BringWindowToFront(IntPtr windowHandle) {
 					bool breturn = false;
-					if (IsIconic(mainWindowHandle)) {
+					if (IsIconic(windowHandle)) {
 						// Show minimized window because SetForegroundWindow does not work for minimized windows
-						ShowWindow(mainWindowHandle, ShowWindowEnum.ShowMaximized);
+						ShowWindow(windowHandle, ShowWindowEnum.ShowMaximized);
 					}
-					breturn = SetForegroundWindow(mainWindowHandle);
+					
+					int lpdwProcessId;
+					int windowThreadProcessId = GetWindowThreadProcessId(GetForegroundWindow(), out lpdwProcessId);
+					int currentThreadId = GetCurrentThreadId();
+					AttachThreadInput(windowThreadProcessId, currentThreadId, true);
+					BringWindowToTop(windowHandle);
+					
+					breturn = SetForegroundWindow(windowHandle);
+					
+					SetActiveWindow(windowHandle);
+					SetFocus(windowHandle);
+					
+					AttachThreadInput(windowThreadProcessId, currentThreadId, false);
 					return breturn;
 				}
 				
-				public static Int32 GetWindowThreadProcessId(IntPtr windowHandle) {
-					Int32 processID = 0;
+				public static int GetWindowThreadProcessId(IntPtr windowHandle) {
+					int processID = 0;
 					GetWindowThreadProcessId(windowHandle, out processID);
 					return processID;
 				}
@@ -7351,8 +7373,8 @@ Function Send-Keys {
 	The title of the application window to search for using regex matching.
 .PARAMETER GetAllWindowTitles
 	Get titles for all open windows on the system.
-.PARAMETER MainWindowHandle
-	Send keys to a specific window where the MainWindowHandle is already known.
+.PARAMETER WindowHandle
+	Send keys to a specific window where the Window Handle is already known.
 .PARAMETER Keys
 	The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 .PARAMETER WaitSeconds
@@ -7364,8 +7386,8 @@ Function Send-Keys {
 	Send-Keys -WindowTitle 'foobar - Notepad' -Key 'Hello world' -WaitSeconds 5
 	Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
 .EXAMPLE
-	Send-Keys -MainWindowHandle ([IntPtr]17368294) -Key 'Hello world'
-	Send the sequence of keys "Hello world" to the application with a MainWindowHandle of '17368294'.
+	Send-Keys -WindowHandle ([IntPtr]17368294) -Key 'Hello world'
+	Send the sequence of keys "Hello world" to the application with a Window Handle of '17368294'.
 .NOTES
 .LINK
 	http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
@@ -7382,7 +7404,7 @@ Function Send-Keys {
 		[switch]$GetAllWindowTitles = $false,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNullorEmpty()]
-		[IntPtr]$MainWindowHandle,
+		[IntPtr]$WindowHandle,
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[string]$Keys,
@@ -7401,18 +7423,20 @@ Function Send-Keys {
 		
 		[scriptblock]$SendKeys = {
 			Param (
-				[IntPtr]$SendKeysMainToWindowHandle
+				[Parameter(Mandatory=$true)]
+				[ValidateNotNullorEmpty()]
+				[IntPtr]$WindowHandle
 			)
 			Try {
-				## Bring the process to the foreground
-				[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($SendKeysToMainWindowHandle)
+				## Bring the window to the foreground
+				[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($WindowHandle)
 				If (-not $IsBringWindowToFrontSuccess) { Throw 'Failed to bring window to foreground.'}
 				
 				## Send the Key sequence
 				If ($Keys) {
 					[System.Windows.Forms.SendKeys]::SendWait($Keys)
-					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]." -Source ${CmdletName}
-
+					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
+					
 					If ($WaitSeconds) {
 						Write-Log -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
 						Start-Sleep -Seconds $WaitSeconds
@@ -7420,19 +7444,19 @@ Function Send-Keys {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$SendKeysToMainWindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 	}
 	Process {
 		Try {
-			If ($MainWindowHandle) {
-				[psobject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcessMainWindowHandle -eq $MainWindowHandle }
+			If ($WindowHandle) {
+				[psobject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
 				If (-not $Window) {
-					Write-Log -Message "No windows with MainWindowHandle [$MainWindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
 					Return
 				}
-				& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
+				& $SendKeys -WindowHandle $Window.WindowHandle
 			}
 			Else {
 				[hashtable]$GetWindowTitleSplat = @{}
@@ -7445,7 +7469,7 @@ Function Send-Keys {
 				}
 				
 				ForEach ($Window in $AllWindows) {
-					& $SendKeys -SendKeysToMainWindowHandle $Window.ParentProcessMainWindowHandle
+					& $SendKeys -WindowHandle $Window.WindowHandle
 				}
 			}
 		}
@@ -7731,7 +7755,7 @@ Function Test-PowerPoint {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'ScreenDetection.FullScreen').Type) {
-			[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms'
+			[string]$ReferencedAssemblies = 'System.Drawing'
 			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
