@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '03/31/2015'
+[string]$appDeployMainScriptDate = '04/01/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -5029,20 +5029,53 @@ Function Show-InstallationWelcome {
 				#  Force the applications to close
 				ElseIf ($promptResult -eq 'Close') {
 					Write-Log -Message 'User selected to force the application(s) to close...' -Source ${CmdletName}
-						ForEach ($runningProcess in $runningProcesses) {
-						# If the PromptToSave parameter was specified and the window has a handle and work to be saved, prompt the user to save the work
-						If ($PromptToSave -and (($runningProcess | Select-Object MainWindowHandle -ExpandProperty MainWindowHandle) -ne 0)) {
-							Write-Log -Message "Stop process $($runningProcess.Name) and prompt to save..." -Source ${CmdletName}
-							Try {
-								$runningProcess.CloseMainWindow() | Out-Null
-								Wait-Process -Id $runningProcess.Id -Timeout $configInstallationPromptToSave -ErrorAction SilentlyContinue
-							}
-							Catch {
+					If (($PromptToSave) -and ($SessionZero -and (-not $IsProcessUserInteractive))) {
+						Write-Log -Message 'Specified [-PromptToSave] option will not be available because current process is running in session zero and is not interactive.' -Severity 2 -Source ${CmdletName}
+					}
+					
+					ForEach ($runningProcess in $runningProcesses) {
+						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.Name }
+						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
+						If (($PromptToSave) -and (-not ($SessionZero -and (-not $IsProcessUserInteractive))) -and ($AllOpenWindowsForRunningProcess) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
+							[timespan]$PromptToSaveTimeout = New-TimeSpan -Seconds $configInstallationPromptToSave
+							[System.Diagnostics.StopWatch]$PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::StartNew()
+							$PromptToSaveStopWatch.Reset()
+							ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
+								Try {
+									Write-Log -Message "Stop process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
+									[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($OpenWindow.WindowHandle)
+									[boolean]$IsCloseWindowCallSuccess = $runningProcess.CloseMainWindow()
+									If (-not $IsCloseWindowCallSuccess) {
+										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
+									}
+									Else {
+										$PromptToSaveStopWatch.Start()
+										Do {
+											[boolean]$IsWindowOpen = [boolean](Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.WindowHandle -eq $OpenWindow.WindowHandle })
+											If (-not $IsWindowOpen) { Break }
+											Start-Sleep -Seconds 3
+										} While (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
+										$PromptToSaveStopWatch.Reset()
+										If ($IsWindowOpen) {
+											Write-Log -Message "Exceeded the [$configInstallationPromptToSave] seconds timeout value for the user to save work associated with process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
+										}
+										Else {
+											Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)] was successfully closed." -Source ${CmdletName}
+										}
+									}
+								}
+								Catch {
+									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+									Continue
+								}
+								Finally {
+									$runningProcess.Refresh()
+								}
 							}
 						}
 						Else {
 							Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
-							Stop-Process -Id ($runningProcess | Select-Object -ExpandProperty Id) -Force -ErrorAction 'SilentlyContinue'
+							Stop-Process -Id $runningProcess.Id -Force -ErrorAction 'SilentlyContinue'
 						}
 					}
 					Start-Sleep -Seconds 2
@@ -7162,6 +7195,8 @@ Function Get-WindowTitle {
 	The title of the application window to search for using regex matching.
 .PARAMETER GetAllWindowTitles
 	Get titles for all open windows on the system.
+.PARAMETER DisableFunctionLogging
+	Disables logging messages to the script log file.
 .EXAMPLE
 	Get-WindowTitle -WindowTitle 'Microsoft Word'
 	Gets details for each window that has the words "Microsoft Word" in the title.
@@ -7182,7 +7217,10 @@ Function Get-WindowTitle {
 		[string]$WindowTitle,
 		[Parameter(Mandatory=$true,ParameterSetName='GetAllWinTitles')]
 		[ValidateNotNullorEmpty()]
-		[switch]$GetAllWindowTitles = $false
+		[switch]$GetAllWindowTitles = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$DisableFunctionLogging = $false
 	)
 	
 	Begin {
@@ -7234,6 +7272,10 @@ Function Get-WindowTitle {
 				public static extern int GetCurrentThreadId();
 				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
 				public static extern bool AttachThreadInput(int idAttach, int idAttachTo, bool fAttach);
+				[DllImport("user32.dll", EntryPoint="GetWindowLong", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern IntPtr GetWindowLong32(IntPtr hWnd, int nIndex);
+				[DllImport("user32.dll", EntryPoint="GetWindowLongPtr", CharSet=CharSet.Auto, SetLastError=false)]
+				public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
 				public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 				
 				public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems) {
@@ -7282,10 +7324,9 @@ Function Get-WindowTitle {
 					int windowThreadProcessId = GetWindowThreadProcessId(GetForegroundWindow(), out lpdwProcessId);
 					int currentThreadId = GetCurrentThreadId();
 					AttachThreadInput(windowThreadProcessId, currentThreadId, true);
+
 					BringWindowToTop(windowHandle);
-					
 					breturn = SetForegroundWindow(windowHandle);
-					
 					SetActiveWindow(windowHandle);
 					SetFocus(windowHandle);
 					
@@ -7298,6 +7339,13 @@ Function Get-WindowTitle {
 					GetWindowThreadProcessId(windowHandle, out processID);
 					return processID;
 				}
+				
+				public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex) {
+					if (IntPtr.Size == 4) {
+						return GetWindowLong32(hWnd, nIndex);
+					}
+					return GetWindowLongPtr64(hWnd, nIndex);
+				}
 			}
 		}
 '@
@@ -7308,10 +7356,10 @@ Function Get-WindowTitle {
 	Process {
 		Try {
 			If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
-				Write-Log -Message "Find open window title(s) [$WindowTitle] using regex matching." -Source ${CmdletName}
+				If (-not $DisableFunctionLogging) { Write-Log -Message "Find open window title(s) [$WindowTitle] using regex matching." -Source ${CmdletName} }
 			}
 			ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
-				Write-Log -Message 'Find all open window title(s).' -Source ${CmdletName}
+				If (-not $DisableFunctionLogging) { Write-Log -Message 'Find all open window title(s).' -Source ${CmdletName} }
 			}
 			
 			## Get all window handles for visible windows
@@ -7349,12 +7397,13 @@ Function Get-WindowTitle {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to get requested window title(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $DisableFunctionLogging) { Write-Log -Message "Failed to get requested window title(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName} }
 		}
 	}
 	End {
 		Write-Output $VisibleWindows
 		
+		If ($DisableFunctionLogging) { . $RevertScriptLogging }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -7434,6 +7483,8 @@ Function Send-Keys {
 				
 				## Send the Key sequence
 				If ($Keys) {
+					[boolean]$IsWindowModal = If ([PSADTUiAutomation.Windows]::IsWindowEnabled($WindowHandle)) { $false } Else { $true }
+					If ( $IsWindowModal) { Throw 'Unable to send keys to window because it may be disabled due to a modal dialog being shown.' }
 					[System.Windows.Forms.SendKeys]::SendWait($Keys)
 					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
 					

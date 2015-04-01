@@ -1,4 +1,4 @@
-Version 3.6.1 [03/xx/2015]
+Version 3.6.1 [04/01/2015]
 	Added Zero-Config deployment for MSI files. No need to customise anything. Drop your MSI in the Files folder and run the toolkit. Information is pulled from the MSI to branding, logging, and closing in-use processes.
 	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script
 	Added -SoftwareUpdatesScanWaitInSeconds and -WaitForPendingUpdatesTimeout parameters to Install-SCCMSoftwareUpdates
@@ -33,6 +33,7 @@ Version 3.6.1 [03/xx/2015]
 	Improved Block-AppExecution by using the import XML method of creating a scheduled task so that we could configure the task that unblocks applications to execute even if running on batteries
 	Improved Deploy-Application.ps1 by setting exit code to 60008 if AppDeployToolkitMain.ps1 fails to dot source
 	Improved Send-Keys function to be able to detect all open windows (including Explorer windows and MDI child windows), and also to bring any child window into the foreground
+	Improved -PromptToSave function to allow prompting for all child windows of a single instance application (such as Microsoft Word)
 	Improved documentation
 	
 Version 3.6.0 [03/11/2015]
