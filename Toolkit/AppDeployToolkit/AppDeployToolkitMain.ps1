@@ -1797,6 +1797,8 @@ Function Execute-MSI {
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER SkipMSIAlreadyInstalledCheck
 	Skips the check to determine if the MSI is already installed on the system. Default is: $false.
+.PARAMETER PassThru
+	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
@@ -1849,6 +1851,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$SkipMSIAlreadyInstalledCheck = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$PassThru = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2034,14 +2039,22 @@ Function Execute-MSI {
 												  WindowStyle = 'Normal' }
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
+			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
 			#  Call the Execute-Process function
-			Execute-Process @ExecuteProcessSplat
+			If ($PassThru) {
+				[psobject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
+			}
+			Else {
+				Execute-Process @ExecuteProcessSplat
+			}
+			
 		}
 		Else {
 			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
 		}
 	}
 	End {
+		If ($PassThru) { Write-Output $ExecuteResults }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -2071,6 +2084,8 @@ Function Remove-MSIApplications {
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
 	For uninstallations, by default the product code is resolved to the displayname and version of the application.
+.PARAMETER PassThru
+	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
@@ -2107,6 +2122,9 @@ Function Remove-MSIApplications {
 		[string]$private:LogName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
+		[switch]$PassThru = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
 	
@@ -2129,13 +2147,19 @@ Function Remove-MSIApplications {
 		ElseIf ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
 		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
+		If ($PassThru) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
 		
 		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -match 'msiexec') {
 					Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
 					$ExecuteMSISplat.Add( 'Path', $installedApplication.ProductCode)
-					Execute-MSI @ExecuteMSISplat
+					If ($PassThru) {
+						[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
+					}
+					Else {
+						Execute-MSI @ExecuteMSISplat
+					}
 				}
 				Else {
 					Write-Log -Message "[$($installedApplication.DisplayName)] uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`", so removal will not proceed." -Severity 2 -Source ${CmdletName}
@@ -2147,6 +2171,7 @@ Function Remove-MSIApplications {
 		}
 	}
 	End {
+		If ($PassThru) { Write-Output $ExecuteResults }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
