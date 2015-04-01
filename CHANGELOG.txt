@@ -32,7 +32,7 @@ Version 3.6.1 [04/01/2015]
 	Improved Invoke-SCCMTask to add a few more SCCM 2012 client compatible schedule ids and to only allow execution of a schedule id compatible with the installed version of the client
 	Improved Block-AppExecution by using the import XML method of creating a scheduled task so that we could configure the task that unblocks applications to execute even if running on batteries
 	Improved Deploy-Application.ps1 by setting exit code to 60008 if AppDeployToolkitMain.ps1 fails to dot source
-	Improved Send-Keys function to be able to detect all open windows (including Explorer windows and MDI child windows), and also to bring any child window into the foreground
+	Improved Send-Keys function to be able to detect all open windows (including Explorer windows and all child windows), and also to bring any child window into the foreground
 	Improved -PromptToSave function to allow prompting for all child windows of a single instance application (such as Microsoft Word)
 	Improved documentation
 	
