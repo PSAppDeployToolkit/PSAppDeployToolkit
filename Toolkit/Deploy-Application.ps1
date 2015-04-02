@@ -63,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '03/26/2015'
+	[string]$appScriptDate = '04/02/2015'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
 	
