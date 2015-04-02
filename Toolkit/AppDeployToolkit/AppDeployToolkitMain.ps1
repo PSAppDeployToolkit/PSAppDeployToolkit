@@ -54,7 +54,7 @@ Param
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.1'
+[version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
 [string]$appDeployMainScriptDate = '04/02/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
@@ -3410,7 +3410,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 						Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]" -Source ${CmdletName}
 						[string]$HiveLoadResult = & reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
 						
-						If ($global:LastExitCode -ne 0) { Throw "$HiveLoadResult" }
+						If ($global:LastExitCode -ne 0) { Throw "Reg.exe failed with exit code [$($global:LastExitCode)] and result [$HiveLoadResult]." }
 					}
 					Catch {
 						Write-Log -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
