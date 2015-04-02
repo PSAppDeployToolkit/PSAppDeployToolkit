@@ -35,6 +35,7 @@ Version 3.6.1 [04/01/2015]
 	Improved Deploy-Application.ps1 by setting exit code to 60008 if AppDeployToolkitMain.ps1 fails to dot source
 	Improved Send-Keys function to be able to detect all open windows (including Explorer windows and all child windows), and also to bring any child window into the foreground
 	Improved -PromptToSave function to allow prompting for all child windows of a single instance application (such as Microsoft Word)
+	Improved the behavior for dialog shown when user tries to execute a blocked app so that no more than one dialog can be shown at a time
 	Improved documentation
 	
 Version 3.6.0 [03/11/2015]

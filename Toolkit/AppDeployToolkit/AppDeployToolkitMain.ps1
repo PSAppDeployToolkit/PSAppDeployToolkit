@@ -2562,7 +2562,7 @@ Function Test-MsiExecMutex {
 	Wait, up to a timeout, for the MSI installer service to become free.
 .DESCRIPTION
 	The _MSIExecute mutex is used by the MSI installer service to serialize installations and prevent multiple MSI based installations happening at the same time.
-	Wait, up to a timeout (default is 10 minutes), for the MSI installer service to become free by checking to see if the MSI mutex, "Global\\_MSIExecute", is available.
+	Wait, up to a timeout (default is 10 minutes), for the MSI installer service to become free by checking to see if the MSI mutex, "Global\_MSIExecute", is available.
 .PARAMETER MsiExecWaitTime
 	The length of time to wait for the MSI installer service to become available.
 .EXAMPLE
@@ -2642,21 +2642,21 @@ Function Test-MsiExecMutex {
 			Else {
 				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalSeconds) seconds"
 			}
-			Write-Log -Message "Check to see if mutex [Global\\_MSIExecute] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
+			Write-Log -Message "Check to see if mutex [Global\_MSIExecute] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
 			[boolean]$IsMsiExecInstallFree = [MsiExec]::IsMsiExecFree($MsiExecWaitTime)
 			
 			If ($IsMsiExecInstallFree) {
-				Write-Log -Message 'Mutex [Global\\_MSIExecute] is available.' -Source ${CmdletName}
+				Write-Log -Message 'Mutex [Global\_MSIExecute] is available.' -Source ${CmdletName}
 			}
 			Else {
 				## Get the command line for the MSI installation in progress
 				[string]$msiInProgressCmdLine = Get-WmiObject -Class Win32_Process -Filter "name = 'msiexec.exe'" | Select-Object -ExpandProperty CommandLine | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
-				Write-Log -Message "Mutex [Global\\_MSIExecute] is not available because the following MSI installation is in progress [$msiInProgressCmdLine]" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Mutex [Global\_MSIExecute] is not available because the following MSI installation is in progress [$msiInProgressCmdLine]" -Severity 2 -Source ${CmdletName}
 			}
 			Write-Output $IsMsiExecInstallFree
 		}
 		Catch {
-			Write-Log -Message "Failed check for availability of mutex [Global\\_MSIExecute]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed check for availability of mutex [Global\_MSIExecute]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			#  We return $true on an error so that an attempt is made to install MSI
 			Write-Output $true
 		}
@@ -9234,6 +9234,51 @@ If ($invokingScript) {
 [scriptblock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
 [scriptblock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
 
+## Define ScriptBlock for getting details for all logged on users
+[scriptblock]$GetLoggedOnUserDetails = {
+	[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
+	Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
+	[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
+	[psobject]$RunAsActiveUser = $null
+	
+	If ($usersLoggedOn) {
+		Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
+		
+		#  Get account and session details for the current process if it is running as a logged in user
+		[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
+		
+		#  Check if the current process is running in the context of one of the logged in users
+		If ($CurrentLoggedOnUserSession) {
+			Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
+		}
+		Else {
+			Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
+		}
+		
+		#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+		[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
+		If ($CurrentConsoleUserSession) {
+			Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
+		}
+		Else {
+			Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
+		}
+		
+		#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+		#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { 'Active','Connected' -contains $_.ConnectState } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
+		If ($CurrentConsoleUserSession) {
+			[psobject]$RunAsActiveUser = $CurrentConsoleUserSession
+		}
+		Else {
+			#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
+			[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { 'Active','Connected' -contains $_.ConnectState } | Select-Object -First 1
+		}
+	}
+	Else {
+		Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
+	}
+}
+
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
@@ -9345,6 +9390,11 @@ Catch {
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt) {
+	. $DisableScriptLogging
+	. $GetLoggedOnUserDetails
+	. $xmlLoadLocalizedUIMessages
+	. $RevertScriptLogging
+	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]" -Source $appDeployToolkitName
 	$appDeployMainScriptParameters.Remove('ShowInstallationPrompt')
@@ -9355,6 +9405,11 @@ If ($showInstallationPrompt) {
 
 ## If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt) {
+	. $DisableScriptLogging
+	. $GetLoggedOnUserDetails
+	. $xmlLoadLocalizedUIMessages
+	. $RevertScriptLogging
+	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]" -Source $appDeployToolkitName
 	$appDeployMainScriptParameters.Remove('ShowInstallationRestartPrompt')
@@ -9374,17 +9429,36 @@ If ($cleanupBlockedApps) {
 ## If the ShowBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog) {
 	. $DisableScriptLogging
+	. $GetLoggedOnUserDetails
+	. $xmlLoadLocalizedUIMessages
 	Try {
-		$deployModeSilent = $true
 		Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]" -Source $appDeployToolkitName
-		Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
-		Exit 0
+		#  Create a mutex and specify a name without acquiring a lock on the mutex
+		[boolean]$showBlockedAppDialogMutexLocked = $false
+		$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
+		$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
+		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 second if unable to acquire exclusive lock
+		If ($showBlockedAppDialogMutex.WaitOne(1000)) {
+			[boolean]$showBlockedAppDialogMutexLocked = $true
+			$deployModeSilent = $true
+			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
+			Exit 0
+		}
+		Else {
+			#  If attempt to acquire an exclusive lock on the mutex failed, then exit script as another blocked app dialog window is already open
+			Write-Log -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2 -Source $appDeployToolkitName
+			Exit 0
+		}
 	}
 	Catch {
 		$InstallPromptErrMsg = "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)"
 		Write-Log -Message $InstallPromptErrMsg -Severity 3 -Source $appDeployToolkitName
 		Show-DialogBox -Text $InstallPromptErrMsg -Icon 'Stop'
 		Exit 60005
+	}
+	Finally {
+		If ($showBlockedAppDialogMutexLocked) { $showBlockedAppDialogMutex.ReleaseMutex() | Out-Null }
+		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Dispose() }
 	}
 }
 
@@ -9443,48 +9517,8 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
-[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
-[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
-[psobject]$RunAsActiveUser = $null
-
-If ($usersLoggedOn) {
-	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
-	
-	#  Get account and session details for the current process if it is running as a logged in user
-	[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
-	
-	#  Check if the current process is running in the context of one of the logged in users
-	If ($CurrentLoggedOnUserSession) {
-		Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
-	}
-	Else {
-		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
-	}
-	
-	#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-	[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
-	If ($CurrentConsoleUserSession) {
-		Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
-	}
-	Else {
-		Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
-	}
-	
-	#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-	#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { 'Active','Connected' -contains $_.ConnectState } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
-	If ($CurrentConsoleUserSession) {
-		[psobject]$RunAsActiveUser = $CurrentConsoleUserSession
-	}
-	Else {
-		#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { 'Active','Connected' -contains $_.ConnectState } | Select-Object -First 1
-	}
-}
-Else {
-	Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
-}
+## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
+. $GetLoggedOnUserDetails
 
 ## Load XML UI messages by dot sourcing ScriptBlock
 . $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
