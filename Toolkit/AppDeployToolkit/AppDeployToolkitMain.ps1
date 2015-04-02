@@ -9413,10 +9413,7 @@ Catch {
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt) {
-	. $DisableScriptLogging
-	. $GetLoggedOnUserDetails
-	. $xmlLoadLocalizedUIMessages
-	. $RevertScriptLogging
+	. $DisableScriptLogging; . $GetLoggedOnUserDetails; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]" -Source $appDeployToolkitName
@@ -9428,10 +9425,7 @@ If ($showInstallationPrompt) {
 
 ## If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt) {
-	. $DisableScriptLogging
-	. $GetLoggedOnUserDetails
-	. $xmlLoadLocalizedUIMessages
-	. $RevertScriptLogging
+	. $DisableScriptLogging; . $GetLoggedOnUserDetails; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]" -Source $appDeployToolkitName
@@ -9542,11 +9536,11 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 ## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
 . $GetLoggedOnUserDetails
 
-## Load XML UI messages by dot sourcing ScriptBlock
+## Dot source ScriptBlock to load config XML UI messages
 . $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
-## Get display scale factor by dot sourcing ScriptBlock
+## Dot source ScriptBlock to get system DPI scale factor
 . $DisableScriptLogging; . $GetDisplayScaleFactor; . $RevertScriptLogging
 If ($UserDisplayScaleFactor) {
 	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
