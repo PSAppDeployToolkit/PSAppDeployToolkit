@@ -9428,10 +9428,8 @@ If ($cleanupBlockedApps) {
 
 ## If the ShowBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog) {
-	. $DisableScriptLogging
-	. $GetLoggedOnUserDetails
-	. $xmlLoadLocalizedUIMessages
 	Try {
+		. $DisableScriptLogging
 		Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]" -Source $appDeployToolkitName
 		#  Create a mutex and specify a name without acquiring a lock on the mutex
 		[boolean]$showBlockedAppDialogMutexLocked = $false
@@ -9441,6 +9439,9 @@ If ($showBlockedAppDialog) {
 		If ($showBlockedAppDialogMutex.WaitOne(1)) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
+			. $GetLoggedOnUserDetails
+			. $xmlLoadLocalizedUIMessages
+			
 			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
 			Exit 0
 		}
@@ -9453,7 +9454,7 @@ If ($showBlockedAppDialog) {
 	Catch {
 		$InstallPromptErrMsg = "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)"
 		Write-Log -Message $InstallPromptErrMsg -Severity 3 -Source $appDeployToolkitName
-		Show-DialogBox -Text $InstallPromptErrMsg -Icon 'Stop'
+		#Show-DialogBox -Text $InstallPromptErrMsg -Icon 'Stop'
 		Exit 60005
 	}
 	Finally {
