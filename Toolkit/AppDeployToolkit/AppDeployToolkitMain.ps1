@@ -9452,9 +9452,7 @@ If ($showBlockedAppDialog) {
 		}
 	}
 	Catch {
-		$InstallPromptErrMsg = "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)"
-		Write-Log -Message $InstallPromptErrMsg -Severity 3 -Source $appDeployToolkitName
-		#Show-DialogBox -Text $InstallPromptErrMsg -Icon 'Stop'
+		Write-Log -Message "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
 		Exit 60005
 	}
 	Finally {
