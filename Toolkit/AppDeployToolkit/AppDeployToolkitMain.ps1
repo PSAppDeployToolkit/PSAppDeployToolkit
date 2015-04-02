@@ -9437,8 +9437,8 @@ If ($showBlockedAppDialog) {
 		[boolean]$showBlockedAppDialogMutexLocked = $false
 		$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
 		$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
-		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 second if unable to acquire exclusive lock
-		If ($showBlockedAppDialogMutex.WaitOne(1000)) {
+		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
+		If ($showBlockedAppDialogMutex.WaitOne(1)) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
 			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
