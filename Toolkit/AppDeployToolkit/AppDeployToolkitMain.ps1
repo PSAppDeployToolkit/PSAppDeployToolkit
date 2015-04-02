@@ -331,7 +331,7 @@ If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name deferHistor
 If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
 If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 
-## Variables: Display Scale Factor
+## Variables: System DPI Scale Factor
 [scriptblock]$GetDisplayScaleFactor = {
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
