@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/01/2015'
+[string]$appDeployMainScriptDate = '04/02/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -9275,8 +9275,31 @@ If ($invokingScript) {
 		}
 	}
 	Else {
-		Write-Log -Message 'No users are logged on to the system' -Source $appDeployToolkitName
+		Write-Log -Message 'No users are logged on to the system.' -Source $appDeployToolkitName
 	}
+}
+
+## Define ScriptBlock to test for and attempt to make a service healthy by checking if it exists, is currently running, and has a start mode of 'Automatic'.
+[scriptblock]$TestServiceHealth = {
+	Param (
+		[string]$ServiceName
+	)
+	Try {
+		[boolean]$IsServiceHealthy = $true
+		If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
+			If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
+				Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
+			}
+			Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
+		}
+		Else {
+			[boolean]$IsServiceHealthy = $false
+		}
+	}
+	Catch {
+		[boolean]$IsServiceHealthy = $false
+	}
+	Write-Output $IsServiceHealthy
 }
 
 ## Disable logging until log file details are available
@@ -9433,8 +9456,8 @@ If ($showBlockedAppDialog) {
 		Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]" -Source $appDeployToolkitName
 		#  Create a mutex and specify a name without acquiring a lock on the mutex
 		[boolean]$showBlockedAppDialogMutexLocked = $false
-		$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
-		$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
+		[string]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
+		[System.Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
 		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
 		If ($showBlockedAppDialogMutex.WaitOne(1)) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
@@ -9461,7 +9484,7 @@ If ($showBlockedAppDialog) {
 	}
 }
 
-## Initialization Logging
+## Initialize Logging
 $installPhase = 'Initialization'
 $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator,$scriptSeparator) -Source $appDeployToolkitName
@@ -9548,39 +9571,23 @@ Catch {
 }
 
 
-## Check to see if the Task Scheduler service is in a healthy state
+## Check to see if the Task Scheduler service is in a healthy state by checking its services to see if they exist, are currently running, and have a start mode of 'Automatic'.
 ## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
 [boolean]$IsTaskSchedulerHealthy = $true
 If ($IsLocalSystemAccount) {
-	[scriptblock]$TestServiceHealth = {
-		Param (
-			[string]$ServiceName
-		)
-		Try {
-			If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-				If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
-					Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
-				}
-				Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
-			}
-			Else {
-				[boolean]$IsTaskSchedulerHealthy = $false
-			}
-		}
-		Catch {
-			[boolean]$IsTaskSchedulerHealthy = $false
-		}
-	}
 	#  Check the health of the 'COM+ Event System' service
-	. $TestServiceHealth -ServiceName 'EventSystem'
+	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'EventSystem'
 	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	. $TestServiceHealth -ServiceName 'RpcSs'
+	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'RpcSs'
 	#  Check the health of the 'Windows Event Log' service
-	. $TestServiceHealth -ServiceName 'EventLog'
+	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the Task Scheduler service
-	. $TestServiceHealth -ServiceName 'Schedule'
+	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'Schedule'
 	
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy because the App Deployment Toolkit is not running under the SYSTEM account." -Source $appDeployToolkitName
 }
 
 ## If script is running in session zero
