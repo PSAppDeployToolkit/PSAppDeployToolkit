@@ -9570,13 +9570,13 @@ Catch {
 [boolean]$IsTaskSchedulerHealthy = $true
 If ($IsLocalSystemAccount) {
 	#  Check the health of the 'COM+ Event System' service
-	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'EventSystem'
+	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventSystem'
 	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'RpcSs'
+	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'RpcSs'
 	#  Check the health of the 'Windows Event Log' service
-	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'EventLog'
-	#  Check the health of the Task Scheduler service
-	[boolean]$IsTaskSchedulerHealthy = . $TestServiceHealth -ServiceName 'Schedule'
+	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventLog'
+	#  Check the health of the 'Task Scheduler' service
+	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'Schedule'
 	
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 }
