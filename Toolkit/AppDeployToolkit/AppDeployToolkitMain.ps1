@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/02/2015'
+[string]$appDeployMainScriptDate = '04/03/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -245,8 +245,10 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
 	If ($RunAsActiveUser) {
 		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
-		[string]$HKUPrimaryLanguageShort = $HKULanguages[0].SubString(0,2).ToUpper()
-		[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
+		If ($HKULanguages) {
+			[string]$HKUPrimaryLanguageShort = $HKULanguages[0].SubString(0,2).ToUpper()
+			[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
+		}
 	}
 	#  Default to UI language of the account executing current process (even if it is the SYSTEM account)
 	Else {
