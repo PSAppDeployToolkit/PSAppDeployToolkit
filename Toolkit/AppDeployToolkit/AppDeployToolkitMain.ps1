@@ -4737,13 +4737,13 @@ Function Get-RunningProcesses {
 						$processNameRoot = [System.IO.Path]::GetFileNameWithoutExtension($processObject.ProcessName)
 						If ($runningProcess.ProcessName -eq $processNameRoot) {
 							If ($processObject.ProcessDescription) {
-								$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
+							}
+							Else {
+								#  Fall back on the process name if no description is provided by the process or as a parameter to the function
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 							}
 						}
-					}
-					#  Fall back on the process name if no description is provided by the process or as a parameter to the function
-					If (-not ($runningProcess.Description)) {
-						$runningProcess | Add-Member -MemberType NoteProperty -Name Description -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 					}
 				}
 			}
@@ -4943,7 +4943,7 @@ Function Show-InstallationWelcome {
 			## Create a Process object with custom descriptions where they are provided (split on an '=' sign)
 			[psobject[]]$processObjects = @()
 			#  Split multiple processes on a comma, then split on equal sign, then create custom object with process name and description
-			ForEach ($process in ($CloseApps -split ',' | Where-Object { -not ([string]::IsNullOrEmpty($_)) })) {
+			ForEach ($process in ($CloseApps -split ',' | Where-Object { $_ })) {
 				$process = $process -split '='
 				$processObjects += New-Object -TypeName PSObject -Property @{
 					ProcessName = $process[0]
@@ -4959,8 +4959,8 @@ Function Show-InstallationWelcome {
 			
 			#  Get the deferral history from the registry
 			$deferHistory = Get-DeferHistory
-			$deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction 'SilentlyContinue'
-			$deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction 'SilentlyContinue'
+			$deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty 'DeferTimesRemaining' -ErrorAction 'SilentlyContinue'
+			$deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty 'DeferDeadline' -ErrorAction 'SilentlyContinue'
 			
 			#  Reset Switches
 			$checkDeferDays = $false
@@ -5027,7 +5027,7 @@ Function Show-InstallationWelcome {
 			}
 			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -5054,7 +5054,7 @@ Function Show-InstallationWelcome {
 					Start-Sleep -Seconds 2
 					
 					#  Break the while loop if there are no processes to close and the user has clicked OK to continue
-					If (-not ($runningProcesses)) { Break }
+					If (-not $runningProcesses) { Break }
 				}
 				#  Force the applications to close
 				ElseIf ($promptResult -eq 'Close') {
