@@ -466,6 +466,7 @@ Function Write-Log {
 	Param (
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
 		[AllowEmptyCollection()]
+		[Alias('Text')]
 		[string[]]$Message,
 		[Parameter(Mandatory=$false,Position=1)]
 		[ValidateRange(1,3)]
