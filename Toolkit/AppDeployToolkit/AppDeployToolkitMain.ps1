@@ -4734,8 +4734,7 @@ Function Get-RunningProcesses {
 				#  3. Fall back on the process name.
 				ForEach ($runningProcess in $runningProcesses) {
 					ForEach ($processObject in $processObjects) {
-						$processNameRoot = [System.IO.Path]::GetFileNameWithoutExtension($processObject.ProcessName)
-						If ($runningProcess.ProcessName -eq $processNameRoot) {
+						If (($runningProcess.ProcessName) -eq ([System.IO.Path]::GetFileNameWithoutExtension($processObject.ProcessName))) {
 							If ($processObject.ProcessDescription) {
 								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
 							}
@@ -5027,7 +5026,7 @@ Function Show-InstallationWelcome {
 			}
 			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -5153,7 +5152,7 @@ Function Show-InstallationWelcome {
 			[array]$runningProcesses = $null
 			[array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $null -ne $_.Description } | Select-Object -ExpandProperty Description | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
 				Write-Log -Message "Force close application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
 				$runningProcesses | Stop-Process -Force -ErrorAction 'SilentlyContinue'
 				Start-Sleep -Seconds 2
@@ -5163,19 +5162,19 @@ Function Show-InstallationWelcome {
 		## Force nsd.exe to stop if Notes is one of the required applications to close
 		If (($processObjects | ForEach-Object { $_.ProcessName }) -match 'notes') {
 			#  Get a list of all the executables in the Notes folder
-			[string[]]$notesPathExes = Get-ChildItem -Path $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty BaseName | Sort-Object
+			[string[]]$notesPathExes = Get-ChildItem -Path $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 			
 			## Ensure we aren't running as a Local System Account
 			If (-not $IsLocalSystemAccount) {
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object { If ((Get-Process).Name -Contains $_) {
-					[string]$notesPath = Get-Item -Path $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty Path
+					[string]$notesPath = Get-Item -Path $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 					If ($notesPath) {
 						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.Exe'
 						Try {
 							If (Test-Path -Path $notesNSDExecutable -PathType Leaf -ErrorAction 'Stop') {
 								Write-Log -Message "Execute [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
-								[System.Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle Hidden -PassThru -ErrorAction 'SilentlyContinue'
+								[System.Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
 								
 								If (-not ($notesNSDProcess.WaitForExit(10000))) {
 									Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
@@ -5198,7 +5197,7 @@ Function Show-InstallationWelcome {
 			
 			#  Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
 			If ($notesPathExes) {
-				[array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select-Object -ExpandProperty ProcessName | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | Where-Object { ($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes') } | Select-Object -ExpandProperty InputObject
+				[array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select-Object -ExpandProperty 'ProcessName' | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | Where-Object { ($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes') } | Select-Object -ExpandProperty 'InputObject'
 				[array]$processObjects = $processObjects | Where-Object { $processesIgnoringNotesExceptions -contains $_.ProcessName }
 			}
 		}
