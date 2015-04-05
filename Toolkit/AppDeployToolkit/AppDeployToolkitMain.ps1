@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/03/2015'
+[string]$appDeployMainScriptDate = '04/05/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -338,7 +338,7 @@ If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
 	If ($RunAsActiveUser) {
-		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\ControlPanel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
+		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
 		[boolean]$UserDisplayScaleFactor = $true
 	}
 	If (-not [string]$dpiPixels) {
@@ -2307,7 +2307,7 @@ Function Execute-Process {
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
 			##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
 			If (($Path -match 'msiexec') -or ($WaitForMsiExec)) {
-				[boolean]$MsiExecAvailable = Test-MsiExecMutex -MsiExecWaitTime $MsiExecWaitTime
+				[boolean]$MsiExecAvailable = Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTime.TotalMilliseconds
 				Start-Sleep -Seconds 1
 				If (-not $MsiExecAvailable) {
 					#  Default MSI exit code for install already in progress
@@ -2558,22 +2558,25 @@ Function Get-MsiExitCodeMessage {
 #endregion
 
 
-#region Function Test-MsiExecMutex
-Function Test-MsiExecMutex {
+#region Function Test-IsMutexAvailable
+Function Test-IsMutexAvailable {
 <#
 .SYNOPSIS
-	Wait, up to a timeout, for the MSI installer service to become free.
+	Wait, up to a timeout value, to check if current thread is able to acquire an exclusive lock on a system mutex.
 .DESCRIPTION
-	The _MSIExecute mutex is used by the MSI installer service to serialize installations and prevent multiple MSI based installations happening at the same time.
-	Wait, up to a timeout (default is 10 minutes), for the MSI installer service to become free by checking to see if the MSI mutex, "Global\_MSIExecute", is available.
-.PARAMETER MsiExecWaitTime
-	The length of time to wait for the MSI installer service to become available.
+	A mutex can be used to serialize applications and prevent multiple instances from being opened at the same time.
+	Wait, up to a timeout (default is 1 millisecond), for the mutex to become available for an exclusive lock.
+.PARAMETER MutexName
+	The name of the system mutex.
+.PARAMETER MutexWaitTime
+	The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
+	A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 .EXAMPLE
-	Test-MsiExecMutex
+	Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds 500
 .EXAMPLE
-	Test-MsiExecMutex -MsiExecWaitTime $(New-TimeSpan -Minutes 5)
+	Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds (New-TimeSpan -Minutes 5).TotalMilliseconds
 .EXAMPLE
-	Test-MsiExecMutex -MsiExecWaitTime $(New-TimeSpan -Seconds 60)
+	Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds (New-TimeSpan -Seconds 60).TotalMilliseconds
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
@@ -2582,9 +2585,12 @@ Function Test-MsiExecMutex {
 #>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateLength(1,260)]
+		[string]$MutexName,
 		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[timespan]$MsiExecWaitTime = $(New-TimeSpan -Seconds $configMSIMutexWaitTime)
+		[ValidateRange(-1,[int32]::MaxValue)]
+		[int32]$MutexWaitTimeInMilliseconds = 1
 	)
 	
 	Begin {
@@ -2592,79 +2598,86 @@ Function Test-MsiExecMutex {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
-		$IsMsiExecFreeSource = @'
-		using System;
-		using System.Threading;
-		public class MsiExec
-		{
-			public static bool IsMsiExecFree(TimeSpan maxWaitTime)
-			{
-				// Wait (up to a timeout) for the MSI installer service to become free.
-				// Returns true for a successful wait, when the installer service has become free.
-				// Returns false when waiting for the installer service has exceeded the timeout.
-				const string installerServiceMutexName = "Global\\_MSIExecute";
-				Mutex MSIExecuteMutex = null;
-				bool isMsiExecFree = false;
-				
-				try
-				{
-					MSIExecuteMutex = Mutex.OpenExisting(installerServiceMutexName, System.Security.AccessControl.MutexRights.Synchronize);
-					isMsiExecFree   = MSIExecuteMutex.WaitOne(maxWaitTime, false);
-				}
-				catch (WaitHandleCannotBeOpenedException)
-				{
-					// Mutex doesn't exist, do nothing
-					isMsiExecFree = true;
-				}
-				catch (ObjectDisposedException)
-				{
-					// Mutex was disposed between opening it and attempting to wait on it, do nothing
-					isMsiExecFree = true;
-				}
-				finally
-				{
-					if (MSIExecuteMutex != null && isMsiExecFree)
-					MSIExecuteMutex.ReleaseMutex();
-				}
-				return isMsiExecFree;
-			}
+		## Initialize Variables
+		[timespan]$MutexWaitTime = [timespan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
+		If ($MutexWaitTime.TotalMinutes -ge 1) {
+			[string]$WaitLogMsg = "$($MutexWaitTime.TotalMinutes) minute(s)"
 		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'MsiExec').Type) {
-			Add-Type -TypeDefinition $IsMsiExecFreeSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
+		ElseIf ($MutexWaitTime.TotalSeconds -ge 1) {
+			[string]$WaitLogMsg = "$($MutexWaitTime.TotalSeconds) second(s)"
 		}
+		Else {
+			[string]$WaitLogMsg = "$($MutexWaitTime.Milliseconds) millisecond(s)"
+		}
+		[boolean]$IsUnhandledException = $false
+		[boolean]$IsMutexFree = $false
+		[System.Threading.Mutex]$OpenExistingMutex = $null
 	}
 	Process {
+		Write-Log -Message "Check to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
 		Try {
-			If ($MsiExecWaitTime.TotalMinutes -gt 1) {
-				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalMinutes) minutes"
-			}
-			ElseIf ($MsiExecWaitTime.TotalMinutes -eq 1) {
-				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalMinutes) minute"
-			}
-			Else {
-				[string]$WaitLogMsg = "$($MsiExecWaitTime.TotalSeconds) seconds"
-			}
-			Write-Log -Message "Check to see if mutex [Global\_MSIExecute] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
-			[boolean]$IsMsiExecInstallFree = [MsiExec]::IsMsiExecFree($MsiExecWaitTime)
+			## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
+			$private:previousErrorActionPreference = $ErrorActionPreference
+			$ErrorActionPreference = 'Stop'
 			
-			If ($IsMsiExecInstallFree) {
-				Write-Log -Message 'Mutex [Global\_MSIExecute] is available.' -Source ${CmdletName}
-			}
-			Else {
-				## Get the command line for the MSI installation in progress
-				[string]$msiInProgressCmdLine = Get-WmiObject -Class Win32_Process -Filter "name = 'msiexec.exe'" | Select-Object -ExpandProperty CommandLine | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
-				Write-Log -Message "Mutex [Global\_MSIExecute] is not available because the following MSI installation is in progress [$msiInProgressCmdLine]" -Severity 2 -Source ${CmdletName}
-			}
-			Write-Output $IsMsiExecInstallFree
+			## Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
+			[System.Threading.Mutex]$OpenExistingMutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+			## Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
+			$IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)
+		}
+		Catch [System.Threading.WaitHandleCannotBeOpenedException] {
+			## The named mutex does not exist
+			$IsMutexFree = $true
+		}
+		Catch [System.ObjectDisposedException] {
+			## Mutex was disposed between opening it and attempting to wait on it
+			$IsMutexFree = $true
+		}
+		Catch [System.UnauthorizedAccessException] {
+			## The named mutex exists, but the user does not have the security access required to use it
+			$IsMutexFree = $false
+		}
+		Catch [System.Threading.AbandonedMutexException] {
+			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a Mutex object that another thread has abandoned by exiting without releasing it.
+			$IsMutexFree = $true
 		}
 		Catch {
-			Write-Log -Message "Failed check for availability of mutex [Global\_MSIExecute]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			#  We return $true on an error so that an attempt is made to install MSI
-			Write-Output $true
+			$IsUnhandledException = $true
+			## Return $true, to signify that Mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
+			Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			$IsMutexFree = $true
+		}
+		Finally {
+			If ($IsMutexFree) {
+				If (-not $IsUnhandledException) {
+					Write-Log -Message "Mutex [$MutexName] is available for an exclusive lock." -Source ${CmdletName}
+				}
+			}
+			Else {
+				If ($MutexName -eq 'Global\_MSIExecute') {
+					## Get the command line for the MSI installation in progress
+					Try {
+						[string]$msiInProgressCmdLine = Get-WmiObject -Class Win32_Process -Filter "name = 'msiexec.exe'" -ErrorAction 'Stop' | Where-Object { $_.CommandLine } | Select-Object -ExpandProperty 'CommandLine' | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
+					}
+					Catch { }
+					Write-Log -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]" -Severity 2 -Source ${CmdletName}
+				}
+				Else {
+					Write-Log -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it." -Source ${CmdletName}
+				}
+			}
+			
+			If (($null -ne $OpenExistingMutex) -and ($IsMutexFree)) {
+				## Release exclusive lock on the mutex
+				$OpenExistingMutex.ReleaseMutex() | Out-Null
+				$OpenExistingMutex.Dispose()
+			}
+			If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 		}
 	}
 	End {
+		Write-Output $IsMutexFree
+		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -9238,33 +9251,18 @@ If ($invokingScript) {
 
 ## Define ScriptBlock for getting details for all logged on users
 [scriptblock]$GetLoggedOnUserDetails = {
+	. $DisableScriptLogging
 	[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-	Write-Log -Message "Logged on user session details: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
+	. $RevertScriptLogging
 	[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
 	[psobject]$RunAsActiveUser = $null
 	
 	If ($usersLoggedOn) {
-		Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
-		
 		#  Get account and session details for the current process if it is running as a logged in user
 		[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
 		
-		#  Check if the current process is running in the context of one of the logged in users
-		If ($CurrentLoggedOnUserSession) {
-			Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
-		}
-		Else {
-			Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
-		}
-		
 		#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
 		[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
-		If ($CurrentConsoleUserSession) {
-			Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
-		}
-		Else {
-			Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
-		}
 		
 		#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
 		#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { 'Active','Connected' -contains $_.ConnectState } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
@@ -9275,9 +9273,6 @@ If ($invokingScript) {
 			#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
 			[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { 'Active','Connected' -contains $_.ConnectState } | Select-Object -First 1
 		}
-	}
-	Else {
-		Write-Log -Message 'No users are logged on to the system.' -Source $appDeployToolkitName
 	}
 }
 
@@ -9455,7 +9450,7 @@ If ($showBlockedAppDialog) {
 		[string]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
 		[System.Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
 		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
-		If ($showBlockedAppDialogMutex.WaitOne(1)) {
+		If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
 			. $GetLoggedOnUserDetails
@@ -9537,6 +9532,34 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
 . $GetLoggedOnUserDetails
+Write-Log -Message "Display session information for all logged on users: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
+If ($usersLoggedOn) {
+	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
+	
+	#  Check if the current process is running in the context of one of the logged in users
+	If ($CurrentLoggedOnUserSession) {
+		Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]" -Source $appDeployToolkitName
+	}
+	Else {
+		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]" -Source $appDeployToolkitName
+	}
+	
+	#  Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+	If ($CurrentConsoleUserSession) {
+		Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
+	}
+	Else {
+		Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $appDeployToolkitName
+	}
+	
+	#  Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+	If ($RunAsActiveUser) {
+		Write-Log -Message "The active logged on user is [$($RunAsActiveUser.NTAccount)]" -Source $appDeployToolkitName
+	}
+}
+Else {
+	Write-Log -Message 'No users are logged on to the system.' -Source $appDeployToolkitName
+}
 
 ## Dot source ScriptBlock to load config XML UI messages
 . $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
