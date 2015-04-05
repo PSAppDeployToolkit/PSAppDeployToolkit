@@ -9276,16 +9276,17 @@ If ($invokingScript) {
 	}
 }
 
-## Define ScriptBlock to test for and attempt to make a service healthy by checking if it exists, is currently running, and has a start mode of 'Automatic'.
+## Define ScriptBlock to test for and attempt to make a service healthy by checking if it exists, is currently running, and has the specified start mode.
 [scriptblock]$TestServiceHealth = {
 	Param (
-		[string]$ServiceName
+		[string]$ServiceName,
+		[string]$ServiceStartMode = 'Automatic'
 	)
 	Try {
 		[boolean]$IsServiceHealthy = $true
 		If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-			If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne 'Automatic') {
-				Set-ServiceStartMode -Name $ServiceName -StartMode 'Automatic' -ContinueOnError $false
+			If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne $ServiceStartMode) {
+				Set-ServiceStartMode -Name $ServiceName -StartMode $ServiceStartMode -ContinueOnError $false
 			}
 			Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
 		}
