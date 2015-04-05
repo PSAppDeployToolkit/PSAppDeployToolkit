@@ -2,7 +2,7 @@ Version 3.6.2 [04/xx/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load
 	Improved internal function Test-MsiExecMutex: renamed function to Test-IsMutexAvailable, added parameters to allow checking for any named mutex, improved error trapping and messages
 	Added an alias called 'Text' for the -Message parameter in Write-Log for backwards compatibility
-	Fixed issue with retrieving the active logged in user's system DPI scale factor because of type in registry key
+	Fixed issue with retrieving the active logged in user's system DPI scale factor because of typo in registry key
 	Fixed issue with malformed log entries being inserted into log file when dot sourcing scriptblock to retrieve logged in user session details
 Version 3.6.1 [04/02/2015]
 	Added Zero-Config deployment for MSI files. No need to customise anything. Drop your MSI in the Files folder and run the toolkit. Information is pulled from the MSI to do branding, logging, and closing in-use processes.
