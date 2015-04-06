@@ -9023,9 +9023,10 @@ Function Get-LoggedOnUser {
 				
 				public static TerminalSessionData[] ListSessions(string ServerName) {
 					IntPtr server = IntPtr.Zero;
-					if (ServerName != "localhost" && ServerName != String.Empty) {server = OpenServer(ServerName);}
+					if (ServerName == "localhost" || ServerName == String.Empty) { ServerName = Environment.MachineName; }
 					List<TerminalSessionData> results = new List<TerminalSessionData>();
 					try {
+						server = OpenServer(ServerName);
 						IntPtr ppSessionInfo = IntPtr.Zero; int count; bool _isUserSession = false; IList<WTS_SESSION_INFO> sessionsInfo;
 						
 						if (WTSEnumerateSessions(server, 0, 1, out ppSessionInfo, out count) == 0) { throw new Win32Exception(); }
