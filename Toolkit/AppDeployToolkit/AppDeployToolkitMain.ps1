@@ -9087,7 +9087,7 @@ Function Get-LoggedOnUser {
 					bool _IsUserSession = false;
 					int currentSessionID = 0;
 					string _NTAccount = String.Empty;
-
+					
 					// Get all members of the local administrators group
 					bool _IsLocalAdminCheckSuccess = false;
 					List<string> localAdminGroupSidsList = new List<string>();
