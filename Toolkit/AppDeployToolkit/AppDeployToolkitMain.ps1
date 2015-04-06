@@ -9337,24 +9337,14 @@ Else {
 	[string]$logDirectory = $configToolkitLogDir
 }
 
-## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
-. $GetLoggedOnUserDetails
-
-## Dot source ScriptBlock to load localized UI messages from config XML
-. $xmlLoadLocalizedUIMessages
-
-## Dot source ScriptBlock to get system DPI scale factor
-. $GetDisplayScaleFactor
-
 ## Revert script logging to original setting
 . $RevertScriptLogging
 
-## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
-If ($ReferringApplication) {
-	$installName = $ReferringApplication
-	$installTitle = $ReferringApplication -replace '_',' '
-	$installPhase = 'Asynchronous'
-}
+## Initialize Logging
+$installPhase = 'Initialization'
+$scriptSeparator = '*' * 79
+Write-Log -Message ($scriptSeparator,$scriptSeparator) -Source $appDeployToolkitName
+Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
 ## Assemblies: Load
 Try {
@@ -9374,6 +9364,77 @@ Catch {
 	Else {
 		Exit-Script -ExitCode 60004
 	}
+}
+
+## Check how the script was invoked
+If ($invokingScript) {
+	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
+}
+
+## Dot Source script extensions
+If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType Leaf) {
+	. "$scriptRoot\$appDeployToolkitDotSourceExtensions"
+}
+
+## Evaluate non-default parameters passed to the scripts
+If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+
+## Check the XML config file version
+If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
+	[string]$XMLConfigVersionErr = "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
+	Write-Log -Message $XMLConfigVersionErr -Severity 3 -Source $appDeployToolkitName
+	Throw $XMLConfigVersionErr
+}
+
+## Log system/script information
+If ($appScriptVersion) { Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName }
+If ($deployAppScriptFriendlyName) { Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName }
+If ($deployAppScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName }
+If ($appDeployMainScriptFriendlyName) { Write-Log -Message "[$appDeployMainScriptFriendlyName] script version is [$appDeployMainScriptVersion]" -Source $appDeployToolkitName }
+If ($appDeployMainScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$appDeployMainScriptFriendlyName]: [$appDeployMainScriptParameters]" -Source $appDeployToolkitName }
+If ($appDeployExtScriptFriendlyName) { Write-Log -Message "[$appDeployExtScriptFriendlyName] version is [$appDeployExtScriptVersion]" -Source $appDeployToolkitName }
+If ($appDeployExtScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$appDeployExtScriptFriendlyName]: [$appDeployExtScriptParameters]" -Source $appDeployToolkitName }
+Write-Log -Message "Computer Name is [$envComputerNameFQDN]" -Source $appDeployToolkitName
+Write-Log -Message "Current User is [$ProcessNTAccount]" -Source $appDeployToolkitName
+If ($envOSServicePack) {
+	Write-Log -Message "OS Version is [$envOSName $envOSServicePack $envOSArchitecture $envOSVersion]" -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "OS Version is [$envOSName $envOSArchitecture $envOSVersion]" -Source $appDeployToolkitName
+}
+Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
+Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
+Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
+Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
+Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
+Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
+
+## Disable logging
+. $DisableScriptLogging
+
+## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
+. $GetLoggedOnUserDetails
+
+## Dot source ScriptBlock to load localized UI messages from config XML
+. $xmlLoadLocalizedUIMessages
+
+## Dot source ScriptBlock to get system DPI scale factor
+. $GetDisplayScaleFactor
+
+## Revert script logging to original setting
+. $RevertScriptLogging
+
+## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
+If ($ReferringApplication) {
+	$installName = $ReferringApplication
+	$installTitle = $ReferringApplication -replace '_',' '
+	$installPhase = 'Asynchronous'
 }
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
@@ -9435,61 +9496,6 @@ If ($showBlockedAppDialog) {
 		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Dispose() }
 	}
 }
-
-## Initialize Logging
-$installPhase = 'Initialization'
-$scriptSeparator = '*' * 79
-Write-Log -Message ($scriptSeparator,$scriptSeparator) -Source $appDeployToolkitName
-Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
-
-## Check how the script was invoked
-If ($invokingScript) {
-	Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $appDeployToolkitName
-}
-Else {
-	Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
-}
-
-## Dot Source script extensions
-If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType Leaf) {
-	. "$scriptRoot\$appDeployToolkitDotSourceExtensions"
-}
-
-## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
-If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
-If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
-
-## Check the XML config file version
-If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
-	[string]$XMLConfigVersionErr = "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
-	Write-Log -Message $XMLConfigVersionErr -Severity 3 -Source $appDeployToolkitName
-	Throw $XMLConfigVersionErr
-}
-
-## Log system/script information
-If ($appScriptVersion) { Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName }
-If ($deployAppScriptFriendlyName) { Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName }
-If ($deployAppScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName }
-If ($appDeployMainScriptFriendlyName) { Write-Log -Message "[$appDeployMainScriptFriendlyName] script version is [$appDeployMainScriptVersion]" -Source $appDeployToolkitName }
-If ($appDeployMainScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$appDeployMainScriptFriendlyName]: [$appDeployMainScriptParameters]" -Source $appDeployToolkitName }
-If ($appDeployExtScriptFriendlyName) { Write-Log -Message "[$appDeployExtScriptFriendlyName] version is [$appDeployExtScriptVersion]" -Source $appDeployToolkitName }
-If ($appDeployExtScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$appDeployExtScriptFriendlyName]: [$appDeployExtScriptParameters]" -Source $appDeployToolkitName }
-Write-Log -Message "Computer Name is [$envComputerNameFQDN]" -Source $appDeployToolkitName
-Write-Log -Message "Current User is [$ProcessNTAccount]" -Source $appDeployToolkitName
-If ($envOSServicePack) {
-	Write-Log -Message "OS Version is [$envOSName $envOSServicePack $envOSArchitecture $envOSVersion]" -Source $appDeployToolkitName
-}
-Else {
-	Write-Log -Message "OS Version is [$envOSName $envOSArchitecture $envOSVersion]" -Source $appDeployToolkitName
-}
-Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
-Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
-Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
-Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
-Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
-Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
-Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Log details for all currently logged in users
 Write-Log -Message "Display session information for all logged on users: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
