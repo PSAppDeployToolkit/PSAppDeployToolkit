@@ -8976,6 +8976,8 @@ Function Get-LoggedOnUser {
 		using System.Runtime.InteropServices;
 		using System.ComponentModel;
 		using FILETIME=System.Runtime.InteropServices.ComTypes.FILETIME;
+		using System.Security.Principal;
+		using System.DirectoryServices;
 		namespace QueryUser
 		{
 			public class Session
@@ -9085,6 +9087,27 @@ Function Get-LoggedOnUser {
 					bool _IsUserSession = false;
 					int currentSessionID = 0;
 					string _NTAccount = String.Empty;
+
+					// Get all members of the local administrators group
+					bool _IsLocalAdminCheckSuccess = false;
+					List<string> localAdminGroupSidsList = new List<string>();
+					try
+					{
+						DirectoryEntry localMachine = new DirectoryEntry("WinNT://" + Environment.MachineName + ",Computer");
+						string localAdminGroupName = new SecurityIdentifier("S-1-5-32-544").Translate(typeof(NTAccount)).Value.Split('\\')[1];
+						DirectoryEntry admGroup = localMachine.Children.Find(localAdminGroupName, "group");
+						object members = admGroup.Invoke("members", null);
+						foreach (object groupMember in (System.Collections.IEnumerable)members)
+						{
+							DirectoryEntry member = new DirectoryEntry(groupMember);
+							if (member.Name != String.Empty)
+							{
+								localAdminGroupSidsList.Add((new NTAccount(member.Name)).Translate(typeof(SecurityIdentifier)).Value);
+							}
+						}
+						_IsLocalAdminCheckSuccess = true;
+					}
+					catch { }
 					
 					if (ServerName != "localhost" && ServerName != String.Empty) { server = OpenServer(ServerName); }
 					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
@@ -9123,7 +9146,24 @@ Function Get-LoggedOnUser {
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.UserName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
 						data.UserName = strData;
-						if (strData != String.Empty) {data.NTAccount = _NTAccount + "\\" + strData;}
+						if (strData != String.Empty) {
+							data.NTAccount = _NTAccount + "\\" + strData;
+							string _Sid = (new NTAccount(_NTAccount + "\\" + strData)).Translate(typeof(SecurityIdentifier)).Value;
+							data.SID = _Sid;
+							if (_IsLocalAdminCheckSuccess == true)
+							{
+								foreach (string localAdminGroupSid in localAdminGroupSidsList)
+								{
+									if (localAdminGroupSid == _Sid)
+									{
+										data.IsLocalAdmin = true; break;
+									}
+									else {
+										data.IsLocalAdmin = false;
+									}
+								}
+							}
+						}
 						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionName, out buffer, out bytesReturned) == false) { return data; }
 						strData = Marshal.PtrToStringAnsi(buffer);
@@ -9173,49 +9213,18 @@ Function Get-LoggedOnUser {
 		}
 '@
 		If (-not ([System.Management.Automation.PSTypeName]'QueryUser.Session').Type) {
-			Add-Type -TypeDefinition $QueryUserSessionSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
+			[string[]]$ReferencedAssemblies = 'System.DirectoryServices'
+			Add-Type -TypeDefinition $QueryUserSessionSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
 		}
 	}
 	Process {
 		Try {
-			Try {
-				## Get NTAccount names in DOMAIN\Username format for the local Administrators security group
-				$LocalAdminGroupSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList 'S-1-5-32-544'
-				$LocalAdminGroupNTAccount = $LocalAdminGroupSID.Translate([System.Security.Principal.NTAccount])
-				$LocalAdminGroupName = ($LocalAdminGroupNTAccount.Value).Split('\')[1]
-				$LocalAdminGroup =[ADSI]"WinNT://$($env:COMPUTERNAME)/$LocalAdminGroupName"
-				$LocalAdminGroupMembers = @($LocalAdminGroup.PSBase.Invoke('Members'))
-				[string[]]$LocalAdminGroupUserName = ''
-				$LocalAdminGroupMembers | ForEach { [string[]]$LocalAdminGroupUserName += $_.GetType().InvokeMember('Name', 'GetProperty', $null, $_, $null) }
-				[string[]]$LocalAdminGroupUserName = $LocalAdminGroupUserName | Where-Object { -not [string]::IsNullOrEmpty($_) }
-				[string[]]$LocalAdminGroupNTAccounts = @()
-				[string[]]$LocalAdminGroupNTAccounts = $LocalAdminGroupUserName | ForEach-Object { (New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $_).Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount]).Value }
-				[boolean]$IsLocalAdminCheckSuccess = $true
-			}
-			Catch {
-				[boolean]$IsLocalAdminCheckSuccess = $false
-				[string[]]$LocalAdminGroupNTAccounts = @()
-			}
-			
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
 			[psobject[]]$TerminalSessions = [QueryUser.Session]::ListSessions('localhost')
 			ForEach ($TerminalSession in $TerminalSessions) {
-				If (($TerminalSession.IsUserSession)) {
+				If ($TerminalSession.IsUserSession) {
 					[psobject]$SessionInfo = [QueryUser.Session]::GetSessionInfo('localhost', $TerminalSession.SessionId)
-					If ($SessionInfo.UserName) {
-						#  Add IsLocalAdmin property
-						If ($IsLocalAdminCheckSuccess) {
-							If ($LocalAdminGroupNTAccounts -contains $SessionInfo.NTAccount) {
-								$SessionInfo.IsLocalAdmin = $true
-							}
-							Else {
-								$SessionInfo.IsLocalAdmin = $false
-							}
-							[psobject[]]$TerminalSessionInfo += $SessionInfo
-						}
-						#  Add SID property
-						$SessionInfo.SID = $(New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $SessionInfo.NTAccount).Translate([System.Security.Principal.SecurityIdentifier]).Value
-					}
+					If ($SessionInfo.UserName) { [psobject[]]$TerminalSessionInfo += $SessionInfo }
 				}
 			}
 			Write-Output $TerminalSessionInfo
