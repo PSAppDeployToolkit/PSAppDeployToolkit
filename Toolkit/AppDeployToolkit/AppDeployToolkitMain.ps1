@@ -9527,10 +9527,10 @@ Else {
 	Write-Log -Message 'No users are logged on to the system.' -Source $appDeployToolkitName
 }
 
-## Dot source ScriptBlock to load config XML UI messages
+## Log primary UI language of active logged on user
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
-## Dot source ScriptBlock to get system DPI scale factor
+## Log system DPI scale factor of active logged on user
 If ($UserDisplayScaleFactor) {
 	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
 }
