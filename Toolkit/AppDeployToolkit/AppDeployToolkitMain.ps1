@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/05/2015'
+[string]$appDeployMainScriptDate = '04/06/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -9211,9 +9211,7 @@ If ($invokingScript) {
 
 ## Define ScriptBlock for getting details for all logged on users
 [scriptblock]$GetLoggedOnUserDetails = {
-	. $DisableScriptLogging
 	[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-	. $RevertScriptLogging
 	[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
 	[psobject]$RunAsActiveUser = $null
 	
@@ -9339,6 +9337,15 @@ Else {
 	[string]$logDirectory = $configToolkitLogDir
 }
 
+## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
+. $GetLoggedOnUserDetails
+
+## Dot source ScriptBlock to load localized UI messages from config XML
+. $xmlLoadLocalizedUIMessages
+
+## Dot source ScriptBlock to get system DPI scale factor
+. $GetDisplayScaleFactor
+
 ## Revert script logging to original setting
 . $RevertScriptLogging
 
@@ -9371,8 +9378,6 @@ Catch {
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt) {
-	. $DisableScriptLogging; . $GetLoggedOnUserDetails; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
-	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]" -Source $appDeployToolkitName
 	$appDeployMainScriptParameters.Remove('ShowInstallationPrompt')
@@ -9383,8 +9388,6 @@ If ($showInstallationPrompt) {
 
 ## If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt) {
-	. $DisableScriptLogging; . $GetLoggedOnUserDetails; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
-	
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]" -Source $appDeployToolkitName
 	$appDeployMainScriptParameters.Remove('ShowInstallationRestartPrompt')
@@ -9414,9 +9417,6 @@ If ($showBlockedAppDialog) {
 		If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
-			. $GetLoggedOnUserDetails
-			. $xmlLoadLocalizedUIMessages
-			
 			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
 			Exit 0
 		}
@@ -9491,8 +9491,7 @@ Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Sour
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
-## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
-. $GetLoggedOnUserDetails
+## Log details for all currently logged in users
 Write-Log -Message "Display session information for all logged on users: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
 If ($usersLoggedOn) {
 	Write-Log -Message "The following users are logged on to the system: $($usersLoggedOn -join ', ')" -Source $appDeployToolkitName
@@ -9523,11 +9522,9 @@ Else {
 }
 
 ## Dot source ScriptBlock to load config XML UI messages
-. $DisableScriptLogging; . $xmlLoadLocalizedUIMessages; . $RevertScriptLogging
 If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
 
 ## Dot source ScriptBlock to get system DPI scale factor
-. $DisableScriptLogging; . $GetDisplayScaleFactor; . $RevertScriptLogging
 If ($UserDisplayScaleFactor) {
 	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
 }
@@ -9567,7 +9564,7 @@ If ($IsLocalSystemAccount) {
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy" -Source $appDeployToolkitName
 }
 Else {
-	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy because the App Deployment Toolkit is not running under the SYSTEM account." -Source $appDeployToolkitName
+	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy because the App Deployment Toolkit is not running under the [$LocalSystemNTAccount] account." -Source $appDeployToolkitName
 }
 
 ## If script is running in session zero
