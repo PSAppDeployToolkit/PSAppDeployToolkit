@@ -9053,12 +9053,14 @@ Function Get-LoggedOnUser {
 					bool _IsUserSession = false;
 					int currentSessionID = 0;
 					string _NTAccount = String.Empty;
+					if (ServerName == "localhost" || ServerName == String.Empty) { ServerName = Environment.MachineName; }
+					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
 					
 					// Get all members of the local administrators group
 					bool _IsLocalAdminCheckSuccess = false;
 					List<string> localAdminGroupSidsList = new List<string>();
 					try {
-						DirectoryEntry localMachine = new DirectoryEntry("WinNT://" + Environment.MachineName + ",Computer");
+						DirectoryEntry localMachine = new DirectoryEntry("WinNT://" + ServerName + ",Computer");
 						string localAdminGroupName = new SecurityIdentifier("S-1-5-32-544").Translate(typeof(NTAccount)).Value.Split('\\')[1];
 						DirectoryEntry admGroup = localMachine.Children.Find(localAdminGroupName, "group");
 						object members = admGroup.Invoke("members", null);
@@ -9072,9 +9074,9 @@ Function Get-LoggedOnUser {
 					}
 					catch { }
 					
-					if (ServerName != "localhost" && ServerName != String.Empty) { server = OpenServer(ServerName); }
-					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
 					try {
+						server = OpenServer(ServerName);
+						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientBuildNumber, out buffer, out bytesReturned) == false) { return data; }
 						int lData = Marshal.ReadInt32(buffer);
 						data.ClientBuildNumber = lData;
@@ -9101,7 +9103,7 @@ Function Get-LoggedOnUser {
 						data.SessionId = lData;
 						
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.DomainName, out buffer, out bytesReturned) == false) { return data; }
-						strData = Marshal.PtrToStringAnsi(buffer);
+						strData = Marshal.PtrToStringAnsi(buffer).ToUpper();
 						data.DomainName = strData;
 						if (strData != String.Empty) {_NTAccount = strData;}
 						
@@ -9175,14 +9177,7 @@ Function Get-LoggedOnUser {
 	Process {
 		Try {
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
-			[psobject[]]$TerminalSessions = [QueryUser.Session]::ListSessions('localhost')
-			ForEach ($TerminalSession in $TerminalSessions) {
-				If ($TerminalSession.IsUserSession) {
-					[psobject]$SessionInfo = [QueryUser.Session]::GetSessionInfo('localhost', $TerminalSession.SessionId)
-					If ($SessionInfo.UserName) { [psobject[]]$TerminalSessionInfo += $SessionInfo }
-				}
-			}
-			Write-Output $TerminalSessionInfo
+			[QueryUser.Session]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [QueryUser.Session]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
 		}
 		Catch {
 			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
