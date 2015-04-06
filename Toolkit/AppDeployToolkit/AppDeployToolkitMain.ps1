@@ -2507,10 +2507,8 @@ Function Get-MsiExitCodeMessage {
 		using System;
 		using System.Text;
 		using System.Runtime.InteropServices;
-		public class MsiExitCode
-		{
-			enum LoadLibraryFlags : int
-			{
+		public class MsiExitCode {
+			enum LoadLibraryFlags : int {
 				DONT_RESOLVE_DLL_REFERENCES 		= 0x00000001,
 				LOAD_IGNORE_CODE_AUTHZ_LEVEL		= 0x00000010,
 				LOAD_LIBRARY_AS_DATAFILE			= 0x00000002,
@@ -2526,8 +2524,7 @@ Function Get-MsiExitCodeMessage {
 			static extern int LoadString(IntPtr hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
 			
 			// Get MSI exit code message from msimsg.dll resource dll
-			public static string GetMessageFromMsiExitCode(int errCode)
-			{
+			public static string GetMessageFromMsiExitCode(int errCode) {
 				IntPtr hModuleInstance = LoadLibraryEx("msimsg.dll", IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
 				
 				StringBuilder sb = new StringBuilder(255);
@@ -4164,8 +4161,7 @@ Function Refresh-Desktop {
 		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
 		
-		public static void Refresh()
-		{
+		public static void Refresh() {
 			// Update desktop icons
 			SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
 			// Update environment variables
@@ -6474,18 +6470,15 @@ Function Set-PinnedApplication {
 			using System;
 			using System.Text;
 			using System.Runtime.InteropServices;
-			namespace Verb
-			{
-				public sealed class Load
-				{
+			namespace Verb {
+				public sealed class Load {
 					[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 					public static extern int LoadString(IntPtr h, int id, StringBuilder sb, int maxBuffer);
 					
 					[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 					public static extern IntPtr LoadLibrary(string s);
 					
-					public static string PinVerb(int VerbId)
-					{
+					public static string PinVerb(int VerbId) {
 						IntPtr hShell32 = LoadLibrary("shell32.dll");
 						const int nChars  = 255;
 						StringBuilder Buff = new StringBuilder("", nChars);
@@ -6624,15 +6617,12 @@ Function Get-IniValue {
 		using System;
 		using System.Text;
 		using System.Runtime.InteropServices;
-		namespace IniFile
-		{
-			public sealed class GetValue
-			{
+		namespace IniFile {
+			public sealed class GetValue {
 				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				public static extern int GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, int nSize, string lpFileName);
 				
-				public static string GetIniValue(string section, string key, string filepath)
-				{
+				public static string GetIniValue(string section, string key, string filepath) {
 					string sDefault	= "";
 					const int  nChars  = 1024;
 					StringBuilder Buff = new StringBuilder(nChars);
@@ -6724,16 +6714,13 @@ Function Set-IniValue {
 		using System;
 		using System.Text;
 		using System.Runtime.InteropServices;
-		namespace IniFile
-		{
-			public sealed class SetValue
-			{
+		namespace IniFile {
+			public sealed class SetValue {
 				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				[return: MarshalAs(UnmanagedType.Bool)]
 				public static extern bool WritePrivateProfileString(string lpAppName, string lpKeyName, StringBuilder lpString, string lpFileName);
 				
-				public static void SetIniValue(string section, string key, StringBuilder value, string filepath)
-				{
+				public static void SetIniValue(string section, string key, StringBuilder value, string filepath) {
 					WritePrivateProfileString(section, key, value, filepath);
 				}
 			}
@@ -7774,19 +7761,16 @@ Function Test-PowerPoint {
 		using System.Text;
 		using System.Text.RegularExpressions;
 		using System.Runtime.InteropServices;
-		namespace ScreenDetection
-		{
+		namespace ScreenDetection {
 			[StructLayout(LayoutKind.Sequential)]
-			public struct RECT
-			{
+			public struct RECT {
 				public int Left;
 				public int Top;
 				public int Right;
 				public int Bottom;
 			}
 			
-			public class FullScreen
-			{
+			public class FullScreen {
 				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				private static extern IntPtr GetForegroundWindow();
 				
@@ -7805,8 +7789,7 @@ Function Test-PowerPoint {
 				private static IntPtr desktopHandle;
 				private static IntPtr shellHandle;
 				
-				public static bool IsFullScreenWindow(string fullScreenWindowTitle)
-				{
+				public static bool IsFullScreenWindow(string fullScreenWindowTitle) {
 					desktopHandle = GetDesktopWindow();
 					shellHandle   = GetShellWindow();
 					
@@ -7819,24 +7802,19 @@ Function Test-PowerPoint {
 					IntPtr hWnd;
 					hWnd = GetForegroundWindow();
 					
-					if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
-					{
-						if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle)))
-						{
-							if (GetWindowText(hWnd, Buff, nChars) > 0)
-							{
+					if (hWnd != null && !hWnd.Equals(IntPtr.Zero)) {
+						if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle))) {
+							if (GetWindowText(hWnd, Buff, nChars) > 0) {
 								mainWindowTitle = Buff.ToString();
 								//Console.WriteLine(mainWindowTitle);
 							}
 							
 							// If the main window title contains the text being searched for, then check to see if the window is in fullscreen mode.
 							Match match  = Regex.Match(mainWindowTitle, fullScreenWindowTitle, RegexOptions.IgnoreCase);
-							if ((!string.IsNullOrEmpty(fullScreenWindowTitle)) && match.Success)
-							{
+							if ((!string.IsNullOrEmpty(fullScreenWindowTitle)) && match.Success) {
 								GetWindowRect(hWnd, out appBounds);
 								screenBounds = System.Windows.Forms.Screen.FromHandle(hWnd).Bounds;
-								if ((appBounds.Bottom + appBounds.Top) == screenBounds.Height && (appBounds.Right + appBounds.Left) == screenBounds.Width)
-								{
+								if ((appBounds.Bottom + appBounds.Top) == screenBounds.Height && (appBounds.Right + appBounds.Left) == screenBounds.Width) {
 									runningFullScreen = true;
 								}
 							}
@@ -8978,10 +8956,8 @@ Function Get-LoggedOnUser {
 		using FILETIME=System.Runtime.InteropServices.ComTypes.FILETIME;
 		using System.Security.Principal;
 		using System.DirectoryServices;
-		namespace QueryUser
-		{
-			public class Session
-			{
+		namespace QueryUser {
+			public class Session {
 				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 				public static extern IntPtr WTSOpenServer(string pServerName);
 				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -9000,14 +8976,12 @@ Function Get-LoggedOnUser {
 				public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
 				
 				[StructLayout(LayoutKind.Sequential)]
-				private struct WTS_SESSION_INFO
-				{
+				private struct WTS_SESSION_INFO {
 					public Int32 SessionId; [MarshalAs(UnmanagedType.LPStr)] public string SessionName; public WTS_CONNECTSTATE_CLASS State;
 				}
 				
 				[StructLayout(LayoutKind.Sequential)]
-				public struct WINSTATIONINFORMATIONW
-				{
+				public struct WINSTATIONINFORMATIONW {
 					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 70)] private byte[] Reserved1;
 					public int SessionId;
 					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)] private byte[] Reserved2;
@@ -9026,46 +9000,39 @@ Function Get-LoggedOnUser {
 				private static IntPtr OpenServer(string Name) { IntPtr server = WTSOpenServer(Name); return server; }
 				private static void CloseServer(IntPtr ServerHandle) { WTSCloseServer(ServerHandle); }
 				
-				private static IList<T> PtrToStructureList<T>(IntPtr ppList, int count) where T : struct
-				{
+				private static IList<T> PtrToStructureList<T>(IntPtr ppList, int count) where T : struct {
 					List<T> result = new List<T>(); long pointer = ppList.ToInt64(); int sizeOf = Marshal.SizeOf(typeof(T));
-					for (int index = 0; index < count; index++)
-					{
+					for (int index = 0; index < count; index++) {
 						T item = (T) Marshal.PtrToStructure(new IntPtr(pointer), typeof(T)); result.Add(item); pointer += sizeOf;
 					}
 					return result;
 				}
 				
-				public static DateTime? FileTimeToDateTime(FILETIME ft)
-				{
+				public static DateTime? FileTimeToDateTime(FILETIME ft) {
 					if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0) { return null; }
 					long hFT = (((long) ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
 					return DateTime.FromFileTime(hFT);
 				}
 				
-				public static WINSTATIONINFORMATIONW GetWinStationInformation(IntPtr server, int sessionId)
-				{
+				public static WINSTATIONINFORMATIONW GetWinStationInformation(IntPtr server, int sessionId) {
 					int retLen = 0;
 					WINSTATIONINFORMATIONW wsInfo = new WINSTATIONINFORMATIONW();
 					WinStationQueryInformation(server, sessionId, (int) WINSTATIONINFOCLASS.WinStationInformation, ref wsInfo, Marshal.SizeOf(typeof(WINSTATIONINFORMATIONW)), ref retLen);
 					return wsInfo;
 				}
 				
-				public static TerminalSessionData[] ListSessions(string ServerName)
-				{
+				public static TerminalSessionData[] ListSessions(string ServerName) {
 					IntPtr server = IntPtr.Zero;
 					if (ServerName != "localhost" && ServerName != String.Empty) {server = OpenServer(ServerName);}
 					List<TerminalSessionData> results = new List<TerminalSessionData>();
-					try
-					{
+					try {
 						IntPtr ppSessionInfo = IntPtr.Zero; int count; bool _isUserSession = false; IList<WTS_SESSION_INFO> sessionsInfo;
 						
 						if (WTSEnumerateSessions(server, 0, 1, out ppSessionInfo, out count) == 0) { throw new Win32Exception(); }
 						try { sessionsInfo = PtrToStructureList<WTS_SESSION_INFO>(ppSessionInfo, count); }
 						finally { WTSFreeMemory(ppSessionInfo); }
 						
-						foreach (WTS_SESSION_INFO sessionInfo in sessionsInfo)
-						{
+						foreach (WTS_SESSION_INFO sessionInfo in sessionsInfo) {
 							if (sessionInfo.SessionName != "Services" && sessionInfo.SessionName != "RDP-Tcp") { _isUserSession = true; }
 							results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
 							_isUserSession = false;
@@ -9076,8 +9043,7 @@ Function Get-LoggedOnUser {
 					return returnData;
 				}
 				
-				public static TerminalSessionInfo GetSessionInfo(string ServerName, int SessionId)
-				{
+				public static TerminalSessionInfo GetSessionInfo(string ServerName, int SessionId) {
 					IntPtr server = IntPtr.Zero;
 					IntPtr buffer = IntPtr.Zero;
 					int bytesReturned;
@@ -9091,17 +9057,14 @@ Function Get-LoggedOnUser {
 					// Get all members of the local administrators group
 					bool _IsLocalAdminCheckSuccess = false;
 					List<string> localAdminGroupSidsList = new List<string>();
-					try
-					{
+					try {
 						DirectoryEntry localMachine = new DirectoryEntry("WinNT://" + Environment.MachineName + ",Computer");
 						string localAdminGroupName = new SecurityIdentifier("S-1-5-32-544").Translate(typeof(NTAccount)).Value.Split('\\')[1];
 						DirectoryEntry admGroup = localMachine.Children.Find(localAdminGroupName, "group");
 						object members = admGroup.Invoke("members", null);
-						foreach (object groupMember in (System.Collections.IEnumerable)members)
-						{
+						foreach (object groupMember in (System.Collections.IEnumerable)members) {
 							DirectoryEntry member = new DirectoryEntry(groupMember);
-							if (member.Name != String.Empty)
-							{
+							if (member.Name != String.Empty) {
 								localAdminGroupSidsList.Add((new NTAccount(member.Name)).Translate(typeof(SecurityIdentifier)).Value);
 							}
 						}
@@ -9111,8 +9074,7 @@ Function Get-LoggedOnUser {
 					
 					if (ServerName != "localhost" && ServerName != String.Empty) { server = OpenServer(ServerName); }
 					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
-					try
-					{
+					try {
 						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientBuildNumber, out buffer, out bytesReturned) == false) { return data; }
 						int lData = Marshal.ReadInt32(buffer);
 						data.ClientBuildNumber = lData;
@@ -9150,12 +9112,9 @@ Function Get-LoggedOnUser {
 							data.NTAccount = _NTAccount + "\\" + strData;
 							string _Sid = (new NTAccount(_NTAccount + "\\" + strData)).Translate(typeof(SecurityIdentifier)).Value;
 							data.SID = _Sid;
-							if (_IsLocalAdminCheckSuccess == true)
-							{
-								foreach (string localAdminGroupSid in localAdminGroupSidsList)
-								{
-									if (localAdminGroupSid == _Sid)
-									{
+							if (_IsLocalAdminCheckSuccess == true) {
+								foreach (string localAdminGroupSid in localAdminGroupSidsList) {
+									if (localAdminGroupSid == _Sid) {
 										data.IsLocalAdmin = true; break;
 									}
 									else {
@@ -9186,25 +9145,21 @@ Function Get-LoggedOnUser {
 						if (currentSessionID == SessionId) { _IsCurrentSessionId = true; }
 						data.IsCurrentSession = _IsCurrentSessionId;
 					}
-					finally
-					{
+					finally {
 						WTSFreeMemory(buffer); buffer = IntPtr.Zero; CloseServer(server);
 					}
 					return data;
 				}
 			}
 			
-			public class TerminalSessionData
-			{
+			public class TerminalSessionData {
 				public int SessionId; public Session.WTS_CONNECTSTATE_CLASS ConnectionState; public string SessionName; public bool IsUserSession;
-				public TerminalSessionData(int sessionId, Session.WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession)
-				{
+				public TerminalSessionData(int sessionId, Session.WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession) {
 					SessionId = sessionId; ConnectionState = connState; SessionName = sessionName; IsUserSession = isUserSession;
 				}
 			}
 			
-			public class TerminalSessionInfo
-			{
+			public class TerminalSessionInfo {
 				public string NTAccount; public string SID; public string UserName; public string DomainName; public int SessionId; public string SessionName;
 				public Session.WTS_CONNECTSTATE_CLASS ConnectState; public bool IsCurrentSession; public bool IsConsoleSession;
 				public bool IsUserSession; public bool IsLocalAdmin; public DateTime? LogonTime; public TimeSpan? IdleTime; public DateTime? DisconnectTime;
