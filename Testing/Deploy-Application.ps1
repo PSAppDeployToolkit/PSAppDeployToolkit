@@ -55,7 +55,6 @@ Try {
 	##*===============================================
 	##* VARIABLE DECLARATION
 	##*===============================================
-	
 	## Variables: Application
 	[string]$appVendor = 'PSAppDeployToolkit'
 	[string]$appName = 'Test Script'
@@ -66,8 +65,8 @@ Try {
 	[string]$appScriptVersion = '3.6.1'
 	[string]$appScriptDate = '03/20/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
-	
 	##*===============================================
+	
 	##* Do not modify section below
 	#region DoNotModify
 	
@@ -77,7 +76,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.1'
-	[string]$deployAppScriptDate = '03/20/2015'
+	[string]$deployAppScriptDate = '03/26/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -98,8 +97,6 @@ Try {
 	
 	#endregion
 	##* Do not modify section above
-	##*===============================================
-	
 	##*===============================================
 	##* END VARIABLE DECLARATION
 	##*===============================================
@@ -206,7 +203,6 @@ Try {
 		## Perform post-uninstallation tasks here
 	}
 	
-	
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================
@@ -215,7 +211,7 @@ Try {
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {
-	[int32]$mainExitCode = 1
+	[int32]$mainExitCode = 60001
 	[string]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
