@@ -2,6 +2,7 @@ Version 3.6.2 [04/xx/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load
 	Improved internal function Test-MsiExecMutex: renamed function to Test-IsMutexAvailable, added parameters to allow checking for any named mutex, improved error trapping and messages
 	Improved Get-LoggedOnUser by increasing performance (should be much faster now)
+	Changed toolkit so that all custom C# code is now in a separate file called "AppDeployToolkitMain.cs" which gets compiled once after functions are declared
 	Added an alias called 'Text' for the -Message parameter in Write-Log for backwards compatibility
 	Fixed issue with retrieving the active logged in user's system DPI scale factor because of typo in registry key
 	Fixed issue with malformed log entries being inserted into log file when dot sourcing scriptblock to retrieve logged in user session details

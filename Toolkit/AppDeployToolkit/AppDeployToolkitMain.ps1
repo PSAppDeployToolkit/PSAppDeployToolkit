@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/06/2015'
+[string]$appDeployMainScriptDate = '04/09/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -197,12 +197,14 @@ Else {
 [string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitLogo.ico'
 [string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitBanner.png'
 [string]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
+[string]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
 #  App Deploy Optional Extensions File
 [string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 #  Check that dependency files are present
-If (-not (Test-Path -Path $AppDeployLogoIcon -PathType Leaf)) { Throw 'App Deploy logo icon file not found.' }
-If (-not (Test-Path -Path $AppDeployLogoBanner -PathType Leaf)) { Throw 'App Deploy logo banner file not found.' }
-If (-not (Test-Path -Path $AppDeployConfigFile -PathType Leaf)) { Throw 'App Deploy XML configuration file not found.' }
+If (-not (Test-Path -Path $appDeployLogoIcon -PathType Leaf)) { Throw 'App Deploy logo icon file not found.' }
+If (-not (Test-Path -Path $appDeployLogoBanner -PathType Leaf)) { Throw 'App Deploy logo banner file not found.' }
+If (-not (Test-Path -Path $appDeployConfigFile -PathType Leaf)) { Throw 'App Deploy XML configuration file not found.' }
+If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Throw 'App Deploy custom types source code file not found.' }
 
 ## Import variables from XML configuration file
 [xml]$xmlConfigFile = Get-Content -Path $AppDeployConfigFile
@@ -2502,46 +2504,11 @@ Function Get-MsiExitCodeMessage {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$MsiExitCodeMsgSource = @'
-		using System;
-		using System.Text;
-		using System.Runtime.InteropServices;
-		public class MsiExitCode {
-			enum LoadLibraryFlags : int {
-				DONT_RESOLVE_DLL_REFERENCES 		= 0x00000001,
-				LOAD_IGNORE_CODE_AUTHZ_LEVEL		= 0x00000010,
-				LOAD_LIBRARY_AS_DATAFILE			= 0x00000002,
-				LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE	= 0x00000040,
-				LOAD_LIBRARY_AS_IMAGE_RESOURCE  	= 0x00000020,
-				LOAD_WITH_ALTERED_SEARCH_PATH 		= 0x00000008
-			}
-			
-			[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-			static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, LoadLibraryFlags dwFlags);
-			
-			[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-			static extern int LoadString(IntPtr hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
-			
-			// Get MSI exit code message from msimsg.dll resource dll
-			public static string GetMessageFromMsiExitCode(int errCode) {
-				IntPtr hModuleInstance = LoadLibraryEx("msimsg.dll", IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
-				
-				StringBuilder sb = new StringBuilder(255);
-				LoadString(hModuleInstance, errCode, sb, sb.Capacity + 1);
-				
-				return sb.ToString();
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'MsiExitCode').Type) {
-			Add-Type -TypeDefinition $MsiExitCodeMsgSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
 			Write-Log -Message "Get message for exit code [$MsiExitCode]." -Source ${CmdletName}
-			[string]$MsiExitCodeMsg = [MsiExitCode]::GetMessageFromMsiExitCode($MsiExitCode)
+			[string]$MsiExitCodeMsg = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode)
 			Write-Output $MsiExitCodeMsg
 		}
 		Catch {
@@ -4146,36 +4113,11 @@ Function Refresh-Desktop {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$refreshDesktopSource = @'
-		private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
-		private const int WM_SETTINGCHANGE = 0x1a;
-		private const int SMTO_ABORTIFHUNG = 0x0002;
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		static extern bool SendNotifyMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, string lParam, int fuFlags, int uTimeout, IntPtr lpdwResult);
-		
-		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
-		
-		public static void Refresh() {
-			// Update desktop icons
-			SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
-			// Update environment variables
-			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, null, SMTO_ABORTIFHUNG, 100, IntPtr.Zero);
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'MyWinAPI.Explorer').Type) {
-			Add-Type -MemberDefinition $refreshDesktopSource -Namespace MyWinAPI -Name Explorer -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
 			Write-Log -Message 'Refresh the Desktop and the Windows Explorer environment process block' -Source ${CmdletName}
-			[MyWinAPI.Explorer]::Refresh()
+			[PSADT.Explorer]::Refresh()
 		}
 		Catch {
 			Write-Log -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -5081,7 +5023,7 @@ Function Show-InstallationWelcome {
 							ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
 								Try {
 									Write-Log -Message "Stop process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
-									[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($OpenWindow.WindowHandle)
+									[boolean]$IsBringWindowToFrontSuccess = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
 									[boolean]$IsCloseWindowCallSuccess = $runningProcess.CloseMainWindow()
 									If (-not $IsCloseWindowCallSuccess) {
 										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
@@ -6466,35 +6408,8 @@ Function Set-PinnedApplication {
 			
 			[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 			
-			$GetPinVerbSource = @'
-			using System;
-			using System.Text;
-			using System.Runtime.InteropServices;
-			namespace Verb {
-				public sealed class Load {
-					[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-					public static extern int LoadString(IntPtr h, int id, StringBuilder sb, int maxBuffer);
-					
-					[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-					public static extern IntPtr LoadLibrary(string s);
-					
-					public static string PinVerb(int VerbId) {
-						IntPtr hShell32 = LoadLibrary("shell32.dll");
-						const int nChars  = 255;
-						StringBuilder Buff = new StringBuilder("", nChars);
-						
-						LoadString(hShell32, VerbId, Buff, Buff.Capacity);
-						return Buff.ToString();
-					}
-				}
-			}
-'@
-			If (-not ([System.Management.Automation.PSTypeName]'Verb.Load').Type) {
-				Add-Type -TypeDefinition $GetPinVerbSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-			}
-			
 			Write-Log -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
-			[string]$PinVerb = [Verb.Load]::PinVerb($VerbId)
+			[string]$PinVerb = [PSADT.FileVerb]::PinVerb($VerbId)
 			Write-Log -Message "Verb ID [$VerbID] has a localized pin verb of [$PinVerb]." -Source ${CmdletName}
 			Write-Output $PinVerb
 		}
@@ -6612,30 +6527,6 @@ Function Get-IniValue {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$GetIniValueSource = @'
-		using System;
-		using System.Text;
-		using System.Runtime.InteropServices;
-		namespace IniFile {
-			public sealed class GetValue {
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern int GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, int nSize, string lpFileName);
-				
-				public static string GetIniValue(string section, string key, string filepath) {
-					string sDefault	= "";
-					const int  nChars  = 1024;
-					StringBuilder Buff = new StringBuilder(nChars);
-					
-					GetPrivateProfileString(section, key, sDefault, Buff, Buff.Capacity, filepath);
-					return Buff.ToString();
-				}
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'IniFile.GetValue').Type) {
-			Add-Type -TypeDefinition $GetIniValueSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
@@ -6643,7 +6534,7 @@ Function Get-IniValue {
 			
 			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
 			
-			$IniValue = [IniFile.GetValue]::GetIniValue($Section, $Key, $FilePath)
+			$IniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
 			Write-Log -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $IniValue]" -Source ${CmdletName}
 			
 			Write-Output $IniValue
@@ -6709,26 +6600,6 @@ Function Set-IniValue {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$SetIniValueSource = @'
-		using System;
-		using System.Text;
-		using System.Runtime.InteropServices;
-		namespace IniFile {
-			public sealed class SetValue {
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				[return: MarshalAs(UnmanagedType.Bool)]
-				public static extern bool WritePrivateProfileString(string lpAppName, string lpKeyName, StringBuilder lpString, string lpFileName);
-				
-				public static void SetIniValue(string section, string key, StringBuilder value, string filepath) {
-					WritePrivateProfileString(section, key, value, filepath);
-				}
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'IniFile.SetValue').Type) {
-			Add-Type -TypeDefinition $SetIniValueSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
@@ -6736,7 +6607,7 @@ Function Set-IniValue {
 			
 			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
 			
-			[IniFile.SetValue]::SetIniValue($Section, $Key, ([System.Text.StringBuilder]$Value), $FilePath)
+			[PSADT.IniFile]::SetIniValue($Section, $Key, ([System.Text.StringBuilder]$Value), $FilePath)
 		}
 		Catch {
 			Write-Log -Message "Failed to write INI file key value. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7256,131 +7127,6 @@ Function Get-WindowTitle {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$PSADTUiAutomationSource = @'
-		using System;
-		using System.Runtime.InteropServices;
-		using System.Collections.Generic;
-		using System.Text;
-		namespace PSADTUiAutomation {
-			public class Windows {
-				public enum GetWindow_Cmd : int {
-					GW_HWNDFIRST = 0, GW_HWNDLAST = 1, GW_HWNDNEXT = 2, GW_HWNDPREV = 3, GW_OWNER = 4, GW_CHILD = 5, GW_ENABLEDPOPUP = 6
-				}
-				public enum ShowWindowEnum {
-					Hide = 0, ShowNormal = 1, ShowMinimized = 2, ShowMaximized = 3, Maximize = 3, ShowNormalNoActivate = 4, Show = 5, Minimize = 6, ShowMinNoActivate = 7, ShowNoActivate = 8, Restore = 9, ShowDefault = 10, ForceMinimized = 11
-				}
-				
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool EnumWindows(EnumWindowsProcD lpEnumFunc, ref IntPtr lParam);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern int GetWindowTextLength(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool IsWindowEnabled(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern bool IsWindowVisible(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool IsIconic(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum flags);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern IntPtr SetActiveWindow(IntPtr hwnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				[return: MarshalAs(UnmanagedType.Bool)] public static extern bool SetForegroundWindow(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern IntPtr GetForegroundWindow();
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern IntPtr SetFocus(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern bool BringWindowToTop(IntPtr hWnd);
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
-				[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern int GetCurrentThreadId();
-				[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern bool AttachThreadInput(int idAttach, int idAttachTo, bool fAttach);
-				[DllImport("user32.dll", EntryPoint="GetWindowLong", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern IntPtr GetWindowLong32(IntPtr hWnd, int nIndex);
-				[DllImport("user32.dll", EntryPoint="GetWindowLongPtr", CharSet=CharSet.Auto, SetLastError=false)]
-				public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
-				public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
-				
-				public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems) {
-					if(hWnd != IntPtr.Zero) {
-						GCHandle hItems = GCHandle.FromIntPtr(lItems);
-						List<IntPtr> items = hItems.Target as List<IntPtr>;
-						items.Add(hWnd);
-						return true;
-					} else {
-						return false;
-					}
-				}
-				
-				public static List<IntPtr> EnumWindows() {
-					try {
-						List<IntPtr> items = new List<IntPtr>();
-						EnumWindowsProcD CallBackPtr = new EnumWindowsProcD(EnumWindowsProc);
-						GCHandle hItems = GCHandle.Alloc(items);
-						IntPtr lItems = GCHandle.ToIntPtr(hItems);
-						EnumWindows(CallBackPtr, ref lItems);
-						return items;
-					} catch (Exception ex) {
-						throw new Exception("An error occured during window enumeration: " + ex.Message);
-					}
-				}
-				
-				public static string GetWindowText(IntPtr hWnd) {
-					int iTextLength = GetWindowTextLength(hWnd);
-					if (iTextLength > 0) {
-						StringBuilder sb = new StringBuilder(iTextLength);
-						GetWindowText(hWnd, sb, iTextLength + 1);
-						return sb.ToString();
-					} else {
-						return String.Empty;
-					}
-				}
-				
-				public static bool BringWindowToFront(IntPtr windowHandle) {
-					bool breturn = false;
-					if (IsIconic(windowHandle)) {
-						// Show minimized window because SetForegroundWindow does not work for minimized windows
-						ShowWindow(windowHandle, ShowWindowEnum.ShowMaximized);
-					}
-					
-					int lpdwProcessId;
-					int windowThreadProcessId = GetWindowThreadProcessId(GetForegroundWindow(), out lpdwProcessId);
-					int currentThreadId = GetCurrentThreadId();
-					AttachThreadInput(windowThreadProcessId, currentThreadId, true);
-
-					BringWindowToTop(windowHandle);
-					breturn = SetForegroundWindow(windowHandle);
-					SetActiveWindow(windowHandle);
-					SetFocus(windowHandle);
-					
-					AttachThreadInput(windowThreadProcessId, currentThreadId, false);
-					return breturn;
-				}
-				
-				public static int GetWindowThreadProcessId(IntPtr windowHandle) {
-					int processID = 0;
-					GetWindowThreadProcessId(windowHandle, out processID);
-					return processID;
-				}
-				
-				public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex) {
-					if (IntPtr.Size == 4) {
-						return GetWindowLong32(hWnd, nIndex);
-					}
-					return GetWindowLongPtr64(hWnd, nIndex);
-				}
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'PSADTUiAutomation.Windows').Type) {
-			Add-Type -TypeDefinition $PSADTUiAutomationSource -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
@@ -7392,16 +7138,16 @@ Function Get-WindowTitle {
 			}
 			
 			## Get all window handles for visible windows
-			[IntPtr[]]$VisibleWindowHandles = [PSADTUiAutomation.Windows]::EnumWindows() | Where-Object { [PSADTUiAutomation.Windows]::IsWindowVisible($_) }
+			[IntPtr[]]$VisibleWindowHandles = [PSADT.UiAutomation]::EnumWindows() | Where-Object { [PSADT.UiAutomation]::IsWindowVisible($_) }
 			
 			## Discover details about each visible window that was discovered
 			ForEach ($VisibleWindowHandle in $VisibleWindowHandles) {
 				If (-not $VisibleWindowHandle) { Continue }
 				## Get the window title
-				[string]$VisibleWindowTitle = [PSADTUiAutomation.Windows]::GetWindowText($VisibleWindowHandle)
+				[string]$VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)
 				If ($VisibleWindowTitle) {
 					## Get the process that spawned the window
-					[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADTUiAutomation.Windows]::GetWindowThreadProcessId($VisibleWindowHandle) }
+					[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
 					If ($Process) {
 						## Build custom object with details about the window and the process
 						[psobject]$VisibleWindow = New-Object -TypeName PSObject -Property @{
@@ -7507,12 +7253,12 @@ Function Send-Keys {
 			)
 			Try {
 				## Bring the window to the foreground
-				[boolean]$IsBringWindowToFrontSuccess = [PSADTUiAutomation.Windows]::BringWindowToFront($WindowHandle)
+				[boolean]$IsBringWindowToFrontSuccess = [PSADT.UiAutomation]::BringWindowToFront($WindowHandle)
 				If (-not $IsBringWindowToFrontSuccess) { Throw 'Failed to bring window to foreground.'}
 				
 				## Send the Key sequence
 				If ($Keys) {
-					[boolean]$IsWindowModal = If ([PSADTUiAutomation.Windows]::IsWindowEnabled($WindowHandle)) { $false } Else { $true }
+					[boolean]$IsWindowModal = If ([PSADT.UiAutomation]::IsWindowEnabled($WindowHandle)) { $false } Else { $true }
 					If ( $IsWindowModal) { Throw 'Unable to send keys to window because it may be disabled due to a modal dialog being shown.' }
 					[System.Windows.Forms.SendKeys]::SendWait($Keys)
 					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
@@ -7755,80 +7501,6 @@ Function Test-PowerPoint {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$FullScreenWindowSource = @'
-		using System;
-		using System.Text;
-		using System.Text.RegularExpressions;
-		using System.Runtime.InteropServices;
-		namespace ScreenDetection {
-			[StructLayout(LayoutKind.Sequential)]
-			public struct RECT {
-				public int Left;
-				public int Top;
-				public int Right;
-				public int Bottom;
-			}
-			
-			public class FullScreen {
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				private static extern IntPtr GetForegroundWindow();
-				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				private static extern IntPtr GetDesktopWindow();
-				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				private static extern IntPtr GetShellWindow();
-				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				private static extern int GetWindowRect(IntPtr hWnd, out RECT rc);
-				
-				[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-				
-				private static IntPtr desktopHandle;
-				private static IntPtr shellHandle;
-				
-				public static bool IsFullScreenWindow(string fullScreenWindowTitle) {
-					desktopHandle = GetDesktopWindow();
-					shellHandle   = GetShellWindow();
-					
-					bool runningFullScreen = false;
-					RECT appBounds;
-					System.Drawing.Rectangle screenBounds;
-					const int nChars = 256;
-					StringBuilder Buff = new StringBuilder(nChars);
-					string mainWindowTitle = "";
-					IntPtr hWnd;
-					hWnd = GetForegroundWindow();
-					
-					if (hWnd != null && !hWnd.Equals(IntPtr.Zero)) {
-						if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle))) {
-							if (GetWindowText(hWnd, Buff, nChars) > 0) {
-								mainWindowTitle = Buff.ToString();
-								//Console.WriteLine(mainWindowTitle);
-							}
-							
-							// If the main window title contains the text being searched for, then check to see if the window is in fullscreen mode.
-							Match match  = Regex.Match(mainWindowTitle, fullScreenWindowTitle, RegexOptions.IgnoreCase);
-							if ((!string.IsNullOrEmpty(fullScreenWindowTitle)) && match.Success) {
-								GetWindowRect(hWnd, out appBounds);
-								screenBounds = System.Windows.Forms.Screen.FromHandle(hWnd).Bounds;
-								if ((appBounds.Bottom + appBounds.Top) == screenBounds.Height && (appBounds.Right + appBounds.Left) == screenBounds.Width) {
-									runningFullScreen = true;
-								}
-							}
-						}
-					}
-					return runningFullScreen;
-				}
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'ScreenDetection.FullScreen').Type) {
-			[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms'
-			Add-Type -TypeDefinition $FullScreenWindowSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
@@ -7838,7 +7510,7 @@ Function Test-PowerPoint {
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 				
 				#  Case insensitive match for "PowerPoint Slide Show" at start of window title using regex matching
-				[boolean]$IsPowerPointFullScreen = [ScreenDetection.FullScreen]::IsFullScreenWindow('^PowerPoint Slide Show')
+				[boolean]$IsPowerPointFullScreen = [PSADT.Screen]::IsFullScreenWindow('^PowerPoint Slide Show')
 				
 				Write-Log -Message "PowerPoint is running in fullscreen mode: $IsPowerPointFullScreen" -Source ${CmdletName}
 			}
@@ -8946,239 +8618,11 @@ Function Get-LoggedOnUser {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		$QueryUserSessionSource = @'
-		using System;
-		using System.Collections.Generic;
-		using System.Text;
-		using System.Runtime.InteropServices;
-		using System.ComponentModel;
-		using FILETIME=System.Runtime.InteropServices.ComTypes.FILETIME;
-		using System.Security.Principal;
-		using System.DirectoryServices;
-		namespace QueryUser {
-			public class Session {
-				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern IntPtr WTSOpenServer(string pServerName);
-				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern void WTSCloseServer(IntPtr hServer);
-				[DllImport("wtsapi32.dll", CharSet = CharSet.Ansi, SetLastError = false)]
-				public static extern bool WTSQuerySessionInformation(IntPtr hServer, int sessionId, WTS_INFO_CLASS wtsInfoClass, out IntPtr pBuffer, out int pBytesReturned);
-				[DllImport("wtsapi32.dll", CharSet = CharSet.Ansi, SetLastError = false)]
-				public static extern int WTSEnumerateSessions(IntPtr hServer, int Reserved, int Version, out IntPtr pSessionInfo, out int pCount);
-				[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern void WTSFreeMemory(IntPtr pMemory);
-				[DllImport("winsta.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern int WinStationQueryInformation(IntPtr hServer, int sessionId, int information, ref WINSTATIONINFORMATIONW pBuffer, int bufferLength, ref int returnedLength);
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern int GetCurrentProcessId();
-				[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-				public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
-				
-				[StructLayout(LayoutKind.Sequential)]
-				private struct WTS_SESSION_INFO {
-					public Int32 SessionId; [MarshalAs(UnmanagedType.LPStr)] public string SessionName; public WTS_CONNECTSTATE_CLASS State;
-				}
-				
-				[StructLayout(LayoutKind.Sequential)]
-				public struct WINSTATIONINFORMATIONW {
-					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 70)] private byte[] Reserved1;
-					public int SessionId;
-					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)] private byte[] Reserved2;
-					public FILETIME ConnectTime;
-					public FILETIME DisconnectTime;
-					public FILETIME LastInputTime;
-					public FILETIME LoginTime;
-					[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1096)] private byte[] Reserved3;
-					public FILETIME CurrentTime;
-				}
-				
-				public enum WINSTATIONINFOCLASS { WinStationInformation = 8 }
-				public enum WTS_CONNECTSTATE_CLASS { Active, Connected, ConnectQuery, Shadow, Disconnected, Idle, Listen, Reset, Down, Init }
-				public enum WTS_INFO_CLASS { SessionId=4, UserName, SessionName, DomainName, ConnectState, ClientBuildNumber, ClientName, ClientDirectory, ClientProtocolType=16 }
-				
-				private static IntPtr OpenServer(string Name) { IntPtr server = WTSOpenServer(Name); return server; }
-				private static void CloseServer(IntPtr ServerHandle) { WTSCloseServer(ServerHandle); }
-				
-				private static IList<T> PtrToStructureList<T>(IntPtr ppList, int count) where T : struct {
-					List<T> result = new List<T>(); long pointer = ppList.ToInt64(); int sizeOf = Marshal.SizeOf(typeof(T));
-					for (int index = 0; index < count; index++) {
-						T item = (T) Marshal.PtrToStructure(new IntPtr(pointer), typeof(T)); result.Add(item); pointer += sizeOf;
-					}
-					return result;
-				}
-				
-				public static DateTime? FileTimeToDateTime(FILETIME ft) {
-					if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0) { return null; }
-					long hFT = (((long) ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
-					return DateTime.FromFileTime(hFT);
-				}
-				
-				public static WINSTATIONINFORMATIONW GetWinStationInformation(IntPtr server, int sessionId) {
-					int retLen = 0;
-					WINSTATIONINFORMATIONW wsInfo = new WINSTATIONINFORMATIONW();
-					WinStationQueryInformation(server, sessionId, (int) WINSTATIONINFOCLASS.WinStationInformation, ref wsInfo, Marshal.SizeOf(typeof(WINSTATIONINFORMATIONW)), ref retLen);
-					return wsInfo;
-				}
-				
-				public static TerminalSessionData[] ListSessions(string ServerName) {
-					IntPtr server = IntPtr.Zero;
-					if (ServerName == "localhost" || ServerName == String.Empty) { ServerName = Environment.MachineName; }
-					List<TerminalSessionData> results = new List<TerminalSessionData>();
-					try {
-						server = OpenServer(ServerName);
-						IntPtr ppSessionInfo = IntPtr.Zero; int count; bool _isUserSession = false; IList<WTS_SESSION_INFO> sessionsInfo;
-						
-						if (WTSEnumerateSessions(server, 0, 1, out ppSessionInfo, out count) == 0) { throw new Win32Exception(); }
-						try { sessionsInfo = PtrToStructureList<WTS_SESSION_INFO>(ppSessionInfo, count); }
-						finally { WTSFreeMemory(ppSessionInfo); }
-						
-						foreach (WTS_SESSION_INFO sessionInfo in sessionsInfo) {
-							if (sessionInfo.SessionName != "Services" && sessionInfo.SessionName != "RDP-Tcp") { _isUserSession = true; }
-							results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
-							_isUserSession = false;
-						}
-					}
-					finally { CloseServer(server); }
-					TerminalSessionData[] returnData = results.ToArray();
-					return returnData;
-				}
-				
-				public static TerminalSessionInfo GetSessionInfo(string ServerName, int SessionId) {
-					IntPtr server = IntPtr.Zero;
-					IntPtr buffer = IntPtr.Zero;
-					int bytesReturned;
-					TerminalSessionInfo data = new TerminalSessionInfo();
-					bool _IsCurrentSessionId = false;
-					bool _IsConsoleSession = false;
-					bool _IsUserSession = false;
-					int currentSessionID = 0;
-					string _NTAccount = String.Empty;
-					if (ServerName == "localhost" || ServerName == String.Empty) { ServerName = Environment.MachineName; }
-					if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false) { currentSessionID = -1; }
-					
-					// Get all members of the local administrators group
-					bool _IsLocalAdminCheckSuccess = false;
-					List<string> localAdminGroupSidsList = new List<string>();
-					try {
-						DirectoryEntry localMachine = new DirectoryEntry("WinNT://" + ServerName + ",Computer");
-						string localAdminGroupName = new SecurityIdentifier("S-1-5-32-544").Translate(typeof(NTAccount)).Value.Split('\\')[1];
-						DirectoryEntry admGroup = localMachine.Children.Find(localAdminGroupName, "group");
-						object members = admGroup.Invoke("members", null);
-						foreach (object groupMember in (System.Collections.IEnumerable)members) {
-							DirectoryEntry member = new DirectoryEntry(groupMember);
-							if (member.Name != String.Empty) {
-								localAdminGroupSidsList.Add((new NTAccount(member.Name)).Translate(typeof(SecurityIdentifier)).Value);
-							}
-						}
-						_IsLocalAdminCheckSuccess = true;
-					}
-					catch { }
-					
-					try {
-						server = OpenServer(ServerName);
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientBuildNumber, out buffer, out bytesReturned) == false) { return data; }
-						int lData = Marshal.ReadInt32(buffer);
-						data.ClientBuildNumber = lData;
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientDirectory, out buffer, out bytesReturned) == false) { return data; }
-						string strData = Marshal.PtrToStringAnsi(buffer);
-						data.ClientDirectory = strData;
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientName, out buffer, out bytesReturned) == false) { return data; }
-						strData = Marshal.PtrToStringAnsi(buffer);
-						data.ClientName = strData;
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ClientProtocolType, out buffer, out bytesReturned) == false) { return data; }
-						Int16 intData = Marshal.ReadInt16(buffer);
-						if (intData == 2) {strData = "RDP";} else {strData = "";}
-						data.ClientProtocolType = strData;
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned) == false) { return data; }
-						lData = Marshal.ReadInt32(buffer);
-						data.ConnectState = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), lData);
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionId, out buffer, out bytesReturned) == false) { return data; }
-						lData = Marshal.ReadInt32(buffer);
-						data.SessionId = lData;
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.DomainName, out buffer, out bytesReturned) == false) { return data; }
-						strData = Marshal.PtrToStringAnsi(buffer).ToUpper();
-						data.DomainName = strData;
-						if (strData != String.Empty) {_NTAccount = strData;}
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.UserName, out buffer, out bytesReturned) == false) { return data; }
-						strData = Marshal.PtrToStringAnsi(buffer);
-						data.UserName = strData;
-						if (strData != String.Empty) {
-							data.NTAccount = _NTAccount + "\\" + strData;
-							string _Sid = (new NTAccount(_NTAccount + "\\" + strData)).Translate(typeof(SecurityIdentifier)).Value;
-							data.SID = _Sid;
-							if (_IsLocalAdminCheckSuccess == true) {
-								foreach (string localAdminGroupSid in localAdminGroupSidsList) {
-									if (localAdminGroupSid == _Sid) {
-										data.IsLocalAdmin = true; break;
-									}
-									else {
-										data.IsLocalAdmin = false;
-									}
-								}
-							}
-						}
-						
-						if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionName, out buffer, out bytesReturned) == false) { return data; }
-						strData = Marshal.PtrToStringAnsi(buffer);
-						data.SessionName = strData;
-						if (strData != "Services" && strData != "RDP-Tcp") { _IsUserSession = true; }
-						data.IsUserSession = _IsUserSession;
-						if (strData == "Console") { _IsConsoleSession = true; }
-						data.IsConsoleSession = _IsConsoleSession;
-						
-						WINSTATIONINFORMATIONW wsInfo = GetWinStationInformation(server, SessionId);
-						DateTime? _loginTime = FileTimeToDateTime(wsInfo.LoginTime);
-						DateTime? _lastInputTime = FileTimeToDateTime(wsInfo.LastInputTime);
-						DateTime? _disconnectTime = FileTimeToDateTime(wsInfo.DisconnectTime);
-						DateTime? _currentTime = FileTimeToDateTime(wsInfo.CurrentTime);
-						TimeSpan? _idleTime = (_currentTime != null && _lastInputTime != null) ? _currentTime.Value - _lastInputTime.Value : TimeSpan.Zero;
-						data.LogonTime = _loginTime;
-						data.IdleTime = _idleTime;
-						data.DisconnectTime = _disconnectTime;
-						
-						if (currentSessionID == SessionId) { _IsCurrentSessionId = true; }
-						data.IsCurrentSession = _IsCurrentSessionId;
-					}
-					finally {
-						WTSFreeMemory(buffer); buffer = IntPtr.Zero; CloseServer(server);
-					}
-					return data;
-				}
-			}
-			
-			public class TerminalSessionData {
-				public int SessionId; public Session.WTS_CONNECTSTATE_CLASS ConnectionState; public string SessionName; public bool IsUserSession;
-				public TerminalSessionData(int sessionId, Session.WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession) {
-					SessionId = sessionId; ConnectionState = connState; SessionName = sessionName; IsUserSession = isUserSession;
-				}
-			}
-			
-			public class TerminalSessionInfo {
-				public string NTAccount; public string SID; public string UserName; public string DomainName; public int SessionId; public string SessionName;
-				public Session.WTS_CONNECTSTATE_CLASS ConnectState; public bool IsCurrentSession; public bool IsConsoleSession;
-				public bool IsUserSession; public bool IsLocalAdmin; public DateTime? LogonTime; public TimeSpan? IdleTime; public DateTime? DisconnectTime;
-				public string ClientName; public string ClientProtocolType; public string ClientDirectory; public int ClientBuildNumber;
-			}
-		}
-'@
-		If (-not ([System.Management.Automation.PSTypeName]'QueryUser.Session').Type) {
-			[string[]]$ReferencedAssemblies = 'System.DirectoryServices'
-			Add-Type -TypeDefinition $QueryUserSessionSource -ReferencedAssemblies $ReferencedAssemblies -Language CSharp -IgnoreWarnings -ErrorAction 'Stop'
-		}
 	}
 	Process {
 		Try {
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
-			[QueryUser.Session]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [QueryUser.Session]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
+			[PSADT.QueryUserSession]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [PSADT.QueryUserSession]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
 		}
 		Catch {
 			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -9203,6 +8647,12 @@ Function Get-LoggedOnUser {
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
 	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
+}
+
+## Add the custom types required for the toolkit
+If (-not ([System.Management.Automation.PSTypeName]'PSADT.QueryUserSession').Type) {
+	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
+	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
 ## Define ScriptBlocks to disable/revert script logging
