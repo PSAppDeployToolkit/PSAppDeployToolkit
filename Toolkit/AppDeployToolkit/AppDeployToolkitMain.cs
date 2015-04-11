@@ -56,7 +56,7 @@ namespace PSADT
 		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
 		
-		public static void Refresh() {
+		public static void RefreshDesktopAndEnvironmentVariables() {
 			// Update desktop icons
 			SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
 			// Update environment variables
@@ -72,7 +72,7 @@ namespace PSADT
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern IntPtr LoadLibrary(string s);
 		
-		public static string PinVerb(int VerbId)
+		public static string GetPinVerb(int VerbId)
 		{
 			IntPtr hShell32 = LoadLibrary("shell32.dll");
 			const int nChars  = 255;
@@ -353,7 +353,7 @@ namespace PSADT
 		}
 	}
 	
-	public class QueryUserSession
+	public class QueryUser
 	{
 		[DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern IntPtr WTSOpenServer(string pServerName);

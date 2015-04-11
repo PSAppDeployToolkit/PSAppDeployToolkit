@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/09/2015'
+[string]$appDeployMainScriptDate = '04/11/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2146,7 +2146,7 @@ Function Remove-MSIApplications {
 		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
 		
 		## Build the hashtable with the options that will be passed to Execute-MSI using splatting
-		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall' }
+		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall'; Path = '' }
 		If ($ContinueOnError) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
 		If ($Parameters) { $ExecuteMSISplat.Add( 'Parameters', $Parameters) }
 		ElseIf ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
@@ -2158,7 +2158,7 @@ Function Remove-MSIApplications {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -match 'msiexec') {
 					Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
-					$ExecuteMSISplat.Add( 'Path', $installedApplication.ProductCode)
+					$ExecuteMSISplat.Path = $installedApplication.ProductCode
 					If ($PassThru) {
 						[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
 					}
@@ -4117,7 +4117,7 @@ Function Refresh-Desktop {
 	Process {
 		Try {
 			Write-Log -Message 'Refresh the Desktop and the Windows Explorer environment process block' -Source ${CmdletName}
-			[PSADT.Explorer]::Refresh()
+			[PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
 		}
 		Catch {
 			Write-Log -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -6409,7 +6409,7 @@ Function Set-PinnedApplication {
 			[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 			
 			Write-Log -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
-			[string]$PinVerb = [PSADT.FileVerb]::PinVerb($VerbId)
+			[string]$PinVerb = [PSADT.FileVerb]::GetPinVerb($VerbId)
 			Write-Log -Message "Verb ID [$VerbID] has a localized pin verb of [$PinVerb]." -Source ${CmdletName}
 			Write-Output $PinVerb
 		}
@@ -8622,7 +8622,7 @@ Function Get-LoggedOnUser {
 	Process {
 		Try {
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
-			[PSADT.QueryUserSession]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [PSADT.QueryUserSession]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
+			[PSADT.QueryUser]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [PSADT.QueryUser]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
 		}
 		Catch {
 			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -8650,7 +8650,7 @@ If ($invokingScript) {
 }
 
 ## Add the custom types required for the toolkit
-If (-not ([System.Management.Automation.PSTypeName]'PSADT.QueryUserSession').Type) {
+If (-not ([System.Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
 	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
 	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
