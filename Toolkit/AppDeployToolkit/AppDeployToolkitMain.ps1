@@ -4697,14 +4697,12 @@ Function Get-RunningProcesses {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
 				Write-Log -Message "The following processes are running: [$runningProcessList]" -Source ${CmdletName}
 				Write-Log -Message 'Resolve process descriptions...' -Source ${CmdletName}
-				## Resolve the running process names to descriptions using the following precedence:
-				#  1. The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-				#  2. The description of the process provided by WMI.
-				#  3. Fall back on the process name.
+				## Resolve the running process names to descriptions
 				ForEach ($runningProcess in $runningProcesses) {
 					ForEach ($processObject in $processObjects) {
-						If (($runningProcess.ProcessName) -eq ([System.IO.Path]::GetFileNameWithoutExtension($processObject.ProcessName))) {
+						If ($runningProcess.ProcessName -eq $processObject.ProcessName) {
 							If ($processObject.ProcessDescription) {
+								#  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
 								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
 							}
 							Else {
@@ -5092,8 +5090,7 @@ Function Show-InstallationWelcome {
 							$script:welcomeTimer.Dispose()
 							$script:welcomeTimer = $null
 						}
-						Catch {
-						}
+						Catch { }
 					}
 					
 					#  Restore minimized windows
