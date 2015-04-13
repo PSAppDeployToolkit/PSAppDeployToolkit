@@ -4910,10 +4910,19 @@ Function Show-InstallationWelcome {
 			[psobject[]]$processObjects = @()
 			#  Split multiple processes on a comma, then split on equal sign, then create custom object with process name and description
 			ForEach ($process in ($CloseApps -split ',' | Where-Object { $_ })) {
-				$process = $process -split '='
-				$processObjects += New-Object -TypeName PSObject -Property @{
-					ProcessName = $process[0]
-					ProcessDescription = $process[1]
+				If ($process.Contains('=')) {
+					[string[]]$ProcessSplit = $process -split '='
+					$processObjects += New-Object -TypeName PSObject -Property @{
+						ProcessName = $ProcessSplit[0]
+						ProcessDescription = $ProcessSplit[1]
+					}
+				}
+				Else {
+					[string]$ProcessInfo = $process
+					$processObjects += New-Object -TypeName PSObject -Property @{
+						ProcessName = $process
+						ProcessDescription = ''
+					}
 				}
 			}
 		}
