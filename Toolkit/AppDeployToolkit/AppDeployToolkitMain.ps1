@@ -4999,16 +4999,16 @@ Function Show-InstallationWelcome {
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
-					If ($AllowDeferCloseApps -and ($runningProcessDescriptions -eq '')) {
+					If ($AllowDeferCloseApps -and (-not $runningProcessDescriptions)) {
 						Break
 					}
 					#  Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
-					ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions -ne '') -and ($promptResult -ne 'Continue'))) {
+					ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions) -and ($promptResult -ne 'Continue'))) {
 						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -TopMost $TopMost
 					}
 				}
 				#  If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
-				ElseIf ($runningProcessDescriptions -ne '') {
+				ElseIf ($runningProcessDescriptions) {
 					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -TopMost $TopMost
 				}
 				#  If there is no deferral and no processes running, break the while loop
@@ -5129,14 +5129,14 @@ Function Show-InstallationWelcome {
 		}
 		
 		## Force nsd.exe to stop if Notes is one of the required applications to close
-		If (($processObjects | ForEach-Object { $_.ProcessName }) -match 'notes') {
+		If (($processObjects | ForEach-Object { $_.ProcessName }) -contains 'notes') {
 			#  Get a list of all the executables in the Notes folder
 			[string[]]$notesPathExes = Get-ChildItem -Path $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 			
 			## Ensure we aren't running as a Local System Account
 			If (-not $IsLocalSystemAccount) {
 				## Check for running Notes executables and run NSD if any are found
-				$notesPathExes | ForEach-Object { If ((Get-Process).Name -Contains $_) {
+				$notesPathExes | ForEach-Object { If ((Get-Process).Name -contains $_) {
 					[string]$notesPath = Get-Item -Path $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 					If ($notesPath) {
 						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.Exe'
