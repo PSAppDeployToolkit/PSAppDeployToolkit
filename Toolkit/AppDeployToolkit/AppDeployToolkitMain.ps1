@@ -4687,8 +4687,8 @@ Function Get-RunningProcesses {
 			[string]$runningAppsCheck = ($processObjects | ForEach-Object { $_.ProcessName }) -join ','
 			Write-Log -Message "Check for running application(s) [$runningAppsCheck]..." -Source ${CmdletName}
 			
-			## Escape special characters that interfere with regex and might cause false positive matches
-			[string[]]$processNames = $processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }
+			## Create an array of process names to search for
+			[string[]]$processNames = $processObjects | ForEach-Object { $_.ProcessName }
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
 			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
