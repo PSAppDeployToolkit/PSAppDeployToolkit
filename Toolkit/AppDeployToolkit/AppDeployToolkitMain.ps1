@@ -4659,9 +4659,9 @@ Function Get-UniversalDate {
 Function Get-RunningProcesses {
 <#
 .SYNOPSIS
-	Gets the processes that are running from a custom list of process objects.
+	Gets the processes that are running from a custom list of process objects and also adds a property called Description.
 .DESCRIPTION
-	Gets the processes that are running from a custom list of process objects.
+	Gets the processes that are running from a custom list of process objects and also adds a property called Description.
 .PARAMETER ProcessObjects
 	Custom object containing the process objects to search for.
 .EXAMPLE
