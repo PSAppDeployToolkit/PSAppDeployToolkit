@@ -246,9 +246,19 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 [scriptblock]$xmlLoadLocalizedUIMessages = {
 	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
 	If ($RunAsActiveUser) {
+		#  Read language for Win 8 machines
 		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
+		#  Read language for Win Vista/Win 7 machines
 		If (-not $HKULanguages) {
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'LocaleName' -SID $RunAsActiveUser.SID
+		}
+		#  Read language for Win XP machines
+		If (-not $HKULanguages) {
+			[int32]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
+			If ([string]$HKULocale) {
+				[int32]$HKULocale = '0x' + $HKULocale
+				[string[]]$HKULanguages = ([System.Globalization.CultureInfo]($HKULocale)).Name
+			}
 		}
 		If ($HKULanguages) {
 			[string]$HKUPrimaryLanguageShort = ([System.Globalization.CultureInfo]($HKULanguages[0])).TwoLetterISOLanguageName.ToUpper()
