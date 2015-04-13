@@ -2566,7 +2566,7 @@ Function Test-IsMutexAvailable {
 		[ValidateLength(1,260)]
 		[string]$MutexName,
 		[Parameter(Mandatory=$false)]
-		[ValidateRange(-1,[int32]::MaxValue)]
+		[ValidateScript({($_ -ge -1) -and ($_ -le [int32]::MaxValue)})]
 		[int32]$MutexWaitTimeInMilliseconds = 1
 	)
 	
