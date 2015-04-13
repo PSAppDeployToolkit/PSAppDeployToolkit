@@ -4688,11 +4688,10 @@ Function Get-RunningProcesses {
 			Write-Log -Message "Check for running application(s) [$runningAppsCheck]..." -Source ${CmdletName}
 			
 			## Escape special characters that interfere with regex and might cause false positive matches
-			## Join the process names with the regex operator '|' to perform "or" match against multiple applications
-			[string]$processNames = ($processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }) -join '|'
+			[string[]]$processNames = $processObjects | ForEach-Object { [regex]::Escape($_.ProcessName) }
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $_.ProcessName -match $processNames }
+			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
 			
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
