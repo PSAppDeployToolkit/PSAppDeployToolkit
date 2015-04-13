@@ -378,6 +378,43 @@ namespace PSADT
 		
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
+
+		public class TerminalSessionData
+		{
+			public int SessionId;
+			public WTS_CONNECTSTATE_CLASS ConnectionState;
+			public string SessionName;
+			public bool IsUserSession;
+			public TerminalSessionData(int sessionId, WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession)
+			{
+				SessionId = sessionId;
+				ConnectionState = connState;
+				SessionName = sessionName;
+				IsUserSession = isUserSession;
+			}
+		}
+		
+		public class TerminalSessionInfo
+		{
+			public string NTAccount;
+			public string SID;
+			public string UserName;
+			public string DomainName;
+			public int SessionId;
+			public string SessionName;
+			public WTS_CONNECTSTATE_CLASS ConnectState;
+			public bool IsCurrentSession;
+			public bool IsConsoleSession;
+			public bool IsUserSession;
+			public bool IsLocalAdmin;
+			public DateTime? LogonTime;
+			public TimeSpan? IdleTime;
+			public DateTime? DisconnectTime;
+			public string ClientName;
+			public string ClientProtocolType;
+			public string ClientDirectory;
+			public int ClientBuildNumber;
+		}
 		
 		[StructLayout(LayoutKind.Sequential)]
 		private struct WTS_SESSION_INFO
@@ -707,42 +744,5 @@ namespace PSADT
 			}
 			return data;
 		}
-	}
-	
-	public class TerminalSessionData
-	{
-		public int SessionId;
-		public QueryUser.WTS_CONNECTSTATE_CLASS ConnectionState;
-		public string SessionName;
-		public bool IsUserSession;
-		public TerminalSessionData(int sessionId, QueryUser.WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession)
-		{
-			SessionId = sessionId;
-			ConnectionState = connState;
-			SessionName = sessionName;
-			IsUserSession = isUserSession;
-		}
-	}
-	
-	public class TerminalSessionInfo
-	{
-		public string NTAccount;
-		public string SID;
-		public string UserName;
-		public string DomainName;
-		public int SessionId;
-		public string SessionName;
-		public QueryUser.WTS_CONNECTSTATE_CLASS ConnectState;
-		public bool IsCurrentSession;
-		public bool IsConsoleSession;
-		public bool IsUserSession;
-		public bool IsLocalAdmin;
-		public DateTime? LogonTime;
-		public TimeSpan? IdleTime;
-		public DateTime? DisconnectTime;
-		public string ClientName;
-		public string ClientProtocolType;
-		public string ClientDirectory;
-		public int ClientBuildNumber;
 	}
 }
