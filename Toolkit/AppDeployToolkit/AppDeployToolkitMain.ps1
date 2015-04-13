@@ -250,6 +250,9 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
 		#  Read language for Win Vista/Win 7 machines
 		If (-not $HKULanguages) {
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PrefferedUILanguages' -SID $RunAsActiveUser.SID
+		}
+		If (-not $HKULanguages) {
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'LocaleName' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win XP machines
