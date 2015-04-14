@@ -4281,16 +4281,16 @@ Function Get-ScheduledTask {
 			Write-Log -Message 'Retrieve Scheduled Tasks' -Source ${CmdletName}
 			[string[]]$exeSchtasksResults = & $exeSchTasks /Query /V /FO CSV
 			If ($global:LastExitCode -ne 0) { Throw "Failed to retrieve scheduled tasks using [$exeSchTasks]." }
-			[psobject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-CSV -ErrorAction 'Stop'
+			[psobject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-CSV -Header 'HostName', 'TaskName', 'Next Run Time', 'Status', 'Logon Mode', 'Last Run Time', 'Last Result', 'Author', 'Task To Run', 'Start In', 'Comment', 'Scheduled Task State', 'Idle Time', 'Power Management', 'Run As User', 'Delete Task If Not Rescheduled', 'Stop Task If Runs X Hours and X Mins', 'Schedule', 'Schedule Type', 'Start Time', 'Start Date', 'End Date', 'Days', 'Months', 'Repeat: Every', 'Repeat: Until: Time', 'Repeat: Until: Duration', 'Repeat: Stop If Still Running' -ErrorAction 'Stop'
 			
 			If ($SchtasksResults) {
 				ForEach ($SchtasksResult in $SchtasksResults) {
 					If ($SchtasksResult.TaskName -match $TaskName) {
-						$SchtasksResult  | Get-Member -MemberType Properties |
+						$SchtasksResult | Get-Member -MemberType Properties |
 						ForEach -Begin { 
 							[hashtable]$Task = @{}
 						} -Process {
-							## Remove spaces and colons in property names. Do not set property value if line being processed is a column header.
+							## Remove spaces and colons in property names. Do not set property value if line being processed is a column header (this will only work on English language machines).
 							($Task.($($_.Name).Replace(' ','').Replace(':',''))) = If ($_.Name -ne $SchtasksResult.($_.Name)) { $SchtasksResult.($_.Name) }
 						} -End {
 							## Only add task to the custom object if all property values are not empty
