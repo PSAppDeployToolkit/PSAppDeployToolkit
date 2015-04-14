@@ -1,4 +1,4 @@
-Version 3.6.2 [04/13/2015]
+Version 3.6.2 [04/14/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load
 	Improved internal function Test-MsiExecMutex: renamed function to Test-IsMutexAvailable, added parameters to allow checking for any named mutex, improved error trapping and messages
 	Improved Get-LoggedOnUser by increasing performance (should be much faster now)
@@ -11,6 +11,7 @@ Version 3.6.2 [04/13/2015]
 	Fixed issue with detecting a logged in user's locale
 	Fixed issue in Get-RunningProcesses where a regex match would detect processes that partially matched the name of the process being searched for
 	Fixed issue in Get-RunningProcesses and Show-InstallationWelcome where a specified custom process description was ignored
+	Fixed issue where Deploy-Application.ps1 script version would be set to toolkit version if it was not specified
 Version 3.6.1 [04/02/2015]
 	Added Zero-Config deployment for MSI files. No need to customise anything. Drop your MSI in the Files folder and run the toolkit. Information is pulled from the MSI to do branding, logging, and closing in-use processes.
 	Added -DisableLogging switch to Deploy-Application.ps1 to disable logging to file for the script

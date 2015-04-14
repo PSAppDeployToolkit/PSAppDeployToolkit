@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.2'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/13/2015'
+[string]$appDeployMainScriptDate = '04/14/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8774,13 +8774,15 @@ If (-not $appName) {
 }
 
 ## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
-If (-not $appVendor) { [string]$appVendor = 'PS' }
-If (-not $appName) { [string]$appName = $appDeployMainScriptFriendlyName }
-If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
-If (-not $appLang) { [string]$appLang = $currentLanguage }
+If (-not $appName) {
+	[string]$appName = $appDeployMainScriptFriendlyName
+	If (-not $appVendor) { [string]$appVendor = 'PS' }
+	If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
+	If (-not $appLang) { [string]$appLang = $currentLanguage }
+}
 If (-not $appRevision) { [string]$appRevision = '01' }
 If (-not $appArch) { [string]$appArch = '' }
-[string]$installTitle = "$appVendor $appName $appVersion"
+[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
 
 ## Sanitize the application details, as they can cause issues in the script
 [char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
