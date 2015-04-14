@@ -268,11 +268,15 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 		}
 		If ($HKULanguages) {
 			[string]$HKUPrimaryLanguageShort = ([System.Globalization.CultureInfo]($HKULanguages[0])).TwoLetterISOLanguageName.ToUpper()
-			[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
 		}
 	}
-	#  Default to UI language of the account executing current process (even if it is the SYSTEM account)
+	
+	If ($HKUPrimaryLanguageShort) {
+		#  Use the primary UI language of the logged in user
+		[string]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
+	}
 	Else {
+		#  Default to UI language of the account executing current process (even if it is the SYSTEM account)
 		[string]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
 	}
 	#  Default to English if the detected UI language is not available in the XMl config file
