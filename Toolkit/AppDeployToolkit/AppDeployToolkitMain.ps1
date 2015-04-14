@@ -5618,7 +5618,7 @@ Function Show-WelcomePrompt {
 		$toolTip.IsBalloon = $false
 		$toolTip.InitialDelay = 100
 		$toolTip.ReshowDelay = 100
-		$toolTip.SetToolTip($buttonContinue, "Only press 'Continue' after closing the above listed applications.")
+		$toolTip.SetToolTip($buttonContinue, "Only press 'Continue' after closing the above listed application(s).")
 		
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
