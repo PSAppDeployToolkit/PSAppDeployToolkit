@@ -1,5 +1,6 @@
 Version 3.6.3 [04/xx/2015]
 	Added an informational tooltip to the 'Continue' button on the close apps screen to make it clear that it can only be used after closing the listed applications
+	Fixed issue with Get-ScheduledTask not working properly with non-English languages
 Version 3.6.2 [04/14/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load
 	Improved internal function Test-MsiExecMutex: renamed function to Test-IsMutexAvailable, added parameters to allow checking for any named mutex, improved error trapping and messages
