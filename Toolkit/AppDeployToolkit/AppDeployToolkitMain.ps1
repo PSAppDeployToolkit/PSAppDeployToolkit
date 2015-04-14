@@ -4659,9 +4659,9 @@ Function Get-UniversalDate {
 Function Get-RunningProcesses {
 <#
 .SYNOPSIS
-	Gets the processes that are running from a custom list of process objects and also adds a property called Description.
+	Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 .DESCRIPTION
-	Gets the processes that are running from a custom list of process objects and also adds a property called Description.
+	Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 .PARAMETER ProcessObjects
 	Custom object containing the process objects to search for.
 .EXAMPLE
@@ -4703,11 +4703,15 @@ Function Get-RunningProcesses {
 						If ($runningProcess.ProcessName -eq $processObject.ProcessName) {
 							If ($processObject.ProcessDescription) {
 								#  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
+							}
+							ElseIf ($runningProcess.Description) {
+								#  If the process already has a description field specified, then use it
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.Description -Force -ErrorAction 'SilentlyContinue'
 							}
 							Else {
 								#  Fall back on the process name if no description is provided by the process or as a parameter to the function
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'Description' -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 							}
 						}
 					}
@@ -5002,7 +5006,7 @@ Function Show-InstallationWelcome {
 			}
 			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
 			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -5127,7 +5131,7 @@ Function Show-InstallationWelcome {
 			[array]$runningProcesses = $null
 			[array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.Description } | Select-Object -ExpandProperty 'Description' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
 				Write-Log -Message "Force close application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
 				$runningProcesses | Stop-Process -Force -ErrorAction 'SilentlyContinue'
 				Start-Sleep -Seconds 2
