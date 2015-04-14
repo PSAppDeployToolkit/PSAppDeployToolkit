@@ -5,6 +5,7 @@ Version 3.6.2 [04/14/2015]
 	Improved Show-WelcomePrompt by adding horizontal scrollbar for listbox items that are longer then the window
 	Changed toolkit so that all custom C# code is now in a separate file called "AppDeployToolkitMain.cs" which gets compiled once after functions are declared
 	Added an alias called 'Text' for the -Message parameter in Write-Log for backwards compatibility
+	Added an informational tooltip to the 'Continue' button on the close apps screen to make it clear that it can only be used after closing the listed applications
 	Fixed issue with retrieving the active logged in user's system DPI scale factor because of typo in registry key
 	Fixed issue with malformed log entries being inserted into log file when dot sourcing scriptblock to retrieve logged in user session details
 	Fixed issue in Remove-MSIApplications where 'Path' key could be added to hash table more than once

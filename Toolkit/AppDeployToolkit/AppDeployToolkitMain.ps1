@@ -5337,6 +5337,7 @@ Function Show-WelcomePrompt {
 		$formWelcomeWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
 		$flowLayoutPanel = New-Object -TypeName System.Windows.Forms.FlowLayoutPanel
 		$panelButtons = New-Object -TypeName System.Windows.Forms.Panel
+		$toolTip = New-Object System.Windows.Forms.ToolTip
 		
 		## Remove all event handlers from the controls
 		[scriptblock]$Form_Cleanup_FormClosed = {
@@ -5612,6 +5613,12 @@ Function Show-WelcomePrompt {
 		$buttonContinue.AutoSize = $true
 		$buttonContinue.UseVisualStyleBackColor = $true
 		$buttonContinue.add_Click($buttonContinue_OnClick)
+		#  Add tooltip to Continue button
+		$toolTip.BackColor = [System.Drawing.Color]::LightGoldenrodYellow
+		$toolTip.IsBalloon = $false
+		$toolTip.InitialDelay = 100
+		$toolTip.ReshowDelay = 100
+		$toolTip.SetToolTip($buttonContinue, "Only press 'Continue' after closing the above listed applications.")
 		
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
