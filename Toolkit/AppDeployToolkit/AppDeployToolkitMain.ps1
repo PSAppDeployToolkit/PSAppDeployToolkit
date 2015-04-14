@@ -8863,6 +8863,8 @@ If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType
 
 ## Evaluate non-default parameters passed to the scripts
 If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+#  Save main script parameters hashtable for async execution of the toolkit
+[hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
 If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
 If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
 
@@ -8923,9 +8925,9 @@ If ($ReferringApplication) {
 If ($showInstallationPrompt) {
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]" -Source $appDeployToolkitName
-	$appDeployMainScriptParameters.Remove('ShowInstallationPrompt')
-	$appDeployMainScriptParameters.Remove('ReferringApplication')
-	Show-InstallationPrompt @appDeployMainScriptParameters
+	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
+	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	Show-InstallationPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
 
@@ -8933,9 +8935,9 @@ If ($showInstallationPrompt) {
 If ($showInstallationRestartPrompt) {
 	$deployModeSilent = $true
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]" -Source $appDeployToolkitName
-	$appDeployMainScriptParameters.Remove('ShowInstallationRestartPrompt')
-	$appDeployMainScriptParameters.Remove('ReferringApplication')
-	Show-InstallationRestartPrompt @appDeployMainScriptParameters
+	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationRestartPrompt')
+	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
 
