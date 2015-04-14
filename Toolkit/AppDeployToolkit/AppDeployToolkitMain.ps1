@@ -363,10 +363,13 @@ If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
 	If ($RunAsActiveUser) {
-		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
+		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
+		If (-not ([string]$dpiPixels)) {
+			[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
+		}
 		[boolean]$UserDisplayScaleFactor = $true
 	}
-	If (-not [string]$dpiPixels) {
+	If (-not ([string]$dpiPixels)) {
 		#  This registry setting only exists if system scale factor has been changed at least once
 		[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
 		[boolean]$UserDisplayScaleFactor = $false
