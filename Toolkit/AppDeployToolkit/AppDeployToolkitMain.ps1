@@ -5502,9 +5502,7 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.Size = $System_Drawing_Size
 		$listBoxCloseApps.Margin = '75,0,0,0'
 		$listBoxCloseApps.TabIndex = 3
-		ForEach ($processDescription in $ProcessDescriptions) {
-			$listboxCloseApps.Items.Add($processDescription) | Out-Null
-		}
+		$ProcessDescriptions | ForEach-Object { $listboxCloseApps.Items.Add($_) | Out-Null }
 		
 		## Label Defer
 		$labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
