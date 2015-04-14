@@ -5288,7 +5288,7 @@ Function Show-WelcomePrompt {
 		
 		## Initial form layout: Close Applications / Allow Deferral
 		If ($processDescriptions) {
-			Write-Log -Message "Prompt user to close application(s) [$runningProcessDescriptions]..." -Source ${CmdletName}
+			Write-Log -Message "Prompt user to close application(s) [$processDescriptions]..." -Source ${CmdletName}
 			$showCloseApps = $true
 		}
 		If (($allowDefer) -and (($deferTimes -ge 0) -or ($deferDeadline))) {
@@ -5318,7 +5318,7 @@ Function Show-WelcomePrompt {
 			$showCountdown = $true
 		}
 		
-		[string[]]$processDescriptions = $processDescriptions.Split(',')
+		[string[]]$processDescriptions = $processDescriptions -split ','
 		[System.Windows.Forms.Application]::EnableVisualStyles()
 		
 		$formWelcome = New-Object -TypeName System.Windows.Forms.Form
@@ -5494,6 +5494,7 @@ Function Show-WelcomePrompt {
 		## Listbox Close Applications
 		$listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
 		$listBoxCloseApps.FormattingEnabled = $true
+		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
 		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
 		$System_Drawing_Size.Height = 100
