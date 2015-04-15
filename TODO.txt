@@ -1,16 +1,11 @@
-Proposed / Planned Features:
+Proposed / Planned Features for v4:
 
-- PowerShell ISE integration - potentially...
-	- Wizard-based script creation
-	- Help system integration
-- Detect toolkit log file location from XML for deploy-application.exe
-- Add Debug param to help section in deploy-application.ps1 script
-- Standardize exit codes in toolkit in a high range to avoid conficts with other applications and document it
+- Convert to a module
+- Get the UI functioning under Session 0
+- UI overhaul: Support for progress bars, update language, better branding
 - Develop more reliable method of detecting network connection for function Test-NetworkConnection, by using INetworkListManager interface
 
-Outstanding Issues:
+To investigate:
 
-
-Administration:
-
-- Update documentation (recurring)
+- Integration with PowerShell ISE - wizard-based script creation?
+- Integration with PowerShell DSC - not sure about how yet
