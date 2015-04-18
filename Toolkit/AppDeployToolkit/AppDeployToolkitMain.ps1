@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/14/2015'
+[string]$appDeployMainScriptDate = '04/17/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -5337,7 +5337,7 @@ Function Show-WelcomePrompt {
 		$formWelcomeWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
 		$flowLayoutPanel = New-Object -TypeName System.Windows.Forms.FlowLayoutPanel
 		$panelButtons = New-Object -TypeName System.Windows.Forms.Panel
-		$toolTip = New-Object System.Windows.Forms.ToolTip
+		$toolTip = New-Object -TypeName System.Windows.Forms.ToolTip
 		
 		## Remove all event handlers from the controls
 		[scriptblock]$Form_Cleanup_FormClosed = {
@@ -5353,8 +5353,7 @@ Function Show-WelcomePrompt {
 				$formWelcome.remove_Load($Form_StateCorrection_Load)
 				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
-			Catch {
-			}
+			Catch { }
 		}
 		
 		[scriptblock]$Form_StateCorrection_Load = {
