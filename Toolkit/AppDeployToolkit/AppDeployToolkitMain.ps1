@@ -1124,8 +1124,7 @@ Function Show-InstallationPrompt {
 				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
-			Catch {
-			}
+			Catch { }
 		}
 		
 		[scriptblock]$Form_StateCorrection_Load = {
@@ -1296,15 +1295,6 @@ Function Show-InstallationPrompt {
 			$buttonAbort.PerformClick()
 		})
 		
-		## Persistence Timer
-		If ($persistPrompt) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
-			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { Refresh-InstallationPrompt }
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
-		}
-		
 		## Save the initial state of the form
 		$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 		## Init the OnLoad event to correct the initial state of the form
@@ -1314,11 +1304,19 @@ Function Show-InstallationPrompt {
 		
 		## Start the timer
 		$timer.Start()
-		
-		Function Refresh-InstallationPrompt {
+
+		## Persistence Timer
+		[scriptblock]$RefreshInstallationPrompt = {
 			$formInstallationPrompt.BringToFront()
 			$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 			$formInstallationPrompt.Refresh()
+		}
+		If ($persistPrompt) {
+			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
+			[scriptblock]$timerPersist_Tick = { & $RefreshInstallationPrompt }
+			$timerPersist.add_Tick($timerPersist_Tick)
+			$timerPersist.Start()
 		}
 		
 		## Close the Installation Progress Dialog if running
@@ -5880,8 +5878,7 @@ Function Show-InstallationRestartPrompt {
 				$formRestart.remove_Load($Form_StateCorrection_Load)
 				$formRestart.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
-			Catch {
-			}
+			Catch { }
 		}
 		
 		## Form
