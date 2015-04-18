@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/17/2015'
+[string]$appDeployMainScriptDate = '04/18/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -549,7 +549,17 @@ Function Write-Log {
 		#  Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
-		If ($script:MyInvocation.Value.ScriptName) { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf } Else { [string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf }
+		Try {
+			If ($script:MyInvocation.Value.ScriptName) {
+				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf -ErrorAction 'Stop'
+			}
+			Else {
+				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction 'Stop'
+			}
+		}
+		Catch {
+			$ScriptSource = ''
+		}
 		
 		## Create script block for generating CMTrace.exe compatible log entry
 		[scriptblock]$CMTraceLogString = {
