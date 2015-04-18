@@ -4718,15 +4718,15 @@ Function Get-RunningProcesses {
 						If ($runningProcess.ProcessName -eq $processObject.ProcessName) {
 							If ($processObject.ProcessDescription) {
 								#  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 							ElseIf ($runningProcess.Description) {
 								#  If the process already has a description field specified, then use it
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.Description -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.Description -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 							Else {
 								#  Fall back on the process name if no description is provided by the process or as a parameter to the function
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.ProcessName -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 						}
 					}
@@ -5019,8 +5019,9 @@ Function Show-InstallationWelcome {
 				# Change this variable to a boolean now to switch the countdown on even with deferral
 				[boolean]$forceCloseAppsCountdown = $true
 			}
-			Set-Variable -Name closeAppsCountdownGlobal -Value $closeAppsCountdown -Scope Script
-			While (($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
+			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope Script
+			
+			While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable runningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
 				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {

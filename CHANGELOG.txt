@@ -2,6 +2,7 @@ Version 3.6.3 [04/xx/2015]
 	Added an informational tooltip to the 'Continue' button on the close apps screen to make it clear that it can only be used after closing the listed applications
 	Fixed issue with Get-ScheduledTask not working properly with non-English languages
 	Fixed issue with Write-Log throwing error on Windows 7 when discovering script source under certain conditions
+	Fixed issue with Get-RunningProcesses on Windows 7 where the custom object did not return ProcessDescription property unless -PassThru option was used
 	Changed icon for Deploy-Application.exe
 Version 3.6.2 [04/14/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load
