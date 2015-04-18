@@ -5779,7 +5779,7 @@ Function Show-InstallationRestartPrompt {
 		$timerCountdown = New-Object -TypeName System.Windows.Forms.Timer
 		$InitialFormWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
 		
-		Function Perform-Restart {
+		[scriptblock]$RestartComputer = {
 			Write-Log -Message 'Force restart the computer...' -Source ${CmdletName}
 			Restart-Computer -Force
 		}
@@ -5834,7 +5834,7 @@ Function Show-InstallationRestartPrompt {
 		}
 		
 		## Restart the computer
-		[scriptblock]$buttonRestartNow_Click = { Perform-Restart }
+		[scriptblock]$buttonRestartNow_Click = { & $RestartComputer }
 		
 		## Hide the form if minimized
 		[scriptblock]$formRestart_Resize = { If ($formRestart.WindowState -eq 'Minimized') { $formRestart.WindowState = 'Minimized' } }
