@@ -55,8 +55,8 @@ Param
 
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.0'
-[string]$appDeployMainScriptDate = '04/18/2015'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
+[string]$appDeployMainScriptDate = '04/20/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -263,11 +263,11 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 			[int32]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
 			If ([string]$HKULocale) {
 				[int32]$HKULocale = '0x' + $HKULocale
-				[string[]]$HKULanguages = ([System.Globalization.CultureInfo]($HKULocale)).Name
+				[string[]]$HKULanguages = ([Globalization.CultureInfo]($HKULocale)).Name
 			}
 		}
 		If ($HKULanguages) {
-			[string]$HKUPrimaryLanguageShort = ([System.Globalization.CultureInfo]($HKULanguages[0])).TwoLetterISOLanguageName.ToUpper()
+			[string]$HKUPrimaryLanguageShort = ([Globalization.CultureInfo]($HKULanguages[0])).TwoLetterISOLanguageName.ToUpper()
 		}
 	}
 	
@@ -297,6 +297,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 	[string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
 	[string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
 	[string]$configClosePromptButtonContinue = $xmlUIMessages.ClosePrompt_ButtonContinue
+	[string]$configClosePromptButtonContinueTooltip = $xmlUIMessages.ClosePrompt_ButtonContinueTooltip
 	[string]$configClosePromptCountdownMessage = $xmlUIMessages.ClosePrompt_CountdownMessage
 	[string]$configDeferPromptWelcomeMessage = $xmlUIMessages.DeferPrompt_WelcomeMessage
 	[string]$configDeferPromptExpiryMessage = $xmlUIMessages.DeferPrompt_ExpiryMessage
@@ -5626,7 +5627,7 @@ Function Show-WelcomePrompt {
 		$toolTip.IsBalloon = $false
 		$toolTip.InitialDelay = 100
 		$toolTip.ReshowDelay = 100
-		$toolTip.SetToolTip($buttonContinue, "Only press 'Continue' after closing the above listed application(s).")
+		$toolTip.SetToolTip($buttonContinue, $configClosePromptButtonContinueTooltip)
 		
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9029,8 +9030,15 @@ Else {
 	Write-Log -Message 'No users are logged on to the system.' -Source $appDeployToolkitName
 }
 
-## Log primary UI language of active logged on user
-If ($HKUPrimaryLanguageShort) { Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName }
+## Log which language's UI messages are loaded from the config XML file
+If ($HKUPrimaryLanguageShort) {
+	Write-Log -Message "The active logged on user [$($RunAsActiveUser.NTAccount)] has a primary UI language of [$HKUPrimaryLanguageShort]." -Source $appDeployToolkitName
+}
+Else {
+	Write-Log -Message "The current system account [$ProcessNTAccount] has a primary UI language of [$currentLanguage]." -Source $appDeployToolkitName
+}
+If ($configInstallationUILanguageOverride) { Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language messages [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName }
+Write-Log -Message "The following UI language messages from the config XML file were imported [$xmlUIMessageLanguage]." -Source $appDeployToolkitName
 
 ## Log system DPI scale factor of active logged on user
 If ($UserDisplayScaleFactor) {
