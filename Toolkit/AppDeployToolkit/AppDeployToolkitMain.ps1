@@ -8221,11 +8221,11 @@ Function Test-ServiceExists {
 		Try {
 			$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop'
 			If ($ServiceObject) {
-				Write-Log -Message "Service [$Name] exists" -Source ${CmdletName}
+				Write-Log -Message "Service [$Name] exists." -Source ${CmdletName}
 				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $true }
 			}
 			Else {
-				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName}
+				Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName}
 				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $false }
 			}
 		}
@@ -8297,12 +8297,12 @@ Function Stop-ServiceAndDependencies {
 		Try {
 			## Check to see if the service exists
 			If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
-				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName} -Severity 2
+				Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
 				Throw "Service [$Name] does not exist."
 			}
 			
 			## Get the service object
-			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
+			Write-Log -Message "Get the service object for service [$Name]." -Source ${CmdletName}
 			[ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
 			## Wait up to 60 seconds if service is in a pending state
 			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
@@ -8319,7 +8319,7 @@ Function Stop-ServiceAndDependencies {
 				$Service.Refresh()
 			}
 			## Discover if the service is currently running
-			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]" -Source ${CmdletName}
+			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
 			If ($Service.Status -ne 'Stopped') {
 				#  Discover all dependent services that are running and stop them
 				If (-not $SkipDependentServices) {
@@ -8342,7 +8342,7 @@ Function Stop-ServiceAndDependencies {
 					}
 				}
 				#  Stop the parent service
-				Write-Log -Message "Stop parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
+				Write-Log -Message "Stop parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
 				[ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 			}
 		}
@@ -8418,12 +8418,12 @@ Function Start-ServiceAndDependencies {
 		Try {
 			## Check to see if the service exists
 			If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
-				Write-Log -Message "Service [$Name] does not exist" -Source ${CmdletName} -Severity 2
+				Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
 				Throw "Service [$Name] does not exist."
 			}
 			
 			## Get the service object
-			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
+			Write-Log -Message "Get the service object for service [$Name]." -Source ${CmdletName}
 			[ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
 			## Wait up to 60 seconds if service is in a pending state
 			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
@@ -8440,10 +8440,10 @@ Function Start-ServiceAndDependencies {
 				$Service.Refresh()
 			}
 			## Discover if the service is currently stopped
-			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]" -Source ${CmdletName}
+			Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
 			If ($Service.Status -ne 'Running') {
 				#  Start the parent service
-				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
+				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
 				[ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 				
 				#  Discover all dependent services that are stopped and start them
@@ -8463,7 +8463,7 @@ Function Start-ServiceAndDependencies {
 						}
 					}
 					Else {
-						Write-Log -Message "Dependent service(s) were not discovered for service [$Name]" -Source ${CmdletName}
+						Write-Log -Message "Dependent service(s) were not discovered for service [$Name]." -Source ${CmdletName}
 					}
 				}
 			}
@@ -8539,7 +8539,7 @@ Function Get-ServiceStartMode
 				Catch { }
 			}
 			
-			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]" -Source ${CmdletName}
+			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]." -Source ${CmdletName}
 			Write-Output $ServiceStartMode
 		}
 		Catch {
@@ -8602,7 +8602,7 @@ Function Set-ServiceStartMode
 			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
 			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
 			
-			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
+			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 			If ($StartMode -eq 'Automatic (Delayed Start)') {
 				$ChangeStartMode = & sc.exe config $Name start= delayed-auto
 				If ($global:LastExitCode -ne 0) {
@@ -8615,7 +8615,7 @@ Function Set-ServiceStartMode
 					Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
 				}
 			}
-			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
+			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 		}
 		Catch {
 			Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
