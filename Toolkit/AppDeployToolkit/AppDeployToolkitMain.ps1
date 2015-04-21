@@ -9037,8 +9037,8 @@ If ($HKUPrimaryLanguageShort) {
 Else {
 	Write-Log -Message "The current system account [$ProcessNTAccount] has a primary UI language of [$currentLanguage]." -Source $appDeployToolkitName
 }
-If ($configInstallationUILanguageOverride) { Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName }
-Write-Log -Message "The following UI language messages from the config XML file were imported [$xmlUIMessageLanguage]." -Source $appDeployToolkitName
+If ($configInstallationUILanguageOverride) { Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language: [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName }
+Write-Log -Message "The following UI messages were imported from the config XML file: [$xmlUIMessageLanguage]." -Source $appDeployToolkitName
 
 ## Log system DPI scale factor of active logged on user
 If ($UserDisplayScaleFactor) {
