@@ -56,13 +56,13 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '04/20/2015'
+[string]$appDeployMainScriptDate = '04/21/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
 [string]$currentTime = (Get-Date -UFormat '%T').ToString()
 [string]$currentDate = (Get-Date -UFormat '%d-%m-%Y').ToString()
-[timespan]$currentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
+[timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
 
@@ -74,7 +74,7 @@ Param
 [string]$envCommonProgramFiles = $env:CommonProgramFiles
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
 [string]$envComputerName = $env:COMPUTERNAME | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
-[string]$envComputerNameFQDN = ([System.Net.Dns]::GetHostEntry('')).HostName
+[string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
 [string]$envHomePath = $env:HOMEPATH
 [string]$envHomeShare = $env:HOMESHARE
@@ -102,17 +102,17 @@ If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $env:PROGRAMFILES 
 If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
-		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([System.Net.Dns]::GetHostEntry($_)).HostName }
+		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
 		# If running in system context, fall back on the logonserver value stored in the registry
 		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
-		[string]$MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
+		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
 }
 Else {
 	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 }
-[string]$envMachineDNSDomain = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+[string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDomain = $env:USERDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 
@@ -120,7 +120,7 @@ Else {
 [psobject]$envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction 'SilentlyContinue'
 [string]$envOSName = $envOS.Caption.Trim()
 [string]$envOSServicePack = $envOS.CSDVersion
-[version]$envOSVersion = [System.Environment]::OSVersion.Version
+[version]$envOSVersion = [Environment]::OSVersion.Version
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
 [string]$envOSVersionBuild = $envOSVersion.Build
@@ -142,7 +142,7 @@ Switch ($envOSProductType) {
 If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
-[boolean]$Is64BitProcess = [boolean]([System.IntPtr]::Size -eq 8)
+[boolean]$Is64BitProcess = [boolean]([IntPtr]::Size -eq 8)
 If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
 
 ## Variables: PowerShell And CLR (.NET) Versions
@@ -163,23 +163,23 @@ If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchi
 [string]$envCLRVersion = $envCLRVersion.ToString()
 
 ## Variables: Permissions/Accounts
-[System.Security.Principal.WindowsIdentity]$CurrentProcessToken = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-[System.Security.Principal.SecurityIdentifier]$CurrentProcessSID = $CurrentProcessToken.User
+[Security.Principal.WindowsIdentity]$CurrentProcessToken = [Security.Principal.WindowsIdentity]::GetCurrent()
+[Security.Principal.SecurityIdentifier]$CurrentProcessSID = $CurrentProcessToken.User
 [string]$ProcessNTAccount = $CurrentProcessToken.Name
 [string]$ProcessNTAccountSID = $CurrentProcessSID.Value
-[boolean]$IsAdmin = [boolean]($CurrentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-32-544')
-[boolean]$IsLocalSystemAccount = $CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid')
-[boolean]$IsLocalServiceAccount = $CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid')
-[boolean]$IsNetworkServiceAccount = $CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid')
-[boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6')
-[boolean]$IsProcessUserInteractive = [System.Environment]::UserInteractive
-[string]$LocalSystemNTAccount = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+[boolean]$IsAdmin = [boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-32-544')
+[boolean]$IsLocalSystemAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'LocalSystemSid')
+[boolean]$IsLocalServiceAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'LocalServiceSid')
+[boolean]$IsNetworkServiceAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'NetworkServiceSid')
+[boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-6')
+[boolean]$IsProcessUserInteractive = [Environment]::UserInteractive
+[string]$LocalSystemNTAccount = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([Security.Principal.NTAccount]).Value
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
 ## Variables: Script Name and Script Paths
 [string]$scriptPath = $MyInvocation.MyCommand.Definition
-[string]$scriptName = [System.IO.Path]::GetFileNameWithoutExtension($scriptPath)
+[string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
 [string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
 [string]$scriptRoot = Split-Path -Path $scriptPath -Parent
 [string]$invokingScript = (Get-Variable -Name MyInvocation).Value.ScriptName
@@ -207,14 +207,14 @@ If (-not (Test-Path -Path $appDeployConfigFile -PathType Leaf)) { Throw 'App Dep
 If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Throw 'App Deploy custom types source code file not found.' }
 
 ## Import variables from XML configuration file
-[xml]$xmlConfigFile = Get-Content -Path $AppDeployConfigFile
-$xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
+[Xml.XmlDocument]$xmlConfigFile = Get-Content -Path $AppDeployConfigFile
+[Xml.XmlElement]$xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 #  Get Config File Details
-$configConfigDetails = $xmlConfig.Config_File
+[Xml.XmlElement]$configConfigDetails = $xmlConfig.Config_File
 [string]$configConfigVersion = [version]$configConfigDetails.Config_Version
 [string]$configConfigDate = $configConfigDetails.Config_Date
 #  Get Toolkit Options
-$xmlToolkitOptions = $xmlConfig.Toolkit_Options
+[Xml.XmlElement]$xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [boolean]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
 [string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
 [string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
@@ -225,7 +225,7 @@ $xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [boolean]$configToolkitLogWriteToHost = [boolean]::Parse($xmlToolkitOptions.Toolkit_LogWriteToHost)
 [boolean]$configToolkitLogDebugMessage = [boolean]::Parse($xmlToolkitOptions.Toolkit_LogDebugMessage)
 #  Get MSI Options
-$xmlConfigMSIOptions = $xmlConfig.MSI_Options
+[Xml.XmlElement]$xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [string]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
 [string]$configMSIInstallParams = $xmlConfigMSIOptions.MSI_InstallParams
 [string]$configMSISilentParams = $xmlConfigMSIOptions.MSI_SilentParams
@@ -233,7 +233,7 @@ $xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [string]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
 #  Get UI Options
-$xmlConfigUIOptions = $xmlConfig.UI_Options
+[Xml.XmlElement]$xmlConfigUIOptions = $xmlConfig.UI_Options
 [string]$configInstallationUILanguageOverride = $xmlConfigUIOptions.InstallationUI_LanguageOverride
 [boolean]$configShowBalloonNotifications = [boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
 [int32]$configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
@@ -284,7 +284,7 @@ $xmlConfigUIOptions = $xmlConfig.UI_Options
 	#  Override the detected language if the override option was specified in the XML config file
 	If ($configInstallationUILanguageOverride) { [string]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride" }
 	
-	$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
+	[Xml.XmlElement]$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
 	[string]$configDiskSpaceMessage = $xmlUIMessages.DiskSpace_Message
 	[string]$configBalloonTextStart = $xmlUIMessages.BalloonText_Start
 	[string]$configBalloonTextComplete = $xmlUIMessages.BalloonText_Complete
@@ -542,7 +542,7 @@ Function Write-Log {
 		#  Log file date/time
 		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
 		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
-		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
+		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		#  Initialize variables
 		[boolean]$ExitLoggingFunction = $false
@@ -569,7 +569,7 @@ Function Write-Log {
 				[string]$lSource,
 				[int16]$lSeverity
 			)
-			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
+			"<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
 		}
 		
 		## Create script block for writing log entry to the console
@@ -684,11 +684,11 @@ Function Write-Log {
 		## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
 		Try {
 			If ((-not $ExitLoggingFunction) -and (-not $DisableLogging)) {
-				[System.IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
+				[IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
 				[decimal]$LogFileSizeMB = $LogFile.Length/1MB
 				If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
 					## Change the file extension to "lo_"
-					[string]$ArchivedOutLogFile = [System.IO.Path]::ChangeExtension($LogFilePath, 'lo_')
+					[string]$ArchivedOutLogFile = [IO.Path]::ChangeExtension($LogFilePath, 'lo_')
 					[hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFilePath; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
 					
 					## Log message about archiving the log file
@@ -1107,7 +1107,7 @@ Function Show-InstallationPrompt {
 			Throw $CountdownTimeoutErr
 		}
 		
-		[System.Windows.Forms.Application]::EnableVisualStyles()
+		[Windows.Forms.Application]::EnableVisualStyles()
 		$formInstallationPrompt = New-Object -TypeName System.Windows.Forms.Form
 		$pictureBanner = New-Object -TypeName System.Windows.Forms.PictureBox
 		$pictureIcon = New-Object -TypeName System.Windows.Forms.PictureBox
@@ -1194,7 +1194,7 @@ Function Show-InstallationPrompt {
 		
 		## Picture Icon
 		$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
-		If ($icon -ne 'None') { $pictureIcon.Image = ([System.Drawing.SystemIcons]::$Icon).ToBitmap() }
+		If ($icon -ne 'None') { $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap() }
 		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
 		$System_Drawing_Point.X = 15
 		$System_Drawing_Point.Y = 105
@@ -1863,7 +1863,7 @@ Function Execute-MSI {
 		[ValidateSet('Install','Uninstall','Patch','Repair','ActiveSetup')]
 		[string]$Action = 'Install',
 		[Parameter(Mandatory=$true,HelpMessage='Please enter either the path to the MSI/MSP file or the ProductCode')]
-		[ValidateScript({($_ -match $MSIProductCodeRegExPattern) -or ('.msi','.msp' -contains [System.IO.Path]::GetExtension($_))})]
+		[ValidateScript({($_ -match $MSIProductCodeRegExPattern) -or ('.msi','.msp' -contains [IO.Path]::GetExtension($_))})]
 		[Alias('FilePath')]
 		[string]$Path,
 		[Parameter(Mandatory=$false)]
@@ -1935,7 +1935,7 @@ Function Execute-MSI {
 		}
 		Else {
 			#  Get the log file name without file extension
-			If (-not $logName) { $logName = ([System.IO.FileInfo]$path).BaseName } ElseIf ('.log','.txt' -contains [System.IO.Path]::GetExtension($logName)) { $logName = [System.IO.Path]::GetFileNameWithoutExtension($logName) }
+			If (-not $logName) { $logName = ([IO.FileInfo]$path).BaseName } ElseIf ('.log','.txt' -contains [IO.Path]::GetExtension($logName)) { $logName = [IO.Path]::GetFileNameWithoutExtension($logName) }
 		}
 		
 		If ($configToolkitCompressLogs) {
@@ -1971,7 +1971,7 @@ Function Execute-MSI {
 		}
 		
 		## Append ".log" to the MSI logfile path and enclose in quotes
-		If ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log') {
+		If ([IO.Path]::GetExtension($msiLogFile) -ne '.log') {
 			[string]$msiLogFile = $msiLogFile + '.log'
 			[string]$msiLogFile = "`"$msiLogFile`""
 		}
@@ -2274,7 +2274,7 @@ Function Execute-Process {
 		[string[]]$Parameters,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
-		[System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
+		[Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$CreateNoWindow = $false,
@@ -2308,7 +2308,7 @@ Function Execute-Process {
 			$private:returnCode = $null
 			
 			## Validate and find the fully qualified path for the $Path variable.
-			If (([System.IO.Path]::IsPathRooted($Path)) -and ([System.IO.Path]::HasExtension($Path))) {
+			If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
 				Write-Log -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
 				If (-not (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop')) {
 					Throw "File [$Path] not found."
@@ -2610,7 +2610,7 @@ Function Test-IsMutexAvailable {
 		}
 		[boolean]$IsUnhandledException = $false
 		[boolean]$IsMutexFree = $false
-		[System.Threading.Mutex]$OpenExistingMutex = $null
+		[Threading.Mutex]$OpenExistingMutex = $null
 	}
 	Process {
 		Write-Log -Message "Check to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
@@ -2620,23 +2620,23 @@ Function Test-IsMutexAvailable {
 			$ErrorActionPreference = 'Stop'
 			
 			## Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
-			[System.Threading.Mutex]$OpenExistingMutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+			[Threading.Mutex]$OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
 			## Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
 			$IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)
 		}
-		Catch [System.Threading.WaitHandleCannotBeOpenedException] {
+		Catch [Threading.WaitHandleCannotBeOpenedException] {
 			## The named mutex does not exist
 			$IsMutexFree = $true
 		}
-		Catch [System.ObjectDisposedException] {
+		Catch [ObjectDisposedException] {
 			## Mutex was disposed between opening it and attempting to wait on it
 			$IsMutexFree = $true
 		}
-		Catch [System.UnauthorizedAccessException] {
+		Catch [UnauthorizedAccessException] {
 			## The named mutex exists, but the user does not have the security access required to use it
 			$IsMutexFree = $false
 		}
-		Catch [System.Threading.AbandonedMutexException] {
+		Catch [Threading.AbandonedMutexException] {
 			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a Mutex object that another thread has abandoned by exiting without releasing it.
 			$IsMutexFree = $true
 		}
@@ -2838,7 +2838,7 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-			If ((-not ([System.IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType Container))) {
+			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType Container))) {
 				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
 			
@@ -3504,7 +3504,7 @@ Function ConvertTo-NTAccountOrSID {
 					Write-Log -Message "Convert $msg." -Source ${CmdletName}
 					
 					$NTAccountSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList $SID
-					$NTAccount = $NTAccountSID.Translate([System.Security.Principal.NTAccount])
+					$NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
 					Write-Output $NTAccount
 				}
 				'NTAccountToSID' {
@@ -3512,7 +3512,7 @@ Function ConvertTo-NTAccountOrSID {
 					Write-Log -Message "Convert $msg." -Source ${CmdletName}
 					
 					$NTAccount = New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $AccountName
-					$NTAccountSID = $NTAccount.Translate([System.Security.Principal.SecurityIdentifier])
+					$NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
 					Write-Output $NTAccountSID
 				}
 				'WellKnownName' {
@@ -3542,7 +3542,7 @@ Function ConvertTo-NTAccountOrSID {
 					$NTAccountSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ($WellKnownSidType, $DomainSid)
 					
 					If ($WellKnownToNTAccount) {
-						$NTAccount = $NTAccountSID.Translate([System.Security.Principal.NTAccount])
+						$NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
 						Write-Output $NTAccount
 					}
 					Else {
@@ -3630,7 +3630,7 @@ Function Get-UserProfiles {
 				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
 				
 				#  On Windows Vista or higher
-				If ([System.Environment]::OSVersion.Version.Major -gt 5) {
+				If ([Environment]::OSVersion.Version.Major -gt 5) {
 					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
 					[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
 				}
@@ -3811,7 +3811,7 @@ Function New-Shortcut {
 	Process {
 		Try {
 			Try {
-				[System.IO.FileInfo]$Path = [System.IO.FileInfo]$Path
+				[IO.FileInfo]$Path = [IO.FileInfo]$Path
 				[string]$PathDirectory = $Path.DirectoryName
 				
 				If (-not (Test-Path -Path $PathDirectory -PathType Container -ErrorAction 'Stop')) {
@@ -3854,9 +3854,9 @@ Function New-Shortcut {
 				## Set shortcut to run program as administrator
 				If ($RunAsAdmin) {
 					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
-					$TempFileName = [System.IO.Path]::GetRandomFileName()
-					$TempFile = [System.IO.FileInfo][IO.Path]::Combine($Path.Directory, $TempFileName)
-					$Writer = New-Object -TypeName System.IO.FileStream -ArgumentList ($TempFile, ([System.IO.FileMode]::Create)) -ErrorAction 'Stop'
+					$TempFileName = [IO.Path]::GetRandomFileName()
+					$TempFile = [IO.FileInfo][IO.Path]::Combine($Path.Directory, $TempFileName)
+					$Writer = New-Object -TypeName System.IO.FileStream -ArgumentList ($TempFile, ([IO.FileMode]::Create)) -ErrorAction 'Stop'
 					$Reader = $Path.OpenRead()
 					While ($Reader.Position -lt $Reader.Length) {
 						$Byte = $Reader.ReadByte()
@@ -4206,7 +4206,7 @@ Function Refresh-SessionEnvironmentVariables {
 				$Key,
 				$Scope
 			)
-			[System.Environment]::GetEnvironmentVariable($Key, $Scope)
+			[Environment]::GetEnvironmentVariable($Key, $Scope)
 		}
 	}
 	Process {
@@ -4217,7 +4217,7 @@ Function Refresh-SessionEnvironmentVariables {
 				[string]$CurrentUserEnvironmentSID = $RunAsActiveUser.SID
 			}
 			Else {
-				[string]$CurrentUserEnvironmentSID = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+				[string]$CurrentUserEnvironmentSID = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 			}
 			[string]$MachineEnvironmentVars = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
 			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
@@ -4707,7 +4707,7 @@ Function Get-RunningProcesses {
 			[string[]]$processNames = $processObjects | ForEach-Object { $_.ProcessName }
 			
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[System.Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
+			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
 			
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
@@ -5064,7 +5064,7 @@ Function Show-InstallationWelcome {
 						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
 						If (($PromptToSave) -and (-not ($SessionZero -and (-not $IsProcessUserInteractive))) -and ($AllOpenWindowsForRunningProcess) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
 							[timespan]$PromptToSaveTimeout = New-TimeSpan -Seconds $configInstallationPromptToSave
-							[System.Diagnostics.StopWatch]$PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::StartNew()
+							[Diagnostics.StopWatch]$PromptToSaveStopWatch = [Diagnostics.StopWatch]::StartNew()
 							$PromptToSaveStopWatch.Reset()
 							ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
 								Try {
@@ -5170,7 +5170,7 @@ Function Show-InstallationWelcome {
 						Try {
 							If (Test-Path -Path $notesNSDExecutable -PathType Leaf -ErrorAction 'Stop') {
 								Write-Log -Message "Execute [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
-								[System.Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
+								[Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
 								
 								If (-not ($notesNSDProcess.WaitForExit(10000))) {
 									Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
@@ -5332,7 +5332,7 @@ Function Show-WelcomePrompt {
 		}
 		
 		[string[]]$processDescriptions = $processDescriptions -split ','
-		[System.Windows.Forms.Application]::EnableVisualStyles()
+		[Windows.Forms.Application]::EnableVisualStyles()
 		
 		$formWelcome = New-Object -TypeName System.Windows.Forms.Form
 		$pictureBanner = New-Object -TypeName System.Windows.Forms.PictureBox
@@ -5408,7 +5408,7 @@ Function Show-WelcomePrompt {
 					#  Update the form
 					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 					$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"
-					[System.Windows.Forms.Application]::DoEvents()
+					[Windows.Forms.Application]::DoEvents()
 				}
 			}
 		}
@@ -5623,7 +5623,7 @@ Function Show-WelcomePrompt {
 		$buttonContinue.UseVisualStyleBackColor = $true
 		$buttonContinue.add_Click($buttonContinue_OnClick)
 		#  Add tooltip to Continue button
-		$toolTip.BackColor = [System.Drawing.Color]::LightGoldenrodYellow
+		$toolTip.BackColor = [Drawing.Color]::LightGoldenrodYellow
 		$toolTip.IsBalloon = $false
 		$toolTip.InitialDelay = 100
 		$toolTip.ReshowDelay = 100
@@ -5778,7 +5778,7 @@ Function Show-InstallationRestartPrompt {
 		[datetime]$startTime = Get-Date
 		[datetime]$countdownTime = $startTime
 		
-		[System.Windows.Forms.Application]::EnableVisualStyles()
+		[Windows.Forms.Application]::EnableVisualStyles()
 		$formRestart = New-Object -TypeName System.Windows.Forms.Form
 		$labelCountdown = New-Object -TypeName System.Windows.Forms.Label
 		$labelTimeRemaining = New-Object -TypeName System.Windows.Forms.Label
@@ -5829,7 +5829,7 @@ Function Show-InstallationRestartPrompt {
 				$formRestart.BringToFront()
 				$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
 				$formRestart.Refresh()
-				[System.Windows.Forms.Application]::DoEvents()
+				[Windows.Forms.Application]::DoEvents()
 			}
 			$timerPersist.add_Tick($timerPersist_Tick)
 			$timerPersist.Start()
@@ -5871,10 +5871,10 @@ Function Show-InstallationRestartPrompt {
 						$formRestart.BringToFront()
 						$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
 						$formRestart.Refresh()
-						[System.Windows.Forms.Application]::DoEvents()
+						[Windows.Forms.Application]::DoEvents()
 					}
 				}
-				[System.Windows.Forms.Application]::DoEvents()
+				[Windows.Forms.Application]::DoEvents()
 			}
 		}
 		
@@ -5916,7 +5916,7 @@ Function Show-InstallationRestartPrompt {
 		
 		## Banner
 		$picturebox.Anchor = 'Top'
-		$picturebox.Image = [System.Drawing.Image]::Fromfile($AppDeployLogoBanner)
+		$picturebox.Image = [Drawing.Image]::Fromfile($AppDeployLogoBanner)
 		$picturebox.Location = '0,0'
 		$picturebox.Name = 'picturebox'
 		$picturebox.Size = '450,50'
@@ -5981,7 +5981,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.add_Load($Form_StateCorrection_Load)
 		# Clean up the control events
 		$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-		$formRestartClosing = [System.Windows.Forms.FormClosingEventHandler]{ $_.Cancel = $true }
+		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ $_.Cancel = $true }
 		$formRestart.add_FormClosing($formRestartClosing)
 		
 		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
@@ -6021,7 +6021,7 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.Dispose()
 			
 			#  Activate the Window
-			[System.Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
+			[Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
 			[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
 		}
 	}
@@ -6065,7 +6065,7 @@ Function Show-BalloonTip {
 		[string]$BalloonTipTitle = $installTitle,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateSet('Error','Info','None','Warning')]
-		[System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
+		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[int32]$BalloonTipTime = 10000
@@ -6307,7 +6307,7 @@ Function Show-InstallationProgress {
 				
 				## Set the configurable values using variables added to the runspace from the parent thread
 				#  Calculate the position on the screen where the progress dialog should be placed
-				$screen = [System.Windows.Forms.Screen]::PrimaryScreen
+				$screen = [Windows.Forms.Screen]::PrimaryScreen
 				$screenWorkingArea = $screen.WorkingArea
 				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty Width
 				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty Height
@@ -6358,7 +6358,7 @@ Function Show-InstallationProgress {
 			Write-Log -Message "Update progress message: [$statusMessage]" -Source ${CmdletName}
 			#  Update the progress text
 			Try {
-				$global:ProgressSyncHash.Window.Dispatcher.Invoke([System.Windows.Threading.DispatcherPriority]'Normal', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				$global:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Normal', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
 			}
 			Catch {
 				Write-Log -Message "Unable to update the progress message. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -6656,7 +6656,7 @@ Function Set-IniValue {
 			
 			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
 			
-			[PSADT.IniFile]::SetIniValue($Section, $Key, ([System.Text.StringBuilder]$Value), $FilePath)
+			[PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
 		}
 		Catch {
 			Write-Log -Message "Failed to write INI file key value. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -6696,7 +6696,7 @@ Function Get-PEFileArchitecture {
 	Param (
 		[Parameter(Mandatory=$true,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
 		[ValidateScript({$_ | Test-Path -PathType Leaf})]
-		[System.IO.FileInfo[]]$FilePath,
+		[IO.FileInfo[]]$FilePath,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true,
@@ -6726,8 +6726,8 @@ Function Get-PEFileArchitecture {
 				$stream.Flush()
 				$stream.Close()
 				
-				[int32]$PE_HEADER_ADDR = [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET)
-				[uint16]$PE_IMAGE_FILE_HEADER = [System.BitConverter]::ToUInt16($data, $PE_HEADER_ADDR + $MACHINE_OFFSET)
+				[int32]$PE_HEADER_ADDR = [BitConverter]::ToInt32($data, $PE_POINTER_OFFSET)
+				[uint16]$PE_IMAGE_FILE_HEADER = [BitConverter]::ToUInt16($data, $PE_HEADER_ADDR + $MACHINE_OFFSET)
 				Switch ($PE_IMAGE_FILE_HEADER) {
 					0 { $PEArchitecture = 'Native' } # The contents of this file are assumed to be applicable to any machine type
 					0x014c { $PEArchitecture = '32BIT' } # File for Windows 32-bit systems
@@ -6928,7 +6928,7 @@ Function Get-MsiTableProperty {
 				[string]$MethodName,
 				[object[]]$ArgumentList
 			)
-			Write-Output $Object.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $null)
+			Write-Output $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $null)
 		}
 		
 		[scriptblock]$GetProperty = {
@@ -6937,7 +6937,7 @@ Function Get-MsiTableProperty {
 				[string]$PropertyName,
 				[object[]]$ArgumentList
 			)
-			Write-Output $Object.GetType().InvokeMember($PropertyName, [System.Reflection.BindingFlags]::GetProperty, $null, $Object, $ArgumentList, $null, $null, $null)
+			Write-Output $Object.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $Object, $ArgumentList, $null, $null, $null)
 		}
 	}
 	Process {
@@ -7086,11 +7086,11 @@ Function Install-MSUpdates {
 		$kbPattern = '(?i)kb\d{6,8}'
 		
 		## Get all hotfixes and install if required
-		[System.IO.FileInfo[]]$files = Get-ChildItem -Path $Directory -Recurse -Include ('*.exe','*.msu','*.msp')
+		[IO.FileInfo[]]$files = Get-ChildItem -Path $Directory -Recurse -Include ('*.exe','*.msu','*.msp')
 		ForEach ($file in $files) {
 			If ($file.Name -match 'redist') {
-				[version]$redistVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($file).ProductVersion
-				[string]$redistDescription = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($file).FileDescription
+				[version]$redistVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($file).ProductVersion
+				[string]$redistDescription = [Diagnostics.FileVersionInfo]::GetVersionInfo($file).FileDescription
 				
 				Write-Log -Message "Install [$redistDescription $redistVersion]..." -Source ${CmdletName}
 				#  Handle older redistributables (ie, VC++ 2005)
@@ -7196,7 +7196,7 @@ Function Get-WindowTitle {
 				[string]$VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)
 				If ($VisibleWindowTitle) {
 					## Get the process that spawned the window
-					[System.Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
+					[Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
 					If ($Process) {
 						## Build custom object with details about the window and the process
 						[psobject]$VisibleWindow = New-Object -TypeName PSObject -Property @{
@@ -7309,7 +7309,7 @@ Function Send-Keys {
 				If ($Keys) {
 					[boolean]$IsWindowModal = If ([PSADT.UiAutomation]::IsWindowEnabled($WindowHandle)) { $false } Else { $true }
 					If ( $IsWindowModal) { Throw 'Unable to send keys to window because it may be disabled due to a modal dialog being shown.' }
-					[System.Windows.Forms.SendKeys]::SendWait($Keys)
+					[Windows.Forms.SendKeys]::SendWait($Keys)
 					Write-Log -Message "Sent key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
 					
 					If ($WaitSeconds) {
@@ -7399,7 +7399,7 @@ Function Test-Battery {
 	Process {
 		Write-Log -Message 'Check if system is using AC power or if it is running on battery...' -Source ${CmdletName}
 		
-		[System.Windows.Forms.PowerStatus]$PowerStatus = [System.Windows.Forms.SystemInformation]::PowerStatus
+		[Windows.Forms.PowerStatus]$PowerStatus = [Windows.Forms.SystemInformation]::PowerStatus
 		
 		## Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
 		#	Offline : The system is not using AC power.
@@ -7683,7 +7683,7 @@ Function Invoke-SCCMTask {
 			
 			## Trigger SCCM task
 			Write-Log -Message "Trigger SCCM Task ID [$ScheduleId]" -Source ${CmdletName}
-			[System.Management.ManagementClass]$SmsClient = [WMIClass]'ROOT\CCM:SMS_Client'
+			[Management.ManagementClass]$SmsClient = [WMIClass]'ROOT\CCM:SMS_Client'
 			$SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID) | Out-Null
 		}
 		Catch {
@@ -7776,7 +7776,7 @@ Function Install-SCCMSoftwareUpdates {
 			
 			## Find the number of missing updates
 			Try {
-				[System.Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'" -ErrorAction 'Stop')
+				[Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'" -ErrorAction 'Stop')
 			}
 			Catch {
 				Write-Log -Message "Failed to find the number of missing software updates. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -8077,14 +8077,14 @@ Function Set-ActiveSetup {
 			
 			## Verify a file with a supported file extension was specified in $StubExePath
 			[string[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.ps1', '.js'
-			[string]$StubExeExt = [System.IO.Path]::GetExtension($StubExePath)
+			[string]$StubExeExt = [IO.Path]::GetExtension($StubExePath)
 			If ($StubExePathFileExtensions -notcontains $StubExeExt) {
 				Throw "Unsupported Active Setup StubPath file extension [$StubExeExt]."
 			}
 			
 			## Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there)
 			[string]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
-			[string]$ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath)
+			[string]$ActiveSetupFileName = [IO.Path]::GetFileName($StubExePath)
 			[string]$StubExeFile = Join-Path -Path $dirFiles -ChildPath $ActiveSetupFileName
 			If (Test-Path -Path $StubExeFile -PathType Leaf) {
 				#  This will overwrite the StubPath file if $StubExePath already exists on target
@@ -8303,7 +8303,7 @@ Function Stop-ServiceAndDependencies {
 			
 			## Get the service object
 			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
-			[System.ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+			[ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
 			## Wait up to 60 seconds if service is in a pending state
 			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
 			If ($PendingStatus -contains $Service.Status) {
@@ -8315,7 +8315,7 @@ Function Stop-ServiceAndDependencies {
 				}
 				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
 				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
-				$Service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
 				$Service.Refresh()
 			}
 			## Discover if the service is currently running
@@ -8324,7 +8324,7 @@ Function Stop-ServiceAndDependencies {
 				#  Discover all dependent services that are running and stop them
 				If (-not $SkipDependentServices) {
 					Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Stopped'." -Source ${CmdletName}
-					[System.ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
+					[ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
 					If ($DependentServices) {
 						ForEach ($DependentService in $DependentServices) {
 							Write-Log -Message "Stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
@@ -8343,7 +8343,7 @@ Function Stop-ServiceAndDependencies {
 				}
 				#  Stop the parent service
 				Write-Log -Message "Stop parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
-				[System.ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+				[ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -8424,7 +8424,7 @@ Function Start-ServiceAndDependencies {
 			
 			## Get the service object
 			Write-Log -Message "Get the service object for service [$Name]" -Source ${CmdletName}
-			[System.ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+			[ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
 			## Wait up to 60 seconds if service is in a pending state
 			[string[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
 			If ($PendingStatus -contains $Service.Status) {
@@ -8436,7 +8436,7 @@ Function Start-ServiceAndDependencies {
 				}
 				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
 				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
-				$Service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
 				$Service.Refresh()
 			}
 			## Discover if the service is currently stopped
@@ -8444,12 +8444,12 @@ Function Start-ServiceAndDependencies {
 			If ($Service.Status -ne 'Running') {
 				#  Start the parent service
 				Write-Log -Message "Start parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]" -Source ${CmdletName}
-				[System.ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+				[ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 				
 				#  Discover all dependent services that are stopped and start them
 				If (-not $SkipDependentServices) {
 					Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
-					[System.ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
+					[ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
 					If ($DependentServices) {
 						ForEach ($DependentService in $DependentServices) {
 							Write-Log -Message "Start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
@@ -8530,7 +8530,7 @@ Function Get-ServiceStartMode
 			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
 			
 			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-			If (($ServiceStartMode -eq 'Automatic') -and ([System.Environment]::OSVersion.Version.Major -gt 5)) {
+			If (($ServiceStartMode -eq 'Automatic') -and ([Environment]::OSVersion.Version.Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
 					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
@@ -8600,7 +8600,7 @@ Function Set-ServiceStartMode
 	Process {
 		Try {
 			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([System.Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
+			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]" -Source ${CmdletName}
 			If ($StartMode -eq 'Automatic (Delayed Start)') {
@@ -8699,7 +8699,7 @@ If ($invokingScript) {
 }
 
 ## Add the custom types required for the toolkit
-If (-not ([System.Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
+If (-not ([Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
 	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
 	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
@@ -8763,7 +8763,7 @@ If (-not ([System.Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
 ## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
 If (-not $appName) {
 	#  Find the first MSI file in the Files folder and use that as our install
-	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([System.IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
+	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
 	If ($defaultMsiFile) {
 		Try {
 			[boolean]$useDefaultMsi = $true
@@ -8774,7 +8774,7 @@ If (-not $appName) {
 			[string]$appName = $defaultMsiPropertyList.ProductName
 			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
 			[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File' -ContinueOnError $false -ErrorAction 'Stop'
-			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [System.IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }
+			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) }
 			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
 			Write-Log -Message "App Vendor [$appVendor]" -Source $appDeployToolkitName
 			Write-Log -Message "App Name [$appName]" -Source $appDeployToolkitName
@@ -8800,7 +8800,7 @@ If (-not $appArch) { [string]$appArch = '' }
 [string]$installTitle = ("$appVendor $appName $appVersion").Trim()
 
 ## Sanitize the application details, as they can cause issues in the script
-[char[]]$invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
+[char[]]$invalidFileNameChars = [IO.Path]::GetInvalidFileNameChars()
 [string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
 [string]$appName = $appName -replace "[$invalidFileNameChars]",'' -replace ' ',''
 [string]$appVersion = $appVersion -replace "[$invalidFileNameChars]",'' -replace ' ',''
@@ -8976,7 +8976,7 @@ If ($showBlockedAppDialog) {
 		#  Create a mutex and specify a name without acquiring a lock on the mutex
 		[boolean]$showBlockedAppDialogMutexLocked = $false
 		[string]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
-		[System.Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
+		[Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
 		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
 		If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
@@ -9037,7 +9037,7 @@ If ($HKUPrimaryLanguageShort) {
 Else {
 	Write-Log -Message "The current system account [$ProcessNTAccount] has a primary UI language of [$currentLanguage]." -Source $appDeployToolkitName
 }
-If ($configInstallationUILanguageOverride) { Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language messages [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName }
+If ($configInstallationUILanguageOverride) { Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName }
 Write-Log -Message "The following UI language messages from the config XML file were imported [$xmlUIMessageLanguage]." -Source $appDeployToolkitName
 
 ## Log system DPI scale factor of active logged on user
@@ -9049,7 +9049,7 @@ Else {
 }
 
 ## Check if script is running on a Terminal Services client session
-Try { [boolean]$IsTerminalServerSession = [System.Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
+Try { [boolean]$IsTerminalServerSession = [Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
 Write-Log -Message "The process is running in a terminal server session: [$IsTerminalServerSession]." -Source $appDeployToolkitName
 
 ## Check if script is running from a SCCM Task Sequence
