@@ -4416,6 +4416,10 @@ Function Block-AppExecution {
 		
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		
+		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
+		If (Test-Path -Path "$configToolkitTempPath\PSAppDeployToolkit" -PathType Leaf -ErrorAction 'SilentlyContinue') {
+			Remove-Item -Path "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue' | Out-Null
+		}
 		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
 		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container -ErrorAction 'SilentlyContinue')) {
 			New-Item -Path $dirAppDeployTemp -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
