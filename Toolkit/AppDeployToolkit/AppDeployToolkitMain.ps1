@@ -8640,7 +8640,7 @@ Function Get-LoggedOnUser {
 .DESCRIPTION
 	Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
 	 NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession,
-	 IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
+	 IsActiveUserSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
 .EXAMPLE
 	Get-LoggedOnUser
 .NOTES
@@ -8657,6 +8657,10 @@ Function Get-LoggedOnUser {
 	Listening 	 The session is listening for connections.
 	Reset		 The session is being reset.
 	Shadowing	 This session is shadowing another session.
+
+	Description of IsActiveUserSession property:
+	If a console user exists, then that will be the active user session.
+	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
@@ -8672,7 +8676,7 @@ Function Get-LoggedOnUser {
 	Process {
 		Try {
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
-			[PSADT.QueryUser]::ListSessions('localhost') | Where-Object { $_.IsUserSession } | ForEach-Object { [PSADT.QueryUser]::GetSessionInfo('localhost', $_.SessionId) } | Where-Object { $_.UserName } | Write-Output
+			Write-Output ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
 		}
 		Catch {
 			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -8700,7 +8704,7 @@ If ($invokingScript) {
 }
 
 ## Add the custom types required for the toolkit
-If (-not ([Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
+If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
 	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
@@ -8713,7 +8717,6 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
 [scriptblock]$GetLoggedOnUserDetails = {
 	[psobject[]]$LoggedOnUserSessions = Get-LoggedOnUser
 	[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
-	[psobject]$RunAsActiveUser = $null
 	
 	If ($usersLoggedOn) {
 		#  Get account and session details for the current process if it is running as a logged in user
@@ -8722,15 +8725,10 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.QueryUser').Type) {
 		#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
 		[psobject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
 		
-		#  Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-		#  One liner to get this info: [psobject]$RunAsActiveUser = Get-LoggedOnUser | Where-Object { $_ } | Where-Object { 'Active','Connected' -contains $_.ConnectState } | ForEach-Object { If($_.IsCurrentSession) { $_ } Else { $_[0] } }
-		If ($CurrentConsoleUserSession) {
-			[psobject]$RunAsActiveUser = $CurrentConsoleUserSession
-		}
-		Else {
-			#  If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user.
-			[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { 'Active','Connected' -contains $_.ConnectState } | Select-Object -First 1
-		}
+		## Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+		#  If a console user exists, then that will be the active user session.
+		#  If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
+		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
 	}
 }
 
