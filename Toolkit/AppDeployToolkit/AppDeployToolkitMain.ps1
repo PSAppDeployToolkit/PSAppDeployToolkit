@@ -8031,28 +8031,28 @@ Function Set-ActiveSetup {
 #>
 	[CmdletBinding()]
 	Param(
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$StubExePath,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$Arguments,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$Description = $installName,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Key = $installName,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$Locale,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[switch]$DisableActiveSetup = $false,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$true,ParameterSetName='Purge')]
 		[switch]$PurgeActiveSetupKey,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]

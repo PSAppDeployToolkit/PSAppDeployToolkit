@@ -5,6 +5,7 @@ Version 3.6.3 [04/xx/2015]
 	Fixed issue with Get-RunningProcesses on Windows 7 where the custom object did not return ProcessDescription property unless -PassThru option was used
 	Fixed issue with the creation of the blocked apps cleanup scheduled task to avoid 259 character limit for the 'Command' property
 	Fixed issue where a file remnant from an old version of the toolkit caused failure in ability to copy toolkit to temporary folder defined in config XML
+	Fixed issue with Set-ActiveSetup where StubExePath was a manadatory parameter when purging active setup entry
 	Changed icon for Deploy-Application.exe
 	Improved Get-LoggedOnUser by increasing performance. Added IsActiveUserSession and IsRdpSession properties.
 	Improved documentation
