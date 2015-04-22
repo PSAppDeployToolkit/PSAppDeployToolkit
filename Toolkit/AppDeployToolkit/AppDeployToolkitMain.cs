@@ -379,7 +379,7 @@ namespace PSADT
 		
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
-
+		
 		public class TerminalSessionData
 		{
 			public int SessionId;
@@ -408,6 +408,7 @@ namespace PSADT
 			public bool IsConsoleSession;
 			public bool IsActiveUserSession;
 			public bool IsUserSession;
+			public bool IsRdpSession;
 			public bool IsLocalAdmin;
 			public DateTime? LogonTime;
 			public TimeSpan? IdleTime;
@@ -645,10 +646,12 @@ namespace PSADT
 				if (intData == 2)
 				{
 					strData = "RDP";
+					data.IsRdpSession = true;
 				}
 				else
 				{
 					strData = "";
+					data.IsRdpSession = false;
 				}
 				data.ClientProtocolType = strData;
 				

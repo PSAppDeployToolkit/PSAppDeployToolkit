@@ -5,7 +5,8 @@ Version 3.6.3 [04/xx/2015]
 	Fixed issue with Get-RunningProcesses on Windows 7 where the custom object did not return ProcessDescription property unless -PassThru option was used
 	Fixed issue with the creation of the blocked apps cleanup scheduled task to avoid 259 character limit for the 'Command' property
 	Changed icon for Deploy-Application.exe
-	Improved Get-LoggedOnUser by increasing performance and adding IsActiveUserSession property
+	Improved Get-LoggedOnUser by increasing performance. Added IsActiveUserSession and IsRdpSession properties.
+	Improved documentation
 	
 Version 3.6.2 [04/14/2015]
 	Improved capture of error details in function Invoke-HKCURegistrySettingsForAllUsers when a user profile fails to load

@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '04/21/2015'
+[string]$appDeployMainScriptDate = '04/22/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8639,8 +8639,8 @@ Function Get-LoggedOnUser {
 	Get session details for all local and RDP logged on users.
 .DESCRIPTION
 	Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
-	 NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession,
-	 IsActiveUserSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
+	 NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession
+	 IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
 .EXAMPLE
 	Get-LoggedOnUser
 .NOTES
@@ -8657,10 +8657,13 @@ Function Get-LoggedOnUser {
 	Listening 	 The session is listening for connections.
 	Reset		 The session is being reset.
 	Shadowing	 This session is shadowing another session.
-
+	
 	Description of IsActiveUserSession property:
 	If a console user exists, then that will be the active user session.
 	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
+	
+	Description of IsRdpSession property:
+	Gets a value indicating whether the user is associated with an RDP client session.
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
@@ -9046,10 +9049,6 @@ If ($UserDisplayScaleFactor) {
 Else {
 	Write-Log -Message "The system has a DPI scale factor of [$dpiScale] with DPI pixels [$dpiPixels]." -Source $appDeployToolkitName
 }
-
-## Check if script is running on a Terminal Services client session
-Try { [boolean]$IsTerminalServerSession = [Windows.Forms.SystemInformation]::TerminalServerSession } Catch { }
-Write-Log -Message "The process is running in a terminal server session: [$IsTerminalServerSession]." -Source $appDeployToolkitName
 
 ## Check if script is running from a SCCM Task Sequence
 Try {
