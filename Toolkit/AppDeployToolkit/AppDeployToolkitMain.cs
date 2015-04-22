@@ -383,10 +383,10 @@ namespace PSADT
 		public class TerminalSessionData
 		{
 			public int SessionId;
-			public WTS_CONNECTSTATE_CLASS ConnectionState;
+			public string ConnectionState;
 			public string SessionName;
 			public bool IsUserSession;
-			public TerminalSessionData(int sessionId, WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession)
+			public TerminalSessionData(int sessionId, string connState, string sessionName, bool isUserSession)
 			{
 				SessionId = sessionId;
 				ConnectionState = connState;
@@ -403,7 +403,7 @@ namespace PSADT
 			public string DomainName;
 			public int SessionId;
 			public string SessionName;
-			public WTS_CONNECTSTATE_CLASS ConnectState;
+			public string ConnectState;
 			public bool IsCurrentSession;
 			public bool IsConsoleSession;
 			public bool IsActiveUserSession;
@@ -558,7 +558,7 @@ namespace PSADT
 					{
 						_isUserSession = true;
 					}
-					results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
+					results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State.ToString(), sessionInfo.SessionName, _isUserSession));
 					_isUserSession = false;
 				}
 			}
@@ -657,7 +657,7 @@ namespace PSADT
 					return data;
 				}
 				lData = Marshal.ReadInt32(buffer);
-				data.ConnectState = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), lData);
+				data.ConnectState = ((WTS_CONNECTSTATE_CLASS) lData).ToString();
 				
 				if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionId, out buffer, out bytesReturned) == false)
 				{
@@ -769,7 +769,7 @@ namespace PSADT
 					sessionInfo = GetSessionInfo(ServerName, session.SessionId);
 					if (sessionInfo.IsUserSession == true)
 					{
-						if ((firstActiveUserNTAccount == String.Empty) && (sessionInfo.ConnectState == WTS_CONNECTSTATE_CLASS.Active || sessionInfo.ConnectState == WTS_CONNECTSTATE_CLASS.Connected))
+						if ((firstActiveUserNTAccount == String.Empty) && (sessionInfo.ConnectState == "Active" || sessionInfo.ConnectState == "Connected"))
 						{
 							firstActiveUserNTAccount = sessionInfo.NTAccount;
 						}
