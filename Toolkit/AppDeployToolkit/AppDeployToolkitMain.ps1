@@ -6254,7 +6254,7 @@ Function Show-InstallationProgress {
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
-				[xml]$xamlProgress = @'
+				[Xml.XmlDocument]$xamlProgress = @'
 							<Window
 							xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 							xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6840,14 +6840,14 @@ Function Invoke-RegisterOrUnregisterDLL {
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
-						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
+						[string]$RegSvr32Path = "$envWinDir\system32\regsvr32.exe"
 					}
 					Else {
-						[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\sysnative\regsvr32.exe" -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
+						[string]$RegSvr32Path = "$envWinDir\sysnative\regsvr32.exe"
 					}
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
+					[string]$RegSvr32Path = "$envWinDir\SysWOW64\regsvr32.exe"
 				}
 			}
 			Else {
@@ -6855,9 +6855,11 @@ Function Invoke-RegisterOrUnregisterDLL {
 					Throw "File [$filePath] cannot be $($DLLAction.ToLower()) because it is a 64-bit file on a 32-bit operating system."
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\regsvr32.exe" -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
+					[string]$RegSvr32Path = "$envWinDir\system32\regsvr32.exe"
 				}
 			}
+
+			[psobject]$ExecuteResult = Execute-Process -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
 				If ($ExecuteResult.ExitCode -eq 60002) {
