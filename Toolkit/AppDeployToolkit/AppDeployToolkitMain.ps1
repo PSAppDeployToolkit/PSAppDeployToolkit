@@ -8263,6 +8263,8 @@ Function Stop-ServiceAndDependencies {
 	Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
 .PARAMETER SkipDependentServices
 	Choose to skip checking for and stopping dependent services. Default is: $false.
+.PARAMETER PendingStatusWait
+	The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 .PARAMETER PassThru
 	Return the System.ServiceProcess.ServiceController service object.
 .PARAMETER ContinueOnError
@@ -8287,6 +8289,9 @@ Function Stop-ServiceAndDependencies {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[switch]$SkipDependentServices,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[timespan]$PendingStatusWait = (New-TimeSpan -Seconds 60),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[switch]$PassThru,
@@ -8318,9 +8323,8 @@ Function Stop-ServiceAndDependencies {
 					'StartPending' { $DesiredStatus = 'Running' }
 					'StopPending' { $DesiredStatus = 'Stopped' }
 				}
-				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
-				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
-				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				Write-Log -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $PendingStatusWait)
 				$Service.Refresh()
 			}
 			## Discover if the service is currently running
@@ -8384,6 +8388,8 @@ Function Start-ServiceAndDependencies {
 	Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
 .PARAMETER SkipDependentServices
 	Choose to skip checking for and starting dependent services. Default is: $false.
+.PARAMETER PendingStatusWait
+	The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 .PARAMETER PassThru
 	Return the System.ServiceProcess.ServiceController service object.
 .PARAMETER ContinueOnError
@@ -8408,6 +8414,9 @@ Function Start-ServiceAndDependencies {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[switch]$SkipDependentServices,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[timespan]$PendingStatusWait = (New-TimeSpan -Seconds 60),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[switch]$PassThru,
@@ -8439,9 +8448,8 @@ Function Start-ServiceAndDependencies {
 					'StartPending' { $DesiredStatus = 'Running' }
 					'StopPending' { $DesiredStatus = 'Stopped' }
 				}
-				[timespan]$WaitForStatusTime = New-TimeSpan -Seconds 60
-				Write-Log -Message "Waiting for up to [$($WaitForStatusTime.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
-				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $WaitForStatusTime)
+				Write-Log -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+				$Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $PendingStatusWait)
 				$Service.Refresh()
 			}
 			## Discover if the service is currently stopped
