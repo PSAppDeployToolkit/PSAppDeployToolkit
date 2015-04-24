@@ -4776,7 +4776,7 @@ Function Show-InstallationWelcome {
 .PARAMETER ForceCloseAppsCountdown
 	Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
 .PARAMETER PromptToSave
-	Specify whether to prompt to save working documents when the user chooses to close applications. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+	Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER PersistPrompt
 	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
@@ -4849,7 +4849,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCloseAppsCountdown = 0,
-		## Specify whether to prompt to save working documents when the user chooses to close applications
+		## Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button
 		[Parameter(Mandatory=$false)]
 		[switch]$PromptToSave = $false,
 		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
