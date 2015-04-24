@@ -5020,9 +5020,9 @@ Function Show-InstallationWelcome {
 		## Prompt the user to close running applications and optionally defer if enabled
 		If (-not ($deployModeSilent) -and (-not ($silent))) {
 			If ($forceCloseAppsCountdown -gt 0) {
-				# Keep the same variable for countdown to simplify the code:
+				#  Keep the same variable for countdown to simplify the code:
 				$closeAppsCountdown = $forceCloseAppsCountdown
-				# Change this variable to a boolean now to switch the countdown on even with deferral
+				#  Change this variable to a boolean now to switch the countdown on even with deferral
 				[boolean]$forceCloseAppsCountdown = $true
 			}
 			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope Script
