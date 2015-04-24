@@ -1,4 +1,4 @@
-Version 3.6.3 [04/xx/2015]
+Version 3.6.3 [04/24/2015]
 	Added an informational tooltip to the 'Continue' button on the close apps screen to make it clear that it can only be used after closing the listed applications
 	Added -PendingStatusWait as a configurable option to functions Start-ServiceAndDependencies and Stop-ServiceAndDependencies
 	Fixed issue with Get-ScheduledTask not working properly with non-English languages
