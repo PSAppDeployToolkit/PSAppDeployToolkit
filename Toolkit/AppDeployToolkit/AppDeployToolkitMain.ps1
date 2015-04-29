@@ -269,14 +269,21 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Thr
 		If ($HKULanguages) {
 			[Globalization.CultureInfo]$PrimaryWindowsUILanguage = [Globalization.CultureInfo]($HKULanguages[0])
 			[string]$HKUPrimaryLanguageShort = $PrimaryWindowsUILanguage.TwoLetterISOLanguageName.ToUpper()
-
+			
 			#  If the detected language is Chinese, determine if it is simplified or traditional Chinese
 			If ($HKUPrimaryLanguageShort -eq 'ZH') {
-				If ($PrimaryWindowsUILanguage.EnglishName -match [regex]::Escape('Chinese (Simplified)')) {
+				If ($PrimaryWindowsUILanguage.EnglishName -match 'Simplified') {
 					[string]$HKUPrimaryLanguageShort = 'ZH-Hans'
 				}
-				If ($PrimaryWindowsUILanguage.EnglishName -match [regex]::Escape('Chinese (Traditional)')) {
+				If ($PrimaryWindowsUILanguage.EnglishName -match 'Traditional') {
 					[string]$HKUPrimaryLanguageShort = 'ZH-Hant'
+				}
+			}
+			
+			#  If the detected language is Portuguese, determine if it is Brazilian Portuguese
+			If ($HKUPrimaryLanguageShort -eq 'PT') {
+				If ($PrimaryWindowsUILanguage.ThreeLetterWindowsLanguageName -eq 'PTB') {
+					[string]$HKUPrimaryLanguageShort = 'PT-BR'
 				}
 			}
 		}
