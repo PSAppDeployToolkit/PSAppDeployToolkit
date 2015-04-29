@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.3'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '04/24/2015'
+[string]$appDeployMainScriptDate = '04/29/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -267,7 +267,18 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Thr
 			}
 		}
 		If ($HKULanguages) {
-			[string]$HKUPrimaryLanguageShort = ([Globalization.CultureInfo]($HKULanguages[0])).TwoLetterISOLanguageName.ToUpper()
+			[Globalization.CultureInfo]$PrimaryWindowsUILanguage = [Globalization.CultureInfo]($HKULanguages[0])
+			[string]$HKUPrimaryLanguageShort = $PrimaryWindowsUILanguage.TwoLetterISOLanguageName.ToUpper()
+
+			#  If the detected language is Chinese, determine if it is simplified or traditional Chinese
+			If ($HKUPrimaryLanguageShort -eq 'ZH') {
+				If ($PrimaryWindowsUILanguage.EnglishName -match [regex]::Escape('Chinese (Simplified)')) {
+					[string]$HKUPrimaryLanguageShort = 'ZH-Hans'
+				}
+				If ($PrimaryWindowsUILanguage.EnglishName -match [regex]::Escape('Chinese (Traditional)')) {
+					[string]$HKUPrimaryLanguageShort = 'ZH-Hant'
+				}
+			}
 		}
 	}
 	
