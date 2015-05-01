@@ -1,3 +1,6 @@
+Version 3.6.4 [05/xx/2015]
+	Fixed issue with detecting user's display UI in some cases
+	
 Version 3.6.3 [04/29/2015]
 	Added an informational tooltip to the 'Continue' button on the close apps screen to make it clear that it can only be used after closing the listed applications
 	Added -PendingStatusWait as a configurable option to functions Start-ServiceAndDependencies and Stop-ServiceAndDependencies

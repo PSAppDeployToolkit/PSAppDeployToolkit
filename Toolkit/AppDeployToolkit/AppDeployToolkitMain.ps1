@@ -54,9 +54,9 @@ Param
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.3'
+[version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '04/29/2015'
+[string]$appDeployMainScriptDate = '05/01/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -246,11 +246,18 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Thr
 [scriptblock]$xmlLoadLocalizedUIMessages = {
 	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
 	If ($RunAsActiveUser) {
+		#  Read language defined by Group Policy
+		If (-not $HKULanguages) {
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:Software\Policies\Control Panel\Desktop' -Value 'PreferedUILanguages'
+		}
+		If (-not $HKULanguages) {
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Control Panel\Desktop' -Value 'PreferedUILanguages' -SID $RunAsActiveUser.SID
+		}
 		#  Read language for Win 8 machines
 		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
 		#  Read language for Win Vista/Win 7 machines
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PrefferedUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PreferedUILanguages' -SID $RunAsActiveUser.SID
 		}
 		If (-not $HKULanguages) {
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop\MuiCached' -Value 'MachinePreferredUILanguages' -SID $RunAsActiveUser.SID
