@@ -8158,7 +8158,7 @@ Function Set-ActiveSetup {
 			
 			## Create the Active Setup entry in the registry
 			Set-RegistryKey -Key $ActiveSetupKey -Name '(Default)' -Value $Description -ContinueOnError $false
-			Set-RegistryKey -Key $ActiveSetupKey -Name 'StubPath' -Value $StubPath -Type 'ExpandString' -ContinueOnError $false
+			Set-RegistryKey -Key $ActiveSetupKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 			Set-RegistryKey -Key $ActiveSetupKey -Name 'Version' -Value $Version -ContinueOnError $false
 			If ($Locale) { Set-RegistryKey -Key $ActiveSetupKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
 			If ($DisableActiveSetup) {
