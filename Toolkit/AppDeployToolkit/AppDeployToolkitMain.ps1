@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '05/01/2015'
+[string]$appDeployMainScriptDate = '05/04/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -248,16 +248,18 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Thr
 	If ($RunAsActiveUser) {
 		#  Read language defined by Group Policy
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:Software\Policies\Control Panel\Desktop' -Value 'PreferedUILanguages'
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:Software\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Control Panel\Desktop' -Value 'PreferedUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win 8 machines
-		[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
+		If (-not $HKULanguages) {
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International\User Profile' -Value 'Languages' -SID $RunAsActiveUser.SID
+		}
 		#  Read language for Win Vista/Win 7 machines
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PreferedUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		If (-not $HKULanguages) {
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop\MuiCached' -Value 'MachinePreferredUILanguages' -SID $RunAsActiveUser.SID
