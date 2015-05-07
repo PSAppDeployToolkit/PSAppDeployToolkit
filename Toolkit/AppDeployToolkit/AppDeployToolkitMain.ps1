@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '05/05/2015'
+[string]$appDeployMainScriptDate = '05/07/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -251,7 +251,7 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Thr
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Microsoft\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win 8 machines
 		If (-not $HKULanguages) {
