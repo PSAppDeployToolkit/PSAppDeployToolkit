@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '05/07/2015'
+[string]$appDeployMainScriptDate = '05/08/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7948,7 +7948,7 @@ Function Enable-TerminalServerInstallMode {
 			Write-Log -Message 'Change terminal server into user install mode...' -Source ${CmdletName}
 			$terminalServerResult = & change.exe User /Install
 			
-			If ($global:LastExitCode -ne 0) { Throw $terminalServerResult }
+			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
 		Catch {
 			Write-Log -Message "Failed to change terminal server into user install mode. `n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
@@ -7996,7 +7996,7 @@ Function Disable-TerminalServerInstallMode {
 			Write-Log -Message 'Change terminal server into user execute mode...' -Source ${CmdletName}
 			$terminalServerResult = & change.exe User /Execute
 			
-			If ($global:LastExitCode -ne 0) { Throw $terminalServerResult }
+			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
 		Catch {
 			Write-Log -Message "Failed to change terminal server into user execute mode. `n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
