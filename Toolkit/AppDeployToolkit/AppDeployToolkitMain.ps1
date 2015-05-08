@@ -2028,7 +2028,7 @@ Function Execute-MSI {
 		If ($PathIsProductCode) {
 			[string]$MSIProductCode = $path
 		}
-		Else {
+		ElseIf ([IO.Path]::GetExtension($msiFile) -eq '.msi') {
 			Try {
 				[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' -ContinueOnError $false | Select-Object -ExpandProperty ProductCode -ErrorAction 'Stop'
 			}
@@ -5214,7 +5214,7 @@ Function Show-InstallationWelcome {
 							Write-Log -Message "Failed to launch [$notesNSDExecutable]. `n$(Resolve-Error)" -Source ${CmdletName}
 						}
 						
-						Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.Exitcode)]." -Source ${CmdletName}
+						Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
 						
 						#  Force NSD process to stop in case the previous command was not successful
 						Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
