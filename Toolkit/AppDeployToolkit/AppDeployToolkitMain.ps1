@@ -3449,6 +3449,10 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 			Finally {
 				If ($ManuallyLoadedRegHive) {
 					Try {
+						Write-Log -Message 'Performing manual garbage collection to ensure successful unloading of registry hive.' -Source ${CmdletName}
+						[GC]::Collect()
+						[GC]::WaitForPendingFinalizers()
+						
 						Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
 						[string]$HiveLoadResult = & reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
 						
