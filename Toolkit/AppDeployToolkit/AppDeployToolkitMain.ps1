@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '05/08/2015'
+[string]$appDeployMainScriptDate = '05/13/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3935,10 +3935,10 @@ Function Execute-ProcessAsUser {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
-	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
 	Execute process under a user account by specifying a username under which to execute it.
 .EXAMPLE
-	Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters '-File `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
+	Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
 	Execute process under a user account by using the default active logged in user that was detected when the toolkit was launched.
 .NOTES
 .LINK
