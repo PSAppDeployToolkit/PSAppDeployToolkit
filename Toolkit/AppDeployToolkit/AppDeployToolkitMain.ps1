@@ -369,7 +369,6 @@ Else {
 	[string]$regKeyLotusNotes = 'HKLM:SOFTWARE\Lotus\Notes'
 }
 [string]$regKeyAppExecution = 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
-[string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 ## COM Objects: Initialize
 [__comobject]$Shell = New-Object -ComObject WScript.Shell -ErrorAction 'SilentlyContinue'
@@ -8863,6 +8862,9 @@ Else {
 	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
 }
 [string]$installName = $installName.Trim('_') -replace '[_]+','_'
+
+## Set the Defer History registry path
+[string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 ## Variables: Log Files
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
