@@ -5983,10 +5983,12 @@ Function Show-InstallationProgress {
 		If ($deployModeSilent) { Return }
 
 		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
-		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Uninstall')) { $StatusMessage = $configProgressMessageUninstall }
+		If (($statusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Uninstall')) {
+			$StatusMessage = $configProgressMessageUninstall
+		}
 		
-		If ($envhost.Name -match 'PowerGUI') {
-			Write-Log -Message "$($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+		If ($envHost.Name -match 'PowerGUI') {
+			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
 			Return
 		}
 		
@@ -6033,7 +6035,7 @@ Function Show-InstallationProgress {
 			$powershell = [PowerShell]::Create()
 			$powershell.Runspace = $global:ProgressRunspace
 			$powershell.AddScript({
-				[xml]$xamlProgress = @'
+				[Xml.XmlDocument]$xamlProgress = @'
 				<Window
 				xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6127,22 +6129,27 @@ Function Show-InstallationProgress {
 			#  Invoke the progress runspace
 			Write-Log -Message "Spin up progress dialog in a separate thread with message: [$statusMessage]" -Source ${CmdletName}
 			$progressData = $powershell.BeginInvoke()
+			#  Allow the thread to be spun up safely before invoking actions against it.
+			Start-Sleep -Seconds 3
 			#  Wait for the runspace to complete and update progress message
 			While ($global:ProgressSyncHash.StatusMessage -ne '_CloseRunspace') {
-				#  Allow time between updating the thread
-				Start-Sleep -Seconds 1
-				#  Get the progress message
-				If (Test-Path -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -PathType 'Leaf') {
-					$global:ProgressSyncHash.StatusMessage = Import-Clixml -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -ErrorAction 'SilentlyContinue'
-				}
-				If ($global:ProgressSyncHash.StatusMessage -eq '_CloseRunspace') { Break }
-				#Write-Log -Message "Update progress message: [$StatusMessage]" -Source ${CmdletName}
-				#  Update the progress text
 				Try {
+					#  Get the progress message
+					If (Test-Path -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -PathType 'Leaf') {
+						$global:ProgressSyncHash.StatusMessage = Import-Clixml -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -ErrorAction 'Stop'
+					}
+					
+					If ($global:ProgressSyncHash.StatusMessage -eq '_CloseRunspace') { Break }
+					
+					#  Update the progress text
 					$global:ProgressSyncHash.Window.Dispatcher.Invoke([System.Windows.Threading.DispatcherPriority]'Normal', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $global:ProgressSyncHash.StatusMessage }, $null, $null)
+					
+					#  Allow time between updating the thread
+					Start-Sleep -Seconds 1
 				}
 				Catch {
 					Write-Log -Message "Unable to update the progress message. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+					Break
 				}
 			}
 			
@@ -6155,6 +6162,11 @@ Function Show-InstallationProgress {
 			$global:ProgressSyncHash.Window.Close()
 			$global:ProgressSyncHash.Window.Dispose()
 			$powershell.Dispose()
+			
+			#  Cleanup file containing the progress message
+			If (Test-Path -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -PathType 'Leaf') {
+				Remove-Item -Path "$dirAppDeployTemp\StatusMsgFrom_ShowInstallProgress.xml" -Force -ErrorAction 'SilentlyContinue' | Out-Null
+			}
 		}
 	}
 	End {

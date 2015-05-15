@@ -6254,8 +6254,8 @@ Function Show-InstallationProgress {
 			$StatusMessage = $configProgressMessageUninstall
 		}
 		
-		If ($envhost.Name -match 'PowerGUI') {
-			Write-Log -Message "$($envhost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+		If ($envHost.Name -match 'PowerGUI') {
+			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
 			Return
 		}
 		
