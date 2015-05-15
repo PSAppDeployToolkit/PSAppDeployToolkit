@@ -8765,7 +8765,7 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	[string[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
 	
 	If ($usersLoggedOn) {
-		#  Get account and session details for the current process if it is running as a logged in user
+		#  Get account and session details for the logged on user session that the current process is running under. Note that the account used to execute the current process may be different than the account that is logged into the session (i.e. you can use "RunAs" to launch with different credentials when logged into an account).
 		[psobject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
 		
 		#  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
@@ -9055,7 +9055,7 @@ If ($usersLoggedOn) {
 	
 	#  Check if the current process is running in the context of one of the logged in users
 	If ($CurrentLoggedOnUserSession) {
-		Write-Log -Message "Current process is running under a user account [$($CurrentLoggedOnUserSession.NTAccount)]." -Source $appDeployToolkitName
+		Write-Log -Message "Current process is running with user account [$ProcessNTAccount] under logged in user session for [$($CurrentLoggedOnUserSession.NTAccount)]." -Source $appDeployToolkitName
 	}
 	Else {
 		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]." -Source $appDeployToolkitName
