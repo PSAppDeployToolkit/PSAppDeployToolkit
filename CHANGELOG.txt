@@ -4,7 +4,8 @@ Version 3.6.4 [05/xx/2015]
 	Fixed issue with Enable-TerminalServerInstallMode and Disable-TerminalServerInstallMode expecting a successful execution of change.exe to return 0 when it should really be 1
 	Fixed issue with Execute-MSI so that Get-MsiTableProperty is only called when the file being executed is an MSI and not when it is an MSP
 	Fixed issue in Invoke-HKCURegistrySettingsForAllUsers where a registry hive would fail to unload because of an active memory reference by manually invoking garbage collection
-	Fixed issue where registry key for deferrals was not being correctly set
+	Fixed issue where registry key for deferrals was not being set correctly
+	Fixed issue in Show-InstallationWelcome where blocking "notes" would stop script execution
 	Changed StubPath registry type to 'String' in Set-ActiveSetup
 	Improved comments and documentation
 
