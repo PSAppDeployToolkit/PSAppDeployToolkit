@@ -2649,6 +2649,8 @@ Function Test-IsMutexAvailable {
 			[Threading.Mutex]$OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
 			## Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
 			$IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)
+			## Release exclusive lock on the mutex
+			$OpenExistingMutex.ReleaseMutex() | Out-Null
 		}
 		Catch [Threading.WaitHandleCannotBeOpenedException] {
 			## The named mutex does not exist
@@ -2693,9 +2695,7 @@ Function Test-IsMutexAvailable {
 			}
 			
 			If (($null -ne $OpenExistingMutex) -and ($IsMutexFree)) {
-				## Release exclusive lock on the mutex
-				$OpenExistingMutex.ReleaseMutex() | Out-Null
-				Try { $OpenExistingMutex.Dispose() } Catch { $OpenExistingMutex.Close() }
+				$OpenExistingMutex.Close()
 			}
 			If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 		}
@@ -9027,9 +9027,9 @@ If ($showBlockedAppDialog) {
 		[Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
 		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
 		If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
-			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
 			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
+			$showBlockedAppDialogMutex.ReleaseMutex() | Out-Null
 			Exit 0
 		}
 		Else {
@@ -9043,8 +9043,7 @@ If ($showBlockedAppDialog) {
 		Exit 60005
 	}
 	Finally {
-		If ($showBlockedAppDialogMutexLocked) { $showBlockedAppDialogMutex.ReleaseMutex() | Out-Null }
-		If ($showBlockedAppDialogMutex) { Try { $showBlockedAppDialogMutex.Dispose() } Catch { $showBlockedAppDialogMutex.Close() } }
+		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Close() }
 	}
 }
 

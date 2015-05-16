@@ -6,7 +6,7 @@ Version 3.6.4 [05/xx/2015]
 	Fixed issue in Invoke-HKCURegistrySettingsForAllUsers where a registry hive would fail to unload because of an active memory reference by manually invoking garbage collection
 	Fixed issue where registry key for deferrals was not being set correctly
 	Fixed issue in Show-InstallationWelcome where blocking "notes" would stop script execution
-	Fixed issue where System.Threading.Mutex class does not have Dispose() method prior to .NET 3.5 so will call Close() method if Dispose() fails
+	Fixed issue where System.Threading.Mutex class does not have Dispose() method prior to .NET 3.5 so will call Close() method instead
 	Changed StubPath registry type to 'String' in Set-ActiveSetup
 	Improved comments and documentation
 
