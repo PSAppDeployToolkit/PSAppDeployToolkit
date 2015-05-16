@@ -2695,7 +2695,7 @@ Function Test-IsMutexAvailable {
 			If (($null -ne $OpenExistingMutex) -and ($IsMutexFree)) {
 				## Release exclusive lock on the mutex
 				$OpenExistingMutex.ReleaseMutex() | Out-Null
-				$OpenExistingMutex.Dispose()
+				$OpenExistingMutex.Close()
 			}
 			If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 		}
@@ -9044,7 +9044,7 @@ If ($showBlockedAppDialog) {
 	}
 	Finally {
 		If ($showBlockedAppDialogMutexLocked) { $showBlockedAppDialogMutex.ReleaseMutex() | Out-Null }
-		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Dispose() }
+		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Close() }
 	}
 }
 
