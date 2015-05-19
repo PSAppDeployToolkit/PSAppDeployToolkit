@@ -1,4 +1,4 @@
-Version 3.6.4 [05/xx/2015]
+Version 3.6.4 [05/19/2015]
 	Fixed issue with detecting user's display UI when enforced by Group Policy, fixed typo in one of the registry paths
 	Fixed issue with extra double quote at end of VBScript command in function Execute-ProcessAsUser (caused issue in Set-ActiveSetup as well)
 	Fixed issue with Enable-TerminalServerInstallMode and Disable-TerminalServerInstallMode expecting a successful execution of change.exe to return 0 when it should really be 1
