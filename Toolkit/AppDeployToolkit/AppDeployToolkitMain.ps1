@@ -94,13 +94,13 @@ If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $env:C
 If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $env:PROGRAMFILES }
 
 ## Variables: Domain Membership
-[boolean]$IsMachinePartOfDomain = (Get-WmiObject Win32_ComputerSystem -ErrorAction 'SilentlyContinue').PartOfDomain
+[boolean]$IsMachinePartOfDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').PartOfDomain
 [string]$envMachineWorkgroup = ''
 [string]$envMachineADDomain = ''
 [string]$envLogonServer = ''
 [string]$MachineDomainController = ''
 If ($IsMachinePartOfDomain) {
-	[string]$envMachineADDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+	[string]$envMachineADDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
 		# If running in system context, fall back on the logonserver value stored in the registry
@@ -110,14 +110,14 @@ If ($IsMachinePartOfDomain) {
 	Catch { }
 }
 Else {
-	[string]$envMachineWorkgroup = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
+	[string]$envMachineWorkgroup = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 }
 [string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDomain = $env:USERDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
 
 ## Variables: Operating System
-[psobject]$envOS = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction 'SilentlyContinue'
+[psobject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
 [string]$envOSName = $envOS.Caption.Trim()
 [string]$envOSServicePack = $envOS.CSDVersion
 [version]$envOSVersion = [Environment]::OSVersion.Version
@@ -138,7 +138,7 @@ Switch ($envOSProductType) {
 	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
 #  Get the OS Architecture
-[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class Win32_Processor | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty AddressWidth) -eq '64')
+[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class 'Win32_Processor' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq '64')
 If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
@@ -173,7 +173,7 @@ If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchi
 [boolean]$IsNetworkServiceAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'NetworkServiceSid')
 [boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-6')
 [boolean]$IsProcessUserInteractive = [Environment]::UserInteractive
-[string]$LocalSystemNTAccount = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([Security.Principal.NTAccount]).Value
+[string]$LocalSystemNTAccount = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([Security.Principal.NTAccount]).Value
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
@@ -182,7 +182,7 @@ If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccoun
 [string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
 [string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
 [string]$scriptRoot = Split-Path -Path $scriptPath -Parent
-[string]$invokingScript = (Get-Variable -Name MyInvocation).Value.ScriptName
+[string]$invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName
 #  Get the invoking script directory
 If ($invokingScript) {
 	#  If this script was invoked by another script
@@ -201,10 +201,10 @@ Else {
 #  App Deploy Optional Extensions File
 [string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 #  Check that dependency files are present
-If (-not (Test-Path -Path $appDeployLogoIcon -PathType Leaf)) { Throw 'App Deploy logo icon file not found.' }
-If (-not (Test-Path -Path $appDeployLogoBanner -PathType Leaf)) { Throw 'App Deploy logo banner file not found.' }
-If (-not (Test-Path -Path $appDeployConfigFile -PathType Leaf)) { Throw 'App Deploy XML configuration file not found.' }
-If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType Leaf)) { Throw 'App Deploy custom types source code file not found.' }
+If (-not (Test-Path -Path $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
+If (-not (Test-Path -Path $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
+If (-not (Test-Path -Path $appDeployConfigFile -PathType 'Leaf')) { Throw 'App Deploy XML configuration file not found.' }
+If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { Throw 'App Deploy custom types source code file not found.' }
 
 ## Import variables from XML configuration file
 [Xml.XmlDocument]$xmlConfigFile = Get-Content -Path $AppDeployConfigFile
@@ -371,19 +371,19 @@ Else {
 [string]$regKeyAppExecution = 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
 
 ## COM Objects: Initialize
-[__comobject]$Shell = New-Object -ComObject WScript.Shell -ErrorAction 'SilentlyContinue'
-[__comobject]$ShellApp = New-Object -ComObject Shell.Application -ErrorAction 'SilentlyContinue'
+[__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'SilentlyContinue'
+[__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'SilentlyContinue'
 
 ## Variables: Reset/Remove Variables
 [boolean]$msiRebootDetected = $false
 [boolean]$BlockExecution = $false
 [boolean]$installationStarted = $false
 [boolean]$runningTaskSequence = $false
-If (Test-Path -Path 'variable:welcomeTimer') { Remove-Variable -Name welcomeTimer -Scope Script}
+If (Test-Path -Path 'variable:welcomeTimer') { Remove-Variable -Name 'welcomeTimer' -Scope 'Script'}
 #  Reset the deferral history
-If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name deferHistory }
-If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
-If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name deferDays }
+If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name 'deferHistory' }
+If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
+If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name 'deferDays' }
 
 ## Variables: System DPI Scale Factor
 [scriptblock]$GetDisplayScaleFactor = {
@@ -566,8 +566,8 @@ Function Write-Log {
 		
 		## Logging Variables
 		#  Log file date/time
-		[string]$LogTime = (Get-Date -Format HH:mm:ss.fff).ToString()
-		[string]$LogDate = (Get-Date -Format MM-dd-yyyy).ToString()
+		[string]$LogTime = (Get-Date -Format 'HH:mm:ss.fff').ToString()
+		[string]$LogDate = (Get-Date -Format 'MM-dd-yyyy').ToString()
 		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		#  Initialize variables
@@ -615,7 +615,7 @@ Function Write-Log {
 				}
 				#  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
 				Else {
-					Write-Output $lTextLogLine
+					Write-Output -InputObject $lTextLogLine
 				}
 			}
 		}
@@ -628,7 +628,7 @@ Function Write-Log {
 		If ($DisableLogging) { Return }
 		
 		## Create the directory where the log file will be saved
-		If (-not (Test-Path -Path $LogFileDirectory -PathType Container)) {
+		If (-not (Test-Path -Path $LogFileDirectory -PathType 'Container')) {
 			Try {
 				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
@@ -734,7 +734,7 @@ Function Write-Log {
 			## If renaming of file fails, script will continue writing to log file even if size goes over the max file size
 		}
 		Finally {
-			If ($PassThru) { Write-Output $Message }
+			If ($PassThru) { Write-Output -InputObject $Message }
 		}
 	}
 }
@@ -841,7 +841,7 @@ Function Exit-Script {
 				Start-Sleep -Milliseconds 500
 			}
 			
-			If (Test-Path -Path $logTempFolder -PathType Container -ErrorAction 'Stop') {
+			If (Test-Path -Path $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
 				Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'Stop' | Out-Null
 			}
 		}
@@ -929,7 +929,7 @@ Function Resolve-Error {
 				[string[]]$Property
 			)
 			
-			[string[]]$ObjectProperty = $InputObject | Get-Member -MemberType *Property | Select-Object -ExpandProperty Name
+			[string[]]$ObjectProperty = $InputObject | Get-Member -MemberType '*Property' | Select-Object -ExpandProperty 'Name'
 			ForEach ($Prop in $Property) {
 				If ($Prop -eq '*') {
 					[string[]]$PropertySelection = $ObjectProperty
@@ -939,7 +939,7 @@ Function Resolve-Error {
 					[string[]]$PropertySelection += $Prop
 				}
 			}
-			Write-Output $PropertySelection
+			Write-Output -InputObject $PropertySelection
 		}
 		
 		#  Initialize variables to avoid error if 'Set-StrictMode' is set
@@ -1022,12 +1022,12 @@ Function Resolve-Error {
 			If ($LogErrorMessage) { $Output = $LogErrorMessage }
 			If ($LogInnerMessage) { $Output += $LogInnerMessage }
 			
-			Write-Output $Output
+			Write-Output -InputObject $Output
 			
-			If (Test-Path -Path 'variable:Output') { Clear-Variable -Name Output }
-			If (Test-Path -Path 'variable:LogErrorMessage') { Clear-Variable -Name LogErrorMessage }
-			If (Test-Path -Path 'variable:LogInnerMessage') { Clear-Variable -Name LogInnerMessage }
-			If (Test-Path -Path 'variable:LogErrorMessageTmp') { Clear-Variable -Name LogErrorMessageTmp }
+			If (Test-Path -Path 'variable:Output') { Clear-Variable -Name 'Output' }
+			If (Test-Path -Path 'variable:LogErrorMessage') { Clear-Variable -Name 'LogErrorMessage' }
+			If (Test-Path -Path 'variable:LogInnerMessage') { Clear-Variable -Name 'LogInnerMessage' }
+			If (Test-Path -Path 'variable:LogErrorMessageTmp') { Clear-Variable -Name 'LogErrorMessageTmp' }
 		}
 	}
 	End {
@@ -1134,15 +1134,15 @@ Function Show-InstallationPrompt {
 		}
 		
 		[Windows.Forms.Application]::EnableVisualStyles()
-		$formInstallationPrompt = New-Object -TypeName System.Windows.Forms.Form
-		$pictureBanner = New-Object -TypeName System.Windows.Forms.PictureBox
-		$pictureIcon = New-Object -TypeName System.Windows.Forms.PictureBox
-		$labelText = New-Object -TypeName System.Windows.Forms.Label
-		$buttonRight = New-Object -TypeName System.Windows.Forms.Button
-		$buttonMiddle = New-Object -TypeName System.Windows.Forms.Button
-		$buttonLeft = New-Object -TypeName System.Windows.Forms.Button
-		$buttonAbort = New-Object -TypeName System.Windows.Forms.Button
-		$InitialFormInstallationPromptWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
+		$formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
+		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$pictureIcon = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$labelText = New-Object -TypeName 'System.Windows.Forms.Label'
+		$buttonRight = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonMiddle = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonLeft = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
+		$InitialFormInstallationPromptWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 		
 		[scriptblock]$Form_Cleanup_FormClosed = {
 			## Remove all event handlers from the controls
@@ -1153,10 +1153,10 @@ Function Show-InstallationPrompt {
 				$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
 				$timer.remove_Tick($timer_Tick)
-				$timer.dispose()
+				$timer.Dispose()
 				$timer = $null
 				$timerPersist.remove_Tick($timerPersist_Tick)
-				$timerPersist.dispose()
+				$timerPersist.Dispose()
 				$timerPersist = $null
 				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
 				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
@@ -1171,7 +1171,7 @@ Function Show-InstallationPrompt {
 			$formInstallationPrompt.TopMost = $true
 			$formInstallationPrompt.BringToFront()
 			# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-			Set-Variable -Name formInstallationPromptStartPosition -Value $formInstallationPrompt.Location -Scope Script
+			Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
 		}
 		
 		## Form
@@ -1179,7 +1179,7 @@ Function Show-InstallationPrompt {
 		
 		##----------------------------------------------
 		## Create padding object
-		$paddingNone = New-Object -TypeName System.Windows.Forms.Padding
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$paddingNone.Top = 0
 		$paddingNone.Bottom = 0
 		$paddingNone.Left = 0
@@ -1192,10 +1192,10 @@ Function Show-InstallationPrompt {
 		$buttonWidth = 110
 		$buttonHeight = 23
 		$buttonPadding = 50
-		$buttonSize = New-Object -TypeName System.Drawing.Size
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
 		$buttonSize.Width = $buttonWidth
 		$buttonSize.Height = $buttonHeight
-		$buttonPadding = New-Object -TypeName System.Windows.Forms.Padding
+		$buttonPadding = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$buttonPadding.Top = 0
 		$buttonPadding.Bottom = 5
 		$buttonPadding.Left = 50
@@ -1204,12 +1204,12 @@ Function Show-InstallationPrompt {
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 0
 		$System_Drawing_Point.Y = 0
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 50
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
@@ -1221,12 +1221,12 @@ Function Show-InstallationPrompt {
 		## Picture Icon
 		$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
 		If ($icon -ne 'None') { $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap() }
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 15
 		$System_Drawing_Point.Y = 105
 		$pictureIcon.Location = $System_Drawing_Point
 		$pictureIcon.Name = 'pictureIcon'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 32
 		$System_Drawing_Size.Width = 32
 		$pictureIcon.Size = $System_Drawing_Size
@@ -1238,11 +1238,11 @@ Function Show-InstallationPrompt {
 		## Label Text
 		$labelText.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelText.Name = 'labelText'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 148
 		$System_Drawing_Size.Width = 385
 		$labelText.Size = $System_Drawing_Size
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 25
 		$System_Drawing_Point.Y = 50
 		$labelText.Location = $System_Drawing_Point
@@ -1300,7 +1300,7 @@ Function Show-InstallationPrompt {
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 		
 		## Form Installation Prompt
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 270
 		$System_Drawing_Size.Width = 450
 		$formInstallationPrompt.Size = $System_Drawing_Size
@@ -1315,7 +1315,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.MinimizeBox = $false
 		$formInstallationPrompt.TopMost = $true
 		$formInstallationPrompt.TopLevel = $true
-		$formInstallationPrompt.Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formInstallationPrompt.Controls.Add($pictureBanner)
 		$formInstallationPrompt.Controls.Add($pictureIcon)
 		$formInstallationPrompt.Controls.Add($labelText)
@@ -1325,7 +1325,7 @@ Function Show-InstallationPrompt {
 		If ($buttonRightText) { $formInstallationPrompt.Controls.Add($buttonRight) }
 		
 		## Timer
-		$timer = New-Object -TypeName System.Windows.Forms.Timer
+		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
 		$timer.Interval = ($timeout * 1000)
 		$timer.Add_Tick({
 			Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
@@ -1349,7 +1349,7 @@ Function Show-InstallationPrompt {
 			$formInstallationPrompt.Refresh()
 		}
 		If ($persistPrompt) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { & $RefreshInstallationPrompt }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -1368,7 +1368,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -1385,9 +1385,9 @@ Function Show-InstallationPrompt {
 			$formInstallationPrompt.Dispose()
 
 			Switch ($result) {
-				'Yes' { Write-Output $buttonRightText }
-				'No' { Write-Output $buttonLeftText }
-				'Ignore' { Write-Output $buttonMiddleText }
+				'Yes' { Write-Output -InputObject $buttonRightText }
+				'No' { Write-Output -InputObject $buttonLeftText }
+				'Ignore' { Write-Output -InputObject $buttonMiddleText }
 				'Abort' {
 					# Restore minimized windows
 					$shellApp.UndoMinimizeAll() | Out-Null
@@ -1510,43 +1510,43 @@ Function Show-DialogBox {
 		Switch ($response) {
 			1 {
 				Write-Log -Message 'Dialog Box Response: OK' -Source ${CmdletName}
-				Write-Output 'OK'
+				Write-Output -InputObject 'OK'
 			}
 			2 {
 				Write-Log -Message 'Dialog Box Response: Cancel' -Source ${CmdletName}
-				Write-Output 'Cancel'
+				Write-Output -InputObject 'Cancel'
 			}
 			3 {
 				Write-Log -Message 'Dialog Box Response: Abort' -Source ${CmdletName}
-				Write-Output 'Abort'
+				Write-Output -InputObject 'Abort'
 			}
 			4 {
 				Write-Log -Message 'Dialog Box Response: Retry' -Source ${CmdletName}
-				Write-Output 'Retry'
+				Write-Output -InputObject 'Retry'
 			}
 			5 {
 				Write-Log -Message 'Dialog Box Response: Ignore' -Source ${CmdletName}
-				Write-Output 'Ignore'
+				Write-Output -InputObject 'Ignore'
 			}
 			6 {
 				Write-Log -Message 'Dialog Box Response: Yes' -Source ${CmdletName}
-				Write-Output 'Yes'
+				Write-Output -InputObject 'Yes'
 			}
 			7 {
 				Write-Log -Message 'Dialog Box Response: No' -Source ${CmdletName}
-				Write-Output 'No'
+				Write-Output -InputObject 'No'
 			}
 			10 {
 				Write-Log -Message 'Dialog Box Response: Try Again' -Source ${CmdletName}
-				Write-Output 'Try Again'
+				Write-Output -InputObject 'Try Again'
 			}
 			11 {
 				Write-Log -Message 'Dialog Box Response: Continue' -Source ${CmdletName}
-				Write-Output "Continue"
+				Write-Output -InputObject 'Continue'
 			}
 			-1 {
 				Write-Log -Message 'Dialog Box Timed Out...' -Source ${CmdletName}
-				Write-Output 'Timeout'
+				Write-Output -InputObject 'Timeout'
 			}
 		}
 	}
@@ -1587,8 +1587,8 @@ Function Get-HardwarePlatform {
 	Process {
 		Try {
 			Write-Log -Message 'Retrieve hardware platform information.' -Source ${CmdletName}
-			$hwBios = Get-WmiObject -Class Win32_BIOS -ErrorAction 'Stop' | Select-Object -Property Version, SerialNnumber
-			$hwMakeModel = Get-WMIObject -Class Win32_ComputerSystem -ErrorAction 'Stop' | Select-Object -Property Model, Manufacturer
+			$hwBios = Get-WmiObject -Class 'Win32_BIOS' -ErrorAction 'Stop' | Select-Object -Property 'Version', 'SerialNnumber'
+			$hwMakeModel = Get-WMIObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop' | Select-Object -Property 'Model', 'Manufacturer'
 			
 			If ($hwBIOS.Version -match 'VRTUAL') { $hwType = 'Virtual:Hyper-V' }
 			ElseIf ($hwBIOS.Version -match 'A M I') { $hwType = 'Virtual:Virtual PC' }
@@ -1599,7 +1599,7 @@ Function Get-HardwarePlatform {
 			ElseIf ($hwMakeModel.Model -like '*Virtual*') { $hwType = 'Virtual' }
 			Else { $hwType = 'Physical' }
 			
-			Write-Output $hwType
+			Write-Output -InputObject $hwType
 		}
 		Catch {
 			Write-Log -Message "Failed to retrieve hardware platform information. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -1650,11 +1650,11 @@ Function Get-FreeDiskSpace {
 	Process {
 		Try {
 			Write-Log -Message "Retrieve free disk space for drive [$Drive]." -Source ${CmdletName}
-			$disk = Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
+			$disk = Get-WmiObject -Class 'Win32_LogicalDisk' -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
 			[double]$freeDiskSpace = [math]::Round($disk.FreeSpace / 1MB)
 
 			Write-Log -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]." -Source ${CmdletName}
-			Write-Output $freeDiskSpace
+			Write-Output -InputObject $freeDiskSpace
 		}
 		Catch {
 			Write-Log -Message "Failed to retrieve free disk space for drive [$Drive]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -1756,7 +1756,7 @@ Function Get-InstalledApplication {
 								## Verify if there is a match with the product code passed to the script
 								If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
 									Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
-									$installedApplication += New-Object -TypeName PSObject -Property @{
+									$installedApplication += New-Object -TypeName 'PSObject' -Property @{
 										ProductCode = $regKeyApp.PSChildName
 										DisplayName = $appDisplayName
 										DisplayVersion = $appDisplayVersion
@@ -1795,7 +1795,7 @@ Function Get-InstalledApplication {
 									}
 									
 									If ($applicationMatched) {
-										$installedApplication += New-Object -TypeName PSObject -Property @{
+										$installedApplication += New-Object -TypeName 'PSObject' -Property @{
 											ProductCode = $regKeyApp.PSChildName
 											DisplayName = $appDisplayName
 											DisplayVersion = $appDisplayVersion
@@ -1822,7 +1822,7 @@ Function Get-InstalledApplication {
 				Continue
 			}
 		}
-		Write-Output $installedApplication
+		Write-Output -InputObject $installedApplication
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -1941,7 +1941,7 @@ Function Execute-MSI {
 			
 			#  Resolve the product code to a publisher, application name, and version
 			Write-Log -Message 'Resolve product code to a publisher, application name, and version.' -Source ${CmdletName}
-			[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction 'SilentlyContinue'
+			[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'
 			
 			#  Build the log file name
 			If (-not $logName) {
@@ -1970,8 +1970,8 @@ Function Execute-MSI {
 		}
 		Else {
 			## Create the Log directory if it doesn't already exist
-			If (-not (Test-Path -Path $configMSILogDir -PathType Container -ErrorAction 'SilentlyContinue')) {
-				New-Item -Path $configMSILogDir -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
+			If (-not (Test-Path -Path $configMSILogDir -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+				New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
 			}
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
@@ -2003,7 +2003,7 @@ Function Execute-MSI {
 		}
 		
 		## If the MSI is in the Files directory, set the full path to the MSI
-		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType Leaf -ErrorAction 'SilentlyContinue') {
+		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
 		}
 		ElseIf (Test-Path -Path $Path -ErrorAction 'SilentlyContinue') {
@@ -2029,7 +2029,7 @@ Function Execute-MSI {
 		}
 		ElseIf ([IO.Path]::GetExtension($msiFile) -eq '.msi') {
 			Try {
-				[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' -ContinueOnError $false | Select-Object -ExpandProperty ProductCode -ErrorAction 'Stop'
+				[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' -ContinueOnError $false | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
 			}
 			Catch {
 				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
@@ -2039,29 +2039,29 @@ Function Execute-MSI {
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[string[]]$transforms = $transform -split ','
-			0..($transforms.Length - 1) | % {
-				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_])) {
-					$transforms[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $transforms[$_].Replace('.\',''))"
+			0..($transforms.Length - 1) | ForEach-Object {
+				If (Test-Path (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_])) {
+					$transforms[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
 				}
 				Else {
 					$transforms[$_] = $transforms[$_]
 				}
 			}
-			$mstFile = "`"$($transforms -join ';')`""
+			[string]$mstFile = "`"$($transforms -join ';')`""
 		}
 		
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
 		If ($patch) {
 			[string[]]$patches = $patch -split ','
-			0..($patches.Length - 1) | % {
-				If (Test-Path (Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_])) {
-					$patches[$_] = "$(Join-Path (Split-Path -Path $msiFile -Parent) $patches[$_].Replace('.\',''))"
+			0..($patches.Length - 1) | ForEach-Object {
+				If (Test-Path (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_])) {
+					$patches[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
 				}
 				Else {
 					$patches[$_] = $patches[$_]
 				}
 			}
-			$mspFile = "`"$($patches -join ';')`""
+			[string]$mspFile = "`"$($patches -join ';')`""
 		}
 		
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
@@ -2120,7 +2120,7 @@ Function Execute-MSI {
 		}
 	}
 	End {
-		If ($PassThru) { Write-Output $ExecuteResults }
+		If ($PassThru) { Write-Output -InputObject $ExecuteResults }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -2237,7 +2237,7 @@ Function Remove-MSIApplications {
 		}
 	}
 	End {
-		If ($PassThru) { Write-Output $ExecuteResults }
+		If ($PassThru) { Write-Output -InputObject $ExecuteResults }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -2278,10 +2278,10 @@ Function Execute-Process {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false (fail on error).
 .EXAMPLE
-	Execute-Process -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle Hidden
+	Execute-Process -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
 	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 .EXAMPLE
-	Execute-Process -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle Hidden
+	Execute-Process -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle 'Hidden'
 .EXAMPLE
 	Execute-Process -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes '1,2'
 .NOTES
@@ -2336,7 +2336,7 @@ Function Execute-Process {
 			## Validate and find the fully qualified path for the $Path variable.
 			If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
 				Write-Log -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
-				If (-not (Test-Path -Path $Path -PathType Leaf -ErrorAction 'Stop')) {
+				If (-not (Test-Path -Path $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
 					Throw "File [$Path] not found."
 				}
 			}
@@ -2388,7 +2388,7 @@ Function Execute-Process {
 				$ErrorActionPreference = 'Stop'
 				
 				## Define process
-				$processStartInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo -ErrorAction 'Stop'
+				$processStartInfo = New-Object -TypeName 'System.Diagnostics.ProcessStartInfo' -ErrorAction 'Stop'
 				$processStartInfo.FileName = $Path
 				$processStartInfo.WorkingDirectory = $WorkingDirectory
 				$processStartInfo.UseShellExecute = $false
@@ -2398,12 +2398,12 @@ Function Execute-Process {
 				$processStartInfo.CreateNoWindow = $CreateNoWindow
 				If ($Parameters) { $processStartInfo.Arguments = $Parameters }
 				If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
-				$process = New-Object -TypeName System.Diagnostics.Process -ErrorAction 'Stop'
+				$process = New-Object -TypeName 'System.Diagnostics.Process' -ErrorAction 'Stop'
 				$process.StartInfo = $processStartInfo
 				
 				## Add event handler to capture process's standard output redirection
 				[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
-				$stdOutBuilder = New-Object -TypeName System.Text.StringBuilder -ArgumentList ''
+				$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
 				$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
 				
 				## Start Process
@@ -2454,7 +2454,7 @@ Function Execute-Process {
 				If ($process) { $process.Close() }
 				
 				## Re-enable Zone checking
-				Remove-Item -Path env:SEE_MASK_NOZONECHECKS -ErrorAction 'SilentlyContinue'
+				Remove-Item -Path 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'SilentlyContinue'
 				
 				If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 			}
@@ -2475,15 +2475,15 @@ Function Execute-Process {
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
 					Write-Log -Message "Execution completed with exit code [$returnCode]." -Source ${CmdletName}
-					[psobject]$ExecutionResults = New-Object -TypeName PSObject -Property @{ ExitCode = $returnCode; StdOut = $stdOut; StdErr = $stdErr }
-					Write-Output $ExecutionResults
+					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = $stdOut; StdErr = $stdErr }
+					Write-Output -InputObject $ExecutionResults
 				}
 				ElseIf ($ignoreExitCodeMatch) {
 					Write-Log -Message "Execution complete and the exit code [$returncode] is being ignored." -Source ${CmdletName}
 				}
 				ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
 					Write-Log -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2 -Source ${CmdletName}
-					Set-Variable -Name msiRebootDetected -Value $true -Scope Script
+					Set-Variable -Name 'msiRebootDetected' -Value $true -Scope 'Script'
 				}
 				ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
 					Write-Log -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3 -Source ${CmdletName}
@@ -2522,8 +2522,8 @@ Function Execute-Process {
 				Write-Log -Message "Execution completed with exit code [$returnCode]. Function failed. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 			If ($PassThru) {
-				[psobject]$ExecutionResults = New-Object -TypeName PSObject -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
-				Write-Output $ExecutionResults
+				[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
+				Write-Output -InputObject $ExecutionResults
 			}
 			Else {
 				Exit-Script -ExitCode $returnCode
@@ -2570,7 +2570,7 @@ Function Get-MsiExitCodeMessage {
 		Try {
 			Write-Log -Message "Get message for exit code [$MsiExitCode]." -Source ${CmdletName}
 			[string]$MsiExitCodeMsg = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode)
-			Write-Output $MsiExitCodeMsg
+			Write-Output -InputObject $MsiExitCodeMsg
 		}
 		Catch {
 			Write-Log -Message "Failed to get message for exit code [$MsiExitCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -2682,7 +2682,7 @@ Function Test-IsMutexAvailable {
 				If ($MutexName -eq 'Global\_MSIExecute') {
 					## Get the command line for the MSI installation in progress
 					Try {
-						[string]$msiInProgressCmdLine = Get-WmiObject -Class Win32_Process -Filter "name = 'msiexec.exe'" -ErrorAction 'Stop' | Where-Object { $_.CommandLine } | Select-Object -ExpandProperty 'CommandLine' | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
+						[string]$msiInProgressCmdLine = Get-WmiObject -Class 'Win32_Process' -Filter "name = 'msiexec.exe'" -ErrorAction 'Stop' | Where-Object { $_.CommandLine } | Select-Object -ExpandProperty 'CommandLine' | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
 					}
 					Catch { }
 					Write-Log -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2 -Source ${CmdletName}
@@ -2701,7 +2701,7 @@ Function Test-IsMutexAvailable {
 		}
 	}
 	End {
-		Write-Output $IsMutexFree
+		Write-Output -InputObject $IsMutexFree
 		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
@@ -2743,9 +2743,9 @@ Function New-Folder {
 	}
 	Process {
 		Try {
-			If (-not (Test-Path -Path $Path -PathType Container)) {
+			If (-not (Test-Path -Path $Path -PathType 'Container')) {
 				Write-Log -Message "Create folder [$Path]." -Source ${CmdletName}
-				New-Item -Path $Path -ItemType Directory -ErrorAction 'Stop'
+				New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
@@ -2799,7 +2799,7 @@ Function Remove-Folder {
 	}
 	Process {
 		Try {
-			If (Test-Path -Path $Path -PathType Container) {
+			If (Test-Path -Path $Path -PathType 'Container') {
 				Write-Log -Message "Delete folder(s) and file(s) recursively from path [$path]..." -Source ${CmdletName}
 				Remove-Item -Path $Path -Force -Recurse -ErrorAction 'Stop' | Out-Null
 			}
@@ -2864,7 +2864,7 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType Container))) {
+			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType 'Container'))) {
 				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
 			
@@ -3029,7 +3029,7 @@ Function Convert-RegistryPath {
 		If ($key -notmatch '^Registry::') { [string]$key = "Registry::$key" }
 		
 		Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
-		Write-Output $key
+		Write-Output -InputObject $key
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -3122,7 +3122,7 @@ Function Get-RegistryKey {
 					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
 				}
 			}
-			If ($regKeyValue) { Write-Output $regKeyValue } Else { Write-Output $null }
+			If ($regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
 		}
 		Catch {
 			If (-not $Value) {
@@ -3216,7 +3216,7 @@ Function Set-RegistryKey {
 			If (-not (Test-Path -Path $key -ErrorAction 'Stop')) {
 				Try {
 					Write-Log -Message "Create registry key [$key]." -Source ${CmdletName}
-					New-Item -Path $key -ItemType Registry -Force -ErrorAction 'Stop' | Out-Null
+					New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop' | Out-Null
 				}
 				Catch {
 					Throw
@@ -3418,7 +3418,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				[boolean]$ManuallyLoadedRegHive = $false
 				If (-not (Test-Path -Path $UserRegistryPath)) {
 					#  Load the User registry hive if the registry hive file exists
-					If (Test-Path -Path $UserRegistryHiveFile -PathType Leaf) {
+					If (Test-Path -Path $UserRegistryHiveFile -PathType 'Leaf') {
 						Write-Log -Message "Load the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
 						[string]$HiveLoadResult = & reg.exe load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 						
@@ -3533,17 +3533,17 @@ Function ConvertTo-NTAccountOrSID {
 					[string]$msg = "the SID [$SID] to an NT Account name"
 					Write-Log -Message "Convert $msg." -Source ${CmdletName}
 					
-					$NTAccountSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList $SID
+					$NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList $SID
 					$NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
-					Write-Output $NTAccount
+					Write-Output -InputObject $NTAccount
 				}
 				'NTAccountToSID' {
 					[string]$msg = "the NT Account [$AccountName] to a SID"
 					Write-Log -Message "Convert $msg." -Source ${CmdletName}
 					
-					$NTAccount = New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList $AccountName
+					$NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList $AccountName
 					$NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
-					Write-Output $NTAccountSID
+					Write-Output -InputObject $NTAccountSID
 				}
 				'WellKnownName' {
 					If ($WellKnownToNTAccount) {
@@ -3557,10 +3557,10 @@ Function ConvertTo-NTAccountOrSID {
 					
 					#  Get the SID for the root domain
 					Try {
-						$MachineRootDomain = (Get-WmiObject -Class Win32_ComputerSystem -ErrorAction 'Stop').Domain.ToLower()
-						$ADDomainObj = New-Object -TypeName System.DirectoryServices.DirectoryEntry -ArgumentList "LDAP://$MachineRootDomain"
+						$MachineRootDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop').Domain.ToLower()
+						$ADDomainObj = New-Object -TypeName 'System.DirectoryServices.DirectoryEntry' -ArgumentList "LDAP://$MachineRootDomain"
 						$DomainSidInBinary = $ADDomainObj.ObjectSid
-						$DomainSid = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ($DomainSidInBinary[0], 0)
+						$DomainSid = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($DomainSidInBinary[0], 0)
 					}
 					Catch {
 						Write-Log -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2 -Source ${CmdletName}
@@ -3569,14 +3569,14 @@ Function ConvertTo-NTAccountOrSID {
 					
 					#  Get the SID for the well known SID name
 					$WellKnownSidType = [Security.Principal.WellKnownSidType]::$WellKnownSIDName
-					$NTAccountSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ($WellKnownSidType, $DomainSid)
+					$NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($WellKnownSidType, $DomainSid)
 					
 					If ($WellKnownToNTAccount) {
 						$NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
-						Write-Output $NTAccount
+						Write-Output -InputObject $NTAccount
 					}
 					Else {
-						Write-Output $NTAccountSID
+						Write-Output -InputObject $NTAccountSID
 					}
 				}
 			}
@@ -3657,7 +3657,7 @@ Function Get-UserProfiles {
 			
 			## Find the path to the Default User profile
 			If (-not $ExcludeDefaultUser) {
-				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name ProfilesDirectory -ErrorAction 'Stop' | Select-Object -ExpandProperty ProfilesDirectory
+				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
 				
 				#  On Windows Vista or higher
 				If ([Environment]::OSVersion.Version.Major -gt 5) {
@@ -3676,16 +3676,17 @@ Function Get-UserProfiles {
 				## Create a custom object for the Default User profile.
 				#  Since the Default User is not an actual User account, it does not have a username or a SID.
 				#  We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-				$DefaultUserProfile = New-Object -TypeName PSObject
-				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name NTAccount -Value 'Default User' -Force -ErrorAction 'Stop'
-				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name SID -Value 'S-1-5-21-Default-User' -Force -ErrorAction 'Stop'
-				$DefaultUserProfile | Add-Member -MemberType NoteProperty -Name ProfilePath -Value $DefaultUserProfileDirectory -Force -ErrorAction 'Stop'
+				[psobject]$DefaultUserProfile = New-Object -TypeName 'PSObject' -Property @{
+					NTAccount = 'Default User'
+					SID = 'S-1-5-21-Default-User'
+					ProfilePath = $DefaultUserProfileDirectory
+				}
 				
 				## Add the Default User custom object to the User Profile list.
 				$UserProfiles += $DefaultUserProfile
 			}
 			
-			Write-Output $UserProfiles
+			Write-Output -InputObject $UserProfiles
 		}
 		Catch {
 			Write-Log -Message "Failed to create a custom object representing all user profiles on the machine. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -3734,14 +3735,14 @@ Function Get-FileVersion {
 		Try {
 			Write-Log -Message "Get file version info for file [$file]." -Source ${CmdletName}
 			
-			If (Test-Path -Path $File -PathType Leaf) {
+			If (Test-Path -Path $File -PathType 'Leaf') {
 				$fileVersion = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo.FileVersion
 				If ($fileVersion) {
 					## Remove product information to leave only the file version
 					$fileVersion = ($fileVersion -split ' ' | Select-Object -First 1)
 					
 					Write-Log -Message "File version is [$fileVersion]." -Source ${CmdletName}
-					Write-Output $fileVersion
+					Write-Output -InputObject $fileVersion
 				}
 				Else {
 					Write-Log -Message 'No file version information found.' -Source ${CmdletName}
@@ -3836,7 +3837,7 @@ Function New-Shortcut {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
-		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject WScript.Shell -ErrorAction 'Stop' }
+		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop' }
 	}
 	Process {
 		Try {
@@ -3844,9 +3845,9 @@ Function New-Shortcut {
 				[IO.FileInfo]$Path = [IO.FileInfo]$Path
 				[string]$PathDirectory = $Path.DirectoryName
 				
-				If (-not (Test-Path -Path $PathDirectory -PathType Container -ErrorAction 'Stop')) {
+				If (-not (Test-Path -Path $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
 					Write-Log -Message "Create shortcut directory [$PathDirectory]." -Source ${CmdletName}
-					New-Item -Path $PathDirectory -ItemType Directory -Force -ErrorAction 'Stop' | Out-Null
+					New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 				}
 			}
 			Catch {
@@ -3860,7 +3861,7 @@ Function New-Shortcut {
 				$URLFile += "URL=$targetPath"
 				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
-				$URLFile | Out-File -FilePath $path.FullName -Force -Encoding default -ErrorAction 'Stop'
+				$URLFile | Out-File -FilePath $path.FullName -Force -Encoding 'default' -ErrorAction 'Stop'
 			}
 			ElseIf (($path.FullName).EndsWith('.lnk')) {
 				If (($iconLocation -and $iconIndex) -and (-not ($iconLocation.Contains(',')))) {
@@ -3886,7 +3887,7 @@ Function New-Shortcut {
 					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
 					$TempFileName = [IO.Path]::GetRandomFileName()
 					$TempFile = [IO.FileInfo][IO.Path]::Combine($Path.Directory, $TempFileName)
-					$Writer = New-Object -TypeName System.IO.FileStream -ArgumentList ($TempFile, ([IO.FileMode]::Create)) -ErrorAction 'Stop'
+					$Writer = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($TempFile, ([IO.FileMode]::Create)) -ErrorAction 'Stop'
 					$Reader = $Path.OpenRead()
 					While ($Reader.Position -lt $Reader.Length) {
 						$Byte = $Reader.ReadByte()
@@ -4008,8 +4009,8 @@ Function Execute-ProcessAsUser {
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 		
 		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
-		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container)) {
-			New-Item -Path $dirAppDeployTemp -ItemType Directory -Force -ErrorAction 'Stop'
+		If (-not (Test-Path -Path $dirAppDeployTemp -PathType 'Container')) {
+			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'Stop'
 		}
 		
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
@@ -4019,7 +4020,7 @@ Function Execute-ProcessAsUser {
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
 			$executeProcessAsUserScript += 'WScript.Quit intReturn'
-			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding default -ErrorAction 'SilentlyContinue'
+			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
 			$Path = 'wscript.exe'
 			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
 		}
@@ -4068,7 +4069,7 @@ Function Execute-ProcessAsUser {
 		Try {
 			#  Specify the filename to export the XML to
 			[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
-			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
+			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 		}
 		Catch {
 			[int32]$executeProcessAsUserExitCode = 60007
@@ -4088,7 +4089,7 @@ Function Execute-ProcessAsUser {
 		Else {
 			Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 		}
-		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
+		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru
 		If ($schTaskResult.ExitCode -ne 0) {
 			[int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
 			Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
@@ -4107,13 +4108,13 @@ Function Execute-ProcessAsUser {
 		Else {
 			Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 		}
-		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -Passthru
+		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle 'Hidden' -CreateNoWindow -Passthru
 		If ($schTaskResult.ExitCode -ne 0) {
 			[int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
 			Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
 			Write-Log -Message 'Delete the scheduled task which did not trigger.' -Source ${CmdletName}
-			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ContinueOnError $true
+			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ContinueOnError $true
 			If (-not $ContinueOnError) {
 				Throw "Failed to trigger scheduled task [$schTaskName]."
 			}
@@ -4137,14 +4138,14 @@ Function Execute-ProcessAsUser {
 		## Delete scheduled task
 		Try {
 			Write-Log -Message "Delete scheduled task [$schTaskName]." -Source ${CmdletName}
-			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -ErrorAction 'Stop'
+			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
 		}
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
-		If ($PassThru) { Write-Output $executeProcessAsUserExitCode }
+		If ($PassThru) { Write-Output -InputObject $executeProcessAsUserExitCode }
 
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
@@ -4253,7 +4254,7 @@ Function Refresh-SessionEnvironmentVariables {
 			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 			
 			## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty Property | ForEach-Object { Set-Item -Path "env:$($_)" -Value (Get-ItemProperty -Path $envRegPath -Name $_).$_ } }
+			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -Path "env:$($_)" -Value (Get-ItemProperty -Path $envRegPath -Name $_).$_ } }
 			
 			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
 			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
@@ -4325,7 +4326,7 @@ Function Get-ScheduledTask {
 			If ($SchtasksResults) {
 				ForEach ($SchtasksResult in $SchtasksResults) {
 					If ($SchtasksResult.TaskName -match $TaskName) {
-						$SchtasksResult | Get-Member -MemberType Properties |
+						$SchtasksResult | Get-Member -MemberType 'Properties' |
 						ForEach -Begin {
 							[hashtable]$Task = @{}
 						} -Process {
@@ -4334,7 +4335,7 @@ Function Get-ScheduledTask {
 						} -End {
 							## Only add task to the custom object if all property values are not empty
 							If (($Task.Values | Select-Object -Unique | Measure-Object).Count) {
-								$ScheduledTasks += New-Object -TypeName PSObject -Property $Task
+								$ScheduledTasks += New-Object -TypeName 'PSObject' -Property $Task
 							}
 						}
 					}
@@ -4349,7 +4350,7 @@ Function Get-ScheduledTask {
 		}
 	}
 	End {
-		Write-Output $ScheduledTasks
+		Write-Output -InputObject $ScheduledTasks
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -4447,12 +4448,12 @@ Function Block-AppExecution {
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		
 		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-		If (Test-Path -Path "$configToolkitTempPath\PSAppDeployToolkit" -PathType Leaf -ErrorAction 'SilentlyContinue') {
+		If (Test-Path -Path "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			Remove-Item -Path "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue' | Out-Null
 		}
 		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
-		If (-not (Test-Path -Path $dirAppDeployTemp -PathType Container -ErrorAction 'SilentlyContinue')) {
-			New-Item -Path $dirAppDeployTemp -ItemType Directory -ErrorAction 'SilentlyContinue' | Out-Null
+		If (-not (Test-Path -Path $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
 		}
 		
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
@@ -4462,12 +4463,12 @@ Function Block-AppExecution {
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
-		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding default -ErrorAction 'SilentlyContinue'
+		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
 		[string]$debuggerBlockValue = "wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
-		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property TaskName | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
 		}
 		Else {
@@ -4475,7 +4476,7 @@ Function Block-AppExecution {
 			Try {
 				#  Specify the filename to export the XML to
 				[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
-				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction Stop
+				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 			}
 			Catch {
 				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -4483,7 +4484,7 @@ Function Block-AppExecution {
 			}
 			
 			## Import the Scheduled Task XML file to create the Scheduled Task
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru
+			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru
 			If ($schTaskResult.ExitCode -ne 0) {
 				Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
 				Return
@@ -4543,18 +4544,18 @@ Function Unblock-AppExecution {
 		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue'})
 		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
 			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName} 
-			$unblockProcess | Remove-ItemProperty -Name Debugger -ErrorAction 'SilentlyContinue'
+			$unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'SilentlyContinue'
 		}
 		
 		## If block execution variable is $true, set it to $false
 		If ($BlockExecution) {
 			#  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-			Set-Variable -Name BlockExecution -Value $false -Scope Script
+			Set-Variable -Name 'BlockExecution' -Value $false -Scope 'Script'
 		}
 		
 		## Remove the scheduled task if it exists
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
-		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property TaskName | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
 			Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
 		}
@@ -4690,7 +4691,7 @@ Function Get-UniversalDate {
 			## Convert the date to a universal sortable date time pattern based on the current culture
 			Write-Log -Message "Convert the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($culture.Name)]." -Source ${CmdletName}
 			[string]$universalDateTime = (Get-Date -Date $DateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
-			Write-Output $universalDateTime
+			Write-Output -InputObject $universalDateTime
 		}
 		Catch {
 			Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -4754,15 +4755,15 @@ Function Get-RunningProcesses {
 						If ($runningProcess.ProcessName -eq $processObject.ProcessName) {
 							If ($processObject.ProcessDescription) {
 								#  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -PassThru -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 							ElseIf ($runningProcess.Description) {
 								#  If the process already has a description field specified, then use it
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.Description -Force -PassThru -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $runningProcess.Description -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 							Else {
 								#  Fall back on the process name if no description is provided by the process or as a parameter to the function
-								$runningProcess | Add-Member -MemberType NoteProperty -Name 'ProcessDescription' -Value $runningProcess.ProcessName -Force -PassThru -ErrorAction 'SilentlyContinue'
+								$runningProcess | Add-Member -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $runningProcess.ProcessName -Force -PassThru -ErrorAction 'SilentlyContinue'
 							}
 						}
 					}
@@ -4773,7 +4774,7 @@ Function Get-RunningProcesses {
 			}
 			
 			Write-Log -Message 'Finished checking running application(s).' -Source ${CmdletName}
-			Write-Output $runningProcesses
+			Write-Output -InputObject $runningProcesses
 		}
 	}
 	End {
@@ -4941,7 +4942,7 @@ Function Show-InstallationWelcome {
 			If ($RequiredDiskSpace -eq 0) {
 				Try {
 					#  Determine the size of the Files folder
-					$fso = New-Object -ComObject Scripting.FileSystemObject -ErrorAction 'Stop'
+					$fso = New-Object -ComObject 'Scripting.FileSystemObject' -ErrorAction 'Stop'
 					$RequiredDiskSpace = [math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
 				}
 				Catch {
@@ -4967,14 +4968,14 @@ Function Show-InstallationWelcome {
 			ForEach ($process in ($CloseApps -split ',' | Where-Object { $_ })) {
 				If ($process.Contains('=')) {
 					[string[]]$ProcessSplit = $process -split '='
-					$processObjects += New-Object -TypeName PSObject -Property @{
+					$processObjects += New-Object -TypeName 'PSObject' -Property @{
 						ProcessName = $ProcessSplit[0]
 						ProcessDescription = $ProcessSplit[1]
 					}
 				}
 				Else {
 					[string]$ProcessInfo = $process
-					$processObjects += New-Object -TypeName PSObject -Property @{
+					$processObjects += New-Object -TypeName 'PSObject' -Property @{
 						ProcessName = $process
 						ProcessDescription = ''
 					}
@@ -5012,7 +5013,7 @@ Function Show-InstallationWelcome {
 				}
 			}
 			Else {
-				If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name deferTimes }
+				If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
 				$DeferTimes = $null
 			}
 			If ($checkDeferDays -and $allowDefer) {
@@ -5055,9 +5056,9 @@ Function Show-InstallationWelcome {
 				#  Change this variable to a boolean now to switch the countdown on even with deferral
 				[boolean]$forceCloseAppsCountdown = $true
 			}
-			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope Script
+			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope 'Script'
 			
-			While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable runningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
+			While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
 				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
@@ -5235,9 +5236,9 @@ Function Show-InstallationWelcome {
 		## If block execution switch is true, call the function to block execution of these processes
 		If ($BlockExecution) {
 			#  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-			Set-Variable -Name BlockExecution -Value $BlockExecution -Scope Script
+			Set-Variable -Name 'BlockExecution' -Value $BlockExecution -Scope 'Script'
 			Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
-			Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty ProcessName)
+			Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty 'ProcessName')
 		}
 	}
 	End {
@@ -5368,20 +5369,20 @@ Function Show-WelcomePrompt {
 		[string[]]$processDescriptions = $processDescriptions -split ','
 		[Windows.Forms.Application]::EnableVisualStyles()
 		
-		$formWelcome = New-Object -TypeName System.Windows.Forms.Form
-		$pictureBanner = New-Object -TypeName System.Windows.Forms.PictureBox
-		$labelAppName = New-Object -TypeName System.Windows.Forms.Label
-		$labelCountdown = New-Object -TypeName System.Windows.Forms.Label
-		$labelDefer = New-Object -TypeName System.Windows.Forms.Label
-		$listBoxCloseApps = New-Object -TypeName System.Windows.Forms.ListBox
-		$buttonContinue = New-Object -TypeName System.Windows.Forms.Button
-		$buttonDefer = New-Object -TypeName System.Windows.Forms.Button
-		$buttonCloseApps = New-Object -TypeName System.Windows.Forms.Button
-		$buttonAbort = New-Object -TypeName System.Windows.Forms.Button
-		$formWelcomeWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
-		$flowLayoutPanel = New-Object -TypeName System.Windows.Forms.FlowLayoutPanel
-		$panelButtons = New-Object -TypeName System.Windows.Forms.Panel
-		$toolTip = New-Object -TypeName System.Windows.Forms.ToolTip
+		$formWelcome = New-Object -TypeName 'System.Windows.Forms.Form'
+		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$labelAppName = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelDefer = New-Object -TypeName 'System.Windows.Forms.Label'
+		$listBoxCloseApps = New-Object -TypeName 'System.Windows.Forms.ListBox'
+		$buttonContinue = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonCloseApps = New-Object -TypeName 'System.Windows.Forms.Button'
+		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
+		$formWelcomeWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
+		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
+		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
+		$toolTip = New-Object -TypeName 'System.Windows.Forms.ToolTip'
 		
 		## Remove all event handlers from the controls
 		[scriptblock]$Form_Cleanup_FormClosed = {
@@ -5407,7 +5408,7 @@ Function Show-WelcomePrompt {
 			$formWelcome.TopMost = $true
 			$formWelcome.BringToFront()
 			#  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-			Set-Variable -Name formWelcomeStartPosition -Value $formWelcome.Location -Scope Script
+			Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
 			
 			## Initialize the countdown timer
 			[datetime]$currentTime = Get-Date
@@ -5422,7 +5423,7 @@ Function Show-WelcomePrompt {
 		
 		## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
 		If (-not ($script:welcomeTimer)) {
-			$script:welcomeTimer = New-Object -TypeName System.Windows.Forms.Timer
+			$script:welcomeTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
 		}
 		
 		If ($showCountdown) {
@@ -5431,7 +5432,7 @@ Function Show-WelcomePrompt {
 				[datetime]$currentTime = Get-Date
 				[datetime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
 				[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-				Set-Variable -Name closeAppsCountdownGlobal -Value $remainingTime.TotalSeconds -Scope Script
+				Set-Variable -Name 'closeAppsCountdownGlobal' -Value $remainingTime.TotalSeconds -Scope 'Script'
 				
 				## If the countdown is complete, close the application(s)
 				If ($countdownTime -lt $currentTime) {
@@ -5455,7 +5456,7 @@ Function Show-WelcomePrompt {
 		
 		## Persistence Timer
 		If ($persistWindow) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = { Refresh-InstallationWelcome }
 			$timerPersist.add_Tick($timerPersist_Tick)
@@ -5468,7 +5469,7 @@ Function Show-WelcomePrompt {
 		
 		##----------------------------------------------
 		## Create padding object
-		$paddingNone = New-Object -TypeName System.Windows.Forms.Padding
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$paddingNone.Top = 0
 		$paddingNone.Bottom = 0
 		$paddingNone.Left = 0
@@ -5481,10 +5482,10 @@ Function Show-WelcomePrompt {
 		$buttonWidth = 110
 		$buttonHeight = 23
 		$buttonPadding = 50
-		$buttonSize = New-Object -TypeName System.Drawing.Size
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
 		$buttonSize.Width = $buttonWidth
 		$buttonSize.Height = $buttonHeight
-		$buttonPadding = New-Object -TypeName System.Windows.Forms.Padding
+		$buttonPadding = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$buttonPadding.Top = 0
 		$buttonPadding.Bottom = 5
 		$buttonPadding.Left = 50
@@ -5493,12 +5494,12 @@ Function Show-WelcomePrompt {
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 0
 		$System_Drawing_Point.Y = 0
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 50
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
@@ -5510,7 +5511,7 @@ Function Show-WelcomePrompt {
 		## Label App Name
 		$labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelAppName.Name = 'labelAppName'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		If (-not $showCloseApps) {
 			$System_Drawing_Size.Height = 40
 		}
@@ -5543,7 +5544,7 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.FormattingEnabled = $true
 		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 100
 		$System_Drawing_Size.Width = 300
 		$listBoxCloseApps.Size = $System_Drawing_Size
@@ -5554,7 +5555,7 @@ Function Show-WelcomePrompt {
 		## Label Defer
 		$labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelDefer.Name = 'labelDefer'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 90
 		$System_Drawing_Size.Width = 450
 		$labelDefer.Size = $System_Drawing_Size
@@ -5583,7 +5584,7 @@ Function Show-WelcomePrompt {
 		## Label Countdown
 		$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelCountdown.Name = 'labelCountdown'
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 40
 		$System_Drawing_Size.Width = 450
 		$labelCountdown.Size = $System_Drawing_Size
@@ -5599,7 +5600,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.add_Click($handler_labelDefer_Click)
 		
 		## Panel Flow Layout
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 0
 		$System_Drawing_Point.Y = 50
 		$flowLayoutPanel.Location = $System_Drawing_Point
@@ -5674,7 +5675,7 @@ Function Show-WelcomePrompt {
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 		
 		## Form Welcome
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 0
 		$System_Drawing_Size.Width = 0
 		$formWelcome.Size = $System_Drawing_Size
@@ -5689,24 +5690,24 @@ Function Show-WelcomePrompt {
 		$formWelcome.MinimizeBox = $false
 		$formWelcome.TopMost = $TopMost
 		$formWelcome.TopLevel = $true
-		$formWelcome.Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formWelcome.AutoSize = $true
 		$formWelcome.Controls.Add($pictureBanner)
 		$formWelcome.Controls.Add($flowLayoutPanel)
 		
 		## Panel Button
-		$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 0
 		# Calculate the position of the panel relative to the size of the form
-		$System_Drawing_Point.Y = (($formWelcome.Size | Select-Object -ExpandProperty Height) - 10)
+		$System_Drawing_Point.Y = (($formWelcome.Size | Select-Object -ExpandProperty 'Height') - 10)
 		$panelButtons.Location = $System_Drawing_Point
-		$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 		$System_Drawing_Size.Height = 40
 		$System_Drawing_Size.Width = 450
 		$panelButtons.Size = $System_Drawing_Size
 		$panelButtons.AutoSize = $true
 		$panelButtons.Anchor = 'Top'
-		$padding = New-Object -TypeName System.Windows.Forms.Padding
+		$padding = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$padding.Top = 0
 		$padding.Bottom = 0
 		$padding.Left = 0
@@ -5746,7 +5747,7 @@ Function Show-WelcomePrompt {
 			Abort { $result = 'Timeout' }
 		}
 		
-		Write-Output $result
+		Write-Output -InputObject $result
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -5813,15 +5814,15 @@ Function Show-InstallationRestartPrompt {
 		[datetime]$countdownTime = $startTime
 		
 		[Windows.Forms.Application]::EnableVisualStyles()
-		$formRestart = New-Object -TypeName System.Windows.Forms.Form
-		$labelCountdown = New-Object -TypeName System.Windows.Forms.Label
-		$labelTimeRemaining = New-Object -TypeName System.Windows.Forms.Label
-		$labelMessage = New-Object -TypeName System.Windows.Forms.Label
-		$buttonRestartLater = New-Object -TypeName System.Windows.Forms.Button
-		$picturebox = New-Object -TypeName System.Windows.Forms.PictureBox
-		$buttonRestartNow = New-Object -TypeName System.Windows.Forms.Button
-		$timerCountdown = New-Object -TypeName System.Windows.Forms.Timer
-		$InitialFormWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
+		$formRestart = New-Object -TypeName 'System.Windows.Forms.Form'
+		$labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelTimeRemaining = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+		$buttonRestartLater = New-Object -TypeName 'System.Windows.Forms.Button'
+		$picturebox = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$buttonRestartNow = New-Object -TypeName 'System.Windows.Forms.Button'
+		$timerCountdown = New-Object -TypeName 'System.Windows.Forms.Timer'
+		$InitialFormWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 		
 		[scriptblock]$RestartComputer = {
 			Write-Log -Message 'Force restart the computer...' -Source ${CmdletName}
@@ -5849,12 +5850,12 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.TopMost = $true
 			$formRestart.BringToFront()
 			## Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-			Set-Variable -Name formInstallationRestartPromptStartPosition -Value $formRestart.Location -Scope Script
+			Set-Variable -Name 'formInstallationRestartPromptStartPosition' -Value $formRestart.Location -Scope 'Script'
 		}
 		
 		## Persistence Timer
 		If ($NoCountdown) {
-			$timerPersist = New-Object -TypeName System.Windows.Forms.Timer
+			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
 			[scriptblock]$timerPersist_Tick = {
 				#  Show the Restart Popup
@@ -5939,7 +5940,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.ClientSize = '450,260'
 		$formRestart.ControlBox = $false
 		$formRestart.FormBorderStyle = 'FixedDialog'
-		$formRestart.Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formRestart.MaximizeBox = $false
 		$formRestart.MinimizeBox = $false
 		$formRestart.Name = 'formRestart'
@@ -6040,7 +6041,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle Hidden -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -6051,7 +6052,7 @@ Function Show-InstallationRestartPrompt {
 			}
 			
 			#  Show the Form
-			Write-Output $formRestart.ShowDialog()
+			Write-Output -InputObject $formRestart.ShowDialog()
 			$formRestart.Dispose()
 			
 			#  Activate the Window
@@ -6118,11 +6119,7 @@ Function Show-BalloonTip {
 		If ($global:notifyIcon) { Try { $global:notifyIcon.Dispose() } Catch {} }
 		
 		## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
-		Try {
-			[string]$callingFunction = (Get-Variable -Name MyInvocation -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name
-		}
-		Catch {
-		}
+		Try { [string]$callingFunction = (Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name } Catch { }
 		
 		If ($callingFunction -eq 'Exit-Script') {
 			Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]." -Source ${CmdletName}
@@ -6147,15 +6144,15 @@ Function Show-BalloonTip {
 				)
 				
 				## Load assembly containing class System.Windows.Forms and System.Drawing
-				Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
-				Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'
+				Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
+				Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
 				
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-				$global:notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
+				$global:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 					BalloonTipIcon = $BalloonTipIcon
 					BalloonTipText = $BalloonTipText
 					BalloonTipTitle = $BalloonTipTitle
-					Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+					Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 					Text = -join $BalloonTipText[0..62]
 					Visible = $true
 				}
@@ -6170,20 +6167,19 @@ Function Show-BalloonTip {
 			
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
-				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle Hidden -CreateNoWindow
+				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle 'Hidden' -Command & {$notifyIconScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
 			}
-			Catch {
-			}
+			Catch { }
 		}
 		## Otherwise create the balloontip icon synchronously
 		Else {
 			Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
 			[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-			$global:notifyIcon = New-Object -TypeName Windows.Forms.NotifyIcon -Property @{
+			$global:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 				BalloonTipIcon = $BalloonTipIcon
 				BalloonTipText = $BalloonTipText
 				BalloonTipTitle = $BalloonTipTitle
-				Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+				Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 				Text = -join $BalloonTipText[0..62]
 				Visible = $true
 			}
@@ -6343,8 +6339,8 @@ Function Show-InstallationProgress {
 				#  Calculate the position on the screen where the progress dialog should be placed
 				$screen = [Windows.Forms.Screen]::PrimaryScreen
 				$screenWorkingArea = $screen.WorkingArea
-				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty Width
-				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty Height
+				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty 'Width'
+				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty 'Height'
 				#  Set the start position of the Window based on the screen size
 				If ($windowLocation -eq 'BottomRight') {
 					$xamlProgress.Window.Left = [string](($screenWidth / ($dpiscale / 100)) - ($xamlProgress.Window.Width))
@@ -6362,7 +6358,7 @@ Function Show-InstallationProgress {
 				$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
 				$xamlProgress.Window.Title = $installTitle
 				#  Parse the XAML
-				$progressReader = New-Object -TypeName System.Xml.XmlNodeReader -ArgumentList $xamlProgress
+				$progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList $xamlProgress
 				$global:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
 				$global:ProgressSyncHash.ProgressText = $global:ProgressSyncHash.Window.FindName('ProgressText')
 				#  Add an action to the Window.Closing event handler to disable the close button
@@ -6494,7 +6490,7 @@ Function Set-PinnedApplication {
 			Write-Log -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
 			[string]$PinVerb = [PSADT.FileVerb]::GetPinVerb($VerbId)
 			Write-Log -Message "Verb ID [$VerbID] has a localized pin verb of [$PinVerb]." -Source ${CmdletName}
-			Write-Output $PinVerb
+			Write-Output -InputObject $PinVerb
 		}
 		#endregion
 		
@@ -6543,7 +6539,7 @@ Function Set-PinnedApplication {
 		Try {
 			Write-Log -Message "Execute action [$Action] for file [$FilePath]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType Leaf -ErrorAction 'Stop')) {
+			If (-not (Test-Path -Path $FilePath -PathType 'Leaf' -ErrorAction 'Stop')) {
 				Throw "Path [$filePath] does not exist."
 			}
 			
@@ -6615,12 +6611,12 @@ Function Get-IniValue {
 		Try {
 			Write-Log -Message "Read INI Key: [Section = $Section] [Key = $Key]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			$IniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
 			Write-Log -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $IniValue]." -Source ${CmdletName}
 			
-			Write-Output $IniValue
+			Write-Output -InputObject $IniValue
 		}
 		Catch {
 			Write-Log -Message "Failed to read INI file key value. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -6688,7 +6684,7 @@ Function Set-IniValue {
 		Try {
 			Write-Log -Message "Write INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			[PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
 		}
@@ -6729,7 +6725,7 @@ Function Get-PEFileArchitecture {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
-		[ValidateScript({$_ | Test-Path -PathType Leaf})]
+		[ValidateScript({$_ | Test-Path -PathType 'Leaf'})]
 		[IO.FileInfo[]]$FilePath,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -6754,8 +6750,8 @@ Function Get-PEFileArchitecture {
 					Throw "Invalid file type. Please specify one of the following PE file types: $($PEFileExtensions -join ', ')"
 				}
 				
-				[byte[]]$data = New-Object -TypeName System.Byte[] -ArgumentList 4096
-				$stream = New-Object -TypeName System.IO.FileStream -ArgumentList ($Path.FullName, 'Open', 'Read')
+				[byte[]]$data = New-Object -TypeName 'System.Byte[]' -ArgumentList 4096
+				$stream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($Path.FullName, 'Open', 'Read')
 				$stream.Read($data, 0, 4096) | Out-Null
 				$stream.Flush()
 				$stream.Close()
@@ -6776,7 +6772,7 @@ Function Get-PEFileArchitecture {
 					Get-Item -Path $Path.FullName -Force | Add-Member -MemberType 'NoteProperty' -Name 'BinaryType' -Value $PEArchitecture -Force -PassThru | Write-Output
 				}
 				Else {
-					Write-Output $PEArchitecture
+					Write-Output -InputObject $PEArchitecture
 				}
 			}
 			Catch {
@@ -6859,7 +6855,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 	Process {
 		Try {
 			Write-Log -Message "$DLLAction DLL file [$filePath]." -Source ${CmdletName}
-			If (-not (Test-Path -Path $FilePath -PathType Leaf)) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			[string]$DLLFileBitness = Get-PEFileArchitecture -FilePath $filePath -ContinueOnError $false -ErrorAction 'Stop'
 			If (($DLLFileBitness -ne '64BIT') -and ($DLLFileBitness -ne '32BIT')) {
@@ -6888,7 +6884,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 				}
 			}
 
-			[psobject]$ExecuteResult = Execute-Process -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru
+			[psobject]$ExecuteResult = Execute-Process -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle 'Hidden' -PassThru
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
 				If ($ExecuteResult.ExitCode -eq 60002) {
@@ -6910,8 +6906,8 @@ Function Invoke-RegisterOrUnregisterDLL {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
-Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope Script -Force -ErrorAction 'SilentlyContinue'
-Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope Script -Force -ErrorAction 'SilentlyContinue'
+Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
+Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
 #endregion
 
 
@@ -6964,7 +6960,7 @@ Function Get-MsiTableProperty {
 				[string]$MethodName,
 				[object[]]$ArgumentList
 			)
-			Write-Output $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $null)
+			Write-Output -InputObject $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $null)
 		}
 		
 		[scriptblock]$GetProperty = {
@@ -6973,7 +6969,7 @@ Function Get-MsiTableProperty {
 				[string]$PropertyName,
 				[object[]]$ArgumentList
 			)
-			Write-Output $Object.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $Object, $ArgumentList, $null, $null, $null)
+			Write-Output -InputObject $Object.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $Object, $ArgumentList, $null, $null, $null)
 		}
 	}
 	Process {
@@ -6981,9 +6977,9 @@ Function Get-MsiTableProperty {
 			Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]." -Source ${CmdletName}
 			
 			## Create an empty object to store properties in
-			[psobject]$TableProperties = New-Object -TypeName PSObject
+			[psobject]$TableProperties = New-Object -TypeName 'PSObject'
 			## Create a Windows Installer object
-			[__comobject]$Installer = New-Object -ComObject WindowsInstaller.Installer -ErrorAction 'Stop'
+			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
 			## Open MSI database in read only mode
 			[int32]$OpenMSIReadOnly = 0
 			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $OpenMSIReadOnly)
@@ -6996,12 +6992,12 @@ Function Get-MsiTableProperty {
 			## If the first row was successfully retrieved, then save data and loop through the entire table
 			While ($Record) {
 				#  Add property and value to custom object
-				$TableProperties | Add-Member -MemberType NoteProperty -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2))
+				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2))
 				#  Retrieve the next row in the table
 				[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
 			}
 			
-			Write-Output $TableProperties
+			Write-Output -InputObject $TableProperties
 		}
 		Catch {
 			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7057,8 +7053,8 @@ Function Test-MSUpdates {
 		[boolean]$kbFound = $false
 		
 		## Check using Update method (to catch Office updates)
-		[__comobject]$Session = New-Object -ComObject Microsoft.Update.Session
-		[__comobject]$Collection = New-Object -ComObject Microsoft.Update.UpdateColl
+		[__comobject]$Session = New-Object -ComObject 'Microsoft.Update.Session'
+		[__comobject]$Collection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
 		[__comobject]$Installer = $Session.CreateUpdateInstaller()
 		[__comobject]$Searcher = $Session.CreateUpdateSearcher()
 		[int32]$updateCount = $Searcher.GetTotalHistoryCount()
@@ -7074,11 +7070,11 @@ Function Test-MSUpdates {
 		## Return Result
 		If (-not $kbFound) {
 			Write-Log -Message "Microsoft Update [$kbNumber] is not installed." -Source ${CmdletName}
-			Write-Output $false
+			Write-Output -InputObject $false
 		}
 		Else {
 			Write-Log -Message "Microsoft Update [$kbNumber] is installed." -Source ${CmdletName}
-			Write-Output $true
+			Write-Output -InputObject $true
 		}
 	}
 	End {
@@ -7131,10 +7127,10 @@ Function Install-MSUpdates {
 				Write-Log -Message "Install [$redistDescription $redistVersion]..." -Source ${CmdletName}
 				#  Handle older redistributables (ie, VC++ 2005)
 				If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
-					Execute-Process -Path $file -Parameters '/q' -WindowStyle Hidden -ContinueOnError $true
+					Execute-Process -Path $file -Parameters '/q' -WindowStyle 'Hidden' -ContinueOnError $true
 				}
 				Else {
-					Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true
+					Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -ContinueOnError $true
 				}
 			}
 			Else {
@@ -7147,9 +7143,9 @@ Function Install-MSUpdates {
 					Write-Log -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
 					Switch ($file.Extension) {
 						#  Installation type for executables (i.e., Microsoft Office Updates)
-						'.exe' { Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle Hidden -ContinueOnError $true }
+						'.exe' { Execute-Process -Path $file -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -ContinueOnError $true }
 						#  Installation type for Windows updates using Windows Update Standalone Installer
-						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$file`" /quiet /norestart" -WindowStyle Hidden -ContinueOnError $true }
+						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$file`" /quiet /norestart" -WindowStyle 'Hidden' -ContinueOnError $true }
 						#  Installation type for Windows Installer Patch
 						'.msp' { Execute-MSI -Action 'Patch' -Path $file -ContinueOnError $true }
 					}
@@ -7235,7 +7231,7 @@ Function Get-WindowTitle {
 					[Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
 					If ($Process) {
 						## Build custom object with details about the window and the process
-						[psobject]$VisibleWindow = New-Object -TypeName PSObject -Property @{
+						[psobject]$VisibleWindow = New-Object -TypeName 'PSObject' -Property @{
 							WindowTitle = $VisibleWindowTitle
 							WindowHandle = $VisibleWindowHandle
 							ParentProcess= $Process.Name
@@ -7261,7 +7257,7 @@ Function Get-WindowTitle {
 		}
 	}
 	End {
-		Write-Output $VisibleWindows
+		Write-Output -InputObject $VisibleWindows
 		
 		If ($DisableFunctionLogging) { . $RevertScriptLogging }
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -7328,7 +7324,7 @@ Function Send-Keys {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		## Load assembly containing class System.Windows.Forms.SendKeys
-		Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+		Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
 		
 		[scriptblock]$SendKeys = {
 			Param (
@@ -7427,7 +7423,7 @@ Function Test-Battery {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		## PowerStatus class found in this assembly is more reliable than WMI in cases where the battery is failing.
-		Add-Type -Assembly System.Windows.Forms -ErrorAction 'SilentlyContinue'
+		Add-Type -Assembly 'System.Windows.Forms' -ErrorAction 'SilentlyContinue'
 		
 		## Initialize a hashtable to store informaiton about system type and power status
 		[hashtable]$SystemTypePowerStatus = @{ }
@@ -7496,7 +7492,7 @@ Function Test-Battery {
 			$IsLaptop = $true
 		}
 		#  Chassis Types
-		[int32[]]$ChassisTypes = Get-WmiObject -Class Win32_SystemEnclosure | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
+		[int32[]]$ChassisTypes = Get-WmiObject -Class 'Win32_SystemEnclosure' | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
 		Write-Log -Message "The following system chassis types were detected [$($ChassisTypes -join ',')]." -Source ${CmdletName}
 		ForEach ($ChassisType in $ChassisTypes) {
 			Switch ($ChassisType) {
@@ -7508,10 +7504,10 @@ Function Test-Battery {
 		$SystemTypePowerStatus.Add('IsLaptop', $IsLaptop)
 		
 		If ($PassThru) {
-			Write-Output $SystemTypePowerStatus
+			Write-Output -InputObject $SystemTypePowerStatus
 		}
 		Else {
-			Write-Output $OnACPower
+			Write-Output -InputObject $OnACPower
 		}
 	}
 	End {
@@ -7546,7 +7542,7 @@ Function Test-NetworkConnection {
 	Process {
 		Write-Log -Message 'Check if system is using a wired network connection...' -Source ${CmdletName}
 		
-		[psobject[]]$networkConnected = Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'SilentlyContinue'
+		[psobject[]]$networkConnected = Get-WmiObject -Class 'Win32_NetworkAdapter' | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'SilentlyContinue'
 		[boolean]$onNetwork = $false
 		If ($networkConnected) {
 			Write-Log -Message 'Wired network connection found.' -Source ${CmdletName}
@@ -7556,7 +7552,7 @@ Function Test-NetworkConnection {
 			Write-Log -Message 'Wired network connection not found.' -Source ${CmdletName}
 		}
 		
-		Write-Output $onNetwork
+		Write-Output -InputObject $onNetwork
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -7603,11 +7599,11 @@ Function Test-PowerPoint {
 				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
 			}
 			
-			Write-Output $IsPowerPointFullScreen
+			Write-Output -InputObject $IsPowerPointFullScreen
 		}
 		Catch {
 			Write-Log -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			Write-Output $false
+			Write-Output -InputObject $false
 		}
 	}
 	End {
@@ -7890,7 +7886,7 @@ Function Update-GroupPolicy {
 					[string]$InstallMsg = 'Update Group Policies for the User'
 					Write-Log -Message "$($InstallMsg)..." -Source ${CmdletName}
 				}
-				[psobject]$ExecuteResult = Execute-Process -Path "$envWindir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle Hidden -PassThru
+				[psobject]$ExecuteResult = Execute-Process -Path "$envWindir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru
 				
 				If ($ExecuteResult.ExitCode -ne 0) {
 					If ($ExecuteResult.ExitCode -eq 60002) {
@@ -8122,13 +8118,13 @@ Function Set-ActiveSetup {
 			[string]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
 			[string]$ActiveSetupFileName = [IO.Path]::GetFileName($StubExePath)
 			[string]$StubExeFile = Join-Path -Path $dirFiles -ChildPath $ActiveSetupFileName
-			If (Test-Path -Path $StubExeFile -PathType Leaf) {
+			If (Test-Path -Path $StubExeFile -PathType 'Leaf') {
 				#  This will overwrite the StubPath file if $StubExePath already exists on target
 				Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
 			}
 			
 			## Check if the $StubExePath file exists
-			If (-not (Test-Path -Path $StubExePath -PathType Leaf)) { Throw "Active Setup StubPath file [$ActiveSetupFileName] is missing." }
+			If (-not (Test-Path -Path $StubExePath -PathType 'Leaf')) { Throw "Active Setup StubPath file [$ActiveSetupFileName] is missing." }
 			
 			## Define Active Setup StubPath according to file extension of $StubExePath
 			Switch ($StubExeExt) {
@@ -8255,14 +8251,14 @@ Function Test-ServiceExists {
 	}
 	Process {
 		Try {
-			$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop'
+			$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop'
 			If ($ServiceObject) {
 				Write-Log -Message "Service [$Name] exists." -Source ${CmdletName}
-				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $true }
+				If ($PassThru) { Write-Output -InputObject $ServiceObject } Else { Write-Output -InputObject $true }
 			}
 			Else {
 				Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName}
-				If ($PassThru) { Write-Output $ServiceObject } Else { Write-Output $false }
+				If ($PassThru) { Write-Output -InputObject $ServiceObject } Else { Write-Output -InputObject $false }
 			}
 		}
 		Catch {
@@ -8394,7 +8390,7 @@ Function Stop-ServiceAndDependencies {
 		}
 		Finally {
 			#  Return the service object if option selected
-			If ($PassThru -and $Service) { Write-Output $Service }
+			If ($PassThru -and $Service) { Write-Output -InputObject $Service }
 		}
 	}
 	End {
@@ -8520,7 +8516,7 @@ Function Start-ServiceAndDependencies {
 		}
 		Finally {
 			#  Return the service object if option selected
-			If ($PassThru -and $Service) { Write-Output $Service }
+			If ($PassThru -and $Service) { Write-Output -InputObject $Service }
 		}
 	}
 	End {
@@ -8584,7 +8580,7 @@ Function Get-ServiceStartMode
 			}
 			
 			Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]." -Source ${CmdletName}
-			Write-Output $ServiceStartMode
+			Write-Output -InputObject $ServiceStartMode
 		}
 		Catch {
 			Write-Log -Message "Failed to get the service [$Name] startup mode. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
@@ -8654,7 +8650,7 @@ Function Set-ServiceStartMode
 				}
 			}
 			Else {
-				$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class Win32_Service -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
+				$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
 				If($ChangeStartMode.ReturnValue -ne 0) {
 					Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
 				}
@@ -8722,7 +8718,7 @@ Function Get-LoggedOnUser {
 	Process {
 		Try {
 			Write-Log -Message 'Get session information for all logged on users.' -Source ${CmdletName}
-			Write-Output ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
+			Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
 		}
 		Catch {
 			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -8799,7 +8795,7 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	Catch {
 		[boolean]$IsServiceHealthy = $false
 	}
-	Write-Output $IsServiceHealthy
+	Write-Output -InputObject $IsServiceHealthy
 }
 
 ## Disable logging until log file details are available
@@ -8877,7 +8873,7 @@ If ($configToolkitCompressLogs) {
 	[string]$zipFileName = Join-Path -Path $configToolkitLogDir -ChildPath ($installName + '_' + $deploymentType + '_' + $zipFileDate + '.zip')
 	
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
-	If (Test-Path -Path $logTempFolder -PathType Container -ErrorAction 'SilentlyContinue') {
+	If (Test-Path -Path $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
 		Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
 	}
 }
@@ -8897,13 +8893,12 @@ Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
 ## Assemblies: Load
 Try {
-	Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
-	Add-Type -AssemblyName PresentationFramework -ErrorAction 'Stop'
-	Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction 'Stop'
-	Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'
-	Add-Type -AssemblyName PresentationFramework -ErrorAction 'Stop'
-	Add-Type -AssemblyName PresentationCore -ErrorAction 'Stop'
-	Add-Type -AssemblyName WindowsBase -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'PresentationFramework' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'Microsoft.VisualBasic' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'PresentationCore' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'WindowsBase' -ErrorAction 'Stop'
 }
 Catch {
 	Write-Log -Message "Failed to load assembly. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
@@ -9024,12 +9019,12 @@ If ($showBlockedAppDialog) {
 		#  Create a mutex and specify a name without acquiring a lock on the mutex
 		[boolean]$showBlockedAppDialogMutexLocked = $false
 		[string]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
-		[Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName System.Threading.Mutex -ArgumentList ($false, $showBlockedAppDialogMutexName)
+		[Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName 'System.Threading.Mutex' -ArgumentList ($false, $showBlockedAppDialogMutexName)
 		#  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
 		If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
 			[boolean]$showBlockedAppDialogMutexLocked = $true
 			$deployModeSilent = $true
-			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon Warning -ButtonRightText 'OK'
+			Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon 'Warning' -ButtonRightText 'OK'
 			Exit 0
 		}
 		Else {
@@ -9098,7 +9093,7 @@ Else {
 
 ## Check if script is running from a SCCM Task Sequence
 Try {
-	[__comobject]$SMSTSEnvironment = New-Object -ComObject Microsoft.SMS.TSEnvironment -ErrorAction 'Stop'
+	[__comobject]$SMSTSEnvironment = New-Object -ComObject 'Microsoft.SMS.TSEnvironment' -ErrorAction 'Stop'
 	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
 	$runningTaskSequence = $true
 }
