@@ -54,7 +54,7 @@ Param
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.4'
+[version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
 [string]$appDeployMainScriptDate = '05/20/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
@@ -8688,7 +8688,7 @@ Function Get-LoggedOnUser {
 	-----		 -----------
 	Active		 A user is logged on to the session.
 	ConnectQuery The session is in the process of connecting to a client.
-	Connected	 A client is connected to the session).
+	Connected	 A client is connected to the session.
 	Disconnected The session is active, but the client has disconnected from it.
 	Down		 The session is down due to an error.
 	Idle		 The session is waiting for a client to connect.
