@@ -56,7 +56,7 @@ Param
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.4'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.3'
-[string]$appDeployMainScriptDate = '05/19/2015'
+[string]$appDeployMainScriptDate = '05/20/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -9140,7 +9140,7 @@ If ($SessionZero) {
 				Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$deployMode]." -Source $appDeployToolkitName
 			}
 			Else {
-				Write-Log -Message "Session 0 detected, process running in user interactive mode, user(s) logged in." -Source $appDeployToolkitName
+				Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
 			}
 		}
 	}
