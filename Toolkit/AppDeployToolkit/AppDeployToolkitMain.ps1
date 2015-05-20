@@ -7228,7 +7228,7 @@ Function Get-WindowTitle {
 				[string]$VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)
 				If ($VisibleWindowTitle) {
 					## Get the process that spawned the window
-					[Diagnostics.Process[]]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
+					[Diagnostics.Process]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
 					If ($Process) {
 						## Build custom object with details about the window and the process
 						[psobject]$VisibleWindow = New-Object -TypeName 'PSObject' -Property @{
