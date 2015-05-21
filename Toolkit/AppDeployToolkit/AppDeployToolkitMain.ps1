@@ -800,10 +800,10 @@ Function Exit-Script {
 		
 		[string]$balloonText = "$deploymentTypeName $configBalloonTextComplete"
 		## Handle reboot prompts on successful script completion
-		If (($msiRebootDetected) -and ($AllowRebootPassThru)) {
+		If (($AllowRebootPassThru) -and ((($msiRebootDetected) -or ($exitCode -eq 3010)) -or ($exitCode -eq 1641))) {
 			Write-Log -Message 'A restart has been flagged as required.' -Source ${CmdletName}
 			[string]$balloonText = "$deploymentTypeName $configBalloonTextRestartRequired"
-			[int32]$exitCode = 3010
+			If (($msiRebootDetected) -and ($exitCode -ne 1641)) { [int32]$exitCode = 3010 }
 		}
 		Else {
 			[int32]$exitCode = 0
