@@ -5405,7 +5405,7 @@ Function Show-WelcomePrompt {
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formWelcome.WindowState = 'Normal'
 			$formWelcome.AutoSize = $true
-			$formWelcome.TopMost = $true
+			$formWelcome.TopMost = $TopMost
 			$formWelcome.BringToFront()
 			#  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 			Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
