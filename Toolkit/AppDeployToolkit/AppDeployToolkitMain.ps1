@@ -20,8 +20,7 @@
 	http://psappdeploytoolkit.codeplex.com
 #>
 [CmdletBinding()]
-Param
-(
+Param (
 	## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or because of an Image File Execution Options registry setting
 	[switch]$ShowInstallationPrompt = $false,
 	[switch]$ShowInstallationRestartPrompt = $false,

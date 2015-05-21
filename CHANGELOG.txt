@@ -1,6 +1,7 @@
 Version 3.6.5 [05/xx/2015]
-	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 .NET 2.0 machines
+	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines
 	Fixed issue with Show-WelcomePrompt which caused the -TopMost $false option to not work (also affected Show-InstallationWelcome)
+	Fixed issue introduced in v3.6.4 where Norwegian language code in config XML was changed to NO. Code reverted back to NB as this is the proper code for the Bokmål written language supported by Windows.
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Improved comments and documentation
 
