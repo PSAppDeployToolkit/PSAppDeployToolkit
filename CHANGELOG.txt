@@ -1,5 +1,6 @@
 Version 3.6.5 [05/xx/2015]
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 .NET 2.0 machines
+	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Improved comments and documentation
 
 Version 3.6.4 [05/19/2015]
