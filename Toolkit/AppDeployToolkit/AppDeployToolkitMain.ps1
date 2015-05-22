@@ -2226,7 +2226,7 @@ Function Remove-MSIApplications {
 		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -match 'msiexec') {
-					If (-not ($ExcludeFromUninstall.GetEnumerator() | Where-Object { $_.Value -eq $installedApplication.($_.Name) })) {
+					If (-not ($ExcludeFromUninstall.GetEnumerator() | Where-Object { $_.Value -match [regex]::Escape($installedApplication.($_.Name)) })) {
 						Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
 						$ExecuteMSISplat.Path = $installedApplication.ProductCode
 						If ($PassThru) {
