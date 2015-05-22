@@ -2144,6 +2144,9 @@ Function Remove-MSIApplications {
 	Overrides the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER ExcludeFromUninstall
+	Hashtable that contains property=value pairs that should be excluded from uninstall if found.
+	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
@@ -2159,6 +2162,9 @@ Function Remove-MSIApplications {
 .EXAMPLE
 	Remove-MSIApplications -Name 'Adobe'
 	Removes all versions of software that match the name "Adobe"
+.EXAMPLE
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @{ Is64BitApplication = $true; DisplayName = 'Java 8 Update 45' }
+	Removes all versions of software that match the name "Java 8 Update" but does not uninstall 64-bit versions of the software or Update 45 of the software.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.codeplex.com
@@ -2179,6 +2185,9 @@ Function Remove-MSIApplications {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$AddParameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[hashtable]$ExcludeFromUninstall = @{},
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
@@ -2217,13 +2226,18 @@ Function Remove-MSIApplications {
 		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -match 'msiexec') {
-					Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
-					$ExecuteMSISplat.Path = $installedApplication.ProductCode
-					If ($PassThru) {
-						[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
+					If (-not ($ExcludeFromUninstall.GetEnumerator() | Where-Object { $_.Value -eq $installedApplication.($_.Name) })) {
+						Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
+						$ExecuteMSISplat.Path = $installedApplication.ProductCode
+						If ($PassThru) {
+							[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
+						}
+						Else {
+							Execute-MSI @ExecuteMSISplat
+						}
 					}
 					Else {
-						Execute-MSI @ExecuteMSISplat
+						Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
 					}
 				}
 				Else {
