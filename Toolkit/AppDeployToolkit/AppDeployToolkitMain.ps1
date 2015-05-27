@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '05/22/2015'
+[string]$appDeployMainScriptDate = '05/27/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2145,7 +2145,7 @@ Function Remove-MSIApplications {
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER ExcludeFromUninstall
-	Hashtable that contains property=value pairs that should be excluded from uninstall if found.
+	Multi-dimentional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
 	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
@@ -2163,9 +2163,18 @@ Function Remove-MSIApplications {
 	Remove-MSIApplications -Name 'Adobe'
 	Removes all versions of software that match the name "Adobe"
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @{ Is64BitApplication = $true; DisplayName = 'Java 8 Update 45' }
-	Removes all versions of software that match the name "Java 8 Update" but does not uninstall 64-bit versions of the software or Update 45 of the software.
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(,,@('DisplayName', 'Java 8 Update 45', 'RegEx'))
+	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall "Java 8 Update 45" of the software. NOTE: if only specifying a single array in an array of arrays, the array must be preceded by two commas as in this example.
+.EXAMPLE
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(
+																			@('Is64BitApplication', $true, 'Exact'),
+																			@('DisplayName', 'Java 8 Update 45', 'Exact'),
+																			@('DisplayName', 'Java 8 Update 4*', 'WildCard'),
+																			@('DisplayName', 'Java 8 Update 45', 'RegEx')
+																		)
+	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
+	More reading on how to create arrays if having trouble with -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
 .LINK
 	http://psappdeploytoolkit.codeplex.com
 #>
@@ -2187,7 +2196,7 @@ Function Remove-MSIApplications {
 		[string]$AddParameters,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[hashtable]$ExcludeFromUninstall = @{},
+		[array]$ExcludeFromUninstall = @(,,@()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
@@ -2214,6 +2223,44 @@ Function Remove-MSIApplications {
 		ElseIf ($WildCard) { $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard) }
 		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
 		
+		## Filter the results from Get-InstalledApplication
+		[Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
+		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
+			ForEach ($installedApplication in $installedApplications) {
+				[boolean]$addAppToRemoveList = $true
+				
+				If ($installedApplication.UninstallString -notmatch 'msiexec') {
+					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`"." -Severity 2 -Source ${CmdletName}
+					Continue
+				}
+				
+				If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count)) {
+					ForEach ($Exclude in $ExcludeFromUninstall) {
+						If ($Exclude[0][2] -eq 'RegEx') {
+							If ($installedApplication.($Exclude[0][0]) -match [regex]::Escape($Exclude[0][1])) {
+								[boolean]$addAppToRemoveList = $false
+								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($Exclude[0][2] -eq 'WildCard') {
+							If ($installedApplication.($Exclude[0][0]) -like $Exclude[0][1]) {
+								[boolean]$addAppToRemoveList = $false
+								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($Exclude[0][2] -eq 'Exact') {
+							If ($installedApplication.($Exclude[0][0]) -eq $Exclude[0][1]) {
+								[boolean]$addAppToRemoveList = $false
+								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+							}
+						}
+					}
+				}
+				
+				If ($addAppToRemoveList) { $removeMSIApplications.Add($installedApplication) }
+			}
+		}
+		
 		## Build the hashtable with the options that will be passed to Execute-MSI using splatting
 		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall'; Path = '' }
 		If ($ContinueOnError) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
@@ -2223,25 +2270,15 @@ Function Remove-MSIApplications {
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
 		If ($PassThru) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
 		
-		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
-			ForEach ($installedApplication in $installedApplications) {
-				If ($installedApplication.UninstallString -match 'msiexec') {
-					If (-not ($ExcludeFromUninstall.GetEnumerator() | Where-Object { $_.Value -match [regex]::Escape($installedApplication.($_.Name)) })) {
-						Write-Log -Message "Remove application [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
-						$ExecuteMSISplat.Path = $installedApplication.ProductCode
-						If ($PassThru) {
-							[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
-						}
-						Else {
-							Execute-MSI @ExecuteMSISplat
-						}
-					}
-					Else {
-						Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
-					}
+		If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
+			ForEach ($removeMSIApplication in $removeMSIApplications) {
+				Write-Log -Message "Remove application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]." -Source ${CmdletName}
+				$ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
+				If ($PassThru) {
+					[psobject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
 				}
 				Else {
-					Write-Log -Message "[$($installedApplication.DisplayName)] uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`", so removal will not proceed." -Severity 2 -Source ${CmdletName}
+					Execute-MSI @ExecuteMSISplat
 				}
 			}
 		}
@@ -7014,7 +7051,7 @@ Function Get-MsiTableProperty {
 		}
 		Catch {
 			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-
+			
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
 			}
@@ -9108,6 +9145,7 @@ Else {
 Try {
 	[__comobject]$SMSTSEnvironment = New-Object -ComObject 'Microsoft.SMS.TSEnvironment' -ErrorAction 'Stop'
 	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
+	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment)
 	$runningTaskSequence = $true
 }
 Catch {
