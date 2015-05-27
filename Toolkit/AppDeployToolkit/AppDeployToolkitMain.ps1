@@ -2399,7 +2399,7 @@ Function Execute-Process {
 				$env:PATH = $PathFolders + ';' + $env:PATH
 				
 				#  Get the fully qualified path for the file. Get-Command searches PATH environment variable to find this value.
-				[string]$FullyQualifiedPath = Get-Command -Name $Path -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'SilentlyContinue'
+				[string]$FullyQualifiedPath = Get-Command -Name $Path -CommandType 'Application' -TotalCount 1 -Syntax -ErrorAction 'Stop'
 				
 				#  Revert the PATH environment variable to it's original value
 				$env:PATH = $env:PATH -replace [regex]::Escape($PathFolders + ';'), ''
