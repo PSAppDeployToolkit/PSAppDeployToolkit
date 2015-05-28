@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '05/27/2015'
+[string]$appDeployMainScriptDate = '05/28/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7107,10 +7107,18 @@ Function Test-MSUpdates {
 		[__comobject]$Collection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
 		[__comobject]$Installer = $Session.CreateUpdateInstaller()
 		[__comobject]$Searcher = $Session.CreateUpdateSearcher()
-		[int32]$updateCount = $Searcher.GetTotalHistoryCount()
-		If ($updateCount -gt 0) {
-			$Searcher.QueryHistory(0, $updateCount) | Where-Object { $_.Title -match $kbNumber } | ForEach-Object { $kbFound = $true }
+		[int32]$updateHistoryCount = $Searcher.GetTotalHistoryCount()
+		If ($updateHistoryCount -gt 0) {
+			$Searcher.QueryHistory(0, $updateHistoryCount) | Where-Object { $_.Title -match $kbNumber } |
+			ForEach-Object {
+				$SearchResult = $Searcher.Search("UpdateID='$($_.UpdateIdentity.UpdateID)' and RevisionNumber=$($_.UpdateIdentity.RevisionNumber)")
+				If ($SearchResult.Updates.Count -gt 0) {
+					$kbFound = $true
+				}
+			}
 		}
+		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Session)
+		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Collection)
 		
 		## Check using standard method
 		If (-not $kbFound) {
