@@ -7103,14 +7103,14 @@ Function Test-MSUpdates {
 		[boolean]$kbFound = $false
 		
 		## Check using Update method (to catch Office updates)
-		[__comobject]$Session = New-Object -ComObject 'Microsoft.Update.Session'
-		[__comobject]$Collection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
-		[__comobject]$Installer = $Session.CreateUpdateInstaller()
-		[__comobject]$Searcher = $Session.CreateUpdateSearcher()
-		[int32]$updateCount = $Searcher.GetTotalHistoryCount()
-		If ($updateCount -gt 0) {
-			$Searcher.QueryHistory(0, $updateCount) | Where-Object { $_.Title -match $kbNumber } | ForEach-Object { $kbFound = $true }
-		}
+		##[__comobject]$Session = New-Object -ComObject 'Microsoft.Update.Session'
+		##[__comobject]$Collection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+		##[__comobject]$Installer = $Session.CreateUpdateInstaller()
+		##[__comobject]$Searcher = $Session.CreateUpdateSearcher()
+		##[int32]$updateCount = $Searcher.GetTotalHistoryCount()
+		##If ($updateCount -gt 0) {
+		##	$Searcher.QueryHistory(0, $updateCount) | Where-Object { $_.Title -match $kbNumber } | ForEach-Object { $kbFound = $true }
+		##}
 		
 		## Check using standard method
 		If (-not $kbFound) {
