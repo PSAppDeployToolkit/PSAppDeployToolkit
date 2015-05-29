@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '05/28/2015'
+[string]$appDeployMainScriptDate = '05/29/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -607,9 +607,9 @@ Function Write-Log {
 				#  Only output using color options if running in a host which supports colors.
 				If ($Host.UI.RawUI.ForegroundColor) {
 					Switch ($lSeverity) {
-						3 { Write-Host $lTextLogLine -ForegroundColor 'Red' -BackgroundColor 'Black' }
-						2 { Write-Host $lTextLogLine -ForegroundColor 'Yellow' -BackgroundColor 'Black' }
-						1 { Write-Host $lTextLogLine }
+						3 { Write-Host -Object $lTextLogLine -ForegroundColor 'Red' -BackgroundColor 'Black' }
+						2 { Write-Host -Object $lTextLogLine -ForegroundColor 'Yellow' -BackgroundColor 'Black' }
+						1 { Write-Host -Object $lTextLogLine }
 					}
 				}
 				#  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
@@ -635,7 +635,7 @@ Function Write-Log {
 				[boolean]$ExitLoggingFunction = $true
 				#  If error creating directory, write message to console
 				If (-not $ContinueOnError) {
-					Write-Host "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+					Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
 				}
 				Return
 			}
@@ -696,7 +696,7 @@ Function Write-Log {
 				}
 				Catch {
 					If (-not $ContinueOnError) {
-						Write-Host "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+						Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `n$(Resolve-Error)" -ForegroundColor 'Red'
 					}
 				}
 			}
