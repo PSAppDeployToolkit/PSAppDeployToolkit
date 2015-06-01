@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '05/29/2015'
+[string]$appDeployMainScriptDate = '06/01/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -268,9 +268,9 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { T
 		}
 		#  Read language for Win XP machines
 		If (-not $HKULanguages) {
-			[int32]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
-			If ([string]$HKULocale) {
-				[int32]$HKULocale = '0x' + $HKULocale
+			[string]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
+			If ($HKULocale) {
+				[int32]$HKULocale = [System.Convert]::ToInt32('0x' + $HKULocale,16)
 				[string[]]$HKULanguages = ([Globalization.CultureInfo]($HKULocale)).Name
 			}
 		}
