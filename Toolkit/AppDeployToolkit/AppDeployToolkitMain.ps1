@@ -270,7 +270,7 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { T
 		If (-not $HKULanguages) {
 			[string]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
 			If ($HKULocale) {
-				[int32]$HKULocale = [System.Convert]::ToInt32('0x' + $HKULocale,16)
+				[int32]$HKULocale = [Convert]::ToInt32('0x' + $HKULocale, 16)
 				[string[]]$HKULanguages = ([Globalization.CultureInfo]($HKULocale)).Name
 			}
 		}
