@@ -1867,16 +1867,19 @@ Function Execute-MSI {
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
 .EXAMPLE
-	Execute-MSI -Action Install -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
+	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
 .EXAMPLE
-	Execute-MSI -Action Install -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transform 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -Parameters '/QN'
+	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transform 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -Parameters '/QN'
 	Installs an MSI, applying a transform and overriding the default MSI toolkit parameters
 .EXAMPLE
-	Execute-MSI -Action Uninstall -Path '{26923b43-4d38-484f-9b9e-de460746276c}'
+	[psobject]$ExecuteMSIResult = Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
+	Installs an MSI and stores the result of the execution into a variable by using the -PassThru option
+.EXAMPLE
+	Execute-MSI -Action 'Uninstall' -Path '{26923b43-4d38-484f-9b9e-de460746276c}'
 	Uninstalls an MSI using a product code
 .EXAMPLE
-	Execute-MSI -Action Patch -Path 'Adobe_Reader_11.0.3_EN.msp'
+	Execute-MSI -Action 'Patch' -Path 'Adobe_Reader_11.0.3_EN.msp'
 	Installs an MSP
 .NOTES
 .LINK
