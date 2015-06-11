@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '06/01/2015'
+[string]$appDeployMainScriptDate = '06/11/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8213,16 +8213,42 @@ Function Set-ActiveSetup {
 			}
 			
 			## Create the Active Setup entry in the registry
-			Set-RegistryKey -Key $ActiveSetupKey -Name '(Default)' -Value $Description -ContinueOnError $false
-			Set-RegistryKey -Key $ActiveSetupKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
-			Set-RegistryKey -Key $ActiveSetupKey -Name 'Version' -Value $Version -ContinueOnError $false
-			If ($Locale) { Set-RegistryKey -Key $ActiveSetupKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
-			If ($DisableActiveSetup) {
-				Set-RegistryKey -Key $ActiveSetupKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
+			[scriptblock]$SetActiveSetupRegKeys = {
+				Param(
+					[Parameter(Mandatory=$true)]
+					[ValidateNotNullorEmpty()]
+					[string]$ActiveSetupRegKey,
+					[Parameter(Mandatory=$false)]
+					[ValidateNotNullorEmpty()]
+					[string]$SID
+				)
+				If ($SID) {
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID -ContinueOnError $false
+					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false }
+					If ($DisableActiveSetup) {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
+					}
+					Else {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID -ContinueOnError $false
+					}
+				}
+				Else {
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
+					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
+					If ($DisableActiveSetup) {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
+					}
+					Else {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
+					}
+				}
+				
 			}
-			Else {
-				Set-RegistryKey -Key $ActiveSetupKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
-			}
+			& $SetActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
 			
 			## Execute the StubPath file for the current user as long as not in Session 0
 			If ($SessionZero) {
@@ -8234,6 +8260,7 @@ Function Set-ActiveSetup {
 					Else {
 						Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
 					}
+					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
 				}
 				Else {
 					Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
@@ -8247,6 +8274,7 @@ Function Set-ActiveSetup {
 				Else {
 					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru
 				}
+				& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
 			}
 		}
 		Catch {

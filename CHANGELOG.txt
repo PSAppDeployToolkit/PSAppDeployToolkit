@@ -7,6 +7,7 @@ Version 3.6.5 [06/xx/2015]
 	Fixed issue in Refresh-Desktop which caused refreshing the global process environment block to fail
 	Fixed issue in Test-MSUpdates where updates that had been uninstalled were detected as installed by the Office updates dectection method
 	Fixed issue with detecting user's display UI on XP from registry key 'HKCU\Control Panel\International\Locale'
+	Fixed issue in Set-ActiveSetup so that HKCU active setup registry keys are created when stubpath is executed for currently logged in user so that it does not execute a second time when user logs into account
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Improved Exit-Script so that it is possible to manually exit the script with a 3010 or 1641 exit code and trigger an SCCM "Soft Reboot"
 	Improved comments and documentation
