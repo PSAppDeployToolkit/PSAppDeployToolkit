@@ -5,7 +5,7 @@
 	The script is automatically dot-sourced by the AppDeployToolkitMain.ps1 script.
 .NOTES
 .LINK 
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
 Param (

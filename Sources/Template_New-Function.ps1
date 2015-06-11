@@ -7,7 +7,7 @@ Function Verb-Noun {
 .EXAMPLE
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (

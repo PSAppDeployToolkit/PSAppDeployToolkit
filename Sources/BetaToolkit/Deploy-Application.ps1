@@ -30,7 +30,7 @@
 	Use psexec.exe to launch script in the SYSTEM context for testing purposes.
 .NOTES
 .LINK 
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
 Param (

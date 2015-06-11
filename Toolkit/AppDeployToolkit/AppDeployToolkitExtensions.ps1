@@ -9,7 +9,7 @@
     69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
     70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
 .LINK 
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
 Param (
@@ -23,7 +23,7 @@ Param (
 [string]$appDeployToolkitExtName = 'PSAppDeployToolkitExt'
 [string]$appDeployExtScriptFriendlyName = 'App Deploy Toolkit Extensions'
 [version]$appDeployExtScriptVersion = [version]'1.5.0'
-[string]$appDeployExtScriptDate = '03/20/2015'
+[string]$appDeployExtScriptDate = '06/11/2015'
 [hashtable]$appDeployExtScriptParameters = $PSBoundParameters
 
 ##*===============================================

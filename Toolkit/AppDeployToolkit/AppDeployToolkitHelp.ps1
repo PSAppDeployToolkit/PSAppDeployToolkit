@@ -7,7 +7,7 @@
 	AppDeployToolkitHelp.ps1
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 
 ##*===============================================
@@ -18,7 +18,7 @@
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
 [version]$appDeployHelpScriptVersion = [version]'3.5.0'
-[string]$appDeployHelpScriptDate = '11/06/2014'
+[string]$appDeployHelpScriptDate = '06/11/2015'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent

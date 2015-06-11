@@ -17,7 +17,7 @@
 .NOTES
 	The other parameters specified for this script that are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
 Param
@@ -407,7 +407,7 @@ Function Write-FunctionHeaderOrFooter {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -482,7 +482,7 @@ Function Write-Log {
 	Write-Log -Message "Script is running on Windows 8" -Source 'Test-ValidOS' -LogType 'Legacy'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -713,7 +713,7 @@ Function Exit-Script {
 	Exit-Script -ExitCode 1618
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -849,7 +849,7 @@ Function Resolve-Error {
 	Resolve-Error -GetErrorInvocation:$false
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1038,7 +1038,7 @@ Function Show-InstallationPrompt {
 	Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1410,7 +1410,7 @@ Function Show-DialogBox {
 	Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1550,7 +1550,7 @@ Function Get-HardwarePlatform {
 	Get-HardwarePlatform
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1610,7 +1610,7 @@ Function Get-FreeDiskSpace {
 	Get-FreeDiskSpace -Drive 'C:'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1672,7 +1672,7 @@ Function Get-InstalledApplication {
 	Get-InstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -1841,7 +1841,7 @@ Function Execute-MSI {
 	Installs an MSP
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2056,7 +2056,7 @@ Function Remove-MSIApplications {
 	Removes all versions of software that match the name "Adobe"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2151,7 +2151,7 @@ Function Execute-Process {
 	Execute-Process -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes '1,2'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2414,7 +2414,7 @@ Function Get-MsiExitCodeMessage {
 	This is an internal script function and should typically not be called directly.
 .LINK
 	http://msdn.microsoft.com/en-us/library/aa368542(v=vs.85).aspx
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2503,7 +2503,7 @@ Function Test-MsiExecMutex {
 	This is an internal script function and should typically not be called directly.
 .LINK
 	http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2611,7 +2611,7 @@ Function New-Folder {
 	New-Folder -Path "$envWinDir\System32"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2667,7 +2667,7 @@ Function Remove-Folder {
 	Remove-Folder -Path "$envWinDir\Downloaded Program Files"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2727,7 +2727,7 @@ Function Copy-File {
 	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWindir\MyApp.ini"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2797,7 +2797,7 @@ Function Remove-File {
 	Remove-File -Path 'C:\Windows\Downloaded Program Files' -Recurse
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2860,7 +2860,7 @@ Function Convert-RegistryPath {
 	Convert-RegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -2952,7 +2952,7 @@ Function Get-RegistryKey {
 	Get-RegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3060,7 +3060,7 @@ Function Set-RegistryKey {
 	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3171,7 +3171,7 @@ Function Remove-RegistryKey {
 	Remove-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3266,7 +3266,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 	Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3376,7 +3376,7 @@ Function ConvertTo-NTAccountOrSID {
 	The conversion can return an empty result if the user account does not exist anymore or if translation fails.
 	http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 	List of Well Known SIDs: http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
 #>
 	[CmdletBinding()]
@@ -3486,7 +3486,7 @@ Function Get-UserProfiles {
 	Get-UserProfiles -ExcludeNTAccount 'CONTOSO\Robot','CONTOSO\ntadmin'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3583,7 +3583,7 @@ Function Get-FileVersion {
 	Get-FileVersion -File "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3666,7 +3666,7 @@ Function New-Shortcut {
 	New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -3809,7 +3809,7 @@ Function Execute-ProcessAsUser {
 	Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters '-Command `"C:\Test\Script.ps1`"; Exit `$LastExitCode' -Wait
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4038,7 +4038,7 @@ Function Refresh-Desktop {
 	Refresh-Desktop
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4111,7 +4111,7 @@ Function Refresh-SessionEnvironmentVariables {
 	Refresh-SessionEnvironmentVariables
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4184,7 +4184,7 @@ Function Get-ScheduledTask {
 	To display a list of all scheduled task names.
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4267,7 +4267,7 @@ Function Block-AppExecution {
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4347,7 +4347,7 @@ Function Unblock-AppExecution {
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4405,7 +4405,7 @@ Function Get-DeferHistory {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4439,7 +4439,7 @@ Function Set-DeferHistory {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4490,7 +4490,7 @@ Function Get-UniversalDate {
 	Returns the date for the current culture in a universal sortable date time pattern.
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4547,7 +4547,7 @@ Function Get-RunningProcesses {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -4683,7 +4683,7 @@ Function Show-InstallationWelcome {
 	When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -5025,7 +5025,7 @@ Function Show-WelcomePrompt {
 .NOTES
 	This is an internal script function and should typically not be called directly. It is used by the Show-InstallationWelcome prompt to display a custom prompt.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -5511,7 +5511,7 @@ Function Show-InstallationRestartPrompt {
 	Show-InstallationRestartPrompt -NoCountdown
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -5817,7 +5817,7 @@ Function Show-BalloonTip {
 	Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -5959,7 +5959,7 @@ Function Show-InstallationProgress {
 	Show-InstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6189,7 +6189,7 @@ Function Close-InstallationProgress {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6238,7 +6238,7 @@ Function Set-PinnedApplication {
 	Set-PinnedApplication -Action 'UnpinfromTaskbar' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6393,7 +6393,7 @@ Function Get-IniValue {
 	Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6489,7 +6489,7 @@ Function Set-IniValue {
 	Set-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6674,7 +6674,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 	Register DLL file using the actual name of this function
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6790,7 +6790,7 @@ Function Get-MsiTableProperty {
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6887,7 +6887,7 @@ Function Test-MSUpdates {
 	Test-MSUpdates -KBNumber 'KB2549864'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -6952,7 +6952,7 @@ Function Install-MSUpdates {
 	Install-MSUpdates -Directory "$dirFiles\MSUpdates"
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7040,7 +7040,7 @@ Function Send-Keys {
 .NOTES
 .LINK
 	http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7126,7 +7126,7 @@ Function Test-Battery {
 	Test-Battery
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7209,7 +7209,7 @@ Function Test-NetworkConnection {
 	Test-NetworkConnection
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7253,7 +7253,7 @@ Function Test-PowerPoint {
 	Test-PowerPoint
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7394,7 +7394,7 @@ Function Invoke-SCCMTask {
 	Invoke-SCCMTask
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7472,7 +7472,7 @@ Function Install-SCCMSoftwareUpdates {
 	Install-SCCMSoftwareUpdates
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7526,7 +7526,7 @@ Function Update-GroupPolicy {
 	Update-GroupPolicy
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7594,7 +7594,7 @@ Function Enable-TerminalServerInstallMode {
 	Enable-TerminalServerInstall
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7642,7 +7642,7 @@ Function Disable-TerminalServerInstallMode {
 	Enable-TerminalServerInstall
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7718,7 +7718,7 @@ Function Set-ActiveSetup {
 .NOTES
 	Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param(
@@ -7880,7 +7880,7 @@ Function Test-ServiceExists {
 	Check if a service exists and then delete it by using the -PassThru parameter.
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -7950,7 +7950,7 @@ Function Stop-ServiceAndDependencies {
 	Stop-ServiceAndDependencies -Name 'wuauserv'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -8071,7 +8071,7 @@ Function Start-ServiceAndDependencies {
 	Start-ServiceAndDependencies -Name 'wuauserv'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
@@ -8188,7 +8188,7 @@ Function Get-ServiceStartMode
 	Get-ServiceStartMode -Name 'wuauserv'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdLetBinding()]
 	Param (
@@ -8260,7 +8260,7 @@ Function Set-ServiceStartMode
 	Set-ServiceStartMode -Name 'wuauserv' -StartMode 'Automatic (Delayed Start)'
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdLetBinding()]
 	Param (
@@ -8330,7 +8330,7 @@ Function Get-LoggedOnUser {
 	Get-LoggedOnUser
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
