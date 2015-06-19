@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '06/11/2015'
+[string]$appDeployMainScriptDate = '06/19/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2798,7 +2798,7 @@ Function New-Folder {
 		Try {
 			If (-not (Test-Path -Path $Path -PathType 'Container')) {
 				Write-Log -Message "Create folder [$Path]." -Source ${CmdletName}
-				New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
+				New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' | Out-Null
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
@@ -8118,7 +8118,7 @@ Function Set-ActiveSetup {
 	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
-	Param(
+	Param (
 		[Parameter(Mandatory=$true,ParameterSetName='Create')]
 		[ValidateNotNullorEmpty()]
 		[string]$StubExePath,
@@ -8217,7 +8217,7 @@ Function Set-ActiveSetup {
 			
 			## Create the Active Setup entry in the registry
 			[scriptblock]$SetActiveSetupRegKeys = {
-				Param(
+				Param (
 					[Parameter(Mandatory=$true)]
 					[ValidateNotNullorEmpty()]
 					[string]$ActiveSetupRegKey,
