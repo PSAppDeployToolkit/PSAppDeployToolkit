@@ -1727,8 +1727,8 @@ Function Get-InstalledApplication {
 		[psobject[]]$installedApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			Try {
-				If (Test-Path -Path $regKey -ErrorAction 'Stop') {
-					[psobject[]]$regKeyApplication = Get-ChildItem -Path $regKey -ErrorAction 'Stop' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' | Where-Object { $_.DisplayName } }
+				If (Test-Path -LiteralPath $regKey -ErrorAction 'Stop') {
+					[psobject[]]$regKeyApplication = Get-ChildItem -LiteralPath $regKey -ErrorAction 'Stop' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' | Where-Object { $_.DisplayName } }
 					ForEach ($regKeyApp in $regKeyApplication) {
 						Try {
 							[string]$appDisplayName = ''
@@ -3227,7 +3227,7 @@ Function Get-RegistryKey {
 			}
 			
 			## Check if the registry key exists
-			If (-not (Test-Path -Path $key -ErrorAction 'Stop')) {
+			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
 				Write-Log -Message "Registry key [$key] does not exist." -Severity 2 -Source ${CmdletName}
 				$regKeyValue = $null
 			}
@@ -3235,16 +3235,16 @@ Function Get-RegistryKey {
 				If (-not $Value) {
 					#  Get the registry key and all property values
 					Write-Log -Message "Get registry key [$key] and all property values." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop'
+					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
 					If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
 						Write-Log -Message "No property values found for registry key. Get registry key [$key]." -Source ${CmdletName}
-						$regKeyValue = Get-Item -Path $key -Force -ErrorAction 'Stop'
+						$regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
 					}
 				}
 				Else {
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 					Write-Log -Message "Get registry key [$key] value [$value]." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -Path $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
 				}
 			}
 			If ($regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
@@ -3338,7 +3338,7 @@ Function Set-RegistryKey {
 			}
 			
 			## Create registry key if it doesn't exist
-			If (-not (Test-Path -Path $key -ErrorAction 'Stop')) {
+			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
 				Try {
 					Write-Log -Message "Create registry key [$key]." -Source ${CmdletName}
 					New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop' | Out-Null
@@ -3350,15 +3350,15 @@ Function Set-RegistryKey {
 			
 			If ($Name) {
 				## Set registry value if it doesn't exist
-				If (-not (Get-ItemProperty -Path $key -Name $Name -ErrorAction 'SilentlyContinue')) {
+				If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'SilentlyContinue')) {
 					Write-Log -Message "Set registry key value: [$key] [$name = $value]." -Source ${CmdletName}
-					New-ItemProperty -Path $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop' | Out-Null
+					New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop' | Out-Null
 				}
 				## Update registry value if it does exist
 				Else {
 					[string]$RegistryValueWriteAction = 'update'
 					Write-Log -Message "Update registry key value: [$key] [$name = $value]." -Source ${CmdletName}
-					Set-ItemProperty -Path $key -Name $name -Value $value -ErrorAction 'Stop' | Out-Null
+					Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop' | Out-Null
 				}
 			}
 		}
@@ -3444,14 +3444,14 @@ Function Remove-RegistryKey {
 			}
 			
 			If (-not ($Name)) {
-				If (Test-Path -Path $Key -ErrorAction 'Stop') {
+				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					If ($Recurse) {
 						Write-Log -Message "Delete registry key recursively [$Key]." -Source ${CmdletName}
-						Remove-Item -Path $Key -ErrorAction 'Stop' -Force -Recurse | Out-Null
+						Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop' | Out-Null
 					}
 					Else {
 						Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
-						Remove-Item -Path $Key -ErrorAction 'Stop' -Force | Out-Null
+						Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop' | Out-Null
 					}
 				}
 				Else {
@@ -3459,9 +3459,9 @@ Function Remove-RegistryKey {
 				}
 			}
 			Else {
-				If (Test-Path -Path $Key -ErrorAction 'Stop') {
+				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					Write-Log -Message "Delete registry value [$Key] [$Name]." -Source ${CmdletName}
-					Remove-ItemProperty -Path $Key -Name $Name -ErrorAction 'Stop' -Force | Out-Null
+					Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop' | Out-Null
 				}
 				Else {
 					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registery key does not exist." -Severity 2 -Source ${CmdletName}
@@ -3541,9 +3541,9 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				
 				#  Load the User profile registry hive if it is not already loaded because the User is logged in
 				[boolean]$ManuallyLoadedRegHive = $false
-				If (-not (Test-Path -Path $UserRegistryPath)) {
+				If (-not (Test-Path -LiteralPath $UserRegistryPath)) {
 					#  Load the User registry hive if the registry hive file exists
-					If (Test-Path -Path $UserRegistryHiveFile -PathType 'Leaf') {
+					If (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf') {
 						Write-Log -Message "Load the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
 						[string]$HiveLoadResult = & reg.exe load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 						
