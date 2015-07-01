@@ -7111,7 +7111,7 @@ Function Get-MsiTableProperty {
 			## If the first row was successfully retrieved, then save data and loop through the entire table
 			While ($Record) {
 				#  Add property and value to custom object
-				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2))
+				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2)) -Force
 				#  Retrieve the next row in the table
 				[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
 			}
