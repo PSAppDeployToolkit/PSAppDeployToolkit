@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '06/19/2015'
+[string]$appDeployMainScriptDate = '07/01/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3083,6 +3083,72 @@ Function Convert-RegistryPath {
 		
 		Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
 		Write-Output -InputObject $key
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Test-RegistryValue
+Function Test-RegistryValue {
+<#
+.SYNOPSIS
+	Test if a registry value exists.
+.DESCRIPTION
+	Checks a registry key path to see if it has a value with a given name. Can correctly handle cases where a value simply has an empty or null value.
+.PARAMETER Key
+	Path of the registry key.
+.PARAMETER Value
+	Specify the registry key value to check the existence of.
+.PARAMETER SID
+	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+.EXAMPLE
+	Test-RegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
+.NOTES
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	Param (
+		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+		[ValidateNotNullOrEmpty()]$Key,
+		[Parameter(Mandatory=$true,Position=1)]
+		[ValidateNotNullOrEmpty()]$Value,
+		[Parameter(Mandatory=$false,Position=2)]
+		[ValidateNotNullorEmpty()]
+		[string]$SID
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
+		If ($PSBoundParameters.ContainsKey('SID')) {
+			[string]$Key = Convert-RegistryPath -Key $Key -SID $SID
+		}
+		Else {
+			[string]$Key = Convert-RegistryPath -Key $Key
+		}
+		
+		[boolean]$IsRegistryValueExists = $false
+		Try {
+			[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
+			If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
+		}
+		Catch { }
+
+		If ($IsRegistryValueExists) {
+			Write-Log -Message "Registry key value [$Key] [$Value] does exist." -Source ${CmdletName}
+		}
+		Else {
+			Write-Log -Message "Registry key value [$Key] [$Value] does not exist." -Source ${CmdletName}
+		}
+		Write-Output -InputObject $IsRegistryValueExists
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -8818,6 +8884,154 @@ Function Get-LoggedOnUser {
 	}
 }
 #endregion
+
+
+#region Function Get-PendingReboot
+Function Get-PendingReboot {
+<#
+.SYNOPSIS
+	Get the pending reboot status on a local computer.
+.DESCRIPTION
+	Check WMI and the registry to determine if the system has a pending reboot operation from any of the following:
+	a) Component Based Servicing (Vista, Windows 2008)
+	b) Windows Update / Auto Update (XP, Windows 2003 / 2008)
+	c) SCCM 2012 Clients (DetermineIfRebootPending WMI method)
+	d) Pending File Rename Operations (XP, Windows 2003 / 2008)
+.EXAMPLE
+	Get-PendingReboot
+	
+	Returns custom object with following properties:
+	ComputerName, LastBootUpTime, IsSystemRebootPending, IsCBServicingRebootPending, IsWindowsUpdateRebootPending, IsSCCMClientRebootPending, IsFileRenameRebootPending, PendingFileRenameOperations, ErrorMsg
+	
+	*Notes: ErrorMsg only contains something if an error occurred
+.EXAMPLE
+	(Get-PendingReboot).IsSystemRebootPending
+	Returns boolean value determining whether or not there is a pending reboot operation.
+.NOTES
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		
+		## Initialize variables
+		[string]$ComputerName = ([Net.Dns]::GetHostEntry('')).HostName
+		$PendRebootErrorMsg = $null
+	}
+	Process {
+		Write-Log -Message "Get the pending reboot status on the local computer [$ComputerName]." -Source ${CmdletName}
+
+		## Get the date/time that the system last booted up
+		Try {
+			[nullable[datetime]]$LastBootUpTime = (Get-Date -ErrorAction 'Stop') - ([timespan]::FromMilliseconds([math]::Abs([environment]::TickCount)))
+		}
+		Catch {
+			[nullable[datetime]]$LastBootUpTime = $null
+			[string[]]$PendRebootErrorMsg += "Failed to get LastBootUpTime: $($_.Exception.Message)"
+			Write-Log -Message "Failed to get LastBootUpTime. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+		
+		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
+		Try {
+			If ([environment]::OSVersion.Version.Build -ge 6001) {
+				If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
+					[nullable[boolean]]$IsCBServicingRebootPending = $true
+				}
+				Else {
+					[nullable[boolean]]$IsCBServicingRebootPending = $false
+				}
+			}
+		}
+		Catch {
+			[nullable[boolean]]$IsCBServicingRebootPending = $null
+			[string[]]$PendRebootErrorMsg += "Failed to get IsCBServicingRebootPending: $($_.Exception.Message)"
+			Write-Log -Message "Failed to get IsCBServicingRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+		
+		## Determine if there is a pending reboot from a Windows Update
+		Try {
+			If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -ErrorAction 'Stop') {
+				[nullable[boolean]]$IsWindowsUpdateRebootPending = $true
+			}
+			Else {
+				[nullable[boolean]]$IsWindowsUpdateRebootPending = $false
+			}
+		}
+		Catch {
+			[nullable[boolean]]$IsWindowsUpdateRebootPending = $null
+			[string[]]$PendRebootErrorMsg += "Failed to get IsWindowsUpdateRebootPending: $($_.Exception.Message)"
+			Write-Log -Message "Failed to get IsWindowsUpdateRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+		
+		## Determine if there is a pending reboot from a pending file rename operation
+		[boolean]$IsFileRenameRebootPending = $false
+		$PendingFileRenameOperations = $null
+		If (Test-RegistryValue -Path 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
+			#  If PendingFileRenameOperations value exists, set $IsFileRenameRebootPending variable to $true
+			[boolean]$IsFileRenameRebootPending = $true
+			#  Get the value of PendingFileRenameOperations
+			Try {
+				[string[]]$PendingFileRenameOperations = Get-ItemProperty -Path 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'PendingFileRenameOperations' -ErrorAction 'Stop'
+			}
+			Catch { 
+				[string[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
+				Write-Log -Message "Failed to get PendingFileRenameOperations. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
+		}
+		
+		## Determine SCCM 2012 Client reboot pending status
+		Try {
+			[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
+			If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
+				Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
+			}
+			Else {
+				[nullable[boolean]]$IsSCCMClientRebootPending = $false
+				If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
+					[nullable[boolean]]$IsSCCMClientRebootPending = $true
+				}
+			}
+		}
+		Catch {
+			[nullable[boolean]]$IsSCCMClientRebootPending = $null
+			[string[]]$PendRebootErrorMsg += "Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)"
+			Write-Log -Message "Failed to get IsSCCMClientRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+		
+		## Determine if there is a pending reboot for the system
+		[boolean]$IsSystemRebootPending = $false
+		If ($IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsSCCMClientRebootPending -or $IsFileRenameRebootPending) {
+			[boolean]$IsSystemRebootPending = $true
+		}
+		
+		## Create a custom object containing pending reboot information for the system
+		[psobject]$PendingRebootInfo = New-Object -TypeName 'PSObject' -Property @{
+			ComputerName = $ComputerName
+			LastBootUpTime = $LastBootUpTime
+			IsSystemRebootPending = $IsSystemRebootPending
+			IsCBServicingRebootPending = $IsCBServicingRebootPending
+			IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
+			IsSCCMClientRebootPending = $IsSCCMClientRebootPending
+			IsFileRenameRebootPending = $IsFileRenameRebootPending
+			PendingFileRenameOperations = $PendingFileRenameOperations
+			ErrorMsg = $PendRebootErrorMsg
+		}
+		Write-Log -Message "Pending reboot status on the local computer [$ComputerName]: `n$($PendingRebootInfo | Format-List | Out-String)" -Source ${CmdletName}
+	}
+	End {
+		Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName','LastBootUpTime','IsSystemRebootPending','IsCBServicingRebootPending','IsWindowsUpdateRebootPending','IsSCCMClientRebootPending','IsFileRenameRebootPending','PendingFileRenameOperations','ErrorMsg')
+
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
 
 #endregion
 ##*=============================================
