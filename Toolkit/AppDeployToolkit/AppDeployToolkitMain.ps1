@@ -2337,6 +2337,12 @@ Function Execute-Process {
 	Execute-Process -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle 'Hidden'
 .EXAMPLE
 	Execute-Process -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes '1,2'
+.EXAMPLE
+	Execute-Process -Path 'setup.exe' -Parameters "-s -f2`"$configToolkitLogDir\$installName.log`""
+	Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
+.EXAMPLE
+	Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$configToolkitLogDir\$installName.log`""
+	Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
