@@ -830,15 +830,38 @@ Function Exit-Script {
 	## Compress the log files and remove the temporary folder
 	If ($configToolkitCompressLogs) {
 		Try {
-			#  Add the file header for zip files to a file and create a 0 byte .zip file
+			## Add the file header for zip files to a file and create a 0 byte .zip file
 			Set-Content -Path $zipFileName -Value ('PK' + [char]5 + [char]6 + ("$([char]0)" * 18)) -ErrorAction 'Stop'
 			
+			## Compress the log files
 			$zipFile = $shellApp.NameSpace($zipFileName)
-			ForEach ($file in (Get-ChildItem -Path $logTempFolder -ErrorAction 'Stop')) {
-				Write-Log -Message "Compress log file [$($file.Name)] to [$zipFileName]..." -Source ${CmdletName}
-				$zipFile.CopyHere($file.FullName)
-				Start-Sleep -Milliseconds 500
-			}
+			$ArrOfFilesToBackUp = $shellApp.NameSpace($logTempFolder)
+			$zipFile.CopyHere($ArrOfFilesToBackUp.Items())
+			Start-Sleep -Seconds 1
+			Write-Log -Message "Compressing [$($ArrOfFilesToBackUp.Count)] log files to [$zipFileName]..." -Source ${CmdletName}
+			
+			## Wait for the log files to finish compressing by waiting for the zip file size to stop growing.
+			#  The .CopyHere method opens the zip file every time it adds a file so checking if the zip file is Locked Open is not reliable.
+			Write-Log -Message 'Waiting for the log file(s) to finish compressing by checking to see if the size of the zip file has stopped growing...' -Source ${CmdletName}
+			[decimal]$OldZipFileSizeInBytes = (Get-ChildItem -Path $zipFileName -ErrorAction 'Stop').Length
+			[int32]$MaxLoops = 8
+			[int32]$LoopCount = 0
+			Do {
+				$LoopCount++
+				Start-Sleep -Milliseconds 200
+				[decimal]$ZipFileSizeInBytes = (Get-ChildItem -Path $zipFileName -ErrorAction 'Stop').Length
+				If ($ZipFileSizeInBytes -gt $OldZipFileSizeInBytes) {
+					[decimal]$OldZipFileSizeInBytes= $ZipFileSizeInBytes
+					$LoopCount = 0
+				}
+			} Until ($LoopCount -gt $MaxLoops)
+			Start-Sleep -Seconds 1
+			Write-Log -Message "The log file(s) have finished compressing because the zipped log file [$zipFileName] has stopped growing in size." -Source ${CmdletName}
+			
+			## Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users
+			Write-Log -Message "Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users." -Source ${CmdletName}
+			$ZipFileParentFolderAcl = Get-Acl -Path (Split-Path -Path $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
+			Set-Acl -Path $zipFileName -AclObject $ZipFileParentFolderAcl -ErrorAction 'Stop'
 			
 			If (Test-Path -Path $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
 				Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'Stop' | Out-Null
@@ -3146,7 +3169,7 @@ Function Test-RegistryValue {
 			If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
 		}
 		Catch { }
-
+		
 		If ($IsRegistryValueExists) {
 			Write-Log -Message "Registry key value [$Key] [$Value] does exist." -Source ${CmdletName}
 		}
