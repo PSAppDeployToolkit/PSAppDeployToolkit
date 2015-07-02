@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/01/2015'
+[string]$appDeployMainScriptDate = '07/02/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -340,6 +340,8 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { T
 	[string]$configRestartPromptTimeRemaining = $xmlUIMessages.RestartPrompt_TimeRemaining
 	[string]$configRestartPromptButtonRestartLater = $xmlUIMessages.RestartPrompt_ButtonRestartLater
 	[string]$configRestartPromptButtonRestartNow = $xmlUIMessages.RestartPrompt_ButtonRestartNow
+	[string]$configWelcomePromptCountdownMessage = $xmlUIMessages.WelcomePrompt_CountdownMessage
+	[string]$configWelcomePromptCustomMessage = $xmlUIMessages.WelcomePrompt_CustomMessage
 }
 
 ## Variables: Script Directories
@@ -4982,6 +4984,10 @@ Function Show-InstallationWelcome {
 	Specifies whether to minimize other windows when displaying prompt. Default: $true.
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
+.PARAMETER ForceCountdown
+	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+.PARAMETER CustomText
+	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps 'iexplore,winword,excel'
 	Prompt the user to close Internet Explorer, Word and Excel.
@@ -5067,7 +5073,14 @@ Function Show-InstallationWelcome {
 		## Specifies whether the window is the topmost window
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$TopMost = $true
+		[boolean]$TopMost = $true,
+		## Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$ForceCountdown = 0,
+		## Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
+		[Parameter(Mandatory=$false)]
+		[switch]$CustomText = $false
 	)
 	
 	Begin {
@@ -5203,6 +5216,12 @@ Function Show-InstallationWelcome {
 				#  Change this variable to a boolean now to switch the countdown on even with deferral
 				[boolean]$forceCloseAppsCountdown = $true
 			}
+			ElseIf ($forceCountdown -gt 0){
+				#  Keep the same variable for countdown to simplify the code:
+				$closeAppsCountdown = $forceCountdown
+				#  Change this variable to a boolean now to switch the countdown on
+				[boolean]$forceCountdown = $true
+			}
 			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope 'Script'
 			
 			While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
@@ -5215,12 +5234,12 @@ Function Show-InstallationWelcome {
 					}
 					#  Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
 					ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions) -and ($promptResult -ne 'Continue'))) {
-						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -TopMost $TopMost
+						[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -CustomText:$CustomText -TopMost $TopMost
 					}
 				}
 				#  If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
-				ElseIf ($runningProcessDescriptions) {
-					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -TopMost $TopMost
+				ElseIf (($runningProcessDescriptions) -or ($forceCountdown)) {
+					[string]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -CustomText:$CustomText -TopMost $TopMost
 				}
 				#  If there is no deferral and no processes running, break the while loop
 				Else {
@@ -5425,6 +5444,10 @@ Function Show-WelcomePrompt {
 	Specifies whether to minimize other windows when displaying prompt. Default: $true.
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
+.PARAMETER ForceCountdown
+	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+.PARAMETER CustomText
+	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
 	Show-WelcomePrompt -ProcessDescriptions 'Lotus Notes, Microsoft Word' -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
 .NOTES
@@ -5453,10 +5476,14 @@ Function Show-WelcomePrompt {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$MinimizeWindows = $true,
-		## Specifies whether the window is the topmost window
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$TopMost = $true
+		[boolean]$TopMost = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$ForceCountdown = 0,
+		[Parameter(Mandatory=$false)]
+		[switch]$CustomText = $false
 	)
 	
 	Begin {
@@ -5512,6 +5539,11 @@ Function Show-WelcomePrompt {
 			Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 			$showCountdown = $true
 		}
+		## If 'force countdown' was specified, enable that feature.
+		If ($forceCountdown -eq $true) {
+			Write-Log -Message "Countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
+			$showCountdown = $true
+		}
 		
 		[string[]]$processDescriptions = $processDescriptions -split ','
 		[Windows.Forms.Application]::EnableVisualStyles()
@@ -5565,7 +5597,11 @@ Function Show-WelcomePrompt {
 			## Set up the form
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-			$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"
+			If ($forceCountdown -eq $true) {
+				If ($deploymentType -ieq 'Install') { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
+				Else { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeUninstall.ToLower())) + "`n$labelCountdownSeconds" } 
+			}
+			Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
 		}
 		
 		## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
@@ -5581,15 +5617,25 @@ Function Show-WelcomePrompt {
 				[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 				Set-Variable -Name 'closeAppsCountdownGlobal' -Value $remainingTime.TotalSeconds -Scope 'Script'
 				
-				## If the countdown is complete, close the application(s)
+				## If the countdown is complete, close the application(s) or continue
 				If ($countdownTime -lt $currentTime) {
-					Write-Log -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).' -Source ${CmdletName}
-					$buttonCloseApps.PerformClick()
+					If ($forceCountdown -eq $true) {
+						Write-Log -Message 'Countdown timer has elapsed. Force continue.' -Source ${CmdletName}
+						$buttonContinue.PerformClick()
+					}
+					Else {
+						Write-Log -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).' -Source ${CmdletName}
+						$buttonCloseApps.PerformClick()
+					}
 				}
 				Else {
 					#  Update the form
 					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					$labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds"
+					If ($forceCountdown -eq $true) {
+						If ($deploymentType -ieq 'Install') { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
+						Else { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall) + "`n$labelCountdownSeconds" }
+					}
+					Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
 					[Windows.Forms.Application]::DoEvents()
 				}
 			}
@@ -5677,8 +5723,11 @@ Function Show-WelcomePrompt {
 		If ($showCloseApps) {
 			$labelAppNameText = $configClosePromptMessage
 		}
-		ElseIf ($showDefer) {
+		ElseIf (($showDefer) -or ($forceCountdown)) {
 			$labelAppNameText = "$configDeferPromptWelcomeMessage `n$installTitle"
+		}
+		If ($CustomText) {
+			$labelAppNameText = "$labelAppNameText `n`n$configWelcomePromptCustomMessage"
 		}
 		$labelAppName.Text = $labelAppNameText
 		$labelAppName.TextAlign = 'TopCenter'
@@ -5760,7 +5809,7 @@ Function Show-WelcomePrompt {
 		If ($showDefer) {
 			$flowLayoutPanel.Controls.Add($labelDefer)
 		}
-		If ($showCloseApps -and $showCountdown) {
+		If ($showCountdown) {
 			$flowLayoutPanel.Controls.Add($labelCountdown)
 		}
 		
@@ -5804,12 +5853,14 @@ Function Show-WelcomePrompt {
 		$buttonContinue.AutoSize = $true
 		$buttonContinue.UseVisualStyleBackColor = $true
 		$buttonContinue.add_Click($buttonContinue_OnClick)
-		#  Add tooltip to Continue button
-		$toolTip.BackColor = [Drawing.Color]::LightGoldenrodYellow
-		$toolTip.IsBalloon = $false
-		$toolTip.InitialDelay = 100
-		$toolTip.ReshowDelay = 100
-		$toolTip.SetToolTip($buttonContinue, $configClosePromptButtonContinueTooltip)
+		If ($showCloseApps) {
+			#  Add tooltip to Continue button
+			$toolTip.BackColor = [Drawing.Color]::LightGoldenrodYellow
+			$toolTip.IsBalloon = $false
+			$toolTip.InitialDelay = 100
+			$toolTip.ReshowDelay = 100
+			$toolTip.SetToolTip($buttonContinue, $configClosePromptButtonContinueTooltip)
+		}
 		
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
