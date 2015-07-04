@@ -7251,16 +7251,21 @@ Function Test-MSUpdates {
 		[boolean]$kbFound = $false
 		
 		## Check for update using ComObject method (to catch Office updates)
+		[__comobject]$UpdateSession = New-Object -ComObject "Microsoft.Update.Session"
+		[__comobject]$UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
 		#  Indicates whether the search results include updates that are superseded by other updates in the search results
 		$UpdateSearcher.IncludePotentiallySupersededUpdates = $false
 		#  Indicates whether the UpdateSearcher goes online to search for updates.
 		$UpdateSearcher.Online = $false
+		[int32]$UpdateHistoryCount = $UpdateSearcher.GetTotalHistoryCount()
+		[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
 						 Select-Object -Property 'Title','Date',
 												 @{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
 												 @{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
 												 'Description' |
 						Sort-Object -Property 'Date' -Descending
 		ForEach ($Update in $UpdateHistory) {
+			If ( ($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber) ) {
 				$LatestUpdateHistory = $Update
 				Break
 			}
