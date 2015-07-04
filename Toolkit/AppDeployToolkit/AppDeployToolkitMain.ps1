@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/02/2015'
+[string]$appDeployMainScriptDate = '07/04/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7250,25 +7250,28 @@ Function Test-MSUpdates {
 		## Default is not found
 		[boolean]$kbFound = $false
 		
-		## Check using Update method (to catch Office updates)
-		[__comobject]$Session = New-Object -ComObject 'Microsoft.Update.Session'
-		[__comobject]$Collection = New-Object -ComObject 'Microsoft.Update.UpdateColl'
-		[__comobject]$Installer = $Session.CreateUpdateInstaller()
-		[__comobject]$Searcher = $Session.CreateUpdateSearcher()
-		[int32]$updateHistoryCount = $Searcher.GetTotalHistoryCount()
-		If ($updateHistoryCount -gt 0) {
-			$Searcher.QueryHistory(0, $updateHistoryCount) | Where-Object { $_.Title -match $kbNumber } |
-			ForEach-Object {
-				$SearchResult = $Searcher.Search("UpdateID='$($_.UpdateIdentity.UpdateID)' and RevisionNumber=$($_.UpdateIdentity.RevisionNumber)")
-				If ($SearchResult.Updates.Count -gt 0) {
-					$kbFound = $true
-				}
+		## Check for update using ComObject method (to catch Office updates)
+		#  Indicates whether the search results include updates that are superseded by other updates in the search results
+		$UpdateSearcher.IncludePotentiallySupersededUpdates = $false
+		#  Indicates whether the UpdateSearcher goes online to search for updates.
+		$UpdateSearcher.Online = $false
+						 Select-Object -Property 'Title','Date',
+												 @{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
+												 @{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
+												 'Description' |
+						Sort-Object -Property 'Date' -Descending
+		ForEach ($Update in $UpdateHistory) {
+				$LatestUpdateHistory = $Update
+				Break
 			}
 		}
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Session)
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Collection)
+		If ( ($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful') ) {
+			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List)" -Source ${CmdletName}
+			$kbFound = $true
+		}
+		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
 		
-		## Check using standard method
+		## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 		If (-not $kbFound) {
 			Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
 		}
