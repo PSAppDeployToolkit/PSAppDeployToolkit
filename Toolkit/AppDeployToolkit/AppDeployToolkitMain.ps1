@@ -7044,7 +7044,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 		}
 		#  Set the correct DLL register/unregister action parameters
 		If (-not $DLLAction) { Throw 'Parameter validation failed. Please specify the [-DLLAction] parameter to determine whether to register or unregister the DLL.' }
-		[string]$DLLAction = (Get-Culture).TextInfo | ForEach-Object { $_.ToTitleCase($DLLAction.ToLower()) }
+		[string]$DLLAction = ((Get-Culture).TextInfo).ToTitleCase($DLLAction.ToLower())
 		Switch ($DLLAction) {
 			'Register' { [string]$DLLActionParameters = "/s `"$FilePath`"" }
 			'Unregister' { [string]$DLLActionParameters = "/s /u `"$FilePath`"" }
