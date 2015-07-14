@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 .DESCRIPTION
@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/04/2015'
+[string]$appDeployMainScriptDate = '07/14/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -6214,7 +6214,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.add_Load($Form_StateCorrection_Load)
 		# Clean up the control events
 		$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
-		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ $_.Cancel = $true }
+		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ If ($_.CloseReason -eq 'UserClosing') { $_.Cancel = $true } }
 		$formRestart.add_FormClosing($formRestartClosing)
 		
 		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously

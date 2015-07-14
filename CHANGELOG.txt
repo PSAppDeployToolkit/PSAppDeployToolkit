@@ -13,6 +13,7 @@ Version 3.6.5 [07/xx/2015]
 	Fixed issue with New-Folder function displaying console output
 	Fixed issue with Get-MsiTableProperty where reading the property table for a second MSI would throw an error unless -Force parameter specified
 	Fixed issue with the zip compressed log files only being accessible to elevated users
+	Fixed issue with Show-InstallationRestartPrompt where the PSADT restart prompt prevented a manual user initiated Windows Shutdown from being executed
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names
