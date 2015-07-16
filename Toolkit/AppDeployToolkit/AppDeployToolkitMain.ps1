@@ -250,7 +250,7 @@ If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { T
 			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Polices\Microsoft\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Policies\Microsoft\Windows\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win 8 machines
 		If (-not $HKULanguages) {
@@ -9013,7 +9013,7 @@ Function Get-PendingReboot {
 	}
 	Process {
 		Write-Log -Message "Get the pending reboot status on the local computer [$ComputerName]." -Source ${CmdletName}
-
+		
 		## Get the date/time that the system last booted up
 		Try {
 			[nullable[datetime]]$LastBootUpTime = (Get-Date -ErrorAction 'Stop') - ([timespan]::FromMilliseconds([math]::Abs([environment]::TickCount)))
@@ -9113,7 +9113,7 @@ Function Get-PendingReboot {
 	}
 	End {
 		Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName','LastBootUpTime','IsSystemRebootPending','IsCBServicingRebootPending','IsWindowsUpdateRebootPending','IsSCCMClientRebootPending','IsFileRenameRebootPending','PendingFileRenameOperations','ErrorMsg')
-
+		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
