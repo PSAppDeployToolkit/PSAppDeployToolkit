@@ -1142,7 +1142,7 @@ Function Show-InstallationPrompt {
 	}
 	Process {
 		## Bypass if in non-interactive mode
-		If ($deployModeNonInteractive) {
+		If ($deployModeSilent) {
 			Write-Log -Message "Bypassing Installation Prompt [Mode: $deployMode]... $Message" -Source ${CmdletName}
 			Return
 		}
@@ -5995,7 +5995,7 @@ Function Show-InstallationRestartPrompt {
 	}
 	Process {
 		## Bypass if in non-interactive mode
-		If ($deployModeNonInteractive) {
+		If ($deployModeSilent) {
 			Write-Log -Message "Bypass Installation Restart Prompt [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
