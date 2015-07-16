@@ -59,8 +59,8 @@ Param (
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
-[string]$currentTime = (Get-Date -UFormat '%T').ToString()
-[string]$currentDate = (Get-Date -UFormat '%d-%m-%Y').ToString()
+[datetime]$currentTime = Get-Date -UFormat '%T'
+[datetime]$currentDate = Get-Date -UFormat '%d-%m-%Y'
 [timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()

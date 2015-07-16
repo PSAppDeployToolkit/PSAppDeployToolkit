@@ -18,6 +18,7 @@ Version 3.6.5 [07/xx/2015]
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names
 	Changed Show-InstallationWelcome and Show-WelcomePrompt to allow display of custom message from XML by using -CustomMessage parameter. Also added -ForceCountdown to allow us to have a countdown timer with the defer option on the welcome screen.
+	Changed variables $currentTime and $currentDate from type [string] to type [datetime], it should not have a negative impact on code
 	Improved Exit-Script so that it is possible to manually exit the script with a 3010 or 1641 exit code and trigger an SCCM "Soft Reboot"
 	Improved comments and documentation
 
