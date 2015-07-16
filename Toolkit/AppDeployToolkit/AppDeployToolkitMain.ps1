@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/14/2015'
+[string]$appDeployMainScriptDate = '07/16/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -9026,7 +9026,7 @@ Function Get-PendingReboot {
 		
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
-			If ([environment]::OSVersion.Version.Build -ge 6001) {
+			If ([environment]::OSVersion.Version.Major -ge 5) {
 				If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
@@ -9059,7 +9059,7 @@ Function Get-PendingReboot {
 		## Determine if there is a pending reboot from a pending file rename operation
 		[boolean]$IsFileRenameRebootPending = $false
 		$PendingFileRenameOperations = $null
-		If (Test-RegistryValue -Path 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
+		If (Test-RegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
 			#  If PendingFileRenameOperations value exists, set $IsFileRenameRebootPending variable to $true
 			[boolean]$IsFileRenameRebootPending = $true
 			#  Get the value of PendingFileRenameOperations
