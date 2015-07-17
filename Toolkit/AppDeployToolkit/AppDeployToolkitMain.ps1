@@ -55,12 +55,13 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/16/2015'
+[string]$appDeployMainScriptDate = '07/17/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
-[datetime]$currentTime = Get-Date -UFormat '%T'
-[datetime]$currentDate = Get-Date -UFormat '%d-%m-%Y'
+[datetime]$currentDateTime = Get-Date
+[string]$currentTime = (Get-Date -UFormat '%T').ToString()
+[string]$currentDate = (Get-Date -UFormat '%d-%m-%Y').ToString()
 [timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
