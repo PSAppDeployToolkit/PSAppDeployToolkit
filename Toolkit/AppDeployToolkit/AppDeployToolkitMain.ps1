@@ -60,8 +60,8 @@ Param (
 
 ## Variables: Datetime and Culture
 [datetime]$currentDateTime = Get-Date
-[string]$currentTime = (Get-Date -UFormat '%T').ToString()
-[string]$currentDate = (Get-Date -UFormat '%d-%m-%Y').ToString()
+[string]$currentTime = Get-Date -UFormat '%T'
+[string]$currentDate = Get-Date -UFormat '%d-%m-%Y'
 [timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
