@@ -55,13 +55,13 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/17/2015'
+[string]$appDeployMainScriptDate = '07/21/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
 [datetime]$currentDateTime = Get-Date
-[string]$currentTime = Get-Date -UFormat '%T'
-[string]$currentDate = Get-Date -UFormat '%d-%m-%Y'
+[string]$currentTime = Get-Date -Date $currentDateTime -UFormat '%T'
+[string]$currentDate = Get-Date -Date $currentDateTime -UFormat '%d-%m-%Y'
 [timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
@@ -1753,8 +1753,8 @@ Function Get-InstalledApplication {
 		[psobject[]]$installedApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			Try {
-				If (Test-Path -LiteralPath $regKey -ErrorAction 'Stop') {
-					[psobject[]]$regKeyApplication = Get-ChildItem -LiteralPath $regKey -ErrorAction 'Stop' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' | Where-Object { $_.DisplayName } }
+				If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
+					[psobject[]]$regKeyApplication = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } }
 					ForEach ($regKeyApp in $regKeyApplication) {
 						Try {
 							[string]$appDisplayName = ''
@@ -1803,20 +1803,20 @@ Function Get-InstalledApplication {
 										#  Check for an exact application name match
 										If ($regKeyApp.DisplayName -eq $application) {
 											$applicationMatched = $true
-											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching forapplication name [$application]." -Source ${CmdletName}
+											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]." -Source ${CmdletName}
 										}
 									}
 									ElseIf ($WildCard) {
 										#  Check for wildcard application name match
 										If ($regKeyApp.DisplayName -like $application) {
 											$applicationMatched = $true
-											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for application name [$application]." -Source ${CmdletName}
+											Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -Source ${CmdletName}
 										}
 									}
 									#  Check for a regex application name match
 									ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
 										$applicationMatched = $true
-										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for application name [$application]." -Source ${CmdletName}
+										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
 									}
 									
 									If ($applicationMatched) {
@@ -1846,6 +1846,10 @@ Function Get-InstalledApplication {
 				Write-Log -Message "Failed to resolve registry path [$regKey]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				Continue
 			}
+		}
+		
+		If ($ErrorUninstallKeyPath) {
+			Write-Log -Message "The following error(s) took place while enumerating installed applications from the registry. `n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
 		}
 		Write-Output -InputObject $installedApplication
 	}
