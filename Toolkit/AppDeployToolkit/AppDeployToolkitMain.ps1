@@ -85,7 +85,7 @@ Param (
 [string]$envPublic = $env:PUBLIC
 [string]$envSystemDrive = $env:SYSTEMDRIVE
 [string]$envSystemRoot = $env:SYSTEMROOT
-[string]$envTemp = $env:TEMP
+[string]$envTemp = [IO.Path]::GetTempPath()
 [string]$envUserName = $env:USERNAME
 [string]$envUserProfile = $env:USERPROFILE
 [string]$envWinDir = $env:WINDIR
