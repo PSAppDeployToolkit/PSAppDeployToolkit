@@ -9015,7 +9015,7 @@ Function Get-PendingReboot {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		## Initialize variables
-		[string]$ComputerName = ([Net.Dns]::GetHostEntry('')).HostName
+		[string]$private:ComputerName = ([Net.Dns]::GetHostEntry('')).HostName
 		$PendRebootErrorMsg = $null
 	}
 	Process {
