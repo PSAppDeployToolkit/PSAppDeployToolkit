@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '07/21/2015'
+[string]$appDeployMainScriptDate = '07/28/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3172,8 +3172,10 @@ Function Test-RegistryValue {
 		
 		[boolean]$IsRegistryValueExists = $false
 		Try {
-			[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
-			If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
+			If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
+				[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
+				If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
+			}
 		}
 		Catch { }
 		
