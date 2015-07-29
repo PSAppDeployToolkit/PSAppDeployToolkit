@@ -16,11 +16,13 @@
 	Fixed issue with Show-InstallationRestartPrompt where the PSADT restart prompt prevented a manual user initiated Windows Shutdown from being executed
 	Fixed issue with Show-InstallationPrompt and Show-InstallationRestartPrompt where the dialog would be displayed in Silent Mode
 	Fixed issue in Get-InstalledApplication where -ErrorAction could prematurely stop function if permissions issue while enumerating registry keys
+	Fixed issue with Invoke-HKCURegistrySettingsForAllUsers where registry profiles would fail to unload
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names
 	Changed Show-InstallationWelcome and Show-WelcomePrompt to allow display of custom message from XML by using -CustomMessage parameter. Also added -ForceCountdown to allow us to have a countdown timer with the defer option on the welcome screen.
 	Changed variables $currentTime and $currentDate from type [string] to type [datetime], it should not have a negative impact on code
+	Changed variable $envTemp to use recommended method of retrieving temp folder path
 	Improved Exit-Script so that it is possible to manually exit the script with a 3010 or 1641 exit code and trigger an SCCM "Soft Reboot"
 	Improved comments and documentation
 
