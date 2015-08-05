@@ -1,4 +1,4 @@
-﻿Version 3.6.5 [07/xx/2015]
+﻿Version 3.6.5 [08/xx/2015]
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs
 	Added function Get-PendingReboot to get pending reboot status for the local computer (thanks to user 'That-Annoying-Guy' for the original code)
 	Added function Test-RegistryValue to check for the existence of a registry value, needed to support Get-PendingReboot function
@@ -17,6 +17,7 @@
 	Fixed issue with Show-InstallationPrompt and Show-InstallationRestartPrompt where the dialog would be displayed in Silent Mode
 	Fixed issue in Get-InstalledApplication where -ErrorAction could prematurely stop function if permissions issue while enumerating registry keys
 	Fixed issue with Invoke-HKCURegistrySettingsForAllUsers where registry profiles would fail to unload
+	Fixed issue where the final (asynchronous) balloon tip would not display
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names
