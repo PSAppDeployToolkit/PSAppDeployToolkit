@@ -9211,6 +9211,7 @@ If (-not $appName) {
 		Try {
 			[boolean]$useDefaultMsi = $true
 			Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
+			#  Discover if there is a zero-config MST file
 			[string]$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')
 			If (Test-Path -Path $defaultMstFile -PathType 'Leaf') {
 				Write-Log -Message "Discovered Zero-Config MST installation file [$defaultMstFile]." -Source $appDeployToolkitName
@@ -9218,6 +9219,12 @@ If (-not $appName) {
 			Else {
 				[string]$defaultMstFile = ''
 			}
+			#  Discover if there are zero-config MSP files
+			[string[]]$defaultMspFiles = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
+			If ($defaultMspFiles) {
+				Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
+			}
+
 			## Read the MSI and get the installation details
 			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property' -ContinueOnError $false -ErrorAction 'Stop'
 			[string]$appVendor = $defaultMsiPropertyList.Manufacturer

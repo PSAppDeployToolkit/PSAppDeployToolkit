@@ -2,6 +2,7 @@
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs
 	Added function Get-PendingReboot to get pending reboot status for the local computer (thanks to user 'That-Annoying-Guy' for the original code)
 	Added function Test-RegistryValue to check for the existence of a registry value, needed to support Get-PendingReboot function
+	Added ability to install MSP files as part of a zero-config MSI install
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines
 	Fixed issue with Show-WelcomePrompt which caused the -TopMost $false option to not work (also affected Show-InstallationWelcome)
 	Fixed issue introduced in v3.6.3 where Norwegian language code in config XML was changed to NO. Code reverted back to NB as this is the proper code for the Bokmål written language supported by Windows.
