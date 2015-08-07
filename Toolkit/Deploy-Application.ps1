@@ -63,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '06/19/2015'
+	[string]$appScriptDate = '08/07/2015'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
 	
@@ -76,7 +76,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.5'
-	[string]$deployAppScriptDate = '06/19/2015'
+	[string]$deployAppScriptDate = '08/07/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -85,7 +85,7 @@ Try {
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
-		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
+		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType 'Leaf')) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
 		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
@@ -121,7 +121,10 @@ Try {
 		[string]$installPhase = 'Installation'
 		
 		## Handle Zero-Config MSI Installations
-		If ($useDefaultMsi) { Execute-MSI -Action 'Install' -Path $defaultMsiFile }
+		If ($useDefaultMsi) {
+			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			Execute-MSI @ExecuteDefaultMSISplat
+		}
 		
 		## <Perform Installation tasks here>
 		
@@ -158,7 +161,10 @@ Try {
 		[string]$installPhase = 'Uninstallation'
 		
 		## Handle Zero-Config MSI Uninstallations
-		If ($useDefaultMsi) { Execute-MSI -Action 'Uninstall' -Path $defaultMsiFile }
+		If ($useDefaultMsi) {
+			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Uninstall'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			Execute-MSI @ExecuteDefaultMSISplat
+		}
 		
 		# <Perform Uninstallation tasks here>
 		

@@ -63,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '3.6.5'
-	[string]$appScriptDate = '06/19/2015'
+	[string]$appScriptDate = '08/07/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
@@ -76,12 +76,12 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.5'
-	[string]$deployAppScriptDate = '06/19/2015'
+	[string]$deployAppScriptDate = '08/07/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
 	[string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-	If (-not (Test-Path -Path $scriptDirectory -PathType Leaf)) { [string]$scriptDirectory = Join-Path (Split-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) -Parent) 'Toolkit' }
+	If (-not (Test-Path -Path $scriptDirectory -PathType 'Leaf')) { [string]$scriptDirectory = Join-Path (Split-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) -Parent) 'Toolkit' }
 	
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
@@ -125,7 +125,7 @@ Try {
 		
 		## MSI Installation and Removal Test
 		Show-InstallationProgress -StatusMessage 'MSI Installation And Removal Test...'
-		Execute-MSI -Action Install -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
+		Execute-MSI -Action 'Install' -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
 		Remove-MSIApplications -Name 'Test Installation (Testing) [Testing]'
 		
 		## x86 File Manipulation and DLL Registration Test
@@ -192,7 +192,7 @@ Try {
 		
 		## MSI Removal Test
 		Show-InstallationProgress -StatusMessage 'MSI Uninstallation Test...'
-		Execute-MSI -Action Uninstall -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
+		Execute-MSI -Action 'Uninstall' -Path 'PSAppDeployToolkit_TestInstallation_1.0.0_EN_01.msi'
 		
 		
 		##*===============================================

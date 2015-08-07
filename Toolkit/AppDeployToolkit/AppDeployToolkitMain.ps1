@@ -9211,6 +9211,13 @@ If (-not $appName) {
 		Try {
 			[boolean]$useDefaultMsi = $true
 			Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
+			[string]$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')
+			If (Test-Path -Path $defaultMstFile -PathType 'Leaf') {
+				Write-Log -Message "Discovered Zero-Config MST installation file [$defaultMstFile]." -Source $appDeployToolkitName
+			}
+			Else {
+				[string]$defaultMstFile = ''
+			}
 			## Read the MSI and get the installation details
 			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property' -ContinueOnError $false -ErrorAction 'Stop'
 			[string]$appVendor = $defaultMsiPropertyList.Manufacturer
