@@ -2055,19 +2055,6 @@ Function Execute-MSI {
 		## Set the working directory of the MSI
 		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
 		
-		## Get the ProductCode of the MSI
-		If ($PathIsProductCode) {
-			[string]$MSIProductCode = $path
-		}
-		ElseIf ([IO.Path]::GetExtension($msiFile) -eq '.msi') {
-			Try {
-				[string]$MSIProductCode = Get-MsiTableProperty -Path $msiFile -Table 'Property' -ContinueOnError $false | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
-			}
-			Catch {
-				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
-			}
-		}
-		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[string[]]$transforms = $transform -split ','
@@ -2094,6 +2081,21 @@ Function Execute-MSI {
 				}
 			}
 			[string]$mspFile = "`"$($patches -join ';')`""
+		}
+		
+		## Get the ProductCode of the MSI
+		If ($PathIsProductCode) {
+			[string]$MSIProductCode = $path
+		}
+		ElseIf ([IO.Path]::GetExtension($msiFile) -eq '.msi') {
+			Try {
+				[hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property'; ContinueOnError = $false }
+				If ($transforms) { $GetMsiTablePropertySplat.Add( 'TransformPath', $transforms ) }
+				[string]$MSIProductCode = Get-MsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
+			}
+			Catch {
+				Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
+			}
 		}
 		
 		## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
@@ -7130,15 +7132,17 @@ Function Get-MsiTableProperty {
 	Use the Windows Installer object to read all of the properties from a MSI table.
 .PARAMETER Path
 	The fully qualified path to an MSI file.
+.PARAMETER TransformPath
+	The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
 .PARAMETER Table
 	The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi'
+	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
 	Retrieve all of the properties from the default 'Property' table.
 .EXAMPLE
-	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi' -Table 'Property' | Select-Object -ExpandProperty ProductCode
+	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
 	Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
 .NOTES
 	This is an internal script function and should typically not be called directly.
@@ -7148,8 +7152,11 @@ Function Get-MsiTableProperty {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
-		[ValidateScript({ $_ | Test-Path -PathType Leaf })]
+		[ValidateScript({ $_ | Test-Path -PathType 'Leaf' })]
 		[string]$Path,
+		[Parameter(Mandatory=$false)]
+		[ValidateScript({ $_ | Test-Path -PathType 'Leaf' })]
+		[string[]]$TransformPath,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[string]$Table = 'Property',
@@ -7190,9 +7197,19 @@ Function Get-MsiTableProperty {
 			[psobject]$TableProperties = New-Object -TypeName 'PSObject'
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
-			## Open MSI database in read only mode
-			[int32]$OpenMSIReadOnly = 0
-			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $OpenMSIReadOnly)
+			## Define properties for how the database is opened
+			[int32]$msiOpenDatabaseModeReadOnly = 0
+			#  Indicates that the file to open is an MSP file and not an MSI
+			[int32]$msiOpenDatabaseModePatchFile = 32
+			[int32]$msiSuppressApplyTransformErrors = 319
+			## Open database in read only mode
+			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseModeReadOnly)
+			## Apply a list of transform(s) to the database
+			If ($TransformPath) {
+				ForEach ($Transform in $TransformPath) {
+					& $InvokeMethod -Object $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors) | Out-Null
+				}
+			}
 			## Open the "Property" table view
 			[__comobject]$View = & $InvokeMethod -Object $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
 			& $InvokeMethod -Object $View -MethodName 'Execute' | Out-Null
@@ -9224,13 +9241,16 @@ If (-not $appName) {
 			If ($defaultMspFiles) {
 				Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
 			}
-
+			
 			## Read the MSI and get the installation details
-			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'Property' -ContinueOnError $false -ErrorAction 'Stop'
+			[hashtable]$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
+			If ($defaultMstFile) { $GetDefaultMsiTablePropertySplat.Add( 'TransformPath', $defaultMstFile ) }
+			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[string]$appVendor = $defaultMsiPropertyList.Manufacturer
 			[string]$appName = $defaultMsiPropertyList.ProductName
 			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
-			[psobject]$defaultMsiFileList = Get-MsiTableProperty -Path $defaultMsiFile -Table 'File' -ContinueOnError $false -ErrorAction 'Stop'
+			$GetDefaultMsiTablePropertySplat.Add( 'Table', 'File' )
+			[psobject]$defaultMsiFileList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) }
 			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
 			Write-Log -Message "App Vendor [$appVendor]." -Source $appDeployToolkitName
