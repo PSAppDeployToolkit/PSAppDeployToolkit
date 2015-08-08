@@ -3,7 +3,7 @@
 	Added function Get-PendingReboot to get pending reboot status for the local computer (thanks to user 'That-Annoying-Guy' for the original code)
 	Added function Test-RegistryValue to check for the existence of a registry value, needed to support Get-PendingReboot function
 	Added ability to install MSP files as part of a zero-config MSI install
-	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it
+	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it. Also added ability to read properties from MSP files.
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines
 	Fixed issue with Show-WelcomePrompt which caused the -TopMost $false option to not work (also affected Show-InstallationWelcome)
 	Fixed issue introduced in v3.6.3 where Norwegian language code in config XML was changed to NO. Code reverted back to NB as this is the proper code for the Bokmål written language supported by Windows.
@@ -21,6 +21,7 @@
 	Fixed issue with Invoke-HKCURegistrySettingsForAllUsers where registry profiles would fail to unload
 	Fixed issue where the final (asynchronous) balloon tip would not display
 	Fixed issue with Zero-Config MSI installations not being able to handle MST files
+	Fixed issue with Get-MsiTableProperty where handle to MSI database file was not released by powershell.exe after reading properties
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names

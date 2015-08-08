@@ -7127,15 +7127,19 @@ Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 
 Function Get-MsiTableProperty {
 <#
 .SYNOPSIS
-	Get all of the properties from an MSI table and return as a custom object.
+	Get all of the properties from a Windows Installer database table and return as a custom object.
 .DESCRIPTION
-	Use the Windows Installer object to read all of the properties from a MSI table.
+	Use the Windows Installer object to read all of the properties from a Windows Installer database table.
 .PARAMETER Path
-	The fully qualified path to an MSI file.
+	The fully qualified path to an database file. Supports .msi and .msp files.
 .PARAMETER TransformPath
 	The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
 .PARAMETER Table
 	The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
+.PARAMETER TablePropertyNameColumnNum
+	Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
+.PARAMETER TablePropertyValueColumnNum
+	Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -7152,14 +7156,20 @@ Function Get-MsiTableProperty {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
-		[ValidateScript({ $_ | Test-Path -PathType 'Leaf' })]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string]$Path,
 		[Parameter(Mandatory=$false)]
-		[ValidateScript({ $_ | Test-Path -PathType 'Leaf' })]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string[]]$TransformPath,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[string]$Table = 'Property',
+		[string]$Table = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 'Property' } Else { 'MsiPatchMetadata' }),
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$TablePropertyNameColumnNum = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 1 } Else { 2 }),
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$TablePropertyValueColumnNum = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 2 } Else { 3 }),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -7168,16 +7178,17 @@ Function Get-MsiTableProperty {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-
+		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 		
 		[scriptblock]$InvokeMethod = {
 			Param (
 				[__comobject]$Object,
 				[string]$MethodName,
-				[object[]]$ArgumentList
+				[object[]]$ArgumentList,
+				$NamedParameters = $null
 			)
-			Write-Output -InputObject $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $null)
+			Write-Output -InputObject $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $NamedParameters)
 		}
 		
 		[scriptblock]$GetProperty = {
@@ -7191,35 +7202,39 @@ Function Get-MsiTableProperty {
 	}
 	Process {
 		Try {
-			Write-Log -Message "Get properties from MSI file [$Path] in table [$Table]." -Source ${CmdletName}
+			Write-Log -Message "Read data from Windows Installer database file [$Path] in table [$Table]." -Source ${CmdletName}
 			
 			## Create an empty object to store properties in
 			[psobject]$TableProperties = New-Object -TypeName 'PSObject'
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
+			## Determine if the database file is a patch (.msp) or not
+			If ([IO.Path]::GetExtension($Path) -eq '.msp') { [boolean]$IsMspFile = $true}
 			## Define properties for how the database is opened
 			[int32]$msiOpenDatabaseModeReadOnly = 0
-			#  Indicates that the file to open is an MSP file and not an MSI
+			[int32]$msiSuppressApplyTransformErrors = 63
+			[int32]$msiOpenDatabaseMode = $msiOpenDatabaseModeReadOnly
 			[int32]$msiOpenDatabaseModePatchFile = 32
-			[int32]$msiSuppressApplyTransformErrors = 319
+			If ($IsMspFile) { [int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile }
 			## Open database in read only mode
-			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseModeReadOnly)
+			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseMode)
 			## Apply a list of transform(s) to the database
-			If ($TransformPath) {
+			If (($TransformPath) -and (-not $IsMspFile)) {
 				ForEach ($Transform in $TransformPath) {
 					& $InvokeMethod -Object $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors) | Out-Null
 				}
 			}
-			## Open the "Property" table view
+			
+			## Open the requested table view from the database
 			[__comobject]$View = & $InvokeMethod -Object $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
 			& $InvokeMethod -Object $View -MethodName 'Execute' | Out-Null
 			
-			## Retrieve the first row from the "Properties" table
+			## Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
+			#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
 			[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
-			## If the first row was successfully retrieved, then save data and loop through the entire table
 			While ($Record) {
-				#  Add property and value to custom object
-				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(1)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @(2)) -Force
+				#  Read string data from record and add property/value pair to custom object
+				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
 				#  Retrieve the next row in the table
 				[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
 			}
@@ -7234,9 +7249,13 @@ Function Get-MsiTableProperty {
 			}
 		}
 		Finally {
-			If ($View) {
-				& $InvokeMethod -Object $View -MethodName 'Close' -ArgumentList @() | Out-Null
+			Try {
+				If ($View) { & $InvokeMethod -Object $View -MethodName 'Close' -ArgumentList @() | Out-Null }
+				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null
+				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null
 			}
+			Catch { }
 		}
 	}
 	End {
@@ -7303,7 +7322,8 @@ Function Test-MSUpdates {
 			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List)" -Source ${CmdletName}
 			$kbFound = $true
 		}
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
+		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession) | Out-Null
+		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher) | Out-Null
 		
 		## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 		If (-not $kbFound) {
@@ -9529,7 +9549,7 @@ Else {
 Try {
 	[__comobject]$SMSTSEnvironment = New-Object -ComObject 'Microsoft.SMS.TSEnvironment' -ErrorAction 'Stop'
 	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment)
+	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment) | Out-Null
 	$runningTaskSequence = $true
 }
 Catch {
