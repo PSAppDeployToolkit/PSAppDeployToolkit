@@ -9256,7 +9256,7 @@ If (-not $appName) {
 			Else {
 				[string]$defaultMstFile = ''
 			}
-			#  Discover if there are zero-config MSP files
+			#  Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
 			[string[]]$defaultMspFiles = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
 			If ($defaultMspFiles) {
 				Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
