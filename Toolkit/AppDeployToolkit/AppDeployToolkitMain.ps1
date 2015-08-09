@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/07/2015'
+[string]$appDeployMainScriptDate = '08/09/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -69,29 +69,41 @@ Param (
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
-[string]$envAppData = $env:APPDATA
+[string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
-[string]$envCommonProgramFiles = $env:CommonProgramFiles
+[string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
-[string]$envComputerName = $env:COMPUTERNAME | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
-[string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('')).HostName
+[string]$envComputerName = [Environment]::MachineName.ToUpper()
+[string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
 [string]$envHomePath = $env:HOMEPATH
 [string]$envHomeShare = $env:HOMESHARE
-[string]$envLocalAppData = $env:LOCALAPPDATA
-[string]$envProgramFiles = $env:PROGRAMFILES
+[string]$envLocalAppData = [Environment]::GetFolderPath('LocalApplicationData')
+[string[]]$envLogicalDrives = [Environment]::GetLogicalDrives()
+[string]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
 [string]$envProgramFilesX86 = ${env:ProgramFiles(x86)}
-[string]$envProgramData = $env:PROGRAMDATA
+[string]$envProgramData = [Environment]::GetFolderPath('CommonApplicationData')
 [string]$envPublic = $env:PUBLIC
 [string]$envSystemDrive = $env:SYSTEMDRIVE
 [string]$envSystemRoot = $env:SYSTEMROOT
 [string]$envTemp = [IO.Path]::GetTempPath()
-[string]$envUserName = $env:USERNAME
+[string]$envUserCookies = [Environment]::GetFolderPath('Cookies')
+[string]$envUserDesktop = [Environment]::GetFolderPath('DesktopDirectory')
+[string]$envUserFavorites = [Environment]::GetFolderPath('Favorites')
+[string]$envUserInternetCache = [Environment]::GetFolderPath('InternetCache')
+[string]$envUserInternetHistory = [Environment]::GetFolderPath('History')
+[string]$envUserMyDocuments = [Environment]::GetFolderPath('MyDocuments')
+[string]$envUserName = [Environment]::UserName
 [string]$envUserProfile = $env:USERPROFILE
+[string]$envUserSendTo = [Environment]::GetFolderPath('SendTo')
+[string]$envUserStartMenu = [Environment]::GetFolderPath('StartMenu')
+[string]$envUserStartMenuPrograms = [Environment]::GetFolderPath('Programs')
+[string]$envUserStartUp = [Environment]::GetFolderPath('StartUp')
+[string]$envSystem32Directory = [Environment]::SystemDirectory
 [string]$envWinDir = $env:WINDIR
 #  Handle X86 environment variables so they are never empty
-If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $env:CommonProgramFiles }
-If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $env:PROGRAMFILES }
+If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $envCommonProgramFiles }
+If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $envProgramFiles }
 
 ## Variables: Domain Membership
 [boolean]$IsMachinePartOfDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').PartOfDomain
@@ -114,7 +126,7 @@ Else {
 }
 [string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-[string]$envUserDomain = $env:USERDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
+[string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
 
 ## Variables: Operating System
 [psobject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
@@ -9065,7 +9077,7 @@ Function Get-PendingReboot {
 		
 		## Get the date/time that the system last booted up
 		Try {
-			[nullable[datetime]]$LastBootUpTime = (Get-Date -ErrorAction 'Stop') - ([timespan]::FromMilliseconds([math]::Abs([environment]::TickCount)))
+			[nullable[datetime]]$LastBootUpTime = (Get-Date -ErrorAction 'Stop') - ([timespan]::FromMilliseconds([math]::Abs([Environment]::TickCount)))
 		}
 		Catch {
 			[nullable[datetime]]$LastBootUpTime = $null
@@ -9075,7 +9087,7 @@ Function Get-PendingReboot {
 		
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
-			If ([environment]::OSVersion.Version.Major -ge 5) {
+			If ([Environment]::OSVersion.Version.Major -ge 5) {
 				If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
