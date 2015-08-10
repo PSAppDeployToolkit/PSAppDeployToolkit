@@ -190,11 +190,13 @@ If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchi
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
 ## Variables: Script Name and Script Paths
-[string]$scriptPath = $MyInvocation.MyCommand.Definition
+#  Add support for alternative PowerShell hosts for retrieving invocation info
+If ($HostInvocation) { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+[string]$scriptPath = $InvocationInfo.MyCommand.Definition
 [string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
 [string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
 [string]$scriptRoot = Split-Path -Path $scriptPath -Parent
-[string]$invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName
+[string]$invokingScript = (Get-Variable -Name 'InvocationInfo').Value.ScriptName
 #  Get the invoking script directory
 If ($invokingScript) {
 	#  If this script was invoked by another script
@@ -590,12 +592,13 @@ Function Write-Log {
 		#  Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
+		If ($script:HostInvocation) { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
 		Try {
-			If ($script:MyInvocation.Value.ScriptName) {
-				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf -ErrorAction 'Stop'
+			If ($private:InvocationInfo.Value.ScriptName) {
+				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
 			}
 			Else {
-				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.MyCommand.Definition -Leaf -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -888,7 +891,13 @@ Function Exit-Script {
 	}
 	
 	## Exit the script, returning the exit code to SCCM
-	Exit $exitCode
+	If ($HostInvocation) {
+		$script:ExitCode = $exitCode
+		Exit
+	}
+	Else {
+		Exit $exitCode
+	}
 }
 #endregion
 
@@ -6343,7 +6352,13 @@ Function Show-BalloonTip {
 		If ($global:notifyIcon) { Try { $global:notifyIcon.Dispose() } Catch {} }
 		
 		## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
-		Try { [string]$callingFunction = (Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name } Catch { }
+		If (Get-Variable -Name 'HostInvocation' -Scope 1 -ErrorAction 'SilentlyContinue') {
+			$private:InvocationInfo = Get-Variable -Name 'HostInvocation' -Scope 1 -ErrorAction 'SilentlyContinue'
+		}
+		Else {
+			$private:InvocationInfo = Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue'
+		}
+		Try { [string]$callingFunction = $private:InvocationInfo.Value.MyCommand.Name } Catch { }
 		
 		If ($callingFunction -eq 'Exit-Script') {
 			Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]." -Source ${CmdletName}
