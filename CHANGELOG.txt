@@ -5,7 +5,7 @@
 	Added ability to install MSP files as part of a zero-config MSI install
 	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it. Also added ability to read properties from MSP files.
 	Added support for retrieving $MyInvocationInfo when using alternative PowerShell hosts such as with Sapien PowerShell compiled EXEs
-	Added following environment variables: $envLogicalDrives, $envUserCookies, $envUserDesktop, $envUserFavorites, $envUserInternetCache, $envUserInternetHistory, $envUserMyDocuments, $envUserSendTo, $envUserStartMenu, $envUserStartMenuPrograms, $envUserStartUp, $envSystem32Directory
+	Added following variables: $currentDateTime, $envLogicalDrives, $envUserCookies, $envUserDesktop, $envUserFavorites, $envUserInternetCache, $envUserInternetHistory, $envUserMyDocuments, $envUserSendTo, $envUserStartMenu, $envUserStartMenuPrograms, $envUserStartUp, $envSystem32Directory
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines
 	Fixed issue with Show-WelcomePrompt which caused the -TopMost $false option to not work (also affected Show-InstallationWelcome)
 	Fixed issue introduced in v3.6.3 where Norwegian language code in config XML was changed to NO. Code reverted back to NB as this is the proper code for the Bokmål written language supported by Windows.
@@ -29,7 +29,6 @@
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names
 	Changed Show-InstallationWelcome and Show-WelcomePrompt to allow display of custom message from XML by using -CustomMessage parameter. Also added -ForceCountdown to allow us to have a countdown timer with the defer option on the welcome screen.
-	Changed variables $currentTime and $currentDate from type [string] to type [datetime], it should not have a negative impact on code
 	Changed variable $envTemp to use recommended method of retrieving temp folder path
 	Improved Exit-Script so that it is possible to manually exit the script with a 3010 or 1641 exit code and trigger an SCCM "Soft Reboot"
 	Improved comments and documentation
