@@ -126,7 +126,10 @@ Else {
 }
 [string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-[string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
+Try {
+    [string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
+}
+Catch { }
 
 ## Variables: Operating System
 [psobject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
