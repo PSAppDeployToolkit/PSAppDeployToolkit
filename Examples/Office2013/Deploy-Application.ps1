@@ -98,7 +98,8 @@ Try {
 	Catch {
 		If ($mainExitCode -eq 0){ [int32]$mainExitCode = 60008 }
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
-		Exit $mainExitCode
+		## Exit the script, returning the exit code to SCCM
+		If (Test-Path -Path 'variable:HostInvocation') { $script:ExitCode = $mainExitCode; Exit } Else { Exit $mainExitCode }
 	}
 	
 	#endregion

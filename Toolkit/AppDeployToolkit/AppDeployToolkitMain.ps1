@@ -891,13 +891,7 @@ Function Exit-Script {
 	}
 	
 	## Exit the script, returning the exit code to SCCM
-	If (Test-Path -Path 'variable:HostInvocation') {
-		$script:ExitCode = $exitCode
-		Exit
-	}
-	Else {
-		Exit $exitCode
-	}
+	If (Test-Path -Path 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }
 #endregion
 
