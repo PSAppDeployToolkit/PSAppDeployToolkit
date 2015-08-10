@@ -80,7 +80,7 @@ Try {
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
-	If ($HostInvocation) { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+	If (Test-Path -Path 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
 	If (-not (Test-Path -Path $scriptDirectory -PathType 'Leaf')) { [string]$scriptDirectory = Join-Path (Split-Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) -Parent) 'Toolkit' }
 	

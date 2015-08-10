@@ -80,7 +80,7 @@ Try {
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
-	If ($HostInvocation) { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+	If (Test-Path -Path 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
 	
 	## Dot source the required App Deploy Toolkit Functions

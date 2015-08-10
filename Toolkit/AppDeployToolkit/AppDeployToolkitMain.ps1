@@ -191,7 +191,7 @@ If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccoun
 
 ## Variables: Script Name and Script Paths
 #  Add support for alternative PowerShell hosts for retrieving invocation info
-If ($HostInvocation) { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+If (Test-Path -Path 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 [string]$scriptPath = $InvocationInfo.MyCommand.Definition
 [string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
 [string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
@@ -592,7 +592,7 @@ Function Write-Log {
 		#  Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
-		If ($script:HostInvocation) { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
+		If (Test-Path -Path 'variable:script:HostInvocation') { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
 		Try {
 			If ($private:InvocationInfo.Value.ScriptName) {
 				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
@@ -891,7 +891,7 @@ Function Exit-Script {
 	}
 	
 	## Exit the script, returning the exit code to SCCM
-	If ($HostInvocation) {
+	If (Test-Path -Path 'variable:HostInvocation') {
 		$script:ExitCode = $exitCode
 		Exit
 	}
@@ -6352,8 +6352,14 @@ Function Show-BalloonTip {
 		If ($global:notifyIcon) { Try { $global:notifyIcon.Dispose() } Catch {} }
 		
 		## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
-		If (Get-Variable -Name 'HostInvocation' -Scope 1 -ErrorAction 'SilentlyContinue') {
-			$private:InvocationInfo = Get-Variable -Name 'HostInvocation' -Scope 1 -ErrorAction 'SilentlyContinue'
+		[boolean]$IsHostInvocationExists = $false
+		Try {
+			$AlternativePSHost = Get-Variable -Name 'HostInvocation' -Scope 1 -ErrorAction 'Stop'
+			[boolean]$IsHostInvocationExists = $true
+		}
+		Catch { }
+		If ($IsHostInvocationExists) {
+			$private:InvocationInfo = $AlternativePSHost
 		}
 		Else {
 			$private:InvocationInfo = Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue'
