@@ -5,6 +5,7 @@
 	Added ability to install MSP files as part of a zero-config MSI install
 	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it. Also added ability to read properties from MSP files.
 	Added support for retrieving $MyInvocationInfo when using alternative PowerShell hosts such as with Sapien PowerShell compiled EXEs
+	Added following environment variables: $envLogicalDrives, $envUserCookies, $envUserDesktop, $envUserFavorites, $envUserInternetCache, $envUserInternetHistory, $envUserMyDocuments, $envUserSendTo, $envUserStartMenu, $envUserStartMenuPrograms, $envUserStartUp, $envSystem32Directory
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines
 	Fixed issue with Show-WelcomePrompt which caused the -TopMost $false option to not work (also affected Show-InstallationWelcome)
 	Fixed issue introduced in v3.6.3 where Norwegian language code in config XML was changed to NO. Code reverted back to NB as this is the proper code for the Bokmål written language supported by Windows.
