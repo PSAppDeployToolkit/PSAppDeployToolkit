@@ -22,6 +22,7 @@
 	Fixed issue where the final (asynchronous) balloon tip would not display
 	Fixed issue with Zero-Config MSI installations not being able to handle MST files
 	Fixed issue with Get-MsiTableProperty where handle to MSI database file was not released by powershell.exe after reading properties
+	Fixed issue with Close-InstallationProgress where $global:ProgressRunspace was not closed
 	Changed 5000 exit code for "InstallationDefer_ExitCode" in config XML to 60012 to be in line with newly defined exit code ranges for the toolkit
 	Changed Deploy-Application.ps1 to allow exiting with custom exit code if failure to parse toolkit
 	Changed registry manipulation functions to use -LiteralPath instead of -Path because * and ? are rare but valid characters for registry names

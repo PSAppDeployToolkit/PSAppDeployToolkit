@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/09/2015'
+[string]$appDeployMainScriptDate = '08/10/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -6656,6 +6656,7 @@ Function Close-InstallationProgress {
 			Write-Log -Message 'Close the installation progress dialog.' -Source ${CmdletName}
 			$global:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
 			$global:ProgressSyncHash.Clear()
+			$global:ProgressRunspace.Close()
 		}
 	}
 	End {
