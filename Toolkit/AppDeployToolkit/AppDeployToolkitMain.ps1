@@ -7154,6 +7154,109 @@ Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 
 #endregion
 
 
+#region Function Invoke-ObjectMethod
+Function Invoke-ObjectMethod {
+<#
+.SYNOPSIS
+	Invoke method on any object.
+.DESCRIPTION
+	Invoke method on any object with or without using named parameters.
+.PARAMETER InputObject
+	Specifies an object which has methods that can be invoked.
+.PARAMETER MethodName
+	Specifies the name of a method to invoke.
+.PARAMETER ArgumentList
+	Argument to pass to the method being executed. Allows execution of method without specifying named parameters.
+.PARAMETER Parameter
+	Argument to pass to the method being executed. Allows execution of method by using named parameters.
+.EXAMPLE
+	$ShellApp = New-Object -ComObject 'Shell.Application'
+	Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll' | Out-Null
+	Minimizes all windows.
+.EXAMPLE
+	$ShellApp = New-Object -ComObject 'Shell.Application'
+	Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'} | Out-Null
+	Opens the C:\Windows folder in a Windows Explorer window.
+.NOTES
+	This is an internal script function and should typically not be called directly.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding(DefaultParameterSetName='Positional')]
+	Param (
+		[Parameter(Mandatory=$true,Position=0,ParameterSetName='Named')]
+		[Parameter(Mandatory=$true,Position=0,ParameterSetName='Positional')]
+		[ValidateNotNull()]
+		[object]$InputObject,
+		[Parameter(Mandatory=$true,Position=1,ParameterSetName='Named')]
+		[Parameter(Mandatory=$true,Position=1,ParameterSetName='Positional')]
+		[ValidateNotNullorEmpty()]
+		[string]$MethodName,
+		[Parameter(Mandatory=$false,Position=2,ParameterSetName='Positional')]
+		[object[]]$ArgumentList,
+		[Parameter(Mandatory=$true,Position=2,ParameterSetName='Named')]
+		[ValidateNotNull()]
+		[hashtable]$Parameter
+	)
+	
+	Begin { }
+	Process {
+		If ($PSCmdlet.ParameterSetName -eq 'Named') {
+			## Invoke method by using parameter names
+			Write-Output -InputObject $InputObject.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([object[]]($Parameter.Values)), $null, $null, ([string[]]($Parameter.Keys)))
+		}
+		Else {
+			## Invoke method without using parameter names
+			Write-Output -InputObject $InputObject.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
+		}
+	}
+	End { }
+}
+#endregion
+
+
+#region Function Get-ObjectProperty
+Function Get-ObjectProperty {
+<#
+.SYNOPSIS
+	Get a property from any object.
+.DESCRIPTION
+	Get a property from any object.
+.PARAMETER InputObject
+	Specifies an object which has properties that can be retrieved.
+.PARAMETER PropertyName
+	Specifies the name of a property to retrieve.
+.PARAMETER ArgumentList
+	Argument to pass to the property being retrieved.
+.EXAMPLE
+	Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @(1)
+.NOTES
+	This is an internal script function and should typically not be called directly.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true,Position=0)]
+		[ValidateNotNull()]
+		[object]$InputObject,
+		[Parameter(Mandatory=$true,Position=1)]
+		[ValidateNotNullorEmpty()]
+		[string]$PropertyName,
+		[Parameter(Mandatory=$false,Position=2)]
+		[object[]]$ArgumentList
+	)
+	
+	Begin { }
+	Process {
+		## Retrieve property
+		Write-Output -InputObject $InputObject.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $InputObject, $ArgumentList, $null, $null, $null)
+	}
+	End { }
+}
+#endregion
+
+
 #region Function Get-MsiTableProperty
 Function Get-MsiTableProperty {
 <#
@@ -7211,25 +7314,6 @@ Function Get-MsiTableProperty {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-		
-		[scriptblock]$InvokeMethod = {
-			Param (
-				[__comobject]$Object,
-				[string]$MethodName,
-				[object[]]$ArgumentList,
-				$NamedParameters = $null
-			)
-			Write-Output -InputObject $Object.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $Object, $ArgumentList, $null, $null, $NamedParameters)
-		}
-		
-		[scriptblock]$GetProperty = {
-			Param (
-				[__comobject]$Object,
-				[string]$PropertyName,
-				[object[]]$ArgumentList
-			)
-			Write-Output -InputObject $Object.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $Object, $ArgumentList, $null, $null, $null)
-		}
 	}
 	Process {
 		Try {
@@ -7241,33 +7325,33 @@ Function Get-MsiTableProperty {
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
 			## Determine if the database file is a patch (.msp) or not
 			If ([IO.Path]::GetExtension($Path) -eq '.msp') { [boolean]$IsMspFile = $true}
-			## Define properties for how the database is opened
+			## Define properties for how the MSI database is opened
 			[int32]$msiOpenDatabaseModeReadOnly = 0
 			[int32]$msiSuppressApplyTransformErrors = 63
 			[int32]$msiOpenDatabaseMode = $msiOpenDatabaseModeReadOnly
 			[int32]$msiOpenDatabaseModePatchFile = 32
 			If ($IsMspFile) { [int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile }
 			## Open database in read only mode
-			[__comobject]$Database = & $InvokeMethod -Object $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseMode)
+			[__comobject]$Database = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseMode)
 			## Apply a list of transform(s) to the database
 			If (($TransformPath) -and (-not $IsMspFile)) {
 				ForEach ($Transform in $TransformPath) {
-					& $InvokeMethod -Object $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors) | Out-Null
+					Invoke-ObjectMethod -InputObject $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors) | Out-Null
 				}
 			}
 			
 			## Open the requested table view from the database
-			[__comobject]$View = & $InvokeMethod -Object $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
-			& $InvokeMethod -Object $View -MethodName 'Execute' | Out-Null
+			[__comobject]$View = Invoke-ObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
+			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
 			
 			## Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
 			#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-			[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
+			[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
 			While ($Record) {
 				#  Read string data from record and add property/value pair to custom object
-				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (& $GetProperty -Object $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
+				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
 				#  Retrieve the next row in the table
-				[__comobject]$Record = & $InvokeMethod -Object $View -MethodName 'Fetch'
+				[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
 			}
 			
 			Write-Output -InputObject $TableProperties
@@ -7280,10 +7364,270 @@ Function Get-MsiTableProperty {
 		}
 		Finally {
 			Try {
-				If ($View) { & $InvokeMethod -Object $View -MethodName 'Close' -ArgumentList @() | Out-Null }
+				If ($View) { Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null }
 				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
 				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null
 				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null
+			}
+			Catch { }
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function Set-MsiProperty
+Function Set-MsiProperty {
+<#
+.SYNOPSIS
+	Set a property in the MSI property table.
+.DESCRIPTION
+	Set a property in the MSI property table.
+.PARAMETER DataBase
+	Specify a ComObject representing an MSI database opened in view/modify/update mode.
+.PARAMETER PropertyName
+	The name of the property to be set/modified.
+.PARAMETER PropertyValue
+	The value of the property to be set/modified.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
+.NOTES
+	This is an internal script function and should typically not be called directly.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[__comobject]$DataBase,
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[string]$PropertyName,
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[string]$PropertyValue,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			Write-Log -Message "Set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]." -Source ${CmdletName}
+			
+			## Open the requested table view from the database
+			[__comobject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+			
+			## Retrieve the requested property from the requested table.
+			#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+			[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+			
+			## Close the previous view on the MSI database
+			Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
+			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+			
+			## Set the MSI property
+			If ($Record) {
+				#  If the property already exists, then create the view for updating the property
+				[__comobject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+			}
+			Else {
+				#  If property does not exist, then create view for inserting the property
+				[__comobject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+			}
+			#  Execute the view to set the MSI property
+			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+		}
+		Catch {
+			Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]: $($_.Exception.Message)"
+			}
+		}
+		Finally {
+			Try {
+				If ($View) { Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null }
+				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+			}
+			Catch { }
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
+#region Function New-MsiTransform
+Function New-MsiTransform {
+<#
+.SYNOPSIS
+	Create a transform file for an MSI database.
+.DESCRIPTION
+	Create a transform file for an MSI database and create/modify properties in the Properties table.
+.PARAMETER MsiPath
+	Specify the path to an MSI file.
+.PARAMETER ApplyTransformPath
+	Specify the path to a transform which should be applied to the MSI database before any new properties are created or modified.
+.PARAMETER NewTransformPath
+	Specify the path where the new transform file with the desired properties will be created. If a transform file of the same name already exists, it will be deleted before a new one is created.
+	Default is: a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
+				b) If only -MsiPath was specified, then <MsiPath>.mst
+.PARAMETER TransformProperties
+	Script block which contains calls to Set-MsiProperty for configuring the desired properties which should be included in new transform file.
+	Example script block: [scriptblock]$TransformProperties = { Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1' }
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	[scriptblock]$TransformProperties = {
+		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
+		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'AgreeToLicense' -PropertyValue 'Yes'
+		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'REBOOT' -PropertyValue 'ReallySuppress'
+		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'RebootYesNo' -PropertyValue 'No'
+		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ROOTDRIVE' -PropertyValue 'C:'
+	}
+	New-MsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties $TransformProperties
+.NOTES
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
+		[string]$MsiPath,
+		[Parameter(Mandatory=$false)]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
+		[string]$ApplyTransformPath,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$NewTransformPath,
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[scriptblock]$TransformProperties,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		
+		## Define properties for how the MSI database is opened
+		[int32]$msiOpenDatabaseModeReadOnly = 0
+		[int32]$msiOpenDatabaseModeTransact = 1
+		[int32]$msiViewModifyUpdate = 2
+		[int32]$msiViewModifyReplace = 4
+		[int32]$msiViewModifyDelete = 6
+		[int32]$msiTransformErrorNone = 0
+		[int32]$msiTransformValidationNone = 0
+		[int32]$msiSuppressApplyTransformErrors = 63
+	}
+	Process {
+		Try {
+			Write-Log -Message "Create a transform file for MSI [$MsiPath]." -Source ${CmdletName}
+			
+			## Discover the parent folder that the MSI file resides in
+			[string]$MsiParentFolder = Split-Path -Path $MsiPath -Parent -ErrorAction 'Stop'
+			
+			## Create a temporary file name for storing a second copy of the MSI database
+			[string]$TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([IO.Path]::GetFileName(([IO.Path]::GetTempFileName()))) -ErrorAction 'Stop'
+			
+			## Create a second copy of the MSI database
+			Write-Log -Message "Copy MSI database in path [$MsiPath] to destination [$TempMsiPath]." -Source ${CmdletName}
+			Copy-Item -Path $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+			
+			## Create a Windows Installer object
+			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
+			
+			## Open both copies of the MSI database
+			#  Open the original MSI database in read only mode
+			Write-Log -Message "Open the MSI database [$MsiPath] in read only mode." -Source ${CmdletName}
+			[__comobject]$MsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($MsiPath, $msiOpenDatabaseModeReadOnly)
+			#  Open the temporary copy of the MSI database in view/modify/update mode
+			Write-Log -Message "Open the MSI database [$TempMsiPath] in view/modify/update mode." -Source ${CmdletName}
+			[__comobject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiViewModifyUpdate)
+			
+			## If a MSI transform file was specified, then apply it to the temporary copy of the MSI database
+			If ($ApplyTransformPath) {
+				Write-Log -Message "Apply transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]." -Source ${CmdletName}
+				Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors) | Out-Null
+			}
+			
+			## Determine the path for the new transform file that will be generated
+			If (-not $NewTransformPath) {
+				If ($ApplyTransformPath) {
+					[string]$NewTransformFileName = [IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [IO.Path]::GetExtension($ApplyTransformPath)
+				}
+				Else {
+					[string]$NewTransformFileName = [IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst'
+				}
+				[string]$NewTransformPath = Join-Path -Path $MsiParentFolder -ChildPath $NewTransformFileName -ErrorAction 'Stop'
+			}
+			
+			## Set the MSI properties in the temporary copy of the MSI database
+			& $TransformProperties
+			
+			## Commit the new properties to the temporary copy of the MSI database
+			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit' | Out-Null
+			
+			## Reopen the temporary copy of the MSI database in read only mode
+			#  Release the database object for the temporary copy of the MSI database
+			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null
+			#  Open the temporary copy of the MSI database in read only mode
+			Write-Log -Message "Re-open the MSI database [$TempMsiPath] in read only mode." -Source ${CmdletName}
+			[__comobject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
+			
+			## Delete the new transform file path if it already exists
+			If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
+				Write-Log -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]." -Source ${CmdletName}
+				Remove-Item -Path $NewTransformPath -Force -ErrorAction 'Stop' | Out-Null
+			}
+			
+			## Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database
+			Write-Log -Message "Generate new transform file [$NewTransformPath]." -Source ${CmdletName}
+			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath) | Out-Null
+			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone) | Out-Null
+			
+			If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
+				Write-Log -Message "Successfully created new transform file in path [$NewTransformPath]." -Source ${CmdletName}
+			}
+			Else {
+				Throw "Failed to generate transform file in path [$NewTransformPath]."
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to create new transform file in path [$NewTransformPath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to create new transform file in path [$NewTransformPath]: $($_.Exception.Message)"
+			}
+		}
+		Finally {
+			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null } Catch { }
+			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($MsiPathDatabase) | Out-Null } Catch { }
+			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
+			Try {
+				## Delete the temporary copy of the MSI database
+				If (Test-Path -LiteralPath $TempMsiPath -PathType 'Leaf' -ErrorAction 'Stop') {
+					Remove-Item -Path $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+				}
 			}
 			Catch { }
 		}
