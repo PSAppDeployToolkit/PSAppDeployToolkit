@@ -127,7 +127,7 @@ Else {
 [string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 [string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
 Try {
-    [string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
+	[string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
 }
 Catch { }
 
@@ -7274,7 +7274,6 @@ Function Get-MsiTableProperty {
 		}
 		Catch {
 			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
 			}
@@ -9295,12 +9294,12 @@ If (-not $appName) {
 			
 			## Read the MSI and get the installation details
 			[hashtable]$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
-			If ($defaultMstFile) { $GetDefaultMsiTablePropertySplat.Add( 'TransformPath', $defaultMstFile ) }
+			If ($defaultMstFile) { $GetDefaultMsiTablePropertySplat.Add('TransformPath', $defaultMstFile) }
 			[psobject]$defaultMsiPropertyList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[string]$appVendor = $defaultMsiPropertyList.Manufacturer
 			[string]$appName = $defaultMsiPropertyList.ProductName
 			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
-			$GetDefaultMsiTablePropertySplat.Add( 'Table', 'File' )
+			$GetDefaultMsiTablePropertySplat.Set_Item('Table', 'File')
 			[psobject]$defaultMsiFileList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) }
 			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
