@@ -4,7 +4,7 @@
 	Added function Get-PendingReboot to get pending reboot status for the local computer (thanks to user 'That-Annoying-Guy' for the original code)
 	Added function Test-RegistryValue to check for the existence of a registry value, needed to support Get-PendingReboot function
 	Added ability to install MSP files as part of a zero-config MSI install
-	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it. Also added ability to read properties from MSP files.
+	Added ability to Get-MsiTableProperty to apply a list of transform files to an MSI database after opening it. Also added ability to read properties from MSP files. Also added -GetSummaryInformation parameter to allow reading of Summary Information from a Windows Installer database file.
 	Added support for retrieving $MyInvocationInfo when using alternative PowerShell hosts such as with Sapien PowerShell compiled EXEs
 	Added following variables: $currentDateTime, $envLogicalDrives, $envUserCookies, $envUserDesktop, $envUserFavorites, $envUserInternetCache, $envUserInternetHistory, $envUserMyDocuments, $envUserSendTo, $envUserStartMenu, $envUserStartMenuPrograms, $envUserStartUp, $envSystem32Directory
 	Fixed issue with Get-WindowTitle which caused the -PromptToSave functionality in Show-InstallationWelcome to fail on Win 7 PowerShell 2.0 machines

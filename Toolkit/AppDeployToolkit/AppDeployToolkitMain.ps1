@@ -7261,9 +7261,9 @@ Function Get-ObjectProperty {
 Function Get-MsiTableProperty {
 <#
 .SYNOPSIS
-	Get all of the properties from a Windows Installer database table and return as a custom object.
+	Get all of the properties from a Windows Installer database table or the Summary Information stream and return as a custom object.
 .DESCRIPTION
-	Use the Windows Installer object to read all of the properties from a Windows Installer database table.
+	Use the Windows Installer object to read all of the properties from a Windows Installer database table or the Summary Information stream.
 .PARAMETER Path
 	The fully qualified path to an database file. Supports .msi and .msp files.
 .PARAMETER TransformPath
@@ -7274,6 +7274,9 @@ Function Get-MsiTableProperty {
 	Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
 .PARAMETER TablePropertyValueColumnNum
 	Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
+.PARAMETER GetSummaryInformation
+	Retrieves the Summary Information for the Windows Installer database.
+	Summary Information property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -7282,29 +7285,38 @@ Function Get-MsiTableProperty {
 .EXAMPLE
 	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
 	Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+.EXAMPLE
+	Get-MsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
+	Retrieves the Summary Information for the Windows Installer database.
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
 	http://psappdeploytoolkit.com
 #>
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName='TableInfo')]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true,ParameterSetName='SummaryInfo')]
+		[Parameter(Mandatory=$true,ParameterSetName='TableInfo')]
 		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string]$Path,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='SummaryInfo')]
+		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
 		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string[]]$TransformPath,
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
 		[ValidateNotNullOrEmpty()]
 		[string]$Table = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 'Property' } Else { 'MsiPatchMetadata' }),
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
 		[ValidateNotNullorEmpty()]
 		[int32]$TablePropertyNameColumnNum = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 1 } Else { 2 }),
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
 		[ValidateNotNullorEmpty()]
 		[int32]$TablePropertyValueColumnNum = $(If ([IO.Path]::GetExtension($Path) -eq '.msi') { 2 } Else { 3 }),
-		[Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$true,ParameterSetName='SummaryInfo')]
+		[ValidateNotNullorEmpty()]
+		[switch]$GetSummaryInformation = $false,
+		[Parameter(Mandatory=$false,ParameterSetName='SummaryInfo')]
+		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -7317,10 +7329,13 @@ Function Get-MsiTableProperty {
 	}
 	Process {
 		Try {
-			Write-Log -Message "Read data from Windows Installer database file [$Path] in table [$Table]." -Source ${CmdletName}
+			If ($PSCmdlet.ParameterSetName -eq 'TableInfo') {
+				Write-Log -Message "Read data from Windows Installer database file [$Path] in table [$Table]." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Read the Summary Information from the Windows Installer database file [$Path]." -Source ${CmdletName}
+			}
 			
-			## Create an empty object to store properties in
-			[psobject]$TableProperties = New-Object -TypeName 'PSObject'
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
 			## Determine if the database file is a patch (.msp) or not
@@ -7340,21 +7355,54 @@ Function Get-MsiTableProperty {
 				}
 			}
 			
-			## Open the requested table view from the database
-			[__comobject]$View = Invoke-ObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
-			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
-			
-			## Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
-			#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-			[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
-			While ($Record) {
-				#  Read string data from record and add property/value pair to custom object
-				$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
-				#  Retrieve the next row in the table
+			## Get either the requested windows database table information or summary information
+			If ($PSCmdlet.ParameterSetName -eq 'TableInfo') {
+				## Open the requested table view from the database
+				[__comobject]$View = Invoke-ObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
+				Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+				
+				## Create an empty object to store properties in
+				[psobject]$TableProperties = New-Object -TypeName 'PSObject'
+				
+				## Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
+				#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
 				[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+				While ($Record) {
+					#  Read string data from record and add property/value pair to custom object
+					$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
+					#  Retrieve the next row in the table
+					[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+				}
+				Write-Output -InputObject $TableProperties
 			}
-			
-			Write-Output -InputObject $TableProperties
+			Else {
+				## Get the SummaryInformation from the windows installer database
+				[__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
+				[hashtable]$SummaryInfoTableProperties = @{}
+				[int32[]]$SummaryPropertyNums = 1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,18,19
+				ForEach ($SummaryPropertyNum in $SummaryPropertyNums) {
+					## Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
+					If ($SummaryPropertyNum -eq 1) { $SummaryInfoTableProperties.Add('CodePage', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 2) { $SummaryInfoTableProperties.Add('Title', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 3) { $SummaryInfoTableProperties.Add('Subject', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 4) { $SummaryInfoTableProperties.Add('Author', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 5) { $SummaryInfoTableProperties.Add('Keywords', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 6) { $SummaryInfoTableProperties.Add('Comments', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 7) { $SummaryInfoTableProperties.Add('Template', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 8) { $SummaryInfoTableProperties.Add('LastSavedBy', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 9) { $SummaryInfoTableProperties.Add('RevisionNumber', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 11) { $SummaryInfoTableProperties.Add('LastPrinted', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 12) { $SummaryInfoTableProperties.Add('CreateTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 13) { $SummaryInfoTableProperties.Add('LastSaveTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 14) { $SummaryInfoTableProperties.Add('PageCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 15) { $SummaryInfoTableProperties.Add('WordCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 16) { $SummaryInfoTableProperties.Add('CharacterCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 18) { $SummaryInfoTableProperties.Add('CreatingApplication', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+					If ($SummaryPropertyNum -eq 19) { $SummaryInfoTableProperties.Add('Security', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
+				}
+				[psobject]$MsiSummaryInfoTable = New-Object -TypeName 'PSObject' -Property $SummaryInfoTableProperties
+				Write-Output -InputObject $MsiSummaryInfoTable
+			}
 		}
 		Catch {
 			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7364,12 +7412,17 @@ Function Get-MsiTableProperty {
 		}
 		Finally {
 			Try {
-				If ($View) { Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null }
-				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
-				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null
-				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null
+				If ($View) {
+					Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
+					Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null } Catch { }
+				}
+				ElseIf($SummaryInformation) {
+					Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) | Out-Null } Catch { }
+				}
 			}
 			Catch { }
+			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null } Catch { }
+			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
 		}
 	}
 	End {
