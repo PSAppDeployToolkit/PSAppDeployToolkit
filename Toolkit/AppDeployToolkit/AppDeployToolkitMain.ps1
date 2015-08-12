@@ -7427,12 +7427,10 @@ Function Get-MsiTableProperty {
 #>
 	[CmdletBinding(DefaultParameterSetName='TableInfo')]
 	Param (
-		[Parameter(Mandatory=$true,ParameterSetName='SummaryInfo')]
-		[Parameter(Mandatory=$true,ParameterSetName='TableInfo')]
+		[Parameter(Mandatory=$true)]
 		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string]$Path,
-		[Parameter(Mandatory=$false,ParameterSetName='SummaryInfo')]
-		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
+		[Parameter(Mandatory=$false)]
 		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[string[]]$TransformPath,
 		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
@@ -7447,8 +7445,7 @@ Function Get-MsiTableProperty {
 		[Parameter(Mandatory=$true,ParameterSetName='SummaryInfo')]
 		[ValidateNotNullorEmpty()]
 		[switch]$GetSummaryInformation = $false,
-		[Parameter(Mandatory=$false,ParameterSetName='SummaryInfo')]
-		[Parameter(Mandatory=$false,ParameterSetName='TableInfo')]
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
