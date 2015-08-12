@@ -523,7 +523,7 @@ Function Write-Log {
 .PARAMETER WriteHost
 	Write the log message to the console.
 .PARAMETER ContinueOnError
-	Suppress writing log message to console on failure to write message to log file.
+	Suppress writing log message to console on failure to write message to log file. Default is: $true.
 .PARAMETER PassThru
 	Return the message that was passed to the function
 .PARAMETER DebugMessage
@@ -558,7 +558,7 @@ Function Write-Log {
 		[string]$LogType = $configToolkitLogStyle,
 		[Parameter(Mandatory=$false,Position=5)]
 		[ValidateNotNullorEmpty()]
-		[string]$LogFileDirectory = $logDirectory,
+		[string]$LogFileDirectory = $(If ($configToolkitCompressLogs) { $logTempFolder } Else { $configToolkitLogDir }),
 		[Parameter(Mandatory=$false,Position=6)]
 		[ValidateNotNullorEmpty()]
 		[string]$LogFileName = $logName,
@@ -761,6 +761,176 @@ Function Write-Log {
 #endregion
 
 
+#region Function New-ZipFile
+Function New-ZipFile {
+<#
+.SYNOPSIS
+	Create a new zip archive or add content to an existing archive.
+.DESCRIPTION
+	Create a new zip archive or add content to an existing archive by using the Shell object .CopyHere method.
+.PARAMETER DestinationArchiveDirectoryPath
+	The path to the directory path where the zip archive will be saved.
+.PARAMETER DestinationArchiveFileName
+	The name of the zip archive.
+.PARAMETER SourceDirectoryPath
+	The path to the directory to be archived, specified as absolute paths.
+.PARAMETER SourceFilePath
+	The path to the file to be archived, specified as absolute paths.
+.PARAMETER RemoveSourceAfterArchiving
+	Remove the source path after successfully archiving the content. Default is: $false.
+.PARAMETER OverWriteArchive
+	Overwrite the destination archive path if it already exists. Default is: $false.
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default: $true.
+.EXAMPLE
+	New-ZipFile -DestinationArchiveDirectoryPath 'E:\Testing' -DestinationArchiveFileName 'TestingLogs.zip' -SourceDirectory 'E:\Testing\Logs'
+.NOTES
+	This is an internal script function and should typically not be called directly.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding(DefaultParameterSetName='CreateFromDirectory')]
+	Param (
+		[Parameter(Mandatory=$true,Position=0)]
+		[ValidateNotNullorEmpty()]
+		[string]$DestinationArchiveDirectoryPath,
+		[Parameter(Mandatory=$true,Position=1)]
+		[ValidateNotNullorEmpty()]
+		[string]$DestinationArchiveFileName,
+		[Parameter(Mandatory=$true,Position=2,ParameterSetName='CreateFromDirectory')]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })]
+		[string[]]$SourceDirectoryPath,
+		[Parameter(Mandatory=$true,Position=2,ParameterSetName='CreateFromFile')]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
+		[string[]]$SourceFilePath,
+		[Parameter(Mandatory=$false,Position=3)]
+		[ValidateNotNullorEmpty()]
+		[switch]$RemoveSourceAfterArchiving = $false,
+		[Parameter(Mandatory=$false,Position=4)]
+		[ValidateNotNullorEmpty()]
+		[switch]$OverWriteArchive = $false,
+		[Parameter(Mandatory=$false,Position=5)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+	
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			## Get the full destination path where the archive will be stored
+			[string]$DestinationPath = Join-Path -Path $DestinationArchiveDirectoryPath -ChildPath $DestinationArchiveFileName -ErrorAction 'Stop'
+			Write-Log -Message "Create a zip archive with the requested content at destination path [$DestinationPath]." -Source ${CmdletName}
+			
+			## If the destination archive already exists, delete it if the -OverWriteArchive option was selected
+			If (($OverWriteArchive) -and (Test-Path -LiteralPath $DestinationPath)) {
+				Write-Log -Message "An archive at the destination path already exists, deleting file [$DestinationPath]." -Source ${CmdletName}
+				Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction 'Stop' | Out-Null
+			}
+			
+			## If archive file does not exist, then create a zero-byte zip archive
+			If (-not (Test-Path -LiteralPath $DestinationPath)) {
+				## Create a zero-byte file
+				Write-Log -Message "Create a zero-byte file [$DestinationPath]." -Source ${CmdletName}
+				New-Item -Path $DestinationArchiveDirectoryPath -Name $DestinationArchiveFileName -ItemType 'File' -Force -ErrorAction 'Stop' | Out-Null
+				
+				## Write the file header for a zip file to the zero-byte file
+				[byte[]]$ZipArchiveByteHeader = 80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+				[IO.FileStream]$FileStream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($DestinationPath, ([IO.FileMode]::Create))
+				[IO.BinaryWriter]$BinaryWriter = New-Object -TypeName 'System.IO.BinaryWriter' -ArgumentList ($FileStream)
+				Write-Log -Message "Write the file header for a zip archive to the zero-byte file [$DestinationPath]." -Source ${CmdletName}
+				$BinaryWriter.Write($ZipArchiveByteHeader) | Out-Null
+				$BinaryWriter.Close()
+				$FileStream.Close()
+			}
+			
+			## Create a Shell object
+			[__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop'
+			## Create an object representing the archive file
+			[__comobject]$Archive = $ShellApp.NameSpace($DestinationPath)
+			
+			## Create the archive file
+			If ($PSCmdlet.ParameterSetName -eq 'CreateFromDirectory') {
+				## Create the archive file from a source directory
+				ForEach ($Directory in $SourceDirectoryPath) {
+					#  Create an object representing the source directory
+					[__comobject]$CreateFromDirectory = $ShellApp.NameSpace($Directory)
+					#  Copy all of the files and folders from the source directory to the archive
+					$Archive.CopyHere($CreateFromDirectory.Items()) | Out-Null
+					#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
+					Write-Log -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
+					Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
+					
+					#  Release the ComObject representing the source directory
+					[System.Runtime.Interopservices.Marshal]::ReleaseComObject($CreateFromDirectory) | Out-Null
+					
+					#  If option was selected, recursively delete the source directory after successfully archiving the contents
+					If ($RemoveSourceAfterArchiving) {
+						Try {
+							Write-Log -Message "Recursively delete the source directory [$Directory] as contents have been successfully archived." -Source ${CmdletName}
+							Remove-Item -LiteralPath $Directory -Recurse -Force -ErrorAction 'Stop' | Out-Null
+						}
+						Catch {
+							Write-Log -Message "Failed to recursively delete the source directory [$Directory]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+						}
+					}
+				}
+			}
+			Else {
+				## Create the archive file from a list of one or more files
+				[IO.FileInfo[]]$SourceFilePath = [IO.FileInfo[]]$SourceFilePath
+				ForEach ($File in $SourceFilePath) {
+					#  Copy the files and folders from the source directory to the archive
+					$Archive.CopyHere($File.FullName) | Out-Null
+					#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
+					Write-Log -Message "Compressing file [$($File.FullName)] to destination path [$DestinationPath]..." -Source ${CmdletName}
+					Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
+					
+					#  If option was selected, delete the source file after successfully archiving the content
+					If ($RemoveSourceAfterArchiving) {
+						Try {
+							Write-Log -Message "Delete the source file [$($File.FullName)] as it has been successfully archived." -Source ${CmdletName}
+							Remove-Item -LiteralPath $File.FullName -Force -ErrorAction 'Stop' | Out-Null
+						}
+						Catch {
+							Write-Log -Message "Failed to delete the source file [$($File.FullName)]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+						}
+					}
+				}
+			}
+			
+			## Release the ComObject representing the archive
+			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Archive) | Out-Null
+			
+			## If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users.
+			#  Apply the parent folder's permissions to the archive file to fix the problem.
+			Write-Log -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$DestinationArchiveDirectoryPath] to file [$DestinationPath]." -Source ${CmdletName}
+			Try {
+				[Security.AccessControl.DirectorySecurity]$DestinationArchiveDirectoryPathAcl = Get-Acl -LiteralPath $DestinationArchiveDirectoryPath -ErrorAction 'Stop'
+				Set-Acl -LiteralPath $DestinationPath -AclObject $DestinationArchiveDirectoryPathAcl -ErrorAction 'Stop'
+			}
+			Catch {
+				Write-Log -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to archive the requested file(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to archive the requested file(s): $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+
 #region Function Exit-Script
 Function Exit-Script {
 <#
@@ -848,49 +1018,13 @@ Function Exit-Script {
 	[string]$LogDash = '-' * 79
 	Write-Log -Message $LogDash -Source ${CmdletName}
 	
-	## Compress the log files and remove the temporary folder
+	## Archive the log files to zip format and then delete the temporary logs folder
 	If ($configToolkitCompressLogs) {
-		Try {
-			## Add the file header for zip files to a file and create a 0 byte .zip file
-			Set-Content -LiteralPath $zipFileName -Value ('PK' + [char]5 + [char]6 + ("$([char]0)" * 18)) -ErrorAction 'Stop'
-			
-			## Compress the log files
-			$zipFile = $shellApp.NameSpace($zipFileName)
-			$ArrOfFilesToBackUp = $shellApp.NameSpace($logTempFolder)
-			$zipFile.CopyHere($ArrOfFilesToBackUp.Items())
-			Start-Sleep -Seconds 1
-			Write-Log -Message "Compressing [$($ArrOfFilesToBackUp.Count)] log files to [$zipFileName]..." -Source ${CmdletName}
-			
-			## Wait for the log files to finish compressing by waiting for the zip file size to stop growing.
-			#  The .CopyHere method opens the zip file every time it adds a file so checking if the zip file is Locked Open is not reliable.
-			Write-Log -Message 'Waiting for the log file(s) to finish compressing by checking to see if the size of the zip file has stopped growing...' -Source ${CmdletName}
-			[decimal]$OldZipFileSizeInBytes = (Get-ChildItem -LiteralPath $zipFileName -ErrorAction 'Stop').Length
-			[int32]$MaxLoops = 8
-			[int32]$LoopCount = 0
-			Do {
-				$LoopCount++
-				Start-Sleep -Milliseconds 200
-				[decimal]$ZipFileSizeInBytes = (Get-ChildItem -LiteralPath $zipFileName -ErrorAction 'Stop').Length
-				If ($ZipFileSizeInBytes -gt $OldZipFileSizeInBytes) {
-					[decimal]$OldZipFileSizeInBytes= $ZipFileSizeInBytes
-					$LoopCount = 0
-				}
-			} Until ($LoopCount -gt $MaxLoops)
-			Start-Sleep -Seconds 1
-			Write-Log -Message "The log file(s) have finished compressing because the zipped log file [$zipFileName] has stopped growing in size." -Source ${CmdletName}
-			
-			## Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users
-			Write-Log -Message "Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users." -Source ${CmdletName}
-			$ZipFileParentFolderAcl = Get-Acl -LiteralPath (Split-Path -Path $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
-			Set-Acl -LiteralPath $zipFileName -AclObject $ZipFileParentFolderAcl -ErrorAction 'Stop'
-			
-			If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
-				Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'Stop' | Out-Null
-			}
-		}
-		Catch {
-			Write-Log -Message "Failed to compress the log file(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-		}
+		## Disable logging to file so that we can archive the log files
+		. $DisableScriptLogging
+		
+		[string]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()) + '.zip'
+		New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
 	}
 	
 	## Exit the script, returning the exit code to SCCM
@@ -1608,7 +1742,7 @@ Function Get-HardwarePlatform {
 .DESCRIPTION
 	Retrieves information about the hardware platform (physical or virtual)
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Get-HardwarePlatform
 .NOTES
@@ -1668,7 +1802,7 @@ Function Get-FreeDiskSpace {
 .PARAMETER Drive
 	Drive to check free disk space on
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Get-FreeDiskSpace -Drive 'C:'
 .NOTES
@@ -1913,7 +2047,7 @@ Function Execute-MSI {
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Defautl is: $false.
 .EXAMPLE
 	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
@@ -2207,7 +2341,7 @@ Function Remove-MSIApplications {
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Default is: $true.
 .EXAMPLE
 	Remove-MSIApplications -Name 'Adobe Flash'
 	Removes all versions of software that match the name "Adobe Flash"
@@ -2378,7 +2512,7 @@ Function Execute-Process {
 .PARAMETER IgnoreExitCodes
 	List the exit codes to ignore.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false (fail on error).
+	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false.
 .EXAMPLE
 	Execute-Process -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
 	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
@@ -2827,7 +2961,7 @@ Function New-Folder {
 .PARAMETER Path
 	Path to the new folder to create.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	New-Folder -Path "$envWinDir\System32"
 .NOTES
@@ -2883,7 +3017,7 @@ Function Remove-Folder {
 .PARAMETER Path
 	Path to the folder to remove.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Remove-Folder -Path "$envWinDir\Downloaded Program Files"
 .NOTES
@@ -2943,7 +3077,7 @@ Function Copy-File {
 .PARAMETER Recurse
 	Copy files in subdirectories.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWindir\MyApp.ini"
 .NOTES
@@ -3011,7 +3145,7 @@ Function Remove-File {
 .PARAMETER Recurse
 	Optionally, remove all files recursively in a directory.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Remove-File -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
 .EXAMPLE
@@ -3890,7 +4024,7 @@ Function Get-FileVersion {
 .PARAMETER File
 	Path of the file
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Get-FileVersion -File "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
 .NOTES
@@ -3973,7 +4107,7 @@ Function New-Shortcut {
 .PARAMETER RunAsAdmin
 	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
@@ -4391,7 +4525,7 @@ Function Refresh-SessionEnvironmentVariables {
 .PARAMETER LoadLoggedOnUserEnvironmentVariables
 	If script is running in SYSTEM context, this option allows loading environment variables from the active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Refresh-SessionEnvironmentVariables
 .NOTES
@@ -4465,7 +4599,7 @@ Function Get-ScheduledTask {
 .PARAMETER TaskName
 	Specify the name of the scheduled task to retrieve details for. Uses regex match to find scheduled task.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered. Default: $false.
+	Continue if an error is encountered. Default: $true.
 .EXAMPLE
 	Get-ScheduledTask
 	To display a list of all scheduled task properties.
@@ -4855,7 +4989,7 @@ Function Get-UniversalDate {
 		[string]$DateTime = ((Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern).ToString()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		$ContinueOnError = $false
+		[boolean]$ContinueOnError = $false
 	)
 	
 	Begin {
@@ -6822,7 +6956,7 @@ Function Get-IniValue {
 .PARAMETER Key
 	Key within the section of the INI file.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 .NOTES
@@ -6891,7 +7025,7 @@ Function Set-IniValue {
 .PARAMETER Value
 	Value for the key within the section of the INI file. To remove a value, set this variable to $null.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Set-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
 .NOTES
@@ -6956,7 +7090,7 @@ Function Get-PEFileArchitecture {
 .PARAMETER FilePath
 	Path to the PE file to examine.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .PARAMETER PassThru
 	Get the file object, attach a property indicating the file binary type, and write to pipeline
 .EXAMPLE
@@ -7046,7 +7180,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 .PARAMETER DLLAction
 	Specify whether to register or unregister the DLL. Optional if function is invoked using 'Register-DLL' or 'Unregister-DLL' alias.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Register-DLL -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 	Register DLL file using the "Register-DLL" alias for this function
@@ -7184,12 +7318,10 @@ Function Invoke-ObjectMethod {
 #>
 	[CmdletBinding(DefaultParameterSetName='Positional')]
 	Param (
-		[Parameter(Mandatory=$true,Position=0,ParameterSetName='Named')]
-		[Parameter(Mandatory=$true,Position=0,ParameterSetName='Positional')]
+		[Parameter(Mandatory=$true,Position=0)]
 		[ValidateNotNull()]
 		[object]$InputObject,
-		[Parameter(Mandatory=$true,Position=1,ParameterSetName='Named')]
-		[Parameter(Mandatory=$true,Position=1,ParameterSetName='Positional')]
+		[Parameter(Mandatory=$true,Position=1)]
 		[ValidateNotNullorEmpty()]
 		[string]$MethodName,
 		[Parameter(Mandatory=$false,Position=2,ParameterSetName='Positional')]
@@ -8310,7 +8442,7 @@ Function Invoke-SCCMTask {
 .PARAMETER ScheduleId
 	Schedule Id.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Invoke-SCCMTask 'SoftwareUpdatesScan'
 .EXAMPLE
@@ -8432,7 +8564,7 @@ Function Install-SCCMSoftwareUpdates {
 .PARAMETER WaitForPendingUpdatesTimeout
 	The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Install-SCCMSoftwareUpdates
 .NOTES
@@ -8541,7 +8673,7 @@ Function Update-GroupPolicy {
 .DESCRIPTION
 	Performs a gpupdate command to refresh Group Policies on the local machine.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Update-GroupPolicy
 .NOTES
@@ -8609,7 +8741,7 @@ Function Enable-TerminalServerInstallMode {
 .DESCRIPTION
 	Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Enable-TerminalServerInstall
 .NOTES
@@ -8657,7 +8789,7 @@ Function Disable-TerminalServerInstallMode {
 .DESCRIPTION
 	Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Enable-TerminalServerInstall
 .NOTES
@@ -8730,7 +8862,7 @@ Function Set-ActiveSetup {
 .PARAMETER DisableActiveSetup
 	Disables the Active Setup entry so that the StubPath file will not be executed.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered.
+	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Set-ActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
 .EXAMPLE
@@ -9743,23 +9875,13 @@ Else {
 
 ## Variables: Log Files
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
+#  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
 [string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
 If ($configToolkitCompressLogs) {
-	## If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder after being zipped.
-	#  Set log file directory to temp log folder
-	[string]$logDirectory = $logTempFolder
-	#  The path to the zipped log file in the actual logs folder defined in App Deploy XML config file
-	[string]$zipFileDate = (Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()
-	[string]$zipFileName = Join-Path -Path $configToolkitLogDir -ChildPath ($installName + '_' + $deploymentType + '_' + $zipFileDate + '.zip')
-	
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
 	If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
 		Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
 	}
-}
-Else {
-	## Path to log directory defined in AppDeploy XML config file
-	[string]$logDirectory = $configToolkitLogDir
 }
 
 ## Revert script logging to original setting
