@@ -7378,30 +7378,27 @@ Function Get-MsiTableProperty {
 			Else {
 				## Get the SummaryInformation from the windows installer database
 				[__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
-				[hashtable]$SummaryInfoTableProperties = @{}
-				[int32[]]$SummaryPropertyNums = 1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,18,19
-				ForEach ($SummaryPropertyNum in $SummaryPropertyNums) {
-					## Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
-					If ($SummaryPropertyNum -eq 1) { $SummaryInfoTableProperties.Add('CodePage', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 2) { $SummaryInfoTableProperties.Add('Title', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 3) { $SummaryInfoTableProperties.Add('Subject', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 4) { $SummaryInfoTableProperties.Add('Author', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 5) { $SummaryInfoTableProperties.Add('Keywords', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 6) { $SummaryInfoTableProperties.Add('Comments', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 7) { $SummaryInfoTableProperties.Add('Template', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 8) { $SummaryInfoTableProperties.Add('LastSavedBy', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 9) { $SummaryInfoTableProperties.Add('RevisionNumber', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 11) { $SummaryInfoTableProperties.Add('LastPrinted', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 12) { $SummaryInfoTableProperties.Add('CreateTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 13) { $SummaryInfoTableProperties.Add('LastSaveTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 14) { $SummaryInfoTableProperties.Add('PageCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 15) { $SummaryInfoTableProperties.Add('WordCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 16) { $SummaryInfoTableProperties.Add('CharacterCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 18) { $SummaryInfoTableProperties.Add('CreatingApplication', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-					If ($SummaryPropertyNum -eq 19) { $SummaryInfoTableProperties.Add('Security', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @($SummaryPropertyNum))) }
-				}
-				[psobject]$MsiSummaryInfoTable = New-Object -TypeName 'PSObject' -Property $SummaryInfoTableProperties
-				Write-Output -InputObject $MsiSummaryInfoTable
+				[hashtable]$SummaryInfoProperty = @{}
+				## Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
+				$SummaryInfoProperty.Add('CodePage', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(1)))
+				$SummaryInfoProperty.Add('Title', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(2)))
+				$SummaryInfoProperty.Add('Subject', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(3)))
+				$SummaryInfoProperty.Add('Author', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(4)))
+				$SummaryInfoProperty.Add('Keywords', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(5)))
+				$SummaryInfoProperty.Add('Comments', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(6)))
+				$SummaryInfoProperty.Add('Template', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)))
+				$SummaryInfoProperty.Add('LastSavedBy', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(8)))
+				$SummaryInfoProperty.Add('RevisionNumber', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(9)))
+				$SummaryInfoProperty.Add('LastPrinted', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(11)))
+				$SummaryInfoProperty.Add('CreateTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(12)))
+				$SummaryInfoProperty.Add('LastSaveTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(13)))
+				$SummaryInfoProperty.Add('PageCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(14)))
+				$SummaryInfoProperty.Add('WordCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(15)))
+				$SummaryInfoProperty.Add('CharacterCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(16)))
+				$SummaryInfoProperty.Add('CreatingApplication', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(18)))
+				$SummaryInfoProperty.Add('Security', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(19)))
+				[psobject]$SummaryInfoProperties = New-Object -TypeName 'PSObject' -Property $SummaryInfoProperty
+				Write-Output -InputObject $SummaryInfoProperties
 			}
 		}
 		Catch {
