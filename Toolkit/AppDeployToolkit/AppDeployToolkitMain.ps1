@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/10/2015'
+[string]$appDeployMainScriptDate = '08/12/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -197,13 +197,13 @@ If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccoun
 If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 [string]$scriptPath = $InvocationInfo.MyCommand.Definition
 [string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
-[string]$scriptFileName = Split-Path -LiteralPath $scriptPath -Leaf
-[string]$scriptRoot = Split-Path -LiteralPath $scriptPath -Parent
+[string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
+[string]$scriptRoot = Split-Path -Path $scriptPath -Parent
 [string]$invokingScript = (Get-Variable -Name 'InvocationInfo').Value.ScriptName
 #  Get the invoking script directory
 If ($invokingScript) {
 	#  If this script was invoked by another script
-	[string]$scriptParentPath = Split-Path -LiteralPath $invokingScript -Parent
+	[string]$scriptParentPath = Split-Path -Path $invokingScript -Parent
 }
 Else {
 	#  If this script was not invoked by another script, fall back to the directory one level above this script
@@ -598,10 +598,10 @@ Function Write-Log {
 		If (Test-Path -LiteralPath 'variable:script:HostInvocation') { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
 		Try {
 			If ($private:InvocationInfo.Value.ScriptName) {
-				[string]$ScriptSource = Split-Path -LiteralPath $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
 			}
 			Else {
-				[string]$ScriptSource = Split-Path -LiteralPath $private:InvocationInfo.MyCommand.Definition -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.MyCommand.Definition -Leaf -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -881,7 +881,7 @@ Function Exit-Script {
 			
 			## Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users
 			Write-Log -Message "Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users." -Source ${CmdletName}
-			$ZipFileParentFolderAcl = Get-Acl -LiteralPath (Split-Path -LiteralPath $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
+			$ZipFileParentFolderAcl = Get-Acl -LiteralPath (Split-Path -Path $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
 			Set-Acl -LiteralPath $zipFileName -AclObject $ZipFileParentFolderAcl -ErrorAction 'Stop'
 			
 			If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
@@ -2071,14 +2071,14 @@ Function Execute-MSI {
 		}
 		
 		## Set the working directory of the MSI
-		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -LiteralPath $msiFile -Parent }
+		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
 		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[string[]]$transforms = $transform -split ','
 			0..($transforms.Length - 1) | ForEach-Object {
-				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $transforms[$_]) -PathType 'Leaf') {
-					$transforms[$_] = Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
+				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_]) -PathType 'Leaf') {
+					$transforms[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
 				}
 				Else {
 					$transforms[$_] = $transforms[$_]
@@ -2091,8 +2091,8 @@ Function Execute-MSI {
 		If ($patch) {
 			[string[]]$patches = $patch -split ','
 			0..($patches.Length - 1) | ForEach-Object {
-				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $patches[$_]) -PathType 'Leaf') {
-					$patches[$_] = Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
+				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_]) -PathType 'Leaf') {
+					$patches[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
 				}
 				Else {
 					$patches[$_] = $patches[$_]
@@ -2472,7 +2472,7 @@ Function Execute-Process {
 			}
 			
 			## Set the Working directory (if not specified)
-			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -LiteralPath $Path -Parent -ErrorAction 'Stop' }
+			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -Path $Path -Parent -ErrorAction 'Stop' }
 			
 			## If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
@@ -4195,7 +4195,7 @@ Function Execute-ProcessAsUser {
 		}
 		
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
-		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -LiteralPath $Path -Leaf) -eq 'PowerShell.exe')) {
+		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
 			[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"'
 			[string[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
@@ -6752,9 +6752,9 @@ Function Set-PinnedApplication {
 			Try {
 				[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 				$verb = $verb.Replace('&','')
-				$path = Split-Path -LiteralPath $FilePath -Parent -ErrorAction 'Stop'
+				$path = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop'
 				$folder = $shellApp.Namespace($path)
-				$item = $folder.ParseName((Split-Path -LiteralPath $FilePath -Leaf -ErrorAction 'Stop'))
+				$item = $folder.ParseName((Split-Path -Path $FilePath -Leaf -ErrorAction 'Stop'))
 				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $verb } -ErrorAction 'Stop'
 				
 				If ($null -eq $itemVerb) {
@@ -7595,7 +7595,7 @@ Function New-MsiTransform {
 			Write-Log -Message "Create a transform file for MSI [$MsiPath]." -Source ${CmdletName}
 			
 			## Discover the parent folder that the MSI file resides in
-			[string]$MsiParentFolder = Split-Path -LiteralPath $MsiPath -Parent -ErrorAction 'Stop'
+			[string]$MsiParentFolder = Split-Path -Path $MsiPath -Parent -ErrorAction 'Stop'
 			
 			## Create a temporary file name for storing a second copy of the MSI database
 			[string]$TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([IO.Path]::GetFileName(([IO.Path]::GetTempFileName()))) -ErrorAction 'Stop'
@@ -9605,7 +9605,7 @@ Function Get-PendingReboot {
 
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
-	If ((Split-Path -LiteralPath $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
+	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
 }
 
 ## Add the custom types required for the toolkit

@@ -18,10 +18,10 @@
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
 [version]$appDeployHelpScriptVersion = [version]'3.5.0'
-[string]$appDeployHelpScriptDate = '08/10/2015'
+[string]$appDeployHelpScriptDate = '08/12/2015'
 
 ## Variables: Environment
-[string]$scriptDirectory = Split-Path -LiteralPath $MyInvocation.MyCommand.Definition -Parent
+[string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 #  Dot source the App Deploy Toolkit Functions
 . "$scriptDirectory\AppDeployToolkitMain.ps1" -DisableLogging
 

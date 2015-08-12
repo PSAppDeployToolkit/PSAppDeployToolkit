@@ -76,13 +76,13 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.5'
-	[string]$deployAppScriptDate = '08/11/2015'
+	[string]$deployAppScriptDate = '08/12/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
-	[string]$scriptDirectory = Split-Path -LiteralPath $InvocationInfo.MyCommand.Definition -Parent
-	If (-not (Test-Path -LiteralPath $scriptDirectory -PathType 'Leaf')) { [string]$scriptDirectory = Join-Path -Path (Split-Path -LiteralPath (Split-Path -LiteralPath $MyInvocation.MyCommand.Definition -Parent) -Parent) -ChildPath 'Toolkit' }
+	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
+	If (-not (Test-Path -LiteralPath $scriptDirectory -PathType 'Leaf')) { [string]$scriptDirectory = Join-Path -Path (Split-Path -Path (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) -Parent) -ChildPath 'Toolkit' }
 	
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
