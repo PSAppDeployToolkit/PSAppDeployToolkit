@@ -857,16 +857,19 @@ Function New-ZipFile {
 			If ($PSCmdlet.ParameterSetName -eq 'CreateFromDirectory') {
 				## Create the archive file from a source directory
 				ForEach ($Directory in $SourceDirectoryPath) {
-					#  Create an object representing the source directory
-					[__comobject]$CreateFromDirectory = $ShellApp.NameSpace($Directory)
-					#  Copy all of the files and folders from the source directory to the archive
-					$Archive.CopyHere($CreateFromDirectory.Items()) | Out-Null
-					#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
-					Write-Log -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
-					Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
-					
-					#  Release the ComObject representing the source directory
-					[System.Runtime.Interopservices.Marshal]::ReleaseComObject($CreateFromDirectory) | Out-Null
+					Try {
+						#  Create an object representing the source directory
+						[__comobject]$CreateFromDirectory = $ShellApp.NameSpace($Directory)
+						#  Copy all of the files and folders from the source directory to the archive
+						$Archive.CopyHere($CreateFromDirectory.Items()) | Out-Null
+						#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
+						Write-Log -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
+						Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
+					}
+					Finally {
+						#  Release the ComObject representing the source directory
+						[Runtime.Interopservices.Marshal]::ReleaseComObject($CreateFromDirectory) | Out-Null
+					}
 					
 					#  If option was selected, recursively delete the source directory after successfully archiving the contents
 					If ($RemoveSourceAfterArchiving) {
@@ -903,9 +906,6 @@ Function New-ZipFile {
 				}
 			}
 			
-			## Release the ComObject representing the archive
-			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Archive) | Out-Null
-			
 			## If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users.
 			#  Apply the parent folder's permissions to the archive file to fix the problem.
 			Write-Log -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$DestinationArchiveDirectoryPath] to file [$DestinationPath]." -Source ${CmdletName}
@@ -922,6 +922,10 @@ Function New-ZipFile {
 			If (-not $ContinueOnError) {
 				Throw "Failed to archive the requested file(s): $($_.Exception.Message)"
 			}
+		}
+		Finally {
+			## Release the ComObject representing the archive
+			If ($Archive) { [Runtime.Interopservices.Marshal]::ReleaseComObject($Archive) | Out-Null }
 		}
 	}
 	End {
@@ -7540,15 +7544,15 @@ Function Get-MsiTableProperty {
 			Try {
 				If ($View) {
 					Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
-					Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null } Catch { }
+					Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null } Catch { }
 				}
 				ElseIf($SummaryInformation) {
-					Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) | Out-Null } Catch { }
+					Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) | Out-Null } Catch { }
 				}
 			}
 			Catch { }
-			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null } Catch { }
-			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
+			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null } Catch { }
+			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
 		}
 	}
 	End {
@@ -7616,7 +7620,7 @@ Function Set-MsiProperty {
 			
 			## Close the previous view on the MSI database
 			Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
-			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+			[Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
 			
 			## Set the MSI property
 			If ($Record) {
@@ -7638,8 +7642,10 @@ Function Set-MsiProperty {
 		}
 		Finally {
 			Try {
-				If ($View) { Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null }
-				[System.Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+				If ($View) {
+					Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
+					[Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+				}
 			}
 			Catch { }
 		}
@@ -7769,7 +7775,7 @@ Function New-MsiTransform {
 			
 			## Reopen the temporary copy of the MSI database in read only mode
 			#  Release the database object for the temporary copy of the MSI database
-			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null
+			[Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null
 			#  Open the temporary copy of the MSI database in read only mode
 			Write-Log -Message "Re-open the MSI database [$TempMsiPath] in read only mode." -Source ${CmdletName}
 			[__comobject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
@@ -7799,9 +7805,9 @@ Function New-MsiTransform {
 			}
 		}
 		Finally {
-			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null } Catch { }
-			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($MsiPathDatabase) | Out-Null } Catch { }
-			Try { [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
+			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null } Catch { }
+			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($MsiPathDatabase) | Out-Null } Catch { }
+			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
 			Try {
 				## Delete the temporary copy of the MSI database
 				If (Test-Path -LiteralPath $TempMsiPath -PathType 'Leaf' -ErrorAction 'Stop') {
@@ -7875,8 +7881,8 @@ Function Test-MSUpdates {
 			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List)" -Source ${CmdletName}
 			$kbFound = $true
 		}
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession) | Out-Null
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher) | Out-Null
+		[Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession) | Out-Null
+		[Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher) | Out-Null
 		
 		## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 		If (-not $kbFound) {
@@ -10092,7 +10098,7 @@ Else {
 Try {
 	[__comobject]$SMSTSEnvironment = New-Object -ComObject 'Microsoft.SMS.TSEnvironment' -ErrorAction 'Stop'
 	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment) | Out-Null
+	[Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment) | Out-Null
 	$runningTaskSequence = $true
 }
 Catch {
