@@ -116,7 +116,7 @@ If ($IsMachinePartOfDomain) {
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
 		# If running in system context, fall back on the logonserver value stored in the registry
-		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
+		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
 		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
@@ -194,20 +194,20 @@ If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccoun
 
 ## Variables: Script Name and Script Paths
 #  Add support for alternative PowerShell hosts for retrieving invocation info
-If (Test-Path -Path 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 [string]$scriptPath = $InvocationInfo.MyCommand.Definition
 [string]$scriptName = [IO.Path]::GetFileNameWithoutExtension($scriptPath)
-[string]$scriptFileName = Split-Path -Path $scriptPath -Leaf
-[string]$scriptRoot = Split-Path -Path $scriptPath -Parent
+[string]$scriptFileName = Split-Path -LiteralPath $scriptPath -Leaf
+[string]$scriptRoot = Split-Path -LiteralPath $scriptPath -Parent
 [string]$invokingScript = (Get-Variable -Name 'InvocationInfo').Value.ScriptName
 #  Get the invoking script directory
 If ($invokingScript) {
 	#  If this script was invoked by another script
-	[string]$scriptParentPath = Split-Path -Path $invokingScript -Parent
+	[string]$scriptParentPath = Split-Path -LiteralPath $invokingScript -Parent
 }
 Else {
 	#  If this script was not invoked by another script, fall back to the directory one level above this script
-	[string]$scriptParentPath = (Get-Item -Path $scriptRoot).Parent.FullName
+	[string]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
 
 ## Variables: App Deploy Script Dependency Files
@@ -218,13 +218,13 @@ Else {
 #  App Deploy Optional Extensions File
 [string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 #  Check that dependency files are present
-If (-not (Test-Path -Path $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
-If (-not (Test-Path -Path $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
-If (-not (Test-Path -Path $appDeployConfigFile -PathType 'Leaf')) { Throw 'App Deploy XML configuration file not found.' }
-If (-not (Test-Path -Path $appDeployCustomTypesSourceCode -PathType 'Leaf')) { Throw 'App Deploy custom types source code file not found.' }
+If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
+If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
+If (-not (Test-Path -LiteralPath $appDeployConfigFile -PathType 'Leaf')) { Throw 'App Deploy XML configuration file not found.' }
+If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf')) { Throw 'App Deploy custom types source code file not found.' }
 
 ## Import variables from XML configuration file
-[Xml.XmlDocument]$xmlConfigFile = Get-Content -Path $AppDeployConfigFile
+[Xml.XmlDocument]$xmlConfigFile = Get-Content -LiteralPath $AppDeployConfigFile
 [Xml.XmlElement]$xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 #  Get Config File Details
 [Xml.XmlElement]$configConfigDetails = $xmlConfig.Config_File
@@ -398,11 +398,11 @@ Else {
 [boolean]$BlockExecution = $false
 [boolean]$installationStarted = $false
 [boolean]$runningTaskSequence = $false
-If (Test-Path -Path 'variable:welcomeTimer') { Remove-Variable -Name 'welcomeTimer' -Scope 'Script'}
+If (Test-Path -LiteralPath 'variable:welcomeTimer') { Remove-Variable -Name 'welcomeTimer' -Scope 'Script'}
 #  Reset the deferral history
-If (Test-Path -Path 'variable:deferHistory') { Remove-Variable -Name 'deferHistory' }
-If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
-If (Test-Path -Path 'variable:deferDays') { Remove-Variable -Name 'deferDays' }
+If (Test-Path -LiteralPath 'variable:deferHistory') { Remove-Variable -Name 'deferHistory' }
+If (Test-Path -LiteralPath 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
+If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferDays' }
 
 ## Variables: System DPI Scale Factor
 [scriptblock]$GetDisplayScaleFactor = {
@@ -587,21 +587,21 @@ Function Write-Log {
 		#  Log file date/time
 		[string]$LogTime = (Get-Date -Format 'HH:mm:ss.fff').ToString()
 		[string]$LogDate = (Get-Date -Format 'MM-dd-yyyy').ToString()
-		If (-not (Test-Path -Path 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
+		If (-not (Test-Path -LiteralPath 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		#  Initialize variables
 		[boolean]$ExitLoggingFunction = $false
-		If (-not (Test-Path -Path 'variable:DisableLogging')) { $DisableLogging = $false }
+		If (-not (Test-Path -LiteralPath 'variable:DisableLogging')) { $DisableLogging = $false }
 		#  Check if the script section is defined
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
-		If (Test-Path -Path 'variable:script:HostInvocation') { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
+		If (Test-Path -LiteralPath 'variable:script:HostInvocation') { $private:InvocationInfo = $script:HostInvocation } Else { $private:InvocationInfo = $script:MyInvocation }
 		Try {
 			If ($private:InvocationInfo.Value.ScriptName) {
-				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -LiteralPath $private:InvocationInfo.Value.ScriptName -Leaf -ErrorAction 'Stop'
 			}
 			Else {
-				[string]$ScriptSource = Split-Path -Path $private:InvocationInfo.MyCommand.Definition -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -LiteralPath $private:InvocationInfo.MyCommand.Definition -Leaf -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -648,7 +648,7 @@ Function Write-Log {
 		If ($DisableLogging) { Return }
 		
 		## Create the directory where the log file will be saved
-		If (-not (Test-Path -Path $LogFileDirectory -PathType 'Container')) {
+		If (-not (Test-Path -LiteralPath $LogFileDirectory -PathType 'Container')) {
 			Try {
 				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
@@ -730,7 +730,7 @@ Function Write-Log {
 		## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
 		Try {
 			If ((-not $ExitLoggingFunction) -and (-not $DisableLogging)) {
-				[IO.FileInfo]$LogFile = Get-ChildItem -Path $LogFilePath -ErrorAction 'Stop'
+				[IO.FileInfo]$LogFile = Get-ChildItem -LiteralPath $LogFilePath -ErrorAction 'Stop'
 				[decimal]$LogFileSizeMB = $LogFile.Length/1MB
 				If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
 					## Change the file extension to "lo_"
@@ -742,7 +742,7 @@ Function Write-Log {
 					Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
 					
 					## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
-					Move-Item -Path $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
+					Move-Item -LiteralPath $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
 					
 					## Start new log file and Log message about archiving the old log file
 					$NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
@@ -814,7 +814,7 @@ Function Exit-Script {
 	If ($deployModeSilent) { [boolean]$configShowBalloonNotifications = $false }
 	
 	If ($installSuccess) {
-		If (Test-Path -Path $regKeyDeferHistory -ErrorAction 'SilentlyContinue') {
+		If (Test-Path -LiteralPath $regKeyDeferHistory -ErrorAction 'SilentlyContinue') {
 			Write-Log -Message 'Remove deferral history...' -Source ${CmdletName}
 			Remove-RegistryKey -Key $regKeyDeferHistory -Recurse
 		}
@@ -852,7 +852,7 @@ Function Exit-Script {
 	If ($configToolkitCompressLogs) {
 		Try {
 			## Add the file header for zip files to a file and create a 0 byte .zip file
-			Set-Content -Path $zipFileName -Value ('PK' + [char]5 + [char]6 + ("$([char]0)" * 18)) -ErrorAction 'Stop'
+			Set-Content -LiteralPath $zipFileName -Value ('PK' + [char]5 + [char]6 + ("$([char]0)" * 18)) -ErrorAction 'Stop'
 			
 			## Compress the log files
 			$zipFile = $shellApp.NameSpace($zipFileName)
@@ -864,13 +864,13 @@ Function Exit-Script {
 			## Wait for the log files to finish compressing by waiting for the zip file size to stop growing.
 			#  The .CopyHere method opens the zip file every time it adds a file so checking if the zip file is Locked Open is not reliable.
 			Write-Log -Message 'Waiting for the log file(s) to finish compressing by checking to see if the size of the zip file has stopped growing...' -Source ${CmdletName}
-			[decimal]$OldZipFileSizeInBytes = (Get-ChildItem -Path $zipFileName -ErrorAction 'Stop').Length
+			[decimal]$OldZipFileSizeInBytes = (Get-ChildItem -LiteralPath $zipFileName -ErrorAction 'Stop').Length
 			[int32]$MaxLoops = 8
 			[int32]$LoopCount = 0
 			Do {
 				$LoopCount++
 				Start-Sleep -Milliseconds 200
-				[decimal]$ZipFileSizeInBytes = (Get-ChildItem -Path $zipFileName -ErrorAction 'Stop').Length
+				[decimal]$ZipFileSizeInBytes = (Get-ChildItem -LiteralPath $zipFileName -ErrorAction 'Stop').Length
 				If ($ZipFileSizeInBytes -gt $OldZipFileSizeInBytes) {
 					[decimal]$OldZipFileSizeInBytes= $ZipFileSizeInBytes
 					$LoopCount = 0
@@ -881,11 +881,11 @@ Function Exit-Script {
 			
 			## Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users
 			Write-Log -Message "Apply parent folder's permissions to the zip file because .CopyHere method may create a file that is only readable by elevated users." -Source ${CmdletName}
-			$ZipFileParentFolderAcl = Get-Acl -Path (Split-Path -Path $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
-			Set-Acl -Path $zipFileName -AclObject $ZipFileParentFolderAcl -ErrorAction 'Stop'
+			$ZipFileParentFolderAcl = Get-Acl -LiteralPath (Split-Path -LiteralPath $zipFileName -Parent -ErrorAction 'Stop') -ErrorAction 'Stop'
+			Set-Acl -LiteralPath $zipFileName -AclObject $ZipFileParentFolderAcl -ErrorAction 'Stop'
 			
-			If (Test-Path -Path $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
-				Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'Stop' | Out-Null
+			If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'Stop') {
+				Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'Stop' | Out-Null
 			}
 		}
 		Catch {
@@ -894,7 +894,7 @@ Function Exit-Script {
 	}
 	
 	## Exit the script, returning the exit code to SCCM
-	If (Test-Path -Path 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
+	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }
 #endregion
 
@@ -1067,10 +1067,10 @@ Function Resolve-Error {
 			
 			Write-Output -InputObject $Output
 			
-			If (Test-Path -Path 'variable:Output') { Clear-Variable -Name 'Output' }
-			If (Test-Path -Path 'variable:LogErrorMessage') { Clear-Variable -Name 'LogErrorMessage' }
-			If (Test-Path -Path 'variable:LogInnerMessage') { Clear-Variable -Name 'LogInnerMessage' }
-			If (Test-Path -Path 'variable:LogErrorMessageTmp') { Clear-Variable -Name 'LogErrorMessageTmp' }
+			If (Test-Path -LiteralPath 'variable:Output') { Clear-Variable -Name 'Output' }
+			If (Test-Path -LiteralPath 'variable:LogErrorMessage') { Clear-Variable -Name 'LogErrorMessage' }
+			If (Test-Path -LiteralPath 'variable:LogInnerMessage') { Clear-Variable -Name 'LogInnerMessage' }
+			If (Test-Path -LiteralPath 'variable:LogErrorMessageTmp') { Clear-Variable -Name 'LogErrorMessageTmp' }
 		}
 	}
 	End {
@@ -2020,7 +2020,7 @@ Function Execute-MSI {
 		}
 		Else {
 			## Create the Log directory if it doesn't already exist
-			If (-not (Test-Path -Path $configMSILogDir -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+			If (-not (Test-Path -LiteralPath $configMSILogDir -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
 				New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
 			}
 			## Build the log file path
@@ -2053,11 +2053,11 @@ Function Execute-MSI {
 		}
 		
 		## If the MSI is in the Files directory, set the full path to the MSI
-		If (Test-Path -Path (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+		If (Test-Path -LiteralPath (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			[string]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
 		}
-		ElseIf (Test-Path -Path $Path -ErrorAction 'SilentlyContinue') {
-			[string]$msiFile = (Get-Item -Path $Path).FullName
+		ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'SilentlyContinue') {
+			[string]$msiFile = (Get-Item -LiteralPath $Path).FullName
 		}
 		ElseIf ($PathIsProductCode) {
 			[string]$msiFile = $Path
@@ -2071,14 +2071,14 @@ Function Execute-MSI {
 		}
 		
 		## Set the working directory of the MSI
-		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -Path $msiFile -Parent }
+		If ((-not $PathIsProductCode) -and (-not $workingDirectory)) { [string]$workingDirectory = Split-Path -LiteralPath $msiFile -Parent }
 		
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[string[]]$transforms = $transform -split ','
 			0..($transforms.Length - 1) | ForEach-Object {
-				If (Test-Path (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_])) {
-					$transforms[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
+				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $transforms[$_]) -PathType 'Leaf') {
+					$transforms[$_] = Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
 				}
 				Else {
 					$transforms[$_] = $transforms[$_]
@@ -2091,8 +2091,8 @@ Function Execute-MSI {
 		If ($patch) {
 			[string[]]$patches = $patch -split ','
 			0..($patches.Length - 1) | ForEach-Object {
-				If (Test-Path (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_])) {
-					$patches[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
+				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $patches[$_]) -PathType 'Leaf') {
+					$patches[$_] = Join-Path -Path (Split-Path -LiteralPath $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
 				}
 				Else {
 					$patches[$_] = $patches[$_]
@@ -2444,7 +2444,7 @@ Function Execute-Process {
 			## Validate and find the fully qualified path for the $Path variable.
 			If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
 				Write-Log -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
-				If (-not (Test-Path -Path $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
+				If (-not (Test-Path -LiteralPath $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
 					Throw "File [$Path] not found."
 				}
 			}
@@ -2472,7 +2472,7 @@ Function Execute-Process {
 			}
 			
 			## Set the Working directory (if not specified)
-			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -Path $Path -Parent -ErrorAction 'Stop' }
+			If (-not $WorkingDirectory) { $WorkingDirectory = Split-Path -LiteralPath $Path -Parent -ErrorAction 'Stop' }
 			
 			## If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
@@ -2562,7 +2562,7 @@ Function Execute-Process {
 				If ($process) { $process.Close() }
 				
 				## Re-enable Zone checking
-				Remove-Item -Path 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'SilentlyContinue'
+				Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'SilentlyContinue'
 				
 				If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
 			}
@@ -2851,7 +2851,7 @@ Function New-Folder {
 	}
 	Process {
 		Try {
-			If (-not (Test-Path -Path $Path -PathType 'Container')) {
+			If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
 				Write-Log -Message "Create folder [$Path]." -Source ${CmdletName}
 				New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' | Out-Null
 			}
@@ -2907,9 +2907,9 @@ Function Remove-Folder {
 	}
 	Process {
 		Try {
-			If (Test-Path -Path $Path -PathType 'Container') {
+			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Write-Log -Message "Delete folder(s) and file(s) recursively from path [$path]..." -Source ${CmdletName}
-				Remove-Item -Path $Path -Force -Recurse -ErrorAction 'Stop' | Out-Null
+				Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Stop' | Out-Null
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] does not exists..." -Source ${CmdletName}
@@ -2972,17 +2972,17 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -Path $Destination -PathType 'Container'))) {
+			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
 				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 			}
 			
 			If ($Recurse) {
 				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $destination -Force -Recurse -ErrorAction 'Stop' | Out-Null
+				Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop' | Out-Null
 			}
 			Else {
 				Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $destination -Force -ErrorAction 'Stop' | Out-Null
+				Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop' | Out-Null
 			}
 		}
 		Catch {
@@ -3823,7 +3823,7 @@ Function Get-UserProfiles {
 			
 			## Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine
 			[string]$UserProfileListRegKey = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
-			[psobject[]]$UserProfiles = Get-ChildItem -Path $UserProfileListRegKey -ErrorAction 'Stop' |
+			[psobject[]]$UserProfiles = Get-ChildItem -LiteralPath $UserProfileListRegKey -ErrorAction 'Stop' |
 			ForEach-Object {
 				Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
 				Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
@@ -3916,7 +3916,7 @@ Function Get-FileVersion {
 		Try {
 			Write-Log -Message "Get file version info for file [$file]." -Source ${CmdletName}
 			
-			If (Test-Path -Path $File -PathType 'Leaf') {
+			If (Test-Path -LiteralPath $File -PathType 'Leaf') {
 				$fileVersion = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo.FileVersion
 				If ($fileVersion) {
 					## Remove product information to leave only the file version
@@ -4026,7 +4026,7 @@ Function New-Shortcut {
 				[IO.FileInfo]$Path = [IO.FileInfo]$Path
 				[string]$PathDirectory = $Path.DirectoryName
 				
-				If (-not (Test-Path -Path $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
+				If (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
 					Write-Log -Message "Create shortcut directory [$PathDirectory]." -Source ${CmdletName}
 					New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop' | Out-Null
 				}
@@ -4078,7 +4078,7 @@ Function New-Shortcut {
 					$Reader.Close()
 					$Writer.Close()
 					$Path.Delete()
-					Rename-Item -Path $TempFile -NewName $Path.Name -Force -ErrorAction 'Stop' | Out-Null
+					Rename-Item -LiteralPath $TempFile -NewName $Path.Name -Force -ErrorAction 'Stop' | Out-Null
 				}
 			}
 		}
@@ -4190,12 +4190,12 @@ Function Execute-ProcessAsUser {
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 		
 		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
-		If (-not (Test-Path -Path $dirAppDeployTemp -PathType 'Container')) {
+		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container')) {
 			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'Stop'
 		}
 		
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
-		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
+		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -LiteralPath $Path -Leaf) -eq 'PowerShell.exe')) {
 			[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"'
 			[string[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
@@ -4435,7 +4435,7 @@ Function Refresh-SessionEnvironmentVariables {
 			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 			
 			## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -Path "env:$($_)" -Value (Get-ItemProperty -Path $envRegPath -Name $_).$_ } }
+			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_ } }
 			
 			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
 			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
@@ -4629,11 +4629,11 @@ Function Block-AppExecution {
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		
 		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-		If (Test-Path -Path "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-			Remove-Item -Path "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue' | Out-Null
+		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+			Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue' | Out-Null
 		}
 		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
-		If (-not (Test-Path -Path $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
 			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
 		}
 		
@@ -4722,7 +4722,7 @@ Function Unblock-AppExecution {
 		
 		## Remove Debugger values to unblock processes
 		[psobject[]]$unblockProcesses = $null
-		[psobject[]]$unblockProcesses += (Get-ChildItem -Path $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue'})
+		[psobject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue'})
 		ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
 			Write-Log -Message "Remove the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName} 
 			$unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'SilentlyContinue'
@@ -5205,7 +5205,7 @@ Function Show-InstallationWelcome {
 				}
 			}
 			Else {
-				If (Test-Path -Path 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
+				If (Test-Path -LiteralPath 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
 				$DeferTimes = $null
 			}
 			If ($checkDeferDays -and $allowDefer) {
@@ -5392,17 +5392,17 @@ Function Show-InstallationWelcome {
 		## Force nsd.exe to stop if Notes is one of the required applications to close
 		If (($processObjects | ForEach-Object { $_.ProcessName }) -contains 'notes') {
 			#  Get a list of all the executables in the Notes folder
-			[string[]]$notesPathExes = Get-ChildItem -Path $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
+			[string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 			
 			## Ensure we aren't running as a Local System Account
 			If (-not $IsLocalSystemAccount) {
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object { If ((Get-Process).Name -contains $_) {
-					[string]$notesPath = Get-Item -Path $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
+					[string]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 					If ($notesPath) {
 						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.Exe'
 						Try {
-							If (Test-Path -Path $notesNSDExecutable -PathType Leaf -ErrorAction 'Stop') {
+							If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
 								Write-Log -Message "Execute [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
 								[Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
 								
@@ -6752,9 +6752,9 @@ Function Set-PinnedApplication {
 			Try {
 				[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 				$verb = $verb.Replace('&','')
-				$path = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop'
+				$path = Split-Path -LiteralPath $FilePath -Parent -ErrorAction 'Stop'
 				$folder = $shellApp.Namespace($path)
-				$item = $folder.ParseName((Split-Path -Path $FilePath -Leaf -ErrorAction 'Stop'))
+				$item = $folder.ParseName((Split-Path -LiteralPath $FilePath -Leaf -ErrorAction 'Stop'))
 				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $verb } -ErrorAction 'Stop'
 				
 				If ($null -eq $itemVerb) {
@@ -6782,7 +6782,7 @@ Function Set-PinnedApplication {
 		Try {
 			Write-Log -Message "Execute action [$Action] for file [$FilePath]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType 'Leaf' -ErrorAction 'Stop')) {
+			If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf' -ErrorAction 'Stop')) {
 				Throw "Path [$filePath] does not exist."
 			}
 			
@@ -6854,7 +6854,7 @@ Function Get-IniValue {
 		Try {
 			Write-Log -Message "Read INI Key: [Section = $Section] [Key = $Key]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			$IniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
 			Write-Log -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $IniValue]." -Source ${CmdletName}
@@ -6927,7 +6927,7 @@ Function Set-IniValue {
 		Try {
 			Write-Log -Message "Write INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]." -Source ${CmdletName}
 			
-			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			[PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
 		}
@@ -6968,7 +6968,7 @@ Function Get-PEFileArchitecture {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
-		[ValidateScript({$_ | Test-Path -PathType 'Leaf'})]
+		[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
 		[IO.FileInfo[]]$FilePath,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -7012,7 +7012,7 @@ Function Get-PEFileArchitecture {
 				
 				If ($PassThru) {
 					#  Get the file object, attach a property indicating the type, and write to pipeline
-					Get-Item -Path $Path.FullName -Force | Add-Member -MemberType 'NoteProperty' -Name 'BinaryType' -Value $PEArchitecture -Force -PassThru | Write-Output
+					Get-Item -LiteralPath $Path.FullName -Force | Add-Member -MemberType 'NoteProperty' -Name 'BinaryType' -Value $PEArchitecture -Force -PassThru | Write-Output
 				}
 				Else {
 					Write-Output -InputObject $PEArchitecture
@@ -7098,7 +7098,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 	Process {
 		Try {
 			Write-Log -Message "$DLLAction DLL file [$filePath]." -Source ${CmdletName}
-			If (-not (Test-Path -Path $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
+			If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) { Throw "File [$filePath] could not be found." }
 			
 			[string]$DLLFileBitness = Get-PEFileArchitecture -FilePath $filePath -ContinueOnError $false -ErrorAction 'Stop'
 			If (($DLLFileBitness -ne '64BIT') -and ($DLLFileBitness -ne '32BIT')) {
@@ -7339,7 +7339,7 @@ Function Get-MsiTableProperty {
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
 			## Determine if the database file is a patch (.msp) or not
-			If ([IO.Path]::GetExtension($Path) -eq '.msp') { [boolean]$IsMspFile = $true}
+			If ([IO.Path]::GetExtension($Path) -eq '.msp') { [boolean]$IsMspFile = $true }
 			## Define properties for how the MSI database is opened
 			[int32]$msiOpenDatabaseModeReadOnly = 0
 			[int32]$msiSuppressApplyTransformErrors = 63
@@ -7595,14 +7595,14 @@ Function New-MsiTransform {
 			Write-Log -Message "Create a transform file for MSI [$MsiPath]." -Source ${CmdletName}
 			
 			## Discover the parent folder that the MSI file resides in
-			[string]$MsiParentFolder = Split-Path -Path $MsiPath -Parent -ErrorAction 'Stop'
+			[string]$MsiParentFolder = Split-Path -LiteralPath $MsiPath -Parent -ErrorAction 'Stop'
 			
 			## Create a temporary file name for storing a second copy of the MSI database
 			[string]$TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([IO.Path]::GetFileName(([IO.Path]::GetTempFileName()))) -ErrorAction 'Stop'
 			
 			## Create a second copy of the MSI database
 			Write-Log -Message "Copy MSI database in path [$MsiPath] to destination [$TempMsiPath]." -Source ${CmdletName}
-			Copy-Item -Path $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+			Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
 			
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
@@ -7648,7 +7648,7 @@ Function New-MsiTransform {
 			## Delete the new transform file path if it already exists
 			If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
 				Write-Log -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]." -Source ${CmdletName}
-				Remove-Item -Path $NewTransformPath -Force -ErrorAction 'Stop' | Out-Null
+				Remove-Item -LiteralPath $NewTransformPath -Force -ErrorAction 'Stop' | Out-Null
 			}
 			
 			## Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database
@@ -7676,7 +7676,7 @@ Function New-MsiTransform {
 			Try {
 				## Delete the temporary copy of the MSI database
 				If (Test-Path -LiteralPath $TempMsiPath -PathType 'Leaf' -ErrorAction 'Stop') {
-					Remove-Item -Path $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+					Remove-Item -LiteralPath $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
 				}
 			}
 			Catch { }
@@ -7805,7 +7805,7 @@ Function Install-MSUpdates {
 		$kbPattern = '(?i)kb\d{6,8}'
 		
 		## Get all hotfixes and install if required
-		[IO.FileInfo[]]$files = Get-ChildItem -Path $Directory -Recurse -Include ('*.exe','*.msu','*.msp')
+		[IO.FileInfo[]]$files = Get-ChildItem -LiteralPath $Directory -Recurse -Include ('*.exe','*.msu','*.msp')
 		ForEach ($file in $files) {
 			If ($file.Name -match 'redist') {
 				[version]$redistVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($file).ProductVersion
@@ -8805,13 +8805,13 @@ Function Set-ActiveSetup {
 			[string]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
 			[string]$ActiveSetupFileName = [IO.Path]::GetFileName($StubExePath)
 			[string]$StubExeFile = Join-Path -Path $dirFiles -ChildPath $ActiveSetupFileName
-			If (Test-Path -Path $StubExeFile -PathType 'Leaf') {
+			If (Test-Path -LiteralPath $StubExeFile -PathType 'Leaf') {
 				#  This will overwrite the StubPath file if $StubExePath already exists on target
 				Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
 			}
 			
 			## Check if the $StubExePath file exists
-			If (-not (Test-Path -Path $StubExePath -PathType 'Leaf')) { Throw "Active Setup StubPath file [$ActiveSetupFileName] is missing." }
+			If (-not (Test-Path -LiteralPath $StubExePath -PathType 'Leaf')) { Throw "Active Setup StubPath file [$ActiveSetupFileName] is missing." }
 			
 			## Define Active Setup StubPath according to file extension of $StubExePath
 			Switch ($StubExeExt) {
@@ -9288,7 +9288,7 @@ Function Get-ServiceStartMode
 			If (($ServiceStartMode -eq 'Automatic') -and ([Environment]::OSVersion.Version.Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
-					[int32]$DelayedAutoStart = Get-ItemProperty -Path $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
+					[int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
 					If ($DelayedAutoStart -eq 1) { $ServiceStartMode = 'Automatic (Delayed Start)' }
 				}
 				Catch { }
@@ -9500,7 +9500,7 @@ Function Get-PendingReboot {
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
 			If ([Environment]::OSVersion.Version.Major -ge 5) {
-				If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
+				If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
 				Else {
@@ -9516,7 +9516,7 @@ Function Get-PendingReboot {
 		
 		## Determine if there is a pending reboot from a Windows Update
 		Try {
-			If (Test-Path -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -ErrorAction 'Stop') {
+			If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -ErrorAction 'Stop') {
 				[nullable[boolean]]$IsWindowsUpdateRebootPending = $true
 			}
 			Else {
@@ -9537,7 +9537,7 @@ Function Get-PendingReboot {
 			[boolean]$IsFileRenameRebootPending = $true
 			#  Get the value of PendingFileRenameOperations
 			Try {
-				[string[]]$PendingFileRenameOperations = Get-ItemProperty -Path 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'PendingFileRenameOperations' -ErrorAction 'Stop'
+				[string[]]$PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'PendingFileRenameOperations' -ErrorAction 'Stop'
 			}
 			Catch { 
 				[string[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
@@ -9605,13 +9605,13 @@ Function Get-PendingReboot {
 
 ## If the script was invoked by the Help Console, exit the script now
 If ($invokingScript) {
-	If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
+	If ((Split-Path -LiteralPath $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') { Return }
 }
 
 ## Add the custom types required for the toolkit
 If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
-	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
+	Add-Type -LiteralPath $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
 ## Define ScriptBlocks to disable/revert script logging
@@ -9667,21 +9667,21 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
 If (-not $appName) {
 	#  Find the first MSI file in the Files folder and use that as our install
-	[string]$defaultMsiFile = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
+	[string]$defaultMsiFile = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
 	If ($defaultMsiFile) {
 		Try {
 			[boolean]$useDefaultMsi = $true
 			Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
 			#  Discover if there is a zero-config MST file
 			[string]$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')
-			If (Test-Path -Path $defaultMstFile -PathType 'Leaf') {
+			If (Test-Path -LiteralPath $defaultMstFile -PathType 'Leaf') {
 				Write-Log -Message "Discovered Zero-Config MST installation file [$defaultMstFile]." -Source $appDeployToolkitName
 			}
 			Else {
 				[string]$defaultMstFile = ''
 			}
 			#  Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-			[string[]]$defaultMspFiles = Get-ChildItem -Path $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
+			[string[]]$defaultMspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
 			If ($defaultMspFiles) {
 				Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
 			}
@@ -9753,8 +9753,8 @@ If ($configToolkitCompressLogs) {
 	[string]$zipFileName = Join-Path -Path $configToolkitLogDir -ChildPath ($installName + '_' + $deploymentType + '_' + $zipFileDate + '.zip')
 	
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
-	If (Test-Path -Path $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
-		Remove-Item -Path $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
+	If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
+		Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
 	}
 }
 Else {
@@ -9799,7 +9799,7 @@ Else {
 }
 
 ## Dot Source script extensions
-If (Test-Path -Path "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType Leaf) {
+If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
 	. "$scriptRoot\$appDeployToolkitDotSourceExtensions"
 }
 

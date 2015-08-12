@@ -69,7 +69,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '3.6.5'
-	[string]$appScriptDate = '08/10/2015'
+	[string]$appScriptDate = '08/11/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
@@ -82,24 +82,24 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.5'
-	[string]$deployAppScriptDate = '08/10/2015'
+	[string]$deployAppScriptDate = '08/11/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
-	If (Test-Path -Path 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
-	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
+	If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
+	[string]$scriptDirectory = Split-Path -LiteralPath $InvocationInfo.MyCommand.Definition -Parent
 	
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
-		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
+		If (-not (Test-Path -LiteralPath $moduleAppDeployToolkitMain -PathType 'Leaf')) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
 		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
 		If ($mainExitCode -eq 0){ [int32]$mainExitCode = 60008 }
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		## Exit the script, returning the exit code to SCCM
-		If (Test-Path -Path 'variable:HostInvocation') { $script:ExitCode = $mainExitCode; Exit } Else { Exit $mainExitCode }
+		If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $mainExitCode; Exit } Else { Exit $mainExitCode }
 	}
 	
 	#endregion
@@ -109,7 +109,7 @@ Try {
 	##*===============================================
 	
 	#  Set the initial Office folder
-	[string] $dirOffice = Join-Path -Path "$envProgramFilesX86" -ChildPath "Microsoft Office"
+	[string] $dirOffice = Join-Path -Path "$envProgramFilesX86" -ChildPath 'Microsoft Office'
 	
 	If ($deploymentType -ine 'Uninstall') {
 		##*===============================================
@@ -126,7 +126,7 @@ Try {
 			}
 			
 			#  Verify that Office 2013 is already installed
-			$officeVersion = Get-ItemProperty -Path 'HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90150000-0011-0000-0000-0000000FF1CE}' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty DisplayName
+			$officeVersion = Get-ItemProperty -LiteralPath 'HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{90150000-0011-0000-0000-0000000FF1CE}' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty DisplayName
 			
 			#  If not found, display an error and exit
 			If (-not $officeVersion) {
@@ -145,23 +145,23 @@ Try {
 			## Check for components and make sure we reinstall them during the upgrade if necessary
 			[string[]]$officeFolders = 'Office12', 'Office13', 'Office14', 'Office15'
 			ForEach ($officeFolder in $officeFolders) {
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\groove.exe") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "$officeFolder\groove.exe") -PathType 'Leaf') {
 					Write-Log -Message 'Sharepoint Workspace / Groove was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
 					$addSharepointWorkspace = $true
 				}
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\infopath.exe") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "$officeFolder\infopath.exe") -PathType 'Leaf') {
 					Write-Log -Message 'InfoPath was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
 					$addInfoPath = $true
 				}
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\onenote.exe") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "$officeFolder\onenote.exe") -PathType 'Leaf') {
 					Write-Log -Message 'OneNote was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
 					$addOneNote = $true
 				}
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\outlook.exe") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "$officeFolder\outlook.exe") -PathType 'Leaf') {
 					Write-Log -Message 'Outlook was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
 					$addOutlook = $true
 				}
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "$officeFolder\mspub.exe") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "$officeFolder\mspub.exe") -PathType 'Leaf') {
 					Write-Log -Message 'Publisher was previously installed. Will be reinstalled' -Source $deployAppScriptFriendlyName
 					$addPublisher = $true
 				}
@@ -173,21 +173,21 @@ Try {
 			# Remove any previous version of Office (if required)
 			[string[]]$officeExecutables = 'excel.exe', 'groove.exe', 'infopath.exe', 'onenote.exe', 'outlook.exe', 'mspub.exe', 'powerpnt.exe', 'winword.exe', 'winproj.exe', 'visio.exe'
 			ForEach ($officeExecutable in $officeExecutables) {
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office12\$officeExecutable") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "Office12\$officeExecutable") -PathType 'Leaf') {
 					Write-Log -Message 'Microsoft Office 2007 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
 					Execute-Process -Path 'cscript.exe' -Parameters "`"$dirSupportFiles\OffScrub07.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
 				}
 			}
 			ForEach ($officeExecutable in $officeExecutables) {
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office14\$officeExecutable") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "Office14\$officeExecutable") -PathType 'Leaf') {
 					Write-Log -Message 'Microsoft Office 2010 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
 					Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub10.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
 				}
 			}
 			ForEach ($officeExecutable in $officeExecutables) {
-				If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath "Office15\$officeExecutable") -PathType Leaf) {
+				If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath "Office15\$officeExecutable") -PathType 'Leaf') {
 					Write-Log -Message 'Microsoft Office 2013 was detected. Will be uninstalled.' -Source $deployAppScriptFriendlyName
 					Execute-Process -Path "cscript.exe" -Parameters "`"$dirSupportFiles\OffScrub13.vbs`" ClientAll /S /Q /NoCancel" -WindowStyle Hidden -IgnoreExitCodes '1,2,3'
 					Break
@@ -245,7 +245,7 @@ Try {
 		
 		# Activate Office components (if running as a user)
 		If (-not $osdMode) {
-			If (Test-Path -Path (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType Leaf) {
+			If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType 'Leaf') {
 				Show-InstallationProgress -StatusMessage 'Activating Microsoft Office components. This may take some time. Please wait...'
 				Execute-Process -Path 'cscript.exe' -Parameters "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
 			}
