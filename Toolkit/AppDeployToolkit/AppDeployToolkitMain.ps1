@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/12/2015'
+[string]$appDeployMainScriptDate = '08/14/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -650,7 +650,7 @@ Function Write-Log {
 		## Create the directory where the log file will be saved
 		If (-not (Test-Path -LiteralPath $LogFileDirectory -PathType 'Container')) {
 			Try {
-				New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+				$null = New-Item -Path $LogFileDirectory -Type 'Directory' -Force -ErrorAction 'Stop'
 			}
 			Catch {
 				[boolean]$ExitLoggingFunction = $true
@@ -829,21 +829,21 @@ Function New-ZipFile {
 			## If the destination archive already exists, delete it if the -OverWriteArchive option was selected
 			If (($OverWriteArchive) -and (Test-Path -LiteralPath $DestinationPath)) {
 				Write-Log -Message "An archive at the destination path already exists, deleting file [$DestinationPath]." -Source ${CmdletName}
-				Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction 'Stop' | Out-Null
+				$null = Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction 'Stop'
 			}
 			
 			## If archive file does not exist, then create a zero-byte zip archive
 			If (-not (Test-Path -LiteralPath $DestinationPath)) {
 				## Create a zero-byte file
 				Write-Log -Message "Create a zero-byte file [$DestinationPath]." -Source ${CmdletName}
-				New-Item -Path $DestinationArchiveDirectoryPath -Name $DestinationArchiveFileName -ItemType 'File' -Force -ErrorAction 'Stop' | Out-Null
+				$null = New-Item -Path $DestinationArchiveDirectoryPath -Name $DestinationArchiveFileName -ItemType 'File' -Force -ErrorAction 'Stop'
 				
 				## Write the file header for a zip file to the zero-byte file
 				[byte[]]$ZipArchiveByteHeader = 80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 				[IO.FileStream]$FileStream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($DestinationPath, ([IO.FileMode]::Create))
 				[IO.BinaryWriter]$BinaryWriter = New-Object -TypeName 'System.IO.BinaryWriter' -ArgumentList ($FileStream)
 				Write-Log -Message "Write the file header for a zip archive to the zero-byte file [$DestinationPath]." -Source ${CmdletName}
-				$BinaryWriter.Write($ZipArchiveByteHeader) | Out-Null
+				$null = $BinaryWriter.Write($ZipArchiveByteHeader)
 				$BinaryWriter.Close()
 				$FileStream.Close()
 			}
@@ -861,21 +861,21 @@ Function New-ZipFile {
 						#  Create an object representing the source directory
 						[__comobject]$CreateFromDirectory = $ShellApp.NameSpace($Directory)
 						#  Copy all of the files and folders from the source directory to the archive
-						$Archive.CopyHere($CreateFromDirectory.Items()) | Out-Null
+						$null = $Archive.CopyHere($CreateFromDirectory.Items())
 						#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
 						Write-Log -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
 						Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
 					}
 					Finally {
 						#  Release the ComObject representing the source directory
-						[Runtime.Interopservices.Marshal]::ReleaseComObject($CreateFromDirectory) | Out-Null
+						$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($CreateFromDirectory)
 					}
 					
 					#  If option was selected, recursively delete the source directory after successfully archiving the contents
 					If ($RemoveSourceAfterArchiving) {
 						Try {
 							Write-Log -Message "Recursively delete the source directory [$Directory] as contents have been successfully archived." -Source ${CmdletName}
-							Remove-Item -LiteralPath $Directory -Recurse -Force -ErrorAction 'Stop' | Out-Null
+							$null = Remove-Item -LiteralPath $Directory -Recurse -Force -ErrorAction 'Stop'
 						}
 						Catch {
 							Write-Log -Message "Failed to recursively delete the source directory [$Directory]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -888,7 +888,7 @@ Function New-ZipFile {
 				[IO.FileInfo[]]$SourceFilePath = [IO.FileInfo[]]$SourceFilePath
 				ForEach ($File in $SourceFilePath) {
 					#  Copy the files and folders from the source directory to the archive
-					$Archive.CopyHere($File.FullName) | Out-Null
+					$null = $Archive.CopyHere($File.FullName)
 					#  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
 					Write-Log -Message "Compressing file [$($File.FullName)] to destination path [$DestinationPath]..." -Source ${CmdletName}
 					Do { Start-Sleep -Milliseconds 250 } While ($Archive.Items().Count -eq 0)
@@ -897,7 +897,7 @@ Function New-ZipFile {
 					If ($RemoveSourceAfterArchiving) {
 						Try {
 							Write-Log -Message "Delete the source file [$($File.FullName)] as it has been successfully archived." -Source ${CmdletName}
-							Remove-Item -LiteralPath $File.FullName -Force -ErrorAction 'Stop' | Out-Null
+							$null = Remove-Item -LiteralPath $File.FullName -Force -ErrorAction 'Stop'
 						}
 						Catch {
 							Write-Log -Message "Failed to delete the source file [$($File.FullName)]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -925,7 +925,7 @@ Function New-ZipFile {
 		}
 		Finally {
 			## Release the ComObject representing the archive
-			If ($Archive) { [Runtime.Interopservices.Marshal]::ReleaseComObject($Archive) | Out-Null }
+			If ($Archive) { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Archive) }
 		}
 	}
 	End {
@@ -1556,7 +1556,7 @@ Function Show-InstallationPrompt {
 			$showDialog = $true
 			While ($showDialog) {
 				# Minimize all other windows
-				If ($minimizeWindows) { $shellApp.MinimizeAll() | Out-Null }
+				If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
 				# Show the Form
 				$result = $formInstallationPrompt.ShowDialog()
 				If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
@@ -1571,7 +1571,7 @@ Function Show-InstallationPrompt {
 				'Ignore' { Write-Output -InputObject $buttonMiddleText }
 				'Abort' {
 					# Restore minimized windows
-					$shellApp.UndoMinimizeAll() | Out-Null
+					$null = $shellApp.UndoMinimizeAll()
 					If ($ExitOnTimeout) {
 						Exit-Script -ExitCode $configInstallationUIExitCode
 					}
@@ -2159,7 +2159,7 @@ Function Execute-MSI {
 		Else {
 			## Create the Log directory if it doesn't already exist
 			If (-not (Test-Path -LiteralPath $configMSILogDir -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-				New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
+				$null = New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
 			}
 			## Build the log file path
 			[string]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
@@ -2940,7 +2940,7 @@ Function Test-IsMutexAvailable {
 			
 			If (($null -ne $OpenExistingMutex) -and ($IsMutexFree)) {
 				## Release exclusive lock on the mutex
-				$OpenExistingMutex.ReleaseMutex() | Out-Null
+				$null = $OpenExistingMutex.ReleaseMutex()
 				$OpenExistingMutex.Close()
 			}
 			If ($private:previousErrorActionPreference) { $ErrorActionPreference = $private:previousErrorActionPreference }
@@ -2991,7 +2991,7 @@ Function New-Folder {
 		Try {
 			If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
 				Write-Log -Message "Create folder [$Path]." -Source ${CmdletName}
-				New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' | Out-Null
+				$null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
@@ -3047,7 +3047,7 @@ Function Remove-Folder {
 		Try {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Write-Log -Message "Delete folder(s) and file(s) recursively from path [$path]..." -Source ${CmdletName}
-				Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Stop' | Out-Null
+				$null = Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Stop'
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] does not exists..." -Source ${CmdletName}
@@ -3111,16 +3111,16 @@ Function Copy-File {
 	Process {
 		Try {
 			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
-				New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+				$null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
 			}
 			
 			If ($Recurse) {
 				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop' | Out-Null
+				$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
 			}
 			Else {
 				Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
-				Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop' | Out-Null
+				$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -3179,11 +3179,11 @@ Function Remove-File {
 		Try {
 			If ($Recurse) {
 				Write-Log -Message "Delete file(s) recursively in path [$path]..." -Source ${CmdletName}
-				Remove-Item -Path $path -Force -Recurse -ErrorAction 'Stop' | Out-Null
+				$null = Remove-Item -Path $path -Force -Recurse -ErrorAction 'Stop'
 			}
 			Else {
 				Write-Log -Message "Delete file in path [$path]..." -Source ${CmdletName}
-				Remove-Item -Path $path -Force -ErrorAction 'Stop' | Out-Null
+				$null = Remove-Item -Path $path -Force -ErrorAction 'Stop'
 			}
 		}
 		Catch {
@@ -3530,7 +3530,7 @@ Function Set-RegistryKey {
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
 				Try {
 					Write-Log -Message "Create registry key [$key]." -Source ${CmdletName}
-					New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop' | Out-Null
+					$null = New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop'
 				}
 				Catch {
 					Throw
@@ -3541,13 +3541,13 @@ Function Set-RegistryKey {
 				## Set registry value if it doesn't exist
 				If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'SilentlyContinue')) {
 					Write-Log -Message "Set registry key value: [$key] [$name = $value]." -Source ${CmdletName}
-					New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop' | Out-Null
+					$null = New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop'
 				}
 				## Update registry value if it does exist
 				Else {
 					[string]$RegistryValueWriteAction = 'update'
 					Write-Log -Message "Update registry key value: [$key] [$name = $value]." -Source ${CmdletName}
-					Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop' | Out-Null
+					$null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
 				}
 			}
 		}
@@ -3636,11 +3636,11 @@ Function Remove-RegistryKey {
 				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					If ($Recurse) {
 						Write-Log -Message "Delete registry key recursively [$Key]." -Source ${CmdletName}
-						Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop' | Out-Null
+						$null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
 					}
 					Else {
 						Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
-						Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop' | Out-Null
+						$null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
 					}
 				}
 				Else {
@@ -3650,7 +3650,7 @@ Function Remove-RegistryKey {
 			Else {
 				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					Write-Log -Message "Delete registry value [$Key] [$Name]." -Source ${CmdletName}
-					Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop' | Out-Null
+					$null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
 				}
 				Else {
 					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registery key does not exist." -Severity 2 -Source ${CmdletName}
@@ -4166,7 +4166,7 @@ Function New-Shortcut {
 				
 				If (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
 					Write-Log -Message "Create shortcut directory [$PathDirectory]." -Source ${CmdletName}
-					New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop' | Out-Null
+					$null = New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop'
 				}
 			}
 			Catch {
@@ -4216,7 +4216,7 @@ Function New-Shortcut {
 					$Reader.Close()
 					$Writer.Close()
 					$Path.Delete()
-					Rename-Item -LiteralPath $TempFile -NewName $Path.Name -Force -ErrorAction 'Stop' | Out-Null
+					$null = Rename-Item -LiteralPath $TempFile -NewName $Path.Name -Force -ErrorAction 'Stop'
 				}
 			}
 		}
@@ -4768,11 +4768,11 @@ Function Block-AppExecution {
 		
 		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
 		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-			Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue' | Out-Null
+			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
 		}
 		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
 		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue' | Out-Null
+			$null = New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
 		}
 		
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
@@ -5496,7 +5496,7 @@ Function Show-InstallationWelcome {
 					}
 					
 					#  Restore minimized windows
-					$shellApp.UndoMinimizeAll() | Out-Null
+					$null = $shellApp.UndoMinimizeAll()
 					
 					Exit-Script -ExitCode $configInstallationUIExitCode
 				}
@@ -5508,7 +5508,7 @@ Function Show-InstallationWelcome {
 					Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					
 					#  Restore minimized windows
-					$shellApp.UndoMinimizeAll() | Out-Null
+					$null = $shellApp.UndoMinimizeAll()
 					
 					Exit-Script -ExitCode $configInstallationDeferExitCode
 				}
@@ -5916,7 +5916,7 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.Size = $System_Drawing_Size
 		$listBoxCloseApps.Margin = '75,0,0,0'
 		$listBoxCloseApps.TabIndex = 3
-		$ProcessDescriptions | ForEach-Object { $listboxCloseApps.Items.Add($_) | Out-Null }
+		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 		
 		## Label Defer
 		$labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6102,7 +6102,7 @@ Function Show-WelcomePrompt {
 		}
 		
 		## Minimize all other windows
-		If ($minimizeWindows) { $shellApp.MinimizeAll() | Out-Null }
+		If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
 		
 		## Show the form
 		$result = $formWelcome.ShowDialog()
@@ -6747,7 +6747,7 @@ Function Show-InstallationProgress {
 				$global:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $global:ProgressSyncHash.Window.DragMove() })
 				#  Add a tooltip
 				$global:ProgressSyncHash.Window.ToolTip = $installTitle
-				$global:ProgressSyncHash.Window.ShowDialog() | Out-Null
+				$null = $global:ProgressSyncHash.Window.ShowDialog()
 				$global:ProgressSyncHash.Error = $Error
 			})
 			
@@ -7133,7 +7133,7 @@ Function Get-PEFileArchitecture {
 				
 				[byte[]]$data = New-Object -TypeName 'System.Byte[]' -ArgumentList 4096
 				$stream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($Path.FullName, 'Open', 'Read')
-				$stream.Read($data, 0, 4096) | Out-Null
+				$null = $stream.Read($data, 0, 4096)
 				$stream.Flush()
 				$stream.Close()
 				
@@ -7309,11 +7309,11 @@ Function Invoke-ObjectMethod {
 	Argument to pass to the method being executed. Allows execution of method by using named parameters.
 .EXAMPLE
 	$ShellApp = New-Object -ComObject 'Shell.Application'
-	Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll' | Out-Null
+	$null = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
 	Minimizes all windows.
 .EXAMPLE
 	$ShellApp = New-Object -ComObject 'Shell.Application'
-	Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'} | Out-Null
+	$null = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
 	Opens the C:\Windows folder in a Windows Explorer window.
 .NOTES
 	This is an internal script function and should typically not be called directly.
@@ -7484,7 +7484,7 @@ Function Get-MsiTableProperty {
 			## Apply a list of transform(s) to the database
 			If (($TransformPath) -and (-not $IsMspFile)) {
 				ForEach ($Transform in $TransformPath) {
-					Invoke-ObjectMethod -InputObject $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors) | Out-Null
+					$null = Invoke-ObjectMethod -InputObject $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
 				}
 			}
 			
@@ -7492,7 +7492,7 @@ Function Get-MsiTableProperty {
 			If ($PSCmdlet.ParameterSetName -eq 'TableInfo') {
 				## Open the requested table view from the database
 				[__comobject]$View = Invoke-ObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
-				Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+				$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
 				
 				## Create an empty object to store properties in
 				[psobject]$TableProperties = New-Object -TypeName 'PSObject'
@@ -7543,16 +7543,16 @@ Function Get-MsiTableProperty {
 		Finally {
 			Try {
 				If ($View) {
-					Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
-					Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null } Catch { }
+					$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View) } Catch { }
 				}
 				ElseIf($SummaryInformation) {
-					Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) | Out-Null } Catch { }
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
 				}
 			}
 			Catch { }
-			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) | Out-Null } Catch { }
-			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) } Catch { }
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
 		}
 	}
 	End {
@@ -7612,15 +7612,15 @@ Function Set-MsiProperty {
 			
 			## Open the requested table view from the database
 			[__comobject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
-			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+			$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
 			
 			## Retrieve the requested property from the requested table.
 			#  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
 			[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
 			
 			## Close the previous view on the MSI database
-			Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
-			[Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+			$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 			
 			## Set the MSI property
 			If ($Record) {
@@ -7632,7 +7632,7 @@ Function Set-MsiProperty {
 				[__comobject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
 			}
 			#  Execute the view to set the MSI property
-			Invoke-ObjectMethod -InputObject $View -MethodName 'Execute' | Out-Null
+			$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
 		}
 		Catch {
 			Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7643,8 +7643,8 @@ Function Set-MsiProperty {
 		Finally {
 			Try {
 				If ($View) {
-					Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @() | Out-Null
-					[Runtime.Interopservices.Marshal]::ReleaseComObject($View) | Out-Null
+					$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+					$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 				}
 			}
 			Catch { }
@@ -7737,7 +7737,7 @@ Function New-MsiTransform {
 			
 			## Create a second copy of the MSI database
 			Write-Log -Message "Copy MSI database in path [$MsiPath] to destination [$TempMsiPath]." -Source ${CmdletName}
-			Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+			$null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop'
 			
 			## Create a Windows Installer object
 			[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
@@ -7753,7 +7753,7 @@ Function New-MsiTransform {
 			## If a MSI transform file was specified, then apply it to the temporary copy of the MSI database
 			If ($ApplyTransformPath) {
 				Write-Log -Message "Apply transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]." -Source ${CmdletName}
-				Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors) | Out-Null
+				$null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors)
 			}
 			
 			## Determine the path for the new transform file that will be generated
@@ -7771,11 +7771,11 @@ Function New-MsiTransform {
 			& $TransformProperties
 			
 			## Commit the new properties to the temporary copy of the MSI database
-			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit' | Out-Null
+			$null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit'
 			
 			## Reopen the temporary copy of the MSI database in read only mode
 			#  Release the database object for the temporary copy of the MSI database
-			[Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null
+			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
 			#  Open the temporary copy of the MSI database in read only mode
 			Write-Log -Message "Re-open the MSI database [$TempMsiPath] in read only mode." -Source ${CmdletName}
 			[__comobject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
@@ -7783,13 +7783,13 @@ Function New-MsiTransform {
 			## Delete the new transform file path if it already exists
 			If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
 				Write-Log -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]." -Source ${CmdletName}
-				Remove-Item -LiteralPath $NewTransformPath -Force -ErrorAction 'Stop' | Out-Null
+				$null = Remove-Item -LiteralPath $NewTransformPath -Force -ErrorAction 'Stop'
 			}
 			
 			## Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database
 			Write-Log -Message "Generate new transform file [$NewTransformPath]." -Source ${CmdletName}
-			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath) | Out-Null
-			Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone) | Out-Null
+			$null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath)
+			$null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone)
 			
 			If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
 				Write-Log -Message "Successfully created new transform file in path [$NewTransformPath]." -Source ${CmdletName}
@@ -7805,13 +7805,13 @@ Function New-MsiTransform {
 			}
 		}
 		Finally {
-			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) | Out-Null } Catch { }
-			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($MsiPathDatabase) | Out-Null } Catch { }
-			Try { [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) | Out-Null } Catch { }
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase) } Catch { }
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($MsiPathDatabase) } Catch { }
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
 			Try {
 				## Delete the temporary copy of the MSI database
 				If (Test-Path -LiteralPath $TempMsiPath -PathType 'Leaf' -ErrorAction 'Stop') {
-					Remove-Item -LiteralPath $TempMsiPath -Force -ErrorAction 'Stop' | Out-Null
+					$null = Remove-Item -LiteralPath $TempMsiPath -Force -ErrorAction 'Stop'
 				}
 			}
 			Catch { }
@@ -7881,8 +7881,8 @@ Function Test-MSUpdates {
 			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List)" -Source ${CmdletName}
 			$kbFound = $true
 		}
-		[Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession) | Out-Null
-		[Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher) | Out-Null
+		$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
+		$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
 		
 		## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 		If (-not $kbFound) {
@@ -8538,7 +8538,7 @@ Function Invoke-SCCMTask {
 			## Trigger SCCM task
 			Write-Log -Message "Trigger SCCM Task ID [$ScheduleId]." -Source ${CmdletName}
 			[Management.ManagementClass]$SmsClient = [WMIClass]'ROOT\CCM:SMS_Client'
-			$SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID) | Out-Null
+			$null = $SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID)
 		}
 		Catch {
 			Write-Log -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -9883,7 +9883,7 @@ If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitNa
 If ($configToolkitCompressLogs) {
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
 	If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
-		Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue' | Out-Null
+		$null = Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue'
 	}
 }
 
@@ -10041,7 +10041,7 @@ If ($showBlockedAppDialog) {
 		Exit 60005
 	}
 	Finally {
-		If ($showBlockedAppDialogMutexLocked) { $showBlockedAppDialogMutex.ReleaseMutex() | Out-Null }
+		If ($showBlockedAppDialogMutexLocked) { $null = $showBlockedAppDialogMutex.ReleaseMutex() }
 		If ($showBlockedAppDialogMutex) { $showBlockedAppDialogMutex.Close() }
 	}
 }
@@ -10098,7 +10098,7 @@ Else {
 Try {
 	[__comobject]$SMSTSEnvironment = New-Object -ComObject 'Microsoft.SMS.TSEnvironment' -ErrorAction 'Stop'
 	Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $appDeployToolkitName
-	[Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment) | Out-Null
+	$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment)
 	$runningTaskSequence = $true
 }
 Catch {
