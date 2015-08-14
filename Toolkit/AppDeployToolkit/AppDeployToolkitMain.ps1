@@ -9746,7 +9746,7 @@ If ($invokingScript) {
 ## Add the custom types required for the toolkit
 If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	[string[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
-	Add-Type -LiteralPath $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
+	Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
 ## Define ScriptBlocks to disable/revert script logging
