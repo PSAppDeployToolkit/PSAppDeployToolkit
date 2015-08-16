@@ -1,4 +1,4 @@
-﻿Version 3.6.5 [08/xx/2015]
+﻿Version 3.6.5 [08/16/2015]
 	Added function New-MsiTransform to allow creation of transform files for MSI databases. Supporting functions: Set-MsiProperty, Invoke-ObjectMethod, Get-ObjectProperty.
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs
 	Added function Get-PendingReboot to get pending reboot status for the local computer (thanks to user 'That-Annoying-Guy' for the original code)
