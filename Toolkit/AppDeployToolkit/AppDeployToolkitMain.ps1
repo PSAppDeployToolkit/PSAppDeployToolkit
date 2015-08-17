@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/16/2015'
+[string]$appDeployMainScriptDate = '08/17/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -7673,17 +7673,17 @@ Function New-MsiTransform {
 	Default is: a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
 				b) If only -MsiPath was specified, then <MsiPath>.mst
 .PARAMETER TransformProperties
-	Script block which contains calls to Set-MsiProperty for configuring the desired properties which should be included in new transform file.
-	Example script block: [scriptblock]$TransformProperties = { Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1' }
+	Hashtable which contains calls to Set-MsiProperty for configuring the desired properties which should be included in new transform file.
+	Example hashtable: [hashtable]$TransformProperties = @{ 'ALLUSERS' = '1' }
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	[scriptblock]$TransformProperties = {
-		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
-		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'AgreeToLicense' -PropertyValue 'Yes'
-		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'REBOOT' -PropertyValue 'ReallySuppress'
-		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'RebootYesNo' -PropertyValue 'No'
-		Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ROOTDRIVE' -PropertyValue 'C:'
+	[hashtable]$TransformProperties = {
+		'ALLUSERS' = '1'
+		'AgreeToLicense' = 'Yes'
+		'REBOOT' = 'ReallySuppress'
+		'RebootYesNo' = 'No'
+		'ROOTDRIVE' = 'C:'
 	}
 	New-MsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties $TransformProperties
 .NOTES
@@ -7703,7 +7703,7 @@ Function New-MsiTransform {
 		[string]$NewTransformPath,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
-		[scriptblock]$TransformProperties,
+		[hashtable]$TransformProperties,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -7768,7 +7768,7 @@ Function New-MsiTransform {
 			}
 			
 			## Set the MSI properties in the temporary copy of the MSI database
-			& $TransformProperties
+			$TransformProperties.GetEnumerator() | ForEach-Object { Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName $_.Key -PropertyValue $_.Value }
 			
 			## Commit the new properties to the temporary copy of the MSI database
 			$null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit'
