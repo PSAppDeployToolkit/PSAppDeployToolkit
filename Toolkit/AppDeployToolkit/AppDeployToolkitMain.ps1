@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.5'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/17/2015'
+[string]$appDeployMainScriptDate = '08/25/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1522,7 +1522,7 @@ Function Show-InstallationPrompt {
 		
 		## Start the timer
 		$timer.Start()
-
+		
 		## Persistence Timer
 		[scriptblock]$RefreshInstallationPrompt = {
 			$formInstallationPrompt.BringToFront()
@@ -1549,7 +1549,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$Title`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -1564,7 +1564,7 @@ Function Show-InstallationPrompt {
 				}
 			}
 			$formInstallationPrompt.Dispose()
-
+			
 			Switch ($result) {
 				'Yes' { Write-Output -InputObject $buttonRightText }
 				'No' { Write-Output -InputObject $buttonLeftText }
@@ -7872,13 +7872,13 @@ Function Test-MSUpdates {
 												 'Description' |
 						Sort-Object -Property 'Date' -Descending
 		ForEach ($Update in $UpdateHistory) {
-			If ( ($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber) ) {
+			If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
 				$LatestUpdateHistory = $Update
 				Break
 			}
 		}
-		If ( ($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful') ) {
-			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List)" -Source ${CmdletName}
+		If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
+			Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
 			$kbFound = $true
 		}
 		$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
@@ -9850,9 +9850,9 @@ If (-not $appName) {
 	If (-not $appVendor) { [string]$appVendor = 'PS' }
 	If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
 	If (-not $appLang) { [string]$appLang = $currentLanguage }
+	If (-not $appRevision) { [string]$appRevision = '01' }
+	If (-not $appArch) { [string]$appArch = '' }
 }
-If (-not $appRevision) { [string]$appRevision = '01' }
-If (-not $appArch) { [string]$appArch = '' }
 [string]$installTitle = ("$appVendor $appName $appVersion").Trim()
 
 ## Sanitize the application details, as they can cause issues in the script
