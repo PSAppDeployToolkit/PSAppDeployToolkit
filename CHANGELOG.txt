@@ -2,6 +2,7 @@
 	Fixed issue with $appRevision being appended to $installName if not defined
 	Fixed issue in Show-InstallationPrompt with $installName being passed instead of $Title for -ReferringApplication parameter when -NoWait option specified
 	Fixed issue in Test-MSUpdates where information about the discovered KBArticle was not being converted to readable text before being logged
+	Fixed issue with detecting UI language by removing faulty detection method for Windows 8
 Version 3.6.5 [08/17/2015]
 	Added function New-MsiTransform to allow creation of transform files for MSI databases. Supporting functions: Set-MsiProperty, Invoke-ObjectMethod, Get-ObjectProperty.
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs
