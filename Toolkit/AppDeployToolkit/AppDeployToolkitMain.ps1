@@ -2330,6 +2330,9 @@ Function Remove-MSIApplications {
 	Overrides the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER FilterApplication
+	Multi-dimentional array that contains property/value/match-type pairs that should be used to filter the list of results returned by Get-InstalledApplication.
+	Properties that can be filtered upon: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER ExcludeFromUninstall
 	Multi-dimentional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
 	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
@@ -2349,6 +2352,15 @@ Function Remove-MSIApplications {
 	Remove-MSIApplications -Name 'Adobe'
 	Removes all versions of software that match the name "Adobe"
 .EXAMPLE
+	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(
+																		@('Is64BitApplication', $false, 'Exact'),
+																		@('Publisher', 'Oracle Corporation', 'Exact')
+																	)
+	Removes all versions of software that match the name "Java 8 Update" where the software is 32-bits and the publisher is "Oracle Corporation".
+.EXAMPLE
+	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(,,@('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall @(,,@('DisplayName', 'Java 8 Update 45', 'RegEx'))
+	Removes all versions of software that match the name "Java 8 Update" and also have "Oracle Corporation" as the Publisher; however, it does not uninstall "Java 8 Update 45" of the software. NOTE: if only specifying a single array in an array of arrays, the array must be preceded by two commas as in this example.
+.EXAMPLE
 	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(,,@('DisplayName', 'Java 8 Update 45', 'RegEx'))
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall "Java 8 Update 45" of the software. NOTE: if only specifying a single array in an array of arrays, the array must be preceded by two commas as in this example.
 .EXAMPLE
@@ -2360,7 +2372,7 @@ Function Remove-MSIApplications {
 																		)
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
-	More reading on how to create arrays if having trouble with -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
+	More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -2380,6 +2392,9 @@ Function Remove-MSIApplications {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$AddParameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[array]$FilterApplication = @(,,@()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[array]$ExcludeFromUninstall = @(,,@()),
@@ -2413,13 +2428,40 @@ Function Remove-MSIApplications {
 		[Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
 		If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
 			ForEach ($installedApplication in $installedApplications) {
-				[boolean]$addAppToRemoveList = $true
-				
 				If ($installedApplication.UninstallString -notmatch 'msiexec') {
 					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`"." -Severity 2 -Source ${CmdletName}
 					Continue
 				}
 				
+				#  Filter the results from Get-InstalledApplication to only those that should be uninstalled
+				If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
+					[boolean]$addAppToRemoveList = $false
+					ForEach ($Filter in $FilterApplication) {
+						If ($Filter[0][2] -eq 'RegEx') {
+							If ($installedApplication.($Filter[0][0]) -match [regex]::Escape($Filter[0][1])) {
+								[boolean]$addAppToRemoveList = $true
+								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($Filter[0][2] -eq 'WildCard') {
+							If ($installedApplication.($Filter[0][0]) -like $Filter[0][1]) {
+								[boolean]$addAppToRemoveList = $true
+								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($Filter[0][2] -eq 'Exact') {
+							If ($installedApplication.($Filter[0][0]) -eq $Filter[0][1]) {
+								[boolean]$addAppToRemoveList = $true
+								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+						}
+					}
+				}
+				Else {
+					[boolean]$addAppToRemoveList = $true
+				}
+				
+				#  Filter the results from Get-InstalledApplication to remove those that should never be uninstalled
 				If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count)) {
 					ForEach ($Exclude in $ExcludeFromUninstall) {
 						If ($Exclude[0][2] -eq 'RegEx') {

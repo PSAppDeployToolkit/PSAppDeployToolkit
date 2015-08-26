@@ -1,4 +1,5 @@
 ﻿Version 3.6.6 [08/25/2015]
+	Added ability in Remove-MSIApplications to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled
 	Fixed issue introduced in v3.6.5 where blocked application dialog did not display for blocked applications
 	Fixed issue with $appRevision being appended to $installName if not defined
 	Fixed issue in Show-InstallationPrompt with $installName being passed instead of $Title for -ReferringApplication parameter when -NoWait option specified
