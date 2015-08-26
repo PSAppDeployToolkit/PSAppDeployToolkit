@@ -2388,10 +2388,10 @@ Function Remove-MSIApplications {
 		[string]$AddParameters,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[array]$FilterApplication = @(,,@()),
+		[array]$FilterApplication = @(@()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[array]$ExcludeFromUninstall = @(,,@()),
+		[array]$ExcludeFromUninstall = @(@()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
@@ -2417,6 +2417,7 @@ Function Remove-MSIApplications {
 		If ($Exact) { $GetInstalledApplicationSplat.Add( 'Exact', $Exact) }
 		ElseIf ($WildCard) { $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard) }
 		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
+		Write-Log -Message "Found [$($installedApplications.Count)] applications that matched the specified criteria [$Name]." -Source ${CmdletName}
 		
 		## Filter the results from Get-InstalledApplication
 		[Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
@@ -2429,6 +2430,7 @@ Function Remove-MSIApplications {
 				
 				#  Filter the results from Get-InstalledApplication to only those that should be uninstalled
 				If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
+					Write-Log -Message "Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication]." -Source ${CmdletName}
 					[boolean]$addAppToRemoveList = $false
 					ForEach ($Filter in $FilterApplication) {
 						If ($Filter[0][2] -eq 'RegEx') {
@@ -2479,7 +2481,10 @@ Function Remove-MSIApplications {
 					}
 				}
 				
-				If ($addAppToRemoveList) { $removeMSIApplications.Add($installedApplication) }
+				If ($addAppToRemoveList) {
+					Write-Log -Message "Adding application to list for removal: [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
+					$removeMSIApplications.Add($installedApplication)
+				}
 			}
 		}
 		
