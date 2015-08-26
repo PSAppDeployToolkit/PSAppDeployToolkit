@@ -2417,7 +2417,7 @@ Function Remove-MSIApplications {
 		If ($Exact) { $GetInstalledApplicationSplat.Add( 'Exact', $Exact) }
 		ElseIf ($WildCard) { $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard) }
 		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
-		Write-Log -Message "Found [$($installedApplications.Count)] applications that matched the specified criteria [$Name]." -Source ${CmdletName}
+		Write-Log -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]." -Source ${CmdletName}
 		
 		## Filter the results from Get-InstalledApplication
 		[Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
