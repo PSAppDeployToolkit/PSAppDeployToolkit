@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.6'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/26/2015'
+[string]$appDeployMainScriptDate = '08/27/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1902,101 +1902,104 @@ Function Get-InstalledApplication {
 			Write-Log -Message "Get information for installed Product Code [$ProductCode]..." -Source ${CmdletName}
 		}
 		
+		## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
 		[psobject[]]$installedApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
-				[psobject[]]$regKeyApplication = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } } 2>$null
-				ForEach ($regKeyApp in $regKeyApplication) {
-					Try {
-						[string]$appDisplayName = ''
-						[string]$appDisplayVersion = ''
-						[string]$appPublisher = ''
-						
-						## Bypass any updates or hotfixes
-						If (-not $IncludeUpdatesAndHotfixes) {
-							If ($regKeyApp.DisplayName -match '(?i)kb\d+') { Continue }
-							If ($regKeyApp.DisplayName -match 'Cumulative Update') { Continue }
-							If ($regKeyApp.DisplayName -match 'Security Update') { Continue }
-							If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
-						}
-						
-						## Remove any control characters which may interfere with logging and creating file path names from these variables
-						$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
-						$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
-						$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
-						
-						## Determine if application is a 64-bit application
-						[boolean]$Is64BitApp = If (($is64Bit) -and ($regKey -notmatch '^HKLM:SOFTWARE\\Wow6432Node')) { $true } Else { $false }
-						
-						If ($ProductCode) {
-							## Verify if there is a match with the product code passed to the script
-							If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
-								Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
-								$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-									ProductCode = $regKeyApp.PSChildName
-									DisplayName = $appDisplayName
-									DisplayVersion = $appDisplayVersion
-									UninstallString = $regKeyApp.UninstallString
-									InstallSource = $regKeyApp.InstallSource
-									InstallLocation = $regKeyApp.InstallLocation
-									InstallDate = $regKeyApp.InstallDate
-									Publisher = $appPublisher
-									Is64BitApplication = $Is64BitApp
-								}
-							}
-						}
-						
-						If ($name) {
-							## Verify if there is a match with the application name(s) passed to the script
-							ForEach ($application in $Name) {
-								$applicationMatched = $false
-								If ($exact) {
-									#  Check for an exact application name match
-									If ($regKeyApp.DisplayName -eq $application) {
-										$applicationMatched = $true
-										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]." -Source ${CmdletName}
-									}
-								}
-								ElseIf ($WildCard) {
-									#  Check for wildcard application name match
-									If ($regKeyApp.DisplayName -like $application) {
-										$applicationMatched = $true
-										Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -Source ${CmdletName}
-									}
-								}
-								#  Check for a regex application name match
-								ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
-									$applicationMatched = $true
-									Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
-								}
-								
-								If ($applicationMatched) {
-									$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-										ProductCode = $regKeyApp.PSChildName
-										DisplayName = $appDisplayName
-										DisplayVersion = $appDisplayVersion
-										UninstallString = $regKeyApp.UninstallString
-										InstallSource = $regKeyApp.InstallSource
-										InstallLocation = $regKeyApp.InstallLocation
-										InstallDate = $regKeyApp.InstallDate
-										Publisher = $appPublisher
-										Is64BitApplication = $Is64BitApp
-									}
-								}
-							}
-						}
-					}
-					Catch {
-						Write-Log -Message "Failed to resolve application details from registry for [$appDisplayName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-						Continue
-					}
-				}
+				[psobject[]]$regKeyApplication += Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } } 2>$null
 			}
 		}
-		
 		If ($ErrorUninstallKeyPath) {
 			Write-Log -Message "The following error(s) took place while enumerating installed applications from the registry. `n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
 		}
+		
+		## Create a custom object with the desired properties for the installed applications and sanitize property details
+		ForEach ($regKeyApp in $regKeyApplication) {
+			Try {
+				[string]$appDisplayName = ''
+				[string]$appDisplayVersion = ''
+				[string]$appPublisher = ''
+				
+				## Bypass any updates or hotfixes
+				If (-not $IncludeUpdatesAndHotfixes) {
+					If ($regKeyApp.DisplayName -match '(?i)kb\d+') { Continue }
+					If ($regKeyApp.DisplayName -match 'Cumulative Update') { Continue }
+					If ($regKeyApp.DisplayName -match 'Security Update') { Continue }
+					If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
+				}
+				
+				## Remove any control characters which may interfere with logging and creating file path names from these variables
+				$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
+				$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
+				$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
+				
+				## Determine if application is a 64-bit application
+				[boolean]$Is64BitApp = If (($is64Bit) -and ($regKeyApp.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')) { $true } Else { $false }
+				
+				If ($ProductCode) {
+					## Verify if there is a match with the product code passed to the script
+					If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
+						Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
+						$installedApplication += New-Object -TypeName 'PSObject' -Property @{
+							ProductCode = $regKeyApp.PSChildName
+							DisplayName = $appDisplayName
+							DisplayVersion = $appDisplayVersion
+							UninstallString = $regKeyApp.UninstallString
+							InstallSource = $regKeyApp.InstallSource
+							InstallLocation = $regKeyApp.InstallLocation
+							InstallDate = $regKeyApp.InstallDate
+							Publisher = $appPublisher
+							Is64BitApplication = $Is64BitApp
+						}
+					}
+				}
+				
+				If ($name) {
+					## Verify if there is a match with the application name(s) passed to the script
+					ForEach ($application in $Name) {
+						$applicationMatched = $false
+						If ($exact) {
+							#  Check for an exact application name match
+							If ($regKeyApp.DisplayName -eq $application) {
+								$applicationMatched = $true
+								Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($WildCard) {
+							#  Check for wildcard application name match
+							If ($regKeyApp.DisplayName -like $application) {
+								$applicationMatched = $true
+								Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -Source ${CmdletName}
+							}
+						}
+						#  Check for a regex application name match
+						ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
+							$applicationMatched = $true
+							Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
+						}
+						
+						If ($applicationMatched) {
+							$installedApplication += New-Object -TypeName 'PSObject' -Property @{
+								ProductCode = $regKeyApp.PSChildName
+								DisplayName = $appDisplayName
+								DisplayVersion = $appDisplayVersion
+								UninstallString = $regKeyApp.UninstallString
+								InstallSource = $regKeyApp.InstallSource
+								InstallLocation = $regKeyApp.InstallLocation
+								InstallDate = $regKeyApp.InstallDate
+								Publisher = $appPublisher
+								Is64BitApplication = $Is64BitApp
+							}
+						}
+					}
+				}
+			}
+			Catch {
+				Write-Log -Message "Failed to resolve application details from registry for [$appDisplayName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Continue
+			}
+		}
+		
 		Write-Output -InputObject $installedApplication
 	}
 	End {
