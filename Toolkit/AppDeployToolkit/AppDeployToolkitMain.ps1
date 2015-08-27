@@ -657,7 +657,7 @@ Function Write-Log {
 				Return
 			}
 		}
-
+		
 		## Assemble the fully qualified path to the log file
 		[string]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 	}
@@ -1829,7 +1829,7 @@ Function Get-FreeDiskSpace {
 			Write-Log -Message "Retrieve free disk space for drive [$Drive]." -Source ${CmdletName}
 			$disk = Get-WmiObject -Class 'Win32_LogicalDisk' -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
 			[double]$freeDiskSpace = [math]::Round($disk.FreeSpace / 1MB)
-
+			
 			Write-Log -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]." -Source ${CmdletName}
 			Write-Output -InputObject $freeDiskSpace
 		}
@@ -4502,7 +4502,7 @@ Function Execute-ProcessAsUser {
 	}
 	End {
 		If ($PassThru) { Write-Output -InputObject $executeProcessAsUserExitCode }
-
+		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -4749,7 +4749,7 @@ Function Block-AppExecution {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
+		
 		## Remove illegal characters from the scheduled task arguments string
 		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@'
 		[string]$SchInstallName = $installName
@@ -7305,7 +7305,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 					[string]$RegSvr32Path = "$envWinDir\system32\regsvr32.exe"
 				}
 			}
-
+			
 			[psobject]$ExecuteResult = Execute-Process -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle 'Hidden' -PassThru
 			
 			If ($ExecuteResult.ExitCode -ne 0) {
