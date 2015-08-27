@@ -1903,7 +1903,6 @@ Function Get-InstalledApplication {
 		}
 		
 		## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
-		[psobject[]]$installedApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
 				[psobject[]]$regKeyApplication += Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } } 2>$null
@@ -1914,6 +1913,7 @@ Function Get-InstalledApplication {
 		}
 		
 		## Create a custom object with the desired properties for the installed applications and sanitize property details
+		[psobject[]]$installedApplication = @()
 		ForEach ($regKeyApp in $regKeyApplication) {
 			Try {
 				[string]$appDisplayName = ''
