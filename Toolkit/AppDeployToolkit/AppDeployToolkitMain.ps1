@@ -3112,9 +3112,9 @@ Function Remove-Folder {
 Function Copy-File {
 <#
 .SYNOPSIS
-	Copy a file to a destination path.
+	Copy a file or group of files to a destination path.
 .DESCRIPTION
-	Copy a file to a destination path.
+	Copy a file or group of files to a destination path.
 .PARAMETER Path
 	Path of the file to copy.
 .PARAMETER Destination
@@ -3125,6 +3125,9 @@ Function Copy-File {
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWindir\MyApp.ini"
+.EXAMPLE
+	Copy-File -Path "$dirSupportFiles\*.*" -Destination "$envTemp\tempfiles"
+	Copy all of the files in a folder to a destination folder.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
