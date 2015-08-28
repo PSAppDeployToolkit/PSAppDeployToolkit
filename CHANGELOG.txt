@@ -7,6 +7,8 @@
 	Fixed issue with detecting UI language by removing faulty detection method for Windows 8
 	Fixed issue in Block-AppExecution by removing illegal characters such as "&" from the arguments string of the XML file before importing it
 	Fixed issue in Get-InstalledApplication where invalid data in the registry could terminate enumeration of the registry
+	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress
+	Changed Set-Acl and Get-Acl -LiteralPath parameter to -Path in function New-ZipFile as -LiteralPath is not available in PS 2.0
 Version 3.6.5 [08/17/2015]
 	Added function New-MsiTransform to allow creation of transform files for MSI databases. Supporting functions: Set-MsiProperty, Invoke-ObjectMethod, Get-ObjectProperty.
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs

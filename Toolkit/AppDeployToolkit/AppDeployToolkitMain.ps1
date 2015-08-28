@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.6'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/27/2015'
+[string]$appDeployMainScriptDate = '08/28/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -906,8 +906,8 @@ Function New-ZipFile {
 			#  Apply the parent folder's permissions to the archive file to fix the problem.
 			Write-Log -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$DestinationArchiveDirectoryPath] to file [$DestinationPath]." -Source ${CmdletName}
 			Try {
-				[Security.AccessControl.DirectorySecurity]$DestinationArchiveDirectoryPathAcl = Get-Acl -LiteralPath $DestinationArchiveDirectoryPath -ErrorAction 'Stop'
-				Set-Acl -LiteralPath $DestinationPath -AclObject $DestinationArchiveDirectoryPathAcl -ErrorAction 'Stop'
+				[Security.AccessControl.DirectorySecurity]$DestinationArchiveDirectoryPathAcl = Get-Acl -Path $DestinationArchiveDirectoryPath -ErrorAction 'Stop'
+				Set-Acl -Path $DestinationPath -AclObject $DestinationArchiveDirectoryPathAcl -ErrorAction 'Stop'
 			}
 			Catch {
 				Write-Log -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -6808,12 +6808,10 @@ Function Show-InstallationProgress {
 		}
 		## Check if the progress thread is running before invoking methods on it
 		ElseIf ($global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
-			#  Allow time between updating the thread
-			Start-Sleep -Seconds 1
-			Write-Log -Message "Update progress message: [$statusMessage]." -Source ${CmdletName}
 			#  Update the progress text
 			Try {
-				$global:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Normal', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				$global:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Send', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				Write-Log -Message "Updated progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {
 				Write-Log -Message "Unable to update the progress message. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -7911,10 +7909,10 @@ Function Test-MSUpdates {
 		$UpdateSearcher.Online = $false
 		[int32]$UpdateHistoryCount = $UpdateSearcher.GetTotalHistoryCount()
 		[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
-						 Select-Object -Property 'Title','Date',
-												 @{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
-												 @{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
-												 'Description' |
+						Select-Object -Property 'Title','Date',
+												@{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
+												@{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
+												'Description' |
 						Sort-Object -Property 'Date' -Descending
 		ForEach ($Update in $UpdateHistory) {
 			If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
