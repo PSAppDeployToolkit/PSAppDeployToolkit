@@ -6680,27 +6680,27 @@ Function Show-InstallationProgress {
 		}
 		
 		## Check if the progress thread is running before invoking methods on it
-		If ($global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne 'Running') {
+		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne 'Running') {
 			#  Notify user that the software installation has started
 			$balloonText = "$deploymentTypeName $configBalloonTextStart"
 			Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
 			#  Create a synchronized hashtable to share objects between runspaces
-			$global:ProgressSyncHash = [hashtable]::Synchronized(@{ })
+			$script:ProgressSyncHash = [hashtable]::Synchronized(@{ })
 			#  Create a new runspace for the progress bar
-			$global:ProgressRunspace = [runspacefactory]::CreateRunspace()
-			$global:ProgressRunspace.ApartmentState = 'STA'
-			$global:ProgressRunspace.ThreadOptions = 'ReuseThread'
-			$global:ProgressRunspace.Open()
+			$script:ProgressRunspace = [runspacefactory]::CreateRunspace()
+			$script:ProgressRunspace.ApartmentState = 'STA'
+			$script:ProgressRunspace.ThreadOptions = 'ReuseThread'
+			$script:ProgressRunspace.Open()
 			#  Add the sync hash to the runspace
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('progressSyncHash', $global:ProgressSyncHash)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('progressSyncHash', $script:ProgressSyncHash)
 			#  Add other variables from the parent thread required in the progress runspace
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $installTitle)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('topMost', [string]$topMost)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
-			$global:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $installTitle)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', [string]$topMost)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
@@ -6784,33 +6784,33 @@ Function Show-InstallationProgress {
 				$xamlProgress.Window.Title = $installTitle
 				#  Parse the XAML
 				$progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList $xamlProgress
-				$global:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
-				$global:ProgressSyncHash.ProgressText = $global:ProgressSyncHash.Window.FindName('ProgressText')
+				$script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
+				$script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
 				#  Add an action to the Window.Closing event handler to disable the close button
-				$global:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
+				$script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
 				#  Allow the window to be dragged by clicking on it anywhere
-				$global:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $global:ProgressSyncHash.Window.DragMove() })
+				$script:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $script:ProgressSyncHash.Window.DragMove() })
 				#  Add a tooltip
-				$global:ProgressSyncHash.Window.ToolTip = $installTitle
-				$null = $global:ProgressSyncHash.Window.ShowDialog()
-				$global:ProgressSyncHash.Error = $Error
+				$script:ProgressSyncHash.Window.ToolTip = $installTitle
+				$null = $script:ProgressSyncHash.Window.ShowDialog()
+				$script:ProgressSyncHash.Error = $Error
 			})
 			
-			$progressCmd.Runspace = $global:ProgressRunspace
+			$progressCmd.Runspace = $script:ProgressRunspace
 			Write-Log -Message "Spin up progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
 			#  Invoke the progress runspace
 			$progressData = $progressCmd.BeginInvoke()
 			#  Allow the thread to be spun up safely before invoking actions against it.
 			Start-Sleep -Seconds 1
-			If ($global:ProgressSyncHash.Error) {
-				Write-Log -Message "Failure while displaying progress dialog. `n$(Resolve-Error -ErrorRecord $global:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
+			If ($script:ProgressSyncHash.Error) {
+				Write-Log -Message "Failure while displaying progress dialog. `n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 		## Check if the progress thread is running before invoking methods on it
-		ElseIf ($global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
+		ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
 			#  Update the progress text
 			Try {
-				$global:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Send', [Windows.Input.InputEventHandler]{ $global:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Send', [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
 				Write-Log -Message "Updated progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {
@@ -6850,12 +6850,12 @@ Function Close-InstallationProgress {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		If ($global:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
+		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
 			## Close the progress thread
 			Write-Log -Message 'Close the installation progress dialog.' -Source ${CmdletName}
-			$global:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
-			$global:ProgressSyncHash.Clear()
-			$global:ProgressRunspace.Close()
+			$script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
+			$script:ProgressSyncHash.Clear()
+			$script:ProgressRunspace.Close()
 		}
 	}
 	End {
