@@ -3310,16 +3310,23 @@ Function Convert-RegistryPath {
 			$key = $key -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
 		}
 		
-		## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-		If ($PSBoundParameters.ContainsKey('SID')) {
-			If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
+
+		If($Key -match '^HKEY_LOCAL_MACHINE|^HKEY_CLASSES_ROOT|^HKEY_CURRENT_USER|^HKEY_USERS|^HKEY_CURRENT_CONFIG|^HKEY_PERFORMANCE_DATA'){
+			## Check for expected key string format
+			If ($PSBoundParameters.ContainsKey('SID')) {
+				## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID				
+				If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
+			}
+						
+			If ($key -notmatch '^Registry::') { [string]$key = "Registry::$key" }
+			## Append the PowerShell drive to the registry key path
+			Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
+			Write-Output -InputObject $key
 		}
-		
-		## Append the PowerShell drive to the registry key path
-		If ($key -notmatch '^Registry::') { [string]$key = "Registry::$key" }
-		
-		Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
-		Write-Output -InputObject $key
+		Else{
+			## If key string is not properly formatted, throw an error
+			Throw "Unable to detect target registry hive in string [$key]."
+		}
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -3365,13 +3372,17 @@ Function Test-RegistryValue {
 	}
 	Process {
 		## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-		If ($PSBoundParameters.ContainsKey('SID')) {
-			[string]$Key = Convert-RegistryPath -Key $Key -SID $SID
+		Try {
+			If ($PSBoundParameters.ContainsKey('SID')) {
+				[string]$Key = Convert-RegistryPath -Key $Key -SID $SID
+			}
+			Else {
+				[string]$Key = Convert-RegistryPath -Key $Key
+			}
 		}
-		Else {
-			[string]$Key = Convert-RegistryPath -Key $Key
+		Catch {
+			Throw
 		}
-		
 		[boolean]$IsRegistryValueExists = $false
 		Try {
 			If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
