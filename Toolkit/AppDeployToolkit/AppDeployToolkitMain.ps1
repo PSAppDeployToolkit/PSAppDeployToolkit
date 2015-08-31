@@ -3310,14 +3310,13 @@ Function Convert-RegistryPath {
 			$key = $key -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
 		}
 		
-
 		If($Key -match '^HKEY_LOCAL_MACHINE|^HKEY_CLASSES_ROOT|^HKEY_CURRENT_USER|^HKEY_USERS|^HKEY_CURRENT_CONFIG|^HKEY_PERFORMANCE_DATA'){
 			## Check for expected key string format
 			If ($PSBoundParameters.ContainsKey('SID')) {
 				## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID				
 				If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
 			}
-						
+			
 			If ($key -notmatch '^Registry::') { [string]$key = "Registry::$key" }
 			## Append the PowerShell drive to the registry key path
 			Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
