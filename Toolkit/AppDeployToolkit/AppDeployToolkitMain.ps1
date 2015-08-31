@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.6'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/28/2015'
+[string]$appDeployMainScriptDate = '08/30/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -6532,7 +6532,7 @@ Function Show-BalloonTip {
 		If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) { Return }
 		
 		## Dispose of previous balloon
-		If ($global:notifyIcon) { Try { $global:notifyIcon.Dispose() } Catch {} }
+		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 		
 		## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
 		[boolean]$IsHostInvocationExists = $false
@@ -6576,7 +6576,7 @@ Function Show-BalloonTip {
 				Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
 				
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-				$global:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
+				$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 					BalloonTipIcon = $BalloonTipIcon
 					BalloonTipText = $BalloonTipText
 					BalloonTipTitle = $BalloonTipTitle
@@ -6586,11 +6586,11 @@ Function Show-BalloonTip {
 				}
 				
 				## Display the balloon tip notification asynchronously
-				$global:NotifyIcon.ShowBalloonTip($BalloonTipTime)
+				$script:NotifyIcon.ShowBalloonTip($BalloonTipTime)
 				
 				## Keep the asynchronous PowerShell process running so that we can dispose of the balloon tip icon
 				Start-Sleep -Milliseconds ($BalloonTipTime)
-				$global:notifyIcon.Dispose()
+				$script:notifyIcon.Dispose()
 			}
 			
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
@@ -6603,7 +6603,7 @@ Function Show-BalloonTip {
 		Else {
 			Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
 			[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-			$global:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
+			$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 				BalloonTipIcon = $BalloonTipIcon
 				BalloonTipText = $BalloonTipText
 				BalloonTipTitle = $BalloonTipTitle
@@ -6613,7 +6613,7 @@ Function Show-BalloonTip {
 			}
 			
 			## Display the balloon tip notification
-			$global:NotifyIcon.ShowBalloonTip($BalloonTipTime)
+			$script:NotifyIcon.ShowBalloonTip($BalloonTipTime)
 		}
 	}
 	End {
@@ -6699,7 +6699,7 @@ Function Show-InstallationProgress {
 			#  Add other variables from the parent thread required in the progress runspace
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $installTitle)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', [string]$topMost)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
