@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.6'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/30/2015'
+[string]$appDeployMainScriptDate = '08/31/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3283,7 +3283,7 @@ Function Convert-RegistryPath {
 	Process {
 		## Convert the registry key hive to the full path, only match if at the beginning of the line
 		If ($Key -match '^HKLM:\\|^HKCU:\\|^HKCR:\\|^HKU:\\|^HKCC:\\|^HKPD:\\') {
-			# Converts registry paths that start with, e.g.: HKLM:\
+			#  Converts registry paths that start with, e.g.: HKLM:\
 			$key = $key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\'
 			$key = $key -replace '^HKCR:\\', 'HKEY_CLASSES_ROOT\'
 			$key = $key -replace '^HKCU:\\', 'HKEY_CURRENT_USER\'
@@ -3292,7 +3292,7 @@ Function Convert-RegistryPath {
 			$key = $key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\'
 		}
 		ElseIf ($Key -match '^HKLM:|^HKCU:|^HKCR:|^HKU:|^HKCC:|^HKPD:') {
-			# Converts registry paths that start with, e.g.: HKLM:
+			#  Converts registry paths that start with, e.g.: HKLM:
 			$key = $key -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\'
 			$key = $key -replace '^HKCR:', 'HKEY_CLASSES_ROOT\'
 			$key = $key -replace '^HKCU:', 'HKEY_CURRENT_USER\'
@@ -3301,7 +3301,7 @@ Function Convert-RegistryPath {
 			$key = $key -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\'
 		}
 		ElseIf ($Key -match '^HKLM\\|^HKCU\\|^HKCR\\|^HKU\\|^HKCC\\|^HKPD\\') {
-			# Converts registry paths that start with, e.g.: HKLM\
+			#  Converts registry paths that start with, e.g.: HKLM\
 			$key = $key -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
 			$key = $key -replace '^HKCR\\', 'HKEY_CLASSES_ROOT\'
 			$key = $key -replace '^HKCU\\', 'HKEY_CURRENT_USER\'
@@ -3310,20 +3310,21 @@ Function Convert-RegistryPath {
 			$key = $key -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
 		}
 		
-		If($Key -match '^HKEY_LOCAL_MACHINE|^HKEY_CLASSES_ROOT|^HKEY_CURRENT_USER|^HKEY_USERS|^HKEY_CURRENT_CONFIG|^HKEY_PERFORMANCE_DATA'){
+		If ($PSBoundParameters.ContainsKey('SID')) {
+			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID				
+			If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
+		}
+		
+		## Append the PowerShell drive to the registry key path
+		If ($key -notmatch '^Registry::') {[string]$key = "Registry::$key" }
+		
+		If($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
 			## Check for expected key string format
-			If ($PSBoundParameters.ContainsKey('SID')) {
-				## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID				
-				If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
-			}
-			
-			If ($key -notmatch '^Registry::') { [string]$key = "Registry::$key" }
-			## Append the PowerShell drive to the registry key path
 			Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
 			Write-Output -InputObject $key
 		}
 		Else{
-			## If key string is not properly formatted, throw an error
+			#  If key string is not properly formatted, throw an error
 			Throw "Unable to detect target registry hive in string [$key]."
 		}
 	}
@@ -3692,9 +3693,15 @@ Function Remove-RegistryKey {
 						Write-Log -Message "Delete registry key recursively [$Key]." -Source ${CmdletName}
 						$null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
 					}
-					Else {
-						Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
-						$null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
+					Else {						
+						If($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')){
+							## Check if there are subkeys of $Key, if so, executing remove-item will hang. Avoiding this with Get-ChildItem.
+							Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
+							$null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
+						}
+						Else {
+							Throw "Unable to delete child key(s) of [$Key] without [-Recurse] switch."
+						}
 					}
 				}
 				Else {
