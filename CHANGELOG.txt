@@ -11,8 +11,9 @@
 	Fixed issue in Get-InstalledApplication where invalid data in the registry could terminate enumeration of the registry
 	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress
 	Changed Set-Acl and Get-Acl -LiteralPath parameter to -Path in function New-ZipFile as -LiteralPath is not available in PS 2.0
-	Changed $global: variables from Show-InstallationProgress to $script: variables
+	Changed $global: variables to $script: variables as these two scopes are the same in the context of the powershell console that executes the script
 	Improved registry functions to throw error if registry hive not specified
+	Improved comments and documentation
 Version 3.6.5 [08/17/2015]
 	Added function New-MsiTransform to allow creation of transform files for MSI databases. Supporting functions: Set-MsiProperty, Invoke-ObjectMethod, Get-ObjectProperty.
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs

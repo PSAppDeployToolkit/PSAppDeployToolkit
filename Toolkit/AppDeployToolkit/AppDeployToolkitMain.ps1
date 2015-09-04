@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.6'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.5'
-[string]$appDeployMainScriptDate = '08/31/2015'
+[string]$appDeployMainScriptDate = '09/04/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3693,7 +3693,7 @@ Function Remove-RegistryKey {
 						Write-Log -Message "Delete registry key recursively [$Key]." -Source ${CmdletName}
 						$null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
 					}
-					Else {						
+					Else {
 						If($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')){
 							## Check if there are subkeys of $Key, if so, executing remove-item will hang. Avoiding this with Get-ChildItem.
 							Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
@@ -9557,15 +9557,18 @@ Function Set-ServiceStartMode
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 			
-			If ($StartMode -eq 'Automatic') {$StartMode = 'Auto'}
+			## Set the name of the start up mode that will be passed to sc.exe
+			[string]$ScExeStartMode = $StartMode
+			If ($StartMode -eq 'Automatic') { $ScExeStartMode = 'Auto' }
+			If ($StartMode -eq 'Automatic (Delayed Start)') { $ScExeStartMode = 'Delayed-Auto' }
+			If ($StartMode -eq 'Manual') { $ScExeStartMode = 'Demand' }
 			
-			If ($StartMode -eq 'Automatic (Delayed Start)') {$StartMode = 'Delayed-Auto'}
-						
-			$ChangeStartMode = & sc.exe config $Name start= $StartMode
+			## Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
+			$ChangeStartMode = & sc.exe config $Name start= $ScExeStartMode
 			
 			If ($global:LastExitCode -ne 0) {
-					Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
-				}
+				Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
+			}
 			
 			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 		}
