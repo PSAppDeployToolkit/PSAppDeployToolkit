@@ -9556,18 +9556,17 @@ Function Set-ServiceStartMode
 			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
-			If ($StartMode -eq 'Automatic (Delayed Start)') {
-				$ChangeStartMode = & sc.exe config $Name start= delayed-auto
-				If ($global:LastExitCode -ne 0) {
+			
+			If ($StartMode -eq 'Automatic') {$StartMode = 'Auto'}
+			
+			If ($StartMode -eq 'Automatic (Delayed Start)') {$StartMode = 'Delayed-Auto'}
+						
+			$ChangeStartMode = & sc.exe config $Name start= $StartMode
+			
+			If ($global:LastExitCode -ne 0) {
 					Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
 				}
-			}
-			Else {
-				$ChangeStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop').ChangeStartMode($StartMode)
-				If($ChangeStartMode.ReturnValue -ne 0) {
-					Throw "The 'ChangeStartMode' method of the 'Win32_Service' WMI class failed with a return value of [$($ChangeStartMode.ReturnValue)]."
-				}
-			}
+			
 			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 		}
 		Catch {
