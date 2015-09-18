@@ -5590,7 +5590,7 @@ Function Show-InstallationWelcome {
 		}
 		
 		## Force nsd.exe to stop if Notes is one of the required applications to close
-		If (($processObjects | ForEach-Object { $_.ProcessName }) -contains 'notes') {
+		If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
 			## Get the path where Notes is installed
 			[string]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 			
