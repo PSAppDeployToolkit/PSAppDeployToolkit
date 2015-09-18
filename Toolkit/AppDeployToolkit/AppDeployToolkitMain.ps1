@@ -5599,28 +5599,30 @@ Function Show-InstallationWelcome {
 				#  Get a list of all the executables in the Notes folder
 				[string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 				## Check for running Notes executables and run NSD if any are found
-				$notesPathExes | ForEach-Object { If ((Get-Process).Name -contains $_) {
-					[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.Exe'
-					Try {
-						If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
-							Write-Log -Message "Execute [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
-							[Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
-							
-							If (-not ($notesNSDProcess.WaitForExit(10000))) {
-								Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
-								Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
+				$notesPathExes | ForEach-Object {
+					If ((Get-Process | Select-Object -ExpandProperty 'Name') -contains $_) {
+						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
+						Try {
+							If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
+								Write-Log -Message "Execute [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
+								[Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
+								
+								If (-not ($notesNSDProcess.WaitForExit(10000))) {
+									Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
+									Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
+								}
 							}
 						}
+						Catch {
+							Write-Log -Message "Failed to launch [$notesNSDExecutable]. `n$(Resolve-Error)" -Source ${CmdletName}
+						}
+						
+						Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
+						
+						#  Force NSD process to stop in case the previous command was not successful
+						Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
 					}
-					Catch {
-						Write-Log -Message "Failed to launch [$notesNSDExecutable]. `n$(Resolve-Error)" -Source ${CmdletName}
-					}
-					
-					Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
-					
-					#  Force NSD process to stop in case the previous command was not successful
-					Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
-				}}
+				}
 			}
 			
 			#  Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.

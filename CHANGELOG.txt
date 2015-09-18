@@ -12,6 +12,7 @@
 	Fixed issue with compiling scripts to EXE by removing support for alternative PowerShell hosts from AppDeployToolkitMain.ps1 file
 	Fixed typo in config XML file for Swedish language message for 'ClosePrompt_CountdownMessage'
 	Fixed issue in Show-InstallationWelcome where $notesPath was not defined before it was used
+	Fixed issue in Show-InstallationWelcome where all process names were not enumerated on PS2.0 when trying to close notes processes
 	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress
 	Changed Set-Acl and Get-Acl -LiteralPath parameter to -Path in function New-ZipFile as -LiteralPath is not available in PS 2.0
 	Changed $global: variables to $script: variables as these two scopes are the same in the context of the powershell console that executes the script
