@@ -10,6 +10,7 @@
 	Fixed issue in Block-AppExecution by removing illegal characters such as "&" from the arguments string of the XML file before importing it
 	Fixed issue in Get-InstalledApplication where invalid data in the registry could terminate enumeration of the registry
 	Fixed issue with compiling scripts to EXE by removing support for alternative PowerShell hosts from AppDeployToolkitMain.ps1 file
+	Fixed typo in config XML file for Swedish language message for 'ClosePrompt_CountdownMessage'
 	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress
 	Changed Set-Acl and Get-Acl -LiteralPath parameter to -Path in function New-ZipFile as -LiteralPath is not available in PS 2.0
 	Changed $global: variables to $script: variables as these two scopes are the same in the context of the powershell console that executes the script
