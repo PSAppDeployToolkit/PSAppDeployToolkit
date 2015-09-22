@@ -1,5 +1,6 @@
 ﻿Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
+	Updated documentation to add section on how to use zero-config MSI install option
 Version 3.6.6 [09/21/2015]
 	Added error handling for Remove-RegistryKey function when used on key with child keys and -Recurse parameter not used to avoid script hanging
 	Added ability in Remove-MSIApplications to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled
