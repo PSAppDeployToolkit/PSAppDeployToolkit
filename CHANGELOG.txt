@@ -1,7 +1,7 @@
-﻿Version 3.6.6 [08/xx/2015]
-	Added error handling for Remove-RegistryKey function when used on key with child keys and -Recurse parameter not used
+﻿Version 3.6.6 [09/21/2015]
+	Added error handling for Remove-RegistryKey function when used on key with child keys and -Recurse parameter not used to avoid script hanging
 	Added ability in Remove-MSIApplications to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled
-	Fixed issue with Set-ServiceStartMode where setting the service to Automatic will set it to Automatic(Delayed Start)
+	Fixed issue with Set-ServiceStartMode where setting the service to Automatic will set it to Automatic (Delayed Start)
 	Fixed issue introduced in v3.6.5 where blocked application dialog did not display for blocked applications
 	Fixed issue with $appRevision being appended to $installName if not defined
 	Fixed issue in Show-InstallationPrompt with $installName being passed instead of $Title for -ReferringApplication parameter when -NoWait option specified
@@ -13,7 +13,7 @@
 	Fixed typo in config XML file for Swedish language message for 'ClosePrompt_CountdownMessage'
 	Fixed issue in Show-InstallationWelcome where $notesPath was not defined before it was used
 	Fixed issue in Show-InstallationWelcome where all process names were not enumerated on PS2.0 when trying to close notes processes
-	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress
+	Changed message update priority, to increase it, from 'Normal' to 'Send' in Show-InstallationProgress (should hopefully address reports that messages do not display on screen on time)
 	Changed Set-Acl and Get-Acl -LiteralPath parameter to -Path in function New-ZipFile as -LiteralPath is not available in PS 2.0
 	Changed $global: variables to $script: variables as these two scopes are the same in the context of the powershell console that executes the script
 	Improved registry functions to throw error if registry hive not specified
