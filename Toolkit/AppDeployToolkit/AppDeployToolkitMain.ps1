@@ -53,9 +53,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.6'
+[version]$appDeployMainScriptVersion = [version]'3.6.7'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '09/21/2015'
+[string]$appDeployMainScriptDate = '09/22/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -590,11 +590,11 @@ Function Write-Log {
 		[boolean]$ScriptSectionDefined = [boolean](-not [string]::IsNullOrEmpty($ScriptSection))
 		#  Get the file name of the source script
 		Try {
-			If ($MyInvocation.Value.ScriptName) {
-				[string]$ScriptSource = Split-Path -Path $MyInvocation.Value.ScriptName -Leaf -ErrorAction 'Stop'
+			If ($script:MyInvocation.Value.ScriptName) {
+				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf -ErrorAction 'Stop'
 			}
 			Else {
-				[string]$ScriptSource = Split-Path -Path $MyInvocation.MyCommand.Definition -Leaf -ErrorAction 'Stop'
+				[string]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction 'Stop'
 			}
 		}
 		Catch {
