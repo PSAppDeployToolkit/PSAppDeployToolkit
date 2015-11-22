@@ -1,4 +1,6 @@
-﻿Version 3.6.7 [09/22/2015]
+﻿Version 3.6.8 [11/22/2015]
+	Updated Offscrub13.vbs to latest from Microsoft. Fixes issue with completion notice
+Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
 	Updated documentation to add section on how to use zero-config MSI install option
 Version 3.6.6 [09/21/2015]

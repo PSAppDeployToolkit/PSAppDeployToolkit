@@ -68,8 +68,8 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '3.6.5'
-	[string]$appScriptDate = '08/17/2015'
+	[string]$appScriptVersion = '3.6.8'
+	[string]$appScriptDate = '11/22/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
