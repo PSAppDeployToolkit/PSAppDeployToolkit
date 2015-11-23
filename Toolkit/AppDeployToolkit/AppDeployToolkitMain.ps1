@@ -53,9 +53,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.7'
+[version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '09/22/2015'
+[string]$appDeployMainScriptDate = '11/23/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -73,6 +73,12 @@ Param (
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
 [string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
+[String]$envCommonDesktop = [Environment]::GetFolderPath('CommonDesktop')
+[String]$envCommonDocuments = [Environment]::GetFolderPath('CommonDocuments')
+[String]$envCommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
+[String]$envCommonStartMenu = [Environment]::GetFolderPath('CommonStartMenu')
+[string]$envCommonStartUp = [Environment]::GetFolderPath('CommonStartUp')
+[string]$envCommonTemplates = [Environment]::GetFolderPath('CommonTemplates')
 [string]$envComputerName = [Environment]::MachineName.ToUpper()
 [string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
@@ -94,13 +100,16 @@ Param (
 [string]$envUserInternetHistory = [Environment]::GetFolderPath('History')
 [string]$envUserMyDocuments = [Environment]::GetFolderPath('MyDocuments')
 [string]$envUserName = [Environment]::UserName
+[string]$envUserPictures = [Environment]::GetFolderPath('MyPictures')
 [string]$envUserProfile = $env:USERPROFILE
 [string]$envUserSendTo = [Environment]::GetFolderPath('SendTo')
 [string]$envUserStartMenu = [Environment]::GetFolderPath('StartMenu')
 [string]$envUserStartMenuPrograms = [Environment]::GetFolderPath('Programs')
 [string]$envUserStartUp = [Environment]::GetFolderPath('StartUp')
+[string]$envUserTemplates = [Environment]::GetFolderPath('Templates')
 [string]$envSystem32Directory = [Environment]::SystemDirectory
 [string]$envWinDir = $env:WINDIR
+
 #  Handle X86 environment variables so they are never empty
 If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $envCommonProgramFiles }
 If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $envProgramFiles }
