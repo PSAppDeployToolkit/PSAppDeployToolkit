@@ -1,5 +1,6 @@
 ﻿Version 3.6.8 [11/22/2015]
-	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system
+	Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
+	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system	
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
 	Updated Offscrub13.vbs to latest from Microsoft. Fixes issue with completion notice
 Version 3.6.7 [09/22/2015]

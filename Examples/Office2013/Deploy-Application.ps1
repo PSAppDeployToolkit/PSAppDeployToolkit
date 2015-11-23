@@ -244,7 +244,7 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		# Activate Office components (if running as a user)
-		If (-not $osdMode) {
+		If ($CurrentLoggedOnUserSession -or $CurrentConsoleUserSession -or $RunAsActiveUser) {
 			If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType 'Leaf') {
 				Show-InstallationProgress -StatusMessage 'Activating Microsoft Office components. This may take some time. Please wait...'
 				Execute-Process -Path 'cscript.exe' -Parameters "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden
