@@ -68,8 +68,8 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '3.6.5'
-	[string]$appScriptDate = '08/12/2015'
+	[string]$appScriptVersion = '3.6.8'
+	[string]$appScriptDate = '11/22/2015'
 	[string]$appScriptAuthor = 'Dan Cunningham'
 	##*===============================================
 	
@@ -82,7 +82,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.5'
-	[string]$deployAppScriptDate = '08/11/2015'
+	[string]$deployAppScriptDate = '08/17/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -244,7 +244,7 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		# Activate Office components (if running as a user)
-		If (-not $osdMode) {
+		If ($CurrentLoggedOnUserSession -or $CurrentConsoleUserSession -or $RunAsActiveUser) {
 			If (Test-Path -LiteralPath (Join-Path -Path $dirOffice -ChildPath 'Office15\OSPP.VBS') -PathType 'Leaf') {
 				Show-InstallationProgress -StatusMessage 'Activating Microsoft Office components. This may take some time. Please wait...'
 				Execute-Process -Path 'cscript.exe' -Parameters "`"$dirOffice\Office15\OSPP.VBS`" /ACT" -WindowStyle Hidden

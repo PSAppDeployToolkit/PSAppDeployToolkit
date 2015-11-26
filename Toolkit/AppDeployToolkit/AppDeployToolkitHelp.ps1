@@ -17,8 +17,8 @@
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.5.0'
-[string]$appDeployHelpScriptDate = '08/12/2015'
+[version]$appDeployHelpScriptVersion = [version]'3.6.5'
+[string]$appDeployHelpScriptDate = '08/17/2015'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
@@ -77,7 +77,7 @@ Function Show-HelpConsole {
 	$HelpListBox.add_SelectedIndexChanged({ $HelpTextBox.Text = Get-Help -Name $HelpListBox.SelectedItem -Detailed | Out-String })
 	$helpFunctions = Get-Command -CommandType 'Function' | Where-Object { ($_.HelpUri -match 'psappdeploytoolkit') -and ($_.Definition -notmatch 'internal script function') } | Select-Object -ExpandProperty Name
 	ForEach ($helpFunction in $helpFunctions) {
-		$HelpListBox.Items.Add($helpFunction) | Out-Null
+		$null = $HelpListBox.Items.Add($helpFunction)
 	}
 	$HelpForm.Controls.Add($HelpListBox)
 	$HelpTextBox.Anchor = 11
@@ -104,7 +104,7 @@ Function Show-HelpConsole {
 	## Init the OnLoad event to correct the initial state of the form
 	$HelpForm.add_Load($OnLoadForm_StateCorrection)
 	## Show the Form
-	$HelpForm.ShowDialog() | Out-Null
+	$null = $HelpForm.ShowDialog()
 }
 
 ##*===============================================
