@@ -7903,7 +7903,7 @@ Function Test-MSUpdates {
 	Param (
 		[Parameter(Mandatory=$true,Position=0,HelpMessage='Enter the KB Number for the Microsoft Update')]
 		[ValidateNotNullorEmpty()]
-		[string]$KBNumber
+		[string]$KBNumber,
 		[Parameter(Mandatory=$false,Position=1)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
