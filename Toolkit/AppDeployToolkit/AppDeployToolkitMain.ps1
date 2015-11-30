@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '11/23/2015'
+[string]$appDeployMainScriptDate = '11/30/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -68,17 +68,18 @@ Param (
 
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
+[string]$envShellFolders = Get-ItemProperty -Path "HKLM:Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -ErrorAction SilentlyContinue
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
 [string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
-[String]$envCommonDesktop = [Environment]::GetFolderPath('CommonDesktop')
-[String]$envCommonDocuments = [Environment]::GetFolderPath('CommonDocuments')
-[String]$envCommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
-[String]$envCommonStartMenu = [Environment]::GetFolderPath('CommonStartMenu')
-[string]$envCommonStartUp = [Environment]::GetFolderPath('CommonStartUp')
-[string]$envCommonTemplates = [Environment]::GetFolderPath('CommonTemplates')
+[String]$envCommonDesktop   = $ShellFolders| Select $Value -ExpandProperty "Common Desktop"
+[String]$envCommonDocuments = $ShellFolders| Select $Value -ExpandProperty "Common Documents"
+[String]$envCommonPrograms  = $ShellFolders | Select $Value -ExpandProperty "Common Programs"
+[String]$envCommonStartMenu = $ShellFolders| Select $Value -ExpandProperty "Common Start Menu"
+[string]$envCommonStartUp   = $ShellFolders| Select $Value -ExpandProperty "Common Startup"
+[string]$envCommonTemplates = $ShellFolders| Select $Value -ExpandProperty "Common Templates"
 [string]$envComputerName = [Environment]::MachineName.ToUpper()
 [string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
