@@ -5,7 +5,8 @@
 	Updated Offscrub13.vbs to latest from Microsoft. Fixes issue with completion notice
 	Updated environment variables with additions for Pictures, Templates, and Common User locations
 	Fixed issue with Test-MSUpdates where a comma was missing after the parameter KBNumber
-	Fixed issue where Get-InstalledApplication throw an error when attempting to import invalid registry values from the subkeys of the Uninstall key 
+	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
+	Improved error handling in the Get-InstalledApplication function
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
 	Updated documentation to add section on how to use zero-config MSI install option

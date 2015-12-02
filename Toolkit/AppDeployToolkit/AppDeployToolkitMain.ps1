@@ -1913,7 +1913,17 @@ Function Get-InstalledApplication {
 		[psobject[]]$regKeyApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
-				[psobject[]]$regKeyApplication += Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -Name DisplayName,DisplayVersion,UninstallString,InstallSource,InstallLocation,InstallDate,Publisher -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } } 2>$null
+				$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath'
+				ForEach ($UninstallKeyApp in $UninstallKeyApps) {
+					Try {
+						[psobject]$regKeyApplicationProps = Get-ItemProperty -LiteralPath $UninstallKeyApp.PSPath -ErrorAction 'Stop'
+						If ($regKeyApplicationProps.DisplayName) { $regKeyApplication += $regKeyApplicationProps }
+					}
+					Catch{
+						$ErrorUninstallKeyPath += $_
+						Continue
+					}
+				}
 			}
 		}
 		If ($ErrorUninstallKeyPath) {
