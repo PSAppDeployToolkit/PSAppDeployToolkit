@@ -1,4 +1,4 @@
-﻿Version 3.6.8 [11/30/2015]
+﻿Version 3.6.8 [12/xx/2015]
 	Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
 	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system	
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
@@ -7,9 +7,11 @@
 	Fixed issue with Test-MSUpdates where a comma was missing after the parameter KBNumber
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Improved error handling in the Get-InstalledApplication function
+
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
 	Updated documentation to add section on how to use zero-config MSI install option
+
 Version 3.6.6 [09/21/2015]
 	Added error handling for Remove-RegistryKey function when used on key with child keys and -Recurse parameter not used to avoid script hanging
 	Added ability in Remove-MSIApplications to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled
@@ -30,6 +32,7 @@ Version 3.6.6 [09/21/2015]
 	Changed $global: variables to $script: variables as these two scopes are the same in the context of the powershell console that executes the script
 	Improved registry functions to throw error if registry hive not specified
 	Improved comments and documentation
+
 Version 3.6.5 [08/17/2015]
 	Added function New-MsiTransform to allow creation of transform files for MSI databases. Supporting functions: Set-MsiProperty, Invoke-ObjectMethod, Get-ObjectProperty.
 	Added ability in Remove-MSIApplications to exclude software from being uninstalled by matching against specified property/value/match-type pairs
