@@ -68,7 +68,7 @@ Param (
 
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
-[psobject[]]$envShellFolders = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
+[psobject]$envShellFolders = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
