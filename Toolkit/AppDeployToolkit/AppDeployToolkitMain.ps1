@@ -2050,6 +2050,8 @@ Function Execute-MSI {
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER SecureParameters
+	Hides all parameters passed to the MSI or MSP file from the toolkit Log file.
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
@@ -2101,6 +2103,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$AddParameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$SecureParameters = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Patch,
@@ -2306,6 +2311,7 @@ Function Execute-MSI {
 												  WindowStyle = 'Normal' }
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
+			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
 			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
 			#  Call the Execute-Process function
 			If ($PassThru) {
@@ -2555,6 +2561,8 @@ Function Execute-Process {
 	Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
 .PARAMETER Parameters
 	Arguments to be passed to the executable
+.PARAMETER SecureParameters
+	Hides all parameters passed to the executable from the Toolkit log file
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
 	Note: Not all processes honor the "Hidden" flag. If it it not working, then check the command line options for the process being executed to see it has a silent option.
@@ -2602,6 +2610,8 @@ Function Execute-Process {
 		[Alias('Arguments')]
 		[ValidateNotNullorEmpty()]
 		[string[]]$Parameters,
+		[Parameter(Mandatory=$false)]
+		[switch]$SecureParameters = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
@@ -2716,8 +2726,13 @@ Function Execute-Process {
 					If ($Parameters -match '-Command \&') {
 						Write-Log -Message "Executing [$Path [PowerShell ScriptBlock]]..." -Source ${CmdletName}
 					}
-					Else{
-						Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+					Else {
+						If ($SecureParameters) {
+							Write-Log -Message "Executing [$Path (Parameters Hidden)]..." -Source ${CmdletName}
+						}
+						Else {							
+							Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+						}
 					}
 				}
 				Else {

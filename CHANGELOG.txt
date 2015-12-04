@@ -7,6 +7,7 @@
 	Fixed issue with Test-MSUpdates where a comma was missing after the parameter KBNumber
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Improved error handling in the Get-InstalledApplication function
+	Added SecureParameters parameter to Execute-MSI and Execute-Process functions
 
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
