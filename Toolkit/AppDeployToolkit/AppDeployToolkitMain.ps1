@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '12/05/2015'
+[string]$appDeployMainScriptDate = '12/06/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -6024,7 +6024,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelDefer.MaximumSize = $System_Drawing_Size
-		$labelDefer.Margin = $paddingNone
+		$labelDefer.Margin = '20,0,20,0'
 		$labelDefer.Padding = $labelPadding
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
@@ -6053,7 +6053,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelCountdown.MaximumSize = $System_Drawing_Size
-		$labelCountdown.Margin = $paddingNone
+		$labelCountdown.Margin = '75,0,0,0'
 		$labelCountdown.Padding = $labelPadding
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
