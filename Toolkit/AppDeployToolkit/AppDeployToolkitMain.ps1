@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '12/04/2015'
+[string]$appDeployMainScriptDate = '12/05/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -110,7 +110,6 @@ Param (
 [string]$envUserTemplates = [Environment]::GetFolderPath('Templates')
 [string]$envSystem32Directory = [Environment]::SystemDirectory
 [string]$envWinDir = $env:WINDIR
-
 #  Handle X86 environment variables so they are never empty
 If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $envCommonProgramFiles }
 If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $envProgramFiles }
@@ -987,7 +986,7 @@ Function Exit-Script {
 		Default { $installSuccess = $false }
 	}
 	
-	## Determine if baloon notification should be shown
+	## Determine if balloon notification should be shown
 	If ($deployModeSilent) { [boolean]$configShowBalloonNotifications = $false }
 	
 	If ($installSuccess) {
@@ -2056,7 +2055,7 @@ Function Execute-MSI {
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-	For uninstallations, by default the product code is resolved to the displayname and version of the application.
+	For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER SkipMSIAlreadyInstalledCheck
@@ -2064,7 +2063,7 @@ Function Execute-MSI {
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Defautl is: $false.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Default is: $false.
 .EXAMPLE
 	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
@@ -2352,16 +2351,16 @@ Function Remove-MSIApplications {
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER FilterApplication
-	Multi-dimentional array that contains property/value/match-type pairs that should be used to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled.
+	Multi-dimensional array that contains property/value/match-type pairs that should be used to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled.
 	Properties that can be filtered upon: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER ExcludeFromUninstall
-	Multi-dimentional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
+	Multi-dimensional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
 	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-	For uninstallations, by default the product code is resolved to the displayname and version of the application.
+	For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
@@ -2982,12 +2981,12 @@ Function Test-IsMutexAvailable {
 			$IsMutexFree = $false
 		}
 		Catch [Threading.AbandonedMutexException] {
-			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a Mutex object that another thread has abandoned by exiting without releasing it.
+			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a mutex object that another thread has abandoned by exiting without releasing it.
 			$IsMutexFree = $true
 		}
 		Catch {
 			$IsUnhandledException = $true
-			## Return $true, to signify that Mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
+			## Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
 			Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			$IsMutexFree = $true
 		}
@@ -3746,7 +3745,7 @@ Function Remove-RegistryKey {
 					$null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
 				}
 				Else {
-					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registery key does not exist." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
 				}
 			}
 		}
@@ -5252,7 +5251,7 @@ Function Show-InstallationWelcome {
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
 .PARAMETER ForceCountdown
-	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+	Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 .PARAMETER CustomText
 	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
@@ -5341,7 +5340,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$TopMost = $true,
-		## Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled
+		## Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCountdown = 0,
@@ -5713,7 +5712,7 @@ Function Show-WelcomePrompt {
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
 .PARAMETER ForceCountdown
-	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+	Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 .PARAMETER CustomText
 	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
@@ -6588,7 +6587,7 @@ Function Show-BalloonTip {
 		Try { [string]$callingFunction = $MyInvocation.Value.MyCommand.Name } Catch { }
 		
 		If ($callingFunction -eq 'Exit-Script') {
-			Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]." -Source ${CmdletName}
+			Write-Log -Message "Display balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
 			## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait
 			[scriptblock]$notifyIconScriptBlock = {
 				Param (
@@ -6716,7 +6715,7 @@ Function Show-InstallationProgress {
 		}
 		
 		If ($envHost.Name -match 'PowerGUI') {
-			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
 			Return
 		}
 		
@@ -6980,7 +6979,7 @@ Function Set-PinnedApplication {
 				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $verb } -ErrorAction 'Stop'
 				
 				If ($null -eq $itemVerb) {
-					Write-Log -Message "Performing action [$verb] is not programatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Performing action [$verb] is not programmatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
 				}
 				Else {
 					Write-Log -Message "Perform action [$verb] on [$FilePath]." -Source ${CmdletName}
@@ -8344,7 +8343,7 @@ Function Test-Battery {
 		## PowerStatus class found in this assembly is more reliable than WMI in cases where the battery is failing.
 		Add-Type -Assembly 'System.Windows.Forms' -ErrorAction 'SilentlyContinue'
 		
-		## Initialize a hashtable to store informaiton about system type and power status
+		## Initialize a hashtable to store information about system type and power status
 		[hashtable]$SystemTypePowerStatus = @{ }
 	}
 	Process {
@@ -8950,7 +8949,7 @@ Function Set-ActiveSetup {
 .PARAMETER Arguments
 	Arguments to pass to the file being executed.
 .PARAMETER Description
-	Description for the Active Setup. Users will see "Setting up personalised settings for: $Description" at logon. Default is: $installName.
+	Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Default is: $installName.
 .PARAMETER Key
 	Name of the registry key for the Active Setup entry. Default is: $installName.
 .PARAMETER Version
