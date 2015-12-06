@@ -7954,25 +7954,30 @@ Function Test-MSUpdates {
 			#  Indicates whether the UpdateSearcher goes online to search for updates.
 			$UpdateSearcher.Online = $false
 			[int32]$UpdateHistoryCount = $UpdateSearcher.GetTotalHistoryCount()
-			[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
-							Select-Object -Property 'Title','Date',
-													@{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
-													@{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
-													'Description' |
-							Sort-Object -Property 'Date' -Descending
-			ForEach ($Update in $UpdateHistory) {
-				If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
-					$LatestUpdateHistory = $Update
-					Break
+			If ($UpdateHistoryCount -gt 0) {
+				[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
+								Select-Object -Property 'Title','Date',
+														@{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
+														@{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
+														'Description' |
+								Sort-Object -Property 'Date' -Descending
+				ForEach ($Update in $UpdateHistory) {
+					If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
+						$LatestUpdateHistory = $Update
+						Break
+					}
 				}
+				If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
+					Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
+					$kbFound = $true
+				}
+				$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
+				$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
 			}
-			If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-				Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
-				$kbFound = $true
+			Else {
+				Write-Log -Message "Unable to detect Windows update history via COM object. Trying via the Get-Hotfix CmdLet." -Source ${CmdletName}
 			}
-			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
-			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
-			
+
 			## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 			If (-not $kbFound) {
 				Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }

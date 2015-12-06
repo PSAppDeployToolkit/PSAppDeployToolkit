@@ -9,6 +9,7 @@
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
 	Improved comments and documentation
 	Improved error handling in the Get-InstalledApplication function
+	Improved error handling in the Test-MSUpdates function
 
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
