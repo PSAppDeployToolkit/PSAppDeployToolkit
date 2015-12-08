@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '11/23/2015'
+[string]$appDeployMainScriptDate = '12/06/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -68,17 +68,18 @@ Param (
 
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
+[psobject]$envShellFolders = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
 [string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
 [string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
-[String]$envCommonDesktop = [Environment]::GetFolderPath('CommonDesktop')
-[String]$envCommonDocuments = [Environment]::GetFolderPath('CommonDocuments')
-[String]$envCommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
-[String]$envCommonStartMenu = [Environment]::GetFolderPath('CommonStartMenu')
-[string]$envCommonStartUp = [Environment]::GetFolderPath('CommonStartUp')
-[string]$envCommonTemplates = [Environment]::GetFolderPath('CommonTemplates')
+[string]$envCommonDesktop   = $envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction 'SilentlyContinue'
+[string]$envCommonDocuments = $envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction 'SilentlyContinue'
+[string]$envCommonPrograms  = $envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction 'SilentlyContinue'
+[string]$envCommonStartMenu = $envShellFolders | Select-Object -ExpandProperty 'Common Start Menu' -ErrorAction 'SilentlyContinue'
+[string]$envCommonStartUp   = $envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction 'SilentlyContinue'
+[string]$envCommonTemplates = $envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction 'SilentlyContinue'
 [string]$envComputerName = [Environment]::MachineName.ToUpper()
 [string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
@@ -109,7 +110,6 @@ Param (
 [string]$envUserTemplates = [Environment]::GetFolderPath('Templates')
 [string]$envSystem32Directory = [Environment]::SystemDirectory
 [string]$envWinDir = $env:WINDIR
-
 #  Handle X86 environment variables so they are never empty
 If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $envCommonProgramFiles }
 If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $envProgramFiles }
@@ -986,7 +986,7 @@ Function Exit-Script {
 		Default { $installSuccess = $false }
 	}
 	
-	## Determine if baloon notification should be shown
+	## Determine if balloon notification should be shown
 	If ($deployModeSilent) { [boolean]$configShowBalloonNotifications = $false }
 	
 	If ($installSuccess) {
@@ -1912,7 +1912,17 @@ Function Get-InstalledApplication {
 		[psobject[]]$regKeyApplication = @()
 		ForEach ($regKey in $regKeyApplications) {
 			If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
-				[psobject[]]$regKeyApplication += Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | ForEach-Object { Get-ItemProperty -Name DisplayName,DisplayVersion,UninstallString,InstallSource,InstallLocation,InstallDate,Publisher -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath' | Where-Object { $_.DisplayName } } 2>$null
+				[psobject[]]$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath'
+				ForEach ($UninstallKeyApp in $UninstallKeyApps) {
+					Try {
+						[psobject]$regKeyApplicationProps = Get-ItemProperty -LiteralPath $UninstallKeyApp.PSPath -ErrorAction 'Stop'
+						If ($regKeyApplicationProps.DisplayName) { [psobject[]]$regKeyApplication += $regKeyApplicationProps }
+					}
+					Catch{
+						Write-Log -Message "Unable to enumerate properties from registry key path [$($UninstallKeyApp.PSPath)]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+						Continue
+					}
+				}
 			}
 		}
 		If ($ErrorUninstallKeyPath) {
@@ -2039,11 +2049,13 @@ Function Execute-MSI {
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
+.PARAMETER SecureParameters
+	Hides all parameters passed to the MSI or MSP file from the toolkit Log file.
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-	For uninstallations, by default the product code is resolved to the displayname and version of the application.
+	For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 .PARAMETER WorkingDirectory
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER SkipMSIAlreadyInstalledCheck
@@ -2051,7 +2063,7 @@ Function Execute-MSI {
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Defautl is: $false.
+	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Default is: $false.
 .EXAMPLE
 	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
@@ -2090,6 +2102,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$AddParameters,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$SecureParameters = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Patch,
@@ -2295,6 +2310,7 @@ Function Execute-MSI {
 												  WindowStyle = 'Normal' }
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
+			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
 			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
 			#  Call the Execute-Process function
 			If ($PassThru) {
@@ -2335,16 +2351,16 @@ Function Remove-MSIApplications {
 .PARAMETER AddParameters
 	Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER FilterApplication
-	Multi-dimentional array that contains property/value/match-type pairs that should be used to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled.
+	Multi-dimensional array that contains property/value/match-type pairs that should be used to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled.
 	Properties that can be filtered upon: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER ExcludeFromUninstall
-	Multi-dimentional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
+	Multi-dimensional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
 	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
 	Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-	For uninstallations, by default the product code is resolved to the displayname and version of the application.
+	For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
@@ -2544,6 +2560,8 @@ Function Execute-Process {
 	Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
 .PARAMETER Parameters
 	Arguments to be passed to the executable
+.PARAMETER SecureParameters
+	Hides all parameters passed to the executable from the Toolkit log file
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
 	Note: Not all processes honor the "Hidden" flag. If it it not working, then check the command line options for the process being executed to see it has a silent option.
@@ -2591,6 +2609,8 @@ Function Execute-Process {
 		[Alias('Arguments')]
 		[ValidateNotNullorEmpty()]
 		[string[]]$Parameters,
+		[Parameter(Mandatory=$false)]
+		[switch]$SecureParameters = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Normal','Hidden','Maximized','Minimized')]
 		[Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
@@ -2705,8 +2725,13 @@ Function Execute-Process {
 					If ($Parameters -match '-Command \&') {
 						Write-Log -Message "Executing [$Path [PowerShell ScriptBlock]]..." -Source ${CmdletName}
 					}
-					Else{
-						Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+					Else {
+						If ($SecureParameters) {
+							Write-Log -Message "Executing [$Path (Parameters Hidden)]..." -Source ${CmdletName}
+						}
+						Else {							
+							Write-Log -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+						}
 					}
 				}
 				Else {
@@ -2956,12 +2981,12 @@ Function Test-IsMutexAvailable {
 			$IsMutexFree = $false
 		}
 		Catch [Threading.AbandonedMutexException] {
-			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a Mutex object that another thread has abandoned by exiting without releasing it.
+			## The wait completed because a thread exited without releasing a mutex. This exception is thrown when one thread acquires a mutex object that another thread has abandoned by exiting without releasing it.
 			$IsMutexFree = $true
 		}
 		Catch {
 			$IsUnhandledException = $true
-			## Return $true, to signify that Mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
+			## Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
 			Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			$IsMutexFree = $true
 		}
@@ -3720,7 +3745,7 @@ Function Remove-RegistryKey {
 					$null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
 				}
 				Else {
-					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registery key does not exist." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
 				}
 			}
 		}
@@ -5226,7 +5251,7 @@ Function Show-InstallationWelcome {
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
 .PARAMETER ForceCountdown
-	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+	Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 .PARAMETER CustomText
 	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
@@ -5315,7 +5340,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$TopMost = $true,
-		## Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled
+		## Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCountdown = 0,
@@ -5687,7 +5712,7 @@ Function Show-WelcomePrompt {
 .PARAMETER TopMost
 	Specifies whether the windows is the topmost window. Default: $true.
 .PARAMETER ForceCountdown
-	Specify a countdown to display before automatically proceeding with the installation when a deferal is enabled.
+	Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 .PARAMETER CustomText
 	Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 .EXAMPLE
@@ -5999,7 +6024,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelDefer.MaximumSize = $System_Drawing_Size
-		$labelDefer.Margin = $paddingNone
+		$labelDefer.Margin = '20,0,20,0'
 		$labelDefer.Padding = $labelPadding
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
@@ -6028,7 +6053,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelCountdown.MaximumSize = $System_Drawing_Size
-		$labelCountdown.Margin = $paddingNone
+		$labelCountdown.Margin = '75,0,0,0'
 		$labelCountdown.Padding = $labelPadding
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
@@ -6562,7 +6587,7 @@ Function Show-BalloonTip {
 		Try { [string]$callingFunction = $MyInvocation.Value.MyCommand.Name } Catch { }
 		
 		If ($callingFunction -eq 'Exit-Script') {
-			Write-Log -Message "Display balloon tip notification asyhchronously with message [$BalloonTipText]." -Source ${CmdletName}
+			Write-Log -Message "Display balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
 			## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait
 			[scriptblock]$notifyIconScriptBlock = {
 				Param (
@@ -6690,7 +6715,7 @@ Function Show-InstallationProgress {
 		}
 		
 		If ($envHost.Name -match 'PowerGUI') {
-			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multithreading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "$($envHost.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
 			Return
 		}
 		
@@ -6954,7 +6979,7 @@ Function Set-PinnedApplication {
 				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $verb } -ErrorAction 'Stop'
 				
 				If ($null -eq $itemVerb) {
-					Write-Log -Message "Performing action [$verb] is not programatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Performing action [$verb] is not programmatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
 				}
 				Else {
 					Write-Log -Message "Perform action [$verb] on [$FilePath]." -Source ${CmdletName}
@@ -7929,25 +7954,30 @@ Function Test-MSUpdates {
 			#  Indicates whether the UpdateSearcher goes online to search for updates.
 			$UpdateSearcher.Online = $false
 			[int32]$UpdateHistoryCount = $UpdateSearcher.GetTotalHistoryCount()
-			[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
-							Select-Object -Property 'Title','Date',
-													@{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
-													@{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
-													'Description' |
-							Sort-Object -Property 'Date' -Descending
-			ForEach ($Update in $UpdateHistory) {
-				If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
-					$LatestUpdateHistory = $Update
-					Break
+			If ($UpdateHistoryCount -gt 0) {
+				[psobject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
+								Select-Object -Property 'Title','Date',
+														@{Name = 'Operation'; Expression = { Switch ($_.Operation) { 1 {'Installation'}; 2 {'Uninstallation'}; 3 {'Other'} } } },
+														@{Name = 'Status'; Expression = { Switch ($_.ResultCode) { 0 {'Not Started'}; 1 {'In Progress'}; 2 {'Successful'}; 3 {'Incomplete'}; 4 {'Failed'}; 5 {'Aborted'} } } },
+														'Description' |
+								Sort-Object -Property 'Date' -Descending
+				ForEach ($Update in $UpdateHistory) {
+					If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
+						$LatestUpdateHistory = $Update
+						Break
+					}
 				}
+				If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
+					Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
+					$kbFound = $true
+				}
+				$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
+				$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
 			}
-			If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-				Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
-				$kbFound = $true
+			Else {
+				Write-Log -Message "Unable to detect Windows update history via COM object. Trying via the Get-Hotfix CmdLet." -Source ${CmdletName}
 			}
-			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
-			$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
-			
+
 			## Check for update using built in PS cmdlet which uses WMI in the background to gather details
 			If (-not $kbFound) {
 				Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
@@ -8318,7 +8348,7 @@ Function Test-Battery {
 		## PowerStatus class found in this assembly is more reliable than WMI in cases where the battery is failing.
 		Add-Type -Assembly 'System.Windows.Forms' -ErrorAction 'SilentlyContinue'
 		
-		## Initialize a hashtable to store informaiton about system type and power status
+		## Initialize a hashtable to store information about system type and power status
 		[hashtable]$SystemTypePowerStatus = @{ }
 	}
 	Process {
@@ -8924,7 +8954,7 @@ Function Set-ActiveSetup {
 .PARAMETER Arguments
 	Arguments to pass to the file being executed.
 .PARAMETER Description
-	Description for the Active Setup. Users will see "Setting up personalised settings for: $Description" at logon. Default is: $installName.
+	Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Default is: $installName.
 .PARAMETER Key
 	Name of the registry key for the Active Setup entry. Default is: $installName.
 .PARAMETER Version
