@@ -3216,30 +3216,35 @@ Function Copy-File {
 Function Remove-File {
 <#
 .SYNOPSIS
-	Remove a file or all files recursively in a given path.
+	Removes one or more items from a given path on the filesystem.
 .DESCRIPTION
-	Remove a file or all files recursively in a given path.
+	Removes one or more items from a given path on the filesystem.
 .PARAMETER Path
-	Path of the file to remove.
+	Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+.PARAMETER LiteralPath
+	Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 .PARAMETER Recurse
-	Optionally, remove all files recursively in a directory.
+	Deletes the files in the specified location(s) and in all child items of the location(s).
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Remove-File -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
 .EXAMPLE
-	Remove-File -Path 'C:\Windows\Downloaded Program Files' -Recurse
+	Remove-File -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true,ParameterSetName='Path')]
 		[ValidateNotNullorEmpty()]
-		[string]$Path,
+		[string[]]$Path,
+		[Parameter(Mandatory=$true,ParameterSetName='LiteralPath')]
+		[ValidateNotNullorEmpty()]
+		[string[]]$LiteralPath,
 		[Parameter(Mandatory=$false)]
-		[switch]$Recurse,
+		[switch]$Recurse = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -3251,25 +3256,64 @@ Function Remove-File {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		Try {
-			If ($Recurse) {
-				Write-Log -Message "Delete file(s) recursively in path [$path]..." -Source ${CmdletName}
-				$null = Remove-Item -Path $path -Force -Recurse -ErrorAction 'Stop'
-			}
-			Else {
-				Write-Log -Message "Delete file in path [$path]..." -Source ${CmdletName}
-				$null = Remove-Item -Path $path -Force -ErrorAction 'Stop'
+		## Build hashtable of parameters/value pairs to be passed to Remove-Item cmdlet
+		[hashtable]$RemoveFileSplat =  @{ 'Recurse' = $Recurse
+										  'Force' = $true
+										  'ErrorVariable' = '+ErrorRemoveItem'
+										}
+		If ($ContinueOnError) {
+			$RemoveFileSplat.Add('ErrorAction', 'SilentlyContinue')
+		}
+		Else {
+			$RemoveFileSplat.Add('ErrorAction', 'Stop')
+		}
+		
+		## Resolve the specified path, if the path does not exist, error will be saved to ErrorVariable
+		If ($PSCmdlet.ParameterSetName -eq 'Path') {
+			[string[]]$SpecifiedPath = $Path
+			[string[]]$ResolvedPath = Resolve-Path -Path $Path -ErrorVariable '+ErrorRemoveItem' -ErrorAction 'SilentlyContinue' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'SilentlyContinue'
+		}
+		Else {
+			[string[]]$SpecifiedPath = $LiteralPath
+			[string[]]$ResolvedPath = Resolve-Path -LiteralPath $LiteralPath -ErrorVariable '+ErrorRemoveItem' -ErrorAction 'SilentlyContinue' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'SilentlyContinue'
+		}
+		
+		## Delete specified path if it was successfully resolved
+		If ($ResolvedPath) {
+			ForEach ($Item in $ResolvedPath) {
+				Try {
+					If (($Recurse) -and (-not ([IO.Path]::HasExtension($Item)))) {
+						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
+					}
+					Else {
+						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
+					}
+                    $null = Remove-Item @RemoveFileSplat -LiteralPath $Item                    
+				}
+				Catch {
+					If (-not $ContinueOnError) {
+						Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+						Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
+					}
+					Continue
+				}
 			}
 		}
-		Catch {
-			Write-Log -Message "Failed to delete file(s) in path [$path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		Else {
+			#  If failed to resolve file/folder, i.e. the specified path does not exist on the system
+			Write-Log -Message "Failed to delete file(s) in path [$SpecifiedPath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
-				Throw "Failed to delete file(s) in path [$path]: $($_.Exception.Message)"
+				Throw "Failed to delete file(s) in path [$SpecifiedPath]: $($ErrorRemoveItem.Exception.Message)"
 			}
+		}
+		
+		If ($ErrorRemoveItem) {
+			Write-Log -Message "The following error(s) took place while removing files in path [$SpecifiedPath]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
 		}
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion
