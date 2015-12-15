@@ -3288,7 +3288,7 @@ Function Remove-File {
 					Else {
 						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
 					}
-                    $null = Remove-Item @RemoveFileSplat -LiteralPath $Item                    
+					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item                    
 				}
 				Catch {
 					If (-not $ContinueOnError) {
@@ -3313,7 +3313,6 @@ Function Remove-File {
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion
