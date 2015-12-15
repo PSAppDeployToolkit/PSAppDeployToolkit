@@ -5,7 +5,6 @@
 	Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
 	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system	
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
-	Fixed issue in Show-InstallationWelcome where dialog window text was offset to the left
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
 	Improved comments and documentation
