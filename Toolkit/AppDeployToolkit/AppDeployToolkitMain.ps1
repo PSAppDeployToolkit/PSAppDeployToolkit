@@ -3280,10 +3280,13 @@ Function Remove-File {
 				}
 			}
 			Catch [System.Management.Automation.ItemNotFoundException] {
-				Write-Log -Message "Unable to delete file(s) in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
 			}
 			Catch {
-				$ErrorRemoveItem += $_
+				Write-Log -Message "Failed to resolve file(s) for deletion in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw "Failed to resolve file(s) for deletion in path [$Item]: $($_.Exception.Message)"
+				}
 			}
 		}
 		
@@ -3304,7 +3307,6 @@ Function Remove-File {
 					If (-not $ContinueOnError) {
 						Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
 					}
-					Continue
 				}
 			}
 		}
