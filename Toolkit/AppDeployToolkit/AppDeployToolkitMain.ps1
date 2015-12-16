@@ -3268,14 +3268,23 @@ Function Remove-File {
 			$RemoveFileSplat.Add('ErrorAction', 'Stop')
 		}
 		
-		## Resolve the specified path, if the path does not exist, error will be saved to ErrorVariable
-		If ($PSCmdlet.ParameterSetName -eq 'Path') {
-			[string[]]$SpecifiedPath = $Path
-			[string[]]$ResolvedPath = Resolve-Path -Path $Path -ErrorVariable '+ErrorRemoveItem' -ErrorAction 'SilentlyContinue' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'SilentlyContinue'
-		}
-		Else {
-			[string[]]$SpecifiedPath = $LiteralPath
-			[string[]]$ResolvedPath = Resolve-Path -LiteralPath $LiteralPath -ErrorVariable '+ErrorRemoveItem' -ErrorAction 'SilentlyContinue' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'SilentlyContinue'
+		## Resolve the specified path, if the path does not exist, display a warning instead of an error
+		If ($PSCmdlet.ParameterSetName -eq 'Path') { [string[]]$SpecifiedPath = $Path } Else { [string[]]$SpecifiedPath = $LiteralPath }
+		ForEach ($Item in $SpecifiedPath) {
+			Try {
+				If ($PSCmdlet.ParameterSetName -eq 'Path') {
+					[string[]]$ResolvedPath += Resolve-Path -Path $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+				}
+				Else {
+					[string[]]$ResolvedPath += Resolve-Path -LiteralPath $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+				}
+			}
+			Catch [System.Management.Automation.ItemNotFoundException] {
+				Write-Log -Message "Unable to delete file(s) in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
+			}
+			Catch {
+				$ErrorRemoveItem += $_
+			}
 		}
 		
 		## Delete specified path if it was successfully resolved
@@ -3291,19 +3300,12 @@ Function Remove-File {
 					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item                    
 				}
 				Catch {
+					Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
-						Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 						Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
 					}
 					Continue
 				}
-			}
-		}
-		Else {
-			#  If failed to resolve file/folder, i.e. the specified path does not exist on the system
-			Write-Log -Message "Failed to delete file(s) in path [$SpecifiedPath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			If (-not $ContinueOnError) {
-				Throw "Failed to delete file(s) in path [$SpecifiedPath]: $($ErrorRemoveItem.Exception.Message)"
 			}
 		}
 		
