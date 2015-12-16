@@ -3291,7 +3291,7 @@ Function Remove-File {
 		If ($ResolvedPath) {
 			ForEach ($Item in $ResolvedPath) {
 				Try {
-					If (($Recurse) -and (-not ([IO.Path]::HasExtension($Item)))) {
+					If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container'))) {
 						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
 					}
 					Else {
