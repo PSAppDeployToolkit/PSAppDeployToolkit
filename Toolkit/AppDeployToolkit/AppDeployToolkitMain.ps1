@@ -3257,8 +3257,8 @@ Function Remove-File {
 	}
 	Process {
 		## Build hashtable of parameters/value pairs to be passed to Remove-Item cmdlet
-		[hashtable]$RemoveFileSplat =  @{ 'Recurse' = $Recurse
-										  'Force' = $true
+		[hashtable]$RemoveFileSplat =  @{ 'Recurse:' = $Recurse
+										  'Force:' = $true
 										  'ErrorVariable' = '+ErrorRemoveItem'
 										}
 		If ($ContinueOnError) {
@@ -3300,7 +3300,7 @@ Function Remove-File {
 					Else {
 						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
 					}
-					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item                    
+					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item
 				}
 				Catch {
 					Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
