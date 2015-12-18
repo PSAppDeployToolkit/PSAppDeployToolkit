@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '12/15/2015'
+[string]$appDeployMainScriptDate = '12/18/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -4832,7 +4832,7 @@ Function Block-AppExecution {
 .PARAMETER ProcessName
 	Name of the process or processes separated by commas
 .EXAMPLE
-	Block-AppExecution -ProcessName 'winword,excel'
+	Block-AppExecution -ProcessName ('winword','excel')
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
@@ -4978,7 +4978,7 @@ Function Unblock-AppExecution {
 .DESCRIPTION
 	This function is called by the Exit-Script function or when the script itself is called with the parameters -CleanupBlockedApps
 .EXAMPLE
-	UnblockAppExecution
+	Unblock-AppExecution
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
