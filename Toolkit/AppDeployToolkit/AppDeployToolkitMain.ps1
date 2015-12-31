@@ -2319,6 +2319,7 @@ Function Execute-MSI {
 			Else {
 				Execute-Process @ExecuteProcessSplat
 			}
+			#  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
 			Refresh-Desktop
 		}
 		Else {
