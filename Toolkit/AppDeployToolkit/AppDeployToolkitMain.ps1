@@ -2755,8 +2755,14 @@ Function Execute-Process {
 					While (-not ($process.HasExited)) { $process.Refresh(); Start-Sleep -Seconds 1 }
 					
 					## Get the exit code for the process
-					[int32]$returnCode = $process.ExitCode
-					
+					Try {
+						[int32]$returnCode = $process.ExitCode
+					}
+					Catch [System.Management.Automation.PSInvalidCastException] {
+						#  Catch exit codes that are out of int32 range
+						[int32]$returnCode = 60013
+					}
+
 					## Unregister standard output event to retrieve process output
 					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
 					$stdOut = $stdOutBuilder.ToString() -replace $null,''
