@@ -54,7 +54,7 @@ Param (
 
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
 [string]$appDeployMainScriptDate = '12/31/2015'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
