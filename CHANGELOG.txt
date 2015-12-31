@@ -7,7 +7,6 @@
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
-	Fixed issue in Execute-MSI where environment variables set by MSIs are sometimes not available after install
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
 	Improved comments and documentation
 	Improved error handling in the Get-InstalledApplication function
