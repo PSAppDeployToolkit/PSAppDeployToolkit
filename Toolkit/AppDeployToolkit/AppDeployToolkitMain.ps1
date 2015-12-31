@@ -2319,6 +2319,7 @@ Function Execute-MSI {
 			Else {
 				Execute-Process @ExecuteProcessSplat
 			}
+			Refresh-Desktop
 		}
 		Else {
 			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
