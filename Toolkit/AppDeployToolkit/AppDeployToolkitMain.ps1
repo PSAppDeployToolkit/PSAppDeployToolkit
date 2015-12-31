@@ -3804,6 +3804,9 @@ Function Remove-RegistryKey {
 				}
 			}
 		}
+		Catch [System.Management.Automation.PSArgumentException] {
+			Write-Log -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2 -Source ${CmdletName}
+		}
 		Catch {
 			If (-not ($Name)) {
 				Write-Log -Message "Failed to delete registry key [$Key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
