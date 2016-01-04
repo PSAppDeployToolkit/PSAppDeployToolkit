@@ -1,4 +1,4 @@
-﻿Version 3.6.8 [12/xx/2015]
+﻿Version 3.6.8 [01/xx/2016]
 	Added environment variables with additions for Pictures, Templates, and Common User locations
 	Added SecureParameters parameter to Execute-MSI and Execute-Process functions
 	Added language translations for Slovak, Hungarian and also updated translations for German

@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '12/31/2015'
+[string]$appDeployMainScriptDate = '01/03/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3438,6 +3438,8 @@ Function Test-RegistryValue {
 .EXAMPLE
 	Test-RegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
 .NOTES
+	To test if registry key exists, use Test-Path function like so:
+	Test-Path -Path $Key -PathType 'Container'
 .LINK
 	http://psappdeploytoolkit.com
 #>
