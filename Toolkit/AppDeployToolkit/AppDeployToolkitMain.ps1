@@ -10042,7 +10042,7 @@ Else {
 ## Variables: Log Files
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
-[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
+[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
 If ($configToolkitCompressLogs) {
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
 	If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
