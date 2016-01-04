@@ -54,8 +54,8 @@ Param (
 
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.6'
-[string]$appDeployMainScriptDate = '12/06/2015'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
+[string]$appDeployMainScriptDate = '01/03/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2319,6 +2319,8 @@ Function Execute-MSI {
 			Else {
 				Execute-Process @ExecuteProcessSplat
 			}
+			#  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
+			Refresh-Desktop
 		}
 		Else {
 			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
@@ -2753,8 +2755,14 @@ Function Execute-Process {
 					While (-not ($process.HasExited)) { $process.Refresh(); Start-Sleep -Seconds 1 }
 					
 					## Get the exit code for the process
-					[int32]$returnCode = $process.ExitCode
-					
+					Try {
+						[int32]$returnCode = $process.ExitCode
+					}
+					Catch [System.Management.Automation.PSInvalidCastException] {
+						#  Catch exit codes that are out of int32 range
+						[int32]$returnCode = 60013
+					}
+
 					## Unregister standard output event to retrieve process output
 					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
 					$stdOut = $stdOutBuilder.ToString() -replace $null,''
@@ -3216,30 +3224,35 @@ Function Copy-File {
 Function Remove-File {
 <#
 .SYNOPSIS
-	Remove a file or all files recursively in a given path.
+	Removes one or more items from a given path on the filesystem.
 .DESCRIPTION
-	Remove a file or all files recursively in a given path.
+	Removes one or more items from a given path on the filesystem.
 .PARAMETER Path
-	Path of the file to remove.
+	Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+.PARAMETER LiteralPath
+	Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 .PARAMETER Recurse
-	Optionally, remove all files recursively in a directory.
+	Deletes the files in the specified location(s) and in all child items of the location(s).
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Remove-File -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
 .EXAMPLE
-	Remove-File -Path 'C:\Windows\Downloaded Program Files' -Recurse
+	Remove-File -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true,ParameterSetName='Path')]
 		[ValidateNotNullorEmpty()]
-		[string]$Path,
+		[string[]]$Path,
+		[Parameter(Mandatory=$true,ParameterSetName='LiteralPath')]
+		[ValidateNotNullorEmpty()]
+		[string[]]$LiteralPath,
 		[Parameter(Mandatory=$false)]
-		[switch]$Recurse,
+		[switch]$Recurse = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -3251,21 +3264,63 @@ Function Remove-File {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		Try {
-			If ($Recurse) {
-				Write-Log -Message "Delete file(s) recursively in path [$path]..." -Source ${CmdletName}
-				$null = Remove-Item -Path $path -Force -Recurse -ErrorAction 'Stop'
+		## Build hashtable of parameters/value pairs to be passed to Remove-Item cmdlet
+		[hashtable]$RemoveFileSplat =  @{ 'Recurse' = $Recurse
+										  'Force' = $true
+										  'ErrorVariable' = '+ErrorRemoveItem'
+										}
+		If ($ContinueOnError) {
+			$RemoveFileSplat.Add('ErrorAction', 'SilentlyContinue')
+		}
+		Else {
+			$RemoveFileSplat.Add('ErrorAction', 'Stop')
+		}
+		
+		## Resolve the specified path, if the path does not exist, display a warning instead of an error
+		If ($PSCmdlet.ParameterSetName -eq 'Path') { [string[]]$SpecifiedPath = $Path } Else { [string[]]$SpecifiedPath = $LiteralPath }
+		ForEach ($Item in $SpecifiedPath) {
+			Try {
+				If ($PSCmdlet.ParameterSetName -eq 'Path') {
+					[string[]]$ResolvedPath += Resolve-Path -Path $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+				}
+				Else {
+					[string[]]$ResolvedPath += Resolve-Path -LiteralPath $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+				}
 			}
-			Else {
-				Write-Log -Message "Delete file in path [$path]..." -Source ${CmdletName}
-				$null = Remove-Item -Path $path -Force -ErrorAction 'Stop'
+			Catch [System.Management.Automation.ItemNotFoundException] {
+				Write-Log -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
+			}
+			Catch {
+				Write-Log -Message "Failed to resolve file(s) for deletion in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw "Failed to resolve file(s) for deletion in path [$Item]: $($_.Exception.Message)"
+				}
 			}
 		}
-		Catch {
-			Write-Log -Message "Failed to delete file(s) in path [$path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			If (-not $ContinueOnError) {
-				Throw "Failed to delete file(s) in path [$path]: $($_.Exception.Message)"
+		
+		## Delete specified path if it was successfully resolved
+		If ($ResolvedPath) {
+			ForEach ($Item in $ResolvedPath) {
+				Try {
+					If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
+						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
+					}
+					Else {
+						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
+					}
+					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item
+				}
+				Catch {
+					Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					If (-not $ContinueOnError) {
+						Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
+					}
+				}
 			}
+		}
+		
+		If ($ErrorRemoveItem) {
+			Write-Log -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -3383,6 +3438,8 @@ Function Test-RegistryValue {
 .EXAMPLE
 	Test-RegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
 .NOTES
+	To test if registry key exists, use Test-Path function like so:
+	Test-Path -Path $Key -PathType 'Container'
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -3748,6 +3805,9 @@ Function Remove-RegistryKey {
 					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
 				}
 			}
+		}
+		Catch [System.Management.Automation.PSArgumentException] {
+			Write-Log -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2 -Source ${CmdletName}
 		}
 		Catch {
 			If (-not ($Name)) {
@@ -4785,7 +4845,7 @@ Function Block-AppExecution {
 .PARAMETER ProcessName
 	Name of the process or processes separated by commas
 .EXAMPLE
-	Block-AppExecution -ProcessName 'winword,excel'
+	Block-AppExecution -ProcessName ('winword','excel')
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
@@ -4874,7 +4934,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -ReferringApplication `" & chr(34) & `"$installName`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -ReferringApplication `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
@@ -4931,7 +4991,7 @@ Function Unblock-AppExecution {
 .DESCRIPTION
 	This function is called by the Exit-Script function or when the script itself is called with the parameters -CleanupBlockedApps
 .EXAMPLE
-	UnblockAppExecution
+	Unblock-AppExecution
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
@@ -6024,7 +6084,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelDefer.MaximumSize = $System_Drawing_Size
-		$labelDefer.Margin = '20,0,20,0'
+		$labelDefer.Margin = $paddingNone
 		$labelDefer.Padding = $labelPadding
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
@@ -6053,7 +6113,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $System_Drawing_Size
 		$System_Drawing_Size.Height = 0
 		$labelCountdown.MaximumSize = $System_Drawing_Size
-		$labelCountdown.Margin = '75,0,0,0'
+		$labelCountdown.Margin = $paddingNone
 		$labelCountdown.Padding = $labelPadding
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
@@ -6506,7 +6566,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installTitle`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -9982,7 +10042,7 @@ Else {
 ## Variables: Log Files
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
-[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath $installName
+[string]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
 If ($configToolkitCompressLogs) {
 	#  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
 	If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
