@@ -55,7 +55,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/03/2016'
+[string]$appDeployMainScriptDate = '01/04/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -10016,7 +10016,9 @@ If (-not $appName) {
 	If (-not $appRevision) { [string]$appRevision = '01' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
-[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
+If (-not $installTitle) {
+	[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
+}
 
 ## Sanitize the application details, as they can cause issues in the script
 [char[]]$invalidFileNameChars = [IO.Path]::GetInvalidFileNameChars()
@@ -10028,13 +10030,15 @@ If (-not $appName) {
 [string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
 
 ## Build the Installation Name
-If ($appArch) {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
+If (-not $installName) {
+	If ($appArch) {
+		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
+	}
+	Else {
+		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
+	}
+	[string]$installName = $installName.Trim('_') -replace '[_]+','_'
 }
-Else {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
-}
-[string]$installName = $installName.Trim('_') -replace '[_]+','_'
 
 ## Set the Defer History registry path
 [string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
