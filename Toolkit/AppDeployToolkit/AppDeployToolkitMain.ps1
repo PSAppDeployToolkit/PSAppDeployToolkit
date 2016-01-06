@@ -8602,14 +8602,13 @@ Function Test-PowerPoint {
 			Else {
 				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
 			}
-			
-			Write-Log -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]." -Source ${CmdletName}
 		}
 		Catch {
 			Write-Log -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
+		Write-Log -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]." -Source ${CmdletName}
 		Write-Output -InputObject $IsPowerPointFullScreen
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
