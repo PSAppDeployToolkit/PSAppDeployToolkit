@@ -8575,7 +8575,7 @@ Function Test-PowerPoint {
 				
 				#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
 				[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
-				If ($PowerPointWindow) { 
+				If ($PowerPointWindow) {
 					[boolean]$IsPowerPointFullScreen = $true
 					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 				}
