@@ -8554,6 +8554,7 @@ Function Test-PowerPoint {
 .EXAMPLE
 	Test-PowerPoint
 .NOTES
+	This function can only execute detection logic if the process is in interactive mode.
 .LINK
 	http://psappdeploytoolkit.com
 #>
