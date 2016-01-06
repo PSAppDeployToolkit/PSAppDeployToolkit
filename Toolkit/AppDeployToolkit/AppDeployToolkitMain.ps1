@@ -8573,7 +8573,7 @@ Function Test-PowerPoint {
 			If (Get-Process -Name 'POWERPNT' -ErrorAction 'SilentlyContinue') {
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 				
-				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only work if process is interactive
+				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only works if process is interactive
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
 					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
