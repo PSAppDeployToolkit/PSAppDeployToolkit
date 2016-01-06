@@ -302,13 +302,13 @@ namespace PSADT
 			}
 			return GetWindowLongPtr64(hWnd, nIndex);
 		}
-
-		public static UserNotificationState GetUserNotificationState()
+		
+		public static string GetUserNotificationState()
 		{
 			// Only works for Windows Vista or higher
 			UserNotificationState state;
 			int returnVal = SHQueryUserNotificationState(out state);
-			return state; 
+			return state.ToString();
 		}
 	}
 	

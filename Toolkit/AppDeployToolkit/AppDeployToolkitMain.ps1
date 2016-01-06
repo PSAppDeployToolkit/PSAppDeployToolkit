@@ -8591,7 +8591,7 @@ Function Test-PowerPoint {
 					## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only work on Windows Vista or higher)
 					If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
 						#  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
-						$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
+						[string]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
 						Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
 						Switch ($UserNotificationState) {
 							'PresentationMode' { [boolean]$IsPowerPointFullScreen = $true }
