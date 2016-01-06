@@ -8582,7 +8582,7 @@ Function Test-PowerPoint {
 				Else {
 					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 				}
-
+				
 				## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only work on Windows Vista or higher)
 				If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
 					If ([Environment]::UserInteractive) {
