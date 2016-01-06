@@ -8555,6 +8555,7 @@ Function Test-PowerPoint {
 	Test-PowerPoint
 .NOTES
 	This function can only execute detection logic if the process is in interactive mode.
+	There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -8577,6 +8578,7 @@ Function Test-PowerPoint {
 				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only works if process is interactive
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
+					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
 					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[boolean]$IsPowerPointFullScreen = $true
