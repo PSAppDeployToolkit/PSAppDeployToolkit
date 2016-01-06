@@ -8573,19 +8573,20 @@ Function Test-PowerPoint {
 			If (Get-Process -Name 'POWERPNT' -ErrorAction 'SilentlyContinue') {
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 				
-				#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
-				[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
-				If ($PowerPointWindow) {
-					[boolean]$IsPowerPointFullScreen = $true
-					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
-				}
-				Else {
-					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
-				}
-				
-				## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only work on Windows Vista or higher)
-				If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
-					If ([Environment]::UserInteractive) {
+				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only work if process is interactive
+				If ([Environment]::UserInteractive) {
+					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
+					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					If ($PowerPointWindow) {
+						[boolean]$IsPowerPointFullScreen = $true
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+					}
+					Else {
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+					}
+					
+					## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only work on Windows Vista or higher)
+					If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
 						#  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
 						$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
 						Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
@@ -8594,9 +8595,9 @@ Function Test-PowerPoint {
 							'FullScreenOrPresentationModeOrLoginScreen' { [boolean]$IsPowerPointFullScreen = $true }
 						}
 					}
-					Else {
-						Write-Log -Message 'Unable to run check to see if PowerPoint is in Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool.' -Severity 2 -Source ${CmdletName}
-					}
+				}
+				Else {
+					Write-Log -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2 -Source ${CmdletName}
 				}
 			}
 			Else {
