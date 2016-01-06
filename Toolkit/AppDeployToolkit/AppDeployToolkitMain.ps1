@@ -8577,10 +8577,10 @@ Function Test-PowerPoint {
 				[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 				If ($PowerPointWindow) { 
 					[boolean]$IsPowerPointFullScreen = $true
-					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with "PowerPoint Slide Show".' -Source ${CmdletName}
+					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 				}
 				Else {
-					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with "PowerPoint Slide Show".' -Source ${CmdletName}
+					Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 				}
 
 				## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only work on Windows Vista or higher)
