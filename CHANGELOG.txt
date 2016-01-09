@@ -10,6 +10,7 @@
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
 	Fixed issue in Test-PowerPoint where detection did not work if there were multiple screens or if presentation was on screen without mouse focus
+	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
 	Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
 	Improved temporary logging folder naming convention to include deployment type in the name
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice

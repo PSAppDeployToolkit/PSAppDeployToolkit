@@ -28,6 +28,7 @@ Param (
 	[switch]$ShowBlockedAppDialog = $false,
 	[switch]$DisableLogging = $false,
 	[string]$ReferringApplication = '',
+	[string]$ReferredLogName = '',
 	[string]$Message = '',
 	[string]$MessageAlignment = '',
 	[string]$ButtonRightText = '',
@@ -55,7 +56,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/08/2016'
+[string]$appDeployMainScriptDate = '01/09/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -648,6 +649,8 @@ Function Write-Log {
 		If (($DisableLogging) -and (-not $WriteHost)) { [boolean]$ExitLoggingFunction = $true; Return }
 		## Exit Begin block if logging is disabled
 		If ($DisableLogging) { Return }
+		## Exit function function if it is an [Initialization] message and the toolkit has been relaunched
+		If (($ReferredLogName) -and ($ScriptSection -eq 'Initialization')) { [boolean]$ExitLoggingFunction = $true; Return }
 		
 		## Create the directory where the log file will be saved
 		If (-not (Test-Path -LiteralPath $LogFileDirectory -PathType 'Container')) {
@@ -1551,7 +1554,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$Title`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$Title`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -6566,7 +6569,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installTitle`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installTitle`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -10093,6 +10096,7 @@ If (-not $installName) {
 [string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 ## Variables: Log Files
+If ($ReferredLogName) { [string]$logName = $ReferredLogName }
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
 [string]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
@@ -10209,6 +10213,7 @@ If ($showInstallationPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
 	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
@@ -10218,6 +10223,7 @@ If ($showInstallationRestartPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationRestartPrompt')
 	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
