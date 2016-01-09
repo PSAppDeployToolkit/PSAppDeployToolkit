@@ -8626,6 +8626,7 @@ Function Test-PowerPoint {
 					}
 				}
 				Else {
+					[nullable[boolean]]$IsPowerPointFullScreen = $null
 					Write-Log -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2 -Source ${CmdletName}
 				}
 			}
