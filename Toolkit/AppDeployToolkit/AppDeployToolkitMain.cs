@@ -1,4 +1,4 @@
-﻿// Date Modified: 01-06-2016
+﻿// Date Modified: 01-08-2016
 // Version Number: 3.6.8
 
 using System;
@@ -168,6 +168,12 @@ namespace PSADT
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern int GetWindowTextLength(IntPtr hWnd);
+		
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		private static extern IntPtr GetDesktopWindow();
+		
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		private static extern IntPtr GetShellWindow();
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		[return: MarshalAs(UnmanagedType.Bool)]
