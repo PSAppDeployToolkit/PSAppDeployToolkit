@@ -11,9 +11,17 @@
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
-.PARAMETER ReferringApplication
+.PARAMETER ReferredInstallTitle
 	Title of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER ReferredInstallName
+	Name of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER ReferredLogname
+	Logfile name of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AsyncToolkitLaunch
+	This parameter is passed to the script when it is being called externally, e.g. from a scheduled task or asynchronously.
 .NOTES
 	The other parameters specified for this script that are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously.
 .LINK
@@ -27,7 +35,8 @@ Param (
 	[switch]$CleanupBlockedApps = $false,
 	[switch]$ShowBlockedAppDialog = $false,
 	[switch]$DisableLogging = $false,
-	[string]$ReferringApplication = '',
+	[string]$ReferredInstallName = '',
+	[string]$ReferredInstallTitle = '',
 	[string]$ReferredLogName = '',
 	[string]$Message = '',
 	[string]$MessageAlignment = '',
@@ -41,7 +50,8 @@ Param (
 	[switch]$PersistPrompt = $false,
 	[int32]$CountdownSeconds,
 	[int32]$CountdownNoHideSeconds,
-	[switch]$NoCountdown = $false
+	[switch]$NoCountdown = $false,
+	[switch]$AsyncToolkitLaunch = $false
 )
 
 ##*=============================================
@@ -650,7 +660,7 @@ Function Write-Log {
 		## Exit Begin block if logging is disabled
 		If ($DisableLogging) { Return }
 		## Exit function function if it is an [Initialization] message and the toolkit has been relaunched
-		If (($ReferredLogName) -and ($ScriptSection -eq 'Initialization')) { [boolean]$ExitLoggingFunction = $true; Return }
+		If (($AsyncToolkitLaunch) -and ($ScriptSection -eq 'Initialization')) { [boolean]$ExitLoggingFunction = $true; Return }
 		
 		## Create the directory where the log file will be saved
 		If (-not (Test-Path -LiteralPath $LogFileDirectory -PathType 'Container')) {
@@ -1554,7 +1564,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$Title`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$Title`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -4872,7 +4882,7 @@ Function Block-AppExecution {
 		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@'
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$SchInstallName`""
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferrredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -4937,7 +4947,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -ReferringApplication `" & chr(34) & `"$installTitle`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
@@ -6569,7 +6579,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installTitle`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -10068,6 +10078,7 @@ If (-not $appName) {
 	If (-not $appRevision) { [string]$appRevision = '01' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
+If ($ReferredInstallTitle) { [string]$installTitle = $ReferredInstallTitle }
 If (-not $installTitle) {
 	[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
 }
@@ -10082,6 +10093,7 @@ If (-not $installTitle) {
 [string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
 
 ## Build the Installation Name
+If ($ReferredInstallName) { [string]$installName = $ReferredInstallName }
 If (-not $installName) {
 	If ($appArch) {
 		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
@@ -10202,9 +10214,7 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 . $RevertScriptLogging
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
-If ($ReferringApplication) {
-	$installName = $ReferringApplication
-	$installTitle = $ReferringApplication -replace '_',' '
+If ($AsyncToolkitLaunch) {
 	$installPhase = 'Asynchronous'
 }
 
@@ -10212,7 +10222,9 @@ If ($ReferringApplication) {
 If ($showInstallationPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
-	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
 	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
@@ -10222,7 +10234,9 @@ If ($showInstallationPrompt) {
 If ($showInstallationRestartPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationRestartPrompt')
-	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
 	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
