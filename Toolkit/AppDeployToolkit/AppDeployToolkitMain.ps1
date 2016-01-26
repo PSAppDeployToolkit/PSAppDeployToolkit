@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/21/2016'
+[string]$appDeployMainScriptDate = '01/26/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -10105,8 +10105,8 @@ If (-not $installName) {
 	Else {
 		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
 	}
-	[string]$installName = $installName.Trim('_') -replace '[_]+','_'
 }
+[string]$installName = $installName.Trim('_') -replace '[_]+','_'
 
 ## Set the Defer History registry path
 [string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
