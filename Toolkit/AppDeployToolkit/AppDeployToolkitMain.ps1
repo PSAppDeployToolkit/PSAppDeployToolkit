@@ -5118,7 +5118,7 @@ Function Set-DeferHistory {
 	}
 	Process {
 		If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
-			Write-Log -Message "Set deferral history: [DeferTimesRemaining = $deferTimes]." -Source ${CmdletName}
+			Write-Log -Message "Set deferral history: [DeferTimesRemaining = $deferTimesRemaining]." -Source ${CmdletName}
 			Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $deferTimesRemaining -ContinueOnError $true
 		}
 		If ($deferDeadline) {

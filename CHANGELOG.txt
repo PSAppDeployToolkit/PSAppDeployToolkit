@@ -11,6 +11,7 @@
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
 	Fixed issue in Test-PowerPoint where detection did not work if there were multiple screens or if presentation was on screen without mouse focus
 	Fixed issue in Get-RegistryKey where reading a DWord value of 0 caused function to return $null instead of 0
+	Fixed issue in Set-DeferHistory where function did now log $deferTimesRemaining and referenced an incorrect variable name instead
 	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
 	Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
 	Improved temporary logging folder naming convention to include deployment type in the name
