@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/26/2016'
+[string]$appDeployMainScriptDate = '01/29/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3592,7 +3592,7 @@ Function Get-RegistryKey {
 					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
 				}
 			}
-			If ($regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
+			If ([string]$regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
 		}
 		Catch {
 			If (-not $Value) {
