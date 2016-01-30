@@ -1790,7 +1790,7 @@ Function Get-HardwarePlatform {
 			ElseIf ($hwBIOS.Version -match 'A M I') { $hwType = 'Virtual:Virtual PC' }
 			ElseIf ($hwBIOS.Version -like '*Xen*') { $hwType = 'Virtual:Xen' }
 			ElseIf ($hwBIOS.SerialNumber -like '*VMware*') { $hwType = 'Virtual:VMWare' }
-			ElseIf ($hwMakeModel.Manufacturer -like '*Microsoft*') { $hwType = 'Virtual:Hyper-V' }
+			ElseIf (($hwMakeModel.Manufacturer -like '*Microsoft*') -and ($hwMakeModel.Model -notlike '*Surface*')) { $hwType = 'Virtual:Hyper-V' }
 			ElseIf ($hwMakeModel.Manufacturer -like '*VMWare*') { $hwType = 'Virtual:VMWare' }
 			ElseIf ($hwMakeModel.Model -like '*Virtual*') { $hwType = 'Virtual' }
 			Else { $hwType = 'Physical' }
