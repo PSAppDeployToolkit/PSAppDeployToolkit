@@ -6651,7 +6651,7 @@ Function Show-BalloonTip {
 	}
 	Process {
 		## Skip balloon if in silent mode
-		If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) { Return }
+		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or (Test-PowerPoint)) { Return }
 		
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
