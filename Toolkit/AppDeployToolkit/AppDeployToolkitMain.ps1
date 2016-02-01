@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/29/2016'
+[string]$appDeployMainScriptDate = '02/01/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2775,7 +2775,7 @@ Function Execute-Process {
 						#  Catch exit codes that are out of int32 range
 						[int32]$returnCode = 60013
 					}
-
+					
 					## Unregister standard output event to retrieve process output
 					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
 					$stdOut = $stdOutBuilder.ToString() -replace $null,''
@@ -9911,15 +9911,31 @@ Function Get-PendingReboot {
 		
 		## Determine SCCM 2012 Client reboot pending status
 		Try {
-			[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
-			If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
-				Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
+			Try {
+				[boolean]$IsSccmClientNamespaceExists = $true
+				Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -List -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'CCM_ClientUtilities' }
+			}
+			Catch [System.Management.ManagementException] {
+				$CmdException = $_
+				If ($CmdException.FullyQualifiedErrorId -eq 'INVALID_NAMESPACE_IDENTIFIER,Microsoft.PowerShell.Commands.GetWmiObjectCommand') {
+					[boolean]$IsSccmClientNamespaceExists = $false
+				}
+			}
+			
+			If ($IsSccmClientNamespaceExists) {
+				[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
+				If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
+					Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
+				}
+				Else {
+					[nullable[boolean]]$IsSCCMClientRebootPending = $false
+					If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
+						[nullable[boolean]]$IsSCCMClientRebootPending = $true
+					}
+				}
 			}
 			Else {
-				[nullable[boolean]]$IsSCCMClientRebootPending = $false
-				If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
-					[nullable[boolean]]$IsSCCMClientRebootPending = $true
-				}
+				[nullable[boolean]]$IsSCCMClientRebootPending = $null
 			}
 		}
 		Catch {

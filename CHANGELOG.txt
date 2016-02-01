@@ -1,4 +1,4 @@
-﻿Version 3.6.8 [01/xx/2016]
+﻿Version 3.6.8 [02/xx/2016]
 	Added environment variables with additions for Pictures, Templates, and Common User locations
 	Added SecureParameters parameter to Execute-MSI and Execute-Process functions
 	Added language translations for Slovak, Hungarian and also updated translations for German
@@ -22,8 +22,9 @@
 	Improved Execute-MSI so that environment variables created by MSIs are always updated for Windows Explorer
 	Improved Execute-Process function to capture out of range exit codes and return custom 60013 exit code
 	Improved Remove-RegistryKey function to write warning instead of error to log if a property being deleted does not exist
-	Improved comments and documentation
+	Improved Get-PendingReboot function to check if "ROOT\CCM\ClientSDK\CCM_ClientUtilities" WMI class exists before executing method
 	Improved Show-BalloonTip function to suppress balloon notifications if a PowerPoint presentation is in fullscreen slideshow mode or presentation mode
+	Improved comments and documentation
 
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
