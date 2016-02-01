@@ -9912,8 +9912,7 @@ Function Get-PendingReboot {
 		## Determine SCCM 2012 Client reboot pending status
 		Try {
 			Try {
-				[boolean]$IsSccmClientNamespaceExists = $true
-				Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -List -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'CCM_ClientUtilities' }
+				[boolean]$IsSccmClientNamespaceExists = [boolean](Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -List -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'CCM_ClientUtilities' })
 			}
 			Catch [System.Management.ManagementException] {
 				$CmdException = $_
