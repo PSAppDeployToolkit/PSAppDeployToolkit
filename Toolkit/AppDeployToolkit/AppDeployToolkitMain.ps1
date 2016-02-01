@@ -3573,7 +3573,7 @@ Function Get-RegistryKey {
 			
 			## Check if the registry key exists
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-				Write-Log -Message "Registry key [$key] does not exist. Return `null." -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Registry key [$key] does not exist. Return `$null." -Severity 2 -Source ${CmdletName}
 				$regKeyValue = $null
 			}
 			Else {
