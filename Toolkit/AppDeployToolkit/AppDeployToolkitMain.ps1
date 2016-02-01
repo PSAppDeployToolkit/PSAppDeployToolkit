@@ -3573,26 +3573,57 @@ Function Get-RegistryKey {
 			
 			## Check if the registry key exists
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-				Write-Log -Message "Registry key [$key] does not exist." -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Registry key [$key] does not exist. Return `null." -Severity 2 -Source ${CmdletName}
 				$regKeyValue = $null
 			}
 			Else {
-				If (-not $Value) {
-					#  Get the registry key and all property values
-					Write-Log -Message "Get registry key [$key] and all property values." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
-					If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
-						Write-Log -Message "No property values found for registry key. Get registry key [$key]." -Source ${CmdletName}
-						$regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
-					}
+				If ($PSBoundParameters.ContainsKey('Value')) {
+					Write-Log -Message "Get registry key [$key] value [$value]." -Source ${CmdletName}
 				}
 				Else {
+					Write-Log -Message "Get registry key [$key] and all property values." -Source ${CmdletName}
+				}
+				
+				## Get all property values for registry key
+				$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
+				[int32]$regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty 'Count'
+				
+				## Select requested property
+				If ($PSBoundParameters.ContainsKey('Value')) {
+					#  Check if registry value exists
+					[boolean]$IsRegistryValueExists = $false
+					If ($regKeyValuePropertyCount -gt 0) {
+						Try {
+							[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
+							If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
+						}
+						Catch { }
+					}
+					
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-					Write-Log -Message "Get registry key [$key] value [$value]." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+					If ($IsRegistryValueExists) {
+						$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+					}
+					Else {
+						Write-Log -Message "Registry key value [$Key] [$Value] does not exist. Return `$null." -Source ${CmdletName}
+						$regKeyValue = $null
+					}
+				}
+				## Select all properties or return empty key object
+				Else {
+					If ($regKeyValuePropertyCount -eq 0) {
+						If ($ReturnEmptyKeyIfExists) {
+							Write-Log -Message "No property values found for registry key. Return empty registry key object [$key]." -Source ${CmdletName}
+							$regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
+						}
+						Else {
+							Write-Log -Message "No property values found for registry key. Return `$null." -Source ${CmdletName}
+							$regKeyValue = $null
+						}
+					}
 				}
 			}
-			If ([string]$regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
+			Write-Output -InputObject $regKeyValue
 		}
 		Catch {
 			If (-not $Value) {

@@ -10,7 +10,7 @@
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
 	Fixed issue in Test-PowerPoint where detection did not work if there were multiple screens or if presentation was on screen without mouse focus
-	Fixed issue in Get-RegistryKey where reading a DWord value of 0 caused function to return $null instead of 0
+	Fixed issue in Get-RegistryKey where reading an empty value or a DWord value of 0 caused function to return $null
 	Fixed issue in Set-DeferHistory where function did now log $deferTimesRemaining and referenced an incorrect variable name instead
 	Fixed issue in Get-HardwarePlatform where function did not detect Microsoft Surface hardware correctly
 	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
