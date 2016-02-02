@@ -13,7 +13,9 @@
 	Fixed issue in Get-RegistryKey where reading an empty value or a DWord value of 0 caused function to return $null
 	Fixed issue in Set-DeferHistory where function did now log $deferTimesRemaining and referenced an incorrect variable name instead
 	Fixed issue in Get-HardwarePlatform where function did not detect Microsoft Surface hardware correctly
+	Fixed issue in Remove-MSIApplications to make sure that an invalid ProductCode is not passed to the Execute-MSI function
 	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
+	Improved Get-InstalledApplication to verify ProductCode is valid product code before storing value, also added UninstallSubkey property
 	Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
 	Improved temporary logging folder naming convention to include deployment type in the name
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
