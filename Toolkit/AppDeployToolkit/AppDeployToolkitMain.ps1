@@ -11,9 +11,17 @@
 .PARAMETER ShowBlockedAppDialog
 	Display a dialog box showing that the application execution is blocked.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
-.PARAMETER ReferringApplication
+.PARAMETER ReferredInstallTitle
 	Title of the referring application that invoked the script externally.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER ReferredInstallName
+	Name of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER ReferredLogname
+	Logfile name of the referring application that invoked the script externally.
+	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
+.PARAMETER AsyncToolkitLaunch
+	This parameter is passed to the script when it is being called externally, e.g. from a scheduled task or asynchronously.
 .NOTES
 	The other parameters specified for this script that are not documented in this help section are for use only by functions in this script that call themselves by running this script again asynchronously.
 .LINK
@@ -27,7 +35,9 @@ Param (
 	[switch]$CleanupBlockedApps = $false,
 	[switch]$ShowBlockedAppDialog = $false,
 	[switch]$DisableLogging = $false,
-	[string]$ReferringApplication = '',
+	[string]$ReferredInstallName = '',
+	[string]$ReferredInstallTitle = '',
+	[string]$ReferredLogName = '',
 	[string]$Message = '',
 	[string]$MessageAlignment = '',
 	[string]$ButtonRightText = '',
@@ -40,7 +50,8 @@ Param (
 	[switch]$PersistPrompt = $false,
 	[int32]$CountdownSeconds,
 	[int32]$CountdownNoHideSeconds,
-	[switch]$NoCountdown = $false
+	[switch]$NoCountdown = $false,
+	[switch]$AsyncToolkitLaunch = $false
 )
 
 ##*=============================================
@@ -55,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '01/03/2016'
+[string]$appDeployMainScriptDate = '02/01/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -648,6 +659,8 @@ Function Write-Log {
 		If (($DisableLogging) -and (-not $WriteHost)) { [boolean]$ExitLoggingFunction = $true; Return }
 		## Exit Begin block if logging is disabled
 		If ($DisableLogging) { Return }
+		## Exit function function if it is an [Initialization] message and the toolkit has been relaunched
+		If (($AsyncToolkitLaunch) -and ($ScriptSection -eq 'Initialization')) { [boolean]$ExitLoggingFunction = $true; Return }
 		
 		## Create the directory where the log file will be saved
 		If (-not (Test-Path -LiteralPath $LogFileDirectory -PathType 'Container')) {
@@ -1551,7 +1564,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$Title`" -ShowInstallationPrompt $installPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$Title`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -1777,7 +1790,7 @@ Function Get-HardwarePlatform {
 			ElseIf ($hwBIOS.Version -match 'A M I') { $hwType = 'Virtual:Virtual PC' }
 			ElseIf ($hwBIOS.Version -like '*Xen*') { $hwType = 'Virtual:Xen' }
 			ElseIf ($hwBIOS.SerialNumber -like '*VMware*') { $hwType = 'Virtual:VMWare' }
-			ElseIf ($hwMakeModel.Manufacturer -like '*Microsoft*') { $hwType = 'Virtual:Hyper-V' }
+			ElseIf (($hwMakeModel.Manufacturer -like '*Microsoft*') -and ($hwMakeModel.Model -notlike '*Surface*')) { $hwType = 'Virtual:Hyper-V' }
 			ElseIf ($hwMakeModel.Manufacturer -like '*VMWare*') { $hwType = 'Virtual:VMWare' }
 			ElseIf ($hwMakeModel.Model -like '*Virtual*') { $hwType = 'Virtual' }
 			Else { $hwType = 'Physical' }
@@ -2595,7 +2608,7 @@ Function Execute-Process {
 	Execute-Process -Path 'setup.exe' -Parameters "-s -f2`"$configToolkitLogDir\$installName.log`""
 	Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 .EXAMPLE
-	Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$configToolkitLogDir\$installName.log`""
+	Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$configToolkitLogDir\$installName.log`"`""
 	Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 .NOTES
 .LINK
@@ -2762,7 +2775,7 @@ Function Execute-Process {
 						#  Catch exit codes that are out of int32 range
 						[int32]$returnCode = 60013
 					}
-
+					
 					## Unregister standard output event to retrieve process output
 					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
 					$stdOut = $stdOutBuilder.ToString() -replace $null,''
@@ -3560,26 +3573,57 @@ Function Get-RegistryKey {
 			
 			## Check if the registry key exists
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-				Write-Log -Message "Registry key [$key] does not exist." -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Registry key [$key] does not exist. Return `$null." -Severity 2 -Source ${CmdletName}
 				$regKeyValue = $null
 			}
 			Else {
-				If (-not $Value) {
-					#  Get the registry key and all property values
-					Write-Log -Message "Get registry key [$key] and all property values." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
-					If ((-not $regKeyValue) -and ($ReturnEmptyKeyIfExists)) {
-						Write-Log -Message "No property values found for registry key. Get registry key [$key]." -Source ${CmdletName}
-						$regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
-					}
+				If ($PSBoundParameters.ContainsKey('Value')) {
+					Write-Log -Message "Get registry key [$key] value [$value]." -Source ${CmdletName}
 				}
 				Else {
+					Write-Log -Message "Get registry key [$key] and all property values." -Source ${CmdletName}
+				}
+				
+				## Get all property values for registry key
+				$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
+				[int32]$regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty 'Count'
+				
+				## Select requested property
+				If ($PSBoundParameters.ContainsKey('Value')) {
+					#  Check if registry value exists
+					[boolean]$IsRegistryValueExists = $false
+					If ($regKeyValuePropertyCount -gt 0) {
+						Try {
+							[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
+							If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
+						}
+						Catch { }
+					}
+					
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-					Write-Log -Message "Get registry key [$key] value [$value]." -Source ${CmdletName}
-					$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop' | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+					If ($IsRegistryValueExists) {
+						$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+					}
+					Else {
+						Write-Log -Message "Registry key value [$Key] [$Value] does not exist. Return `$null." -Source ${CmdletName}
+						$regKeyValue = $null
+					}
+				}
+				## Select all properties or return empty key object
+				Else {
+					If ($regKeyValuePropertyCount -eq 0) {
+						If ($ReturnEmptyKeyIfExists) {
+							Write-Log -Message "No property values found for registry key. Return empty registry key object [$key]." -Source ${CmdletName}
+							$regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
+						}
+						Else {
+							Write-Log -Message "No property values found for registry key. Return `$null." -Source ${CmdletName}
+							$regKeyValue = $null
+						}
+					}
 				}
 			}
-			If ($regKeyValue) { Write-Output -InputObject $regKeyValue } Else { Write-Output -InputObject $null }
+			Write-Output -InputObject $regKeyValue
 		}
 		Catch {
 			If (-not $Value) {
@@ -4869,7 +4913,7 @@ Function Block-AppExecution {
 		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@'
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferringApplication `"$SchInstallName`""
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferrredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -4934,7 +4978,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 		
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -ReferringApplication `" & chr(34) & `"$installTitle`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
@@ -5105,7 +5149,7 @@ Function Set-DeferHistory {
 	}
 	Process {
 		If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
-			Write-Log -Message "Set deferral history: [DeferTimesRemaining = $deferTimes]." -Source ${CmdletName}
+			Write-Log -Message "Set deferral history: [DeferTimesRemaining = $deferTimesRemaining]." -Source ${CmdletName}
 			Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $deferTimesRemaining -ContinueOnError $true
 		}
 		If ($deferDeadline) {
@@ -6566,7 +6610,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferringApplication `"$installTitle`" -ShowInstallationRestartPrompt $installRestartPromptParameters" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -6638,7 +6682,7 @@ Function Show-BalloonTip {
 	}
 	Process {
 		## Skip balloon if in silent mode
-		If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) { Return }
+		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or (Test-PowerPoint)) { Return }
 		
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
@@ -8153,7 +8197,7 @@ Function Get-WindowTitle {
 	Search for an open window title and return details about the window.
 .DESCRIPTION
 	Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
-	Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle.
+	Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
 	Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER WindowTitle
 	The title of the application window to search for using regex matching.
@@ -8219,6 +8263,7 @@ Function Get-WindowTitle {
 							WindowHandle = $VisibleWindowHandle
 							ParentProcess= $Process.Name
 							ParentProcessMainWindowHandle = $Process.MainWindowHandle
+							ParentProcessId = $Process.Id
 						}
 						
 						## Only save/return the window and process details which match the search criteria
@@ -8548,12 +8593,14 @@ Function Test-NetworkConnection {
 Function Test-PowerPoint {
 <#
 .SYNOPSIS
-	Tests whether PowerPoint is running in fullscreen slideshow mode.
+	Tests whether PowerPoint is running in either fullscreen slideshow mode or presentation mode.
 .DESCRIPTION
-	Tests whether PowerPoint is running in fullscreen slideshow mode to see if someone is presenting.
+	Tests whether someone is presenting using PowerPoint in either fullscreen slideshow mode or presentation mode.
 .EXAMPLE
 	Test-PowerPoint
 .NOTES
+	This function can only execute detection logic if the process is in interactive mode.
+	There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -8568,28 +8615,74 @@ Function Test-PowerPoint {
 	}
 	Process {
 		Try {
-			Write-Log -Message 'Check if PowerPoint is in fullscreen slideshow mode...' -Source ${CmdletName}
-			[boolean]$IsPowerPointFullScreen = $false
-			If (Get-Process -Name 'POWERPNT' -ErrorAction 'SilentlyContinue') {
+			Write-Log -Message 'Check if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
+			Try {
+				[boolean]$IsPowerPointRunning = [boolean](Get-Process -Name 'POWERPNT' -ErrorAction 'Stop')
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
-				
-				#  Case insensitive match for "PowerPoint Slide Show" at start of window title using regex matching
-				[boolean]$IsPowerPointFullScreen = [PSADT.Screen]::IsFullScreenWindow('^PowerPoint Slide Show')
-				
-				Write-Log -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]." -Source ${CmdletName}
 			}
-			Else {
+			Catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
 				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
+				[boolean]$IsPowerPointRunning = $false
+			}
+			Catch {
+				Throw
 			}
 			
-			Write-Output -InputObject $IsPowerPointFullScreen
+			[nullable[boolean]]$IsPowerPointFullScreen = $false
+			If ($IsPowerPointRunning) {
+				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only works if process is interactive
+				If ([Environment]::UserInteractive) {
+					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
+					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
+					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					If ($PowerPointWindow) {
+						[nullable[boolean]]$IsPowerPointFullScreen = $true
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+					}
+					Else {
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+						Try {
+							[int32[]]$PowerPointProcessIDs = Get-Process -Name 'POWERPNT' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Id'
+							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
+						}
+						Catch {
+							Write-Log -Message "Unable to retrieve process id(s) for [POWERPNT] process. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+						}
+					}
+					
+					## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher)
+					If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
+						#  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
+						[string]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
+						Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
+						Switch ($UserNotificationState) {
+							'PresentationMode' {
+								Write-Log -Message "Detected that system is in [Presentation Mode]." -Source ${CmdletName}
+								[nullable[boolean]]$IsPowerPointFullScreen = $true
+							}
+							'FullScreenOrPresentationModeOrLoginScreen' {
+								If (([string]$PowerPointProcessIDs) -and ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))) {
+									Write-Log -Message "Detected that fullscreen foreground window matches PowerPoint process id." -Source ${CmdletName}
+									[nullable[boolean]]$IsPowerPointFullScreen = $true
+								}
+							}
+						}
+					}
+				}
+				Else {
+					[nullable[boolean]]$IsPowerPointFullScreen = $null
+					Write-Log -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2 -Source ${CmdletName}
+				}
+			}
 		}
 		Catch {
+			[nullable[boolean]]$IsPowerPointFullScreen = $null
 			Write-Log -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			Write-Output -InputObject $false
 		}
 	}
 	End {
+		Write-Log -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]." -Source ${CmdletName}
+		Write-Output -InputObject $IsPowerPointFullScreen
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
@@ -8604,7 +8697,11 @@ Function Invoke-SCCMTask {
 .DESCRIPTION
 	Triggers SCCM to invoke the requested schedule task id.
 .PARAMETER ScheduleId
-	Schedule Id.
+	Name of the schedule id to trigger.
+	Options: HardwareInventory, SoftwareInventory, HeartbeatDiscovery, SoftwareInventoryFileCollection, RequestMachinePolicy, EvaluateMachinePolicy,
+	LocationServicesCleanup, SoftwareMeteringReport, SourceUpdate, PolicyAgentCleanup, RequestMachinePolicy2, CertificateMaintenance, PeerDistributionPointStatus,
+	PeerDistributionPointProvisioning, ComplianceIntervalEnforcement, SoftwareUpdatesAgentAssignmentEvaluation, UploadStateMessage, StateMessageManager,
+	SoftwareUpdatesScan, AMTProvisionCycle, UpdateStorePolicy, StateSystemBulkSend, ApplicationManagerPolicyAction, PowerManagementStartSummarizer
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -9845,15 +9942,30 @@ Function Get-PendingReboot {
 		
 		## Determine SCCM 2012 Client reboot pending status
 		Try {
-			[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
-			If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
-				Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
+			Try {
+				[boolean]$IsSccmClientNamespaceExists = [boolean](Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -List -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'CCM_ClientUtilities' })
+			}
+			Catch [System.Management.ManagementException] {
+				$CmdException = $_
+				If ($CmdException.FullyQualifiedErrorId -eq 'INVALID_NAMESPACE_IDENTIFIER,Microsoft.PowerShell.Commands.GetWmiObjectCommand') {
+					[boolean]$IsSccmClientNamespaceExists = $false
+				}
+			}
+			
+			If ($IsSccmClientNamespaceExists) {
+				[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
+				If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
+					Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
+				}
+				Else {
+					[nullable[boolean]]$IsSCCMClientRebootPending = $false
+					If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
+						[nullable[boolean]]$IsSCCMClientRebootPending = $true
+					}
+				}
 			}
 			Else {
-				[nullable[boolean]]$IsSCCMClientRebootPending = $false
-				If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
-					[nullable[boolean]]$IsSCCMClientRebootPending = $true
-				}
+				[nullable[boolean]]$IsSCCMClientRebootPending = $null
 			}
 		}
 		Catch {
@@ -10016,7 +10128,10 @@ If (-not $appName) {
 	If (-not $appRevision) { [string]$appRevision = '01' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
-[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
+If ($ReferredInstallTitle) { [string]$installTitle = $ReferredInstallTitle }
+If (-not $installTitle) {
+	[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
+}
 
 ## Sanitize the application details, as they can cause issues in the script
 [char[]]$invalidFileNameChars = [IO.Path]::GetInvalidFileNameChars()
@@ -10028,11 +10143,14 @@ If (-not $appName) {
 [string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
 
 ## Build the Installation Name
-If ($appArch) {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
-}
-Else {
-	[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
+If ($ReferredInstallName) { [string]$installName = $ReferredInstallName }
+If (-not $installName) {
+	If ($appArch) {
+		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
+	}
+	Else {
+		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
+	}
 }
 [string]$installName = $installName.Trim('_') -replace '[_]+','_'
 
@@ -10040,6 +10158,7 @@ Else {
 [string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 ## Variables: Log Files
+If ($ReferredLogName) { [string]$logName = $ReferredLogName }
 If (-not $logName) { [string]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log' }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
 [string]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
@@ -10145,9 +10264,7 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 . $RevertScriptLogging
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
-If ($ReferringApplication) {
-	$installName = $ReferringApplication
-	$installTitle = $ReferringApplication -replace '_',' '
+If ($AsyncToolkitLaunch) {
 	$installPhase = 'Asynchronous'
 }
 
@@ -10155,7 +10272,10 @@ If ($ReferringApplication) {
 If ($showInstallationPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
-	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
@@ -10164,7 +10284,10 @@ If ($showInstallationPrompt) {
 If ($showInstallationRestartPrompt) {
 	Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $appDeployToolkitName
 	$appDeployMainScriptAsyncParameters.Remove('ShowInstallationRestartPrompt')
-	$appDeployMainScriptAsyncParameters.Remove('ReferringApplication')
+	$appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
+	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
 	Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }

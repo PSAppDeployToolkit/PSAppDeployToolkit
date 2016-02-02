@@ -1,5 +1,5 @@
-﻿// Date Modified: 08-17-2015
-// Version Number: 3.6.5
+﻿// Date Modified: 01-08-2016
+// Version Number: 3.6.8
 
 using System;
 using System.Text;
@@ -143,6 +143,22 @@ namespace PSADT
 			ForceMinimized          = 11
 		}
 		
+		public enum UserNotificationState
+		{
+			// http://msdn.microsoft.com/en-us/library/bb762533(v=vs.85).aspx
+			ScreenSaverOrLockedOrFastUserSwitching		=1, // A screen saver is displayed, the machine is locked, or a nonactive Fast User Switching session is in progress.
+			FullScreenOrPresentationModeOrLoginScreen	=2, // A full-screen application is running or Presentation Settings are applied. Presentation Settings allow a user to put their machine into a state fit for an uninterrupted presentation, such as a set of PowerPoint slides, with a single click. Also returns this state if machine is at the login screen.
+			RunningDirect3DFullScreen					=3, // A full-screen, exclusive mode, Direct3D application is running.
+			PresentationMode 							=4, // The user has activated Windows presentation settings to block notifications and pop-up messages.
+			AcceptsNotifications						=5, // None of the other states are found, notifications can be freely sent.
+			QuietTime									=6, // Introduced in Windows 7. The current user is in "quiet time", which is the first hour after a new user logs into his or her account for the first time.
+			WindowsStoreAppRunning						=7  // Introduced in Windows 8. A Windows Store app is running.
+		}
+		
+		// Only for Vista or above
+		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
+		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool EnumWindows(EnumWindowsProcD lpEnumFunc, ref IntPtr lParam);
@@ -152,6 +168,12 @@ namespace PSADT
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern int GetWindowTextLength(IntPtr hWnd);
+		
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		private static extern IntPtr GetDesktopWindow();
+		
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		private static extern IntPtr GetShellWindow();
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -286,75 +308,13 @@ namespace PSADT
 			}
 			return GetWindowLongPtr64(hWnd, nIndex);
 		}
-	}
-	
-	public class Screen
-	{
-		[StructLayout(LayoutKind.Sequential)]
-		public struct RECT
+		
+		public static string GetUserNotificationState()
 		{
-			public int Left;
-			public int Top;
-			public int Right;
-			public int Bottom;
-		}
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern IntPtr GetForegroundWindow();
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern IntPtr GetDesktopWindow();
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern IntPtr GetShellWindow();
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern int GetWindowRect(IntPtr hWnd, out RECT rc);
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-		
-		private static IntPtr desktopHandle;
-		private static IntPtr shellHandle;
-		
-		public static bool IsFullScreenWindow(string fullScreenWindowTitle)
-		{
-			desktopHandle = GetDesktopWindow();
-			shellHandle = GetShellWindow();
-			
-			bool runningFullScreen = false;
-			RECT appBounds;
-			System.Drawing.Rectangle screenBounds;
-			const int nChars = 256;
-			StringBuilder Buff = new StringBuilder(nChars);
-			string mainWindowTitle = "";
-			IntPtr hWnd;
-			hWnd = GetForegroundWindow();
-			
-			if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
-			{
-				if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle)))
-				{
-					if (GetWindowText(hWnd, Buff, nChars) > 0)
-					{
-						mainWindowTitle = Buff.ToString();
-						//Console.WriteLine(mainWindowTitle);
-					}
-					
-					// If the main window title contains the text being searched for, then check to see if the window is in fullscreen mode.
-					Match match = Regex.Match(mainWindowTitle, fullScreenWindowTitle, RegexOptions.IgnoreCase);
-					if ((!string.IsNullOrEmpty(fullScreenWindowTitle)) && match.Success)
-					{
-						GetWindowRect(hWnd, out appBounds);
-						screenBounds = System.Windows.Forms.Screen.FromHandle(hWnd).Bounds;
-						if ((appBounds.Bottom + appBounds.Top) == screenBounds.Height && (appBounds.Right + appBounds.Left) == screenBounds.Width)
-						{
-							runningFullScreen = true;
-						}
-					}
-				}
-			}
-			return runningFullScreen;
+			// Only works for Windows Vista or higher
+			UserNotificationState state;
+			int returnVal = SHQueryUserNotificationState(out state);
+			return state.ToString();
 		}
 	}
 	

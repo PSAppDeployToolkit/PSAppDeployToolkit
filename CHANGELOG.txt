@@ -1,21 +1,30 @@
-﻿Version 3.6.8 [01/xx/2016]
+﻿Version 3.6.8 [02/xx/2016]
 	Added environment variables with additions for Pictures, Templates, and Common User locations
 	Added SecureParameters parameter to Execute-MSI and Execute-Process functions
 	Added language translations for Slovak, Hungarian and also updated translations for German
+	Added ParentProcessId property to Get-WindowTitle
 	Fixed issue in Remove-File where deleting of multiple files would stop silently on first error and added LiteralPath parameter
 	Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
 	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system	
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
+	Fixed issue in Test-PowerPoint where detection did not work if there were multiple screens or if presentation was on screen without mouse focus
+	Fixed issue in Get-RegistryKey where reading an empty value or a DWord value of 0 caused function to return $null
+	Fixed issue in Set-DeferHistory where function did now log $deferTimesRemaining and referenced an incorrect variable name instead
+	Fixed issue in Get-HardwarePlatform where function did not detect Microsoft Surface hardware correctly
+	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
+	Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
 	Improved temporary logging folder naming convention to include deployment type in the name
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
-	Improved comments and documentation
 	Improved error handling in the Get-InstalledApplication function
 	Improved error handling in the Test-MSUpdates function
 	Improved Execute-MSI so that environment variables created by MSIs are always updated for Windows Explorer
 	Improved Execute-Process function to capture out of range exit codes and return custom 60013 exit code
 	Improved Remove-RegistryKey function to write warning instead of error to log if a property being deleted does not exist
+	Improved Get-PendingReboot function to check if "ROOT\CCM\ClientSDK\CCM_ClientUtilities" WMI class exists before executing method
+	Improved Show-BalloonTip function to suppress balloon notifications if a PowerPoint presentation is in fullscreen slideshow mode or presentation mode
+	Improved comments and documentation
 
 Version 3.6.7 [09/22/2015]
 	Fixed Write-Log issue introduced in v3.6.6 that created malformed CMTrace type log files
