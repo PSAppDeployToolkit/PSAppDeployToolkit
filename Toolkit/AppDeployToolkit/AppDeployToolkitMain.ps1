@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/01/2016'
+[string]$appDeployMainScriptDate = '02/02/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1971,7 +1971,8 @@ Function Get-InstalledApplication {
 					If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
 						Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
 						$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-							ProductCode = $regKeyApp.PSChildName
+							UninstallSubkey = $regKeyApp.PSChildName
+							ProductCode = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) { $regKeyApp.PSChildName } Else { [string]::Empty }
 							DisplayName = $appDisplayName
 							DisplayVersion = $appDisplayVersion
 							UninstallString = $regKeyApp.UninstallString
@@ -2010,7 +2011,8 @@ Function Get-InstalledApplication {
 						
 						If ($applicationMatched) {
 							$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-								ProductCode = $regKeyApp.PSChildName
+								UninstallSubkey = $regKeyApp.PSChildName
+								ProductCode = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) { $regKeyApp.PSChildName } Else { [string]::Empty }
 								DisplayName = $appDisplayName
 								DisplayVersion = $appDisplayVersion
 								UninstallString = $regKeyApp.UninstallString
@@ -2466,6 +2468,10 @@ Function Remove-MSIApplications {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -notmatch 'msiexec') {
 					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`"." -Severity 2 -Source ${CmdletName}
+					Continue
+				}
+				If ([string]::IsNullOrEmpty($installedApplication.ProductCode)) {
+					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2 -Source ${CmdletName}
 					Continue
 				}
 				
