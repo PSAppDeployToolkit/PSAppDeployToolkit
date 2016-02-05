@@ -8623,18 +8623,18 @@ Function Test-PowerPoint {
 		Try {
 			Write-Log -Message 'Check if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
 			Try {
-				[boolean]$IsPowerPointRunning = [boolean](Get-Process -Name 'POWERPNT' -ErrorAction 'Stop')
-				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
-			}
-			Catch {
-				$CmdException = $_
-				If ($CmdException.FullyQualifiedErrorId -eq 'NoProcessFoundForGivenName,Microsoft.PowerShell.Commands.GetProcessCommand') {
-					Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
-					[boolean]$IsPowerPointRunning = $false
+				[Diagnostics.Process[]]$PowerPointProcess = Get-Process -ErrorAction 'Stop' | Where-Object { $_.ProcessName -eq 'POWERPNT' }
+				If ($PowerPointProcess) {
+					[boolean]$IsPowerPointRunning = $true
+					Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 				}
 				Else {
-					Throw $CmdException
+					[boolean]$IsPowerPointRunning = $false
+					Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
 				}
+			}
+			Catch {
+				Throw
 			}
 			
 			[nullable[boolean]]$IsPowerPointFullScreen = $false
@@ -8651,7 +8651,7 @@ Function Test-PowerPoint {
 					Else {
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 						Try {
-							[int32[]]$PowerPointProcessIDs = Get-Process -Name 'POWERPNT' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Id'
+							[int32[]]$PowerPointProcessIDs = $PowerPointProcess | Select-Object -ExpandProperty 'Id'
 							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
 						}
 						Catch {
