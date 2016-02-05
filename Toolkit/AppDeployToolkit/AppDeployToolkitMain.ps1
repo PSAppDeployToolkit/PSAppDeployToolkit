@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/02/2016'
+[string]$appDeployMainScriptDate = '02/05/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8626,12 +8626,15 @@ Function Test-PowerPoint {
 				[boolean]$IsPowerPointRunning = [boolean](Get-Process -Name 'POWERPNT' -ErrorAction 'Stop')
 				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
 			}
-			Catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
-				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
-				[boolean]$IsPowerPointRunning = $false
-			}
 			Catch {
-				Throw
+				$CmdException = $_
+				If ($CmdException.FullyQualifiedErrorId -eq 'NoProcessFoundForGivenName,Microsoft.PowerShell.Commands.GetProcessCommand') {
+					Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
+					[boolean]$IsPowerPointRunning = $false
+				}
+				Else {
+					Throw $CmdException
+				}
 			}
 			
 			[nullable[boolean]]$IsPowerPointFullScreen = $false
