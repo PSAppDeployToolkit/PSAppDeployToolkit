@@ -1,5 +1,7 @@
-Version 3.6.8 [02/xx/2016]
+Version 3.6.9 [02/xx/2016]
 	Fixed issue in Remove-RegistryKey function where it failed to delete the (Default) value when specified due to limitation of Remove-ChildItem cmdlet
+	Improved comments and documentation
+
 Version 3.6.8 [02/06/2016]
 	Added environment variables with additions for Pictures, Templates, and Common User locations
 	Added SecureParameters parameter to Execute-MSI and Execute-Process functions

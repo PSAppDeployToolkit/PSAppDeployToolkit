@@ -64,9 +64,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.8'
+[version]$appDeployMainScriptVersion = [version]'3.6.9'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/05/2016'
+[string]$appDeployMainScriptDate = '02/19/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2596,7 +2596,7 @@ Function Execute-Process {
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER WaitForMsiExec
 	Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that
-	that this function waits for the msiexec engine to become available before starting the install.
+	this function waits for the msiexec engine to become available before starting the install.
 .PARAMETER MsiExecWaitTime
 	Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
