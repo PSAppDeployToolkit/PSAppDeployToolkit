@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/02/2016'
+[string]$appDeployMainScriptDate = '02/05/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -8623,12 +8623,15 @@ Function Test-PowerPoint {
 		Try {
 			Write-Log -Message 'Check if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
 			Try {
-				[boolean]$IsPowerPointRunning = [boolean](Get-Process -Name 'POWERPNT' -ErrorAction 'Stop')
-				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
-			}
-			Catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
-				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
-				[boolean]$IsPowerPointRunning = $false
+				[Diagnostics.Process[]]$PowerPointProcess = Get-Process -ErrorAction 'Stop' | Where-Object { $_.ProcessName -eq 'POWERPNT' }
+				If ($PowerPointProcess) {
+					[boolean]$IsPowerPointRunning = $true
+					Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
+				}
+				Else {
+					[boolean]$IsPowerPointRunning = $false
+					Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
+				}
 			}
 			Catch {
 				Throw
@@ -8648,7 +8651,7 @@ Function Test-PowerPoint {
 					Else {
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 						Try {
-							[int32[]]$PowerPointProcessIDs = Get-Process -Name 'POWERPNT' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Id'
+							[int32[]]$PowerPointProcessIDs = $PowerPointProcess | Select-Object -ExpandProperty 'Id' -ErrorAction 'Stop'
 							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
 						}
 						Catch {
