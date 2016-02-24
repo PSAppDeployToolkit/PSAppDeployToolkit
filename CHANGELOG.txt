@@ -1,5 +1,6 @@
 Version 3.6.9 [02/xx/2016]
 	Fixed issue in Remove-RegistryKey function where it failed to delete the (Default) value when specified due to limitation of Remove-ChildItem cmdlet
+	Fixed issue in New-Shortcut to use Rename-Item parameter name that is compatible with PS 2.0
 	Improved comments and documentation
 
 Version 3.6.8 [02/06/2016]
