@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.8'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/01/2016'
+[string]$appDeployMainScriptDate = '02/05/2016'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1971,7 +1971,8 @@ Function Get-InstalledApplication {
 					If ($regKeyApp.PSChildName -match [regex]::Escape($productCode)) {
 						Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
 						$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-							ProductCode = $regKeyApp.PSChildName
+							UninstallSubkey = $regKeyApp.PSChildName
+							ProductCode = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) { $regKeyApp.PSChildName } Else { [string]::Empty }
 							DisplayName = $appDisplayName
 							DisplayVersion = $appDisplayVersion
 							UninstallString = $regKeyApp.UninstallString
@@ -2010,7 +2011,8 @@ Function Get-InstalledApplication {
 						
 						If ($applicationMatched) {
 							$installedApplication += New-Object -TypeName 'PSObject' -Property @{
-								ProductCode = $regKeyApp.PSChildName
+								UninstallSubkey = $regKeyApp.PSChildName
+								ProductCode = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) { $regKeyApp.PSChildName } Else { [string]::Empty }
 								DisplayName = $appDisplayName
 								DisplayVersion = $appDisplayVersion
 								UninstallString = $regKeyApp.UninstallString
@@ -2466,6 +2468,10 @@ Function Remove-MSIApplications {
 			ForEach ($installedApplication in $installedApplications) {
 				If ($installedApplication.UninstallString -notmatch 'msiexec') {
 					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because uninstall string [$($installedApplication.UninstallString)] does not match `"msiexec`"." -Severity 2 -Source ${CmdletName}
+					Continue
+				}
+				If ([string]::IsNullOrEmpty($installedApplication.ProductCode)) {
+					Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2 -Source ${CmdletName}
 					Continue
 				}
 				
@@ -3843,7 +3849,14 @@ Function Remove-RegistryKey {
 			Else {
 				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					Write-Log -Message "Delete registry value [$Key] [$Name]." -Source ${CmdletName}
-					$null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
+					
+					If ($Name -eq '(Default)') {
+                        ## Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value
+                        $null = (Get-Item -Path $Key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').DeleteValue('')
+                    }
+                    Else {
+                        $null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
+                    }
 				}
 				Else {
 					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
@@ -8617,12 +8630,15 @@ Function Test-PowerPoint {
 		Try {
 			Write-Log -Message 'Check if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
 			Try {
-				[boolean]$IsPowerPointRunning = [boolean](Get-Process -Name 'POWERPNT' -ErrorAction 'Stop')
-				Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
-			}
-			Catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
-				Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
-				[boolean]$IsPowerPointRunning = $false
+				[Diagnostics.Process[]]$PowerPointProcess = Get-Process -ErrorAction 'Stop' | Where-Object { $_.ProcessName -eq 'POWERPNT' }
+				If ($PowerPointProcess) {
+					[boolean]$IsPowerPointRunning = $true
+					Write-Log -Message 'PowerPoint application is running.' -Source ${CmdletName}
+				}
+				Else {
+					[boolean]$IsPowerPointRunning = $false
+					Write-Log -Message 'PowerPoint application is not running.' -Source ${CmdletName}
+				}
 			}
 			Catch {
 				Throw
@@ -8642,7 +8658,7 @@ Function Test-PowerPoint {
 					Else {
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
 						Try {
-							[int32[]]$PowerPointProcessIDs = Get-Process -Name 'POWERPNT' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Id'
+							[int32[]]$PowerPointProcessIDs = $PowerPointProcess | Select-Object -ExpandProperty 'Id' -ErrorAction 'Stop'
 							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
 						}
 						Catch {

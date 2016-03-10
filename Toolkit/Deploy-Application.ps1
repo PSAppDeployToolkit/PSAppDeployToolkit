@@ -63,9 +63,12 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '12/05/2015'
+	[string]$appScriptDate = '02/06/2015'
 	[string]$appScriptAuthor = '<author name>'
 	##*===============================================
+	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
+	[string]$installName = ''
+	[string]$installTitle = ''
 	
 	##* Do not modify section below
 	#region DoNotModify
@@ -76,7 +79,7 @@ Try {
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.8'
-	[string]$deployAppScriptDate = '12/05/2015'
+	[string]$deployAppScriptDate = '02/06/2016'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment

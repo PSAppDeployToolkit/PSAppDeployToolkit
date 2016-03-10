@@ -1,11 +1,13 @@
-﻿Version 3.6.8 [02/xx/2016]
+Version 3.6.8 [02/xx/2016]
+	Fixed issue in Remove-RegistryKey function where it failed to delete the (Default) value when specified due to limitation of Remove-ChildItem cmdlet
+Version 3.6.8 [02/06/2016]
 	Added environment variables with additions for Pictures, Templates, and Common User locations
 	Added SecureParameters parameter to Execute-MSI and Execute-Process functions
 	Added language translations for Slovak, Hungarian and also updated translations for German
 	Added ParentProcessId property to Get-WindowTitle
 	Fixed issue in Remove-File where deleting of multiple files would stop silently on first error and added LiteralPath parameter
 	Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
-	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system	
+	Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system
 	Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
 	Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 	Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
@@ -13,7 +15,9 @@
 	Fixed issue in Get-RegistryKey where reading an empty value or a DWord value of 0 caused function to return $null
 	Fixed issue in Set-DeferHistory where function did now log $deferTimesRemaining and referenced an incorrect variable name instead
 	Fixed issue in Get-HardwarePlatform where function did not detect Microsoft Surface hardware correctly
+	Fixed issue in Remove-MSIApplications to make sure that an invalid ProductCode is not passed to the Execute-MSI function
 	Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
+	Improved Get-InstalledApplication to verify ProductCode is valid product code before storing value, also added UninstallSubkey property
 	Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
 	Improved temporary logging folder naming convention to include deployment type in the name
 	Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
