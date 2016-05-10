@@ -3719,6 +3719,9 @@ Function Set-RegistryKey {
 				[string]$key = Convert-RegistryPath -Key $key
 			}
 			
+			## Replace forward slash character to allow forward slash in name of registry key rather than creating new subkey
+			$key = $key.Replace('/',"$([char]0x2215)")
+			
 			## Create registry key if it doesn't exist
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
 				Try {
