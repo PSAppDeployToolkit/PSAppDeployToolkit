@@ -8082,7 +8082,7 @@ Function Test-MSUpdates {
 														'Description' |
 								Sort-Object -Property 'Date' -Descending
 				ForEach ($Update in $UpdateHistory) {
-					If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
+					If (($Update.Operation -ne 'Other') -and ($Update.Title -match "\($KBNumber\)") {
 						$LatestUpdateHistory = $Update
 						Break
 					}
