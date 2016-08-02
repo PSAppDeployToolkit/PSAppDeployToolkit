@@ -7135,12 +7135,24 @@ Function Set-PinnedApplication {
 		}
 		#endregion
 		
-		[hashtable]$Verbs = @{
+		If ($envOSVersionMajor -eq '10') {
+			Write-Log -Message "Detected Windows 10, using Windows 10 verb codes" -Source ${CmdletName}
+			[hashtable]$Verbs = @{
+                'PintoStartMenu' = 51201
+                'UnpinfromStartMenu' = 51394
+                'PintoTaskbar' = 5386
+                'UnpinfromTaskbar' = 5387
+            }
+		}
+		Else {
+			[hashtable]$Verbs = @{
 			'PintoStartMenu' = 5381
 			'UnpinfromStartMenu' = 5382
 			'PintoTaskbar' = 5386
 			'UnpinfromTaskbar' = 5387
+			}
 		}
+		
 	}
 	Process {
 		Try {
