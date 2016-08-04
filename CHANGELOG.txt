@@ -1,5 +1,6 @@
 Version 3.6.9 [02/xx/2016]
-	Added support for Windows 10 to function Set-PinnedApplication to enable pinning and unpinning to the Start Menu
+	BREAKING CHANGE, Changed variable envCommonPrograms to envCommonStartMenuPrograms
+	Added support for Windows 10 to the function Set-PinnedApplication to enable pinning and unpinning to the Start Menu
 	Added IncludeUpdatesAndHotfixes Parameter to Execute-MSI and Remove-MSI functions
 	Fixed issue in Test-MSUpdate which returned a false positive when searching for an installed update
 	Fixed typo in Get-HardwarePlatform function
