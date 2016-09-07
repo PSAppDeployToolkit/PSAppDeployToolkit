@@ -3764,9 +3764,15 @@ Function Set-RegistryKey {
 				}
 				## Update registry value if it does exist
 				Else {
-					[string]$RegistryValueWriteAction = 'update'
-					Write-Log -Message "Update registry key value: [$key] [$name = $value]." -Source ${CmdletName}
-					$null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
+					If ($Name -eq '(Default)') {
+	                    ## Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value
+	                    $null = $(Get-Item -Path $key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').SetValue($null,$value)
+	                } 
+	                Else {
+						[string]$RegistryValueWriteAction = 'update'
+						Write-Log -Message "Update registry key value: [$key] [$name = $value]." -Source ${CmdletName}
+						$null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
+						}
 				}
 			}
 		}
