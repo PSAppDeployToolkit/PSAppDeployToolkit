@@ -1,5 +1,5 @@
 Version 3.6.9 [02/xx/2016]
-	Fixed issue in Set-RegistryKey to enable the Default value to be set
+	Fixed issue where variable envOSVersion was inconsistent in Windows 8 and 8.1 workstations
 	Fixed issue in Execute-ProcessAsUser with Powershell script execution
 	BREAKING CHANGE, Changed variable envCommonPrograms to envCommonStartMenuPrograms
 	Added support for Windows 10 to the function Set-PinnedApplication to enable pinning and unpinning to the Start Menu
