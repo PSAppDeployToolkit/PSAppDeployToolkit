@@ -1,4 +1,8 @@
 Version 3.6.9 [02/xx/2016]
+	Added IncludeUpdatesAndHotfixes Parameter to Execute-MSI and Remove-MSI functions
+	Fixed issue in Test-MSUpdate which returned a false positive when searching for an installed update
+	Fixed typo in Get-HardwarePlatform function
+	Fixed issue in Set-RegistryKey where registry keys with forward slashes were treated like backslahes and broken up into subkeys
 	Fixed issue in Remove-RegistryKey function where it failed to delete the (Default) value when specified due to limitation of Remove-ChildItem cmdlet
 	Fixed issue in New-Shortcut to use Rename-Item parameter name that is compatible with PS 2.0
 	Improved comments and documentation

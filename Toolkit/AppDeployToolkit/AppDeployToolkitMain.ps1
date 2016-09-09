@@ -1783,7 +1783,7 @@ Function Get-HardwarePlatform {
 	Process {
 		Try {
 			Write-Log -Message 'Retrieve hardware platform information.' -Source ${CmdletName}
-			$hwBios = Get-WmiObject -Class 'Win32_BIOS' -ErrorAction 'Stop' | Select-Object -Property 'Version', 'SerialNnumber'
+			$hwBios = Get-WmiObject -Class 'Win32_BIOS' -ErrorAction 'Stop' | Select-Object -Property 'Version', 'SerialNumber'
 			$hwMakeModel = Get-WMIObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop' | Select-Object -Property 'Model', 'Manufacturer'
 			
 			If ($hwBIOS.Version -match 'VRTUAL') { $hwType = 'Virtual:Hyper-V' }
@@ -2075,6 +2075,8 @@ Function Execute-MSI {
 	Overrides the working directory. The working directory is set to the location of the MSI file.
 .PARAMETER SkipMSIAlreadyInstalledCheck
 	Skips the check to determine if the MSI is already installed on the system. Default is: $false.
+.PARAMETER IncludeUpdatesAndHotfixes
+	Include matches against updates and hotfixes in results.
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
@@ -2136,6 +2138,8 @@ Function Execute-MSI {
 		[ValidateNotNullorEmpty()]
 		[switch]$SkipMSIAlreadyInstalledCheck = $false,
 		[Parameter(Mandatory=$false)]
+		[switch]$IncludeUpdatesAndHotfixes,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$PassThru = $false,
 		[Parameter(Mandatory=$false)]
@@ -2159,8 +2163,14 @@ Function Execute-MSI {
 			
 			#  Resolve the product code to a publisher, application name, and version
 			Write-Log -Message 'Resolve product code to a publisher, application name, and version.' -Source ${CmdletName}
-			[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'
 			
+			If ($IncludeUpdatesAndHotfixes) {
+				[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'	
+			}
+			Else {
+				[psobject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'
+			}
+									
 			#  Build the log file name
 			If (-not $logName) {
 				If ($productCodeNameVersion) {
@@ -2305,8 +2315,13 @@ Function Execute-MSI {
 			If ($SkipMSIAlreadyInstalledCheck) {
 				[boolean]$IsMsiInstalled = $false
 			}
-			Else {
-				[psobject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
+			Else {								
+				If ($IncludeUpdatesAndHotfixes) {
+					[psobject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes
+				}
+				Else {
+					[psobject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode					
+				}				
 				If ($MsiInstalled) { [boolean]$IsMsiInstalled = $true }
 			}
 		}
@@ -2373,6 +2388,8 @@ Function Remove-MSIApplications {
 .PARAMETER ExcludeFromUninstall
 	Multi-dimensional array that contains property/value/match-type pairs that should be excluded from uninstall if found.
 	Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
+.PARAMETER IncludeUpdatesAndHotfixes
+	Include matches against updates and hotfixes in results.
 .PARAMETER LoggingOptions
 	Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 .PARAMETER LogName
@@ -2436,6 +2453,8 @@ Function Remove-MSIApplications {
 		[ValidateNotNullorEmpty()]
 		[array]$ExcludeFromUninstall = @(@()),
 		[Parameter(Mandatory=$false)]
+		[switch]$IncludeUpdatesAndHotfixes,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
 		[Parameter(Mandatory=$false)]
@@ -2459,7 +2478,10 @@ Function Remove-MSIApplications {
 		[hashtable]$GetInstalledApplicationSplat = @{ Name = $name }
 		If ($Exact) { $GetInstalledApplicationSplat.Add( 'Exact', $Exact) }
 		ElseIf ($WildCard) { $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard) }
-		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
+		If ($IncludeUpdatesAndHotfixes) { $GetInstalledApplicationSplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes) }
+		
+		[psobject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat 
+						
 		Write-Log -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]." -Source ${CmdletName}
 		
 		## Filter the results from Get-InstalledApplication
@@ -2543,6 +2565,7 @@ Function Remove-MSIApplications {
 		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
 		If ($PassThru) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
+		If ($IncludeUpdatesAndHotfixes) { $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes) }
 		
 		If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
 			ForEach ($removeMSIApplication in $removeMSIApplications) {
@@ -3718,6 +3741,9 @@ Function Set-RegistryKey {
 			Else {
 				[string]$key = Convert-RegistryPath -Key $key
 			}
+			
+			## Replace forward slash character to allow forward slash in name of registry key rather than creating new subkey
+			$key = $key.Replace('/',"$([char]0x2215)")
 			
 			## Create registry key if it doesn't exist
 			If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
@@ -8079,7 +8105,7 @@ Function Test-MSUpdates {
 														'Description' |
 								Sort-Object -Property 'Date' -Descending
 				ForEach ($Update in $UpdateHistory) {
-					If (($Update.Operation -ne 'Other') -and ($Update.Title -match $KBNumber)) {
+					If (($Update.Operation -ne 'Other') -and ($Update.Title -match "\($KBNumber\)")) {
 						$LatestUpdateHistory = $Update
 						Break
 					}
