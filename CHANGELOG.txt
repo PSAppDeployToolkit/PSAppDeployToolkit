@@ -1,4 +1,5 @@
 Version 3.6.9 [02/xx/2016]
+	Added expandstring functionality to the MSI_InstallParams, MSI_SilentParams, and MSI_UninstallParams XML properties
 	Fixed issue in Test-MSUpdates giving preference to the Get-Hotfix cmdlet for detecting updates
 	Fixed issue where variable envOSVersion was inconsistent in Windows 8 and 8.1 workstations
 	Fixed issue in Execute-ProcessAsUser with Powershell script execution
