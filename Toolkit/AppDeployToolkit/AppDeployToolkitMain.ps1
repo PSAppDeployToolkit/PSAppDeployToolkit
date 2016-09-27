@@ -7136,7 +7136,7 @@ Function Set-PinnedApplication {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to perform action [$verb] on [$FilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to perform action [$verb] on [$FilePath]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 			}
 		}
 		#endregion
@@ -7180,7 +7180,7 @@ Function Set-PinnedApplication {
 			Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
 		}
 		Catch {
-			Write-Log -Message "Failed to execute action [$Action]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to execute action [$Action]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 		}
 	}
 	End {
