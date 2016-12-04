@@ -1,4 +1,5 @@
 Version 3.6.9 [02/xx/2016]
+	Fixed issue in Get-PendingReboot where detection of a pending SCCM reboot would cause a fatal error for some clients
 	Changed severity of failure messages created in the Set-PinnedApplication to warning (2) from error (3)
 	Added expandstring functionality to the MSI_InstallParams, MSI_SilentParams, and MSI_UninstallParams XML properties
 	Fixed issue in Test-MSUpdates giving preference to the Get-Hotfix cmdlet for detecting updates

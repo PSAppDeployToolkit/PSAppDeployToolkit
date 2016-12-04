@@ -10009,31 +10009,28 @@ Function Get-PendingReboot {
 		
 		## Determine SCCM 2012 Client reboot pending status
 		Try {
-			Try {
-				[boolean]$IsSccmClientNamespaceExists = [boolean](Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -List -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'CCM_ClientUtilities' })
-			}
-			Catch [System.Management.ManagementException] {
-				$CmdException = $_
-				If ($CmdException.FullyQualifiedErrorId -eq 'INVALID_NAMESPACE_IDENTIFIER,Microsoft.PowerShell.Commands.GetWmiObjectCommand') {
-					[boolean]$IsSccmClientNamespaceExists = $false
-				}
-			}
-			
-			If ($IsSccmClientNamespaceExists) {
-				[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
-				If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
-					Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
-				}
-				Else {
-					[nullable[boolean]]$IsSCCMClientRebootPending = $false
-					If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
-						[nullable[boolean]]$IsSCCMClientRebootPending = $true
-					}
-				}
+			[boolean]$IsSccmClientNamespaceExists = $false
+			[psobject]$SCCMClientRebootStatus = Invoke-WmiMethod -ComputerName $ComputerName -NameSpace 'ROOT\CCM\ClientSDK' -Class 'CCM_ClientUtilities' -Name 'DetermineIfRebootPending' -ErrorAction 'Stop'
+			[boolean]$IsSccmClientNamespaceExists = $true
+			If ($SCCMClientRebootStatus.ReturnValue -ne 0) {
+				Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
 			}
 			Else {
-				[nullable[boolean]]$IsSCCMClientRebootPending = $null
+				Write-Log -Message "Successfully queried SCCM client for reboot status." -Source ${CmdletName}
+				[nullable[boolean]]$IsSCCMClientRebootPending = $false
+				If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
+					[nullable[boolean]]$IsSCCMClientRebootPending = $true
+					Write-Log -Message "Pending SCCM reboot detected." -Source ${CmdletName}
+				}
+				Else {
+					Write-Log -Message "No pending SCCM reboot detected." -Source ${CmdletName}
+				}
 			}
+		}
+		Catch [System.Management.ManagementException] {
+			[nullable[boolean]]$IsSCCMClientRebootPending = $null
+			[boolean]$IsSccmClientNamespaceExists = $false
+			Write-Log -Message "Failed to get IsSCCMClientRebootPending. Failed to detect the SCCM client WMI class." -Severity 3 -Source ${CmdletName}
 		}
 		Catch {
 			[nullable[boolean]]$IsSCCMClientRebootPending = $null
