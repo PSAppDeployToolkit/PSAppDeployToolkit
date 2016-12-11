@@ -3554,6 +3554,8 @@ Function Get-RegistryKey {
 	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 .PARAMETER ReturnEmptyKeyIfExists
 	Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
+.PARAMETER DoNotExpandEnvironmentNames
+	Return unexpanded REG_EXPAND_SZ values. Default is: $false.	
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -3562,6 +3564,9 @@ Function Get-RegistryKey {
 	Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
 .EXAMPLE
 	Get-RegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
+.EXAMPLE
+	Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames 
+	Returns %ProgramFiles%\Java instead of C:\Program Files\Java
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -3580,6 +3585,9 @@ Function Get-RegistryKey {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$ReturnEmptyKeyIfExists,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[switch]$DoNotExpandEnvironmentNames,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -3631,7 +3639,12 @@ Function Get-RegistryKey {
 					
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 					If ($IsRegistryValueExists) {
-						$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+						If ($DoNotExpandEnvironmentNames) { #Only useful on 'ExpandString' values
+							$regKeyValue = $(Get-Item -Path $key -ErrorAction 'Stop').getvalue($Value,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+						}
+						Else {
+							$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+						}
 					}
 					Else {
 						Write-Log -Message "Registry key value [$Key] [$Value] does not exist. Return `$null." -Source ${CmdletName}
