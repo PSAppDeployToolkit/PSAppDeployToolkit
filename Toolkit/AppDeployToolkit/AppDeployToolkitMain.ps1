@@ -1875,11 +1875,13 @@ Function Get-InstalledApplication {
 	Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
 	Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 .PARAMETER Name
-	The name of the application to retrieve information for. Performs a regex match on the application display name by default.
+	The name of the application to retrieve information for. Performs a contains match on the application display name by default.
 .PARAMETER Exact
 	Specifies that the named application must be matched using the exact name.
 .PARAMETER WildCard
 	Specifies that the named application must be matched using a wildcard search.
+.PARAMETER RegEx
+	Specifies that the named application must be matched using a regular expression search.
 .PARAMETER ProductCode
 	The product code of the application to retrieve information for.
 .PARAMETER IncludeUpdatesAndHotfixes
@@ -1901,6 +1903,8 @@ Function Get-InstalledApplication {
 		[switch]$Exact = $false,
 		[Parameter(Mandatory=$false)]
 		[switch]$WildCard = $false,
+		[Parameter(Mandatory=$false)]
+		[switch]$RegEx = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$ProductCode,
@@ -2003,10 +2007,17 @@ Function Get-InstalledApplication {
 								Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -Source ${CmdletName}
 							}
 						}
-						#  Check for a regex application name match
+						ElseIf ($RegEx) {
+							#  Check for a regex application name match
+							If ($regKeyApp.DisplayName -match $application) {
+								$applicationMatched = $true
+								Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
+							}
+						}
+						#  Check for a contains application name match
 						ElseIf ($regKeyApp.DisplayName -match [regex]::Escape($application)) {
 							$applicationMatched = $true
-							Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
+							Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]." -Source ${CmdletName}
 						}
 						
 						If ($applicationMatched) {

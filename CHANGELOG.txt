@@ -1,5 +1,6 @@
 Version 3.6.9 [02/xx/2016]
-	Changed behavior of Remove-Folder function to continue deleting files reucrsivley when an error is encountered when $ContinueOnError is used
+	Added -RegEx parameter to Get-InstalledApplication and modified the help text for the -Name parameter
+	Changed behavior of Remove-Folder function to continue deleting files recursively when an error is encountered when $ContinueOnError is used
 	Added DoNotExpandEnvironmentNames parameter to Get-RegistryKey to enable retrieving of unexpanded REG_EXPAND_SZ values
 	Fixed issue in Get-PendingReboot where detection of a pending SCCM reboot would cause a fatal error for some clients
 	Changed severity of failure messages created in the Set-PinnedApplication to warning (2) from error (3)
