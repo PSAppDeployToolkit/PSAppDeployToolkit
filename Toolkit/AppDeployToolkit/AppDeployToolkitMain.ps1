@@ -3178,30 +3178,18 @@ Function Remove-Folder {
 	}
 	Process {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
-				$FolderSubObjects = Get-ChildItem -LiteralPath $Path -Recurse
-				ForEach($FolderSubObject in $FolderSubObjects) {
-					Try {
-						Remove-Item -LiteralPath $FolderSubObject.FullName -Force -ErrorAction 'Stop'	
-					}
-					Catch {
-						Write-Log -Message "Failed to delete $($FolderSubObject.FullName) from path [$path].`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-						If (-not $ContinueOnError) {
-							Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
-						}
-						Else {
-							Return
-						}
+				Try {
+					Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+					If ($ErrorRemoveFolder) {
+						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
+					}		
+				}
+				Catch {
+					Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					If (-not $ContinueOnError) {
+						Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
 					}
 				}
-				Try {
-						Remove-Item -LiteralPath $Path -Force -ErrorAction 'Stop'
-					}
-					Catch {
-						Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-						If (-not $ContinueOnError) {
-							Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
-						}
-					}
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] does not exists..." -Source ${CmdletName}
