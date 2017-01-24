@@ -6754,7 +6754,7 @@ Function Show-BalloonTip {
 	Process {
 		## Skip balloon if in silent mode
 		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or (Test-PowerPoint)) { Return }
-		
+
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 		
@@ -7068,6 +7068,7 @@ Function Close-InstallationProgress {
 		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
 			## Close the progress thread
 			Write-Log -Message 'Close the installation progress dialog.' -Source ${CmdletName}
+			If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 			$script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
 			$script:ProgressSyncHash.Clear()
 			$script:ProgressRunspace.Close()

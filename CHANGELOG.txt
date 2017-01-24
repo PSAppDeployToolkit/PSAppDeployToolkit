@@ -1,4 +1,5 @@
 ﻿Version 3.6.9 [02/xx/2016]
+	Fixed issue in Exit-Script where the system tray icon was not being removed at the end of the script
 	Fixed issue in Remove-MSIApplication which caused the function to fail in the case of multiple filtered or excluded applications
 	Added -RegEx parameter to Get-InstalledApplication and modified the help text for the -Name parameter
 	Changed behavior of Remove-Folder function to continue deleting files recursively when an error is encountered when $ContinueOnError is used
