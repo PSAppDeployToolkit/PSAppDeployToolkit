@@ -4514,6 +4514,8 @@ Function Execute-ProcessAsUser {
 	Path to the file being executed.
 .PARAMETER Parameters
 	Arguments to be passed to the file being executed.
+.PARAMETER SecureParameters
+	Hides all parameters passed to the executable from the Toolkit log file
 .PARAMETER RunLevel
 	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are:
 	- HighestAvailable: Tasks run by using the highest available privileges (Admin privileges for Administrators). Default Value.
@@ -4545,6 +4547,8 @@ Function Execute-ProcessAsUser {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Parameters = '',
+		[Parameter(Mandatory=$false)]
+		[switch]$SecureParameters = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('HighestAvailable','LeastPrivilege')]
 		[string]$RunLevel = 'HighestAvailable',
@@ -4670,7 +4674,12 @@ Function Execute-ProcessAsUser {
 		
 		## Create Scheduled Task to run the process with a logged-on user account
 		If ($Parameters) {
-			Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+			If ($SecureParameters) {
+				Write-Log -Message "Create scheduled task to run the process [$Path (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}	
+			}			
 		}
 		Else {
 			Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
