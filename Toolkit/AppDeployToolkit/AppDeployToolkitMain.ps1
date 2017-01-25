@@ -1045,7 +1045,8 @@ Function Exit-Script {
 		[string]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()) + '.zip'
 		New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
 	}
-	
+
+	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 	## Exit the script, returning the exit code to SCCM
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }
@@ -4675,7 +4676,7 @@ Function Execute-ProcessAsUser {
 		## Create Scheduled Task to run the process with a logged-on user account
 		If ($Parameters) {
 			If ($SecureParameters) {
-				Write-Log -Message "Create scheduled task to run the process [$Path (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Create scheduled task to run the process [$Path] (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			Else {
 				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}	
@@ -4698,7 +4699,12 @@ Function Execute-ProcessAsUser {
 		
 		## Trigger the Scheduled Task
 		If ($Parameters) {
-			Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+			If ($SecureParameters) {
+				Write-Log -Message "Trigger execution of scheduled task with command [$Path] (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Trigger execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+			}
 		}
 		Else {
 			Write-Log -Message "Trigger execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
@@ -7077,7 +7083,6 @@ Function Close-InstallationProgress {
 		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
 			## Close the progress thread
 			Write-Log -Message 'Close the installation progress dialog.' -Source ${CmdletName}
-			If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 			$script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
 			$script:ProgressSyncHash.Clear()
 			$script:ProgressRunspace.Close()

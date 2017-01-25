@@ -1,4 +1,5 @@
 ﻿Version 3.6.9 [02/xx/2016]
+	Added SecureParameters parameter to additional section of Execute-ProcessAsUser
 	Added SecureParameters parameter to Execute-ProcessAsUser
 	Fixed issue in Exit-Script where the system tray icon was not being removed at the end of the script
 	Fixed issue in Remove-MSIApplication which caused the function to fail in the case of multiple filtered or excluded applications
