@@ -1,20 +1,20 @@
-﻿Version 3.6.9 [02/xx/2016]
+﻿Version 3.6.9 [01/xx/2017]
 	Added SecureParameters parameter to additional section of Execute-ProcessAsUser
 	Added SecureParameters parameter to Execute-ProcessAsUser
+	Added -RegEx parameter to Get-InstalledApplication and modified the help text for the -Name parameter
+	Added DoNotExpandEnvironmentNames parameter to Get-RegistryKey to enable retrieving of unexpanded REG_EXPAND_SZ values
+	Added expandstring functionality to the MSI_InstallParams, MSI_SilentParams, and MSI_UninstallParams XML properties
+	Added support for Windows 10 to the function Set-PinnedApplication to enable pinning and unpinning to the Start Menu
+	Added IncludeUpdatesAndHotfixes Parameter to Execute-MSI and Remove-MSI functions
+	BREAKING CHANGE, Changed variable envCommonPrograms to envCommonStartMenuPrograms
+	Changed behavior of Remove-Folder function to continue deleting files recursively when an error is encountered when $ContinueOnError is used
+	Changed severity of failure messages created in the Set-PinnedApplication to warning (2) from error (3)
 	Fixed issue in Exit-Script where the system tray icon was not being removed at the end of the script
 	Fixed issue in Remove-MSIApplication which caused the function to fail in the case of multiple filtered or excluded applications
-	Added -RegEx parameter to Get-InstalledApplication and modified the help text for the -Name parameter
-	Changed behavior of Remove-Folder function to continue deleting files recursively when an error is encountered when $ContinueOnError is used
-	Added DoNotExpandEnvironmentNames parameter to Get-RegistryKey to enable retrieving of unexpanded REG_EXPAND_SZ values
 	Fixed issue in Get-PendingReboot where detection of a pending SCCM reboot would cause a fatal error for some clients
-	Changed severity of failure messages created in the Set-PinnedApplication to warning (2) from error (3)
-	Added expandstring functionality to the MSI_InstallParams, MSI_SilentParams, and MSI_UninstallParams XML properties
 	Fixed issue in Test-MSUpdates giving preference to the Get-Hotfix cmdlet for detecting updates
 	Fixed issue where variable envOSVersion was inconsistent in Windows 8 and 8.1 workstations
 	Fixed issue in Execute-ProcessAsUser with Powershell script execution
-	BREAKING CHANGE, Changed variable envCommonPrograms to envCommonStartMenuPrograms
-	Added support for Windows 10 to the function Set-PinnedApplication to enable pinning and unpinning to the Start Menu
-	Added IncludeUpdatesAndHotfixes Parameter to Execute-MSI and Remove-MSI functions
 	Fixed issue in Test-MSUpdate which returned a false positive when searching for an installed update
 	Fixed typo in Get-HardwarePlatform function
 	Fixed issue in Set-RegistryKey where registry keys with forward slashes were treated like backslahes and broken up into subkeys
