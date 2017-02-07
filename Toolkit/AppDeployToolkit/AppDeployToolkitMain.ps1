@@ -155,12 +155,13 @@ Catch { }
 [psobject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
 [string]$envOSName = $envOS.Caption.Trim()
 [string]$envOSServicePack = $envOS.CSDVersion
-[version]$envOSVersion = (Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue').Version
+[version]$envOSVersion = $envOS.Version
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
 [string]$envOSVersionBuild = $envOSVersion.Build
 [string]$envOSVersionRevision = ,((Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
-[string]$envOSVersion = $envOSVersion.ToString()
+If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
+If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { "$($envOSVersion.ToString())" }
 #  Get the operating system type
 [int32]$envOSProductType = $envOS.ProductType
 [boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
@@ -4247,7 +4248,7 @@ Function Get-UserProfiles {
 				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
 				
 				#  On Windows Vista or higher
-				If ($envOSVersion.Major -gt 5) {
+				If (([version]$envOSVersion).Major -gt 5) {
 					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
 					[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
 				}
@@ -7182,7 +7183,7 @@ Function Set-PinnedApplication {
 		}
 		#endregion
 		
-		If ($envOSVersionMajor -ge '10') {
+		If (([version]$envOSVersion).Major -ge 10) {
 			Write-Log -Message "Detected Windows 10 or higher, using Windows 10 verb codes." -Source ${CmdletName}
 			[hashtable]$Verbs = @{
 				'PintoStartMenu' = 51201
@@ -8759,7 +8760,7 @@ Function Test-PowerPoint {
 					}
 					
 					## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher)
-					If ((-not $IsPowerPointFullScreen) -and ($envOSVersion.Major -gt 5)) {
+					If ((-not $IsPowerPointFullScreen) -and (([version]$envOSVersion).Major -gt 5)) {
 						#  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
 						[string]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
 						Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
@@ -9786,7 +9787,7 @@ Function Get-ServiceStartMode
 			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
 			
 			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-			If (($ServiceStartMode -eq 'Automatic') -and ($envOSVersion.Major -gt 5)) {
+			If (($ServiceStartMode -eq 'Automatic') -and (([version]$envOSVersion).Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
 					[int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
@@ -9856,7 +9857,7 @@ Function Set-ServiceStartMode
 	Process {
 		Try {
 			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-			If (($StartMode -eq 'Automatic (Delayed Start)') -and ($envOSVersion.Major -lt 6)) { $StartMode = 'Automatic' }
+			If (($StartMode -eq 'Automatic (Delayed Start)') -and (([version]$envOSVersion).Major -lt 6)) { $StartMode = 'Automatic' }
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 			
@@ -10002,7 +10003,7 @@ Function Get-PendingReboot {
 		
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
-			If ($envOSVersion.Major -ge 5) {
+			If (([version]$envOSVersion).Major -ge 5) {
 				If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
