@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 .DESCRIPTION
@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.9'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/24/2016'
+[string]$appDeployMainScriptDate = '02/06/2017'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -155,11 +155,11 @@ Catch { }
 [psobject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
 [string]$envOSName = $envOS.Caption.Trim()
 [string]$envOSServicePack = $envOS.CSDVersion
-[version]$envOSVersion = $(Get-WmiObject Win32_operatingSystem).Version
+[version]$envOSVersion = (Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue').Version
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
 [string]$envOSVersionBuild = $envOSVersion.Build
-[string]$envOSVersionRevision = $envOSVersion.Revision
+[string]$envOSVersionRevision = ,((Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
 [string]$envOSVersion = $envOSVersion.ToString()
 #  Get the operating system type
 [int32]$envOSProductType = $envOS.ProductType
@@ -173,7 +173,7 @@ Switch ($envOSProductType) {
 	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
 #  Get the OS Architecture
-[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class 'Win32_Processor' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
+[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
 If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
@@ -1045,7 +1045,7 @@ Function Exit-Script {
 		[string]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()) + '.zip'
 		New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
 	}
-
+	
 	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 	## Exit the script, returning the exit code to SCCM
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
@@ -2150,7 +2150,7 @@ Function Execute-MSI {
 		[ValidateNotNullorEmpty()]
 		[switch]$SkipMSIAlreadyInstalledCheck = $false,
 		[Parameter(Mandatory=$false)]
-		[switch]$IncludeUpdatesAndHotfixes,
+		[switch]$IncludeUpdatesAndHotfixes = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$PassThru = $false,
@@ -2465,7 +2465,7 @@ Function Remove-MSIApplications {
 		[ValidateNotNullorEmpty()]
 		[array]$ExcludeFromUninstall = @(@()),
 		[Parameter(Mandatory=$false)]
-		[switch]$IncludeUpdatesAndHotfixes,
+		[switch]$IncludeUpdatesAndHotfixes = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$LoggingOptions,
@@ -3654,7 +3654,7 @@ Function Get-RegistryKey {
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 					If ($IsRegistryValueExists) {
 						If ($DoNotExpandEnvironmentNames) { #Only useful on 'ExpandString' values
-							$regKeyValue = $(Get-Item -Path $key -ErrorAction 'Stop').getvalue($Value,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+							$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($Value,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
 						}
 						Else {
 							$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
@@ -3791,12 +3791,12 @@ Function Set-RegistryKey {
 				}
 				## Update registry value if it does exist
 				Else {
+					[string]$RegistryValueWriteAction = 'update'
 					If ($Name -eq '(Default)') {
-	                    ## Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value
-	                    $null = $(Get-Item -Path $key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').SetValue($null,$value)
-	                } 
-	                Else {
-						[string]$RegistryValueWriteAction = 'update'
+						## Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value
+						$null = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').SetValue($null,$value)
+					} 
+					Else {
 						Write-Log -Message "Update registry key value: [$key] [$name = $value]." -Source ${CmdletName}
 						$null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
 					}
@@ -3891,8 +3891,8 @@ Function Remove-RegistryKey {
 						$null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
 					}
 					Else {
-						If($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')){
-							## Check if there are subkeys of $Key, if so, executing remove-item will hang. Avoiding this with Get-ChildItem.
+						If ($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')){
+							## Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
 							Write-Log -Message "Delete registry key [$Key]." -Source ${CmdletName}
 							$null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
 						}
@@ -3910,12 +3910,12 @@ Function Remove-RegistryKey {
 					Write-Log -Message "Delete registry value [$Key] [$Name]." -Source ${CmdletName}
 					
 					If ($Name -eq '(Default)') {
-                        ## Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value
-                        $null = (Get-Item -Path $Key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').DeleteValue('')
-                    }
-                    Else {
-                        $null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
-                    }
+						## Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value
+						$null = (Get-Item -LiteralPath $Key -ErrorAction 'Stop').OpenSubKey('','ReadWriteSubTree').DeleteValue('')
+					}
+					Else {
+						$null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
+					}
 				}
 				Else {
 					Write-Log -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
@@ -4247,7 +4247,7 @@ Function Get-UserProfiles {
 				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
 				
 				#  On Windows Vista or higher
-				If ([Environment]::OSVersion.Version.Major -gt 5) {
+				If ($envOSVersion.Major -gt 5) {
 					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
 					[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
 				}
@@ -4516,7 +4516,7 @@ Function Execute-ProcessAsUser {
 .PARAMETER Parameters
 	Arguments to be passed to the file being executed.
 .PARAMETER SecureParameters
-	Hides all parameters passed to the executable from the Toolkit log file
+	Hides all parameters passed to the executable from the Toolkit log file.
 .PARAMETER RunLevel
 	Specifies the level of user rights that Task Scheduler uses to run the task. The acceptable values for this parameter are:
 	- HighestAvailable: Tasks run by using the highest available privileges (Admin privileges for Administrators). Default Value.
@@ -7182,14 +7182,14 @@ Function Set-PinnedApplication {
 		}
 		#endregion
 		
-		If ($envOSVersionMajor -eq '10') {
-			Write-Log -Message "Detected Windows 10, using Windows 10 verb codes" -Source ${CmdletName}
+		If ($envOSVersionMajor -ge '10') {
+			Write-Log -Message "Detected Windows 10 or higher, using Windows 10 verb codes." -Source ${CmdletName}
 			[hashtable]$Verbs = @{
-                'PintoStartMenu' = 51201
-                'UnpinfromStartMenu' = 51394
-                'PintoTaskbar' = 5386
-                'UnpinfromTaskbar' = 5387
-            }
+				'PintoStartMenu' = 51201
+				'UnpinfromStartMenu' = 51394
+				'PintoTaskbar' = 5386
+				'UnpinfromTaskbar' = 5387
+			}
 		}
 		Else {
 			[hashtable]$Verbs = @{
@@ -8153,11 +8153,11 @@ Function Test-MSUpdates {
 				Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
 			}
 			Else {
-				Write-Log -Message "Older version of Powershell detected, Get-Hotfix cmdlet is not supported." -Source ${CmdletName}
+				Write-Log -Message 'Older version of Powershell detected, Get-Hotfix cmdlet is not supported.' -Source ${CmdletName}
 			}
 						
 			If (-not $kbFound) {
-				Write-Log -Message "Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object." -Source ${CmdletName}
+				Write-Log -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}
 			
 				## Check for update using ComObject method (to catch Office updates)
 				[__comobject]$UpdateSession = New-Object -ComObject "Microsoft.Update.Session"
@@ -8188,10 +8188,10 @@ Function Test-MSUpdates {
 					$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
 				}
 				Else {
-					Write-Log -Message "Unable to detect Windows update history via COM object." -Source ${CmdletName}
+					Write-Log -Message 'Unable to detect Windows update history via COM object.' -Source ${CmdletName}
 				}
 			}
-
+			
 			## Return Result
 			If (-not $kbFound) {
 				Write-Log -Message "Microsoft Update [$kbNumber] is not installed." -Source ${CmdletName}
@@ -8759,7 +8759,7 @@ Function Test-PowerPoint {
 					}
 					
 					## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher)
-					If ((-not $IsPowerPointFullScreen) -and ([Environment]::OSVersion.Version.Major -gt 5)) {
+					If ((-not $IsPowerPointFullScreen) -and ($envOSVersion.Major -gt 5)) {
 						#  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
 						[string]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
 						Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
@@ -9786,7 +9786,7 @@ Function Get-ServiceStartMode
 			If ($ServiceStartMode -eq 'Auto') { $ServiceStartMode = 'Automatic'}
 			
 			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-			If (($ServiceStartMode -eq 'Automatic') -and ([Environment]::OSVersion.Version.Major -gt 5)) {
+			If (($ServiceStartMode -eq 'Automatic') -and ($envOSVersion.Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
 					[int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
@@ -9856,7 +9856,7 @@ Function Set-ServiceStartMode
 	Process {
 		Try {
 			## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-			If (($StartMode -eq 'Automatic (Delayed Start)') -and ([Environment]::OSVersion.Version.Major -lt 6)) { $StartMode = 'Automatic' }
+			If (($StartMode -eq 'Automatic (Delayed Start)') -and ($envOSVersion.Major -lt 6)) { $StartMode = 'Automatic' }
 			
 			Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 			
@@ -10002,7 +10002,7 @@ Function Get-PendingReboot {
 		
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
-			If ([Environment]::OSVersion.Version.Major -ge 5) {
+			If ($envOSVersion.Major -ge 5) {
 				If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
@@ -10057,14 +10057,14 @@ Function Get-PendingReboot {
 				Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
 			}
 			Else {
-				Write-Log -Message "Successfully queried SCCM client for reboot status." -Source ${CmdletName}
+				Write-Log -Message 'Successfully queried SCCM client for reboot status.' -Source ${CmdletName}
 				[nullable[boolean]]$IsSCCMClientRebootPending = $false
 				If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
 					[nullable[boolean]]$IsSCCMClientRebootPending = $true
-					Write-Log -Message "Pending SCCM reboot detected." -Source ${CmdletName}
+					Write-Log -Message 'Pending SCCM reboot detected.' -Source ${CmdletName}
 				}
 				Else {
-					Write-Log -Message "No pending SCCM reboot detected." -Source ${CmdletName}
+					Write-Log -Message 'Pending SCCM reboot not detected.' -Source ${CmdletName}
 				}
 			}
 		}
