@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 .DESCRIPTION
@@ -3582,6 +3582,8 @@ Function Get-RegistryKey {
 .EXAMPLE
 	Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames 
 	Returns %ProgramFiles%\Java instead of C:\Program Files\Java
+.EXAMPLE
+	Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -3655,7 +3657,15 @@ Function Get-RegistryKey {
 					#  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
 					If ($IsRegistryValueExists) {
 						If ($DoNotExpandEnvironmentNames) { #Only useful on 'ExpandString' values
-							$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($Value,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+							If ($Value -like '(Default)') {
+								$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+							}
+							Else {
+								$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($Value,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)	
+							}							
+						}
+						ElseIf ($Value -like '(Default)') {
+							$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null)
 						}
 						Else {
 							$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
@@ -3728,6 +3738,10 @@ Function Set-RegistryKey {
 	Set-RegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
 .EXAMPLE
 	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
+.EXAMPLE
+	Set-RegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
+.EXAMPLE
+    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
