@@ -21,7 +21,7 @@ Version 3.6.9 [02/12/2017]
 	Fixed issue in Set-RegistryKey where registry keys with forward slashes were treated like backslashes and broken up into subkeys
 	Fixed issue in Remove-RegistryKey function where it failed to delete the (Default) value when specified due to limitation of Remove-ChildItem cmdlet
 	Fixed issue in New-Shortcut to use Rename-Item parameter name that is compatible with PS 2.0
-	Fixed issue in Get-RegistryKey function which caused it to ignore the (Defalt) value
+	Fixed issue in Get-RegistryKey function which caused it to ignore the (Default) value
 	Improved comments and documentation
 
 Version 3.6.8 [02/06/2016]
