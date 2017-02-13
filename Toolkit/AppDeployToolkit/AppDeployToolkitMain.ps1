@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 .DESCRIPTION
@@ -66,7 +66,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.6.9'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '02/06/2017'
+[string]$appDeployMainScriptDate = '02/12/2017'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -3601,10 +3601,10 @@ Function Get-RegistryKey {
 		[string]$SID,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[switch]$ReturnEmptyKeyIfExists,
+		[switch]$ReturnEmptyKeyIfExists = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[switch]$DoNotExpandEnvironmentNames,
+		[switch]$DoNotExpandEnvironmentNames = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -3690,7 +3690,7 @@ Function Get-RegistryKey {
 					}
 				}
 			}
-			Write-Output -InputObject $regKeyValue
+			Write-Output -InputObject ($regKeyValue)
 		}
 		Catch {
 			If (-not $Value) {
