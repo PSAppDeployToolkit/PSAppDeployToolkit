@@ -1,3 +1,6 @@
+﻿Version 3.6.10 [xx/xx/2017]
+	Fixed missing information in documentation and fixed encoding issue with AppDeployToolkitConfig.xml
+
 Version 3.6.9 [02/12/2017]
 	Added SecureParameters parameter to additional section of Execute-ProcessAsUser
 	Added SecureParameters parameter to Execute-ProcessAsUser
