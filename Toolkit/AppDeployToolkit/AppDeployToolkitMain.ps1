@@ -1687,7 +1687,7 @@ Function Show-DialogBox {
 .PARAMETER Timeout
 	Timeout period in seconds before automatically closing the dialog box with the return message "Timeout". Default: UI timeout value set in the config XML file.
 .PARAMETER TopMost
-	Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
+	Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $false.
 .EXAMPLE
 	Show-DialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
 .EXAMPLE
@@ -1717,7 +1717,7 @@ Function Show-DialogBox {
 		[ValidateNotNullorEmpty()]
 		[string]$Timeout = $configInstallationUITimeout,
 		[Parameter(Mandatory=$false)]
-		[switch]$TopMost = $true
+		[switch]$TopMost = $false
 	)
 	
 	Begin {
