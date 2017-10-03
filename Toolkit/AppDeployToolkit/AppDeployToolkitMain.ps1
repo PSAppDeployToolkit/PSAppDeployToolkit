@@ -8224,12 +8224,7 @@ Function Test-MSUpdates {
 			[boolean]$kbFound = $false
 			
 			## Check for update using built in PS cmdlet which uses WMI in the background to gather details
-			If ([int]$envPSVersionMajor -ge 3) {
-				Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
-			}
-			Else {
-				Write-Log -Message 'Older version of Powershell detected, Get-Hotfix cmdlet is not supported.' -Source ${CmdletName}
-			}
+			Get-Hotfix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
 						
 			If (-not $kbFound) {
 				Write-Log -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}
