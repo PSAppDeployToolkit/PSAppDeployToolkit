@@ -4518,14 +4518,14 @@ Function New-Shortcut {
 			}
 			
 			Write-Log -Message "Create shortcut [$($path.FullName)]." -Source ${CmdletName}
-			If (($path.FullName).EndsWith('.url')) {
+			If (($path.FullName).ToLower().EndsWith('.url')) {
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
 				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
 				$URLFile | Out-File -FilePath $path.FullName -Force -Encoding 'default' -ErrorAction 'Stop'
 			}
-			ElseIf (($path.FullName).EndsWith('.lnk')) {
+			ElseIf (($path.FullName).ToLower().EndsWith('.lnk')) {
 				If (($iconLocation -and $iconIndex) -and (-not ($iconLocation.Contains(',')))) {
 					$iconLocation = $iconLocation + ",$iconIndex"
 				}
