@@ -1,6 +1,8 @@
 ﻿Version 3.6.10 [xx/xx/2017]
 	Fixed missing information in documentation and fixed encoding issue with AppDeployToolkitConfig.xml
 	Removed PS v3.0 minimum check for Get-Hotfix cmdlet used in Test-MSUpdates
+	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
+	Fixed case sensitivity in the shortcut path passed to New-Shortcut
 
 Version 3.6.9 [02/12/2017]
 	Added SecureParameters parameter to additional section of Execute-ProcessAsUser

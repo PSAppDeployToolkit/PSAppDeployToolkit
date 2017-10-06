@@ -2480,7 +2480,6 @@ Function Remove-MSIApplications {
 	Removes all versions of software that match the name "Adobe"
 .EXAMPLE
 	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication ('Is64BitApplication', $false, 'Exact'),('Publisher', 'Oracle Corporation', 'Exact')
-																	)
 	Removes all versions of software that match the name "Java 8 Update" where the software is 32-bits and the publisher is "Oracle Corporation".
 .EXAMPLE
 	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication (,('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'RegEx'))
@@ -2495,8 +2494,7 @@ Function Remove-MSIApplications {
 			('Is64BitApplication', $true, 'Exact'),
 			('DisplayName', 'Java 8 Update 45', 'Exact'),
 			('DisplayName', 'Java 8 Update 4*', 'WildCard'),
-			('DisplayName', 'Java 8 Update 45', 'RegEx')
-		
+			('DisplayName', 'Java 8 Update 45', 'RegEx')		
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
 	More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
@@ -6536,7 +6534,7 @@ Function Show-InstallationRestartPrompt {
 		
 		## Check if we are already displaying a restart prompt
 		If (Get-Process | Where-Object { $_.MainWindowTitle -match $configRestartPromptTitle }) {
-			Write-Log -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Canceling restart prompt." -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2 -Source ${CmdletName}
 			Return
 		}
 		
