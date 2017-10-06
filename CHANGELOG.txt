@@ -1,4 +1,5 @@
 ﻿Version 3.6.10 [xx/xx/2017]
+	Fixed issue with white spaces in scheduled task creation breaking the -BlockExecution parameter
 	Fixed missing information in documentation and fixed encoding issue with AppDeployToolkitConfig.xml
 	Removed PS v3.0 minimum check for Get-Hotfix cmdlet used in Test-MSUpdates
 	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
