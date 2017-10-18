@@ -3276,7 +3276,9 @@ Function Copy-File {
 .PARAMETER Recurse
 	Copy files in subdirectories.
 .PARAMETER ContinueOnError
-	Continue if an error is encountered. Default is: $true.
+	Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
+.PARAMETER ContinueFileCopyOnError
+	Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 .EXAMPLE
 	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWindir\MyApp.ini"
 .EXAMPLE
@@ -3298,7 +3300,9 @@ Function Copy-File {
 		[switch]$Recurse = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[boolean]$ContinueOnError = $true
+		[boolean]$ContinueOnError = $true,
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueFileCopyOnError = $false
 	)
 	
 	Begin {
@@ -3308,19 +3312,39 @@ Function Copy-File {
 	}
 	Process {
 		Try {
+            $null = $fileCopyError
 			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
+                Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
 				$null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
-			}
+            }
 			
-			If ($Recurse) {
-				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-				$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
+            $null = $FileCopyError
+            If ($Recurse) {
+                Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
+                If (-not $ContinueFileCopyOnError) {
+				    $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
+                }
+                Else {
+                    $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+                }
 			}
 			Else {
-				Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
-				$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
+                Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
+                If (-not $ContinueFileCopyOnError) {
+				    $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
+                }
+                Else {
+                    $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+                }
 			}
-		}
+
+            If ($fileCopyError -ne $null) { 
+                Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
+            }
+            Else {
+                Write-Log -Message "File copy completed successfully." -Source ${CmdletName}            
+		    }
+        }
 		Catch {
 			Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
