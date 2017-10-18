@@ -3444,6 +3444,10 @@ Function Remove-File {
 					If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
 						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
 					}
+                    ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
+                        Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified"
+                        Continue
+                    }
 					Else {
 						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
 					}
