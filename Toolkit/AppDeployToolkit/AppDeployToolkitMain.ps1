@@ -3312,39 +3312,39 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-            $null = $fileCopyError
+			$null = $fileCopyError
 			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
-                Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
+				Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
 				$null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
-            }
+			}
 			
-            $null = $FileCopyError
-            If ($Recurse) {
-                Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-                If (-not $ContinueFileCopyOnError) {
-				    $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
-                }
-                Else {
-                    $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
-                }
+			$null = $FileCopyError
+			If ($Recurse) {
+				Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
+				If (-not $ContinueFileCopyOnError) {
+					$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
+				}
+				Else {
+					$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+				}
 			}
 			Else {
-                Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                If (-not $ContinueFileCopyOnError) {
-				    $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
-                }
-                Else {
-                    $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
-                }
+				Write-Log -Message "Copy file in path [$path] to destination [$destination]." -Source ${CmdletName}
+				If (-not $ContinueFileCopyOnError) {
+					$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
+				}
+				Else {
+					$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+				}
 			}
 
             If ($fileCopyError) { 
-                Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
-            }
-            Else {
-                Write-Log -Message "File copy completed successfully." -Source ${CmdletName}            
-		    }
-        }
+				Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "File copy completed successfully." -Source ${CmdletName}            
+			}
+		}
 		Catch {
 			Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
@@ -3444,10 +3444,10 @@ Function Remove-File {
 					If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
 						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
 					}
-                    ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-                        Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified"
-                        Continue
-                    }
+					ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
+						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified"
+					Continue
+					}
 					Else {
 						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
 					}
@@ -5261,13 +5261,13 @@ Function Unblock-AppExecution {
 		
 		## Remove the scheduled task if it exists
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
-        Try {
-		    If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
-			    Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
-			    Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
-		    }
-        }
-        Catch {
+		Try {
+			If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+				Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
+				Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+			}
+		}
+		Catch {
 			Write-Log -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
