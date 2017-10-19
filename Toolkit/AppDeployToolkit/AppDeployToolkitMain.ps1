@@ -3338,7 +3338,7 @@ Function Copy-File {
                 }
 			}
 
-            If ($fileCopyError -ne $null) { 
+            If ($fileCopyError) { 
                 Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
             }
             Else {
@@ -5261,9 +5261,14 @@ Function Unblock-AppExecution {
 		
 		## Remove the scheduled task if it exists
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
-		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
-			Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
-			Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+        Try {
+		    If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+			    Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
+			    Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+		    }
+        }
+        Catch {
+			Write-Log -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
