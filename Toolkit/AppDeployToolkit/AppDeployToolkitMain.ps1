@@ -4829,11 +4829,11 @@ Function Execute-ProcessAsUser {
 		If ($Wait) {
 			Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
 			Start-Sleep -Seconds 1
-			While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+			while ((Get-ScheduledTask_EPAU -TaskName "\$schTaskName").State -eq 4) {
 				Start-Sleep -Seconds 5
 			}
 			#  Get the exit code from the process launched by the scheduled task
-			[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			[int32]$executeProcessAsUserExitCode = (Get-ScheduledTask_EPAU -TaskName "\$schTaskName").LastTaskResult
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
 		
@@ -4853,6 +4853,49 @@ Function Execute-ProcessAsUser {
 	}
 }
 #endregion
+
+Function Get-ScheduledTask_EPAU {
+<#
+.SYNOPSIS
+	Retrieve the scheduled task properties to return the return value.
+.DESCRIPTION
+	Retrieve the scheduled task properties to return the return value.
+.EXAMPLE
+	Get-ScheduledTask_EPAU -TaskName "\$schTaskName"
+.NOTES
+.LINK
+	https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/228
+#>
+[CmdletBinding()]
+Param (
+    [Parameter(Mandatory=$true)]
+    [string]$TaskName
+  )
+  
+  Begin {
+	## Get the name of this function and write header
+	[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+	Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+  }
+  Process {
+  
+  	Try {
+  		$Schedule = New-Object -ComObject 'Schedule.Service'
+  		$Schedule.Connect()
+  		$RootFolder = $Schedule.GetFolder('\')
+  		$Task = $RootFolder.GetTask("$TaskName")
+  		Write-Output $Task
+	}
+	Catch {
+	
+		Write-Log -Message 'Failed to get the return from the service' -Source ${CmdletName}
+		Throw "Failed to get the return from the service: $($_.Exception.Message)"
+	}
+  }
+  End {
+	Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+  }
+}
 
 
 #region Function Refresh-Desktop
