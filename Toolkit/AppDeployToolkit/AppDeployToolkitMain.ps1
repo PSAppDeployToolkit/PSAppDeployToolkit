@@ -1376,7 +1376,7 @@ Function Show-InstallationPrompt {
 	}
 	Process {
 		## Bypass if in non-interactive mode
-		If ($deployModeSilent) {
+		If (($deployModeSilent -eq $true) -or ($deployModeUnattended -eq $true)) {
 			Write-Log -Message "Bypassing Installation Prompt [Mode: $deployMode]... $Message" -Source ${CmdletName}
 			Return
 		}
@@ -1727,7 +1727,7 @@ Function Show-DialogBox {
 	}
 	Process {
 		#  Bypass if in non-interactive mode
-		If ($deployModeNonInteractive) {
+		If (($deployModeNonInteractive -eq $true) -or ($deployModeUnattended -eq $true)) {
 			Write-Log -Message "Bypassing Dialog Box [Mode: $deployMode]: $Text..." -Source ${CmdletName}
 			Return
 		}
@@ -5146,7 +5146,7 @@ Function Block-AppExecution {
 	}
 	Process {
 		## Bypass if in NonInteractive mode
-		If ($deployModeNonInteractive) {
+		If (($deployModeNonInteractive -eq $true) -or ($deployModeUnattended -eq $true)) {
 			Write-Log -Message "Bypassing Function [${CmdletName}] [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
@@ -5240,7 +5240,7 @@ Function Unblock-AppExecution {
 	}
 	Process {
 		## Bypass if in NonInteractive mode
-		If ($deployModeNonInteractive) {
+		If (($deployModeNonInteractive -eq $true) -or ($deployModeUnattended -eq $true)) {
 			Write-Log -Message "Bypassing Function [${CmdletName}] [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
@@ -5652,7 +5652,7 @@ Function Show-InstallationWelcome {
 	}
 	Process {
 		## If running in NonInteractive mode, force the processes to close silently
-		If ($deployModeNonInteractive) { $Silent = $true }
+		If (($deployModeNonInteractive -eq $true) -or ($deployModeUnattended -eq $true)) { $Silent = $true }
 		
 		## If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
 		If ($useDefaultMsi) { $CloseApps = "$CloseApps,$defaultMsiExecutablesList" }
@@ -10395,7 +10395,7 @@ Try {
 }
 Catch {
 	Write-Log -Message "Failed to load assembly. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
-	If ($deployModeNonInteractive) {
+	If (($deployModeNonInteractive -eq $true) -or ($deployModeUnattended -eq $true)) {
 		Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
 	}
 	Else {
@@ -10651,6 +10651,7 @@ If ($deployMode) {
 Switch ($deployMode) {
 	'Silent' { $deployModeSilent = $true }
 	'NonInteractive' { $deployModeNonInteractive = $true; $deployModeSilent = $true }
+	'Unattended' { $deployModeUnattended = $true; $deployModeNonInteractive = $false; $deployModeSilent = $false }																										   
 	Default { $deployModeNonInteractive = $false; $deployModeSilent = $false }
 }
 

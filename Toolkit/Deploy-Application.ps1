@@ -38,7 +38,7 @@ Param (
 	[ValidateSet('Install','Uninstall')]
 	[string]$DeploymentType = 'Install',
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Interactive','Silent','NonInteractive')]
+	[ValidateSet('Interactive','Silent','NonInteractive','Unattended')]
 	[string]$DeployMode = 'Interactive',
 	[Parameter(Mandatory=$false)]
 	[switch]$AllowRebootPassThru = $false,
