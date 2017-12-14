@@ -6639,9 +6639,11 @@ Function Show-InstallationRestartPrompt {
 		[scriptblock]$buttonRestartLater_Click = {
 			## Minimize the form
 			$formRestart.WindowState = 'Minimized'
-			## Reset the persistence timer
-			$timerPersist.Stop()
-			$timerPersist.Start()
+            If ($NoCountdown) {
+			    ## Reset the persistence timer
+			    $timerPersist.Stop()
+			    $timerPersist.Start()
+            }
 		}
 		
 		## Restart the computer
