@@ -1,6 +1,7 @@
 ﻿Version 3.6.10 [xx/xx/2017]
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
+	Added detection of App-V pending tasks to the Get-PendingReboot function
 	Added support for creating a hotkey to the New-Shortcut function
 	Added the parameter type column to the logging function
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, adding an alias for old function names for backwards compatibility.

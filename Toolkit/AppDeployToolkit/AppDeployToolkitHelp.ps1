@@ -79,7 +79,7 @@ Function Show-HelpConsole {
 	$HelpListBox.Size = $System_Drawing_Size
 	$HelpListBox.Sorted = $true
 	$HelpListBox.TabIndex = 2
-	$HelpListBox.add_SelectedIndexChanged({ $HelpTextBox.Text = Get-Help -Name $HelpListBox.SelectedItem -Detailed | Out-String })
+	$HelpListBox.add_SelectedIndexChanged({ $HelpTextBox.Text = Get-Help -Name $HelpListBox.SelectedItem -Full | Out-String })
 	$helpFunctions = Get-Command -CommandType 'Function' | Where-Object { ($_.HelpUri -match 'psappdeploytoolkit') -and ($_.Definition -notmatch 'internal script function') } | Select-Object -ExpandProperty Name
 	ForEach ($helpFunction in $helpFunctions) {
 		$null = $HelpListBox.Items.Add($helpFunction)

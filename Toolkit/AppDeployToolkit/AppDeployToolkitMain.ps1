@@ -3823,6 +3823,7 @@ Function Set-RegistryKey {
 	The value data.
 .PARAMETER Type
 	The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
+    Dword should be specified as a decimal.
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
@@ -3830,6 +3831,8 @@ Function Set-RegistryKey {
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
 	Set-RegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
+.EXAMPLE
+    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'Dword' -Value '1'
 .EXAMPLE
 	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
 .EXAMPLE
@@ -10078,7 +10081,8 @@ Function Get-PendingReboot {
 	a) Component Based Servicing (Vista, Windows 2008)
 	b) Windows Update / Auto Update (XP, Windows 2003 / 2008)
 	c) SCCM 2012 Clients (DetermineIfRebootPending WMI method)
-	d) Pending File Rename Operations (XP, Windows 2003 / 2008)
+    d) App-V Pending Tasks (global based Appv 5.0 SP2)   
+	e) Pending File Rename Operations (XP, Windows 2003 / 2008)
 .EXAMPLE
 	Get-PendingReboot
 	
@@ -10197,6 +10201,22 @@ Function Get-PendingReboot {
 			[string[]]$PendRebootErrorMsg += "Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)"
 			Write-Log -Message "Failed to get IsSCCMClientRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
+
+        ## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
+		Try {
+			If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks' -ErrorAction 'Stop') {
+
+				[nullable[boolean]]$IsAppVRebootPending = $true
+			}
+			Else {
+				[nullable[boolean]]$IsAppVRebootPending = $false
+			}
+		}
+		Catch {
+			[nullable[boolean]]$IsAppVRebootPending = $null
+			[string[]]$PendRebootErrorMsg += "Failed to get IsAppVRebootPending: $($_.Exception.Message)"
+			Write-Log -Message "Failed to get IsAppVRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
 		
 		## Determine if there is a pending reboot for the system
 		[boolean]$IsSystemRebootPending = $false
@@ -10212,6 +10232,7 @@ Function Get-PendingReboot {
 			IsCBServicingRebootPending = $IsCBServicingRebootPending
 			IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
 			IsSCCMClientRebootPending = $IsSCCMClientRebootPending
+            IsAppVRebootPending = $IsAppVRebootPending
 			IsFileRenameRebootPending = $IsFileRenameRebootPending
 			PendingFileRenameOperations = $PendingFileRenameOperations
 			ErrorMsg = $PendRebootErrorMsg
@@ -10219,7 +10240,7 @@ Function Get-PendingReboot {
 		Write-Log -Message "Pending reboot status on the local computer [$ComputerName]: `n$($PendingRebootInfo | Format-List | Out-String)" -Source ${CmdletName}
 	}
 	End {
-		Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName','LastBootUpTime','IsSystemRebootPending','IsCBServicingRebootPending','IsWindowsUpdateRebootPending','IsSCCMClientRebootPending','IsFileRenameRebootPending','PendingFileRenameOperations','ErrorMsg')
+		Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName','LastBootUpTime','IsSystemRebootPending','IsCBServicingRebootPending','IsWindowsUpdateRebootPending','IsSCCMClientRebootPending','IsAppVRebootPending','IsFileRenameRebootPending','PendingFileRenameOperations','ErrorMsg')
 		
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
