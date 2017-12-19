@@ -186,6 +186,9 @@ If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArc
 [boolean]$Is64BitProcess = [boolean]([IntPtr]::Size -eq 8)
 If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
 
+## Variables: Hardware
+[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | % {[Math]::Round(($_.sum / 1GB),2)}
+
 ## Variables: PowerShell And CLR (.NET) Versions
 [hashtable]$envPSVersionTable = $PSVersionTable
 #  PowerShell Version
@@ -2428,7 +2431,7 @@ Function Execute-MSI {
 				Execute-Process @ExecuteProcessSplat
 			}
 			#  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
-			Refresh-Desktop
+			Update-Desktop
 		}
 		Else {
 			Write-Log -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
@@ -4860,8 +4863,8 @@ Function Execute-ProcessAsUser {
 #endregion
 
 
-#region Function Refresh-Desktop
-Function Refresh-Desktop {
+#region Function Update-Desktop
+Function Update-Desktop {
 <#
 .SYNOPSIS
 	Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
@@ -4870,7 +4873,7 @@ Function Refresh-Desktop {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Refresh-Desktop
+	Update-Desktop
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -4903,11 +4906,12 @@ Function Refresh-Desktop {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
+Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
 #endregion
 
 
-#region Function Refresh-SessionEnvironmentVariables
-Function Refresh-SessionEnvironmentVariables {
+#region Function Update-SessionEnvironmentVariables
+Function Update-SessionEnvironmentVariables {
 <#
 .SYNOPSIS
 	Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
@@ -4919,7 +4923,7 @@ Function Refresh-SessionEnvironmentVariables {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Refresh-SessionEnvironmentVariables
+	Update-SessionEnvironmentVariables
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -4978,6 +4982,7 @@ Function Refresh-SessionEnvironmentVariables {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
+Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
 #endregion
 
 
