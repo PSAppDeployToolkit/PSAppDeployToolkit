@@ -1,3 +1,7 @@
+Immediate To Do:
+
+- Update documentation of parameters to include type.
+
 Proposed / Planned Features for v4:
 
 - Convert to a module
