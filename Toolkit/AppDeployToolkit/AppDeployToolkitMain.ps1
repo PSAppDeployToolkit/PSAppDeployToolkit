@@ -4487,6 +4487,8 @@ Function New-Shortcut {
 	Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
 .PARAMETER RunAsAdmin
 	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
+.PARAMETER Hotkey
+    Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -4523,6 +4525,9 @@ Function New-Shortcut {
 		[string]$WindowStyle,
 		[Parameter(Mandatory=$false)]
 		[switch]$RunAsAdmin,
+        [Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Hotkey,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -4575,6 +4580,7 @@ Function New-Shortcut {
 				$shortcut.Description = $description
 				$shortcut.WorkingDirectory = $workingDirectory
 				$shortcut.WindowStyle = $windowStyleInt
+                If ($hotkey) {$shortcut.Hotkey = $hotkey}
 				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
 				$shortcut.Save()
 				
