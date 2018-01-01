@@ -4,6 +4,7 @@
 	Added detection of App-V pending tasks to the Get-PendingReboot function
 	Added support for creating a hotkey to the New-Shortcut function
 	Added the parameter type column to the logging function
+	Added the Win32_BaseService class to the Test-ServiceExists function
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, adding an alias for old function names for backwards compatibility.
 	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
 	Fixed case sensitivity in the shortcut path passed to New-Shortcut
