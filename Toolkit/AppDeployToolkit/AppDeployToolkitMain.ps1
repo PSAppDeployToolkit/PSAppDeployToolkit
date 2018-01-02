@@ -238,7 +238,7 @@ Else {
 }
 
 ## Variables: App Deploy Script Dependency Files
-[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'Logo.ico'
+[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'Icon.ico'
 [string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath 'Banner.png'
 [string]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
 [string]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
@@ -6081,7 +6081,9 @@ Function Show-WelcomePrompt {
 		[ValidateNotNullorEmpty()]
 		[int32]$ForceCountdown = 0,
 		[Parameter(Mandatory=$false)]
-		[switch]$CustomText = $false
+		[switch]$CustomText = $false,
+		[Parameter(Mandatory=$false)]
+		[boolean]$showContinue = $false
 	)
 	
 	Begin {
@@ -6530,7 +6532,7 @@ Function Show-WelcomePrompt {
 			$panelButtons.Controls.Add($buttonDefer) 
 			$panelButtons.Controls.Add($dropdownDefer)
 		}
-		$panelButtons.Controls.Add($buttonContinue)
+		if($showContinue){ $panelButtons.Controls.Add($buttonContinue)}
 		
 		## Add the Buttons Panel to the form
 		$formWelcome.Controls.Add($panelButtons)

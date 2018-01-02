@@ -71,7 +71,7 @@ Try {
 	$ScriptGuid = ''
 
 	#List of applications that should be closed (NOTE! Do not Write file extensions!):
-	$Applist = "iexplorer, notepad"
+	$Applist = "iexplorer,notepad"
 	
 	##* Do not modify section below
 	#region DoNotModify

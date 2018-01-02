@@ -7,6 +7,7 @@
 * New defer mechanism. Defer now works by creating a scheduled task, that runs the Application Deployment Evaluation Cycle
 * If the installation times out, the installation will be defered. The amount is specified in the config file
 * User can choose to defer 1, 2 og 4 hours
+* Added `-showContinue` flag to `Show-WelcomePrompt` since the button blocks the defer dropdown
  
 ___
 ### What is the PowerShell App Deployment Toolkit?
