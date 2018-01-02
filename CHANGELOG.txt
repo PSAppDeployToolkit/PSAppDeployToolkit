@@ -1,14 +1,17 @@
 ﻿Version 3.6.10 [xx/xx/2017]
+	Added the ability to re-enumerate running applications while displaying Show-InstallationWelcome. If previously detected running applications are manually closed and no deferral is available, the installation will automatically continue. If deferral is available, Show-InstallationWelcome will be updated to remove the close apps list. The AutoContinue option is set to True by default in the XML configuration file.
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
 	Added detection of App-V pending tasks to the Get-PendingReboot function
 	Added support for creating a hotkey to the New-Shortcut function
 	Added the parameter type column to the logging function
+	Added the Win32_BaseService class to the Test-ServiceExists function
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, adding an alias for old function names for backwards compatibility.
 	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
 	Fixed case sensitivity in the shortcut path passed to New-Shortcut
 	Fixed issue in Remove-File where a confirmation dialogue would hang the script if a non-empty folder is encountered when the Recurse switch is not specified
 	Fixed issue with white spaces in scheduled task creation breaking the -BlockExecution parameter
+	Fixed issue where $RunAsActiveUser.IsLocalAdmin incorrectly returns $false
 	Fixed missing information in documentation and fixed encoding issue with AppDeployToolkitConfig.xml
 	Removed PS v3.0 minimum check for Get-Hotfix cmdlet used in Test-MSUpdates
 

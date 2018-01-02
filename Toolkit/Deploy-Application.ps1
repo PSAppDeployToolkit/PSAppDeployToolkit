@@ -81,8 +81,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.6.9'
-	[string]$deployAppScriptDate = '02/12/2017'
+	[version]$deployAppScriptVersion = [version]'3.7.0'
+	[string]$deployAppScriptDate = '01/01/2018'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -122,7 +122,6 @@ Try {
 		#Show installation welcome, asking the user to close the running apps. This also blocks execution, if the user tries to open the apps during installation
 		Show-InstallationWelcome -CloseApps $Applist  -AllowDeferCloseApps -DeferTimes 30 -BlockExecution -PromptToSave -CheckDiskSpace
      
-
 
 		
 		##*===============================================
