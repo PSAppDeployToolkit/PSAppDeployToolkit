@@ -69,9 +69,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.6.10'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.6.8'
-[string]$appDeployMainScriptDate = '10/06/2017'
+[version]$appDeployMainScriptVersion = [version]'3.7.0'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.7.0'
+[string]$appDeployMainScriptDate = '01/01/2018'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -286,6 +286,8 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 [int32]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 [int32]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
 [int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
+[boolean]$configInstallationWelcomePromptAutoContinue = [boolean]::Parse($xmlConfigUIOptions.InstallationWelcomePrompt_AutoContinue)
+[int32]$configInstallationWelcomePromptRunningProcessesInterval = $xmlConfigUIOptions.InstallationWelcomePrompt_RunningProcessesInterval
 #  Define ScriptBlock for Loading Message UI Language Options (default for English if no localization found)
 [scriptblock]$xmlLoadLocalizedUIMessages = {
 	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
@@ -5455,8 +5457,10 @@ Function Get-RunningProcesses {
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$false)]
-		[psobject[]]$ProcessObjects
+		[Parameter(Mandatory=$true,Position=0)]
+		[psobject[]]$ProcessObjects,
+		[Parameter(Mandatory=$false,Position=1)]
+		[switch]$DisableLogging
 	)
 	
 	Begin {
@@ -5467,8 +5471,9 @@ Function Get-RunningProcesses {
 	Process {
 		If ($processObjects) {
 			[string]$runningAppsCheck = ($processObjects | ForEach-Object { $_.ProcessName }) -join ','
-			Write-Log -Message "Check for running application(s) [$runningAppsCheck]..." -Source ${CmdletName}
-			
+			If (-not($DisableLogging)) {
+				Write-Log -Message "Check for running application(s) [$runningAppsCheck]..." -Source ${CmdletName}
+			}
 			## Create an array of process names to search for
 			[string[]]$processNames = $processObjects | ForEach-Object { $_.ProcessName }
 			
@@ -5477,8 +5482,10 @@ Function Get-RunningProcesses {
 			
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
-				Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
-				Write-Log -Message 'Resolve process descriptions...' -Source ${CmdletName}
+				If (-not($DisableLogging)) {
+					Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
+					Write-Log -Message 'Resolve process descriptions...' -Source ${CmdletName}
+				}
 				## Resolve the running process names to descriptions
 				ForEach ($runningProcess in $runningProcesses) {
 					ForEach ($processObject in $processObjects) {
@@ -5500,10 +5507,10 @@ Function Get-RunningProcesses {
 				}
 			}
 			Else {
-				Write-Log -Message 'Application(s) are not running.' -Source ${CmdletName}
-			}
-			
-			Write-Log -Message 'Finished checking running application(s).' -Source ${CmdletName}
+ 				If (-not($DisableLogging)) {
+					Write-Log -Message 'Application(s) are not running.' -Source ${CmdletName}
+				}
+			}			
 			Write-Output -InputObject $runningProcesses
 		}
 	}
@@ -6156,6 +6163,7 @@ Function Show-WelcomePrompt {
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
 				$script:welcomeTimer.remove_Tick($timer_Tick)
 				$timerPersist.remove_Tick($timerPersist_Tick)
+				$timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
 				$formWelcome.remove_Load($Form_StateCorrection_Load)
 				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
 			}
@@ -6233,11 +6241,22 @@ Function Show-WelcomePrompt {
 		If ($persistWindow) {
 			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { Refresh-InstallationWelcome }
+			[scriptblock]$timerPersist_Tick = { Update-InstallationWelcome }
 			$timerPersist.add_Tick($timerPersist_Tick)
 			$timerPersist.Start()
 		}
-		
+
+		## Process Re-Enumeration Timer
+		If ($ProcessDescriptions) {
+			If ($configInstallationWelcomePromptAutoContinue) {                
+				$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
+				$timerRunningProcesses.Interval = ($configInstallationWelcomePromptRunningProcessesInterval * 1000)
+				[scriptblock]$timerRunningProcesses_Tick = { Invoke-GetRunningProcesses }
+				$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
+				$timerRunningProcesses.Start()
+			}
+		}
+
 		## Form
 		$formWelcome.Controls.Add($pictureBanner)
 		$formWelcome.Controls.Add($buttonAbort)
@@ -6507,12 +6526,19 @@ Function Show-WelcomePrompt {
 		#  Clean up the control events
 		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
 		
-		Function Refresh-InstallationWelcome {
+		Function Update-InstallationWelcome {
 			$formWelcome.BringToFront()
 			$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 			$formWelcome.Refresh()
 		}
 		
+		Function Invoke-GetRunningProcesses {
+			If (-not (Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging)) {
+				Write-Log -Message 'Previously detected running processes are no longer running. Auto Continuing.' -Source ${CmdletName}
+				$formWelcome.Dispose()
+			}
+		}
+
 		## Minimize all other windows
 		If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
 		

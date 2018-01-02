@@ -1,4 +1,5 @@
 ﻿Version 3.6.10 [xx/xx/2017]
+	Added the ability to re-enumerate running applications while displaying Show-InstallationWelcome. If previously detected running applications are manually closed and no deferral is available, the installation will automatically continue. If deferral is available, Show-InstallationWelcome will be updated to remove the close apps list. The AutoContinue option is set to True by default in the XML configuration file.
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
 	Added detection of App-V pending tasks to the Get-PendingReboot function
