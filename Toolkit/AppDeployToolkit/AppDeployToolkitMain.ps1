@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
     # LICENSE #
@@ -4507,16 +4507,7 @@ Function New-Shortcut {
 		[string]$Path,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
-		[string]$TargetPath,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[string]$Arguments,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$IconLocation,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$IconIndex,
+				Start-Sleep -Seconds 5
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[string]$Description,
