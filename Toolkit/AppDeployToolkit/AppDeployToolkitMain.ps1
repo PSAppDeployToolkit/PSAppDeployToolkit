@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
     # LICENSE #
@@ -238,8 +238,8 @@ Else {
 }
 
 ## Variables: App Deploy Script Dependency Files
-[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitLogo.ico'
-[string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitBanner.png'
+[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'Logo.ico'
+[string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath 'Banner.png'
 [string]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
 [string]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
 #  App Deploy Optional Extensions File
@@ -1094,7 +1094,7 @@ Function Exit-Script {
 	ElseIf (-not $installSuccess) {
 		Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
 		If (($exitCode -eq $configInstallationUIExitCode) -or ($exitCode -eq $configInstallationDeferExitCode)) {
-			[string]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
+			[string]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry" -f $global:configInstallationDeferTime
 			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText }
 		}
 		Else {
@@ -4507,7 +4507,16 @@ Function New-Shortcut {
 		[string]$Path,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
-				Start-Sleep -Seconds 5
+		[string]$TargetPath,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Arguments,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconLocation,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconIndex,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[string]$Description,
@@ -4837,11 +4846,21 @@ Function Execute-ProcessAsUser {
 		If ($Wait) {
 			Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
 			Start-Sleep -Seconds 1
-			While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
-				Start-Sleep -Seconds 5
-			}
+			#Create com object for the task scheduler
+			$schedule = New-Object -com("Schedule.Service")
+            $schedule.Connect()
+            $task = $schedule.getFolder('\').getTasks(0)|where{$_.Name -eq "$schTaskName"}
+
+            #If the task exists, wait for it to finish
+            if($task){
+                While ($task.state -eq 4){
+                    Start-Sleep -Seconds 4
+                }
+            }
+            else{Write-Log -Message "Could not file task: $schTaskName" -Severity 3 -Source ${CmdletName}}
+
 			#  Get the exit code from the process launched by the scheduled task
-			[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			[int32]$executeProcessAsUserExitCode = $task.LastTaskResult
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
 		
@@ -5896,7 +5915,10 @@ Function Show-InstallationWelcome {
 						}
 						Catch { }
 					}
-					
+
+					#Create a scheduled task to rerun the Application Evaluation Cycle
+					Trigger-AppEvalCycle -Time $global:configInstallationDeferTime
+
 					#  Restore minimized windows
 					$null = $shellApp.UndoMinimizeAll()
 					
@@ -5909,6 +5931,9 @@ Function Show-InstallationWelcome {
 					
 					Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					
+					#Create a scheduled task to rerun the Application Evaluation Cycle
+                    Trigger-AppEvalCycle -Time $global:configInstallationDeferTime				
+
 					#  Restore minimized windows
 					$null = $shellApp.UndoMinimizeAll()
 					
@@ -6131,6 +6156,7 @@ Function Show-WelcomePrompt {
 		$buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonCloseApps = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
+		$dropdownDefer = New-Object -TypeName "System.Windows.Forms.Combobox"
 		$formWelcomeWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
@@ -6415,6 +6441,21 @@ Function Show-WelcomePrompt {
 		$buttonDefer.UseVisualStyleBackColor = $true
 		$buttonDefer.add_Click($buttonDefer_OnClick)
 		
+		## Defer dropdown
+        $dropdownDefer.Location = '325,0'
+		$dropdownDefer.Name = 'buttonContinue'
+		$dropdownDefer.Size = $buttonSize
+		$dropdownDefer.TabIndex = 7
+		$dropdownDefer.AutoSize = $true
+		$dropdownDefer.DropDownHeight = 200
+		$dropdownDefer.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+		
+		#Add options to the dropdown
+        $dropdownDefer.Items.Add("1 time")|out-null
+		$dropdownDefer.Items.Add("2 timer")|out-null
+		$dropdownDefer.Items.Add("4 timer")|out-null
+        $dropdownDefer.SelectedIndex=1
+
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonContinue.Location = '325,0'
@@ -6485,7 +6526,10 @@ Function Show-WelcomePrompt {
 		$padding.Right = 0
 		$panelButtons.Margin = $padding
 		If ($showCloseApps) { $panelButtons.Controls.Add($buttonCloseApps) }
-		If ($showDefer) { $panelButtons.Controls.Add($buttonDefer) }
+		If ($showDefer) { 
+			$panelButtons.Controls.Add($buttonDefer) 
+			$panelButtons.Controls.Add($dropdownDefer)
+		}
 		$panelButtons.Controls.Add($buttonContinue)
 		
 		## Add the Buttons Panel to the form
@@ -6513,7 +6557,10 @@ Function Show-WelcomePrompt {
 		
 		Switch ($result) {
 			OK { $result = 'Continue' }
-			No { $result = 'Defer' }
+			No { 
+                $result = 'Defer'
+                $global:configInstallationDeferTime = [int]::parse($dropdownDefer.SelectedItem[0])
+                }
 			Yes { $result = 'Close' }
 			Abort { $result = 'Timeout' }
 		}
@@ -8855,7 +8902,7 @@ Function Test-PowerPoint {
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
 					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint-diasshow' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[nullable[boolean]]$IsPowerPointFullScreen = $true
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
