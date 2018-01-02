@@ -1,3 +1,15 @@
+## BEC changes
+### Fixes
+* -Wait parameter for `ExecuteProcessAsUser` now work on non-english OS
+* `Test-PowerPoint` now works for danish OS
+
+### New functionality
+* New defer mechanism. Defer now works by creating a scheduled task, that runs the Application Deployment Evaluation Cycle
+* If the installation times out, the installation will be defered. The amount is specified in the config file
+* User can choose to defer 1, 2 og 4 hours
+* Added `-showContinue` flag to `Show-WelcomePrompt` since the button blocks the defer dropdown
+ 
+___
 ### What is the PowerShell App Deployment Toolkit?
 
 The PowerShell App Deployment Toolkit provides a set of functions to perform common application deployment tasks and to interact with the user during a deployment. It simplifies the complex scripting challenges of deploying applications in the enterprise, provides a consistent deployment experience and improves installation success rates.

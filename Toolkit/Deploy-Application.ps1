@@ -57,23 +57,21 @@ Try {
 	## Set the script execution policy for this process
 	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {}
 	
-	##*===============================================
-	##* VARIABLE DECLARATION
-	##*===============================================
-	## Variables: Application
+	## Atea======= PACKAGE NAMING  ======= ======= ======= ======= ======= ======= =======
+	
 	[string]$appVendor = ''
 	[string]$appName = ''
 	[string]$appVersion = ''
-	[string]$appArch = ''
-	[string]$appLang = 'EN'
+	[string]$appArch = 'x64'
+	[string]$appLang = 'DA'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
 	[string]$appScriptDate = '02/12/2017'
 	[string]$appScriptAuthor = '<author name>'
-	##*===============================================
-	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
-	[string]$installName = ''
-	[string]$installTitle = ''
+	$ScriptGuid = ''
+
+	#List of applications that should be closed (NOTE! Do not Write file extensions!):
+	$Applist = "iexplorer,notepad"
 	
 	##* Do not modify section below
 	#region DoNotModify
@@ -116,38 +114,36 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
-        ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
-		
-        ## Show Progress Message (with the default message)
-		Show-InstallationProgress
-		
-		## <Perform Pre-Installation tasks here>
-		
+		#Check if a powerpoint presentation is open. In this case, defer the installation
+		if(Test-PowerPoint){
+			Trigger-AppEvalCycle -Time $configInstallationDeferTime
+			Exit-Script -ExitCode $configInstallationDeferExitCode
+		}
+		#Show installation welcome, asking the user to close the running apps. This also blocks execution, if the user tries to open the apps during installation
+		Show-InstallationWelcome -CloseApps $Applist  -AllowDeferCloseApps -DeferTimes 30 -BlockExecution -PromptToSave -CheckDiskSpace
+     
+
 		
 		##*===============================================
 		##* INSTALLATION 
 		##*===============================================
 		[string]$installPhase = 'Installation'
 		
-		## Handle Zero-Config MSI Installations
-		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
-			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
-		}
-		
-		## <Perform Installation tasks here>
-		
-		
+
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Installation'
 		
-		## <Perform Post-Installation tasks here>
-		
+		#Set registry guid if the installation was successfull
+		if($mainExitCode -eq 0){
+			Set-RegistryKey -Key "HKEY_LOCAL_MACHINE\SOFTWARE\Atea\Applications\$ScriptGuid"	
+		}
+
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
+		
+		#If the package requires a reboot, let the user know, by uncomming the line below
+		#Show-InstallationRestartPrompt -NoCount
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -156,28 +152,23 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Uninstallation'
 		
-		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
-		
-		## Show Progress Message (with the default message)
-		Show-InstallationProgress
-		
-		## <Perform Pre-Uninstallation tasks here>
-		
-		
+		#Check if a powerpoint presentation is open. In this case, defer the installation
+		if(Test-PowerPoint){
+			Trigger-AppEvalCycle -Time $configInstallationDeferTime
+			Exit-Script -ExitCode $configInstallationDeferExitCode
+		}
+		#Show installation welcome, asking the user to close the running apps. This also blocks execution, if the user tries to open the apps during installation
+		Show-InstallationWelcome -CloseApps $Applist  -AllowDeferCloseApps -DeferTimes 30 -BlockExecution -PromptToSave -CheckDiskSpace
+
+
 		##*===============================================
 		##* UNINSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
-		
-		## Handle Zero-Config MSI Uninstallations
-		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Uninstall'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
-			Execute-MSI @ExecuteDefaultMSISplat
-		}
-		
-		# <Perform Uninstallation tasks here>
-		
+
+
+		Remove-RegistryKey -Key "HKEY_LOCAL_MACHINE\SOFTWARE\Atea\Applications\$ScriptGuid"
+				
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
