@@ -9,7 +9,7 @@
 .DESCRIPTION
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts.
-	Please check release notes before upgrading.
+	Please check release notes befinfore upgrading.
 .PARAMETER CleanupBlockedApps
 	Clean up the blocked applications.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
@@ -286,8 +286,8 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 [int32]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
 [int32]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
 [int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
-[boolean]$configInstallationWelcomePromptAutoContinue = [boolean]::Parse($xmlConfigUIOptions.InstallationWelcomePrompt_AutoContinue)
-[int32]$configInstallationWelcomePromptRunningProcessesInterval = $xmlConfigUIOptions.InstallationWelcomePrompt_RunningProcessesInterval
+[boolean]$configInstallationWelcomePromptDynamicRunningProcessEvaluation = [boolean]::Parse($xmlConfigUIOptions.InstallationWelcomePrompt_DynamicRunningProcessEvaluation)
+[int32]$configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval = $xmlConfigUIOptions.InstallationWelcomePrompt_DynamicRunningProcessEvaluationInterval
 #  Define ScriptBlock for Loading Message UI Language Options (default for English if no localization found)
 [scriptblock]$xmlLoadLocalizedUIMessages = {
 	#  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
@@ -1452,10 +1452,7 @@ Function Show-InstallationPrompt {
 		$paddingNone.Bottom = 0
 		$paddingNone.Left = 0
 		$paddingNone.Right = 0
-		
-		## Generic Label properties
-		$labelPadding = '20,0,20,0'
-		
+				
 		## Generic Button properties
 		$buttonWidth = 110
 		$buttonHeight = 23
@@ -1515,7 +1512,7 @@ Function Show-InstallationPrompt {
 		$System_Drawing_Point.Y = 50
 		$labelText.Location = $System_Drawing_Point
 		$labelText.Margin = '0,0,0,0'
-		$labelText.Padding = $labelPadding
+		$labelText.Padding = '40,0,20,0'
 		$labelText.TabIndex = 1
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
@@ -6247,15 +6244,13 @@ Function Show-WelcomePrompt {
 		}
 
 		## Process Re-Enumeration Timer
-		If ($ProcessDescriptions) {
-			If ($configInstallationWelcomePromptAutoContinue) {                
+        If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {                
 				$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
-				$timerRunningProcesses.Interval = ($configInstallationWelcomePromptRunningProcessesInterval * 1000)
-				[scriptblock]$timerRunningProcesses_Tick = { Invoke-GetRunningProcesses }
+				$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
+				[scriptblock]$timerRunningProcesses_Tick = { Get-RunningProcessesDynamically }
 				$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
-				$timerRunningProcesses.Start()
-			}
-		}
+				$timerRunningProcesses.Start()		
+        }
 
 		## Form
 		$formWelcome.Controls.Add($pictureBanner)
@@ -6268,9 +6263,6 @@ Function Show-WelcomePrompt {
 		$paddingNone.Bottom = 0
 		$paddingNone.Left = 0
 		$paddingNone.Right = 0
-		
-		## Generic Label properties
-		$labelPadding = '20,0,20,0'
 		
 		## Generic Button properties
 		$buttonWidth = 110
@@ -6317,7 +6309,7 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Size.Height = 0
 		$labelAppName.MaximumSize = $System_Drawing_Size
 		$labelAppName.Margin = '0,15,0,15'
-		$labelAppName.Padding = $labelPadding
+		$labelAppName.Padding = '20,0,20,0'
 		$labelAppName.TabIndex = 1
 		
 		## Initial form layout: Close Applications / Allow Deferral
@@ -6359,7 +6351,7 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Size.Height = 0
 		$labelDefer.MaximumSize = $System_Drawing_Size
 		$labelDefer.Margin = $paddingNone
-		$labelDefer.Padding = $labelPadding
+		$labelDefer.Padding = '40,0,20,0'
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
 		
@@ -6388,7 +6380,7 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Size.Height = 0
 		$labelCountdown.MaximumSize = $System_Drawing_Size
 		$labelCountdown.Margin = $paddingNone
-		$labelCountdown.Padding = $labelPadding
+		$labelCountdown.Padding = '40,0,20,0'
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
 		$labelCountdown.Text = '00:00:00'
@@ -6532,11 +6524,32 @@ Function Show-WelcomePrompt {
 			$formWelcome.Refresh()
 		}
 		
-		Function Invoke-GetRunningProcesses {
-			If (-not (Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging)) {
-				Write-Log -Message 'Previously detected running processes are no longer running. Auto Continuing.' -Source ${CmdletName}
-				$formWelcome.Dispose()
-			}
+		Function Get-RunningProcessesDynamically {
+            $dynamicRunningProcesses = $null
+            Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
+            [string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+            If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+                # Update the runningProcessDescriptions variable for the next time this function runs
+                Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+                Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+                # Update the list box with the processes to close
+                $listboxCloseApps.Items.Clear()
+                $script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
+            }
+            # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
+            If ($ProcessDescriptions) {
+			    If (-not ($dynamicRunningProcesses)) {
+                        Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
+				        $formWelcome.Dispose()
+                }
+            }
+            # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
+            ElseIf (-not $ProcessDescriptions) {
+                If ($dynamicRunningProcesses) {
+                    Write-Log -Message 'New running processes detected. Updating the form to advise the user to close the running applications.' -Source ${CmdletName}
+				    $formWelcome.Dispose()   
+			    }
+            }
 		}
 
 		## Minimize all other windows
@@ -8888,15 +8901,15 @@ Function Test-PowerPoint {
 			If ($IsPowerPointRunning) {
 				## Detect if PowerPoint is in fullscreen mode or Presentation Mode, detection method only works if process is interactive
 				If ([Environment]::UserInteractive) {
-					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show"
+					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
 					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-					[psobject]$PowerPointWindow = Get-WindowTitle -WindowTitle '^PowerPoint Slide Show' | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[nullable[boolean]]$IsPowerPointFullScreen = $true
-						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
 					}
 					Else {
-						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show].' -Source ${CmdletName}
+						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
 						Try {
 							[int32[]]$PowerPointProcessIDs = $PowerPointProcess | Select-Object -ExpandProperty 'Id' -ErrorAction 'Stop'
 							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
