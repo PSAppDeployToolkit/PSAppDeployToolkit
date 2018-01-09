@@ -9,6 +9,7 @@
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, adding an alias for old function names for backwards compatibility.
 	Fixed issue where Test-Powerpoint erroneously returned False on non-English language systems.
 	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
+	Fixed issue with Execute-ProcessAsUser which could delete the task before executing it if used without the Wait switch
 	Fixed case sensitivity in the shortcut path passed to New-Shortcut
 	Fixed issue in Remove-File where a confirmation dialogue would hang the script if a non-empty folder is encountered when the Recurse switch is not specified
 	Fixed issue with white spaces in scheduled task creation breaking the -BlockExecution parameter

@@ -4852,6 +4852,9 @@ Function Execute-ProcessAsUser {
 			[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
+        Else {
+            Start-Sleep -Seconds 1
+        }
 		
 		## Delete scheduled task
 		Try {
@@ -6531,7 +6534,9 @@ Function Show-WelcomePrompt {
             If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
                 # Update the runningProcessDescriptions variable for the next time this function runs
                 Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-                Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+                If ($dynamicrunningProcesses) {
+                    Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+                }
                 # Update the list box with the processes to close
                 $listboxCloseApps.Items.Clear()
                 $script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
@@ -6546,7 +6551,7 @@ Function Show-WelcomePrompt {
             # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
             ElseIf (-not $ProcessDescriptions) {
                 If ($dynamicRunningProcesses) {
-                    Write-Log -Message 'New running processes detected. Updating the form to advise the user to close the running applications.' -Source ${CmdletName}
+                    Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
 				    $formWelcome.Dispose()   
 			    }
             }
