@@ -5672,6 +5672,13 @@ Function Show-InstallationWelcome {
 	)
 	
 	Begin {
+		#It's seen that someone set the diskspace on checkdiskspace insted of -RequiredDiskSpace perameter. 
+		if ($CheckDiskSpace -ne [boolean])
+		{
+			Write-Log -Message '-CheckDiskSpace can only be a Boolean. Use -RequiredDiskSpace [Space in MB]' -Severity 3 -Source ${CmdletName}
+			Exit-Script -ExitCode $mainExitCode
+			#            Throw '-CheckDiskSpace can only be a Boolean. Use -RequiredDiskSpace [Space in MB]'
+		}
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
