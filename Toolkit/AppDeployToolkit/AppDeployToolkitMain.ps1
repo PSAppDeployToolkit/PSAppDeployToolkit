@@ -1698,7 +1698,7 @@ Function Show-DialogBox {
 .EXAMPLE
 	Show-DialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
 .EXAMPLE
-	Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600
+	Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -1724,7 +1724,7 @@ Function Show-DialogBox {
 		[ValidateNotNullorEmpty()]
 		[string]$Timeout = $configInstallationUITimeout,
 		[Parameter(Mandatory=$false)]
-		[switch]$TopMost = $true
+		[boolean]$TopMost = $true
 	)
 	
 	Begin {
