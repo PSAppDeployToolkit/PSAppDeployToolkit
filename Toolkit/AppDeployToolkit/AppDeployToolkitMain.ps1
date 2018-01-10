@@ -5604,7 +5604,8 @@ Function Show-InstallationWelcome {
 .LINK
 	http://psappdeploytoolkit.com
 #>
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParametersetName='None')] 
+
 	Param (
 		## Specify process names separated by commas. Optionally specify a process description with an equals symbol, e.g. "winword=Microsoft Office Word"
 		[Parameter(Mandatory=$false)]
@@ -5648,10 +5649,11 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[string]$DeferDeadline = '',
 		## Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
-		[Parameter(Mandatory=$false)]
-		[switch]$CheckDiskSpace = $false,
+		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$false)]
+        [ValidateScript({$_.IsPresent -eq ($true -or $false)})]
+		[switch]$CheckDiskSpace,
 		## Specify required disk space in MB, used in combination with $CheckDiskSpace.
-		[Parameter(Mandatory=$false)]
+		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
 		[int32]$RequiredDiskSpace = 0,
 		## Specify whether to minimize other windows when displaying prompt
