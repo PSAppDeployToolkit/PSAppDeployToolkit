@@ -1,5 +1,4 @@
-﻿Version 3.7.0 [xx/xx/2018]
-	Added 'Schedule.Service' comObject for Windows Vista and higher in Execute-ProcessAsUser to retrieve Task State/Status and TaskLastResult/Last Result UI language independent
+﻿Version 3.7.0 [xx/xx/2018]	
 	Added the ability to dynamically re-enumerate running applications while displaying the Show-InstallationWelcome prompt. If the CloseApps processes were not running when the prompt was displayed, and are subsequently detected to be running, the prompt will be updated with the apps to close. If the CloseApps processes were running when the prompt was displayed and are subsequently detected not to be running, then the installation will automatically continue if no deferral is available. If the CloseApps processes change (new processes launched or running processes closed), the list box will dynamically update every 2 seconds to reflect the currently running applications.
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
@@ -8,6 +7,7 @@
 	Added the parameter type column to the logging function
 	Added the Win32_BaseService class to the Test-ServiceExists function
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, adding an alias for old function names for backwards compatibility.
+	Fixed issue with Execute-ProcessAsUser where result from the task scheduler could not be parsed on non-English language systems. Fix applies for Vista and higher.
 	Fixed issue where Test-Powerpoint erroneously returned False on non-English language systems.
 	Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
 	Fixed issue with Execute-ProcessAsUser which could delete the task before executing it if used without the Wait switch
