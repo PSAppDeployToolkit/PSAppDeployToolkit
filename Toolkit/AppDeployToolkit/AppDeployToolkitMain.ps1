@@ -4845,11 +4845,35 @@ Function Execute-ProcessAsUser {
 		If ($Wait) {
 			Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
 			Start-Sleep -Seconds 1
-			While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
-				Start-Sleep -Seconds 5
+			#If on Windows Vista or higer, Windows Task Scheduler 2.0 is supported. 'Schedule.Service' ComObject output is UI language independent
+			If (([version]$envOSVersion).Major -gt 5) {
+				Try {
+					[__comobject]$ScheduleService = New-Object -ComObject 'Schedule.Service' -ErrorAction Stop
+					$ScheduleService.Connect()
+					$RootFolder = $ScheduleService.GetFolder('\')
+					$Task = $RootFolder.GetTask("$schTaskName")
+					# Task State(Status) 4 = 'Running'
+					While ($Task.State -eq 4) {
+						Start-Sleep -Seconds 5
+					}
+					#  Get the exit code from the process launched by the scheduled task
+					[int32]$executeProcessAsUserExitCode = $Task.LastTaskResult
+				}
+				Catch {
+					Write-Log -Message "Failed to retrieve information from Task Scheduler. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+				Finally {
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($ScheduleService) } Catch { }
+				}
 			}
-			#  Get the exit code from the process launched by the scheduled task
-			[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			#Windows Task Scheduler 1.0
+			Else {
+				While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+					Start-Sleep -Seconds 5
+				}
+				#  Get the exit code from the process launched by the scheduled task
+				[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+			}
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
         Else {
