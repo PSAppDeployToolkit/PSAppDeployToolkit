@@ -4876,9 +4876,9 @@ Function Execute-ProcessAsUser {
 			}
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
-        Else {
-            Start-Sleep -Seconds 1
-        }
+		Else {
+			Start-Sleep -Seconds 1
+		}
 		
 		## Delete scheduled task
 		Try {
