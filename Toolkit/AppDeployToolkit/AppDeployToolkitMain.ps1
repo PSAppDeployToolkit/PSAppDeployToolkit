@@ -5677,7 +5677,7 @@ Function Show-InstallationWelcome {
         [ValidateScript({$_.IsPresent -eq ($true -or $false)})]
 		[switch]$CheckDiskSpace,
 		## Specify required disk space in MB, used in combination with $CheckDiskSpace.
-		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$true)]
+		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[int32]$RequiredDiskSpace = 0,
 		## Specify whether to minimize other windows when displaying prompt
@@ -6893,6 +6893,9 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
+            #$restartPromptLogName = ([IO.FileInfo]$logname).BaseName + "_RestartPrompt.log"
+            #Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$restartPromptLogName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+       
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
