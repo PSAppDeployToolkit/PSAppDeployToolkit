@@ -81,6 +81,8 @@ Param (
 [timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
+[Globalization.CultureInfo]$uiculture = Get-UICulture
+[string]$currentUILanguage = $uiculture.TwoLetterISOLanguageName.ToUpper()
 
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
@@ -2453,7 +2455,7 @@ Function Remove-MSIApplications {
 	Removes all MSI applications matching the specified application name.
 	Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code, provided the uninstall string matches "msiexec".
 .PARAMETER Name
-	The name of the application to uninstall. Performs a regex match on the application display name by default.
+	The name of the application to uninstall. Performs a contains match on the application display name by default.
 .PARAMETER Exact
 	Specifies that the named application must be matched using the exact name.
 .PARAMETER WildCard
@@ -2489,11 +2491,11 @@ Function Remove-MSIApplications {
 	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication ('Is64BitApplication', $false, 'Exact'),('Publisher', 'Oracle Corporation', 'Exact')
 	Removes all versions of software that match the name "Java 8 Update" where the software is 32-bits and the publisher is "Oracle Corporation".
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication (,('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'RegEx'))
+	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication (,('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'Contains'))
 	Removes all versions of software that match the name "Java 8 Update" and also have "Oracle Corporation" as the Publisher; however, it does not uninstall "Java 8 Update 45" of the software. 
 	NOTE: if only specifying a single row in the two-dimensional arrays, the array must have the extra parentheses and leading comma as in this example.
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'RegEx'))
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'Contains'))
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall "Java 8 Update 45" of the software. 
 	NOTE: if only specifying a single row in the two-dimensional array, the array must have the extra parentheses and leading comma as in this example.
 .EXAMPLE
@@ -2501,7 +2503,8 @@ Function Remove-MSIApplications {
 			('Is64BitApplication', $true, 'Exact'),
 			('DisplayName', 'Java 8 Update 45', 'Exact'),
 			('DisplayName', 'Java 8 Update 4*', 'WildCard'),
-			('DisplayName', 'Java 8 Update 45', 'RegEx')		
+            ('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
+			('DisplayName', 'Java 8 Update', 'Contains')		
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
 	More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
@@ -2581,9 +2584,15 @@ Function Remove-MSIApplications {
 					[boolean]$addAppToRemoveList = $false
 					ForEach ($Filter in $FilterApplication) {
 						If ($Filter[2] -eq 'RegEx') {
-							If ($installedApplication.($Filter[0]) -match [regex]::Escape($Filter[1])) {
+							If ($installedApplication.($Filter[0]) -match $Filter[1]) {
 								[boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+						}
+                        ElseIf ($Filter[2] -eq 'Contains') {
+							If ($installedApplication.($Filter[0]) -match [regex]::Escape($Filter[1])) {
+								[boolean]$addAppToRemoveList = $true
+								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria." -Source ${CmdletName}
 							}
 						}
 						ElseIf ($Filter[2] -eq 'WildCard') {
@@ -2608,9 +2617,15 @@ Function Remove-MSIApplications {
 				If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count)) {
 					ForEach ($Exclude in $ExcludeFromUninstall) {
 						If ($Exclude[2] -eq 'RegEx') {
-							If ($installedApplication.($Exclude[0]) -match [regex]::Escape($Exclude[1])) {
+							If ($installedApplication.($Exclude[0]) -match $Exclude[1]) {
 								[boolean]$addAppToRemoveList = $false
 								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+							}
+						}
+						ElseIf ($Exclude[2] -eq 'Contains') {
+							If ($installedApplication.($Exclude[0]) -match [regex]::Escape($Exclude[1])) {
+								[boolean]$addAppToRemoveList = $false
+								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
 							}
 						}
 						ElseIf ($Exclude[2] -eq 'WildCard') {
@@ -5677,7 +5692,7 @@ Function Show-InstallationWelcome {
 		[Parameter(Mandatory=$false)]
 		[string]$DeferDeadline = '',
 		## Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
-		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$false)]
+		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$true)]
         [ValidateScript({$_.IsPresent -eq ($true -or $false)})]
 		[switch]$CheckDiskSpace,
 		## Specify required disk space in MB, used in combination with $CheckDiskSpace.
@@ -6557,6 +6572,7 @@ Function Show-WelcomePrompt {
 			$formWelcome.Refresh()
 		}
 		
+        # Function invoked by a timer to periodically check running processes dynamically whilst showing the welcome prompt
 		Function Get-RunningProcessesDynamically {
             $dynamicRunningProcesses = $null
             Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
@@ -10400,11 +10416,11 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
-## If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly
-If (-not $appName) {
+## If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly
+If ((-not $appName) -and (-not $ReferredInstallName)){
 	#  Find the first MSI file in the Files folder and use that as our install
 	[string]$defaultMsiFile = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
-	If (($defaultMsiFile) -and (-not $ReferredInstallName)) {
+	If ($defaultMsiFile) {
 		Try {
 			[boolean]$useDefaultMsi = $true
 			Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
@@ -10568,7 +10584,7 @@ Else {
 	Write-Log -Message "OS Version is [$envOSName $envOSArchitecture $envOSVersion]" -Source $appDeployToolkitName
 }
 Write-Log -Message "OS Type is [$envOSProductTypeName]" -Source $appDeployToolkitName
-Write-Log -Message "Current Culture is [$($culture.Name)] and UI language is [$currentLanguage]" -Source $appDeployToolkitName
+Write-Log -Message "Current Culture is [$($culture.Name)], language is [$currentLanguage] and UI language is [$currentUILanguage]" -Source $appDeployToolkitName
 Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
