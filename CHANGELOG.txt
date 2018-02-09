@@ -9,6 +9,7 @@
 	Added environment variables; CurrentUILanguage
 	BREAKING CHANGE, The "Regex" filter in Remove-MSIApplications previously escaped RegEx characters, but now parses a RegEx statement as expected. Added "Contains" filter which emulates RegEx filter from previous version.
 	Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, an alias preserves backwards compatibility with the previous function names
+	Fixed issue in Set-RegistryKey where registry keys with forward slashes now contains actual forward slash [char]0x002F instead of [char]0x2215
 	Fixed issue with Execute-ProcessAsUser where result from the task scheduler could not be parsed on non-English language systems. Fix applies for Vista and higher.
 	Fixed issue in Execute-ProcessAsUser with Powershell script execution. Parameters may now end with double quote.
 	Fixed issue where Test-Powerpoint erroneously returned False on non-English language systems.
