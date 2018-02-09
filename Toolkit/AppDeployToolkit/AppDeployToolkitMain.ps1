@@ -3314,7 +3314,7 @@ Function Copy-File {
 	Param (
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
-		[string]$Path,
+		[string[]]$Path,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
 		[string]$Destination,
