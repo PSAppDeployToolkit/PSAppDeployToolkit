@@ -1,15 +1,15 @@
 ﻿<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
-    # LICENSE #
-    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
-    Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
-    You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+	# LICENSE #
+	PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
+	Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
+	This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+	You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 .DESCRIPTION
 	The script can be called directly to dot-source the toolkit functions for testing, but it is usually called by the Deploy-Application.ps1 script.
 	The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts.
-	Please check release notes befinfore upgrading.
+	Please check release notes before upgrading.
 .PARAMETER CleanupBlockedApps
 	Clean up the blocked applications.
 	This parameter is passed to the script when it is called externally, e.g. from a scheduled task or asynchronously.
@@ -71,7 +71,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.7.0'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.7.0'
-[string]$appDeployMainScriptDate = '01/01/2018'
+[string]$appDeployMainScriptDate = '02/13/2018'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -527,7 +527,7 @@ Function Execute-MSP {
 <#
 .SYNOPSIS
 	Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
-    If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
+	If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
 .PARAMETER Path
 .EXAMPLE
 	Execute-MSP -Path 'Adobe_Reader_11.0.3_EN.msp'
@@ -535,21 +535,21 @@ Function Execute-MSP {
 .LINK
 	http://psappdeploytoolkit.com
 #>
-    [CmdletBinding()]
+	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true,HelpMessage='Please enter the path to the MSP file')]
 		[ValidateScript({('.msp' -contains [IO.Path]::GetExtension($_))})]
 		[Alias('FilePath')]
 		[string]$Path
-    )
+	)
 
-    Begin {
+	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-        ## If the MSP is in the Files directory, set the full path to the MSP
+		## If the MSP is in the Files directory, set the full path to the MSP
 		If (Test-Path -LiteralPath (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			[string]$mspFile = Join-Path -Path $dirFiles -ChildPath $path
 		}
@@ -563,24 +563,24 @@ Function Execute-MSP {
 			}
 			Continue
 		}
-        Write-Log -Message 'Checking MSP file for valid product codes' -Source ${CmdletName}
+		Write-Log -Message 'Checking MSP file for valid product codes' -Source ${CmdletName}
 			
-        [boolean]$IsMSPNeeded = $false
+		[boolean]$IsMSPNeeded = $false
 
-        $Installer = New-Object -com WindowsInstaller.Installer
-        $Database = $Installer.GetType().InvokeMember(“OpenDatabase”, “InvokeMethod”, $Null, $Installer, $($mspFile,([int32]32)))
-        [__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
-        [hashtable]$SummaryInfoProperty = @{}
-        $all = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
-        Foreach($FormattedProductCode in $all) { 
-            [psobject]$MSIInstalled = Get-InstalledApplication -ProductCode $FormattedProductCode
-            If ($MSIInstalled) {[boolean]$IsMSPNeeded = $true }
-        }
-        Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
-        Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) } Catch { }
-        Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
-        If ($IsMSPNeeded) { Execute-MSI -Action Patch -Path $Path }
-    }    
+		$Installer = New-Object -com WindowsInstaller.Installer
+		$Database = $Installer.GetType().InvokeMember(“OpenDatabase”, “InvokeMethod”, $Null, $Installer, $($mspFile,([int32]32)))
+		[__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
+		[hashtable]$SummaryInfoProperty = @{}
+		$all = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
+		Foreach($FormattedProductCode in $all) { 
+			[psobject]$MSIInstalled = Get-InstalledApplication -ProductCode $FormattedProductCode
+			If ($MSIInstalled) {[boolean]$IsMSPNeeded = $true }
+		}
+		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
+		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) } Catch { }
+		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
+		If ($IsMSPNeeded) { Execute-MSI -Action Patch -Path $Path }
+	}
 }
 #endregion
 
@@ -2590,7 +2590,7 @@ Function Remove-MSIApplications {
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria." -Source ${CmdletName}
 							}
 						}
-                        ElseIf ($Filter[2] -eq 'Contains') {
+						ElseIf ($Filter[2] -eq 'Contains') {
 							If ($installedApplication.($Filter[0]) -match [regex]::Escape($Filter[1])) {
 								[boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria." -Source ${CmdletName}
@@ -3361,7 +3361,7 @@ Function Copy-File {
 				}
 			}
 
-            If ($fileCopyError) { 
+			If ($fileCopyError) { 
 				Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
 			}
 			Else {
@@ -3838,7 +3838,7 @@ Function Set-RegistryKey {
 	The value data.
 .PARAMETER Type
 	The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
-    Dword should be specified as a decimal.
+	Dword should be specified as a decimal.
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
@@ -3847,7 +3847,7 @@ Function Set-RegistryKey {
 .EXAMPLE
 	Set-RegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
 .EXAMPLE
-    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'Dword' -Value '1'
+	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'Dword' -Value '1'
 .EXAMPLE
 	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
 .EXAMPLE
@@ -4553,7 +4553,7 @@ Function New-Shortcut {
 		[string]$WindowStyle,
 		[Parameter(Mandatory=$false)]
 		[switch]$RunAsAdmin,
-        [Parameter(Mandatory=$false)]
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$Hotkey,
 		[Parameter(Mandatory=$false)]
@@ -4749,7 +4749,7 @@ Function Execute-ProcessAsUser {
 		
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
 		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
-            # Permit inclusion of double quotes in parameters
+			# Permit inclusion of double quotes in parameters
 			If ($($Parameters.Substring($Parameters.Length - 1)) -eq '"') {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
 			Else {
@@ -5704,7 +5704,7 @@ Function Show-InstallationWelcome {
 		[string]$DeferDeadline = '',
 		## Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$true)]
-        [ValidateScript({$_.IsPresent -eq ($true -or $false)})]
+		[ValidateScript({$_.IsPresent -eq ($true -or $false)})]
 		[switch]$CheckDiskSpace,
 		## Specify required disk space in MB, used in combination with $CheckDiskSpace.
 		[Parameter(ParameterSetName = "CheckDiskSpaceParameterSet",Mandatory=$false)]
@@ -6303,13 +6303,13 @@ Function Show-WelcomePrompt {
 		}
 
 		## Process Re-Enumeration Timer
-        If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {                
+		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {                
 				$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
 				$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
 				[scriptblock]$timerRunningProcesses_Tick = { Get-RunningProcessesDynamically }
 				$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
 				$timerRunningProcesses.Start()		
-        }
+		}
 
 		## Form
 		$formWelcome.Controls.Add($pictureBanner)
@@ -6583,35 +6583,35 @@ Function Show-WelcomePrompt {
 			$formWelcome.Refresh()
 		}
 		
-        # Function invoked by a timer to periodically check running processes dynamically whilst showing the welcome prompt
+		# Function invoked by a timer to periodically check running processes dynamically whilst showing the welcome prompt
 		Function Get-RunningProcessesDynamically {
-            $dynamicRunningProcesses = $null
-            Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
-            [string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
-            If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
-                # Update the runningProcessDescriptions variable for the next time this function runs
-                Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-                If ($dynamicrunningProcesses) {
-                    Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
-                }
-                # Update the list box with the processes to close
-                $listboxCloseApps.Items.Clear()
-                $script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
-            }
-            # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
-            If ($ProcessDescriptions) {
-			    If (-not ($dynamicRunningProcesses)) {
-                        Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
-				        $formWelcome.Dispose()
-                }
-            }
-            # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
-            ElseIf (-not $ProcessDescriptions) {
-                If ($dynamicRunningProcesses) {
-                    Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
-				    $formWelcome.Dispose()   
-			    }
-            }
+			$dynamicRunningProcesses = $null
+			Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
+			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+				If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+				# Update the runningProcessDescriptions variable for the next time this function runs
+				Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+				If ($dynamicrunningProcesses) {
+					Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+				}
+				# Update the list box with the processes to close
+				$listboxCloseApps.Items.Clear()
+				$script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
+			}
+			# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
+			If ($ProcessDescriptions) {
+				If (-not ($dynamicRunningProcesses)) {
+					Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
+						$formWelcome.Dispose()
+				}
+			}
+			# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
+			ElseIf (-not $ProcessDescriptions) {
+				If ($dynamicRunningProcesses) {
+					Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
+					$formWelcome.Dispose()   
+				}
+			}
 		}
 
 		## Minimize all other windows
@@ -6754,11 +6754,11 @@ Function Show-InstallationRestartPrompt {
 		[scriptblock]$buttonRestartLater_Click = {
 			## Minimize the form
 			$formRestart.WindowState = 'Minimized'
-            If ($NoCountdown) {
-			    ## Reset the persistence timer
-			    $timerPersist.Stop()
-			    $timerPersist.Start()
-            }
+			If ($NoCountdown) {
+				## Reset the persistence timer
+				$timerPersist.Stop()
+				$timerPersist.Start()
+			}
 		}
 		
 		## Restart the computer
@@ -10187,7 +10187,7 @@ Function Get-PendingReboot {
 	a) Component Based Servicing (Vista, Windows 2008)
 	b) Windows Update / Auto Update (XP, Windows 2003 / 2008)
 	c) SCCM 2012 Clients (DetermineIfRebootPending WMI method)
-    d) App-V Pending Tasks (global based Appv 5.0 SP2)   
+	d) App-V Pending Tasks (global based Appv 5.0 SP2)   
 	e) Pending File Rename Operations (XP, Windows 2003 / 2008)
 .EXAMPLE
 	Get-PendingReboot
@@ -10308,7 +10308,7 @@ Function Get-PendingReboot {
 			Write-Log -Message "Failed to get IsSCCMClientRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
-        ## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
+		## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
 		Try {
 			If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks' -ErrorAction 'Stop') {
 
@@ -10338,7 +10338,7 @@ Function Get-PendingReboot {
 			IsCBServicingRebootPending = $IsCBServicingRebootPending
 			IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
 			IsSCCMClientRebootPending = $IsSCCMClientRebootPending
-            IsAppVRebootPending = $IsAppVRebootPending
+			IsAppVRebootPending = $IsAppVRebootPending
 			IsFileRenameRebootPending = $IsFileRenameRebootPending
 			PendingFileRenameOperations = $PendingFileRenameOperations
 			ErrorMsg = $PendRebootErrorMsg
@@ -10395,8 +10395,6 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 		#  If a console user exists, then that will be the active user session.
 		#  If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
 		[psobject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
-        # The IsLocalAdmin property erroneously returns $false, so use this method instead to set it $true where appropriate. 
-        $RunAsActiveUser.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 	}
 }
 
@@ -10642,7 +10640,7 @@ If ($showInstallationRestartPrompt) {
 	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
 	$appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
 	$appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
-    Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
+	Show-InstallationRestartPrompt @appDeployMainScriptAsyncParameters
 	Exit 0
 }
 
