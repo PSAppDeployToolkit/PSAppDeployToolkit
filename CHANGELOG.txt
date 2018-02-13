@@ -1,4 +1,4 @@
-﻿Version 3.7.0 [xx/xx/2018]	
+﻿Version 3.7.0 [02/13/2018]	
 	Added the ability to dynamically re-enumerate running applications while displaying the Show-InstallationWelcome prompt. If the CloseApps processes were not running when the prompt was displayed and are subsequently detected to be running, the prompt will be updated with the apps to close. If the CloseApps processes were running when the prompt was displayed and are subsequently detected not to be running, then the installation will automatically continue if no deferral is available. If the CloseApps processes change (new processes launched or running processes closed), the list box will dynamically update every 2 seconds to reflect the currently running applications.
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
