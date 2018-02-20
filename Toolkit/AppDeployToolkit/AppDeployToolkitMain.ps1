@@ -9335,7 +9335,7 @@ Function Enable-TerminalServerInstallMode {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Enable-TerminalServerInstall
+	Enable-TerminalServerInstallMode
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -9383,7 +9383,7 @@ Function Disable-TerminalServerInstallMode {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Disable-TerminalServerInstall
+	Disable-TerminalServerInstallMode
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
