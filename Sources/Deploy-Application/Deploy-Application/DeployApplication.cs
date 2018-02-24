@@ -23,7 +23,8 @@ namespace PSAppDeployToolkit
                 string appDeployToolkitXMLPath = Path.Combine(appDeployToolkitFolder, "AppDeployToolkitConfig.xml");
                 string powershellExePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string powershellArgs = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
-                List<string> commandLineArgs = new List<string>(Environment.GetCommandLineArgs());
+                //List<string> commandLineArgs = new List<string>(Environment.GetCommandLineArgs());
+                List<string> commandLineArgs = new List<string>(Environment.CommandLine.Split(new[] { " -" }, StringSplitOptions.None));
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
 
@@ -80,7 +81,8 @@ namespace PSAppDeployToolkit
                 powershellArgs = powershellArgs + " -Command & { & '" + appDeployScriptPath + "'";
                 if (commandLineArgs.Count > 0)
                 {
-                    powershellArgs = powershellArgs + " " + string.Join(" ", commandLineArgs.ToArray());
+                    //powershellArgs = powershellArgs + " " + string.Join(" ", commandLineArgs.ToArray());
+                    powershellArgs = powershellArgs + " -" + string.Join(" -", commandLineArgs.ToArray());
                 }
                 powershellArgs = powershellArgs + "; Exit $LastExitCode }";
 
