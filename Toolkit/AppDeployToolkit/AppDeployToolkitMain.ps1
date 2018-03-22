@@ -5511,7 +5511,7 @@ Function Get-RunningProcesses {
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true,Position=0)]
+		[Parameter(Mandatory=$false,Position=0)]
 		[psobject[]]$ProcessObjects,
 		[Parameter(Mandatory=$false,Position=1)]
 		[switch]$DisableLogging
