@@ -1,4 +1,5 @@
 ﻿Version 3.7.1 [xx/xx/2018]
+	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail
 	Fixed detection of wired network connections in Test-NetworkConnection function on Windows 10 workstations
 Version 3.7.0 [02/13/2018]	
