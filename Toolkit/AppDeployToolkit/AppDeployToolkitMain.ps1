@@ -568,7 +568,7 @@ Function Execute-MSP {
 		[boolean]$IsMSPNeeded = $false
 
 		$Installer = New-Object -com WindowsInstaller.Installer
-		$Database = $Installer.GetType().InvokeMember(“OpenDatabase”, “InvokeMethod”, $Null, $Installer, $($mspFile,([int32]32)))
+		$Database = $Installer.GetType().InvokeMember("OpenDatabase", "InvokeMethod", $Null, $Installer, $($mspFile,([int32]32)))
 		[__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
 		[hashtable]$SummaryInfoProperty = @{}
 		$all = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
