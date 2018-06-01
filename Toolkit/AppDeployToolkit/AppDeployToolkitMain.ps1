@@ -3262,7 +3262,7 @@ Function Remove-Folder {
 	Process {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Try {
-					Write-Log -Message "Delete folder [$path] recursively..." -Source $(CmdletName}
+					Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
 					Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 					If ($ErrorRemoveFolder) {
 						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
