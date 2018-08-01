@@ -40,7 +40,7 @@
 [CmdletBinding()]
 Param (
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Install','Uninstall')]
+	[ValidateSet('Install','Repair','Uninstall')]
 	[string]$DeploymentType = 'Install',
 	[Parameter(Mandatory=$false)]
 	[ValidateSet('Interactive','Silent','NonInteractive')]
@@ -110,7 +110,7 @@ Try {
 	##* END VARIABLE DECLARATION
 	##*===============================================
 		
-	If ($deploymentType -ine 'Uninstall') {
+	If ($deploymentType -eq 'Install') {
 		##*===============================================
 		##* PRE-INSTALLATION
 		##*===============================================
@@ -149,7 +149,47 @@ Try {
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
-	ElseIf ($deploymentType -ieq 'Uninstall')
+	If ($deploymentType -eq 'Repair') {
+		##*===============================================
+		##* PRE-REPAIR
+		##*===============================================
+		[string]$installPhase = 'Pre-Repair'
+
+		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the repair, and persist the prompt
+		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		
+		## Show Progress Message (with the default message)
+		Show-InstallationProgress
+		
+		## <Perform Pre-Repair tasks here>
+		
+		
+		##*===============================================
+		##* REPAIRING
+		##*===============================================
+		[string]$installPhase = 'Repairing'
+		
+		## Handle Zero-Config MSI Installations
+		If ($useDefaultMsi) {
+			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
+		}
+		
+		## <Perform Repair tasks here>
+		
+		
+		##*===============================================
+		##* POST-REPAIR
+		##*===============================================
+		[string]$installPhase = 'Post-Repair'
+		
+		## <Perform Post-Repair tasks here>
+		
+		## Display a message at the end of the repair
+		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of a repair or remove it completely for unattended repairs.' -ButtonRightText 'OK' -Icon Information -NoWait }
+	}
+
+	If ($deploymentType -eq 'Uninstall')
 	{
 		##*===============================================
 		##* PRE-UNINSTALLATION
