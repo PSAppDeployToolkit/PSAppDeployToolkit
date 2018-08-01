@@ -110,7 +110,7 @@ Try {
 	##* END VARIABLE DECLARATION
 	##*===============================================
 		
-	If ($deploymentType -eq 'Install') {
+	If ($DeploymentType -eq 'Install') {
 		##*===============================================
 		##* PRE-INSTALLATION
 		##*===============================================
@@ -149,7 +149,7 @@ Try {
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
-	If ($deploymentType -eq 'Repair') {
+	If ($DeploymentType -eq 'Repair') {
 		##*===============================================
 		##* PRE-REPAIR
 		##*===============================================
@@ -189,7 +189,7 @@ Try {
 		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of a repair or remove it completely for unattended repairs.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 
-	If ($deploymentType -eq 'Uninstall')
+	If ($DeploymentType -eq 'Uninstall')
 	{
 		##*===============================================
 		##* PRE-UNINSTALLATION
