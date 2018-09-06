@@ -5958,7 +5958,7 @@ Function Show-InstallationWelcome {
 					Write-Log -Message 'Installation not actioned before the timeout value.' -Source ${CmdletName}
 					$BlockExecution = $false
 					
-					If (($deferTimes) -or ($deferDeadlineUniversal)) {
+					If (($deferTimes -ge 0) -or ($deferDeadlineUniversal)) {
 						Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 					}
 					## Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period
