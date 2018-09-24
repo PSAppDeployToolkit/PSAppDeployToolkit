@@ -43,6 +43,7 @@ Param (
 	[string]$ReferredInstallName = '',
 	[string]$ReferredInstallTitle = '',
 	[string]$ReferredLogName = '',
+	[string]$Title = '',
 	[string]$Message = '',
 	[string]$MessageAlignment = '',
 	[string]$ButtonRightText = '',
