@@ -6629,7 +6629,9 @@ Function Show-WelcomePrompt {
 			Yes { $result = 'Close' }
 			Abort { $result = 'Timeout' }
 		}
-		
+		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
+			$timerRunningProcesses.Stop()
+		}
 		Write-Output -InputObject $result
 	}
 	End {
