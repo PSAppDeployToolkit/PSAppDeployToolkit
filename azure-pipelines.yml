@@ -1,0 +1,137 @@
+name: $(rev:r)
+jobs:
+  - job: Build_PS_Win2016
+    pool:
+      vmImage: vs2017-win2016
+
+    steps:
+    - checkout: self
+      persistCredentials: true
+
+    - powershell: |
+        .\build.ps1 -TaskList Test -Verbose
+      displayName: 'Execute Tests'
+      env:
+        githubRepoToken: $(githubRepoToken)
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/Unit/TestResults.unit.xml'
+        testRunTitle: 'PS_Win2016_Unit'
+      displayName: 'Publish Unit Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        summaryFileLocation: '**/Unit/CodeCoverage.xml'
+        failIfCoverageEmpty: true
+      displayName: 'Publish Unit Test Code Coverage'
+      condition: and(in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed'), eq(variables['System.PullRequest.IsFork'], false))
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/Integration/TestResults.integration.xml'
+        testRunTitle: 'PS_Win2016_Integration'
+      displayName: 'Publish Integration Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
+
+    - powershell: |
+        .\build.ps1 -TaskList Build -Verbose
+      displayName: 'Build and Stage Module'
+      env:
+        githubRepoToken: $(githubRepoToken)
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: 'staging/PSAppDeployToolkit'
+        artifactName: 'PSAppDeployToolkit'
+      displayName: 'Publish Module'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: 'staging/zip'
+        artifactName: 'zip'
+      displayName: 'Publish Module Zip'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: 'psakefile.ps1'
+        artifactName: 'scripts'
+      displayName: 'Publish PSake File'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: 'psappdeploytoolkit.depend.psd1'
+        artifactName: 'scripts'
+      displayName: 'Publish PSDepend File'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: 'build.ps1'
+        artifactName: 'scripts'
+      displayName: 'Publish Build File'
+
+  - job: Build_PSCore_Ubuntu1604
+    pool:
+      vmImage: ubuntu-16.04
+
+    steps:
+    - script: |
+        curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+        curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/microsoft.list
+        sudo apt-get update
+        sudo apt-get install -y powershell
+      displayName: 'Install PowerShell Core'
+
+    - script: |
+        pwsh -c '.\build.ps1 -TaskList Test -Verbose'
+      displayName: 'Execute Tests'
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/Unit/TestResults.unit.xml'
+        testRunTitle: 'PSCore_Ubuntu1604_Unit'
+      displayName: 'Publish Unit Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/Integration/TestResults.integration.xml'
+        testRunTitle: 'PSCore_Ubuntu1604_Integration'
+      displayName: 'Publish Integration Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
+
+  - job: Build_PSCore_MacOS1013
+    pool:
+      vmImage: xcode9-macos10.13
+
+    steps:
+    - script: |
+        brew update
+        brew tap caskroom/cask
+        brew cask install powershell
+      displayName: 'Install PowerShell Core'
+
+    - script: |
+        pwsh -c '.\build.ps1 -TaskList Test -Verbose'
+      displayName: 'Execute Tests'
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/TestResults.unit.xml'
+        testRunTitle: 'PSCore_MacOS1013_Unit'
+      displayName: 'Publish Unit Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: 'NUnit'
+        testResultsFiles: '**/TestResults.integration.xml'
+        testRunTitle: 'PSCore_MacOS1013_Integration'
+      displayName: 'Publish Integration Test Results'
+      condition: in(variables['Agent.JobStatus'], 'Succeeded', 'SucceededWithIssues', 'Failed')
