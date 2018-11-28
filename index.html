@@ -1,0 +1,657 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="PowerShell App Deployment Toolkit">
+      
+      
+        <link rel="canonical" href="https://psappdeploytoolkit.com/">
+      
+      
+        <meta name="author" content="PSAppDeployToolkit Team">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.1.0">
+    
+    
+      
+        <title>PSAppDeployToolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/application.11e41852.css">
+      
+        <link rel="stylesheet" href="assets/stylesheets/application-palette.22915126.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="">
+      
+    
+    
+      <script src="assets/javascripts/modernizr.20ef595d.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="assets/fonts/material-icons.css">
+    
+    
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="white" data-md-color-accent="blue">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
+    viewBox="0 0 416 448" id="__github">
+  <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
+        8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
+        18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
+        19-18.125 8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19
+        18.125-8.5 18.125 8.5 10.75 19 3.125 20.5zM360
+        304q0-30-17.25-51t-46.75-21q-10.25 0-48.75 5.25-17.75 2.75-39.25
+        2.75t-39.25-2.75q-38-5.25-48.75-5.25-29.5 0-46.75 21t-17.25 51q0 22 8
+        38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0
+        37.25-1.75t35-7.375 30.5-15 20.25-25.75 8-38.375zM416 260q0 51.75-15.25
+        82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5-41.75
+        1.125q-19.5 0-35.5-0.75t-36.875-3.125-38.125-7.5-34.25-12.875-30.25-20.25-21.5-28.75q-15.5-30.75-15.5-82.75
+        0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25
+        30.875q36.75-8.75 77.25-8.75 37 0 70 8 26.25-20.5
+        46.75-30.25t47.25-9.75q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34
+        99.5z" />
+</svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#about" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="https://psappdeploytoolkit.com" title="PSAppDeployToolkit" class="md-header-nav__button md-logo">
+          
+            <img src="img/logo.svg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                PSAppDeployToolkit
+              </span>
+              <span class="md-header-nav__topic">
+                About
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+
+  <a href="https://github.com/PSAppDeployToolkit/PSAppDeployToolkit" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#__github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      PSAppDeployToolkit
+    </div>
+  </a>
+
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="https://psappdeploytoolkit.com" title="PSAppDeployToolkit" class="md-nav__button md-logo">
+      
+        <img src="img/logo.svg" width="48" height="48">
+      
+    </a>
+    PSAppDeployToolkit
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+
+  <a href="https://github.com/PSAppDeployToolkit/PSAppDeployToolkit" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#__github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      PSAppDeployToolkit
+    </div>
+  </a>
+
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        About
+      </label>
+    
+    <a href="." title="About" class="md-nav__link md-nav__link--active">
+      About
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#features" title="Features" class="md-nav__link">
+    Features
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functionality" title="Functionality" class="md-nav__link">
+    Functionality
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-interface" title="User Interface" class="md-nav__link">
+    User Interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions-logic" title="Functions / Logic" class="md-nav__link">
+    Functions / Logic
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sccm-integration" title="SCCM Integration" class="md-nav__link">
+    SCCM Integration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help-console" title="Help Console" class="md-nav__link">
+    Help Console
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviews" title="Reviews" class="md-nav__link">
+    Reviews
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#presentations" title="Presentations" class="md-nav__link">
+    Presentations
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="screenshots/" title="Screenshots" class="md-nav__link">
+      Screenshots
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases" title="Download" class="md-nav__link">
+      Download
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="https://discourse.psappdeploytoolkit.com" title="Community" class="md-nav__link">
+      Community
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="about/" title="About Us" class="md-nav__link">
+      About Us
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="donate/" title="Donate" class="md-nav__link">
+      Donate
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="news/" title="News" class="md-nav__link">
+      News
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#features" title="Features" class="md-nav__link">
+    Features
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functionality" title="Functionality" class="md-nav__link">
+    Functionality
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-interface" title="User Interface" class="md-nav__link">
+    User Interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions-logic" title="Functions / Logic" class="md-nav__link">
+    Functions / Logic
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sccm-integration" title="SCCM Integration" class="md-nav__link">
+    SCCM Integration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help-console" title="Help Console" class="md-nav__link">
+    Help Console
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviews" title="Reviews" class="md-nav__link">
+    Reviews
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#presentations" title="Presentations" class="md-nav__link">
+    Presentations
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="about">About<a class="headerlink" href="#about" title="Permanent link">&para;</a></h1>
+<p>The PowerShell App Deployment Toolkit provides a set of functions to perform common application deployment tasks and to interact with the user during a deployment. It simplifies the complex scripting challenges of deploying applications in the enterprise, provides a consistent deployment experience and improves installation success rates.</p>
+<p><img alt="Welcome Message" class="center" src="img/welcomeprompt_withcloseanddefer.png" /></p>
+<p>The PowerShell App Deployment Toolkit can be used to replace your WiseScript, VBScript and Batch wrapper scripts with one versatile, re-usable and extensible tool.</p>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Easy To Use</strong> – Any PowerShell beginner can use the template and the functions provided with the Toolkit to perform application deployments.</li>
+<li><strong>Consistent</strong> – Provides a consistent look and feel for all application deployments, regardless of complexity.</li>
+<li><strong>Powerful</strong> – Provides a set of functions to perform common deployment tasks, such as installing or uninstalling multiple applications, prompting users to close apps, setting registry keys, copying files, etc.</li>
+<li><strong>User Interface</strong> – Provides user interaction through customizable user interface dialogs boxes, progress dialogs and balloon tip notifications.</li>
+<li><strong>Localized</strong> – The UI is localized in several languages and more can easily be added using the XML configuration file.</li>
+<li><strong>Integration</strong> – Integrates well with ConfigMgr (SCCM); provides installation and uninstallation deployment types with options on how to handle exit codes, such as suppressing reboots or returning a fast retry code.</li>
+<li><strong>Updatable</strong> – The logic engine and functions are separated from per-application scripts, so that you can update the toolkit when a new version is released and maintain backwards compatibility with your deployment scripts.</li>
+<li><strong>Extensible</strong> – The Toolkit can be easily extended to add custom scripts and functions.</li>
+<li><strong>Helpful</strong> – The Toolkit provides detailed logging of all actions performed and even includes a graphical console to browse the help documentation for the Toolkit functions.</li>
+</ul>
+<h2 id="functionality">Functionality<a class="headerlink" href="#functionality" title="Permanent link">&para;</a></h2>
+<h3 id="user-interface">User Interface<a class="headerlink" href="#user-interface" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An interface to prompt the user to close specified applications that are open prior to starting the application deployment. The user is prompted to save their documents and has the option to close the applications themselves, have the toolkit close the running executables, or optionally defer. Optionally, a countdown can be displayed until the applications are automatically closed.</li>
+<li>The ability to allow the user to defer an installation X number of times, X number of days or until a deadline date is reached.</li>
+<li>The ability to prevent the user from launching the applications that need to be closed while the application installation is in progress.</li>
+<li>An indeterminate progress dialog with customizable message text that can be updated throughout the deployment.</li>
+<li>A restart prompt with an option to restart later or restart now and a countdown to automatic restart.</li>
+<li>The ability to notify the user if disk space requirements are not met.</li>
+<li>Custom dialog boxes with options to customize title, text, buttons &amp; icon.</li>
+<li>Balloon tip notifications to indicate the beginning and end of an installation and the success or failure of an installation.</li>
+<li>Branding of the above UI components using a custom logo icon and banner for your own Organization.</li>
+<li>The ability to run in interactive, silent (no dialogs) or non-interactive mode (default for running SCCM task sequence or session 0).</li>
+<li>The UI is localized in several languages and more can easily be added using the XML configuration file.</li>
+</ul>
+<h3 id="functions-logic">Functions / Logic<a class="headerlink" href="#functions-logic" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Provides extensive logging of both the Toolkit functions and any MSI installation / uninstallation.</li>
+<li>Provides the ability to execute any type of setup (MSI or EXEs) and handle / translate the return codes.</li>
+<li>Mass remove MSI applications with a partial match (e.g. remove all versions of all MSI applications which match "Office").</li>
+<li>Check for in-progress MSI installations and wait for MSI Mutex to become available.</li>
+<li>Send a sequence of keys to an application window.</li>
+<li>Perform ConfigMgr (SCCM) actions such as Machine and User Policy Refresh, Inventory Update and Software Update.</li>
+<li>Supports installation of applications on Citrix XenApp/Remote Desktop Session Host Servers.</li>
+<li>Update Group Policy.</li>
+<li>Copy / Delete Files.</li>
+<li>Get / Set / Remove Registry Keys and Values.</li>
+<li>Get / Set Ini File Keys and Values.</li>
+<li>Check File versions.</li>
+<li>Pin or Unpin applications to the Start Menu or Task Bar.</li>
+<li>Create Start Menu Shortcuts.</li>
+<li>Register / Unregister DLL files.</li>
+<li>Refresh desktop icons.</li>
+<li>Test network connectivity.</li>
+<li>Test power connectivity.</li>
+<li>Check whether a PowerPoint slideshow is running.</li>
+</ul>
+<h3 id="sccm-integration">SCCM Integration<a class="headerlink" href="#sccm-integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Handles ConfigMgr exit codes, including time sensitive dialogs supporting ConfigMgr's Fast Retry feature – providing more accurate ConfigMgr Reporting (no more Failed due to timeout errors).</li>
+<li>Ability to prevent reboot codes (3010) from being passed back to ConfigMgr, which would cause a reboot prompt.</li>
+<li>Supports the CM12 application model by providing an install and uninstall deployment type for every deployment script.</li>
+<li>Bundle multiple application installations to overcome the supported limit of 5 applications in the CM12 application dependency chain.</li>
+<li>Compared to compiled deployment packages, e.g. WiseScript, the Toolkit utilises the ConfigMgr cache correctly and ConfigMgr Distribution Point bandwidth more efficiently by using loose files.</li>
+</ul>
+<h3 id="help-console">Help Console<a class="headerlink" href="#help-console" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A graphical console for browsing the help documentation for the toolkit functions.</li>
+</ul>
+<h2 id="reviews">Reviews<a class="headerlink" href="#reviews" title="Permanent link">&para;</a></h2>
+<ul>
+<li><em>"Truly powerful application deployment toolkit written in PowerShell! Solving some classic problems"</em> – Jörgen Nilsson, Microsoft MVP, Enterprise Client Management</li>
+<li><em>"Another very cool SCCM 2012 must have tool – PowerShell App Deployment Toolkit"</em> – Kent Agerlund, Microsoft MVP, Enterprise Client Management</li>
+<li><em>"This is really an exceptional Toolkit! It's the swiss army knive for software deployment. For every task you possible need to perform, there is a function for it. And you can extend it with your own functions if you like. Even when you're using something like SCCM to deploy your software, the toolkit can have real value as it fills the gabs left by SCCM. Thanks!"</em> – Quint</li>
+<li><em>"Excellent support guys! This toolkit is the best thing around to easily wrap and deploy software to end users and it just keeps on getting better with every release!"</em> – Maarten Pauchet</li>
+<li><em>"The PowerShell App Deployment toolkit rocks! I tried it today and love it."</em> – Alex Verboon</li>
+</ul>
+<h2 id="presentations">Presentations<a class="headerlink" href="#presentations" title="Permanent link">&para;</a></h2>
+<p>The PS App Deployment Toolkit has featured in the following industry conferences:</p>
+<ul>
+<li><em>"Become the Hero of the Day – Master ConfigMgr 2012 R2 with a Limited Budget and Free Community Tools" sessions at NIC Conference 2013 and System Center Universe 2014 (Kent Agerlund).</em></li>
+<li><em>"Microsoft System Center Configuration Manager Community Jewels" session at MS TechEd North America 2014 (Jorgen Nilsson, Stefan Schörling)</em> – see <a href="http://channel9.msdn.com/Events/TechEd/NorthAmerica/2014/PCIT-B320#fbid">video</a> @ 18 mins</li>
+<li><em>"Microsoft System Center Configuration Manager Community Jewels" session at MS TechEd Europe 2014 (Jorgen Nilsson, Stefan Schörling)</em> – see <a href="http://channel9.msdn.com/Events/TechEd/Europe/2014/EM-B308">video</a> @ 21 mins</li>
+</ul>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+        
+          <a href="screenshots/" title="Screenshots" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Screenshots
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            PowerShell App Deployment Toolkit Team Copyright &copy; 2018
+          </div>
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+  <div class="md-footer-social">
+    <link rel="stylesheet" href="assets/fonts/font-awesome.css">
+    
+      <a href="http://psappdeploytoolkit.com" class="md-footer-social__link fa fa-globe"></a>
+    
+      <a href="https://github.com/PSAppDeployToolkit/PSAppDeployToolkit" class="md-footer-social__link fa fa-github"></a>
+    
+  </div>
+
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="assets/javascripts/application.905597d0.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:"."}})</script>
+      
+    
+    
+      
+    
+  </body>
+</html>
