@@ -28,7 +28,7 @@ theme:
   feature:
     tabs: false
   palette:
-    primary: White
+    primary: Blue
     accent: Blue
   font:
     text: 'Roboto'
