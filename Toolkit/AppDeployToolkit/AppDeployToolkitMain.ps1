@@ -5459,7 +5459,7 @@ Function Get-UniversalDate {
 		#  Get the current date
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$DateTime = ((Get-Date -Format ($culture).DateTimeFormat.FullDateTimePattern).ToString()),
+		[string]$DateTime = ((Get-Date -Format ($culture).DateTimeFormat.UniversalDateTimePattern).ToString()),
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -5828,7 +5828,7 @@ Function Show-InstallationWelcome {
 					[string]$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferHistoryDeadline
 				}
 				Else {
-					[string]$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date -Date ((Get-Date).AddDays($deferDays)) -Format ($culture).DateTimeFormat.FullDateTimePattern)
+					[string]$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date -Date ((Get-Date).AddDays($deferDays)) -Format ($culture).DateTimeFormat.UniversalDateTimePattern).ToString()
 				}
 				Write-Log -Message "User has until [$deferDeadlineUniversal] before deferral expires." -Source ${CmdletName}
 				If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
