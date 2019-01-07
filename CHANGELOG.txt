@@ -1,6 +1,8 @@
 ﻿Version 3.7.1 [xx/xx/2018]
 	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail
+	Fixed Get-RunningProcessesDynamically .NET error in Show-WelcomePrompt
+	Fixed issue where active setup execution fails when StubExePath contains ps1 file in Set-ActiveSetup function
 	Fixed issue where Show-InstallationPrompt would not show when using Title parameter in combination with NoWait
 	Fixed issue where defertimes would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
 	Fixed detection of wired network connections in Test-NetworkConnection function on Windows 10 workstations
