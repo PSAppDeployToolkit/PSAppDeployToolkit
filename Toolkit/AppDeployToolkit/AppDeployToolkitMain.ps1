@@ -6630,6 +6630,10 @@ Function Show-WelcomePrompt {
 			Abort { $result = 'Timeout' }
 		}
 		
+		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation){
+			$timerRunningProcesses.Stop()
+		}
+		
 		Write-Output -InputObject $result
 	}
 	End {
