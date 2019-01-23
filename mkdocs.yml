@@ -47,6 +47,10 @@ extra:
 extra_css:
   - stylesheets/extra.css
 
+google_analytics:
+  - 'UA-128821248-1'
+  - 'auto'
+
 markdown_extensions:
   - admonition
   - codehilite:
