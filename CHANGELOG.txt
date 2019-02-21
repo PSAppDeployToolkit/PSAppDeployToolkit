@@ -2,6 +2,7 @@
 	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail
 	Fixed Get-RunningProcessesDynamically .NET error in Show-WelcomePrompt
+	Fixed issue where Get-LoggedOnUser failed to detect if user is member of the Administrators group, when Administrator group has an orphaned account listed
 	Fixed issue where active setup execution fails when StubExePath contains ps1 file in Set-ActiveSetup function
 	Fixed issue where Show-InstallationPrompt would not show when using Title parameter in combination with NoWait
 	Fixed issue where defertimes would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
