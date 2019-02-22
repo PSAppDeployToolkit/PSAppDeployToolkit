@@ -2035,6 +2035,10 @@ Function Get-InstalledApplication {
 					If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
 				}
 				
+				$appDisplayName = $regKeyApp.DisplayName
+				$appDisplayVersion = $regKeyApp.DisplayVersion
+				$appPublisher = $regKeyApp.Publisher
+				
 				## Determine if application is a 64-bit application
 				[boolean]$Is64BitApp = If (($is64Bit) -and ($regKeyApp.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')) { $true } Else { $false }
 				
