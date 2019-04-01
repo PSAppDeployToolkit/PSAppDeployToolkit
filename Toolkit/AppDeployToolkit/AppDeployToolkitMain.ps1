@@ -7375,6 +7375,7 @@ Function Set-PinnedApplication {
 .EXAMPLE
 	Set-PinnedApplication -Action 'UnpinfromTaskbar' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
 .NOTES
+	Windows 10 logic borrowed from Stuart Pearson (https://pinto10blog.wordpress.com/2016/09/10/pinto10/)
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -7476,15 +7477,72 @@ Function Set-PinnedApplication {
 				Throw "Action [$Action] not supported. Supported actions are [$($Verbs.Keys -join ', ')]."
 			}
 			
-			[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
-			If (-not ($PinVerbAction)) {
-				Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
-			}
+			If ($Action -in 'PintoStartMenu', 'UnpinfromStartMenu')
+			{
+				If ([int]$envOSVersionMajor -ge 10)	{
+					If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
+						Throw "Only shortcut files (.lnk) are supported on Windows 10 and higher."
+					}
+					ElseIf (-not ($FilePath.StartsWith($envUserStartMenu) -or $FilePath.StartsWith($envCommonStartMenu))) {
+						Throw "Only shortcut files (.lnk) in [$envUserStartMenu] and [$envCommonStartMenu] are supported on Windows 10 and higher."
+					}
+				}
 			
-			Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
+				[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
+				If (-not ($PinVerbAction)) {
+					Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
+				}
+			
+				Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
+			}
+			ElseIf ($Action -in 'PintoTaskbar', 'UnpinfromTaskbar') {
+				If ([int]$envOSVersionMajor -ge 10) {
+					$FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
+					$PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
+					
+					If ($Action -eq 'PintoTaskbar' -and $PinExists) {
+						If($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
+							Write-Log -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
+							return
+						}
+					}
+					ElseIf ($Action -eq 'UnpinfromTaskbar' -and $PinExists -eq $false) {
+						Write-Log -Message "Pin [$FileNameWithoutExtension] does not exist." -Source ${CmdletName}
+						return
+					}
+					
+					$ExplorerCommandHandler = Get-RegistryKey -Key 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
+					$classesStarKey = (Get-Item "Registry::HKEY_USERS\$($RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey("*", $true)
+					$shellKey = $classesStarKey.CreateSubKey("shell", $true)
+					$specialKey = $shellKey.CreateSubKey("{:}", $true)
+					$specialKey.SetValue("ExplorerCommandHandler", $ExplorerCommandHandler)
+					
+					$Folder = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
+					$Item = Invoke-ObjectMethod -InputObject $Folder -MethodName 'ParseName' -ArgumentList $(Split-Path -Path $FilePath -Leaf)
+					
+					$Item.InvokeVerb("{:}")
+					
+					$shellKey.DeleteSubKey("{:}")
+					If ($shellKey.SubKeyCount -eq 0 -and $shellKey.ValueCount -eq 0) {
+						$classesStarKey.DeleteSubKey("shell")
+					}
+				}
+				Else {
+					[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
+					If (-not ($PinVerbAction)) {
+						Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
+					}
+					
+					Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
+				}
+			}
 		}
 		Catch {
 			Write-Log -Message "Failed to execute action [$Action]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+		}
+		Finally {
+			Try { If ($shellKey) { $shellKey.Close() } } Catch { }
+			Try { If ($classesStarKey) { $classesStarKey.Close() } } Catch { }
 		}
 	}
 	End {
