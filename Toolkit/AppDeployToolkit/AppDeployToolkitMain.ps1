@@ -6302,7 +6302,8 @@ Function Show-WelcomePrompt {
 					}
 					Else {
 						Write-Log -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).' -Source ${CmdletName}
-						$buttonCloseApps.PerformClick()
+						If ($buttonCloseApps.CanFocus) { $buttonCloseApps.PerformClick() }
+						Else { $buttonContinue.PerformClick() }
 					}
 				}
 				Else {
