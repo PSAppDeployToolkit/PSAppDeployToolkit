@@ -1532,7 +1532,7 @@ Function Show-InstallationPrompt {
 		$labelText.Size = $System_Drawing_Size
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 25
-		$System_Drawing_Point.Y = 50 + $appDeployLogoBannerHeight
+		$System_Drawing_Point.Y = $appDeployLogoBannerHeight
 		$labelText.Location = $System_Drawing_Point
 		$labelText.Margin = '0,0,0,0'
 		$labelText.Padding = '40,0,20,0'
