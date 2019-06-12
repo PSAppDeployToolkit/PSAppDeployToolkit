@@ -2035,9 +2035,12 @@ Function Get-InstalledApplication {
 					If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
 				}
 				
-				$appDisplayName = $regKeyApp.DisplayName
-				$appDisplayVersion = $regKeyApp.DisplayVersion
-				$appPublisher = $regKeyApp.Publisher
+				## Remove any control characters which may interfere with logging and creating file path names from these variables				
+				$illegalChars = [string][System.IO.Path]::GetInvalidFileNameChars()
+				$appDisplayName = $regKeyApp.DisplayName -replace $illegalChars,''
+				$appDisplayVersion = $regKeyApp.DisplayVersion -replace $illegalChars,''
+				$appPublisher = $regKeyApp.Publisher -replace $illegalChars,''
+
 				
 				## Determine if application is a 64-bit application
 				[boolean]$Is64BitApp = If (($is64Bit) -and ($regKeyApp.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')) { $true } Else { $false }
