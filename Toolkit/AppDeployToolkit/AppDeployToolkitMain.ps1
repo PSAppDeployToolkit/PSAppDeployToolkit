@@ -2766,7 +2766,7 @@ Function Execute-Process {
 		[switch]$WaitForMsiExec = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[timespan]$MsiExecWaitTime = $(New-TimeSpan -Seconds $configMSIMutexWaitTime),
+		[int]$MsiExecWaitTime = $configMSIMutexWaitTime,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$IgnoreExitCodes,
@@ -2821,7 +2821,8 @@ Function Execute-Process {
 			## Please note that a race condition is possible after this check where another process waiting for the MSI installer
 			##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
 			If (($Path -match 'msiexec') -or ($WaitForMsiExec)) {
-				[boolean]$MsiExecAvailable = Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTime.TotalMilliseconds
+				[timespan]$MsiExecWaitTimeSpan = New-TimeSpan -Seconds $MsiExecWaitTime
+				[boolean]$MsiExecAvailable = Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTimeSpan.TotalMilliseconds
 				Start-Sleep -Seconds 1
 				If (-not $MsiExecAvailable) {
 					#  Default MSI exit code for install already in progress
