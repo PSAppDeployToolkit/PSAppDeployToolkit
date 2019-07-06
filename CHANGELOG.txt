@@ -1,6 +1,14 @@
 ﻿Version 3.7.1 [xx/xx/2018]
+        Added ability to change the dialog banner height, with a configurable maximum
+	Added ability to change the dialog banner and icon filename through the configuration file
+	Added support for animated gifs in the dialog banner
+	Added a dynamic dialog banner height with a configurable maximum to the dialogs.
+        Added support for flattening folder structure within Copy-File with -Flatten switch
+	Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
 	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail
+	Fixed an issue where Execute-Process -MsiExecWaitTime used ticks instead of seconds
+	Fixed a number of glitches relating to illegal characters and locale-specific time / date formats.
 	Fixed Get-RunningProcessesDynamically .NET error in Show-WelcomePrompt
 	Fixed issue where Show-WelcomePrompt hangs when ForceCloseAppsCountdown is passed to Show-InstallationWelcomePrompt and application(s) listed in CloseApps are not running when timeout is reached
 	Fixed issue where Set-PinnedApplication did not pin to / unpin from taskbar on Windows 10 because Microsoft removed the taskbar verbs
