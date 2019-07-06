@@ -10522,8 +10522,18 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 
 ## If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly
 If ((-not $appName) -and (-not $ReferredInstallName)){
+	# Build properly formatted Architecture String
+	switch ($Is64Bit) {
+        	$false { $formattedOSArch = "x86" }
+        	$true { $formattedOSArch = "x64" }
+    	}
 	#  Find the first MSI file in the Files folder and use that as our install
-	[string]$defaultMsiFile = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1
+	if ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq ".msi") -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
+		Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+	}
+	elseif ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq ".msi") } | Select-Object -ExpandProperty 'FullName' -First 1)) {
+		Write-Log -Message "Discovered Arch-Independent Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+	}
 	If ($defaultMsiFile) {
 		Try {
 			[boolean]$useDefaultMsi = $true
