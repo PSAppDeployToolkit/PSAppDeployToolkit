@@ -242,17 +242,13 @@ Else {
 }
 
 ## Variables: App Deploy Script Dependency Files
-[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitLogo.ico'
-[string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitBanner.png'
 [string]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
 [string]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
-#  App Deploy Optional Extensions File
-[string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
-#  Check that dependency files are present
-If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
-If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
 If (-not (Test-Path -LiteralPath $appDeployConfigFile -PathType 'Leaf')) { Throw 'App Deploy XML configuration file not found.' }
 If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf')) { Throw 'App Deploy custom types source code file not found.' }
+
+#  App Deploy Optional Extensions File
+[string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 
 ## Import variables from XML configuration file
 [Xml.XmlDocument]$xmlConfigFile = Get-Content -LiteralPath $AppDeployConfigFile
@@ -261,6 +257,29 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 [Xml.XmlElement]$configConfigDetails = $xmlConfig.Config_File
 [string]$configConfigVersion = [version]$configConfigDetails.Config_Version
 [string]$configConfigDate = $configConfigDetails.Config_Date
+
+# Get Banner and Icon details
+[Xml.XmlElement]$xmlBannerIconOptions = $xmlConfig.BannerIcon_Options
+[string]$configBannerIconFileName = $xmlBannerIconOptions.Icon_Filename
+[string]$configBannerIconBannerName = $xmlBannerIconOptions.Banner_Filename
+[Int32]$appDeployLogoBannerMaxHeight = $xmlBannerIconOptions.Banner_MaxHeight
+
+[string]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName
+[string]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath $configBannerIconBannerName
+#  Check that dependency files are present
+If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
+If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
+
+Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
+[System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object System.Drawing.Bitmap $appDeployLogoBanner
+[Int32]$appDeployLogoBannerBaseHeight = 50
+
+[Int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
+if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
+	$appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight	
+}
+[Int32]$appDeployLogoBannerHeightDifference = $appDeployLogoBannerHeight - $appDeployLogoBannerBaseHeight
+
 #  Get Toolkit Options
 [Xml.XmlElement]$xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [boolean]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
@@ -1479,7 +1498,7 @@ Function Show-InstallationPrompt {
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 50
+		$System_Drawing_Size.Height = $appDeployLogoBannerHeight
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
@@ -1492,7 +1511,7 @@ Function Show-InstallationPrompt {
 		If ($icon -ne 'None') { $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap() }
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 15
-		$System_Drawing_Point.Y = 105
+		$System_Drawing_Point.Y = 105 + $appDeployLogoBannerHeightDifference
 		$pictureIcon.Location = $System_Drawing_Point
 		$pictureIcon.Name = 'pictureIcon'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
@@ -1513,7 +1532,7 @@ Function Show-InstallationPrompt {
 		$labelText.Size = $System_Drawing_Size
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 25
-		$System_Drawing_Point.Y = 50
+		$System_Drawing_Point.Y = $appDeployLogoBannerHeight
 		$labelText.Location = $System_Drawing_Point
 		$labelText.Margin = '0,0,0,0'
 		$labelText.Padding = '40,0,20,0'
@@ -1523,9 +1542,12 @@ Function Show-InstallationPrompt {
 		$labelText.Anchor = 'Top'
 		$labelText.add_Click($handler_labelText_Click)
 		
+		# Generic Y location for buttons
+		$buttonLocationY = 200 + $appDeployLogoBannerHeightDifference
+		
 		## Button Left
 		$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonLeft.Location = '15,200'
+		$buttonLeft.Location = "15,$buttonLocationY"
 		$buttonLeft.Name = 'buttonLeft'
 		$buttonLeft.Size = $buttonSize
 		$buttonLeft.TabIndex = 5
@@ -1537,7 +1559,7 @@ Function Show-InstallationPrompt {
 		
 		## Button Middle
 		$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonMiddle.Location = '170,200'
+		$buttonMiddle.Location = "170,$buttonLocationY"
 		$buttonMiddle.Name = 'buttonMiddle'
 		$buttonMiddle.Size = $buttonSize
 		$buttonMiddle.TabIndex = 6
@@ -1549,7 +1571,7 @@ Function Show-InstallationPrompt {
 		
 		## Button Right
 		$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRight.Location = '325,200'
+		$buttonRight.Location = "325,$buttonLocationY"
 		$buttonRight.Name = 'buttonRight'
 		$buttonRight.Size = $buttonSize
 		$buttonRight.TabIndex = 7
@@ -1570,7 +1592,7 @@ Function Show-InstallationPrompt {
 		
 		## Form Installation Prompt
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 270
+		$System_Drawing_Size.Height = 270 + $appDeployLogoBannerHeightDifference
 		$System_Drawing_Size.Width = 450
 		$formInstallationPrompt.Size = $System_Drawing_Size
 		$formInstallationPrompt.Padding = '0,0,0,10'
@@ -6381,7 +6403,7 @@ Function Show-WelcomePrompt {
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 50
+		$System_Drawing_Size.Height = $appDeployLogoBannerHeight
 		$System_Drawing_Size.Width = 450
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
@@ -6486,7 +6508,7 @@ Function Show-WelcomePrompt {
 		## Panel Flow Layout
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 		$System_Drawing_Point.X = 0
-		$System_Drawing_Point.Y = 50
+		$System_Drawing_Point.Y = $appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
@@ -6860,7 +6882,8 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.Controls.Add($buttonRestartLater)
 		$formRestart.Controls.Add($picturebox)
 		$formRestart.Controls.Add($buttonRestartNow)
-		$formRestart.ClientSize = '450,260'
+		$clientSizeY = 260 + $appDeployLogoBannerHeightDifference
+		$formRestart.ClientSize = "450,$clientSizeY"
 		$formRestart.ControlBox = $false
 		$formRestart.FormBorderStyle = 'FixedDialog'
 		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
@@ -6877,13 +6900,15 @@ Function Show-InstallationRestartPrompt {
 		$picturebox.Image = [Drawing.Image]::Fromfile($AppDeployLogoBanner)
 		$picturebox.Location = '0,0'
 		$picturebox.Name = 'picturebox'
-		$picturebox.Size = '450,50'
+		$pictureboxSizeY = $appDeployLogoBannerHeight
+		$picturebox.Size = "450,$pictureboxSizeY"
 		$picturebox.SizeMode = 'CenterImage'
 		$picturebox.TabIndex = 1
 		$picturebox.TabStop = $false
 		
 		## Label Message
-		$labelMessage.Location = '20,58'
+		$labelMessageLocationY = 58 + $appDeployLogoBannerHeightDifference
+		$labelMessage.Location = "20,$labelMessageLocationY"
 		$labelMessage.Name = 'labelMessage'
 		$labelMessage.Size = '400,79'
 		$labelMessage.TabIndex = 3
@@ -6892,7 +6917,8 @@ Function Show-InstallationRestartPrompt {
 		$labelMessage.TextAlign = 'MiddleCenter'
 		
 		## Label Time Remaining
-		$labelTimeRemaining.Location = '20,138'
+		$labelTimeRemainingLocationY = 138 + $appDeployLogoBannerHeightDifference
+		$labelTimeRemaining.Location = "20,$labelTimeRemainingLocationY"
 		$labelTimeRemaining.Name = 'labelTimeRemaining'
 		$labelTimeRemaining.Size = '400,23'
 		$labelTimeRemaining.TabIndex = 4
@@ -6901,16 +6927,20 @@ Function Show-InstallationRestartPrompt {
 		
 		## Label Countdown
 		$labelCountdown.Font = 'Microsoft Sans Serif, 18pt, style=Bold'
-		$labelCountdown.Location = '20,165'
+		$labelCountdownLocationY = 165 + $appDeployLogoBannerHeightDifference
+		$labelCountdown.Location = "20,$labelCountdownLocationY"
 		$labelCountdown.Name = 'labelCountdown'
 		$labelCountdown.Size = '400,30'
 		$labelCountdown.TabIndex = 5
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
 		
+		# Generic Y location for buttons
+		$buttonsLocationY = 216 + $appDeployLogoBannerHeightDifference
+		
 		## Label Restart Later
 		$buttonRestartLater.Anchor = 'Bottom,Left'
-		$buttonRestartLater.Location = '20,216'
+		$buttonRestartLater.Location = "20,$buttonsLocationY"
 		$buttonRestartLater.Name = 'buttonRestartLater'
 		$buttonRestartLater.Size = '159,23'
 		$buttonRestartLater.TabIndex = 0
@@ -6920,7 +6950,7 @@ Function Show-InstallationRestartPrompt {
 		
 		## Label Restart Now
 		$buttonRestartNow.Anchor = 'Bottom,Right'
-		$buttonRestartNow.Location = '265,216'
+		$buttonRestartNow.Location = "265,$buttonsLocationY"
 		$buttonRestartNow.Name = 'buttonRestartNow'
 		$buttonRestartNow.Size = '159,23'
 		$buttonRestartNow.TabIndex = 2
@@ -7202,12 +7232,12 @@ Function Show-InstallationProgress {
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
-				[Xml.XmlDocument]$xamlProgress = @'
+				[string]$xamlProgress = @'
 							<Window
 							xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 							xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 							x:Name="Window" Title=""
-							MaxHeight="200" MinHeight="180" Height="180"
+							MaxHeight="%MaxHeight%" MinHeight="%MinHeight%" Height="%Height%"
 							MaxWidth="456" MinWidth="456" Width="456" Padding="0,0,0,0" Margin="0,0,0,0"
 							WindowStartupLocation = "Manual"
 							Top=""
@@ -7230,7 +7260,7 @@ Function Show-InstallationProgress {
 							</Window.Triggers>
 							<Grid Background="#F0F0F0">
 								<Grid.RowDefinitions>
-									<RowDefinition Height="50"/>
+									<RowDefinition Height="%BannerHeight%"/>
 									<RowDefinition Height="100"/>
 								</Grid.RowDefinitions>
 								<Grid.ColumnDefinitions>
@@ -7257,6 +7287,12 @@ Function Show-InstallationProgress {
 								</Grid>
 							</Window>
 '@
+				
+				$xamlProgress = $xamlProgress.replace('%BannerHeight%', $appDeployLogoBannerHeight)
+				$xamlProgress = $xamlProgress.replace('%Height%', 180 + $appDeployLogoBannerHeightDifference)
+				$xamlProgress = $xamlProgress.replace('%MinHeight%', 180 + $appDeployLogoBannerHeightDifference)
+				$xamlProgress = $xamlProgress.replace('%MaxHeight%', 200 + $appDeployLogoBannerHeightDifference)
+				[Xml.XmlDocument]$xamlProgress = $xamlProgress
 				
 				## Set the configurable values using variables added to the runspace from the parent thread
 				#  Calculate the position on the screen where the progress dialog should be placed
