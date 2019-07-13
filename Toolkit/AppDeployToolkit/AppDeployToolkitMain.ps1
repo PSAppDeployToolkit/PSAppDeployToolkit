@@ -7226,26 +7226,28 @@ Function Show-InstallationProgress {
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('progressStatusMessage', $statusMessage)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeight', $appDeployLogoBannerHeight)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeightDifference', $appDeployLogoBannerHeightDifference)
+			$script:ProgressRunspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 			
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
-				[string]$xamlProgress = @'
+				[string]$xamlProgressString = @'
 							<Window
 							xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 							xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-							x:Name="Window" Title=""
+							x:Name="Window" Title="PSAppDeployToolkit"
 							MaxHeight="%MaxHeight%" MinHeight="%MinHeight%" Height="%Height%"
 							MaxWidth="456" MinWidth="456" Width="456" Padding="0,0,0,0" Margin="0,0,0,0"
 							WindowStartupLocation = "Manual"
-							Top=""
-							Left=""
-							Topmost=""
+							Top="0"
+							Left="0"
+							Topmost="True"
 							ResizeMode="NoResize"
 							Icon=""
-							ShowInTaskbar="True" >
+							ShowInTaskbar="True">
 							<Window.Resources>
 								<Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
 									<DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
@@ -7287,13 +7289,10 @@ Function Show-InstallationProgress {
 								</Grid>
 							</Window>
 '@
-				
-				$xamlProgress = $xamlProgress.replace('%BannerHeight%', $appDeployLogoBannerHeight)
-				$xamlProgress = $xamlProgress.replace('%Height%', 180 + $appDeployLogoBannerHeightDifference)
-				$xamlProgress = $xamlProgress.replace('%MinHeight%', 180 + $appDeployLogoBannerHeightDifference)
-				$xamlProgress = $xamlProgress.replace('%MaxHeight%', 200 + $appDeployLogoBannerHeightDifference)
-				[Xml.XmlDocument]$xamlProgress = $xamlProgress
-				
+				## Replace dummy text with values and turn the string into an xml document variable
+				$xamlProgressString = $xamlProgressString.replace('%BannerHeight%', $appDeployLogoBannerHeight).replace('%Height%', 180 + $appDeployLogoBannerHeightDifference).replace('%MinHeight%', 180 + $appDeployLogoBannerHeightDifference).replace('%MaxHeight%', 200 + $appDeployLogoBannerHeightDifference)
+				[Xml.XmlDocument]$xamlProgress = New-Object 'System.Xml.XmlDocument'
+				$xamlProgress.LoadXml($xamlProgressString)
 				## Set the configurable values using variables added to the runspace from the parent thread
 				#  Calculate the position on the screen where the progress dialog should be placed
 				$screen = [Windows.Forms.Screen]::PrimaryScreen
