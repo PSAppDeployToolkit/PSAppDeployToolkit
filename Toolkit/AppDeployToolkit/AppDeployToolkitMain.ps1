@@ -6779,7 +6779,7 @@ Function Show-InstallationRestartPrompt {
 			$timerCountdown.Start()
 			## Set up the form
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
+			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) { $buttonRestartLater.Enabled = $false }
 			$formRestart.WindowState = 'Normal'
 			$formRestart.TopMost = $true
