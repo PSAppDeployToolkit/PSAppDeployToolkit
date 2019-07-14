@@ -191,7 +191,7 @@ If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArc
 If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
 
 ## Variables: Hardware
-[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | % {[Math]::Round(($_.sum / 1GB),2)}
+[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | ForEach-Object {[Math]::Round(($_.sum / 1GB),2)}
 
 ## Variables: PowerShell And CLR (.NET) Versions
 [hashtable]$envPSVersionTable = $PSVersionTable
@@ -3376,12 +3376,12 @@ Function Copy-File {
 				If ($Recurse) {
 					Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach {
+						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
 							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
 						}
 					}
 					Else {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach {
+						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
 							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
 						}
 					}
@@ -5161,7 +5161,7 @@ Function Get-ScheduledTask {
 				ForEach ($SchtasksResult in $SchtasksResults) {
 					If ($SchtasksResult.TaskName -match $TaskName) {
 						$SchtasksResult | Get-Member -MemberType 'Properties' |
-						ForEach -Begin {
+						ForEach-Object -Begin {
 							[hashtable]$Task = @{}
 						} -Process {
 							## Remove spaces and colons in property names. Do not set property value if line being processed is a column header (this will only work on English language machines).
@@ -9098,7 +9098,7 @@ Function Test-PowerPoint {
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
 					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[nullable[boolean]]$IsPowerPointFullScreen = $true
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
