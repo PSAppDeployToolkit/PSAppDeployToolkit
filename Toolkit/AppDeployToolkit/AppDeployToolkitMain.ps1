@@ -5657,7 +5657,7 @@ Function Show-InstallationWelcome {
 .PARAMETER PromptToSave
 	Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation.
 .PARAMETER AllowDefer
@@ -5702,7 +5702,7 @@ Function Show-InstallationWelcome {
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps 'winword,msaccess,excel' -PersistPrompt
 	Prompt the user to close Word, MSAccess and Excel.
-	By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
+	By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
 .EXAMPLE
 	Show-InstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
 	Allow the user to defer the installation until the deadline is reached.
@@ -5736,7 +5736,7 @@ Function Show-InstallationWelcome {
 		## Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button
 		[Parameter(Mandatory=$false)]
 		[switch]$PromptToSave = $false,
-		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
+		## Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.
 		[Parameter(Mandatory=$false)]
 		[switch]$PersistPrompt = $false,
 		## Specify whether to block execution of the processes during installation
@@ -6135,7 +6135,7 @@ Function Show-WelcomePrompt {
 .PARAMETER ForceCloseAppsCountdown
 	Specify whether to show the countdown regardless of whether deferral is allowed.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds.
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.
 .PARAMETER AllowDefer
 	Specify whether to provide an option to defer the installation.
 .PARAMETER DeferTimes
