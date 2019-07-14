@@ -1351,7 +1351,7 @@ Function Show-InstallationPrompt {
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile!
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
 .PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt. Default: $false.
 .PARAMETER Timeout
