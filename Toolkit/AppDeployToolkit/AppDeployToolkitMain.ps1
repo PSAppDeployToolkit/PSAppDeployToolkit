@@ -191,7 +191,7 @@ If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArc
 If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
 
 ## Variables: Hardware
-[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | % {[Math]::Round(($_.sum / 1GB),2)}
+[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | ForEach-Object {[Math]::Round(($_.sum / 1GB),2)}
 
 ## Variables: PowerShell And CLR (.NET) Versions
 [hashtable]$envPSVersionTable = $PSVersionTable
@@ -1351,7 +1351,7 @@ Function Show-InstallationPrompt {
 .PARAMETER NoWait
 	Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt - resistance is futile!
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
 .PARAMETER MinimizeWindows
 	Specifies whether to minimize other windows when displaying prompt. Default: $false.
 .PARAMETER Timeout
@@ -3376,12 +3376,12 @@ Function Copy-File {
 				If ($Recurse) {
 					Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach {
+						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
 							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
 						}
 					}
 					Else {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach {
+						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
 							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
 						}
 					}
@@ -5161,7 +5161,7 @@ Function Get-ScheduledTask {
 				ForEach ($SchtasksResult in $SchtasksResults) {
 					If ($SchtasksResult.TaskName -match $TaskName) {
 						$SchtasksResult | Get-Member -MemberType 'Properties' |
-						ForEach -Begin {
+						ForEach-Object -Begin {
 							[hashtable]$Task = @{}
 						} -Process {
 							## Remove spaces and colons in property names. Do not set property value if line being processed is a column header (this will only work on English language machines).
@@ -5657,7 +5657,7 @@ Function Show-InstallationWelcome {
 .PARAMETER PromptToSave
 	Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
 	Option to prevent the user from launching the process/application during the installation.
 .PARAMETER AllowDefer
@@ -5702,7 +5702,7 @@ Function Show-InstallationWelcome {
 .EXAMPLE
 	Show-InstallationWelcome -CloseApps 'winword,msaccess,excel' -PersistPrompt
 	Prompt the user to close Word, MSAccess and Excel.
-	By using the PersistPrompt switch, the dialog will return to the center of the screen every 10 seconds so the user cannot ignore it by dragging it aside.
+	By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
 .EXAMPLE
 	Show-InstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
 	Allow the user to defer the installation until the deadline is reached.
@@ -5736,7 +5736,7 @@ Function Show-InstallationWelcome {
 		## Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button
 		[Parameter(Mandatory=$false)]
 		[switch]$PromptToSave = $false,
-		## Specify whether to make the prompt persist in the center of the screen every 10 seconds.
+		## Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.
 		[Parameter(Mandatory=$false)]
 		[switch]$PersistPrompt = $false,
 		## Specify whether to block execution of the processes during installation
@@ -6135,7 +6135,7 @@ Function Show-WelcomePrompt {
 .PARAMETER ForceCloseAppsCountdown
 	Specify whether to show the countdown regardless of whether deferral is allowed.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every 10 seconds.
+	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.
 .PARAMETER AllowDefer
 	Specify whether to provide an option to defer the installation.
 .PARAMETER DeferTimes
@@ -9098,7 +9098,7 @@ Function Test-PowerPoint {
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
 					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[nullable[boolean]]$IsPowerPointFullScreen = $true
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
