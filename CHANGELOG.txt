@@ -1,15 +1,18 @@
-﻿Version 3.7.1 [xx/xx/2018]
-        Added ability to change the dialog banner height, with a configurable maximum
+﻿Version 3.8.0 [09/23/2019]
+    Added ability to change the dialog banner height, with a configurable maximum
 	Added ability to change the dialog banner and icon filename through the configuration file
 	Added support for animated gifs in the dialog banner
-	Added a dynamic dialog banner height with a configurable maximum to the dialogs.
-        Added support for flattening folder structure within Copy-File with -Flatten switch
+	Added a dynamic dialog banner height with a configurable maximum to the dialogs
+    Added support for flattening folder structure within Copy-File with -Flatten switch
 	Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
 	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail
+	Changed encoding of AppDeployToolkitConfig.xml to UTF-8 (was incorrectly UTF16)
 	Fixed an issue where Execute-Process -MsiExecWaitTime used ticks instead of seconds
-	Fixed a number of glitches relating to illegal characters and locale-specific time / date formats.
+	Fixed a number of glitches relating to illegal characters and locale-specific time / date formats
 	Fixed Get-RunningProcessesDynamically .NET error in Show-WelcomePrompt
+	Fixed issue with Write-Log creating bad formatting for CMTrace in non-English cultures
+	Fixed issue with non-standard quote characters in the Execute-MSP function
 	Fixed issue where Show-WelcomePrompt hangs when ForceCloseAppsCountdown is passed to Show-InstallationWelcomePrompt and application(s) listed in CloseApps are not running when timeout is reached
 	Fixed issue where Set-PinnedApplication did not pin to / unpin from taskbar on Windows 10 because Microsoft removed the taskbar verbs
 	Fixed issue where Get-InstalledApplication only supported Basic Latin unicode characters by removing logic which "removes any control characters which might interfere with logging and creating file path names from these variables", as the creation of file name is only used in Execute-MSI function and the logic there already replaces invalid filename characters
@@ -17,8 +20,13 @@
 	Fixed issue where active setup execution fails when StubExePath contains ps1 file in Set-ActiveSetup function
 	Fixed issue where Show-InstallationPrompt would not show when using Title parameter in combination with NoWait
 	Fixed issue where defertimes would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
+	Fixed issue where a .NET Framework error would appear sayinh the term 'Get-RunningProcessesDynamically' was not recognized
+	Fixed an ActiveSetup purging error
+	Fixed typo in Remove-Folder function
+	Fixed examples in Enable/Disable-TerminalServerInstallMode
 	Fixed detection of wired network connections in Test-NetworkConnection function on Windows 10 workstations
-Version 3.7.0 [02/13/2018]	
+
+Version 3.7.0 [02/13/2018]
 	Added the ability to dynamically re-enumerate running applications while displaying the Show-InstallationWelcome prompt. If the CloseApps processes were not running when the prompt was displayed and are subsequently detected to be running, the prompt will be updated with the apps to close. If the CloseApps processes were running when the prompt was displayed and are subsequently detected not to be running, then the installation will automatically continue if no deferral is available. If the CloseApps processes change (new processes launched or running processes closed), the list box will dynamically update every 2 seconds to reflect the currently running applications.
 	Added ContinueFileCopyOnError parameter to the File-Copy function to continue copying files if an error is encountered.
 	Added error handling to catch errors retrieving/deleting scheduled task in Unblock-AppExecution
@@ -319,7 +327,7 @@ Version 3.5.0 [11/24/2014]
 	Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
 	Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
 	Added ability to detect active console user (user with control of the monitor, keyboard, mouse)
-	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed	
+	Added ForceCloseAppsCountdown parameter to Show-InstallationWelcome allowing a countdown to close apps regardless of whether deferral is allowed
 	Added Patch parameter to Execute-MSI to allow an MSP file to be specified on the command line with an MSI installation
 	Added ability to Get-InstalledApplication to detect whether a 64-bit or 32-bit application
 	Added CreateNoWindow parameter to Execute-Process
@@ -447,8 +455,8 @@ Version 3.0.10 [12/05/2013]
 
 Version 3.0.9 [11/29/2013]
 	Note	We recently attempted to add a killer new feature and release 3.1.0. We thought we had nailed it but ended up hitting problems once we went into production environments.
-			Worse still, we ended up causing a bunch of problems in 3.0.8 trying to reverse out all of these changes. 
-			We've prided ourselves on getting to be a really stable toolkit that works well in an enterprise environment. 
+			Worse still, we ended up causing a bunch of problems in 3.0.8 trying to reverse out all of these changes.
+			We've prided ourselves on getting to be a really stable toolkit that works well in an enterprise environment.
 			So we're very sorry for the shoddiness of 3.0.8 and have taken a number of steps (a QA process and test scripts) to ensure we don't have these issues going forward.
 	Added handling of X86 environment variables so they are never empty
 	Added prevention of AllowDefer and CloseAppsCountdown at the same time
@@ -477,7 +485,7 @@ Version 3.0.7 [10/24/2013]
 	Fixed issue executing blocked app execution dialog from UNC path (executed instead from local temporary directory)
 	Added sanitization of all application details to prevent invalid characters in log file name creation (which would break the script)
 	Fixed Test-Battery function returning inverse value (was True when Power was connected)
-	Fixed error failing to locate schtasks.exe 
+	Fixed error failing to locate schtasks.exe
 	Fixed "Restart Now" button text not using text from config file
 	Corrected the window properties of the countdown-no-hide phase of restart prompt to be topmost.
 
@@ -496,17 +504,17 @@ Version 3.0.6 [10/10/2013]
 Version 3.0.5 [09/27/2013]
 	Fixed issue with Show-InstallationPrompt not running asynchronously with the NoWait parameter.
 	Fixed issue with Show-InstallationRestartPrompt closing with the parent process.
-	Fixed issue matching application names with brackets in Remove-MSIApplications.	
+	Fixed issue matching application names with brackets in Remove-MSIApplications.
 	Fixed exception after clicking "Close Programs" button on Show-InstallationWelcomePrompt (only known to affect v3.0.4).
 	Fixed issue with one deferral more showing than is remaining (cosmetic only)
-	Deferral history is now reset on successful installation	
+	Deferral history is now reset on successful installation
 	Added ExitOnTimeout parameter to Show-InstallationPrompt (default is true)
 	Added MinimizeWindows parameter to Show-InstallationPrompt (default is false)
 	Added MinimizeWindows parameter to Show-InstallationWelcome (default is true)
-	Added extra space for the <DeferPrompt_WelcomeMessage> message	
+	Added extra space for the <DeferPrompt_WelcomeMessage> message
 	Added additional XML configuration items:
 		- Specify separate toolkit and msi log directories
-		- Specify whether administrator rights are required	
+		- Specify whether administrator rights are required
 		- Minimum supported version check for the XMl config file
 		- Configure deferral exit code
 		- Configure temporary path for caching toolkit files
@@ -533,15 +541,15 @@ Version 3.0.3 [09/05/2013]
 Version 3.0.2 [08/29/2013]
 
 	Added CheckDiskSpace and RequiredDiskSpace parameters to Show-InstallationWelcome
-		If CheckDiskSpace parameter is used, disk space will be evaluated before showing the Welcome screen. If disk space requirements are not met, an error message will be displayed and a Fast Retry (1618) exit code generated. The disk space requirements are calculated automatically based on the size of the source files or by specifying the required space in MB using the RequiredDiskSpace parameter. 
+		If CheckDiskSpace parameter is used, disk space will be evaluated before showing the Welcome screen. If disk space requirements are not met, an error message will be displayed and a Fast Retry (1618) exit code generated. The disk space requirements are calculated automatically based on the size of the source files or by specifying the required space in MB using the RequiredDiskSpace parameter.
 	Added Get-FreeDiskSpace function (returns value in MB)
 	Show-InstallationPrompt enhancements
-		MessageAlignment - align message text on the prompt 
+		MessageAlignment - align message text on the prompt
 		Icon - display a system icon on the prompt
 		NoWait - display the prompt asynchronously and continue the script without waiting for user response
 		Cosmetic improvements
 	Added parameter validation to Invoke-SCCMTask
-	Cosmetic improvements to Show-InstallationWelcome & Show-InstallationProgress 
+	Cosmetic improvements to Show-InstallationWelcome & Show-InstallationProgress
 	Fixed issue where user would not be granted their last deferral.
 
 Version 3.0.1 [08/28/2013]
@@ -594,11 +602,11 @@ Version 2.0.1 [08/15/2013]
 	Attempted to fix issue with installation progress not updating or hanging.
 
 Version 2.0.0 [08/07/2013]
-	Initial Public Release.	
+	Initial Public Release.
 
 # LICENSE #
-    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
+    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
     Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.

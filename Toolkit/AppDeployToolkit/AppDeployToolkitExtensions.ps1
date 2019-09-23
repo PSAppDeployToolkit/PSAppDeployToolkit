@@ -2,9 +2,9 @@
 .SYNOPSIS
 	This script is a template that allows you to extend the toolkit with your own custom functions.
     # LICENSE #
-    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
+    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
     Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 .DESCRIPTION
 	The script is automatically dot-sourced by the AppDeployToolkitMain.ps1 script.
@@ -13,7 +13,7 @@
     60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
     69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
     70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
-.LINK 
+.LINK
 	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
@@ -28,7 +28,7 @@ Param (
 [string]$appDeployToolkitExtName = 'PSAppDeployToolkitExt'
 [string]$appDeployExtScriptFriendlyName = 'App Deploy Toolkit Extensions'
 [version]$appDeployExtScriptVersion = [version]'3.8.0'
-[string]$appDeployExtScriptDate = '19/09/2019'
+[string]$appDeployExtScriptDate = '23/09/2019'
 [hashtable]$appDeployExtScriptParameters = $PSBoundParameters
 
 ##*===============================================

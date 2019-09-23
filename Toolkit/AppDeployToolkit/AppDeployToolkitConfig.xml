@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <AppDeployToolkit_Config>
 <!--# LICENSE #
-    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
+    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
     Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 	<!--Configuration File Details-->
 	<Config_File>
 		<Config_Version>3.8.0</Config_Version>
-		<Config_Date>19/09/2019</Config_Date>
+		<Config_Date>23/09/2019</Config_Date>
 	</Config_File>
 
 	<!--Toolkit Options-->
@@ -68,7 +68,7 @@
 		<InstallationUI_LanguageOverride></InstallationUI_LanguageOverride>
 		<!-- Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
 			 Language Code 		Language 		|		Language Code 		Language
-			 ============= 		======== 		|		============= 		======== 
+			 ============= 		======== 		|		============= 		========
 			 EN 				English			|		DA 					Danish
 			 FR 				French 			|		DE 					German
 			 IT 				Italian 		| 		JA 					Japanese
@@ -208,7 +208,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Afinstallation</DeploymentType_UnInstall>
 		<BalloonText_Start>startet.</BalloonText_Start>
@@ -255,7 +255,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Désinstallation</DeploymentType_UnInstall>
 		<BalloonText_Start>en cours.</BalloonText_Start>
@@ -302,7 +302,7 @@
 
 		<WelcomePrompt_CountdownMessage>Die {0} wird automatisch fortgesetzt in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Deinstallation</DeploymentType_UnInstall>
 		<BalloonText_Start>gestartet.</BalloonText_Start>
@@ -349,7 +349,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installazione</DeploymentType_Install>
 		<DeploymentType_UnInstall>Disinstallazione</DeploymentType_UnInstall>
 		<BalloonText_Start>Iniziata.</BalloonText_Start>
@@ -396,7 +396,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>インストール</DeploymentType_Install>
 		<DeploymentType_UnInstall>アンインストール</DeploymentType_UnInstall>
 		<BalloonText_Start>開始</BalloonText_Start>
@@ -443,7 +443,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installasjon</DeploymentType_Install>
 		<DeploymentType_UnInstall>Avinstallasjon</DeploymentType_UnInstall>
 		<BalloonText_Start>startet.</BalloonText_Start>
@@ -490,7 +490,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installatie</DeploymentType_Install>
 		<DeploymentType_UnInstall>Verwijderen</DeploymentType_UnInstall>
 		<BalloonText_Start>gestart.</BalloonText_Start>
@@ -537,7 +537,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Instalacja</DeploymentType_Install>
 		<DeploymentType_UnInstall>Deinstalacja</DeploymentType_UnInstall>
 		<BalloonText_Start>rozpoczęta.</BalloonText_Start>
@@ -556,7 +556,7 @@
 		<RestartPrompt_ButtonRestartLater>Restartuj Później</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Restartuj Teraz</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_PL>
-	
+
 	<!-- UI Messages - Portuguese (Portugal) -->
 	<UI_Messages_PT>
 		<DiskSpace_Message>Você não tem espaço em disco suficiente para concluir a instalação de:
@@ -584,7 +584,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Instalação</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
 		<BalloonText_Start>começou a.</BalloonText_Start>
@@ -631,7 +631,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Instalação</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
 		<BalloonText_Start>iniciada.</BalloonText_Start>
@@ -678,7 +678,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Instalación</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalación</DeploymentType_UnInstall>
 		<BalloonText_Start>comenzó a.</BalloonText_Start>
@@ -716,7 +716,7 @@
 		Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på "Fortsätt".
 		Alternativt, spara ditt arbete och klicka på "Stäng Program".
 		</ClosePrompt_Message>
-		<ClosePrompt_CountdownMessage>OBS: Programmen kommer automatiskt att avslutas om:</ClosePrompt_CountdownMessage> 
+		<ClosePrompt_CountdownMessage>OBS: Programmen kommer automatiskt att avslutas om:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Följande applikation kommer att installeras:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Du kan välja att fördröja installationen ett begränsat antal gånger under en begränsad tid:</DeferPrompt_ExpiryMessage>
 		<DeferPrompt_WarningMessage>När antalet fördröjningar är slut eller deadlinen inträffar är detta alternativ inte längre tillgängligt.</DeferPrompt_WarningMessage>
@@ -725,7 +725,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Avinstallation</DeploymentType_UnInstall>
 		<BalloonText_Start>startad.</BalloonText_Start>
@@ -772,7 +772,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>تثبيت</DeploymentType_Install>
 		<DeploymentType_UnInstall>إزالة التثبيت</DeploymentType_UnInstall>
 		<BalloonText_Start>بدأ.</BalloonText_Start>
@@ -819,7 +819,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>התקנה</DeploymentType_Install>
 		<DeploymentType_UnInstall>הסרה</DeploymentType_UnInstall>
 		<BalloonText_Start>התחילה.</BalloonText_Start>
@@ -866,7 +866,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>설치</DeploymentType_Install>
 		<DeploymentType_UnInstall>제거</DeploymentType_UnInstall>
 		<BalloonText_Start>시작되었습니다.</BalloonText_Start>
@@ -913,7 +913,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Установка</DeploymentType_Install>
 		<DeploymentType_UnInstall>Удаление</DeploymentType_UnInstall>
 		<BalloonText_Start>начата.</BalloonText_Start>
@@ -960,7 +960,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>安装</DeploymentType_Install>
 		<DeploymentType_UnInstall>卸载</DeploymentType_UnInstall>
 		<BalloonText_Start>已启动。</BalloonText_Start>
@@ -1007,7 +1007,7 @@
 
 		<WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>安裝</DeploymentType_Install>
 		<DeploymentType_UnInstall>卸載</DeploymentType_UnInstall>
 		<BalloonText_Start>已啟動。</BalloonText_Start>
@@ -1054,7 +1054,7 @@
 
 		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovať:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Inštalácia</DeploymentType_Install>
 		<DeploymentType_UnInstall>Odinštalovať</DeploymentType_UnInstall>
 		<BalloonText_Start>spustená.</BalloonText_Start>
@@ -1087,7 +1087,7 @@
 		<ClosePrompt_ButtonDefer> Elhalaszt</ClosePrompt_ButtonDefer>
 		<ClosePrompt_Message> Az alábbi programokat szíveskedjen bezárni, mielőtt a telepítés elkezdődik.
 
-		Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat. 
+		Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat.
 		Vagy
 		Kérjük mentse munkáját és kattintson a „Programok bezárása”-ra.
 		</ClosePrompt_Message>
