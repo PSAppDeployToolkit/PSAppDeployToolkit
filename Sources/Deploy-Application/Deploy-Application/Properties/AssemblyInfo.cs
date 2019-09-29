@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Deploy Application")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Launch executable to start a PowerShell App Deployment Toolkit Deploy-Application.ps1 script without a PowerShell console window being visible")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PSAppDeployToolkit")]
 [assembly: AssemblyProduct("Deploy Application")]
-[assembly: AssemblyCopyright("Copyright © 2014")]
+[assembly: AssemblyCopyright("Copyright © 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
