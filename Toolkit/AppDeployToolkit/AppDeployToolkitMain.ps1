@@ -7517,7 +7517,7 @@ Function Set-PinnedApplication {
 				Throw "Action [$Action] not supported. Supported actions are [$($Verbs.Keys -join ', ')]."
 			}
 
-			If ($Action -in 'PintoStartMenu', 'UnpinfromStartMenu')
+			If ($Action.Contains("StartMenu"))
 			{
 				If ([int]$envOSVersionMajor -ge 10)	{
 					If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
@@ -7535,7 +7535,7 @@ Function Set-PinnedApplication {
 
 				Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
 			}
-			ElseIf ($Action -in 'PintoTaskbar', 'UnpinfromTaskbar') {
+			ElseIf ($Action.Contains("Taskbar")) {
 				If ([int]$envOSVersionMajor -ge 10) {
 					$FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 					$PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
