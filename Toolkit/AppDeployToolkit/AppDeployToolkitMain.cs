@@ -221,6 +221,15 @@ namespace PSADT
 		[DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
 		
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		public static extern IntPtr DestroyMenu(IntPtr hWnd);
+
 		public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 		
 		public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems)
