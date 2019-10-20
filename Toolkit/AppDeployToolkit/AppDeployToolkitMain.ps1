@@ -7325,11 +7325,11 @@ Function Show-InstallationProgress {
 						[IntPtr]$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
 						If ($menuHandle -ne [IntPtr]::Zero) {
 							[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-							[PSADT.UIAutomation]::DestroyMenu($menuHandle)
+							[PSADT.UiAutomation]::DestroyMenu($menuHandle)
 						}
 					}
 				})
-				
+				#  Prepare the ProgressText variable so we can use it to change the text in the text area
 				$script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
 				#  Add an action to the Window.Closing event handler to disable the close button
 				$script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
