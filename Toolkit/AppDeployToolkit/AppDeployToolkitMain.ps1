@@ -7320,7 +7320,7 @@ Function Show-InstallationProgress {
 				$script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
 				#  Grey out the X button
 				$script:ProgressSyncHash.Window.add_Loaded({
-					$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
+					[IntPtr]$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
 					If ($null -ne $windowHandle) {
 						[IntPtr]$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
 						If ($menuHandle -ne [IntPtr]::Zero) {
