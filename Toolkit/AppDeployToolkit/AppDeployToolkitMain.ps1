@@ -7318,6 +7318,18 @@ Function Show-InstallationProgress {
 				#  Parse the XAML
 				$progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList $xamlProgress
 				$script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
+				#  Grey out the X button
+				$script:ProgressSyncHash.Window.add_Loaded({
+					$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
+					If ($null -ne $windowHandle) {
+						[IntPtr]$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+						If ($menuHandle -ne [IntPtr]::Zero) {
+							[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+							[PSADT.UIAutomation]::DestroyMenu($menuHandle)
+						}
+					}
+				})
+				
 				$script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
 				#  Add an action to the Window.Closing event handler to disable the close button
 				$script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
