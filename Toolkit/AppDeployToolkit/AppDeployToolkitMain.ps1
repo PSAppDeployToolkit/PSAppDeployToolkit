@@ -10643,6 +10643,9 @@ If (-not $installTitle) {
 	[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
 }
 
+## Set Powershell window title, in case the window is visible
+$Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
+
 ## Sanitize the application details, as they can cause issues in the script
 [char[]]$invalidFileNameChars = [IO.Path]::GetInvalidFileNameChars()
 [string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
