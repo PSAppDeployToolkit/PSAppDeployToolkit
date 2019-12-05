@@ -385,6 +385,7 @@ if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
 	[string]$configBalloonTextError = $xmlUIMessages.BalloonText_Error
 	[string]$configProgressMessageInstall = $xmlUIMessages.Progress_MessageInstall
 	[string]$configProgressMessageUninstall = $xmlUIMessages.Progress_MessageUninstall
+	[string]$configProgressMessageRepair = $xmlUIMessages.Progress_MessageRepair
 	[string]$configClosePromptMessage = $xmlUIMessages.ClosePrompt_Message
 	[string]$configClosePromptButtonClose = $xmlUIMessages.ClosePrompt_ButtonClose
 	[string]$configClosePromptButtonDefer = $xmlUIMessages.ClosePrompt_ButtonDefer
@@ -399,6 +400,7 @@ if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
 	[string]$configBlockExecutionMessage = $xmlUIMessages.BlockExecution_Message
 	[string]$configDeploymentTypeInstall = $xmlUIMessages.DeploymentType_Install
 	[string]$configDeploymentTypeUnInstall = $xmlUIMessages.DeploymentType_UnInstall
+	[string]$configDeploymentTypeRepair = $xmlUIMessages.DeploymentType_Repair
 	[string]$configRestartPromptTitle = $xmlUIMessages.RestartPrompt_Title
 	[string]$configRestartPromptMessage = $xmlUIMessages.RestartPrompt_Message
 	[string]$configRestartPromptMessageTime = $xmlUIMessages.RestartPrompt_MessageTime
@@ -6301,8 +6303,12 @@ Function Show-WelcomePrompt {
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($forceCountdown -eq $true) {
-				If ($deploymentType -ieq 'Install') { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
-				Else { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeUninstall.ToLower())) + "`n$labelCountdownSeconds" }
+				switch ($deploymentType){
+					'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
+					'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeUninstall.ToLower())) + "`n$labelCountdownSeconds" }
+					'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeRepair.ToLower())) + "`n$labelCountdownSeconds" }
+					Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
+				}
 			}
 			Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
 		}
@@ -6336,8 +6342,12 @@ Function Show-WelcomePrompt {
 					#  Update the form
 					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 					If ($forceCountdown -eq $true) {
-						If ($deploymentType -ieq 'Install') { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
-						Else { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall) + "`n$labelCountdownSeconds" }
+						switch ($deploymentType){
+							'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
+							'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall) + "`n$labelCountdownSeconds" }
+							'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair) + "`n$labelCountdownSeconds" }
+							Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
+						}
 					}
 					Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
 					[Windows.Forms.Application]::DoEvents()
@@ -7200,6 +7210,9 @@ Function Show-InstallationProgress {
 		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
 		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Uninstall')) {
 			$StatusMessage = $configProgressMessageUninstall
+		}
+		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Repair')) {
+			$StatusMessage = $configProgressMessageRepair
 		}
 
 		If ($envHost.Name -match 'PowerGUI') {
@@ -10966,6 +10979,7 @@ Switch ($deployMode) {
 Switch ($deploymentType) {
 	'Install'   { $deploymentTypeName = $configDeploymentTypeInstall }
 	'Uninstall' { $deploymentTypeName = $configDeploymentTypeUnInstall }
+	'Repair' { $deploymentTypeName = $configDeploymentTypeRepair }
 	Default { $deploymentTypeName = $configDeploymentTypeInstall }
 }
 If ($deploymentTypeName) { Write-Log -Message "Deployment type is [$deploymentTypeName]." -Source $appDeployToolkitName }
