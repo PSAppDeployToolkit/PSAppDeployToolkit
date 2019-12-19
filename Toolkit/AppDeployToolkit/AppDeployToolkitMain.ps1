@@ -4489,6 +4489,8 @@ Function Get-FileVersion {
 	Gets the version of the specified file
 .PARAMETER File
 	Path of the file
+.PARAMETER ProductVersion
+	Switch that makes the command return ProductVersion instead of FileVersion
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
