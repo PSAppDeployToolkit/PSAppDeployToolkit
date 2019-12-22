@@ -1,9 +1,12 @@
-﻿Version 3.8.0 [09/23/2019]
-    Added ability to change the dialog banner height, with a configurable maximum
+﻿Version 3.8.1 [xx/xx/2020]
+	Fixed issue in Set-PinnedApplication where pin action on StartMenu is case sensitive on Windows 10
+
+Version 3.8.0 [09/23/2019]
+	Added ability to change the dialog banner height, with a configurable maximum
 	Added ability to change the dialog banner and icon filename through the configuration file
 	Added support for animated gifs in the dialog banner
 	Added a dynamic dialog banner height with a configurable maximum to the dialogs
-    Added support for flattening folder structure within Copy-File with -Flatten switch
+	Added support for flattening folder structure within Copy-File with -Flatten switch
 	Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
 	Added logging to Remove-Folder function so it is also traceable in the log file when successful
 	Changed ProcessObjects parameter in Get-RunningProcesses function to mandatory=$false so Show-InstallationWelcome without CloseApps parameter does not fail

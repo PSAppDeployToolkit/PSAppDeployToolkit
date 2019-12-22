@@ -7535,7 +7535,7 @@ Function Set-PinnedApplication {
 					If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
 						Throw "Only shortcut files (.lnk) are supported on Windows 10 and higher."
 					}
-					ElseIf (-not ($FilePath.StartsWith($envUserStartMenu) -or $FilePath.StartsWith($envCommonStartMenu))) {
+					ElseIf (-not ($FilePath.StartsWith($envUserStartMenu, 'CurrentCultureIgnoreCase') -or $FilePath.StartsWith($envCommonStartMenu, 'CurrentCultureIgnoreCase'))) {
 						Throw "Only shortcut files (.lnk) in [$envUserStartMenu] and [$envCommonStartMenu] are supported on Windows 10 and higher."
 					}
 				}
