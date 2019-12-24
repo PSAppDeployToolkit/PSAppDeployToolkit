@@ -4529,8 +4529,6 @@ Function Get-FileVersion {
 				}
 				
 				If ($fileVersion) {
-					## Remove product information to leave only the file version
-					$fileVersion = ($fileVersion -split ' ' | Select-Object -First 1)
 					If ($ProductVersion) {
 						Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
 					}
