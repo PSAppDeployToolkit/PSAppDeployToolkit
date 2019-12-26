@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	Displays a graphical console to browse the help for the App Deployment Toolkit functions
     # LICENSE #
@@ -29,7 +29,7 @@
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 #  Dot source the App Deploy Toolkit Functions
 . "$scriptDirectory\AppDeployToolkitMain.ps1" -DisableLogging
-
+. "$scriptDirectory\AppDeployToolkitExtensions.ps1"
 ##*===============================================
 ##* END VARIABLE DECLARATION
 ##*===============================================
@@ -81,9 +81,7 @@ Function Show-HelpConsole {
 	$HelpListBox.TabIndex = 2
 	$HelpListBox.add_SelectedIndexChanged({ $HelpTextBox.Text = Get-Help -Name $HelpListBox.SelectedItem -Full | Out-String })
 	$helpFunctions = Get-Command -CommandType 'Function' | Where-Object { ($_.HelpUri -match 'psappdeploytoolkit') -and ($_.Definition -notmatch 'internal script function') } | Select-Object -ExpandProperty Name
-	ForEach ($helpFunction in $helpFunctions) {
-		$null = $HelpListBox.Items.Add($helpFunction)
-	}
+	$null = $HelpListBox.Items.AddRange($helpFunctions)
 	$HelpForm.Controls.Add($HelpListBox)
 	$HelpTextBox.Anchor = 11
 	$HelpTextBox.BorderStyle = 1
