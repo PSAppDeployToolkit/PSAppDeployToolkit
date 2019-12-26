@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 	# LICENSE #
@@ -869,6 +869,47 @@ Function Write-Log {
 }
 #endregion
 
+#region Function Get-LoggedOnUser
+Function Remove-InvalidFileNameChars {
+	<#
+	.SYNOPSIS
+		Remove invalid characters from the supplied string.
+	.DESCRIPTION
+		Remove invalid characters from the supplied string and returns a valid filename as a string.
+	.EXAMPLE
+		Remove-InvalidFileNameChars -Name "Filename/\1"
+	.NOTES
+		This functions always returns a string however it can be empty if the name only contains invalid characters.
+		Do no use this command for an entire path as '\' is not a valid filename character.
+	.LINK
+		http://psappdeploytoolkit.com
+	#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+		[AllowEmptyString()]
+		[string]$Name
+	)
+
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+	Process {
+		Try {
+			Write-Output -InputObject (([char[]]$Name | Where-Object { [IO.Path]::GetinvalidFileNameChars() -notcontains $_ }) -join '')
+		}
+		Catch {
+			Write-Log -Message "Failed to remove invalid characters from the supplied filename. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
 
 #region Function New-ZipFile
 Function New-ZipFile {
@@ -931,6 +972,11 @@ Function New-ZipFile {
 	}
 	Process {
 		Try {
+			## Remove invalid characters from the supplied filename
+			$DestinationArchiveFileName = Remove-InvalidFileNameChars -Name $DestinationArchiveFileName
+			If ($DestinationArchiveFileName.length -eq 0) {
+				Throw "Invalid filename characters replacement resulted into an empty string."
+			}
 			## Get the full destination path where the archive will be stored
 			[string]$DestinationPath = Join-Path -Path $DestinationArchiveDirectoryPath -ChildPath $DestinationArchiveFileName -ErrorAction 'Stop'
 			Write-Log -Message "Create a zip archive with the requested content at destination path [$DestinationPath]." -Source ${CmdletName}
@@ -2057,11 +2103,10 @@ Function Get-InstalledApplication {
 					If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
 				}
 
-				## Remove any control characters which may interfere with logging and creating file path names from these variables
-				$illegalChars = [string][System.IO.Path]::GetInvalidFileNameChars()
-				$appDisplayName = $regKeyApp.DisplayName -replace $illegalChars,''
-				$appDisplayVersion = $regKeyApp.DisplayVersion -replace $illegalChars,''
-				$appPublisher = $regKeyApp.Publisher -replace $illegalChars,''
+				## Remove any invalid filename characters which may interfere with logging and creating file path names from these variables
+				$appDisplayName = Remove-InvalidFileNameChars -Name $regKeyApp.DisplayName
+				$appDisplayVersion = Remove-InvalidFileNameChars -Name $regKeyApp.DisplayVersion
+				$appPublisher = Remove-InvalidFileNameChars -Name $regKeyApp.Publisher
 
 
 				## Determine if application is a 64-bit application
@@ -2283,10 +2328,10 @@ Function Execute-MSI {
 			If (-not $logName) {
 				If ($productCodeNameVersion) {
 					If ($productCodeNameVersion.Publisher) {
-						$logName = ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace "[$invalidFileNameChars]",'' -replace ' ',''
+						$logName = Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace ' ',''
 					}
 					Else {
-						$logName = ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace "[$invalidFileNameChars]",'' -replace ' ',''
+						$logName = Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace ' ',''
 					}
 				}
 				Else {
@@ -10643,13 +10688,12 @@ If (-not $installTitle) {
 $Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
 
 ## Sanitize the application details, as they can cause issues in the script
-[char[]]$invalidFileNameChars = [IO.Path]::GetInvalidFileNameChars()
-[string]$appVendor = $appVendor -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appName = $appName -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appVersion = $appVersion -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appArch = $appArch -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appLang = $appLang -replace "[$invalidFileNameChars]",'' -replace ' ',''
-[string]$appRevision = $appRevision -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$appVendor = (Remove-InvalidFileNameChars -Name $appVendor) -replace ' ',''
+[string]$appName = (Remove-InvalidFileNameChars -Name $appName) -replace ' ',''
+[string]$appVersion = (Remove-InvalidFileNameChars -Name $appVersion) -replace ' ',''
+[string]$appArch = (Remove-InvalidFileNameChars -Name $appArch) -replace ' ',''
+[string]$appLang = (Remove-InvalidFileNameChars -Name $appLang) -replace ' ',''
+[string]$appRevision = (Remove-InvalidFileNameChars -Name $appRevision) -replace ' ',''
 
 ## Build the Installation Name
 If ($ReferredInstallName) { [string]$installName = $ReferredInstallName }
@@ -10661,7 +10705,7 @@ If (-not $installName) {
 		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
 	}
 }
-[string]$installName = $installName -replace "[$invalidFileNameChars]",'' -replace ' ',''
+[string]$installName = (Remove-InvalidFileNameChars -Name $installName) -replace ' ',''
 [string]$installName = $installName.Trim('_') -replace '[_]+','_'
 
 ## Set the Defer History registry path
