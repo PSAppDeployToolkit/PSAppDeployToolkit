@@ -4542,6 +4542,8 @@ Function Get-FileVersion {
 	Gets the version of the specified file
 .PARAMETER File
 	Path of the file
+.PARAMETER ProductVersion
+	Switch that makes the command return ProductVersion instead of FileVersion
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -4556,6 +4558,8 @@ Function Get-FileVersion {
 		[ValidateNotNullorEmpty()]
 		[string]$File,
 		[Parameter(Mandatory=$false)]
+		[switch]$ProductVersion,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -4567,19 +4571,29 @@ Function Get-FileVersion {
 	}
 	Process {
 		Try {
-			Write-Log -Message "Get file version info for file [$file]." -Source ${CmdletName}
+			Write-Log -Message "Get version info for file [$file]." -Source ${CmdletName}
 
 			If (Test-Path -LiteralPath $File -PathType 'Leaf') {
-				$fileVersion = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo.FileVersion
+				$fileVersionInfo = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo
+				If ($ProductVersion) {
+					$fileVersion = $fileVersionInfo.ProductVersion
+				} else {
+					$fileVersion = $fileVersionInfo.FileVersion
+				}
+				
 				If ($fileVersion) {
-					## Remove product information to leave only the file version
-					$fileVersion = ($fileVersion -split ' ' | Select-Object -First 1)
-
-					Write-Log -Message "File version is [$fileVersion]." -Source ${CmdletName}
+					If ($ProductVersion) {
+						Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
+					}
+					else 
+					{
+						Write-Log -Message "File version is [$fileVersion]." -Source ${CmdletName}
+					}
+					
 					Write-Output -InputObject $fileVersion
 				}
 				Else {
-					Write-Log -Message 'No file version information found.' -Source ${CmdletName}
+					Write-Log -Message 'No version information found.' -Source ${CmdletName}
 				}
 			}
 			Else {
@@ -4587,9 +4601,9 @@ Function Get-FileVersion {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to get file version info. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get version info. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
-				Throw "Failed to get file version info: $($_.Exception.Message)"
+				Throw "Failed to get version info: $($_.Exception.Message)"
 			}
 		}
 	}
