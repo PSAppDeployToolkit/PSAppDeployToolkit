@@ -2087,6 +2087,7 @@ Function Get-InstalledApplication {
 			Write-Log -Message "The following error(s) took place while enumerating installed applications from the registry. `n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
 		}
 
+		$UpdatesSkippedCounter = 0
 		## Create a custom object with the desired properties for the installed applications and sanitize property details
 		[psobject[]]$installedApplication = @()
 		ForEach ($regKeyApp in $regKeyApplication) {
@@ -2096,11 +2097,9 @@ Function Get-InstalledApplication {
 				[string]$appPublisher = ''
 
 				## Bypass any updates or hotfixes
-				If (-not $IncludeUpdatesAndHotfixes) {
-					If ($regKeyApp.DisplayName -match '(?i)kb\d+') { Continue }
-					If ($regKeyApp.DisplayName -match 'Cumulative Update') { Continue }
-					If ($regKeyApp.DisplayName -match 'Security Update') { Continue }
-					If ($regKeyApp.DisplayName -match 'Hotfix') { Continue }
+				If ((-not $IncludeUpdatesAndHotfixes) -and (($regKeyApp.DisplayName -match '(?i)kb\d+') -or ($regKeyApp.DisplayName -match 'Cumulative Update') -or ($regKeyApp.DisplayName -match 'Security Update') -or ($regKeyApp.DisplayName -match 'Hotfix'))) {
+					$UpdatesSkippedCounter += 1
+					Continue
 				}
 
 				## Remove any invalid filename characters which may interfere with logging and creating file path names from these variables
@@ -2183,6 +2182,19 @@ Function Get-InstalledApplication {
 				Write-Log -Message "Failed to resolve application details from registry for [$appDisplayName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				Continue
 			}
+		}
+
+		If (-not $IncludeUpdatesAndHotfixes) {
+			## Write to log the number of entries skipped due to them being considered updates
+			If ($UpdatesSkippedCounter -eq 1) {
+				Write-Log -Message "Skipped 1 entry while searching, because it was considered a Microsoft update." -Source ${CmdletName}
+			} else {
+				Write-Log -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates." -Source ${CmdletName}
+			}
+		}
+
+		If (-not $installedApplication) {
+			Write-Log -Message "Found no application based on the supplied parameters." -Source ${CmdletName}
 		}
 
 		Write-Output -InputObject $installedApplication
