@@ -151,6 +151,8 @@
 		<!-- Name displayed in UI for installation deployment type. -->
 		<DeploymentType_UnInstall>Uninstallation</DeploymentType_UnInstall>
 		<!-- Name displayed in UI for uninstallation deployment type. -->
+		<DeploymentType_Repair>Repairing</DeploymentType_Repair>
+		<!-- Name displayed in UI for repair deployment type. -->
 
 		<!-- Balloon Tip Text -->
 		<BalloonText_Start>started.</BalloonText_Start>
@@ -168,6 +170,8 @@
 		<!-- Default text displayed in the progress bar for installations. -->
 		<Progress_MessageUninstall>Uninstallation in progress. Please wait...</Progress_MessageUninstall>
 		<!-- Default text displayed in the progress bar for uninstallations. -->
+		<Progress_MessageRepair>Repair in progress. Please wait...</Progress_MessageRepair>
+		<!-- Default text displayed in the progress bar for repairs. -->
 		<BlockExecution_Message>Launching this application has been temporarily blocked so that an installation operation can complete.</BlockExecution_Message>
 		<!-- Text displayed when prompting user that an application has been blocked. -->
 		<RestartPrompt_Title>Restart Required</RestartPrompt_Title>
@@ -211,6 +215,8 @@
 
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Afinstallation</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparere</DeploymentType_Repair>
+
 		<BalloonText_Start>startet.</BalloonText_Start>
 		<BalloonText_Complete>færdig.</BalloonText_Complete>
 		<BalloonText_RestartRequired>færdig. En genstart er nødvendig.</BalloonText_RestartRequired>
@@ -218,6 +224,7 @@
 		<BalloonText_FastRetry>ikke færdig.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installation i gang. Vent venligst...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Afinstallation i gang. Vent venligst...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparere i gang. Vent venligst...</Progress_MessageRepair>
 		<BlockExecution_Message>Opstart af denne applikation er midlertidigt blokeret da en installationsproces er under afvikling.</BlockExecution_Message>
 		<RestartPrompt_Title>Genstart Nødvendig</RestartPrompt_Title>
 		<RestartPrompt_Message>For at færdiggøre installationen skal du genstarte din computer.</RestartPrompt_Message>
@@ -258,6 +265,7 @@
 
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Désinstallation</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Réparation</DeploymentType_Repair>
 		<BalloonText_Start>en cours.</BalloonText_Start>
 		<BalloonText_Complete>réussie.</BalloonText_Complete>
 		<BalloonText_RestartRequired>réussie. Un redémarrage est requis.</BalloonText_RestartRequired>
@@ -265,6 +273,7 @@
 		<BalloonText_FastRetry>incomplète.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installation en cours, merci de patienter...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Désinstallation en cours, merci de patienter...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Réparation en cours, merci de patienter...</Progress_MessageRepair>
 		<BlockExecution_Message>Le lancement de cette application a été temporairement bloqué afin qu'une autre installation puisse se terminer.</BlockExecution_Message>
 		<RestartPrompt_Title>Redémarrage Requis</RestartPrompt_Title>
 		<RestartPrompt_Message>Pour que l'installation soit compléte, vous devez redémarrer votre ordinateur.</RestartPrompt_Message>
@@ -305,6 +314,7 @@
 
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Deinstallation</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparatur</DeploymentType_Repair>
 		<BalloonText_Start>gestartet.</BalloonText_Start>
 		<BalloonText_Complete>abgeschlossen.</BalloonText_Complete>
 		<BalloonText_RestartRequired>abgeschlossen. Ein Neustart ist erforderlich.</BalloonText_RestartRequired>
@@ -312,6 +322,7 @@
 		<BalloonText_FastRetry>nicht abgeschlossen werden.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installation wird durchgeführt. Bitte warten...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Deinstallation wird durchgeführt. Bitte warten...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparatur wird durchgeführt. Bitte warten...</Progress_MessageRepair>
 		<BlockExecution_Message>Das Starten dieser Anwendung(en) wurde vorübergehend blockiert, damit der Installationsvorgang erfolgreich durchgeführt werden kann.</BlockExecution_Message>
 		<RestartPrompt_Title>Neustart Erforderlich</RestartPrompt_Title>
 		<RestartPrompt_Message>Zum Abschluss der Installation müssen Sie Ihren Computer neu starten.</RestartPrompt_Message>
@@ -352,6 +363,7 @@
 
 		<DeploymentType_Install>Installazione</DeploymentType_Install>
 		<DeploymentType_UnInstall>Disinstallazione</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Riparazione</DeploymentType_Repair>
 		<BalloonText_Start>Iniziata.</BalloonText_Start>
 		<BalloonText_Complete>Completata.</BalloonText_Complete>
 		<BalloonText_RestartRequired>Completata. È necessario riavviare il computer.</BalloonText_RestartRequired>
@@ -359,6 +371,7 @@
 		<BalloonText_FastRetry>Non completata.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installazione in corso. Attendere prego...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Disinstallazione in corso. Attendere prego...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Riparazione in corso. Attendere prego...</Progress_MessageRepair>
 		<BlockExecution_Message>L'esecuzione di questa applicazione è stata temporaneamente bloccata in modo che l'operazione di installazione possa essere completata.</BlockExecution_Message>
 		<RestartPrompt_Title>Riavvio Richiesto</RestartPrompt_Title>
 		<RestartPrompt_Message>Per completare l'installazione, è necessario riavviare il computer.</RestartPrompt_Message>
@@ -399,6 +412,7 @@
 
 		<DeploymentType_Install>インストール</DeploymentType_Install>
 		<DeploymentType_UnInstall>アンインストール</DeploymentType_UnInstall>
+		<DeploymentType_Repair>修復</DeploymentType_Repair>
 		<BalloonText_Start>開始</BalloonText_Start>
 		<BalloonText_Complete>完了です</BalloonText_Complete>
 		<BalloonText_RestartRequired>完了。再起動が必要です。</BalloonText_RestartRequired>
@@ -406,6 +420,7 @@
 		<BalloonText_FastRetry>未完了。</BalloonText_FastRetry>
 		<Progress_MessageInstall>インストール中です。 少々お待ちください。</Progress_MessageInstall>
 		<Progress_MessageUninstall>アンインストール中です。 少々お待ちください。</Progress_MessageUninstall>
+		<Progress_MessageRepair>修復中です。 少々お待ちください。</Progress_MessageRepair>
 		<BlockExecution_Message>アプリケーションインストールが完了するまで、このアプリケーションの起動を一時的にブロックしています。</BlockExecution_Message>
 		<RestartPrompt_Title>再起動が必要です</RestartPrompt_Title>
 		<RestartPrompt_Message>インストールを完了するために、再起動が必要です。</RestartPrompt_Message>
@@ -446,6 +461,7 @@
 
 		<DeploymentType_Install>Installasjon</DeploymentType_Install>
 		<DeploymentType_UnInstall>Avinstallasjon</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparasjon</DeploymentType_Repair>
 		<BalloonText_Start>startet.</BalloonText_Start>
 		<BalloonText_Complete>fullført.</BalloonText_Complete>
 		<BalloonText_RestartRequired>ferdig. En omstart er nødvendig.</BalloonText_RestartRequired>
@@ -453,6 +469,7 @@
 		<BalloonText_FastRetry>ikke fullført.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Programvareinstallasjon pågår. Vennligst vent..</Progress_MessageInstall>
 		<Progress_MessageUninstall>ProgramvareAvinstallasjon pågår. Vennligst vent..</Progress_MessageUninstall>
+		<Progress_MessageRepair>ProgramvareReparasjon pågår. Vennligst vent..</Progress_MessageRepair>
 		<BlockExecution_Message>Start av dette programmet er midlertidig blokkert til programvareinstallasjon er ferdig.</BlockExecution_Message>
 		<RestartPrompt_Title>Omstart Kreves</RestartPrompt_Title>
 		<RestartPrompt_Message>En omstart av pcen er nødvendig for å fullføre installasjonen.</RestartPrompt_Message>
@@ -493,6 +510,7 @@
 
 		<DeploymentType_Install>Installatie</DeploymentType_Install>
 		<DeploymentType_UnInstall>Verwijderen</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparatie</DeploymentType_Repair>
 		<BalloonText_Start>gestart</BalloonText_Start>
 		<BalloonText_Complete>voltooid</BalloonText_Complete>
 		<BalloonText_RestartRequired>voltooid. Een herstart is nodig</BalloonText_RestartRequired>
@@ -500,6 +518,7 @@
 		<BalloonText_FastRetry>onvolledig</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installatie bezig. Even geduld...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Verwijderen bezig. Even geduld...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparatie bezig. Even geduld...</Progress_MessageRepair>
 		<BlockExecution_Message>Het opstarten van deze applicatie werd tijdelijk geblokkeerd om een installatie uit te voeren.</BlockExecution_Message>
 		<RestartPrompt_Title>Herstart nodig</RestartPrompt_Title>
 		<RestartPrompt_Message>Om de installatie te voltooien is een herstart nodig.</RestartPrompt_Message>
@@ -540,6 +559,7 @@
 
 		<DeploymentType_Install>Instalacja</DeploymentType_Install>
 		<DeploymentType_UnInstall>Deinstalacja</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Naprawa</DeploymentType_Repair>
 		<BalloonText_Start>rozpoczęta.</BalloonText_Start>
 		<BalloonText_Complete>zakończona.</BalloonText_Complete>
 		<BalloonText_RestartRequired>zakończona. Wymagany jest restart komputera.</BalloonText_RestartRequired>
@@ -547,6 +567,7 @@
 		<BalloonText_FastRetry>nieukończona.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Trwa instalacja. Proszę czekać...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Trwa deinstalacja. Proszę czekać...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Trwa naprawa. Proszę czekać...</Progress_MessageRepair>
 		<BlockExecution_Message>Uruchomienie tej aplikacji zostało zablokowane na okres instalacji.</BlockExecution_Message>
 		<RestartPrompt_Title>Wymagany Restart</RestartPrompt_Title>
 		<RestartPrompt_Message>Aby instalacja została poprawnie ukończona wymagany jest restart komputera.</RestartPrompt_Message>
@@ -587,6 +608,7 @@
 
 		<DeploymentType_Install>Instalação</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparação</DeploymentType_Repair>
 		<BalloonText_Start>começou a.</BalloonText_Start>
 		<BalloonText_Complete>completo.</BalloonText_Complete>
 		<BalloonText_RestartRequired>completa. Uma reinicialização é necessária.</BalloonText_RestartRequired>
@@ -594,6 +616,7 @@
 		<BalloonText_FastRetry>não completar.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Instalação em andamento. Por favor aguarde...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Desinstalação em andamento. Por favor aguarde...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparação em andamento. Por favor aguarde...</Progress_MessageRepair>
 		<BlockExecution_Message>Lançar este aplicativo está temporariamente bloqueado para que possa concluir uma operação de instalação.</BlockExecution_Message>
 		<RestartPrompt_Title>Reinicialização Necessária</RestartPrompt_Title>
 		<RestartPrompt_Message>Em ordem para completar a instalação, você deve reiniciar seu computador.</RestartPrompt_Message>
@@ -634,6 +657,7 @@
 
 		<DeploymentType_Install>Instalação</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparação</DeploymentType_Repair>
 		<BalloonText_Start>iniciada.</BalloonText_Start>
 		<BalloonText_Complete>concluída.</BalloonText_Complete>
 		<BalloonText_RestartRequired>concluída. É necessário reiniciar.</BalloonText_RestartRequired>
@@ -641,6 +665,7 @@
 		<BalloonText_FastRetry>não concluída.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Instalação em andamento. Aguarde...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Desinstalação em andamento. Aguarde...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparação em andamento. Aguarde...</Progress_MessageRepair>
 		<BlockExecution_Message>A execução deste aplicativo foi temporariamente bloqueada para que uma operação de instalação seja concluída.</BlockExecution_Message>
 		<RestartPrompt_Title>Reinicialização Necessária</RestartPrompt_Title>
 		<RestartPrompt_Message>Para que a instalação seja concluída, é necessário reiniciar o computador.</RestartPrompt_Message>
@@ -681,6 +706,7 @@
 
 		<DeploymentType_Install>Instalación</DeploymentType_Install>
 		<DeploymentType_UnInstall>Desinstalación</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparación</DeploymentType_Repair>
 		<BalloonText_Start>comenzó a.</BalloonText_Start>
 		<BalloonText_Complete>completa.</BalloonText_Complete>
 		<BalloonText_RestartRequired>completa. Se requiere un reinicio.</BalloonText_RestartRequired>
@@ -688,6 +714,7 @@
 		<BalloonText_FastRetry>no.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Instalación en curso. Por favor, espere...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Desinstalación en curso. Por favor, espere...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparación en curso. Por favor, espere...</Progress_MessageRepair>
 		<BlockExecution_Message>Lanzar esta aplicación ha sido bloqueado temporalmente para que pueda completar una operación de instalación.</BlockExecution_Message>
 		<RestartPrompt_Title>Reiniciar Requerido</RestartPrompt_Title>
 		<RestartPrompt_Message>En orden para completar la instalación, debe reiniciar su computadora.</RestartPrompt_Message>
@@ -728,6 +755,7 @@
 
 		<DeploymentType_Install>Installation</DeploymentType_Install>
 		<DeploymentType_UnInstall>Avinstallation</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Reparation</DeploymentType_Repair>
 		<BalloonText_Start>startad.</BalloonText_Start>
 		<BalloonText_Complete>slutförd.</BalloonText_Complete>
 		<BalloonText_RestartRequired>slutförd. En omstart av datorn är nödvändig.</BalloonText_RestartRequired>
@@ -735,6 +763,7 @@
 		<BalloonText_FastRetry>ej slutförd.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Installation pågår. Var god vänta...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Avinstallation pågår. Var god vänta...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Reparation pågår. Var god vänta...</Progress_MessageRepair>
 		<BlockExecution_Message>Den här applikationen har temporärt blockerats så att installationen kan slutföras.</BlockExecution_Message>
 		<RestartPrompt_Title>Omstart Krävs</RestartPrompt_Title>
 		<RestartPrompt_Message>För att installationen ska kunna slutföras måste din dator startas om.</RestartPrompt_Message>
@@ -775,6 +804,7 @@
 
 		<DeploymentType_Install>تثبيت</DeploymentType_Install>
 		<DeploymentType_UnInstall>إزالة التثبيت</DeploymentType_UnInstall>
+		<DeploymentType_Repair>إصلاح</DeploymentType_Repair>
 		<BalloonText_Start>بدأ.</BalloonText_Start>
 		<BalloonText_Complete>تم.</BalloonText_Complete>
 		<BalloonText_RestartRequired>تم. يجب إعادة تشغيل النظام.</BalloonText_RestartRequired>
@@ -782,6 +812,7 @@
 		<BalloonText_FastRetry>غير مكتمل.</BalloonText_FastRetry>
 		<Progress_MessageInstall>جاري التثبيت. يرجى الانتظار...</Progress_MessageInstall>
 		<Progress_MessageUninstall>جارٍ إزالة التثبيت. يرجى الانتظار...</Progress_MessageUninstall>
+		<Progress_MessageRepair>جارٍ إصلاح. يرجى الانتظار...</Progress_MessageRepair>
 		<BlockExecution_Message>تم تعطيل تشغيل هذا التطبيق مؤقتًا بحيث يمكن إكمال عملية التثبيت.</BlockExecution_Message>
 		<RestartPrompt_Title>مطلوب إعادة التشغيل</RestartPrompt_Title>
 		<RestartPrompt_Message>كي تكتمل عملية التثبيت، يجب عليك إعادة تشغيل حاسوبك.</RestartPrompt_Message>
@@ -822,6 +853,7 @@
 
 		<DeploymentType_Install>התקנה</DeploymentType_Install>
 		<DeploymentType_UnInstall>הסרה</DeploymentType_UnInstall>
+		<DeploymentType_Repair>תיקון</DeploymentType_Repair>
 		<BalloonText_Start>התחילה.</BalloonText_Start>
 		<BalloonText_Complete>הושלמה.</BalloonText_Complete>
 		<BalloonText_RestartRequired>הושלמה. נדרש אתחול המחשב.</BalloonText_RestartRequired>
@@ -829,6 +861,7 @@
 		<BalloonText_FastRetry>לא הושלמה.</BalloonText_FastRetry>
 		<Progress_MessageInstall>מבצע התקנה. נא להמתין.</Progress_MessageInstall>
 		<Progress_MessageUninstall>מבצע הסרה. נא להמתין.</Progress_MessageUninstall>
+		<Progress_MessageRepair>מבצע תיקון. נא להמתין.</Progress_MessageRepair>
 		<BlockExecution_Message>הרצת היישום הזה נחסמה זמנית כדי שפעולת התקנה תוכל להסתיים.</BlockExecution_Message>
 		<RestartPrompt_Title>נדרש אתחול המחשב</RestartPrompt_Title>
 		<RestartPrompt_Message>כדי להשלים את ההתקנה, עליך לאתחל את המחשב שלך מחדש.</RestartPrompt_Message>
@@ -869,6 +902,7 @@
 
 		<DeploymentType_Install>설치</DeploymentType_Install>
 		<DeploymentType_UnInstall>제거</DeploymentType_UnInstall>
+		<DeploymentType_Repair>수리</DeploymentType_Repair>
 		<BalloonText_Start>시작되었습니다.</BalloonText_Start>
 		<BalloonText_Complete>완료되었습니다.</BalloonText_Complete>
 		<BalloonText_RestartRequired>완료되었습니다. 재부팅이 필요합니다.</BalloonText_RestartRequired>
@@ -876,6 +910,7 @@
 		<BalloonText_FastRetry>완료되지 않았습니다.</BalloonText_FastRetry>
 		<Progress_MessageInstall>설치 중입니다. 기다리세요...</Progress_MessageInstall>
 		<Progress_MessageUninstall>제거 중입니다. 기다리세요...</Progress_MessageUninstall>
+		<Progress_MessageRepair>수리 중입니다. 기다리세요...</Progress_MessageRepair>
 		<BlockExecution_Message>설치 작업을 완료할 수 있도록 응용 프로그램의 시작을 잠시 차단했습니다.</BlockExecution_Message>
 		<RestartPrompt_Title>다시 시작해야 합니다</RestartPrompt_Title>
 		<RestartPrompt_Message>설치를 완료하려면 컴퓨터를 다시 시작해야 합니다.</RestartPrompt_Message>
@@ -916,6 +951,7 @@
 
 		<DeploymentType_Install>Установка</DeploymentType_Install>
 		<DeploymentType_UnInstall>Удаление</DeploymentType_UnInstall>
+		<DeploymentType_Repair>ремонт</DeploymentType_Repair>
 		<BalloonText_Start>начата.</BalloonText_Start>
 		<BalloonText_Complete>выполнена.</BalloonText_Complete>
 		<BalloonText_RestartRequired>выполнена. Требуется перезагрузка.</BalloonText_RestartRequired>
@@ -923,6 +959,7 @@
 		<BalloonText_FastRetry>не завершена.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Идет установка. Пожалуйста, подождите...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Идет удаление. Пожалуйста, подождите...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Идет ремонт. Пожалуйста, подождите...</Progress_MessageRepair>
 		<BlockExecution_Message>Запуск этого приложения временно заблокирован для завершения процесса установки.</BlockExecution_Message>
 		<RestartPrompt_Title>Требуется перезагрузка</RestartPrompt_Title>
 		<RestartPrompt_Message>Для завершения установки необходимо перезагрузить ваш компьютер.</RestartPrompt_Message>
@@ -963,6 +1000,7 @@
 
 		<DeploymentType_Install>安装</DeploymentType_Install>
 		<DeploymentType_UnInstall>卸载</DeploymentType_UnInstall>
+		<DeploymentType_Repair>修复</DeploymentType_Repair>
 		<BalloonText_Start>已启动。</BalloonText_Start>
 		<BalloonText_Complete>完成。</BalloonText_Complete>
 		<BalloonText_RestartRequired>完成。必须重新启动。</BalloonText_RestartRequired>
@@ -970,6 +1008,7 @@
 		<BalloonText_FastRetry>未完成。</BalloonText_FastRetry>
 		<Progress_MessageInstall>安装中。请稍等。。。</Progress_MessageInstall>
 		<Progress_MessageUninstall>卸载中。请稍等。。。</Progress_MessageUninstall>
+		<Progress_MessageRepair>修复中。请稍等。。。</Progress_MessageRepair>
 		<BlockExecution_Message>为完成安装过程，暂时禁止启动这款应用程式。</BlockExecution_Message>
 		<RestartPrompt_Title>需重启</RestartPrompt_Title>
 		<RestartPrompt_Message>为完成安装过程，需重启计算机。</RestartPrompt_Message>
@@ -1010,6 +1049,7 @@
 
 		<DeploymentType_Install>安裝</DeploymentType_Install>
 		<DeploymentType_UnInstall>卸載</DeploymentType_UnInstall>
+		<DeploymentType_Repair>修復</DeploymentType_Repair>
 		<BalloonText_Start>已啟動。</BalloonText_Start>
 		<BalloonText_Complete>完成。</BalloonText_Complete>
 		<BalloonText_RestartRequired>完成。需重啟。</BalloonText_RestartRequired>
@@ -1017,6 +1057,7 @@
 		<BalloonText_FastRetry>未完成。</BalloonText_FastRetry>
 		<Progress_MessageInstall>安裝中。請稍等。。。</Progress_MessageInstall>
 		<Progress_MessageUninstall>卸載中。請稍等。。。</Progress_MessageUninstall>
+		<Progress_MessageRepair>修復中。請稍等。。。</Progress_MessageRepair>
 		<BlockExecution_Message>為完成安裝過程，暫時禁止啟動本款應用程式。</BlockExecution_Message>
 		<RestartPrompt_Title>需重啟</RestartPrompt_Title>
 		<RestartPrompt_Message>未完成安裝過程，需重啟計算機。</RestartPrompt_Message>
@@ -1057,6 +1098,7 @@
 
 		<DeploymentType_Install>Inštalácia</DeploymentType_Install>
 		<DeploymentType_UnInstall>Odinštalovať</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Oprava</DeploymentType_Repair>
 		<BalloonText_Start>spustená.</BalloonText_Start>
 		<BalloonText_Complete>ukončená.</BalloonText_Complete>
 		<BalloonText_RestartRequired>ukončená. Je nutný reštart.</BalloonText_RestartRequired>
@@ -1064,6 +1106,7 @@
 		<BalloonText_FastRetry>nemôže byť ukončená.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Inštalácia sa vykonáva. Prosím čakajte...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Prebieha odinštalácia. Prosím čakajte...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Vykonáva sa oprava. Prosím čakajte...</Progress_MessageRepair>
 		<BlockExecution_Message>Spustenie tejto aplikácie ( y ) bolo dočasne zastavené, aby mohla byť inštalácia vykonaná úspešne. </BlockExecution_Message>
 		<RestartPrompt_Title>Je nutný reštart.</RestartPrompt_Title>
 		<RestartPrompt_Message>Na ukončenie inštalácie musíte váš počítač reštartovať.</RestartPrompt_Message>
@@ -1073,7 +1116,7 @@
 		<RestartPrompt_ButtonRestartLater>Neskôr reštartovať.</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Teraz reštartovať.</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_SK>
-	
+
 	<!-- UI Messages - Czech -->
 	<UI_Messages_CZ>
 		<DiskSpace_Message>Nemáte dostatek volného místa na instalaci aplikace:
@@ -1101,9 +1144,10 @@
 
 		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovat:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
-		
+
 		<DeploymentType_Install>Instalace</DeploymentType_Install>
 		<DeploymentType_UnInstall>Odinstalace</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Oprava</DeploymentType_Repair>
 		<BalloonText_Start>zahájena.</BalloonText_Start>
 		<BalloonText_Complete>dokončena.</BalloonText_Complete>
 		<BalloonText_RestartRequired>dokončena. Je nutné restartovat počítač.</BalloonText_RestartRequired>
@@ -1111,6 +1155,7 @@
 		<BalloonText_FastRetry>nemůže být dokončena.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Instalace právě probíhá. Prosím čekejte...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Probíhá odinstalace. Prosím čekejte...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Oprava právě probíhá. Prosím čekejte...</Progress_MessageRepair>
 		<BlockExecution_Message>Spuštění této aplikace bylo dočasně zakázáno, aby mohla proběhnout instalace. </BlockExecution_Message>
 		<RestartPrompt_Title>Je nutné restartovat počítač.</RestartPrompt_Title>
 		<RestartPrompt_Message>Pro dokončení instalace musíte váš počítač restartovat.</RestartPrompt_Message>
@@ -1119,7 +1164,7 @@
 		<RestartPrompt_TimeRemaining>Zbývající čas:</RestartPrompt_TimeRemaining>
 		<RestartPrompt_ButtonRestartLater>Restartovat později.</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Restartovat nyní.</RestartPrompt_ButtonRestartNow>
-	</UI_Messages_CZ>	
+	</UI_Messages_CZ>
 
 	<!-- UI Messages - Hungarian-->
 	<UI_Messages_HU>
@@ -1150,6 +1195,7 @@
 
 		<DeploymentType_Install>Telepítés</DeploymentType_Install>
 		<DeploymentType_UnInstall>Eltávolítás</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Javítás</DeploymentType_Repair>
 		<BalloonText_Start>elindult.</BalloonText_Start>
 		<BalloonText_Complete>elkészült.</BalloonText_Complete>
 		<BalloonText_RestartRequired>elkészült.Újraindítás szükséges.</BalloonText_RestartRequired>
@@ -1157,6 +1203,7 @@
 		<BalloonText_FastRetry>nem lehet befejezni.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Telepítés folyamatban. Kérem várjon...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Eltávolítás folyamatban. Kérem várjon...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Javítás folyamatban. Kérem várjon...</Progress_MessageRepair>
 		<BlockExecution_Message> A következő alkalmazások blokkolva lesznek, annak érdekében hogy a telepítés problémamentesen végrehajtódjon.</BlockExecution_Message>
 		<RestartPrompt_Title>Újraindítás szükséges</RestartPrompt_Title>
 		<RestartPrompt_Message>A telepítés befejezéséhez a számítógépet újraindítása szükséges.</RestartPrompt_Message>
