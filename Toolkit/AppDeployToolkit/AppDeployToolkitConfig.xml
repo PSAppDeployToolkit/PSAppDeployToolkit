@@ -170,7 +170,7 @@
 		<!-- Default text displayed in the progress bar for installations. -->
 		<Progress_MessageUninstall>Uninstallation in progress. Please wait...</Progress_MessageUninstall>
 		<!-- Default text displayed in the progress bar for uninstallations. -->
-		<Progress_MessageRepair>Repairing in progress. Please wait...</Progress_MessageRepair>
+		<Progress_MessageRepair>Repair in progress. Please wait...</Progress_MessageRepair>
 		<!-- Default text displayed in the progress bar for repairs. -->
 		<BlockExecution_Message>Launching this application has been temporarily blocked so that an installation operation can complete.</BlockExecution_Message>
 		<!-- Text displayed when prompting user that an application has been blocked. -->
