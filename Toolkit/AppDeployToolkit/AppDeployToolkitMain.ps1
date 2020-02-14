@@ -871,7 +871,7 @@ Function Write-Log {
 }
 #endregion
 
-#region Function Get-LoggedOnUser
+#region Function Remove-InvalidFileNameChars
 Function Remove-InvalidFileNameChars {
 	<#
 	.SYNOPSIS
@@ -2342,10 +2342,10 @@ Function Execute-MSI {
 			If (-not $logName) {
 				If ($productCodeNameVersion) {
 					If ($productCodeNameVersion.Publisher) {
-						$logName = Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace ' ',''
+						$logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ',''
 					}
 					Else {
-						$logName = Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion) -replace ' ',''
+						$logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ',''
 					}
 				}
 				Else {
