@@ -659,7 +659,7 @@ Function Write-Log {
 		[int16]$Severity = 1,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNull()]
-		[string]$Source = '',
+		[string]$Source = 'Unknown',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[string]$ScriptSection = $script:installPhase,
