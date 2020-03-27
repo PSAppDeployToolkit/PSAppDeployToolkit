@@ -3314,9 +3314,11 @@ Function Remove-Folder {
 .SYNOPSIS
 	Remove folder and files if they exist.
 .DESCRIPTION
-	Remove folder and all files recursively in a given path.
+	Remove folder and all files with or without recursion in a given path.
 .PARAMETER Path
 	Path to the folder to remove.
+.PARAMETER DisableRecursion
+	Disables recursion while deleting.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -3331,6 +3333,8 @@ Function Remove-Folder {
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
 		[Parameter(Mandatory=$false)]
+		[switch]$DisableRecursion,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -3343,8 +3347,14 @@ Function Remove-Folder {
 	Process {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Try {
-					Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
-					Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+					If ($DisableRecursion) {
+						Write-Log -Message "Delete folder [$path] without recursion..." -Source ${CmdletName}
+						Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+					} else {
+						Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
+						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+					}
+
 					If ($ErrorRemoveFolder) {
 						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
 					}
