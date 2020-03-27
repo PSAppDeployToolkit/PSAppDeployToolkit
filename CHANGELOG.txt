@@ -1,5 +1,17 @@
-﻿Version 3.8.1 [xx/xx/2020]
+Version 3.8.2 [xx/xx/2020]
+        ---
+
+Version 3.8.1 [03/27/2020]
+        Added support for Repair as an action type (e.g. Install, Uninstall, Repair)
 	Added ability to Execute-ProcessAsUser function to run PowerShell scriptblocks 
+	Added ability to retrieve Product Version in Get-FileVersion
+        Added ability to display help for custom functions in the AppDeployToolkitHelp UI
+	Added ability to disable recurdsion in Remove-Folder
+        Added Remove-InvalidFileNameChars function and implemented across the toolkit
+ 	Added Powershell window renaming, in case it's visible to the user
+	Added Czech translations
+	Changed a few sentences and fixed typos in Dutch translations
+	Improved logging in Get-InstalledApplication
 	Fixed issue in Set-PinnedApplication where pin action on StartMenu is case sensitive on Windows 10
 
 Version 3.8.0 [09/23/2019]
