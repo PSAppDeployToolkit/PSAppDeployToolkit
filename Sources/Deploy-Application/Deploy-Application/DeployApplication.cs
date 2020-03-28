@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Windows.Forms;
-using System.Reflection;
 
 namespace PSAppDeployToolkit
 {
@@ -16,8 +15,7 @@ namespace PSAppDeployToolkit
             {
                 // Set up variables
                 int processExitCode = 60010;
-                string currentAppPath = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-                string currentAppFolder = Path.GetDirectoryName(currentAppPath);
+                string currentAppFolder = AppDomain.CurrentDomain.BaseDirectory;
                 string appDeployScriptPath = Path.Combine(currentAppFolder, "Deploy-Application.ps1");
                 string appDeployToolkitFolder = Path.Combine(currentAppFolder, "AppDeployToolkit");
                 string appDeployToolkitXMLPath = Path.Combine(appDeployToolkitFolder, "AppDeployToolkitConfig.xml");
@@ -125,12 +123,14 @@ namespace PSAppDeployToolkit
                 // Define PowerShell process
                 WriteDebugMessage("PowerShell Path: " + powershellExePath);
                 WriteDebugMessage("PowerShell Parameters: " + powershellArgs);
-                ProcessStartInfo processStartInfo = new ProcessStartInfo();
-                processStartInfo.FileName = powershellExePath;
-                processStartInfo.Arguments = powershellArgs;
-                processStartInfo.WorkingDirectory = Path.GetDirectoryName(powershellExePath);
-                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                processStartInfo.UseShellExecute = true;
+                ProcessStartInfo processStartInfo = new ProcessStartInfo
+                {
+                    FileName = powershellExePath,
+                    Arguments = powershellArgs,
+                    WorkingDirectory = Path.GetDirectoryName(powershellExePath),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = true
+                };
                 // Set the RunAs flag if the XML specifically calls for Admin Rights and OS Vista or higher
                 if (((isRequireAdmin) & (Environment.OSVersion.Version.Major >= 6)))
                 {
