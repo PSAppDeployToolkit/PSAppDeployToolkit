@@ -72,7 +72,7 @@ Param (
 ## Variables: Script Info
 [version]$appDeployMainScriptVersion = [version]'3.8.1'
 [version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.1'
-[string]$appDeployMainScriptDate = '27/03/2020'
+[string]$appDeployMainScriptDate = '28/03/2020'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -4592,16 +4592,16 @@ Function Get-FileVersion {
 				} else {
 					$fileVersion = $fileVersionInfo.FileVersion
 				}
-				
+
 				If ($fileVersion) {
 					If ($ProductVersion) {
 						Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
 					}
-					else 
+					else
 					{
 						Write-Log -Message "File version is [$fileVersion]." -Source ${CmdletName}
 					}
-					
+
 					Write-Output -InputObject $fileVersion
 				}
 				Else {
