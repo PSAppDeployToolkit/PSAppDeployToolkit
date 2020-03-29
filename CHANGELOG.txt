@@ -1,4 +1,4 @@
-**Version 3.8.1 [27/03/2020]**
+**Version 3.8.1 [28/03/2020]**
 - Added support for Repair as an action type (e.g. Install, Uninstall, Repair)
 - Added disabling of the close button for the Show-InstallationProgress window
 - Added ability to Execute-ProcessAsUser function to run PowerShell scriptblocks
@@ -9,10 +9,13 @@
 - Added Powershell window renaming, in case it's visible to the user
 - Added Czech translations
 - Changed -In parameter usage to .Contains as -In parameter not supported in PowerShell 2.0
+- Changed Banner image to use Cascadia Code as primary font
+- Improved documentation
 - Improved Dutch translations
 - Improved logging in Get-InstalledApplication
 - Fixed issue in Set-PinnedApplication where pin action on StartMenu is case sensitive on Windows 10
 - Fixed Set-ActiveSetup purging incorrectly testing registry values
+- Fixed issue with Deploy-Application.exe where it would prompt to download .NET Framework 3.5 on Windows 8 and above
 
 **Version 3.8.0 [09/23/2019]**
 - Added ability to change the dialog banner height, with a configurable maximum
