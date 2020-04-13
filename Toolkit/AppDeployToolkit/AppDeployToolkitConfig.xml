@@ -16,8 +16,8 @@
 	<Toolkit_Options>
 		<Toolkit_RequireAdmin>True</Toolkit_RequireAdmin>
 		<!-- Specify if Administrator Rights are required. NB: Some functions won't work if this is set to false, such as deferral, blockexecution, file & registry RW access and potentially logging. -->
-		<Toolkit_TempPath>$envSystemDrive\Users\Public</Toolkit_TempPath>
-		<!-- Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. -->
+		<Toolkit_TempPath>$envTemp</Toolkit_TempPath>
+		<!-- Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp. -->
 		<Toolkit_RegPath>HKLM:SOFTWARE</Toolkit_RegPath>
 		<!-- Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history. -->
 		<Toolkit_LogPath>$envWinDir\Logs\Software</Toolkit_LogPath>
