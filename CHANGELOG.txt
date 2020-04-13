@@ -1,4 +1,7 @@
-﻿Version 3.8.1 [xx/xx/2020]
+﻿Version 3.8.2 [04/13/2020]
+	Fixed issue with insecure defaults that could allow elevation of privilege (CVE-2020-10962)
+
+Version 3.8.1 [xx/xx/2020]
 	Added ability to Execute-ProcessAsUser function to run PowerShell scriptblocks 
 	Fixed issue in Set-PinnedApplication where pin action on StartMenu is case sensitive on Windows 10
 
