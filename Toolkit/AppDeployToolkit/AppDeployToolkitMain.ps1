@@ -5668,7 +5668,7 @@ Function Get-RunningProcesses {
 			[string[]]$processNames = $processObjects | ForEach-Object { $_.ProcessName }
 
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
+			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName } | Sort-Object Name -Unique
 
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
