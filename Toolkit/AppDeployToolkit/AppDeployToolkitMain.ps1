@@ -2790,7 +2790,7 @@ Function Execute-Process {
 .PARAMETER NoWait
 	Immediately continue after executing the process.
 .PARAMETER PassThru
-	Returns ExitCode, STDOut, and STDErr output from the process. Exit code is being ignored.
+	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER WaitForMsiExec
 	Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that
 	this function waits for the msiexec engine to become available before starting the install.
@@ -3033,11 +3033,12 @@ Function Execute-Process {
 
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
-					Write-Log -Message "Execution completed and the exit code [$returncode] is being ignored, because it is included in the returned object as output due to -PassThru parameter." -Source ${CmdletName}
+					Write-Log -Message "-PassThru parameter specified, returning execution results object." -Source ${CmdletName}
 					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = $stdOut; StdErr = $stdErr }
 					Write-Output -InputObject $ExecutionResults
 				}
-				ElseIf ($ignoreExitCodeMatch) {
+
+				If ($ignoreExitCodeMatch) {
 					Write-Log -Message "Execution completed and the exit code [$returncode] is being ignored." -Source ${CmdletName}
 				}
 				ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
