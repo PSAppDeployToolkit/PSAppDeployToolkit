@@ -3088,9 +3088,7 @@ Function Execute-Process {
 				[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 				Write-Output -InputObject $ExecutionResults
 			}
-			Else {
-				Exit-Script -ExitCode $returnCode
-			}
+			Exit-Script -ExitCode $returnCode
 		}
 	}
 	End {
