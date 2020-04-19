@@ -2798,6 +2798,8 @@ Function Execute-Process {
 	Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
 	List the exit codes to ignore.
+.PARAMETER PriorityClass
+	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 .PARAMETER ContinueOnError
 	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false.
 .EXAMPLE
@@ -2850,6 +2852,9 @@ Function Execute-Process {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$IgnoreExitCodes,
+		[Parameter(Mandatory=$false)]
+		[ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+		[Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2956,7 +2961,24 @@ Function Execute-Process {
 				Else {
 					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
 				}
-				[boolean]$processStarted = $process.Start()
+
+				$null = $process.Start()
+
+				If ($PriorityClass -ne "Normal") {
+					try {
+						If ($process.HasExited -eq $False) {
+							Write-Log -Message "Changing the priority class for the process to [$PriorityClass]" -Source ${CmdletName}
+							$process.PriorityClass = $PriorityClass
+						}
+						Else {
+							Write-Log -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2 -Source ${CmdletName}
+						}
+
+					}
+					catch {
+						Write-Log -Message "Failed to change the priority class for the process." -Severity 2 -Source ${CmdletName}
+					}
+				}
 
 				If ($NoWait) {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
