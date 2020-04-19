@@ -2797,11 +2797,9 @@ Function Execute-Process {
 .PARAMETER MsiExecWaitTime
 	Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
-	List the exit codes to ignore.
-.PARAMETER PriorityClass
-	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
+	List the exit codes to ignore or * to ignore all exit codes.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false.
+	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
 	Execute-Process -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
 	If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
@@ -2873,7 +2871,11 @@ Function Execute-Process {
 			If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
 				Write-Log -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
 				If (-not (Test-Path -LiteralPath $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
-					Throw "File [$Path] not found."
+					Write-Log -Message "File [$Path] not found." -Severity 3 -Source ${CmdletName}
+					If (-not $ContinueOnError) {
+						Throw "File [$Path] not found."
+					}
+					Return
 				}
 			}
 			Else {
@@ -2895,7 +2897,11 @@ Function Execute-Process {
 					$Path = $FullyQualifiedPath
 				}
 				Else {
-					Throw "[$Path] contains an invalid path or file name."
+					Write-Log -Message "[$Path] contains an invalid path or file name." -Severity 3 -Source ${CmdletName}
+					If (-not $ContinueOnError) {
+						Throw "[$Path] contains an invalid path or file name."
+					}
+					Return
 				}
 			}
 
@@ -2912,7 +2918,11 @@ Function Execute-Process {
 				If (-not $MsiExecAvailable) {
 					#  Default MSI exit code for install already in progress
 					[int32]$returnCode = 1618
-					Throw 'Please complete in progress MSI installation before proceeding with this install.'
+					Write-Log -Message "Another MSI installation is already in progress and needs to be completed before proceeding with this installation." -Severity 3 -Source ${CmdletName}
+					If (-not $ContinueOnError) {
+						Throw 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.'
+					}
+					Return
 				}
 			}
 
@@ -3028,23 +3038,28 @@ Function Execute-Process {
 				## Check to see whether we should ignore exit codes
 				$ignoreExitCodeMatch = $false
 				If ($ignoreExitCodes) {
-					#  Split the processes on a comma
-					[int32[]]$ignoreExitCodesArray = $ignoreExitCodes -split ','
-					ForEach ($ignoreCode in $ignoreExitCodesArray) {
-						If ($returnCode -eq $ignoreCode) { $ignoreExitCodeMatch = $true }
+					## Check whether * was specified, which would tell us to ignore all exit codes
+					If ($ignoreExitCodes.Trim() -eq "*") {
+						$ignoreExitCodeMatch = $true
+					}
+					Else {
+						## Split the processes on a comma
+						[int32[]]$ignoreExitCodesArray = $ignoreExitCodes -split ','
+						ForEach ($ignoreCode in $ignoreExitCodesArray) {
+							If ($returnCode -eq $ignoreCode) { $ignoreExitCodeMatch = $true }
+						}
 					}
 				}
-				#  Or always ignore exit codes
-				If ($ContinueOnError) { $ignoreExitCodeMatch = $true }
 
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
-					Write-Log -Message "Execution completed with exit code [$returnCode]." -Source ${CmdletName}
+					Write-Log -Message "-PassThru parameter specified, returning execution results object." -Source ${CmdletName}
 					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = $stdOut; StdErr = $stdErr }
 					Write-Output -InputObject $ExecutionResults
 				}
-				ElseIf ($ignoreExitCodeMatch) {
-					Write-Log -Message "Execution complete and the exit code [$returncode] is being ignored." -Source ${CmdletName}
+
+				If ($ignoreExitCodeMatch) {
+					Write-Log -Message "Execution completed and the exit code [$returncode] is being ignored." -Source ${CmdletName}
 				}
 				ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
 					Write-Log -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2 -Source ${CmdletName}
@@ -3082,6 +3097,9 @@ Function Execute-Process {
 			If ([string]::IsNullOrEmpty([string]$returnCode)) {
 				[int32]$returnCode = 60002
 				Write-Log -Message "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+				}
 			}
 			Else {
 				Write-Log -Message "Execution completed with exit code [$returnCode]. Function failed. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -3090,9 +3108,7 @@ Function Execute-Process {
 				[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 				Write-Output -InputObject $ExecutionResults
 			}
-			Else {
-				Exit-Script -ExitCode $returnCode
-			}
+			Exit-Script -ExitCode $returnCode
 		}
 	}
 	End {
@@ -4880,9 +4896,7 @@ Function Execute-ProcessAsUser {
 			If (-not $ContinueOnError) {
 				Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
 			}
-			Else {
-				Return
-			}
+			Return
 		}
 
 		## Confirm if the toolkit is running with administrator privileges
@@ -4892,9 +4906,7 @@ Function Execute-ProcessAsUser {
 			If (-not $ContinueOnError) {
 				Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
 			}
-			Else {
-				Return
-			}
+			Return
 		}
 
 		## Build the scheduled task XML name
@@ -4973,9 +4985,7 @@ Function Execute-ProcessAsUser {
 			If (-not $ContinueOnError) {
 				Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
 			}
-			Else {
-				Return
-			}
+			Return
 		}
 
 		## Create Scheduled Task to run the process with a logged-on user account
@@ -4997,9 +5007,7 @@ Function Execute-ProcessAsUser {
 			If (-not $ContinueOnError) {
 				Throw "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]."
 			}
-			Else {
-				Return
-			}
+			Return
 		}
 
 		## Trigger the Scheduled Task
@@ -5020,13 +5028,11 @@ Function Execute-ProcessAsUser {
 			Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
 			#  Delete Scheduled Task
 			Write-Log -Message 'Delete the scheduled task which did not trigger.' -Source ${CmdletName}
-			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ContinueOnError $true
+			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -IgnoreExitCodes "*"
 			If (-not $ContinueOnError) {
 				Throw "Failed to trigger scheduled task [$schTaskName]."
 			}
-			Else {
-				Return
-			}
+			Return
 		}
 
 		## Wait for the process launched by the scheduled task to complete execution
@@ -8739,10 +8745,10 @@ Function Install-MSUpdates {
 				Write-Log -Message "Install [$redistDescription $redistVersion]..." -Source ${CmdletName}
 				#  Handle older redistributables (ie, VC++ 2005)
 				If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
-					Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -ContinueOnError $true
+					Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes "*"
 				}
 				Else {
-					Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -ContinueOnError $true
+					Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes "*"
 				}
 			}
 			Else {
@@ -8755,11 +8761,11 @@ Function Install-MSUpdates {
 					Write-Log -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
 					Switch ($file.Extension) {
 						#  Installation type for executables (i.e., Microsoft Office Updates)
-						'.exe' { Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -ContinueOnError $true }
+						'.exe' { Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
 						#  Installation type for Windows updates using Windows Update Standalone Installer
-						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -ContinueOnError $true }
+						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
 						#  Installation type for Windows Installer Patch
-						'.msp' { Execute-MSI -Action 'Patch' -Path $file.FullName -ContinueOnError $true }
+						'.msp' { Execute-MSI -Action 'Patch' -Path $file.FullName -IgnoreExitCodes "*" }
 					}
 				}
 				Else {
