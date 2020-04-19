@@ -8,16 +8,16 @@
 -->
 	<!--Configuration File Details-->
 	<Config_File>
-		<Config_Version>3.8.1</Config_Version>
-		<Config_Date>28/03/2020</Config_Date>
+		<Config_Version>3.8.2</Config_Version>
+		<Config_Date>13/04/2020</Config_Date>
 	</Config_File>
 
 	<!--Toolkit Options-->
 	<Toolkit_Options>
 		<Toolkit_RequireAdmin>True</Toolkit_RequireAdmin>
 		<!-- Specify if Administrator Rights are required. NB: Some functions won't work if this is set to false, such as deferral, blockexecution, file & registry RW access and potentially logging. -->
-		<Toolkit_TempPath>$envSystemDrive\Users\Public</Toolkit_TempPath>
-		<!-- Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. -->
+		<Toolkit_TempPath>$envTemp</Toolkit_TempPath>
+		<!-- Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp. -->
 		<Toolkit_RegPath>HKLM:SOFTWARE</Toolkit_RegPath>
 		<!-- Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history. -->
 		<Toolkit_LogPath>$envWinDir\Logs\Software</Toolkit_LogPath>

@@ -70,9 +70,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.8.1'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.1'
-[string]$appDeployMainScriptDate = '28/03/2020'
+[version]$appDeployMainScriptVersion = [version]'3.8.2'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.2'
+[string]$appDeployMainScriptDate = '13/04/2020'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -2851,6 +2851,9 @@ Function Execute-Process {
 		[ValidateNotNullorEmpty()]
 		[string]$IgnoreExitCodes,
 		[Parameter(Mandatory=$false)]
+		[ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+		[Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
 	)
@@ -2968,7 +2971,24 @@ Function Execute-Process {
 				Else {
 					Write-Log -Message "Executing [$Path]..." -Source ${CmdletName}
 				}
-				[boolean]$processStarted = $process.Start()
+
+				$null = $process.Start()
+
+				If ($PriorityClass -ne "Normal") {
+					try {
+						If ($process.HasExited -eq $False) {
+							Write-Log -Message "Changing the priority class for the process to [$PriorityClass]" -Source ${CmdletName}
+							$process.PriorityClass = $PriorityClass
+						}
+						Else {
+							Write-Log -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2 -Source ${CmdletName}
+						}
+
+					}
+					catch {
+						Write-Log -Message "Failed to change the priority class for the process." -Severity 2 -Source ${CmdletName}
+					}
+				}
 
 				If ($NoWait) {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
@@ -5676,7 +5696,7 @@ Function Get-RunningProcesses {
 			[string[]]$processNames = $processObjects | ForEach-Object { $_.ProcessName }
 
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName }
+			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object { $processNames -contains $_.ProcessName } | Sort-Object Name -Unique
 
 			If ($runningProcesses) {
 				[string]$runningProcessList = ($runningProcesses | ForEach-Object { $_.ProcessName } | Select-Object -Unique) -join ','
