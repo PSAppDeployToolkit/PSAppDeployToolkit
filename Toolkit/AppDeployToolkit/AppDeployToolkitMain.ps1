@@ -2798,6 +2798,10 @@ Function Execute-Process {
 	Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 .PARAMETER IgnoreExitCodes
 	List the exit codes to ignore or * to ignore all exit codes.
+.PARAMETER PriorityClass	
+	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
+.PARAMETER ExitOnProcessFailure
+	Specified whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
 .PARAMETER ContinueOnError
 	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
@@ -2853,6 +2857,9 @@ Function Execute-Process {
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
 		[Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ExitOnProcessFailure = $true,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -3089,7 +3096,10 @@ Function Execute-Process {
 					Else {
 						Write-Log -Message "Execution failed with exit code [$returnCode]." -Severity 3 -Source ${CmdletName}
 					}
-					Exit-Script -ExitCode $returnCode
+
+					If ($ExitOnProcessFailure) {
+						Exit-Script -ExitCode $returnCode
+					}
 				}
 			}
 		}
@@ -3104,11 +3114,15 @@ Function Execute-Process {
 			Else {
 				Write-Log -Message "Execution completed with exit code [$returnCode]. Function failed. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
+
 			If ($PassThru) {
 				[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 				Write-Output -InputObject $ExecutionResults
 			}
-			Exit-Script -ExitCode $returnCode
+
+			If ($ExitOnProcessFailure) {
+				Exit-Script -ExitCode $returnCode
+			}
 		}
 	}
 	End {
