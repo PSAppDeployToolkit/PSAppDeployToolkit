@@ -2244,10 +2244,18 @@ Function Execute-MSI {
 	Skips the check to determine if the MSI is already installed on the system. Default is: $false.
 .PARAMETER IncludeUpdatesAndHotfixes
 	Include matches against updates and hotfixes in results.
+.PARAMETER NoWait
+	Immediately continue after executing the process.
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
+.PARAMETER IgnoreExitCodes
+	List the exit codes to ignore or * to ignore all exit codes.
+.PARAMETER PriorityClass	
+	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
+.PARAMETER ExitOnProcessFailure
+	Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Default is: $false.
+	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
 	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI
@@ -2307,8 +2315,19 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[switch]$IncludeUpdatesAndHotfixes = $false,
 		[Parameter(Mandatory=$false)]
+		[switch]$NoWait = $false,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[switch]$PassThru = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IgnoreExitCodes,
+		[Parameter(Mandatory=$false)]
+		[ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+		[Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ExitOnProcessFailure = $true,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2509,6 +2528,10 @@ Function Execute-MSI {
 			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
 			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
 			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
+			If ($IgnoreExitCodes) {  $ExecuteProcessSplat.Add( 'IgnoreExitCodes', $IgnoreExitCodes) }
+			If ($PriorityClass) {  $ExecuteProcessSplat.Add( 'PriorityClass', $PriorityClass) }
+			If ($ExitOnProcessFailure) {  $ExecuteProcessSplat.Add( 'ExitOnProcessFailure', $ExitOnProcessFailure) }
+			If ($NoWait) { $ExecuteProcessSplat.Add( 'NoWait', $NoWait) }
 			#  Call the Execute-Process function
 			If ($PassThru) {
 				[psobject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
@@ -2801,7 +2824,7 @@ Function Execute-Process {
 .PARAMETER PriorityClass	
 	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 .PARAMETER ExitOnProcessFailure
-	Specified whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
+	Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
 .PARAMETER ContinueOnError
 	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
