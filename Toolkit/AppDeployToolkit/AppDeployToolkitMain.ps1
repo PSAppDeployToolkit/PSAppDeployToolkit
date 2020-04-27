@@ -2982,6 +2982,8 @@ Function Execute-Process {
 				[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
 				$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
 				$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
+				$stdErrBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
+				$stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'ErrorDataReceived' -MessageData $stdErrBuilder -ErrorAction 'Stop'
 
 				## Start Process
 				Write-Log -Message "Working Directory is [$WorkingDirectory]." -Source ${CmdletName}
@@ -3025,14 +3027,14 @@ Function Execute-Process {
 				}
 				Else {
 					$process.BeginOutputReadLine()
-					$stdErr = $($process.StandardError.ReadToEnd()).ToString() -replace $null,''
-
+					$process.BeginErrorReadLine()
+					
 					## Instructs the Process component to wait indefinitely for the associated process to exit.
 					$process.WaitForExit()
-
+					
 					## HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
 					While (-not ($process.HasExited)) { $process.Refresh(); Start-Sleep -Seconds 1 }
-
+					
 					## Get the exit code for the process
 					Try {
 						[int32]$returnCode = $process.ExitCode
@@ -3041,10 +3043,12 @@ Function Execute-Process {
 						#  Catch exit codes that are out of int32 range
 						[int32]$returnCode = 60013
 					}
-
-					## Unregister standard output event to retrieve process output
+					
+					## Unregister standard output and error event to retrieve process output
 					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
+					If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
 					$stdOut = $stdOutBuilder.ToString() -replace $null,''
+					$stdErr = $stdErrBuilder.ToString() -replace $null,''
 
 					If ($stdErr.Length -gt 0) {
 						Write-Log -Message "Standard error output from the process: $stdErr" -Severity 3 -Source ${CmdletName}
@@ -3052,11 +3056,11 @@ Function Execute-Process {
 				}
 			}
 			Finally {
-				## Make sure the standard output event is unregistered
-				If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'}
-
+				## Make sure the standard output and error event is unregistered
+				If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
+				If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
 				## Free resources associated with the process, this does not cause process to exit
-				If ($process) { $process.Close() }
+				If ($process) { $process.Dispose() }
 
 				## Re-enable Zone checking
 				Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'SilentlyContinue'
