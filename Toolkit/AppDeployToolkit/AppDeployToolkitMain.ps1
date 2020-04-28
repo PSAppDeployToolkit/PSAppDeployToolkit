@@ -2254,6 +2254,8 @@ Function Execute-MSI {
 	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 .PARAMETER ExitOnProcessFailure
 	Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
+.PARAMETER RepairFromSource
+	Specifies whether we should repair from source. Also rewrites local cache. Default: $false
 .PARAMETER ContinueOnError
 	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
@@ -2328,6 +2330,9 @@ Function Execute-MSI {
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ExitOnProcessFailure = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$RepairFromSource = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2406,7 +2411,7 @@ Function Execute-MSI {
 			'Install' { $option = '/i'; [string]$msiLogFile = "$logPath" + '_Install'; $msiDefaultParams = $msiInstallDefaultParams }
 			'Uninstall' { $option = '/x'; [string]$msiLogFile = "$logPath" + '_Uninstall'; $msiDefaultParams = $msiUninstallDefaultParams }
 			'Patch' { $option = '/update'; [string]$msiLogFile = "$logPath" + '_Patch'; $msiDefaultParams = $msiInstallDefaultParams }
-			'Repair' { $option = '/f'; [string]$msiLogFile = "$logPath" + '_Repair'; $msiDefaultParams = $msiInstallDefaultParams }
+			'Repair' { $option = '/f'; If ($RepairFromSource) {	$option += "v" } [string]$msiLogFile = "$logPath" + '_Repair'; $msiDefaultParams = $msiInstallDefaultParams }
 			'ActiveSetup' { $option = '/fups'; [string]$msiLogFile = "$logPath" + '_ActiveSetup' }
 		}
 
