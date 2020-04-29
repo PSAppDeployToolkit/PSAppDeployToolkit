@@ -2593,7 +2593,7 @@ Function Remove-MSIApplications {
 .PARAMETER PassThru
 	Returns ExitCode, STDOut, and STDErr output from the process.
 .PARAMETER ContinueOnError
-	Continue if an exit code is returned by msiexec that is not recognized by the App Deploy Toolkit. Default is: $true.
+	Continue if an error occured while trying to start the processes. Default: $true.
 .EXAMPLE
 	Remove-MSIApplications -Name 'Adobe Flash'
 	Removes all versions of software that match the name "Adobe Flash"
