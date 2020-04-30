@@ -4989,7 +4989,7 @@ Function Execute-ProcessAsUser {
 			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
 		}
 
-		## Prepare working directory line
+		## Prepare working directory insert
 		[string]$WorkingDirectoryInsert = ""
 		If ($WorkingDirectory) {
 			$WorkingDirectoryInsert = "`n	  <WorkingDirectory>$WorkingDirectory</WorkingDirectory>"
