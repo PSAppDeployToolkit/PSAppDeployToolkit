@@ -4888,6 +4888,8 @@ Function Execute-ProcessAsUser {
 	Wait for the process, launched by the scheduled task, to complete execution before accepting more input. Default is $false.
 .PARAMETER PassThru
 	Returns the exit code from this function or the process launched by the scheduled task.
+.PARAMETER WorkingDirectory
+	Set working directory for the process.
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is $true.
 .EXAMPLE
@@ -4923,6 +4925,9 @@ Function Execute-ProcessAsUser {
 		[switch]$PassThru = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
+		[string]$WorkingDirectory,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
 
@@ -4955,6 +4960,11 @@ Function Execute-ProcessAsUser {
 			Return
 		}
 
+		## Check whether the specified Working Directory exists
+		If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
+			Write-Log -Message "The specified working directory does not exist or is not a directory. The scheduled task might not work as expected." -Severity 2 -Source ${CmdletName}
+		}
+
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 
@@ -4979,6 +4989,11 @@ Function Execute-ProcessAsUser {
 			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
 		}
 
+		## Prepare working directory insert
+		[string]$WorkingDirectoryInsert = ""
+		If ($WorkingDirectory) {
+			$WorkingDirectoryInsert = "`n	  <WorkingDirectory>$WorkingDirectory</WorkingDirectory>"
+		}
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5007,7 +5022,7 @@ Function Execute-ProcessAsUser {
   <Actions Context="Author">
 	<Exec>
 	  <Command>$Path</Command>
-	  <Arguments>$Parameters</Arguments>
+	  <Arguments>$Parameters</Arguments>$WorkingDirectoryInsert
 	</Exec>
   </Actions>
   <Principals>
