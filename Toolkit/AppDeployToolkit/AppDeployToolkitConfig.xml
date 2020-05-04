@@ -1078,7 +1078,7 @@
 
 		Prosím, uvoľnite dostatok miesta pre pokračovanie inštalácie.</DiskSpace_Message>
 		<ClosePrompt_ButtonContinue>Pokračovať</ClosePrompt_ButtonContinue>
-		<ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", keď zavriete vyššie zobrazené aplikácie.</ClosePrompt_ButtonContinueTooltip>
+		<ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", keď zavriete vyššie uvedené aplikácie.</ClosePrompt_ButtonContinueTooltip>
 		<ClosePrompt_ButtonClose>Ukončiť programy</ClosePrompt_ButtonClose>
 		<ClosePrompt_ButtonDefer>Oddialiť</ClosePrompt_ButtonDefer>
 		<ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než bude inštalácia pokračovať.
