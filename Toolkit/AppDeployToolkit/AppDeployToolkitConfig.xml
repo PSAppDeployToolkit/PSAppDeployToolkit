@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <AppDeployToolkit_Config>
 <!--# LICENSE #
     PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
@@ -1073,48 +1073,48 @@
 		<DiskSpace_Message>Nemáte dostatok voľného miesta na dokončenie inštalácie:
 		{0}
 
-		Potrebný priestor: {1}MB
-		Voľný priestor: {2}MB
+		Potrebné miesto: {1}MB
+		Voľné miesto: {2}MB
 
-		Prosím, uvoľnite dostatok miesta k pokračovaní v inštalácie.</DiskSpace_Message>
+		Prosím, uvoľnite dostatok miesta pre pokračovanie inštalácie.</DiskSpace_Message>
 		<ClosePrompt_ButtonContinue>Pokračovať</ClosePrompt_ButtonContinue>
-		<ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", až budete mať vyššie uvedenú žiadosť ( y ) uzavretú.</ClosePrompt_ButtonContinueTooltip>
-		<ClosePrompt_ButtonClose>Ukončiť program</ClosePrompt_ButtonClose>
+		<ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", keď zavriete vyššie zobrazené aplikácie.</ClosePrompt_ButtonContinueTooltip>
+		<ClosePrompt_ButtonClose>Ukončiť programy</ClosePrompt_ButtonClose>
 		<ClosePrompt_ButtonDefer>Oddialiť</ClosePrompt_ButtonDefer>
-		<ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než inštalácia môže pokračovať.
+		<ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než bude inštalácia pokračovať.
 
-		Prosím, uložte svoju prácu, zatvorte program a potom kliknite na pokračovať .
-		Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť program".
+		Prosím, uložte svoju prácu, zatvorte dané programy a potom kliknite na pokračovať.
+		Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť programy".
 		</ClosePrompt_Message>
-		<ClosePrompt_CountdownMessage>Poznámka: Programy budú automaticky uzavreté:</ClosePrompt_CountdownMessage>
+		<ClosePrompt_CountdownMessage>Poznámka: Programy budú automaticky ukončené za:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Nasledujúca aplikácia bude nainštalovaná:</DeferPrompt_WelcomeMessage>
-		<DeferPrompt_ExpiryMessage>Inštaláciu môžete odložiť počas platnosti odkladu:</DeferPrompt_ExpiryMessage>
-		<DeferPrompt_WarningMessage>Akonáhle odklad uplynie, už nebudete mať šancu odložiť inštaláciu.</DeferPrompt_WarningMessage>
-		<DeferPrompt_RemainingDeferrals>Zostávajúci odklad:</DeferPrompt_RemainingDeferrals>
+		<DeferPrompt_ExpiryMessage>Inštaláciu môžete niekoľkokrát odložiť:</DeferPrompt_ExpiryMessage>
+		<DeferPrompt_WarningMessage>Akonáhle odklady uplynú, už nebudete mať možnosť odložiť inštaláciu.</DeferPrompt_WarningMessage>
+		<DeferPrompt_RemainingDeferrals>Zostávajúce odklady:</DeferPrompt_RemainingDeferrals>
 		<DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
 
-		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovať:</WelcomePrompt_CountdownMessage>
+		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovať za:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 		<DeploymentType_Install>Inštalácia</DeploymentType_Install>
-		<DeploymentType_UnInstall>Odinštalovať</DeploymentType_UnInstall>
+		<DeploymentType_UnInstall>Odinštalácia</DeploymentType_UnInstall>
 		<DeploymentType_Repair>Oprava</DeploymentType_Repair>
 		<BalloonText_Start>spustená.</BalloonText_Start>
 		<BalloonText_Complete>ukončená.</BalloonText_Complete>
 		<BalloonText_RestartRequired>ukončená. Je nutný reštart.</BalloonText_RestartRequired>
 		<BalloonText_Error>sa nepodarila.</BalloonText_Error>
-		<BalloonText_FastRetry>nemôže byť ukončená.</BalloonText_FastRetry>
+		<BalloonText_FastRetry>nedokončená.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Inštalácia sa vykonáva. Prosím čakajte...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Prebieha odinštalácia. Prosím čakajte...</Progress_MessageUninstall>
 		<Progress_MessageRepair>Vykonáva sa oprava. Prosím čakajte...</Progress_MessageRepair>
-		<BlockExecution_Message>Spustenie tejto aplikácie ( y ) bolo dočasne zastavené, aby mohla byť inštalácia vykonaná úspešne. </BlockExecution_Message>
+		<BlockExecution_Message>Spustenie tejto aplikácie bolo dočasne zablokované, aby mohla byť inštalácia dokončená úspešne. </BlockExecution_Message>
 		<RestartPrompt_Title>Je nutný reštart.</RestartPrompt_Title>
-		<RestartPrompt_Message>Na ukončenie inštalácie musíte váš počítač reštartovať.</RestartPrompt_Message>
+		<RestartPrompt_Message>Na dokončenie inštalácie musíte váš počítač reštartovať.</RestartPrompt_Message>
 		<RestartPrompt_MessageTime>Prosím, uložte si prácu a reštartujte počítač v stanovenej lehote.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Na konci odpočítavania, bude váš počítač automaticky reštartovaný.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Zostávajúci čas:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Neskôr reštartovať.</RestartPrompt_ButtonRestartLater>
-		<RestartPrompt_ButtonRestartNow>Teraz reštartovať.</RestartPrompt_ButtonRestartNow>
+		<RestartPrompt_ButtonRestartLater>Reštartovať Neskôr</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartNow>Reštartovať Teraz</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_SK>
 
 	<!-- UI Messages - Czech -->
@@ -1125,24 +1125,24 @@
 		Potřebné místo na disku: {1}MB
 		Dostupné místo na disku: {2}MB
 
-		Uvolněte prosím dostatek místa k pokračovaní v instalaci.</DiskSpace_Message>
+		Uvolněte prosím dostatek místa k pokračovaní instalace.</DiskSpace_Message>
 		<ClosePrompt_ButtonContinue>Pokračovat</ClosePrompt_ButtonContinue>
-		<ClosePrompt_ButtonContinueTooltip>Klikněte na "Pokračovat", až budete mít výše uvedené aplikace uzavřené.</ClosePrompt_ButtonContinueTooltip>
-		<ClosePrompt_ButtonClose>Ukončit program</ClosePrompt_ButtonClose>
+		<ClosePrompt_ButtonContinueTooltip>Klikněte na "Pokračovat", až budete mít výše uvedené aplikace zavřené.</ClosePrompt_ButtonContinueTooltip>
+		<ClosePrompt_ButtonClose>Ukončit programy</ClosePrompt_ButtonClose>
 		<ClosePrompt_ButtonDefer>Odložit</ClosePrompt_ButtonDefer>
 		<ClosePrompt_Message>Následující programy musí být zavřené, aby instalace mohla pokračovat.
 
 		Prosím, uložte svou práci, zavřete program a potom klikněte na "Pokračovat".
-		Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit program".
+		Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit programy".
 		</ClosePrompt_Message>
-		<ClosePrompt_CountdownMessage>Upozornění: Programy budou automaticky uzavřené za:</ClosePrompt_CountdownMessage>
+		<ClosePrompt_CountdownMessage>Upozornění: Programy budou automaticky zavřené za:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Nasledující aplikace bude nainstalována:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Instalaci můžete několikrát odložit:</DeferPrompt_ExpiryMessage>
 		<DeferPrompt_WarningMessage>Jakmile vyčerpáte všechna odložení, už nebudete mít šanci odložit instalaci.</DeferPrompt_WarningMessage>
 		<DeferPrompt_RemainingDeferrals>Zbývající počet odložení:</DeferPrompt_RemainingDeferrals>
 		<DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
 
-		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovat:</WelcomePrompt_CountdownMessage>
+		<WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovat za:</WelcomePrompt_CountdownMessage>
 		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 		<DeploymentType_Install>Instalace</DeploymentType_Install>
@@ -1152,7 +1152,7 @@
 		<BalloonText_Complete>dokončena.</BalloonText_Complete>
 		<BalloonText_RestartRequired>dokončena. Je nutné restartovat počítač.</BalloonText_RestartRequired>
 		<BalloonText_Error>se nepodařila.</BalloonText_Error>
-		<BalloonText_FastRetry>nemůže být dokončena.</BalloonText_FastRetry>
+		<BalloonText_FastRetry>nedokončena.</BalloonText_FastRetry>
 		<Progress_MessageInstall>Instalace právě probíhá. Prosím čekejte...</Progress_MessageInstall>
 		<Progress_MessageUninstall>Probíhá odinstalace. Prosím čekejte...</Progress_MessageUninstall>
 		<Progress_MessageRepair>Oprava právě probíhá. Prosím čekejte...</Progress_MessageRepair>
@@ -1162,8 +1162,8 @@
 		<RestartPrompt_MessageTime>Prosím, uložte si práci a restartujte počítač ve stanoveném čase.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Na konci odpočítávání, bude váš počítač automaticky restartovaný.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Zbývající čas:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Restartovat později.</RestartPrompt_ButtonRestartLater>
-		<RestartPrompt_ButtonRestartNow>Restartovat nyní.</RestartPrompt_ButtonRestartNow>
+		<RestartPrompt_ButtonRestartLater>Restartovat později</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartNow>Restartovat nyní</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_CZ>
 
 	<!-- UI Messages - Hungarian-->
