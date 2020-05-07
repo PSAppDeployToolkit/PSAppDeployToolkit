@@ -428,6 +428,9 @@ If (-not $deploymentType) { [string]$deploymentType = 'Install' }
 ## Variables: RegEx Patterns
 [string]$MSIProductCodeRegExPattern = '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$'
 
+## Variables: Invalid FileName Characters
+[char[]]$invalidFileNameChars = [IO.Path]::GetinvalidFileNameChars()
+
 ## Variables: Registry Keys
 #  Registry keys for native and WOW64 applications
 [string[]]$regKeyApplications = 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -900,7 +903,7 @@ Function Remove-InvalidFileNameChars {
 	}
 	Process {
 		Try {
-			Write-Output -InputObject (([char[]]$Name | Where-Object { [IO.Path]::GetinvalidFileNameChars() -notcontains $_ }) -join '')
+			Write-Output -InputObject (([char[]]$Name | Where-Object { $invalidFileNameChars -notcontains $_ }) -join '')
 		}
 		Catch {
 			Write-Log -Message "Failed to remove invalid characters from the supplied filename. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -2104,10 +2107,10 @@ Function Get-InstalledApplication {
 					Continue
 				}
 
-				## Remove any invalid filename characters which may interfere with logging and creating file path names from these variables
-				$appDisplayName = Remove-InvalidFileNameChars -Name $regKeyApp.DisplayName
-				$appDisplayVersion = Remove-InvalidFileNameChars -Name $regKeyApp.DisplayVersion
-				$appPublisher = Remove-InvalidFileNameChars -Name $regKeyApp.Publisher
+				## Remove any control characters which may interfere with logging and creating file path names from these variables
+				$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
+				$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
+				$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
 
 
 				## Determine if application is a 64-bit application
