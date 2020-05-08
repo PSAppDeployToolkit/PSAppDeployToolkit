@@ -1192,6 +1192,8 @@ Function Exit-Script {
 	}
 
 	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
+	## Reset powershell window title to its previous title
+	$Host.UI.RawUI.WindowTitle = $oldPSWindowTitle
 	## Exit the script, returning the exit code to SCCM
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }
@@ -10811,7 +10813,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 	}
 }
 
-## Set up sample variables if Dot Sourcing the script, app details have not been specified, or InstallName not passed as parameter to the script
+## Set up sample variables if Dot Sourcing the script, app details have not been specified
 If (-not $appName) {
 	[string]$appName = $appDeployMainScriptFriendlyName
 	If (-not $appVendor) { [string]$appVendor = 'PS' }
@@ -10820,24 +10822,27 @@ If (-not $appName) {
 	If (-not $appRevision) { [string]$appRevision = '01' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
-If ($ReferredInstallTitle) { [string]$installTitle = $ReferredInstallTitle }
+
+## Sanitize the application details, as they can cause issues in the script
+[string]$appVendor = (Remove-InvalidFileNameChars -Name ($appVendor.Trim()))
+[string]$appName = (Remove-InvalidFileNameChars -Name ($appName.Trim()))
+[string]$appVersion = (Remove-InvalidFileNameChars -Name ($appVersion.Trim()))
+[string]$appArch = (Remove-InvalidFileNameChars -Name ($appArch.Trim()))
+[string]$appLang = (Remove-InvalidFileNameChars -Name ($appLang.Trim()))
+[string]$appRevision = (Remove-InvalidFileNameChars -Name ($appRevision.Trim()))
+
+## Build the Installation Title
+If ($ReferredInstallTitle) { [string]$installTitle = (Remove-InvalidFileNameChars -Name ($ReferredInstallTitle.Trim())) }
 If (-not $installTitle) {
-	[string]$installTitle = ("$appVendor $appName $appVersion").Trim()
+	[string]$installTitle = "$appVendor $appName $appVersion"
 }
 
 ## Set Powershell window title, in case the window is visible
+[string]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
 $Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
 
-## Sanitize the application details, as they can cause issues in the script
-[string]$appVendor = (Remove-InvalidFileNameChars -Name $appVendor) -replace ' ',''
-[string]$appName = (Remove-InvalidFileNameChars -Name $appName) -replace ' ',''
-[string]$appVersion = (Remove-InvalidFileNameChars -Name $appVersion) -replace ' ',''
-[string]$appArch = (Remove-InvalidFileNameChars -Name $appArch) -replace ' ',''
-[string]$appLang = (Remove-InvalidFileNameChars -Name $appLang) -replace ' ',''
-[string]$appRevision = (Remove-InvalidFileNameChars -Name $appRevision) -replace ' ',''
-
 ## Build the Installation Name
-If ($ReferredInstallName) { [string]$installName = $ReferredInstallName }
+If ($ReferredInstallName) { [string]$installName = (Remove-InvalidFileNameChars -Name $ReferredInstallName) }
 If (-not $installName) {
 	If ($appArch) {
 		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appArch + '_' + $appLang + '_' + $appRevision
@@ -10846,8 +10851,7 @@ If (-not $installName) {
 		[string]$installName = $appVendor + '_' + $appName + '_' + $appVersion + '_' + $appLang + '_' + $appRevision
 	}
 }
-[string]$installName = (Remove-InvalidFileNameChars -Name $installName) -replace ' ',''
-[string]$installName = $installName.Trim('_') -replace '[_]+','_'
+[string]$installName = (($installName -replace ' ','').Trim('_') -replace '[_]+','_')
 
 ## Set the Defer History registry path
 [string]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
