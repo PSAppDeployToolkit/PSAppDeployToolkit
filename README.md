@@ -1,3 +1,5 @@
+# ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png) PowerShell App Deployment Toolkit
+
 ### What is the PowerShell App Deployment Toolkit?
 
 The PowerShell App Deployment Toolkit provides a set of functions to perform common application deployment tasks and to interact with the user during a deployment. It simplifies the complex scripting challenges of deploying applications in the enterprise, provides a consistent deployment experience and improves installation success rates.
