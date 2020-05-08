@@ -1,6 +1,43 @@
-**Version 3.8.2 [04/2020]**
-- Fixed security issue that could allow elevation of privilege related to the toolkit temp file path [CVE-2020-10962]
-- Fixed issue where multiple processes are listed in Show-InstallationWelcome when the same process has multiple descriptions
+**Version 3.8.2 [08/05/2020]**
+
+Security Notice
+
+- Fixed security issue that could allow elevation of privilege related to the toolkit temp file path [Reserved CVE-2020-10962]
+  - The script temp file path was set to a location that was writeable by a standard user. This is set in the configuration XML.
+  - This security risk only affects deployments that use the Show-InstallationWelcome function with the parameter -BlockExecution or the internal function Block-AppExecution AND are running with elevated permissions AND can be exploited only while the script is running.
+  - To further minimize the risk of an attacker using this to gain additional permissions, it has been moved to a write-protected location.
+  - Note: This change will break deployment scripts that run with Standard User rights. While this has been technically possible to do, we are not aware of anyone doing this. As such, we feel this is the safest course of action for the overall PSADT userbase.
+  - Additionally, a standalone PowerShell script was created, to identify and remediate the issue on existing PSAppDeployToolkit deployment packages. It can be found here:
+    - https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/master/Sources/Set-ToolkitTempPath.ps1
+
+Breaking Changes
+
+- Changed behavior of parameters in Execute-Process. This is a breaking change which may require changes to deployment scripts:
+  - Changes to behavior are being made to reduce confusion around the wording of parameters when a custom workflow is required.
+  - No changes required if your deployment script does not have custom handling of exceptions / exit codes.
+  - ContinueOnError was scoped to ignore non-zero exit codes. It now operates at the function level and will allow continuing if an unknown exception occurs.
+  - If Passthru was specified, all non-zero exit codes and exceptions were ignored. Now, both event types cause a Script Failure.
+	- To ignore specific exit codes, use the new IgnoreExitCodes parameter, using * to ignore all.
+	- To stop the script if the process fails, use the ExitOnProcessFailure parameter.
+  - Execute-Process would fail if an exception occurred, even when ContinueOnError was specified. It now ignores exceptions as expected.
+  - ContinueOnError now ignores exceptions as expected. To ignore specific exit codes, use the new IgnoreExitCodes parameter.
+
+Other
+
+- Added new parameters to the Execute-Process function:
+  - NoWait. Allows immediately returning to the script once the process has been started, without waiting for it to complete (Default: False).
+  - IgnoreExitCodes. Allows ignoring specific or all exit codes returned by the process (Default: None).
+  - PriorityClass. Allows changing the process priority immediately after process starts (Default: Normal).
+  - ExitOnProcessFailure. Allows setting the script to immediately stop if the process fails and returns the exit code to the caller (e.g. SCCM) (Default: True).
+- Added async reading of standard error stream to Execute-Process
+- Added restoring of PowerShell window title on script exit
+- Changed function Remove-InvalidFileNameChars to only retrieve Invalid Filename Characters once per script execution, instead of once per each function call
+- Improved handling of application install title / name variables
+- Fixed issue where exceptions were bypassed in Execute-Process with PassThru parameter specified.
+- Fixed issue where multiple processes were displayed in the Show-InstallationWelcome dialog when the same process has multiple descriptions.
+- Fixed a number of typos in the documentation.
+- Reverted part of the function Get-InstalledApplication that was causing slowdowns
+- Removed unused variable $processStarted.
 
 **Version 3.8.1 [28/03/2020]**
 - Added support for Repair as an action type (e.g. Install, Uninstall, Repair)
@@ -8,7 +45,7 @@
 - Added ability to Execute-ProcessAsUser function to run PowerShell scriptblocks
 - Added ability to retrieve Product Version in Get-FileVersion
 - Added ability to display help for custom functions in the AppDeployToolkitHelp UI
-- Added ability to disable recurdsion in Remove-Folder
+- Added ability to disable recursion in Remove-Folder
 - Added Remove-InvalidFileNameChars function and implemented across the toolkit
 - Added Powershell window renaming, in case it's visible to the user
 - Added Czech translations
@@ -24,7 +61,7 @@
 **Version 3.8.0 [09/23/2019]**
 - Added ability to change the dialog banner height, with a configurable maximum
 - Added ability to change the dialog banner and icon filename through the configuration file
-- Added support for animated gifs in the dialog banner
+- Added support for animated GIFs in the dialog banner
 - Added a dynamic dialog banner height with a configurable maximum to the dialogs
 - Added support for flattening folder structure within Copy-File with -Flatten switch
 - Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
@@ -42,8 +79,8 @@
 - Fixed issue where Get-LoggedOnUser failed to detect if user is member of the Administrators group, when Administrator group has an orphaned account listed
 - Fixed issue where active setup execution fails when StubExePath contains ps1 file in Set-ActiveSetup function
 - Fixed issue where Show-InstallationPrompt would not show when using Title parameter in combination with NoWait
-- Fixed issue where defertimes would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
-- Fixed issue where a .NET Framework error would appear sayinh the term 'Get-RunningProcessesDynamically' was not recognized
+- Fixed issue where defer times would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
+- Fixed issue where a .NET Framework error would appear stating the term 'Get-RunningProcessesDynamically' was not recognized
 - Fixed an ActiveSetup purging error
 - Fixed typo in Remove-Folder function
 - Fixed examples in Enable/Disable-TerminalServerInstallMode
@@ -67,7 +104,7 @@
 - Fixed issue in Execute-ProcessAsUser where result from the task scheduler could not be parsed on non-English language systems. Fix applies for Vista and higher
 - Fixed issue in Execute-ProcessAsUser which could delete the task before executing it if used without the Wait switch
 - Fixed issue in Execute-ProcessAsUser to allow parameters ending with a double quote
-- Fixed issue where Test-Powerpoint erroneously returned False on non-English language systems
+- Fixed issue where Test-PowerPoint erroneously returned False on non-English language systems
 - Fixed issue where zero-config MSI would run when Show-InstallationRestartPrompt is called
 - Fixed issue where BalloonTip doesn't launch asynchronously when initiated from Exit-Script
 - Fixed case sensitivity in the shortcut path passed to New-Shortcut
@@ -76,7 +113,7 @@
 - Fixed missing information in documentation and fixed encoding issue with AppDeployToolkitConfig.xml
 - Fixed issue where TopMost parameter in Show-DialogBox function could not be set to $false
 - Removed PS v3.0 minimum check for Get-Hotfix cmdlet used in Test-MSUpdates
-- Improved parameter validation on -CheckDiskSpace and -RequiredDiskSpace paramters in Show-InstallationWelcome prompt
+- Improved parameter validation on -CheckDiskSpace and -RequiredDiskSpace parameters in Show-InstallationWelcome prompt
 - Improved comments and documentation
 
 **Version 3.6.9 [02/12/2017]**
@@ -112,7 +149,7 @@
 - Added ParentProcessId property to Get-WindowTitle
 - Fixed issue in Remove-File where deleting of multiple files would stop silently on first error and added LiteralPath parameter
 - Fixed issue in the Uninstall Office 2013 Deploy-Application example where an incorrect variable was referenced to determine if a user session was present for the script execution
-- Fixed issue in Test-MSUpdates where a fatal error occured when no update history is present on the target system
+- Fixed issue in Test-MSUpdates where a fatal error occurred when no update history is present on the target system
 - Fixed issue in Install-MSUpdates where the full path to the update file was not passed to Execute-Process for installation
 - Fixed issue where Get-InstalledApplication throws an error when attempting to import invalid registry values from the subkeys of the Uninstall key
 - Fixed formatting of window title name when showing the blocked app dialog window or the restart computer window
@@ -123,7 +160,7 @@
 - Fixed issue in Remove-MSIApplications to make sure that an invalid ProductCode is not passed to the Execute-MSI function
 - Improved toolkit so that asynchronous executions of the toolkit write to the same log file instead of creating a new one
 - Improved Get-InstalledApplication to verify ProductCode is valid product code before storing value, also added UninstallSubkey property
-- Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Applicatio
+- Improved toolkit to allow setting custom $InstallTitle and $InstallName in Deploy-Application
 - Improved temporary logging folder naming convention to include deployment type in the name
 - Improved Office example script by updating Offscrub13.vbs to latest version from Microsoft, fixes issue with completion notice
 - Improved error handling in the Get-InstalledApplication function
@@ -401,7 +438,7 @@
 - Improved exception handling in Write-Log
 - The install title format on asynchronous UI elements will now match the synchronous UI elements
 - Asynchronous toolkit invocations now write to the same log file as synchronous
-- Install-MSUpdates now handles re-distributables such as the VC++ runtime redistributables
+- Install-MSUpdates now handles redistributables such as the VC++ runtime redistributables
 - Added additional uninstallation sections to Deploy-Application.ps1 template to mirror installation sections
 - Added Dutch translations
 - (Thanks to mmashwani for his excellent contributions to this release)
@@ -453,7 +490,7 @@
 **Version 3.1.0 [02/25/2014]**
 - Re-coded BlockExecution to be more stable and prevent issues unblocking execution
 - Added support for installing applications on Remote Desktop Session Host/Citrix servers
-- Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to noninteractive
+- Added handling of UI assembly load errors affecting PS 2.0 and .NET 4.0 and greater. Errors are ignored only if deploy mode is set to non-interactive
 - Fixed ContinueOnError parameter data type which was set as a switch but should have been boolean
 - Added default progress message for Uninstallation deployment mode
 - Fixed issue with detection of Session 0 on XP which resulted in no UI being displayed
