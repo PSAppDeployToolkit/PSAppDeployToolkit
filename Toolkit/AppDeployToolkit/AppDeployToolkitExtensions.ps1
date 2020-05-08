@@ -28,7 +28,7 @@ Param (
 [string]$appDeployToolkitExtName = 'PSAppDeployToolkitExt'
 [string]$appDeployExtScriptFriendlyName = 'App Deploy Toolkit Extensions'
 [version]$appDeployExtScriptVersion = [version]'3.8.2'
-[string]$appDeployExtScriptDate = '13/04/2020'
+[string]$appDeployExtScriptDate = '08/05/2020'
 [hashtable]$appDeployExtScriptParameters = $PSBoundParameters
 
 ##*===============================================
