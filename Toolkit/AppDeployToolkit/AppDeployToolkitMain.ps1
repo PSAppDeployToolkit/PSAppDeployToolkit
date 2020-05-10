@@ -2815,11 +2815,14 @@ Function Execute-Process {
 	Hides all parameters passed to the executable from the Toolkit log file
 .PARAMETER WindowStyle
 	Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal.
-	Note: Not all processes honor the "Hidden" flag. If it it not working, then check the command line options for the process being executed to see it has a silent option.
+	Note: Not all processes honor WindowStyle. WindowStyle is a recommendation passed to the process. They can choose to ignore it.
+	Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 .PARAMETER CreateNoWindow
-	Specifies whether the process should be started with a new window to contain it. Default is false.
+	Specifies whether the process should be started with a new window to contain it. Only works for Console mode applications. UseShellExecute should be set to $false. 
+	Default is false.
 .PARAMETER WorkingDirectory
 	The working directory used for executing the process. Defaults to the directory of the file being executed.
+	Parameter UseShellExecute affects this parameter.
 .PARAMETER NoWait
 	Immediately continue after executing the process.
 .PARAMETER PassThru
@@ -2835,6 +2838,14 @@ Function Execute-Process {
 	Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 .PARAMETER ExitOnProcessFailure
 	Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
+.PARAMETER UseShellExecute
+	Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
+	The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents.
+	It lets you open a file or a url and the Shell will figure out the program to open it with.
+	The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property. When UseShellExecute is true, the WorkingDirectory property specifies the location of the executable.
+	When UseShellExecute is false, the WorkingDirectory property is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
+	If you set UseShellExecute to $true, there will be no available output from the process.
+	Default: $false
 .PARAMETER ContinueOnError
 	Continue if an error occured while trying to start the process. Default: $false.
 .EXAMPLE
@@ -2892,7 +2903,10 @@ Function Execute-Process {
 		[Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$ExitOnProcessFailure = $true,
+		[boolean]$ExitOnProcessFailure = $true,		
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$UseShellExecute = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $false
@@ -2978,22 +2992,29 @@ Function Execute-Process {
 				$processStartInfo = New-Object -TypeName 'System.Diagnostics.ProcessStartInfo' -ErrorAction 'Stop'
 				$processStartInfo.FileName = $Path
 				$processStartInfo.WorkingDirectory = $WorkingDirectory
-				$processStartInfo.UseShellExecute = $false
+				$processStartInfo.UseShellExecute = $UseShellExecute
 				$processStartInfo.ErrorDialog = $false
 				$processStartInfo.RedirectStandardOutput = $true
 				$processStartInfo.RedirectStandardError = $true
 				$processStartInfo.CreateNoWindow = $CreateNoWindow
 				If ($Parameters) { $processStartInfo.Arguments = $Parameters }
-				If ($windowStyle) { $processStartInfo.WindowStyle = $WindowStyle }
+				$processStartInfo.WindowStyle = $WindowStyle
+				If ($processStartInfo.UseShellExecute -eq $true) {
+					Write-Log -Message "UseShellExecute is set to true, standard output and error will not be available." -Source ${CmdletName}
+					$processStartInfo.RedirectStandardOutput = $false
+					$processStartInfo.RedirectStandardError = $false
+				}
 				$process = New-Object -TypeName 'System.Diagnostics.Process' -ErrorAction 'Stop'
 				$process.StartInfo = $processStartInfo
 
-				## Add event handler to capture process's standard output redirection
-				[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
-				$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
-				$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
-				$stdErrBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
-				$stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'ErrorDataReceived' -MessageData $stdErrBuilder -ErrorAction 'Stop'
+				If ($processStartInfo.UseShellExecute -eq $false) {
+					## Add event handler to capture process's standard output redirection
+					[scriptblock]$processEventHandler = { If (-not [string]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
+					$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
+					$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
+					$stdErrBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
+					$stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'ErrorDataReceived' -MessageData $stdErrBuilder -ErrorAction 'Stop'
+				}
 
 				## Start Process
 				Write-Log -Message "Working Directory is [$WorkingDirectory]." -Source ${CmdletName}
@@ -3036,9 +3057,10 @@ Function Execute-Process {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
 				}
 				Else {
-					$process.BeginOutputReadLine()
-					$process.BeginErrorReadLine()
-					
+					If ($processStartInfo.UseShellExecute -eq $false) {
+						$process.BeginOutputReadLine()
+						$process.BeginErrorReadLine()
+					}
 					## Instructs the Process component to wait indefinitely for the associated process to exit.
 					$process.WaitForExit()
 					
@@ -3054,21 +3076,25 @@ Function Execute-Process {
 						[int32]$returnCode = 60013
 					}
 					
-					## Unregister standard output and error event to retrieve process output
-					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
-					If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
-					$stdOut = $stdOutBuilder.ToString() -replace $null,''
-					$stdErr = $stdErrBuilder.ToString() -replace $null,''
+					If ($processStartInfo.UseShellExecute -eq $false) {
+						## Unregister standard output and error event to retrieve process output
+						If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
+						If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
+						$stdOut = $stdOutBuilder.ToString() -replace $null,''
+						$stdErr = $stdErrBuilder.ToString() -replace $null,''
 
-					If ($stdErr.Length -gt 0) {
-						Write-Log -Message "Standard error output from the process: $stdErr" -Severity 3 -Source ${CmdletName}
+						If ($stdErr.Length -gt 0) {
+							Write-Log -Message "Standard error output from the process: $stdErr" -Severity 3 -Source ${CmdletName}
+						}
 					}
 				}
 			}
 			Finally {
-				## Make sure the standard output and error event is unregistered
-				If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
-				If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
+				If ($processStartInfo.UseShellExecute -eq $false) {
+					## Make sure the standard output and error event is unregistered
+					If ($stdOutEvent) { Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Stop'; $stdOutEvent = $null }
+					If ($stdErrEvent) { Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Stop'; $stdErrEvent = $null }
+				}
 				## Free resources associated with the process, this does not cause process to exit
 				If ($process) { $process.Dispose() }
 
@@ -3098,7 +3124,7 @@ Function Execute-Process {
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
 					Write-Log -Message "-PassThru parameter specified, returning execution results object." -Source ${CmdletName}
-					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = $stdOut; StdErr = $stdErr }
+					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 					Write-Output -InputObject $ExecutionResults
 				}
 
