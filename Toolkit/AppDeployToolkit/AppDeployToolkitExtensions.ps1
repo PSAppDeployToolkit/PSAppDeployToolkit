@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 	This script is a template that allows you to extend the toolkit with your own custom functions.
     # LICENSE #
