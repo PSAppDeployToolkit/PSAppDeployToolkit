@@ -1,4 +1,4 @@
-﻿// Date Modified: 08/05/2020
+// Date Modified: 08/05/2020
 // Version Number: 3.8.2
 
 using System;
