@@ -1523,19 +1523,12 @@ Function Show-InstallationPrompt {
 
 		##----------------------------------------------
 		## Create padding object
-		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding'
-		$paddingNone.Top = 0
-		$paddingNone.Bottom = 0
-		$paddingNone.Left = 0
-		$paddingNone.Right = 0
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
 
 		## Generic Button properties
-		$buttonWidth = 110
-		$buttonHeight = 23
-		$buttonPadding = 50
 		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
-		$buttonSize.Width = $buttonWidth
-		$buttonSize.Height = $buttonHeight
+		$buttonSize.Width = 110
+		$buttonSize.Height = 23
 		$buttonPadding = New-Object -TypeName 'System.Windows.Forms.Padding'
 		$buttonPadding.Top = 0
 		$buttonPadding.Bottom = 5
@@ -1545,9 +1538,7 @@ Function Show-InstallationPrompt {
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 0
-		$System_Drawing_Point.Y = 0
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
@@ -6524,7 +6515,7 @@ Function Show-WelcomePrompt {
 				Set-Variable -Name 'closeAppsCountdownGlobal' -Value $remainingTime.TotalSeconds -Scope 'Script'
 
 				## If the countdown is complete, close the application(s) or continue
-				If ($countdownTime -lt $currentTime) {
+				If ($countdownTime -le $currentTime) {
 					If ($forceCountdown -eq $true) {
 						Write-Log -Message 'Countdown timer has elapsed. Force continue.' -Source ${CmdletName}
 						$buttonContinue.PerformClick()
@@ -6581,37 +6572,23 @@ Function Show-WelcomePrompt {
 		$formWelcome.Controls.Add($buttonAbort)
 
 		##----------------------------------------------
-		## Create padding object
-		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding'
-		$paddingNone.Top = 0
-		$paddingNone.Bottom = 0
-		$paddingNone.Left = 0
-		$paddingNone.Right = 0
+		## Create zero px padding object
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
+		## Create basic control size
+		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonWidth = 110
-		$buttonHeight = 23
-		$buttonPadding = 50
 		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
-		$buttonSize.Width = $buttonWidth
-		$buttonSize.Height = $buttonHeight
-		$buttonPadding = New-Object -TypeName 'System.Windows.Forms.Padding'
-		$buttonPadding.Top = 0
-		$buttonPadding.Bottom = 5
-		$buttonPadding.Left = 50
-		$buttonPadding.Right = 0
+		$buttonSize.Width = 110
+		$buttonSize.Height = 24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 0
-		$System_Drawing_Point.Y = 0
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = $appDeployLogoBannerHeight
-		$System_Drawing_Size.Width = 450
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
@@ -6621,33 +6598,23 @@ Function Show-WelcomePrompt {
 		## Label App Name
 		$labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelAppName.Name = 'labelAppName'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		If (-not $showCloseApps) {
-			$System_Drawing_Size.Height = 40
-		}
-		Else {
-			$System_Drawing_Size.Height = 65
-		}
-		$System_Drawing_Size.Width = 450
-		$labelAppName.Size = $System_Drawing_Size
-		$System_Drawing_Size.Height = 0
-		$labelAppName.MaximumSize = $System_Drawing_Size
-		$labelAppName.Margin = '0,15,0,15'
-		$labelAppName.Padding = '20,0,20,0'
+		$labelAppName.Size = $defaultControlSize
+		$labelAppName.MinimumSize = $defaultControlSize
+		$labelAppName.MaximumSize = $defaultControlSize
+		$labelAppName.Margin = '0,5,0,5'
+		$labelAppName.Padding = $paddingNone
 		$labelAppName.TabIndex = 1
 
 		## Initial form layout: Close Applications / Allow Deferral
+		$labelAppNameText = "$configDeferPromptWelcomeMessage `n$installTitle"
 		If ($showCloseApps) {
-			$labelAppNameText = $configClosePromptMessage
-		}
-		ElseIf (($showDefer) -or ($forceCountdown)) {
-			$labelAppNameText = "$configDeferPromptWelcomeMessage `n$installTitle"
+			$labelAppNameText = "$labelAppNameText `n`n$configClosePromptMessage"
 		}
 		If ($CustomText) {
 			$labelAppNameText = "$labelAppNameText `n`n$configWelcomePromptCustomMessage"
 		}
 		$labelAppName.Text = $labelAppNameText
-		$labelAppName.TextAlign = 'TopCenter'
+		$labelAppName.TextAlign = 'MiddleCenter'
 		$labelAppName.Anchor = 'Top'
 		$labelAppName.AutoSize = $true
 		$labelAppName.add_Click($handler_labelAppName_Click)
@@ -6657,25 +6624,20 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.FormattingEnabled = $true
 		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 100
-		$System_Drawing_Size.Width = 300
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 400,100
 		$listBoxCloseApps.Size = $System_Drawing_Size
-		$listBoxCloseApps.Margin = '75,0,0,0'
+		$listBoxCloseApps.Margin = '25,0,0,0'
 		$listBoxCloseApps.TabIndex = 3
 		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
 		## Label Defer
 		$labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelDefer.Name = 'labelDefer'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 90
-		$System_Drawing_Size.Width = 450
-		$labelDefer.Size = $System_Drawing_Size
-		$System_Drawing_Size.Height = 0
-		$labelDefer.MaximumSize = $System_Drawing_Size
+		$labelDefer.Size = $defaultControlSize
+		$labelDefer.MinimumSize = $defaultControlSize
+		$labelDefer.MaximumSize = $defaultControlSize
 		$labelDefer.Margin = $paddingNone
-		$labelDefer.Padding = '40,0,20,0'
+		$labelDefer.Padding = '0,0,0,0'
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
 
@@ -6697,25 +6659,20 @@ Function Show-WelcomePrompt {
 		## Label Countdown
 		$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelCountdown.Name = 'labelCountdown'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 40
-		$System_Drawing_Size.Width = 450
-		$labelCountdown.Size = $System_Drawing_Size
-		$System_Drawing_Size.Height = 0
-		$labelCountdown.MaximumSize = $System_Drawing_Size
-		$labelCountdown.Margin = $paddingNone
-		$labelCountdown.Padding = '40,0,20,0'
+		$labelCountdown.Size = $defaultControlSize
+		$labelCountdown.MinimumSize = $defaultControlSize
+		$labelCountdown.MaximumSize = $defaultControlSize
+		$labelCountdown.Margin = "0,5,0,5"
+		$labelCountdown.Padding = $paddingNone
 		$labelCountdown.TabIndex = 4
-		$labelCountdown.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
+		$labelCountdown.Font = New-Object -TypeName "System.Drawing.Font" -ArgumentList $labelCountdown.Font,1
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
 		$labelCountdown.AutoSize = $true
 		$labelCountdown.add_Click($handler_labelDefer_Click)
 
 		## Panel Flow Layout
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 0
-		$System_Drawing_Point.Y = $appDeployLogoBannerHeight
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
@@ -6723,12 +6680,8 @@ Function Show-WelcomePrompt {
 		$flowLayoutPanel.WrapContents = $true
 		$flowLayoutPanel.Controls.Add($labelAppName)
 		If ($showCloseApps) { $flowLayoutPanel.Controls.Add($listBoxCloseApps) }
-		If ($showDefer) {
-			$flowLayoutPanel.Controls.Add($labelDefer)
-		}
-		If ($showCountdown) {
-			$flowLayoutPanel.Controls.Add($labelCountdown)
-		}
+		If ($showDefer) { $flowLayoutPanel.Controls.Add($labelDefer) }
+		If ($showCountdown) { $flowLayoutPanel.Controls.Add($labelCountdown) }
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6786,14 +6739,12 @@ Function Show-WelcomePrompt {
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
+		$buttonAbort.Visible = $false
 		$buttonAbort.UseVisualStyleBackColor = $true
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
 		## Form Welcome
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 0
-		$System_Drawing_Size.Width = 0
-		$formWelcome.Size = $System_Drawing_Size
+		$formWelcome.Size = $defaultControlSize
 		$formWelcome.Padding = $paddingNone
 		$formWelcome.Margin = $paddingNone
 		$formWelcome.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6808,32 +6759,21 @@ Function Show-WelcomePrompt {
 		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formWelcome.AutoSize = $true
 		$formWelcome.Controls.Add($pictureBanner)
-		$formWelcome.Controls.Add($flowLayoutPanel)
 
 		## Panel Button
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 0
-		# Calculate the position of the panel relative to the size of the form
-		$System_Drawing_Point.Y = (($formWelcome.Size | Select-Object -ExpandProperty 'Height') - 10)
-		$panelButtons.Location = $System_Drawing_Point
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 40
-		$System_Drawing_Size.Width = 450
-		$panelButtons.Size = $System_Drawing_Size
+		$panelButtons.Size = $defaultControlSize
 		$panelButtons.AutoSize = $true
-		$panelButtons.Anchor = 'Top'
-		$padding = New-Object -TypeName 'System.Windows.Forms.Padding'
-		$padding.Top = 0
-		$padding.Bottom = 0
-		$padding.Left = 0
-		$padding.Right = 0
-		$panelButtons.Margin = $padding
+		$panelButtons.Padding = $paddingNone
+		$panelButtons.Margin = $paddingNone
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,40
 		If ($showCloseApps) { $panelButtons.Controls.Add($buttonCloseApps) }
 		If ($showDefer) { $panelButtons.Controls.Add($buttonDefer) }
 		$panelButtons.Controls.Add($buttonContinue)
 
-		## Add the Buttons Panel to the form
-		$formWelcome.Controls.Add($panelButtons)
+		## Add the Buttons Panel to the flowPanel
+		$flowLayoutPanel.Controls.Add($panelButtons)
+		## Add FlowPanel to the form
+		$formWelcome.Controls.Add($flowLayoutPanel)
 
 		## Save the initial state of the form
 		$formWelcomeWindowState = $formWelcome.WindowState
