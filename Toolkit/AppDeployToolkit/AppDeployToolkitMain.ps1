@@ -91,8 +91,6 @@ Param (
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
-[string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
-[string]$envCommonProgramFilesX86 = ${env:CommonProgramFiles(x86)}
 [string]$envCommonDesktop   = $envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction 'SilentlyContinue'
 [string]$envCommonDocuments = $envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction 'SilentlyContinue'
 [string]$envCommonStartMenuPrograms  = $envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction 'SilentlyContinue'
@@ -106,8 +104,6 @@ Param (
 [string]$envHomeShare = $env:HOMESHARE
 [string]$envLocalAppData = [Environment]::GetFolderPath('LocalApplicationData')
 [string[]]$envLogicalDrives = [Environment]::GetLogicalDrives()
-[string]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
-[string]$envProgramFilesX86 = ${env:ProgramFiles(x86)}
 [string]$envProgramData = [Environment]::GetFolderPath('CommonApplicationData')
 [string]$envPublic = $env:PUBLIC
 [string]$envSystemDrive = $env:SYSTEMDRIVE
@@ -129,9 +125,6 @@ Param (
 [string]$envUserTemplates = [Environment]::GetFolderPath('Templates')
 [string]$envSystem32Directory = [Environment]::SystemDirectory
 [string]$envWinDir = $env:WINDIR
-#  Handle X86 environment variables so they are never empty
-If (-not $envCommonProgramFilesX86) { [string]$envCommonProgramFilesX86 = $envCommonProgramFiles }
-If (-not $envProgramFilesX86) { [string]$envProgramFilesX86 = $envProgramFiles }
 
 ## Variables: Domain Membership
 [boolean]$IsMachinePartOfDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').PartOfDomain
@@ -167,8 +160,12 @@ Catch { }
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
 [string]$envOSVersionBuild = $envOSVersion.Build
-If ($envOSVersionMajor -eq 10) {$envOSVersionRevision = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'UBR' -ErrorAction SilentlyContinue).UBR}
-Else { [string]$envOSVersionRevision = ,((Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] } }
+If ((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'UBR') {
+	[string]$envOSVersionRevision = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'UBR' -ErrorAction 'SilentlyContinue').UBR
+}
+ElseIf ((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'BuildLabEx') {
+	[string]$envOSVersionRevision = ,((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
+}
 If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
 If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { "$($envOSVersion.ToString())" }
 #  Get the operating system type
@@ -189,6 +186,31 @@ If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArc
 ## Variables: Current Process Architecture
 [boolean]$Is64BitProcess = [boolean]([IntPtr]::Size -eq 8)
 If ($Is64BitProcess) { [string]$psArchitecture = 'x64' } Else { [string]$psArchitecture = 'x86' }
+
+## Variables: Get Normalized ProgramFiles and CommonProgramFiles Paths
+[string]$envProgramFiles = ''
+[string]$envProgramFilesX86 = ''
+[string]$envCommonProgramFiles = ''
+[string]$envCommonProgramFilesX86 = ''
+If ($Is64Bit) {
+	If ($Is64BitProcess) {
+		[string]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
+		[string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
+	}
+	Else {
+		[string]$envProgramFiles = [Environment]::GetEnvironmentVariable('ProgramW6432')
+		[string]$envCommonProgramFiles = [Environment]::GetEnvironmentVariable('CommonProgramW6432')
+	}
+	
+	[string]$envProgramFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
+	[string]$envCommonProgramFilesX86 = [Environment]::GetFolderPath('CommonProgramFilesX86')
+}
+Else {
+	[string]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
+	[string]$envProgramFilesX86 = $envProgramFiles
+	[string]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
+	[string]$envCommonProgramFilesX86 = $envCommonProgramFiles
+}
 
 ## Variables: Hardware
 [int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | ForEach-Object {[Math]::Round(($_.sum / 1GB),2)}
