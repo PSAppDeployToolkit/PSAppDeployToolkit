@@ -7413,11 +7413,8 @@ Function Show-InstallationProgress {
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeight', $appDeployLogoBannerHeight)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeightDifference', $appDeployLogoBannerHeightDifference)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
@@ -7432,7 +7429,7 @@ Function Show-InstallationProgress {
 				Left="0"
 				Topmost="True"
 				ResizeMode="NoResize"
-				ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight" >
+				ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight">
 					<Window.Resources>
 					<Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
 					<DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
@@ -7445,14 +7442,14 @@ Function Show-InstallationProgress {
 					<BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
 					</EventTrigger>
 					</Window.Triggers>
-					<Grid Background="#F0F0F0" MinWidth="450" MaxWidth="450">
+					<Grid Background="#F0F0F0" MinWidth="450" MaxWidth="450" Width="450">
 					<Grid.RowDefinitions>
 					<RowDefinition Height="*"/>
 					<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="50" MaxWidth="50"></ColumnDefinition>
-					<ColumnDefinition MinWidth="400" MaxWidth="400"></ColumnDefinition>
+					<ColumnDefinition MinWidth="50" MaxWidth="50" Width="50"></ColumnDefinition>
+					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
 					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
@@ -7534,7 +7531,7 @@ Function Show-InstallationProgress {
 			$progressCmd.Runspace = $script:ProgressRunspace
 			Write-Log -Message "Spin up progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
 			#  Invoke the progress runspace
-			$progressData = $progressCmd.BeginInvoke()
+			$null = $progressCmd.BeginInvoke()
 			#  Allow the thread to be spun up safely before invoking actions against it.
 			Start-Sleep -Seconds 1
 			If ($script:ProgressSyncHash.Error) {
