@@ -7366,7 +7366,7 @@ Function Show-InstallationProgress {
 		[ValidateNotNullorEmpty()]
 		[string]$StatusMessage = $configProgressMessageInstall,
 		[Parameter(Mandatory=$false)]
-		[ValidateSet('Default','BottomRight')]
+		[ValidateSet('Default','BottomRight','TopCenter')]
 		[string]$WindowLocation = 'Default',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -7425,6 +7425,7 @@ Function Show-InstallationProgress {
 				x:Name="Window" Title="PSAppDeployToolkit"
 				Padding="0,0,0,0" Margin="0,0,0,0"
 				WindowStartupLocation = "Manual"
+				Icon=""
 				Top="0"
 				Left="0"
 				Topmost="True"
@@ -7494,6 +7495,10 @@ Function Show-InstallationProgress {
 						#  Put the window in the corner
 						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
 						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+					}
+					ElseIf($windowLocation -eq 'TopCenter'){
+						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
 					}
 					Else {
 						#  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
