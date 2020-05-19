@@ -22,6 +22,12 @@
 		<!-- Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history. -->
 		<Toolkit_LogPath>$envWinDir\Logs\Software</Toolkit_LogPath>
 		<!-- Log path used for Toolkit logging. -->
+		<Toolkit_TempPathNoAdminRights>$envTemp</Toolkit_TempPathNoAdminRights>
+		<!-- Same as TempPath but used when RequireAdmin is False. -->
+		<Toolkit_RegPathNoAdminRights>HKCU:SOFTWARE</Toolkit_RegPathNoAdminRights>
+		<!-- Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also. -->
+		<Toolkit_LogPathNoAdminRights>$envProgramData\Logs\Software</Toolkit_LogPathNoAdminRights>
+		<!-- Same as LogPath but used when RequireAdmin is False. -->
 		<Toolkit_CompressLogs>False</Toolkit_CompressLogs>
 		<!-- Specify if the log files should be bundled together in a compressed zip file -->
 		<Toolkit_LogStyle>CMTrace</Toolkit_LogStyle>
@@ -52,6 +58,8 @@
 		<!-- Logging level used for MSI logging. -->
 		<MSI_LogPath>$envWinDir\Logs\Software</MSI_LogPath>
 		<!-- Log path used for MSI logging. -->
+		<MSI_LogPathNoAdminRights>$envProgramData\Logs\Software</MSI_LogPathNoAdminRights>
+		<!-- Log path used for MSI logging when RequireAdmin is False. -->
 		<MSI_InstallParams>REBOOT=ReallySuppress /QB-!</MSI_InstallParams>
 		<!-- Installation parameters used for non-silent MSI actions. -->
 		<MSI_SilentParams>REBOOT=ReallySuppress /QN</MSI_SilentParams>

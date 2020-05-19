@@ -321,6 +321,21 @@ if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
 [string]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
 [string]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
+#  Change paths to user accessible ones if RequireAdmin is false
+If ($configToolkitRequireAdmin -eq $false){
+	If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {
+		[string]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPathNoAdminRights)
+	}
+	If ($xmlToolkitOptions.Toolkit_RegPathNoAdminRights) {
+		[string]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPathNoAdminRights
+	}
+	If ($xmlToolkitOptions.Toolkit_LogPathNoAdminRights) {
+		[string]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathNoAdminRights)
+	}
+	If ($xmlConfigMSIOptions.MSI_LogPathNoAdminRights) {
+		[string]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPathNoAdminRights)
+	}
+}
 #  Get UI Options
 [Xml.XmlElement]$xmlConfigUIOptions = $xmlConfig.UI_Options
 [string]$configInstallationUILanguageOverride = $xmlConfigUIOptions.InstallationUI_LanguageOverride
@@ -684,7 +699,7 @@ Function Write-Log {
 		[int16]$Severity = 1,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNull()]
-		[string]$Source = 'Unknown',
+		[string]$Source = $([string]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If($parentFunctionName) {$parentFunctionName} Else {'Unknown'}),
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[string]$ScriptSection = $script:installPhase,
