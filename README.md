@@ -18,13 +18,18 @@ The PowerShell App Deployment Toolkit can be used to replace your WiseScript, VB
 * **Extensible** - The Toolkit can be easily extended to add custom scripts and functions.
 * **Helpful** - The Toolkit provides detailed logging of all actions performed and even includes a graphical console to browse the help documentation for the Toolkit functions.
 
+### System Requirements
+
+* Powershell 2.0+
+* .NET Framework 3.5+
+
 ### Links
 
-[Homepage](https://psappdeploytoolkit.com)<br>
-[Community Forums](https://discourse.psappdeploytoolkit.com/)<br>
-[Releases](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)<br>
-[Screenshots](https://psappdeploytoolkit.com/screenshots/)<br>
-[About Us](https://psappdeploytoolkit.com/about/)<br>
+**-> [Homepage](https://psappdeploytoolkit.com)<br>
+-> [Community Forums](https://discourse.psappdeploytoolkit.com/)<br>
+-> [Releases](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)<br>
+-> [Screenshots](https://psappdeploytoolkit.com/screenshots/)<br>
+-> [About Us](https://psappdeploytoolkit.com/about/)**<br>
 
 ### License
 
