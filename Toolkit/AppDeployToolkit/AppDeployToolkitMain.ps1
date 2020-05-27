@@ -7366,7 +7366,7 @@ Function Show-InstallationProgress {
 		[ValidateNotNullorEmpty()]
 		[string]$StatusMessage = $configProgressMessageInstall,
 		[Parameter(Mandatory=$false)]
-		[ValidateSet('Default','BottomRight')]
+		[ValidateSet('Default','BottomRight','TopCenter')]
 		[string]$WindowLocation = 'Default',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -7413,90 +7413,68 @@ Function Show-InstallationProgress {
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeight', $appDeployLogoBannerHeight)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBannerHeightDifference', $appDeployLogoBannerHeightDifference)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
 			$script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
-			$script:ProgressRunspace.SessionStateProxy.SetVariable('dpiScale', $dpiScale)
 
 			#  Add the script block to be executed in the progress runspace
 			$progressCmd = [PowerShell]::Create().AddScript({
 				[string]$xamlProgressString = @'
-							<Window
-							xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-							xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-							x:Name="Window" Title="PSAppDeployToolkit"
-							MaxHeight="%MaxHeight%" MinHeight="%MinHeight%" Height="%Height%"
-							MaxWidth="456" MinWidth="456" Width="456" Padding="0,0,0,0" Margin="0,0,0,0"
-							WindowStartupLocation = "Manual"
-							Top="0"
-							Left="0"
-							Topmost="True"
-							ResizeMode="NoResize"
-							Icon=""
-							ShowInTaskbar="True">
-							<Window.Resources>
-								<Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
-									<DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
-									<SplineDoubleKeyFrame KeyTime="00:00:02" Value="360"/>
-									</DoubleAnimationUsingKeyFrames>
-								</Storyboard>
-							</Window.Resources>
-							<Window.Triggers>
-								<EventTrigger RoutedEvent="FrameworkElement.Loaded">
-									<BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
-								</EventTrigger>
-							</Window.Triggers>
-							<Grid Background="#F0F0F0">
-								<Grid.RowDefinitions>
-									<RowDefinition Height="%BannerHeight%"/>
-									<RowDefinition Height="100"/>
-								</Grid.RowDefinitions>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="45"></ColumnDefinition>
-									<ColumnDefinition Width="*"></ColumnDefinition>
-								</Grid.ColumnDefinitions>
-								<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source=""></Image>
-								<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,5,45,10" Text="" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="15" TextWrapping="Wrap"></TextBlock>
-								<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
-									<Ellipse.RenderTransform>
-										<TransformGroup>
-											<ScaleTransform/>
-											<SkewTransform/>
-											<RotateTransform/>
-										</TransformGroup>
-									</Ellipse.RenderTransform>
-									<Ellipse.Stroke>
-										<LinearGradientBrush EndPoint="0.445,0.997" StartPoint="0.555,0.003">
-											<GradientStop Color="White" Offset="0"/>
-											<GradientStop Color="#008000" Offset="1"/>
-										</LinearGradientBrush>
-									</Ellipse.Stroke>
-								</Ellipse>
-								</Grid>
-							</Window>
+				<Window
+				xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Name="Window" Title="PSAppDeployToolkit"
+				Padding="0,0,0,0" Margin="0,0,0,0"
+				WindowStartupLocation = "Manual"
+				Icon=""
+				Top="0"
+				Left="0"
+				Topmost="True"
+				ResizeMode="NoResize"
+				ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight">
+					<Window.Resources>
+					<Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
+					<DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
+						<SplineDoubleKeyFrame KeyTime="00:00:02" Value="360"/>
+					</DoubleAnimationUsingKeyFrames>
+					</Storyboard>
+					</Window.Resources>
+					<Window.Triggers>
+					<EventTrigger RoutedEvent="FrameworkElement.Loaded">
+					<BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
+					</EventTrigger>
+					</Window.Triggers>
+					<Grid Background="#F0F0F0" MinWidth="450" MaxWidth="450" Width="450">
+					<Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="50" MaxWidth="50" Width="50"></ColumnDefinition>
+					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
+					</Grid.ColumnDefinitions>
+					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
+					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
+					<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
+					<Ellipse.RenderTransform>
+						<TransformGroup>
+							<ScaleTransform/>
+							<SkewTransform/>
+							<RotateTransform/>
+						</TransformGroup>
+					</Ellipse.RenderTransform>
+					<Ellipse.Stroke>
+						<LinearGradientBrush EndPoint="0.445,0.997" StartPoint="0.555,0.003">
+							<GradientStop Color="White" Offset="0"/>
+							<GradientStop Color="#008000" Offset="1"/>
+						</LinearGradientBrush>
+					</Ellipse.Stroke>
+					</Ellipse>
+					</Grid>
+				</Window>
 '@
-				## Replace dummy text with values and turn the string into an xml document variable
-				$xamlProgressString = $xamlProgressString.replace('%BannerHeight%', $appDeployLogoBannerHeight).replace('%Height%', 180 + $appDeployLogoBannerHeightDifference).replace('%MinHeight%', 180 + $appDeployLogoBannerHeightDifference).replace('%MaxHeight%', 200 + $appDeployLogoBannerHeightDifference)
 				[Xml.XmlDocument]$xamlProgress = New-Object 'System.Xml.XmlDocument'
 				$xamlProgress.LoadXml($xamlProgressString)
 				## Set the configurable values using variables added to the runspace from the parent thread
-				#  Calculate the position on the screen where the progress dialog should be placed
-				$screen = [Windows.Forms.Screen]::PrimaryScreen
-				$screenWorkingArea = $screen.WorkingArea
-				[int32]$screenWidth = $screenWorkingArea | Select-Object -ExpandProperty 'Width'
-				[int32]$screenHeight = $screenWorkingArea | Select-Object -ExpandProperty 'Height'
-				#  Set the start position of the Window based on the screen size
-				If ($windowLocation -eq 'BottomRight') {
-					$xamlProgress.Window.Left = [string](($screenWidth / ($dpiscale / 100)) - ($xamlProgress.Window.Width))
-					$xamlProgress.Window.Top = [string](($screenHeight / ($dpiscale / 100)) - ($xamlProgress.Window.Height))
-				}
-				#  Show the default location (Top center)
-				Else {
-					#  Center the progress window by calculating the center of the workable screen based on the width of the screen relative to the DPI scale minus half the width of the progress bar
-					$xamlProgress.Window.Left = [string](($screenWidth / (2 * ($dpiscale / 100) )) - (($xamlProgress.Window.Width / 2)))
-					$xamlProgress.Window.Top = [string]($screenHeight / 9.5)
-				}
 				$xamlProgress.Window.TopMost = $topMost
 				$xamlProgress.Window.Icon = $AppDeployLogoIcon
 				$xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
@@ -7507,13 +7485,40 @@ Function Show-InstallationProgress {
 				$script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
 				#  Grey out the X button
 				$script:ProgressSyncHash.Window.add_Loaded({
-					[IntPtr]$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
-					If ($null -ne $windowHandle) {
-						[IntPtr]$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-						If ($menuHandle -ne [IntPtr]::Zero) {
-							[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-							[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					#  Calculate the position on the screen where the progress dialog should be placed
+					[int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+					[int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+					[int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.Width
+					[int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.Height
+					#  Set the start position of the Window based on the screen size
+					If ($windowLocation -eq 'BottomRight') {
+						#  Put the window in the corner
+						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
+						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+					}
+					ElseIf($windowLocation -eq 'TopCenter'){
+						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
+					}
+					Else {
+						#  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
+					}
+					#  Grey out the X button
+					try {
+						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
+						If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+							$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+							If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+								[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+								[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+							}
 						}
+					}
+					catch {
+						# Not a terminating error if we can't grey out the button
+						Write-Log "Failed to grey out the Close button." -Severity 2 -Source ${CmdletName}
 					}
 				})
 				#  Prepare the ProgressText variable so we can use it to change the text in the text area
@@ -7531,7 +7536,7 @@ Function Show-InstallationProgress {
 			$progressCmd.Runspace = $script:ProgressRunspace
 			Write-Log -Message "Spin up progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
 			#  Invoke the progress runspace
-			$progressData = $progressCmd.BeginInvoke()
+			$null = $progressCmd.BeginInvoke()
 			#  Allow the thread to be spun up safely before invoking actions against it.
 			Start-Sleep -Seconds 1
 			If ($script:ProgressSyncHash.Error) {
