@@ -6665,7 +6665,7 @@ Function Show-WelcomePrompt {
 		$labelAppName.Size = $defaultControlSize
 		$labelAppName.MinimumSize = $defaultControlSize
 		$labelAppName.MaximumSize = $defaultControlSize
-		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,2
+		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,5
 		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelAppName.TabIndex = 1
 
@@ -6674,7 +6674,7 @@ Function Show-WelcomePrompt {
 		If ($showCloseApps) {
 			$labelAppNameText = "$labelAppNameText`n`n$configClosePromptMessage"
 		}
-		If ($CustomText) {
+		If ($CustomText -and $configWelcomePromptCustomMessage) {
 			$labelAppNameText = "$labelAppNameText`n`n$configWelcomePromptCustomMessage"
 		}
 		$labelAppName.Text = $labelAppNameText
@@ -6700,7 +6700,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $defaultControlSize
 		$labelDefer.MinimumSize = $defaultControlSize
 		$labelDefer.MaximumSize = $defaultControlSize
-		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,2,0,5
+		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
 		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"

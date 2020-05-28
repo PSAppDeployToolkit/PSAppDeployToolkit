@@ -134,8 +134,7 @@
 		<ClosePrompt_Message>The following programs must be closed before the installation can proceed.
 
 		Please save your work, close the programs, and then continue.
-		Alternatively, save your work and click "Close Programs".
-		</ClosePrompt_Message>
+		Alternatively, save your work and click "Close Programs".</ClosePrompt_Message>
 		<!-- Text displayed when prompting to close running programs. -->
 		<ClosePrompt_CountdownMessage>NOTE: The program(s) will be automatically closed in:</ClosePrompt_CountdownMessage>
 		<!-- Text displayed when counting down to automatically closing applications. -->
@@ -209,8 +208,7 @@
 		<ClosePrompt_Message>Følgende programmer skal lukkes før installationen kan fortsætte.
 
 		Gem dit arbejde, luk programmerne og fortsæt.
-		Alternativt kan du gemme dit arbejde og trykke på "Luk Programmer".
-		</ClosePrompt_Message>
+		Alternativt kan du gemme dit arbejde og trykke på "Luk Programmer".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>BEMÆRK: Programmet/Programmerne vil automatisk blive lukket om:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Følgende applikation vil nu blive installeret:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Du kan vælge at udsætte installationen indtil udsættelsesperioden udløber:</DeferPrompt_ExpiryMessage>
@@ -259,8 +257,7 @@
 		<ClosePrompt_Message>Les programmes suivants doivent être fermés afin que l'installation s'initialise.
 
 		Merci de sauvegarder votre travail, fermer tous les programmes, et continuer.
-		Vous pouvez aussi sauvegarder votre travail puis cliquez sur « Fermer Programmes ».
-		</ClosePrompt_Message>
+		Vous pouvez aussi sauvegarder votre travail puis cliquez sur « Fermer Programmes ».</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>REMARQUE: Les programmes seront automatiquement fermés dans:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>L'application suivante est sur le point d'être installée:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Vous pouvez choisir de reporter l'installation:</DeferPrompt_ExpiryMessage>
@@ -308,8 +305,7 @@
 		<ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.
 
 		Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort.
-		Alternativ können Sie Ihre Arbeit speichern und dann auf „Programme Schließen“ klicken.
-		</ClosePrompt_Message>
+		Alternativ können Sie Ihre Arbeit speichern und dann auf „Programme Schließen“ klicken.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>HINWEIS: Diese Programme werden automatisch geschlossen:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Die folgende Anwendung soll installiert werden:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Sie können die Installation verzögern, bis die Rückstellung abläuft:</DeferPrompt_ExpiryMessage>
@@ -357,8 +353,7 @@
 		<ClosePrompt_Message>I seguenti programmi devono essere chiusi prima che l'installazione possa procedere.
 
 		Salvare il lavoro , chiudere i programmi, e poi continuare.
-		In alternativa, salvare il lavoro e fare clic su "Chiudi Programmi".
-		</ClosePrompt_Message>
+		In alternativa, salvare il lavoro e fare clic su "Chiudi Programmi".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>NOTA: il programma(s) sarà chiuso automaticamente in:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>La seguente applicazione sta per essere installata:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Si può decidere di posticipare l'installazione fino alla prossima richiesta automatica:</DeferPrompt_ExpiryMessage>
@@ -406,8 +401,7 @@
 		<ClosePrompt_Message>インストールを実行するために、下記のプログラムを閉じる必要があります。
 
 		実行中のアプリケーションを保存し、閉じてから続行してください。
-		または、実行中のアプリケーションを保存し、プログラムを強制終了ボタンをクリックしてくだい
-		</ClosePrompt_Message>
+		または、実行中のアプリケーションを保存し、プログラムを強制終了ボタンをクリックしてくだい</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>注意: これらのプログラムは自動的に閉じられます:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>このアプリケーションはこれからインストールされます。</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>再試行可能回数が0になるまでは、都合の良い時にインストール可能です。</DeferPrompt_ExpiryMessage>
@@ -455,8 +449,7 @@
 		<ClosePrompt_Message>Følgende programmer må lukkes før installasjonen kan fortsette.
 
 		Lagre arbeidet, lukk programmene og velg "Fortsett"
-		Eller velg "Lukk Programmer" uten å lagre.
-		</ClosePrompt_Message>
+		Eller velg "Lukk Programmer" uten å lagre.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>OBS: Programmet vil automatisk lukkes om:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Følgende program vil bli installert:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Du kan velge å utsette installasjonen et begrenset antall ganger inntil fristen utløper:</DeferPrompt_ExpiryMessage>
@@ -504,8 +497,7 @@
 		<ClosePrompt_Message>De volgende applicaties moeten afgesloten worden om de installatie te voltooien.
 
 		Sla je werk op, sluit de applicaties, en ga verder.
-		Of, sla je werk op en klik op 'Sluit Applicaties'.
-		</ClosePrompt_Message>
+		Of, sla je werk op en klik op 'Sluit Applicaties'.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>LET OP: De applicatie(s) worden afgesloten over:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>De volgende applicatie wordt zometeen geïnstalleerd:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Je kan de installatie uitstellen tot het maximale uitsteltermijn is verstreken:</DeferPrompt_ExpiryMessage>
@@ -553,8 +545,7 @@
 		<ClosePrompt_Message>Następujące programy muszą zostać zamknięte przed rozpoczęciem instalacji.
 
 		Proszę zapisać wszystkie dokumenty i zamknąć programy, a następnie kliknąć przycisk „Kontynuuj”.
-		Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk „Zamknij Programy”.
-		</ClosePrompt_Message>
+		Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk „Zamknij Programy”.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>UWAGA: Programy zostaną automatycznie zamknięte za:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Zostanie zainstalowana następująca aplikacja:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Instalacja może zostać przełożona na późniejszy termin.</DeferPrompt_ExpiryMessage>
@@ -602,8 +593,7 @@
 		<ClosePrompt_Message>Programas de seguir devem ser fechados antes que a instalação possa prosseguir.
 
 		Por favor, guarde o seu trabalho, feche os programas e em seguida continuar.
-		Como alternativa, salve seu trabalho e clique em "Fechar Programas".
-		</ClosePrompt_Message>
+		Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>NOTA: O programa será fechado automaticamente em:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>O seguinte aplicativo está prestes a ser instalado:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que expire o diferimento:</DeferPrompt_ExpiryMessage>
@@ -651,8 +641,7 @@
 		<ClosePrompt_Message>Os seguintes programas precisam ser fechados antes que a instalação possa prosseguir.
 
 		Salve seu trabalho, feche os programas e depois continue.
-		Como alternativa, salve seu trabalho e clique em "Fechar Programas".
-		</ClosePrompt_Message>
+		Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>OBSERVAÇÃO: O(s) programa(s) será(ão) automaticamente fechado(s) em:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>O seguinte aplicativo está prestes a ser instalado:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que o adiamento expire:</DeferPrompt_ExpiryMessage>
@@ -700,8 +689,7 @@
 		<ClosePrompt_Message>Los siguientes programas deben cerrarse antes de la instalación puede proceder.
 
 		Por favor, guarde el trabajo, cerrar los programas y luego continuar.
-		Alternativamente, guarde su trabajo y haga clic en "Cerrar Programas".
-		</ClosePrompt_Message>
+		Alternativamente, guarde su trabajo y haga clic en "Cerrar Programas".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>NOTA: El programa se cerrará automáticamente en:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>La siguiente aplicación está a punto de instalarse:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Puede decidir aplazar la instalación hasta que expire el aplazamiento:</DeferPrompt_ExpiryMessage>
@@ -749,8 +737,7 @@
 		<ClosePrompt_Message>Följande program måste stängas innan installationen kan fortsätta.
 
 		Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på "Fortsätt".
-		Alternativt, spara ditt arbete och klicka på "Stäng Program".
-		</ClosePrompt_Message>
+		Alternativt, spara ditt arbete och klicka på "Stäng Program".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>OBS: Programmen kommer automatiskt att avslutas om:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Följande applikation kommer att installeras:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Du kan välja att fördröja installationen ett begränsat antal gånger under en begränsad tid:</DeferPrompt_ExpiryMessage>
@@ -798,8 +785,7 @@
 		<ClosePrompt_Message>يجب إغلاق البرامج التالية قبل التمكن من متابعة عملية التثبيت.
 
 		يرجى حفظ عملك، وإغلاق البرامج، ومن ثم المتابعة.
-		يمكنك بدلا من ذلك، حفظ عملك والنقر فوق "إغلاق البرامج".
-		</ClosePrompt_Message>
+		يمكنك بدلا من ذلك، حفظ عملك والنقر فوق "إغلاق البرامج".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>ملاحظة: سيتم إغلاق البرنامج/البرامج بشكل تلقائي خلال:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>التطبيق التالي على وشك التثبيت:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>بإمكانك اختيار تأجيل التثبيت إلى حين انتهاء صلاحية التأجيل:</DeferPrompt_ExpiryMessage>
@@ -847,8 +833,7 @@
 		<ClosePrompt_Message>יש לסגור את התכנות הבאות בטרם ההתקנה תוכל להתחיל.
 
 		אנא שמור על העבודה שלך, סגור את התכניות, ואז המשך.
-		לחילופין, שמור על העבודה שלך והקלק על "סגור תכניות".
-		</ClosePrompt_Message>
+		לחילופין, שמור על העבודה שלך והקלק על "סגור תכניות".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>שים לב: התכנית(ות) תסגרנה באופן אוטומטי תוך:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>היישום הבא עומד להיות מותקן:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>אתה יכול לבחור לדחות את ההתקנה עד שמשך זמן הדחיה יפוג.</DeferPrompt_ExpiryMessage>
@@ -896,8 +881,7 @@
 		<ClosePrompt_Message>설치를 계속하려면 다음의 프로그램을 종료해야 합니다.
 
 		사용자 작업을 저장하고 프로그램을 종료한 후 계속하세요.
-		다른 방법으로는 사용자 작업을 저장하고 "프로그램 종료"를 클릭하세요.
-		</ClosePrompt_Message>
+		다른 방법으로는 사용자 작업을 저장하고 "프로그램 종료"를 클릭하세요.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>참고: 프로그램이 자동으로 종료되는 경우:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>다음의 응용 프로그램을 설치합니다:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>지연 기간이 만료될 때까지 설치를 연기할 수 있습니다:</DeferPrompt_ExpiryMessage>
@@ -945,8 +929,7 @@
 		<ClosePrompt_Message>Перед продолжением установки необходимо закрыть следующие программы.
 
 		Пожалуйста, сохраните вашу работу и закройте программы, а затем продолжите установку.
-		Также вы можете сохранить вашу работу и нажать "Закрыть программы".
-		</ClosePrompt_Message>
+		Также вы можете сохранить вашу работу и нажать "Закрыть программы".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>ПРИМЕЧАНИЕ: Эти программы будут автоматически закрыты через:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Планируется установка следующего приложения:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Вы можете отложить установку приложения до тех пор, пока не истечет срок действия этой отсрочки:</DeferPrompt_ExpiryMessage>
@@ -994,8 +977,7 @@
 		<ClosePrompt_Message>为继续安装，必须关闭下列程序。
 
 		请保存您的工作，关闭程序，然后继续。
-		或者保存您的工作，点击"关闭程序"。
-		</ClosePrompt_Message>
+		或者保存您的工作，点击"关闭程序"。</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>注：下列程序将自动关闭：</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>即将安装下列应用程式：</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>在延期失效前，可选择延迟安装：</DeferPrompt_ExpiryMessage>
@@ -1043,8 +1025,7 @@
 		<ClosePrompt_Message>在繼續安裝前必須關閉下列程序。
 
 		請保存您的工作，關閉程序，然後繼續。
-		或者保存您的工作，然後點擊"關閉程序"。
-		</ClosePrompt_Message>
+		或者保存您的工作，然後點擊"關閉程序"。</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>注：下列程序將自動關閉：</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>即將安裝下列應用程式：</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>在延期失效前，可選擇延遲安裝：</DeferPrompt_ExpiryMessage>
@@ -1092,8 +1073,7 @@
 		<ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než bude inštalácia pokračovať.
 
 		Prosím, uložte svoju prácu, zatvorte dané programy a potom kliknite na pokračovať.
-		Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť programy".
-		</ClosePrompt_Message>
+		Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť programy".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>Poznámka: Programy budú automaticky ukončené za:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Nasledujúca aplikácia bude nainštalovaná:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Inštaláciu môžete niekoľkokrát odložiť:</DeferPrompt_ExpiryMessage>
@@ -1141,8 +1121,7 @@
 		<ClosePrompt_Message>Následující programy musí být zavřené, aby instalace mohla pokračovat.
 
 		Prosím, uložte svou práci, zavřete program a potom klikněte na "Pokračovat".
-		Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit programy".
-		</ClosePrompt_Message>
+		Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit programy".</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>Upozornění: Programy budou automaticky zavřené za:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>Nasledující aplikace bude nainstalována:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>Instalaci můžete několikrát odložit:</DeferPrompt_ExpiryMessage>
@@ -1189,8 +1168,7 @@
 
 		Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat.
 		Vagy
-		Kérjük mentse munkáját és kattintson a „Programok bezárása”-ra.
-		</ClosePrompt_Message>
+		Kérjük mentse munkáját és kattintson a „Programok bezárása”-ra.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>Megjegyzés: a programok automatikusan bezárásra kerülnek,:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>A következő alkalmazások telepítésre kerülnek:</DeferPrompt_WelcomeMessage>
 		<DeferPrompt_ExpiryMessage>A telepítést elhalaszthatja amíg a rendelkezésre álló idő lejár:</DeferPrompt_ExpiryMessage>
