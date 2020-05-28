@@ -1606,7 +1606,7 @@ Function Show-InstallationPrompt {
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
 		$labelText.Margin = $paddingNone
-		$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,5,10
+		$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 5,5,5,5
 		$labelText.TabIndex = 1
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
