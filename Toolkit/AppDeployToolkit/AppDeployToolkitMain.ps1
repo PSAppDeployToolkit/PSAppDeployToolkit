@@ -1517,12 +1517,16 @@ Function Show-InstallationPrompt {
 		[Windows.Forms.Application]::EnableVisualStyles()
 		$formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
 		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
-		$pictureIcon = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		If ($Icon -ne 'None') {
+			$pictureIcon = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		}
 		$labelText = New-Object -TypeName 'System.Windows.Forms.Label'
 		$buttonRight = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonMiddle = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonLeft = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
+		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
+		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 		$InitialFormInstallationPromptWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 		[scriptblock]$Form_Cleanup_FormClosed = {
@@ -1562,73 +1566,59 @@ Function Show-InstallationPrompt {
 		## Create padding object
 		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
 
+		## Default control size
+		$DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
+
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
-		$buttonSize.Width = 110
-		$buttonSize.Height = 23
-		$buttonPadding = New-Object -TypeName 'System.Windows.Forms.Padding'
-		$buttonPadding.Top = 0
-		$buttonPadding.Bottom = 5
-		$buttonPadding.Left = 50
-		$buttonPadding.Right = 0
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
-		$pictureBanner.Location = $System_Drawing_Point
-		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = $appDeployLogoBannerHeight
-		$System_Drawing_Size.Width = 450
-		$pictureBanner.Size = $System_Drawing_Size
+		$pictureBanner.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
+        $pictureBanner.MinimumSize = $DefaultControlSize
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
+		$pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 
 		## Picture Icon
-		$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
-		If ($icon -ne 'None') { $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap() }
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 15
-		$System_Drawing_Point.Y = 105 + $appDeployLogoBannerHeightDifference
-		$pictureIcon.Location = $System_Drawing_Point
-		$pictureIcon.Name = 'pictureIcon'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 32
-		$System_Drawing_Size.Width = 32
-		$pictureIcon.Size = $System_Drawing_Size
-		$pictureIcon.AutoSize = $true
-		$pictureIcon.Margin = $paddingNone
-		$pictureIcon.TabIndex = 0
-		$pictureIcon.TabStop = $false
+		If ($Icon -ne 'None') {
+			$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
+			$pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap()
+			$pictureIcon.Name = 'pictureIcon'
+			$pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 60,32
+			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 60,32
+			$pictureIcon.SizeMode = "CenterImage"
+			$pictureIcon.TabIndex = 0
+			$pictureIcon.TabStop = $false
+			$pictureIcon.Anchor = 'None'
+            $pictureIcon.Margin = $paddingNone
+		}
 
 		## Label Text
 		$labelText.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelText.Name = 'labelText'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 148
-		$System_Drawing_Size.Width = 385
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 390,0
 		$labelText.Size = $System_Drawing_Size
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
-		$System_Drawing_Point.X = 25
-		$System_Drawing_Point.Y = $appDeployLogoBannerHeight
-		$labelText.Location = $System_Drawing_Point
-		$labelText.Margin = '0,0,0,0'
-		$labelText.Padding = '40,0,20,0'
+		$labelText.MinimumSize = $System_Drawing_Size
+		$labelText.MaximumSize = $System_Drawing_Size
+		$labelText.AutoSize = $true
+		$labelText.Margin = $paddingNone
+		$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,10,10
 		$labelText.TabIndex = 1
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
-		$labelText.Anchor = 'Top'
+		$labelText.Anchor = 'None'
 		$labelText.add_Click($handler_labelText_Click)
 
-		# Generic Y location for buttons
-		$buttonLocationY = 200 + $appDeployLogoBannerHeightDifference
-
+		If ($Icon -ne 'None') {
+			# Add margin for the icon based on labelText Height so its centered
+			$pictureIcon.Height = $labelText.Height
+		}
 		## Button Left
 		$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonLeft.Location = "15,$buttonLocationY"
 		$buttonLeft.Name = 'buttonLeft'
 		$buttonLeft.Size = $buttonSize
 		$buttonLeft.TabIndex = 5
@@ -1636,11 +1626,11 @@ Function Show-InstallationPrompt {
 		$buttonLeft.DialogResult = 'No'
 		$buttonLeft.AutoSize = $false
 		$buttonLeft.UseVisualStyleBackColor = $true
+		$buttonLeft.Location = "15,5"
 		$buttonLeft.add_Click($buttonLeft_OnClick)
 
 		## Button Middle
 		$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonMiddle.Location = "170,$buttonLocationY"
 		$buttonMiddle.Name = 'buttonMiddle'
 		$buttonMiddle.Size = $buttonSize
 		$buttonMiddle.TabIndex = 6
@@ -1648,11 +1638,11 @@ Function Show-InstallationPrompt {
 		$buttonMiddle.DialogResult = 'Ignore'
 		$buttonMiddle.AutoSize = $true
 		$buttonMiddle.UseVisualStyleBackColor = $true
+        $buttonMiddle.Location = "170,5"
 		$buttonMiddle.add_Click($buttonMiddle_OnClick)
 
 		## Button Right
 		$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRight.Location = "325,$buttonLocationY"
 		$buttonRight.Name = 'buttonRight'
 		$buttonRight.Size = $buttonSize
 		$buttonRight.TabIndex = 7
@@ -1660,6 +1650,7 @@ Function Show-InstallationPrompt {
 		$buttonRight.DialogResult = 'Yes'
 		$buttonRight.AutoSize = $true
 		$buttonRight.UseVisualStyleBackColor = $true
+		$buttonRight.Location = "325,5"
 		$buttonRight.add_Click($buttonRight_OnClick)
 
 		## Button Abort (Hidden)
@@ -1668,18 +1659,59 @@ Function Show-InstallationPrompt {
 		$buttonAbort.Size = '1,1'
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabStop = $false
+		$buttonAbort.Visible = $false
 		$buttonAbort.UseVisualStyleBackColor = $true
+        $buttonAbort.Location = "0,0"
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
+		## FlowLayoutPanel
+		$flowLayoutPanel.MinimumSize = $DefaultControlSize
+		$flowLayoutPanel.MaximumSize = $DefaultControlSize
+		$flowLayoutPanel.Size = $DefaultControlSize
+		$flowLayoutPanel.AutoSize = $true
+		$flowLayoutPanel.Anchor = 'Top,Left'
+		$flowLayoutPanel.FlowDirection = 'LeftToRight'
+		$flowLayoutPanel.WrapContents = $true
+        $flowLayoutPanel.Margin = $paddingNone
+		If ($Icon -ne 'None') {
+			$flowLayoutPanel.Controls.Add($pictureIcon)
+		}
+		$flowLayoutPanel.Controls.Add($labelText)
+		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
+		## Make sure label text is positioned correctly
+		If ($Icon -ne 'None') {
+            $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 60,0
+		} else {
+			$labelText.MinimumSize = $DefaultControlSize
+			$labelText.MaximumSize = $DefaultControlSize
+			$labelText.Size = $DefaultControlSize
+			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+		}
+		$flowLayoutPanel.Controls.Add($buttonAbort)
+
+		## ButtonsPanel
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.Padding = $paddingNone
+		$panelButtons.Margin = $paddingNone
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.AutoSize = $true
+		If ($buttonLeftText) { $panelButtons.Controls.Add($buttonLeft) }
+		If ($buttonMiddleText) { $panelButtons.Controls.Add($buttonMiddle) }
+		If ($buttonRightText) { $panelButtons.Controls.Add($buttonRight) }
+		## Add the ButtonsPanel to the flowLayoutPanel if any buttons are present
+		If ($buttonLeftText -or $buttonMiddleText -or $buttonRightText) {
+			$flowLayoutPanel.Controls.Add($panelButtons)
+		}
+
 		## Form Installation Prompt
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
-		$System_Drawing_Size.Height = 270 + $appDeployLogoBannerHeightDifference
-		$System_Drawing_Size.Width = 450
-		$formInstallationPrompt.Size = $System_Drawing_Size
-		$formInstallationPrompt.Padding = '0,0,0,10'
+		$formInstallationPrompt.MinimumSize = $DefaultControlSize
+        $formInstallationPrompt.Size = $DefaultControlSize
+		$formInstallationPrompt.Padding = $paddingNone
 		$formInstallationPrompt.Margin = $paddingNone
 		$formInstallationPrompt.DataBindings.DefaultDataSourceUpdateMode = 0
-		$formInstallationPrompt.Name = 'WelcomeForm'
+		$formInstallationPrompt.Name = 'InstallPromptForm'
 		$formInstallationPrompt.Text = $title
 		$formInstallationPrompt.StartPosition = 'CenterScreen'
 		$formInstallationPrompt.FormBorderStyle = 'FixedDialog'
@@ -1687,15 +1719,10 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.MinimizeBox = $false
 		$formInstallationPrompt.TopMost = $true
 		$formInstallationPrompt.TopLevel = $true
+		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formInstallationPrompt.Controls.Add($pictureBanner)
-		$formInstallationPrompt.Controls.Add($pictureIcon)
-		$formInstallationPrompt.Controls.Add($labelText)
-		$formInstallationPrompt.Controls.Add($buttonAbort)
-		If ($buttonLeftText) { $formInstallationPrompt.Controls.Add($buttonLeft) }
-		If ($buttonMiddleText) { $formInstallationPrompt.Controls.Add($buttonMiddle) }
-		If ($buttonRightText) { $formInstallationPrompt.Controls.Add($buttonRight) }
-
+		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
 		## Timer
 		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
 		$timer.Interval = ($timeout * 1000)
@@ -6643,12 +6670,12 @@ Function Show-WelcomePrompt {
 		$labelAppName.TabIndex = 1
 
 		## Initial form layout: Close Applications / Allow Deferral
-		$labelAppNameText = "$configDeferPromptWelcomeMessage `n$installTitle"
+		$labelAppNameText = "$configDeferPromptWelcomeMessage`n`n$installTitle"
 		If ($showCloseApps) {
-			$labelAppNameText = "$labelAppNameText `n`n$configClosePromptMessage"
+			$labelAppNameText = "$labelAppNameText`n`n$configClosePromptMessage"
 		}
 		If ($CustomText) {
-			$labelAppNameText = "$labelAppNameText `n`n$configWelcomePromptCustomMessage"
+			$labelAppNameText = "$labelAppNameText`n`n$configWelcomePromptCustomMessage"
 		}
 		$labelAppName.Text = $labelAppNameText
 		$labelAppName.TextAlign = 'MiddleCenter'
@@ -6674,7 +6701,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.MinimumSize = $defaultControlSize
 		$labelDefer.MaximumSize = $defaultControlSize
 		$labelDefer.Margin = $paddingNone
-		$labelDefer.Padding = '0,0,0,0'
+		$labelDefer.Padding = '0,0,0,5'
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
 
@@ -6699,7 +6726,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
-		$labelCountdown.Margin = "0,5,0,5"
+		$labelCountdown.Margin = "0,0,0,5"
 		$labelCountdown.Padding = $paddingNone
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = New-Object -TypeName "System.Drawing.Font" -ArgumentList $labelCountdown.Font,1
@@ -6711,6 +6738,7 @@ Function Show-WelcomePrompt {
 		## Panel Flow Layout
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
+		$flowLayoutPanel.Margin = $paddingNone
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
@@ -6722,7 +6750,7 @@ Function Show-WelcomePrompt {
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonCloseApps.Location = '15,0'
+		$buttonCloseApps.Location = '15,5'
 		$buttonCloseApps.Name = 'buttonCloseApps'
 		$buttonCloseApps.Size = $buttonSize
 		$buttonCloseApps.TabIndex = 5
@@ -6735,10 +6763,10 @@ Function Show-WelcomePrompt {
 		## Button Defer
 		$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		If (-not $showCloseApps) {
-			$buttonDefer.Location = '15,0'
+			$buttonDefer.Location = '15,5'
 		}
 		Else {
-			$buttonDefer.Location = '170,0'
+			$buttonDefer.Location = '170,5'
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
@@ -6751,7 +6779,7 @@ Function Show-WelcomePrompt {
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = '325,0'
+		$buttonContinue.Location = '325,5'
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
 		$buttonContinue.TabIndex = 7
@@ -6782,6 +6810,7 @@ Function Show-WelcomePrompt {
 
 		## Form Welcome
 		$formWelcome.Size = $defaultControlSize
+		$formWelcome.MinimumSize = $defaultControlSize
 		$formWelcome.Padding = $paddingNone
 		$formWelcome.Margin = $paddingNone
 		$formWelcome.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6798,11 +6827,12 @@ Function Show-WelcomePrompt {
 		$formWelcome.Controls.Add($pictureBanner)
 
 		## Panel Button
-		$panelButtons.Size = $defaultControlSize
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,40
 		If ($showCloseApps) { $panelButtons.Controls.Add($buttonCloseApps) }
 		If ($showDefer) { $panelButtons.Controls.Add($buttonDefer) }
 		$panelButtons.Controls.Add($buttonContinue)
@@ -9146,7 +9176,7 @@ Function Test-Battery {
 		}
 		$SystemTypePowerStatus.Add('BatteryLifePercent', $PowerStatus.BatteryLifePercent)
 
-		## The reported approximate number of seconds of battery life remaining. It will report –1 if the remaining life is unknown because the system is on AC power.
+		## The reported approximate number of seconds of battery life remaining. It will report -1 if the remaining life is unknown because the system is on AC power.
 		[int32]$BatteryLifeRemaining = $PowerStatus.BatteryLifeRemaining
 		$SystemTypePowerStatus.Add('BatteryLifeRemaining', $PowerStatus.BatteryLifeRemaining)
 
