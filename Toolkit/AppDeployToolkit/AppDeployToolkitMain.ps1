@@ -1588,8 +1588,9 @@ Function Show-InstallationPrompt {
 			$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
 			$pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap()
 			$pictureIcon.Name = 'pictureIcon'
-			$pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 60,32
-			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 60,32
+			$pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
+			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
+			$pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 24,0,8,0
 			$pictureIcon.SizeMode = "CenterImage"
 			$pictureIcon.TabIndex = 0
 			$pictureIcon.TabStop = $false
@@ -1600,13 +1601,12 @@ Function Show-InstallationPrompt {
 		## Label Text
 		$labelText.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelText.Name = 'labelText'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 390,0
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 386,0
 		$labelText.Size = $System_Drawing_Size
 		$labelText.MinimumSize = $System_Drawing_Size
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
 		$labelText.Margin = $paddingNone
-		$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 5,5,5,5
 		$labelText.TabIndex = 1
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
@@ -1677,18 +1677,20 @@ Function Show-InstallationPrompt {
 			$flowLayoutPanel.Controls.Add($pictureIcon)
 		}
 		$flowLayoutPanel.Controls.Add($labelText)
-		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,10,5
             $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
-			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 60,0
+			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 64,0
 		} else {
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,5,10,5
 			$labelText.MinimumSize = $DefaultControlSize
 			$labelText.MaximumSize = $DefaultControlSize
 			$labelText.Size = $DefaultControlSize
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 		}
 		$flowLayoutPanel.Controls.Add($buttonAbort)
+		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 
 		## ButtonsPanel
 		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
@@ -6642,9 +6644,7 @@ Function Show-WelcomePrompt {
 		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size'
-		$buttonSize.Width = 110
-		$buttonSize.Height = 24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6665,8 +6665,8 @@ Function Show-WelcomePrompt {
 		$labelAppName.Size = $defaultControlSize
 		$labelAppName.MinimumSize = $defaultControlSize
 		$labelAppName.MaximumSize = $defaultControlSize
-		$labelAppName.Margin = '0,5,0,5'
-		$labelAppName.Padding = $paddingNone
+		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,2
+		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelAppName.TabIndex = 1
 
 		## Initial form layout: Close Applications / Allow Deferral
@@ -6690,7 +6690,7 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 400,100
 		$listBoxCloseApps.Size = $System_Drawing_Size
-		$listBoxCloseApps.Margin = '25,0,0,0'
+		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 25,0,0,0
 		$listBoxCloseApps.TabIndex = 3
 		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
@@ -6700,8 +6700,8 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $defaultControlSize
 		$labelDefer.MinimumSize = $defaultControlSize
 		$labelDefer.MaximumSize = $defaultControlSize
-		$labelDefer.Margin = $paddingNone
-		$labelDefer.Padding = '0,0,0,5'
+		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,2,0,5
+		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelDefer.TabIndex = 4
 		$deferralText = "$configDeferPromptExpiryMessage`n"
 
@@ -6726,8 +6726,8 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
-		$labelCountdown.Margin = "0,0,0,5"
-		$labelCountdown.Padding = $paddingNone
+		$labelCountdown.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdown.TabIndex = 4
 		$labelCountdown.Font = New-Object -TypeName "System.Drawing.Font" -ArgumentList $labelCountdown.Font,1
 		$labelCountdown.Text = '00:00:00'
@@ -6750,7 +6750,7 @@ Function Show-WelcomePrompt {
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonCloseApps.Location = '15,5'
+		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
 		$buttonCloseApps.Name = 'buttonCloseApps'
 		$buttonCloseApps.Size = $buttonSize
 		$buttonCloseApps.TabIndex = 5
@@ -6763,10 +6763,10 @@ Function Show-WelcomePrompt {
 		## Button Defer
 		$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		If (-not $showCloseApps) {
-			$buttonDefer.Location = '15,5'
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
 		}
 		Else {
-			$buttonDefer.Location = '170,5'
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 170,5
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
@@ -6779,7 +6779,7 @@ Function Show-WelcomePrompt {
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = '325,5'
+		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 325,5
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
 		$buttonContinue.TabIndex = 7
@@ -6800,7 +6800,7 @@ Function Show-WelcomePrompt {
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = '1,1'
+		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabIndex = 5
