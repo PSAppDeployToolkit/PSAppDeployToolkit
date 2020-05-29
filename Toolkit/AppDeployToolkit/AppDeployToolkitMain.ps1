@@ -2883,7 +2883,7 @@ Function Execute-Process {
 .PARAMETER NoWait
 	Immediately continue after executing the process.
 .PARAMETER PassThru
-	Returns ExitCode, STDOut, and STDErr output from the process.
+	If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
 .PARAMETER WaitForMsiExec
 	Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that
 	this function waits for the msiexec engine to become available before starting the install.
@@ -3093,7 +3093,7 @@ Function Execute-Process {
 				}
 
 				$null = $process.Start()
-
+				## Set priority
 				If ($PriorityClass -ne "Normal") {
 					try {
 						If ($process.HasExited -eq $False) {
@@ -3109,9 +3109,20 @@ Function Execute-Process {
 						Write-Log -Message "Failed to change the priority class for the process." -Severity 2 -Source ${CmdletName}
 					}
 				}
-
+				## NoWait specified, return process details. If it isnt specified, start reading standard Output and Error streams
 				If ($NoWait) {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
+
+					If ($PassThru) {
+						If ($process.HasExited -eq $false) {
+							Write-Log -Message "PassThru parameter specified, returning process details object." -Source ${CmdletName}
+							[psobject]$ProcessDetails = New-Object -TypeName 'PSObject' -Property @{ Id = If ($process.Id) {$process.Id} Else { $null } ; Handle = If ($process.Handle) { $process.Handle } Else { [IntPtr]::Zero }; ProcessName = If ($process.ProcessName) { $process.ProcessName } Else { '' } }
+							Write-Output -InputObject $ProcessDetails
+						}
+						Else {
+							Write-Log -Message "PassThru parameter specified, however the process has already exited." -Source ${CmdletName}
+						}
+					}
 				}
 				Else {
 					If ($processStartInfo.UseShellExecute -eq $false) {
@@ -3180,7 +3191,7 @@ Function Execute-Process {
 
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
-					Write-Log -Message "-PassThru parameter specified, returning execution results object." -Source ${CmdletName}
+					Write-Log -Message "PassThru parameter specified, returning execution results object." -Source ${CmdletName}
 					[psobject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 					Write-Output -InputObject $ExecutionResults
 				}
