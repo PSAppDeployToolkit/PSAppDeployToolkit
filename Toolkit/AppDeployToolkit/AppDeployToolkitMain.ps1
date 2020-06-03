@@ -6970,7 +6970,7 @@ Function Show-InstallationRestartPrompt {
 	Process {
 		## If in non-interactive mode
 		If ($deployModeSilent -and ($NoSilentRestart -eq $false)) {
-			Write-Log -Message "Trigger restart silently due to Deployment mode being set to [$deployMode], with a timeout of [$CountdownSeconds] seconds." -Source ${CmdletName}
+			Write-Log -Message "Trigger restart silently due to deploy mode being set to [$deployMode], with a timeout of [$CountdownSeconds] seconds." -Source ${CmdletName}
 			Start-Sleep -Seconds $CountdownSeconds
 			Restart-Computer -Force
 			Return
