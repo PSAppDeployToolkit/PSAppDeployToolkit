@@ -6939,7 +6939,7 @@ Function Show-InstallationRestartPrompt {
 	Specifies not to show a countdown, just the Restart Now and Restart Later buttons.
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .PARAMETER NoSilentRestart
-	Specifies whether the restart should not be triggered when Deployment Mode is silent.
+	Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
