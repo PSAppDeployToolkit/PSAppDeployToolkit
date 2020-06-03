@@ -6938,6 +6938,8 @@ Function Show-InstallationRestartPrompt {
 .PARAMETER NoCountdown
 	Specifies not to show a countdown, just the Restart Now and Restart Later buttons.
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
+.PARAMETER NoSilentRestart
+	Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
@@ -6955,6 +6957,8 @@ Function Show-InstallationRestartPrompt {
 		[ValidateNotNullorEmpty()]
 		[int32]$CountdownNoHideSeconds = 30,
 		[Parameter(Mandatory=$false)]
+		[bool]$NoSilentRestart = $true,
+		[Parameter(Mandatory=$false)]
 		[switch]$NoCountdown = $false
 	)
 
@@ -6964,9 +6968,16 @@ Function Show-InstallationRestartPrompt {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		## Bypass if in non-interactive mode
+		## If in non-interactive mode
 		If ($deployModeSilent) {
-			Write-Log -Message "Bypass Installation Restart Prompt [Mode: $deployMode]." -Source ${CmdletName}
+            If ($NoSilentRestart -eq $false) {
+                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$CountdownSeconds] seconds." -Source ${CmdletName}
+                Start-Sleep -Seconds $CountdownSeconds
+                Restart-Computer -Force
+            }
+            Else {
+                Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
+            }
 			Return
 		}
 		## Get the parameters passed to the function for invoking the function asynchronously
