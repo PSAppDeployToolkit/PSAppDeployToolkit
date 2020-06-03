@@ -6957,7 +6957,7 @@ Function Show-InstallationRestartPrompt {
 		[ValidateNotNullorEmpty()]
 		[int32]$CountdownNoHideSeconds = 30,
 		[Parameter(Mandatory=$false)]
-		[bool]$NoSilentRestart = $false,
+		[bool]$NoSilentRestart = $true,
 		[Parameter(Mandatory=$false)]
 		[switch]$NoCountdown = $false
 	)
@@ -6969,10 +6969,15 @@ Function Show-InstallationRestartPrompt {
 	}
 	Process {
 		## If in non-interactive mode
-		If ($deployModeSilent -and ($NoSilentRestart -eq $false)) {
-			Write-Log -Message "Trigger restart silently due to deploy mode being set to [$deployMode], with a timeout of [$CountdownSeconds] seconds." -Source ${CmdletName}
-			Start-Sleep -Seconds $CountdownSeconds
-			Restart-Computer -Force
+		If ($deployModeSilent) {
+            If ($NoSilentRestart -eq $false) {
+                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode], with a timeout of [$CountdownSeconds] seconds." -Source ${CmdletName}
+                Start-Sleep -Seconds $CountdownSeconds
+                Restart-Computer -Force
+            }
+            Else {
+                Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is not enabled." -Source ${CmdletName}
+            }
 			Return
 		}
 		## Get the parameters passed to the function for invoking the function asynchronously
