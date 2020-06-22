@@ -167,7 +167,7 @@ ElseIf ((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\Curr
 	[string]$envOSVersionRevision = ,((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
 }
 If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
-If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { "$($envOSVersion.ToString())" }
+If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [string]$envOSVersion = "$($envOSVersion.ToString())" }
 #  Get the operating system type
 [int32]$envOSProductType = $envOS.ProductType
 [boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
