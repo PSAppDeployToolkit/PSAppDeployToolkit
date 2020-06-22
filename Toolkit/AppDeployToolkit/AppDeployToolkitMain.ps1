@@ -6947,7 +6947,10 @@ Function Show-InstallationRestartPrompt {
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
 	Show-InstallationRestartPrompt -NoCountdown
+.EXAMPLE
+	Show-InstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
 .NOTES
+	Be mindful of the countdown you specify for the reboot as code directly after this function might be able to execute, including additional logging.
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -6977,7 +6980,7 @@ Function Show-InstallationRestartPrompt {
 		## If in non-interactive mode
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
-                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
+				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
 				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {Start-Sleep -Seconds $SilentCountdownSeconds;Restart-Computer -Force;}`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
