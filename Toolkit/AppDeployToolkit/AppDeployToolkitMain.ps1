@@ -6933,19 +6933,24 @@ Function Show-InstallationRestartPrompt {
 .DESCRIPTION
 	Displays a restart prompt with a countdown to a forced restart.
 .PARAMETER CountdownSeconds
-	Specifies the number of seconds to countdown before the system restart.
+	Specifies the number of seconds to countdown before the system restart. Default: 60
 .PARAMETER CountdownNoHideSeconds
-	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
+	Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
+.PARAMETER NoSilentRestart
+	Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $true
 .PARAMETER NoCountdown
 	Specifies not to show a countdown, just the Restart Now and Restart Later buttons.
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
-.PARAMETER NoSilentRestart
-	Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
+.PARAMETER SilentCountdownSeconds
+	Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
 	Show-InstallationRestartPrompt -NoCountdown
+.EXAMPLE
+	Show-InstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
 .NOTES
+	Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -6960,7 +6965,10 @@ Function Show-InstallationRestartPrompt {
 		[Parameter(Mandatory=$false)]
 		[bool]$NoSilentRestart = $true,
 		[Parameter(Mandatory=$false)]
-		[switch]$NoCountdown = $false
+		[switch]$NoCountdown = $false,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[int32]$SilentCountdownSeconds = 5
 	)
 
 	Begin {
@@ -6972,9 +6980,8 @@ Function Show-InstallationRestartPrompt {
 		## If in non-interactive mode
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
-                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$CountdownSeconds] seconds." -Source ${CmdletName}
-                Start-Sleep -Seconds $CountdownSeconds
-                Restart-Computer -Force
+				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
+				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {Start-Sleep -Seconds $SilentCountdownSeconds;Restart-Computer -Force;}`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -7217,6 +7224,10 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
 			}
+			## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters. 
+			$installRestartPromptParameters.Remove("NoSilentRestart")
+			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
+			## Prepare a list of parameters of this function as a string
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
 				If ($_.Value.GetType().Name -eq 'SwitchParameter') {
 					"-$($_.Key)"
@@ -7231,6 +7242,7 @@ Function Show-InstallationRestartPrompt {
 					"-$($_.Key) `"$($_.Value)`""
 				}
 			}) -join ' '
+			## Start another powershell instance silently with function parameters from this function
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
