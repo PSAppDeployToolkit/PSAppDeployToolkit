@@ -6950,7 +6950,7 @@ Function Show-InstallationRestartPrompt {
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
 .NOTES
-	Be mindful of the countdown you specify for the reboot as code directly after this function might be able to execute, including additional logging.
+	Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 .LINK
 	http://psappdeploytoolkit.com
 #>
