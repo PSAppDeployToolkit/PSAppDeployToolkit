@@ -188,7 +188,7 @@
 		<RestartPrompt_MessageRestart>Your computer will be automatically restarted at the end of the countdown.</RestartPrompt_MessageRestart>
 		<!-- Text displayed on the restart prompt. -->
 		<RestartPrompt_TimeRemaining>Time remaining:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Restart Later</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimize</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Restart Now</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_EN>
 
@@ -237,7 +237,7 @@
 		<RestartPrompt_MessageTime>Du bør venligst gemme dit arbejde og genstarte indenfor det givne tidsrum.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Din computer vil automatisk blive genstartet når nedtællingen er færdig.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tid tilbage:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Genstart Senere</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimere</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Genstart Nu</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_DA>
 
@@ -285,7 +285,7 @@
 		<RestartPrompt_MessageTime>Merci de sauvegarder votre travail et de redémarrer avant que le temps spécifié ne soit écoulé.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Votre ordinateur sera automatiquement redémarré à la fin du décompte.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Temps restant:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Redémarrer Plus Tard</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimiser</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Redémarrer Maintenant</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_FR>
 
@@ -333,7 +333,7 @@
 		<RestartPrompt_MessageTime>Bitte speichern Sie Ihre Arbeit und starten Sie den Computer innerhalb der vorgegebenen Zeit neu.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Am Ende des Countdowns wird Ihr Computer automatisch neu gestartet.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Verbleibende Zeit:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Später Neustarten</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimieren</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Jetzt Neustarten</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_DE>
 
@@ -381,7 +381,7 @@
 		<RestartPrompt_MessageTime>Salvare il lavoro e riavviare entro il tempo assegnato.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Il computer verrà riavviato automaticamente al termine del conto alla rovescia.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tempo rimanente:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Riavvia Seguito</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimizzare</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Riavvia Ora</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_IT>
 
@@ -429,7 +429,7 @@
 		<RestartPrompt_MessageTime>実行中のアプリケーションを保存し、再起動してください。</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>カウントダウン後にコンピュータが再起動します。</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>残時間：</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>後で再起動</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>最小 化</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>今すぐ再起動</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_JA>
 
@@ -477,7 +477,7 @@
 		<RestartPrompt_MessageTime>Lagre arbeidet ditt og gjør en omstart av pc innen fristen.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Pcen vil automatisk starte på nytt, når nedtellingen er slutt.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tid som gjenstår:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Omstart Senere</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimere</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Omstart Nå</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_NB>
 
@@ -525,7 +525,7 @@
 		<RestartPrompt_MessageTime>Gelieve je werk op te slaan en binnen het toegestane termijn de computer herstarten</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>De computer zal herstarten als de teller op nul staat</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Resterende tijd:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Herstart Later</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimaliseren</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Herstart Nu</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_NL>
 
@@ -573,7 +573,7 @@
 		<RestartPrompt_MessageTime>Proszę zapisać wszystkie dokumenty i zrestartować komputer w wyznaczonym czasie.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Komputer zostanie automatycznie zrestartowany po upływie wyznaczonego czasu.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Pozostały czas do restartu automatycznego:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Restartuj Później</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Zminimalizować</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Restartuj Teraz</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_PL>
 
@@ -621,7 +621,7 @@
 		<RestartPrompt_MessageTime>Por favor, salve o trabalho e reiniciar no tempo alocado.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da contagem regressiva.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tempo restante:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Reiniciar Mais Tarde</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Reinicie Agora</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_PT>
 
@@ -669,7 +669,7 @@
 		<RestartPrompt_MessageTime>Salve seu trabalho e reinicie dentro do prazo estipulado.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da contagem regressiva.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tempo restante:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Reiniciar Mais Tarde</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Reiniciar Agora</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_PT-BR>
 
@@ -717,7 +717,7 @@
 		<RestartPrompt_MessageTime>Por favor guarde su trabajo y reinicie dentro del tiempo asignado.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>El ordenador se reiniciará automáticamente al final de la cuenta regresiva de.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Tiempo restante:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Reiniciar Más Tarde</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Reiniciar Ahora</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_ES>
 
@@ -765,7 +765,7 @@
 		<RestartPrompt_MessageTime>Se till att spara ditt arbete innan tiden går ut och en automatisk omstart sker.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Din dator kommer automatiskt att starta om när nedräkningen är slut.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Återstående tid:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Starta Om Senare</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimera</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Starta Om Nu</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_SV>
 
@@ -813,7 +813,7 @@
 		<RestartPrompt_MessageTime>يرجى حفظ عملك وإعادة التشغيل خلال الوقت المخصص.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>ستتم إعادة تشغيل حاسوبك بشكل تلقائي عند نهاية العد التنازلي.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>الزمن المتبقي:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>إعادة التشغيل لاحقًا</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>تقليل</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>إعادة التشغيل الآن</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_AR>
 
@@ -861,7 +861,7 @@
 		<RestartPrompt_MessageTime>אנא שמור על העבודה שלך ואתחל במסגרת הזמן המוקצב.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>המחשב שלך יאותחל באופן אוטומטי בסיום הספירה לאחור.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>הזמן הנותר:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>אתחל מאוחר יותר</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>מזער את</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>אתחל עכשיו</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_HE>
 
@@ -909,7 +909,7 @@
 		<RestartPrompt_MessageTime>사용자 작업을 저장하고 지정된 시간 이내에 다시 시작하세요.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>카운트다운이 종료되면 컴퓨터는 자동으로 다시 시작합니다.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>남은 시간:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>나중에 다시 시작</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>최소화</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>지금 다시 시작 </RestartPrompt_ButtonRestartNow>
 	</UI_Messages_KO>
 
@@ -957,7 +957,7 @@
 		<RestartPrompt_MessageTime>Пожалуйста, сохраните вашу работу и выполните перезагрузку в отведенное время.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Ваш компьютер будет автоматически перезагружен по завершению обратного отсчета.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Оставшееся время:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Перезагрузить позже</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Минимизировать</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Перезагрузить сейчас</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_RU>
 
@@ -1005,7 +1005,7 @@
 		<RestartPrompt_MessageTime>请保存您的工作，并在容许时间重启计算机。</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>倒计时结束后，计算机将自动重启。</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>剩余时间：</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>稍后重启</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>最小化</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>现在重启</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_ZH-Hans>
 
@@ -1053,7 +1053,7 @@
 		<RestartPrompt_MessageTime>請保存您的工作，然後在容許時間重啟計算機。</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>倒計時結束後，計算機將自動重啟。</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>剩餘時間：</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>稍後重啟</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>最小化</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>現在重啟</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_ZH-Hant>
 
@@ -1101,7 +1101,7 @@
 		<RestartPrompt_MessageTime>Prosím, uložte si prácu a reštartujte počítač v stanovenej lehote.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Na konci odpočítavania, bude váš počítač automaticky reštartovaný.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Zostávajúci čas:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Reštartovať Neskôr</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimalizovať</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Reštartovať Teraz</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_SK>
 
@@ -1149,7 +1149,7 @@
 		<RestartPrompt_MessageTime>Prosím, uložte si práci a restartujte počítač ve stanoveném čase.</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>Na konci odpočítávání, bude váš počítač automaticky restartovaný.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Zbývající čas:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Restartovat později</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimalizovat</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Restartovat nyní</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_CZ>
 
@@ -1196,7 +1196,7 @@
 		<RestartPrompt_MessageTime>Kérem mentse munkáját, és a megadott időn belül indítsa újra..</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>A hátralévő idő leteltével a számítógép újraindul.</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Hátralévő idő:</RestartPrompt_TimeRemaining>
-		<RestartPrompt_ButtonRestartLater>Újraindítás később</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartLater>Minimalizál</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Újraindítás most</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_HU>
 
