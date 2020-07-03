@@ -3531,11 +3531,13 @@ Function Remove-Folder {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Try {
 					If ($DisableRecursion) {
+                        #Check if Folder is empty to remove it without standard response dialog from Remove-Item.
+                        #if empty remove it, if not log that Folder is not empty and will not be removed.
                         if((get-childitem -LiteralPath $Path -ErrorAction 'SilentlyContinue' -ErrorVariable  '+ErrorRemoveFolder').Count -eq 0){
 						    Write-Log -Message "Delete folder [$path] without recursion..." -Source ${CmdletName}
                             Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
                         } else {
-                            Write-Log -Message "Delete folder [$path] not possible Folder not empty..." -Source ${CmdletName}
+                            Write-Log -Message "Delete folder [$path] not possible. Folder not empty..." -Source ${CmdletName}
                         }
 					} else {
 						Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
