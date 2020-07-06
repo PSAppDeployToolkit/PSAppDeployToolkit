@@ -3531,8 +3531,14 @@ Function Remove-Folder {
 			If (Test-Path -LiteralPath $Path -PathType 'Container') {
 				Try {
 					If ($DisableRecursion) {
-						Write-Log -Message "Delete folder [$path] without recursion..." -Source ${CmdletName}
-						Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                        #Check if folder contains folder(s) 
+                        #if empty remove it, if not log that folder is not empty and will not be removed.
+                        if((get-childitem -LiteralPath $Path -Directory -ErrorAction 'SilentlyContinue' -ErrorVariable  '+ErrorRemoveFolder').Count -eq 0){
+						    Write-Log -Message "Delete folder [$path] without recursion..." -Source ${CmdletName}
+                            Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                        } else {
+                            Write-Log -Message "Delete folder [$path] not possible without recursion. Folder contains subfolders ..." -Source ${CmdletName}
+                        }
 					} else {
 						Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
 						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
