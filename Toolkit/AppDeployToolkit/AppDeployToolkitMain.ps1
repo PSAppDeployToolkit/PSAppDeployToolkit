@@ -3518,6 +3518,8 @@ Function Remove-Folder {
 		[Parameter(Mandatory=$false)]
 		[switch]$DisableRecursion,
 		[Parameter(Mandatory=$false)]
+		[switch]$IfEmpty,
+		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[boolean]$ContinueOnError = $true
 	)
@@ -3539,7 +3541,16 @@ Function Remove-Folder {
                         } else {
                             Write-Log -Message "Delete folder [$path] not possible without recursion. Folder contains subfolders ..." -Source ${CmdletName}
                         }
-					} else {
+					} elseif($IfEmpty){
+						#iterate through all subfolders of $Path,if any
+                        ForEach($itm in (get-childitem -LiteralPath $Path -directory -ErrorAction 'SilentlyContinue' -ErrorVariable  '+ErrorRemoveFolder')){
+                                Remove-Folder -Path $itm.fullname -IfEmpty
+                            }
+						#If folder is empty, Remove-Folder
+                        if((get-childitem -LiteralPath $Path -ErrorAction 'SilentlyContinue' -ErrorVariable  '+ErrorRemoveFolder').count -eq 0){
+                                Remove-Folder -Path $path
+                        }
+                    } else {
 						Write-Log -Message "Delete folder [$path] recursively..." -Source ${CmdletName}
 						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 					}
