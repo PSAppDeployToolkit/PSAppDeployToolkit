@@ -87,7 +87,7 @@ Param (
 
 ## Variables: Environment Variables
 [psobject]$envHost = $Host
-[psobject]$envShellFolders = Get-ItemProperty -Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
+[psobject]$envShellFolders = Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
@@ -137,7 +137,7 @@ If ($IsMachinePartOfDomain) {
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
 		# If running in system context, fall back on the logonserver value stored in the registry
-		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
+		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
 		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
 	Catch { }
@@ -160,11 +160,11 @@ Catch { }
 [string]$envOSVersionMajor = $envOSVersion.Major
 [string]$envOSVersionMinor = $envOSVersion.Minor
 [string]$envOSVersionBuild = $envOSVersion.Build
-If ((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'UBR') {
-	[string]$envOSVersionRevision = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'UBR' -ErrorAction 'SilentlyContinue').UBR
+If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'UBR') {
+	[string]$envOSVersionRevision = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'UBR' -ErrorAction 'SilentlyContinue').UBR
 }
-ElseIf ((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'BuildLabEx') {
-	[string]$envOSVersionRevision = ,((Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
+ElseIf ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'BuildLabEx') {
+	[string]$envOSVersionRevision = ,((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
 }
 If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
 If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [string]$envOSVersion = "$($envOSVersion.ToString())" }
@@ -354,24 +354,24 @@ If ($configToolkitRequireAdmin -eq $false){
 	If ($RunAsActiveUser) {
 		#  Read language defined by Group Policy
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKLM:SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Software\Policies\Microsoft\Windows\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win Vista & higher machines
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop\MuiCached' -Value 'MachinePreferredUILanguages' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\MuiCached' -Value 'MachinePreferredUILanguages' -SID $RunAsActiveUser.SID
 		}
 		If (-not $HKULanguages) {
-			[string[]]$HKULanguages = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'LocaleName' -SID $RunAsActiveUser.SID
+			[string[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\International' -Value 'LocaleName' -SID $RunAsActiveUser.SID
 		}
 		#  Read language for Win XP machines
 		If (-not $HKULanguages) {
-			[string]$HKULocale = Get-RegistryKey -Key 'HKCU\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
+			[string]$HKULocale = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
 			If ($HKULocale) {
 				[int32]$HKULocale = [Convert]::ToInt32('0x' + $HKULocale, 16)
 				[string[]]$HKULanguages = ([Globalization.CultureInfo]($HKULocale)).Name
@@ -470,14 +470,14 @@ If (-not $deploymentType) { [string]$deploymentType = 'Install' }
 
 ## Variables: Registry Keys
 #  Registry keys for native and WOW64 applications
-[string[]]$regKeyApplications = 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall','HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+[string[]]$regKeyApplications = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall','Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
 If ($is64Bit) {
-	[string]$regKeyLotusNotes = 'HKLM:SOFTWARE\Wow6432Node\Lotus\Notes'
+	[string]$regKeyLotusNotes = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Lotus\Notes'
 }
 Else {
-	[string]$regKeyLotusNotes = 'HKLM:SOFTWARE\Lotus\Notes'
+	[string]$regKeyLotusNotes = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Lotus\Notes'
 }
-[string]$regKeyAppExecution = 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
+[string]$regKeyAppExecution = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
 
 ## COM Objects: Initialize
 [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'SilentlyContinue'
@@ -499,15 +499,15 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
 	If ($RunAsActiveUser) {
-		[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
+		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
 		If (-not ([string]$dpiPixels)) {
-			[int32]$dpiPixels = Get-RegistryKey -Key 'HKCU\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
+			[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
 		}
 		[boolean]$UserDisplayScaleFactor = $true
 	}
 	If (-not ([string]$dpiPixels)) {
 		#  This registry setting only exists if system scale factor has been changed at least once
-		[int32]$dpiPixels = Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
+		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
 		[boolean]$UserDisplayScaleFactor = $false
 	}
 	Switch ($dpiPixels) {
@@ -7820,7 +7820,7 @@ Function Set-PinnedApplication {
 						return
 					}
 
-					$ExplorerCommandHandler = Get-RegistryKey -Key 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
+					$ExplorerCommandHandler = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
 					$classesStarKey = (Get-Item "Registry::HKEY_USERS\$($RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey("*", $true)
 					$shellKey = $classesStarKey.CreateSubKey("shell", $true)
 					$specialKey = $shellKey.CreateSubKey("{:}", $true)
@@ -9906,8 +9906,8 @@ Function Set-ActiveSetup {
 	}
 	Process {
 		Try {
-			[string]$ActiveSetupKey = "HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
-			[string]$HKCUActiveSetupKey = "HKCU:Software\Microsoft\Active Setup\Installed Components\$Key"
+			[string]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
+			[string]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
 
 			## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
 			If ($PurgeActiveSetupKey) {
@@ -10422,7 +10422,7 @@ Function Get-ServiceStartMode
 			## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
 			If (($ServiceStartMode -eq 'Automatic') -and (([version]$envOSVersion).Major -gt 5)) {
 				Try {
-					[string]$ServiceRegistryPath = "HKLM:SYSTEM\CurrentControlSet\Services\$Name"
+					[string]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
 					[int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
 					If ($DelayedAutoStart -eq 1) { $ServiceStartMode = 'Automatic (Delayed Start)' }
 				}
@@ -10638,7 +10638,7 @@ Function Get-PendingReboot {
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
 		Try {
 			If (([version]$envOSVersion).Major -ge 5) {
-				If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
+				If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
 					[nullable[boolean]]$IsCBServicingRebootPending = $true
 				}
 				Else {
@@ -10654,7 +10654,7 @@ Function Get-PendingReboot {
 
 		## Determine if there is a pending reboot from a Windows Update
 		Try {
-			If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -ErrorAction 'Stop') {
+			If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -ErrorAction 'Stop') {
 				[nullable[boolean]]$IsWindowsUpdateRebootPending = $true
 			}
 			Else {
@@ -10670,12 +10670,12 @@ Function Get-PendingReboot {
 		## Determine if there is a pending reboot from a pending file rename operation
 		[boolean]$IsFileRenameRebootPending = $false
 		$PendingFileRenameOperations = $null
-		If (Test-RegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
+		If (Test-RegistryValue -Key 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
 			#  If PendingFileRenameOperations value exists, set $IsFileRenameRebootPending variable to $true
 			[boolean]$IsFileRenameRebootPending = $true
 			#  Get the value of PendingFileRenameOperations
 			Try {
-				[string[]]$PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'PendingFileRenameOperations' -ErrorAction 'Stop'
+				[string[]]$PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'PendingFileRenameOperations' -ErrorAction 'Stop'
 			}
 			Catch {
 				[string[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
@@ -10716,7 +10716,7 @@ Function Get-PendingReboot {
 
 		## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
 		Try {
-			If (Test-Path -LiteralPath 'HKLM:SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks' -ErrorAction 'Stop') {
+			If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks' -ErrorAction 'Stop') {
 
 				[nullable[boolean]]$IsAppVRebootPending = $true
 			}
