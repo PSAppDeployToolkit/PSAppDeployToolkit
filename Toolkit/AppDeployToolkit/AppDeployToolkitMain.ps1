@@ -8993,6 +8993,7 @@ Function Get-WindowTitle {
 							ParentProcess= $Process.Name
 							ParentProcessMainWindowHandle = $Process.MainWindowHandle
 							ParentProcessId = $Process.Id
+							ParentProcessObj = $Process
 						}
 
 						## Only save/return the window and process details which match the search criteria
