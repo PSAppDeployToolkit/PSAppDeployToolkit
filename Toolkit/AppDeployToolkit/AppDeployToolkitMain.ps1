@@ -458,8 +458,8 @@ If ($configToolkitRequireAdmin -eq $false){
 If (-not $deploymentType) { [string]$deploymentType = 'Install' }
 
 ## Variables: Executables
-[string]$exeWusa = 'wusa.exe' # Installs Standalone Windows Updates
-[string]$exeMsiexec = 'msiexec.exe' # Installs MSI Installers
+[string]$exeWusa = "$envWinDir\System32\wusa.exe" # Installs Standalone Windows Updates
+[string]$exeMsiexec = "$envWinDir\System32\msiexec.exe" # Installs MSI Installers
 [string]$exeSchTasks = "$envWinDir\System32\schtasks.exe" # Manages Scheduled Tasks
 
 ## Variables: RegEx Patterns
@@ -3580,7 +3580,7 @@ Function Copy-File {
 .PARAMETER ContinueFileCopyOnError
 	Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 .EXAMPLE
-	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWindir\MyApp.ini"
+	Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWinDir\MyApp.ini"
 .EXAMPLE
 	Copy-File -Path "$dirSupportFiles\*.*" -Destination "$envTemp\tempfiles"
 	Copy all of the files in a folder to a destination folder.
@@ -4213,7 +4213,7 @@ Function Set-RegistryKey {
 					# Forward slash was found in Key. Use REG.exe ADD to create registry key
 					Else
 					{
-						[string]$CreateRegkeyResult = & reg.exe Add "$($Key.Substring($Key.IndexOf('::') + 2))"
+						[string]$CreateRegkeyResult = & "$envWinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))"
 						If ($global:LastExitCode -ne 0)
 						{
 							Throw "Failed to create registry key [$Key]"
@@ -4444,7 +4444,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 					#  Load the User registry hive if the registry hive file exists
 					If (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf') {
 						Write-Log -Message "Load the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-						[string]$HiveLoadResult = & reg.exe load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
+						[string]$HiveLoadResult = & "$envWinDir\System32\reg.exe" load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 
 						If ($global:LastExitCode -ne 0) {
 							Throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
@@ -4473,7 +4473,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				If ($ManuallyLoadedRegHive) {
 					Try {
 						Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-						[string]$HiveLoadResult = & reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
+						[string]$HiveLoadResult = & "$envWinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
 
 						If ($global:LastExitCode -ne 0) {
 							Write-Log -Message "REG.exe failed to unload the registry hive and exited with exit code [$($global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2 -Source ${CmdletName}
@@ -4482,7 +4482,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 							Start-Sleep -Seconds 5
 
 							Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-							[string]$HiveLoadResult = & reg.exe unload "`"HKEY_USERS\$($UserProfile.SID)`""
+							[string]$HiveLoadResult = & "$envWinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
 							If ($global:LastExitCode -ne 0) { Throw "REG.exe failed with exit code [$($global:LastExitCode)] and result [$HiveLoadResult]." }
 						}
 					}
@@ -5084,7 +5084,7 @@ Function Execute-ProcessAsUser {
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
 			$executeProcessAsUserScript += 'WScript.Quit intReturn'
 			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
-			$Path = 'wscript.exe'
+			$Path = "$envWinDir\System32\wscript.exe"
 			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
 		}
 
@@ -5414,7 +5414,6 @@ Function Get-ScheduledTask {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-		If (-not $exeSchTasks) { [string]$exeSchTasks = "$env:WINDIR\system32\schtasks.exe" }
 		[psobject[]]$ScheduledTasks = @()
 	}
 	Process {
@@ -5536,7 +5535,7 @@ Function Block-AppExecution {
 	</Settings>
 	<Actions Context="Author">
 		<Exec>
-			<Command>powershell.exe</Command>
+			<Command>$PSHome\powershell.exe</Command>
 			<Arguments>$schTaskUnblockAppsCommand</Arguments>
 		</Exec>
 	</Actions>
@@ -5564,12 +5563,12 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
 		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
-		[string]$debuggerBlockValue = "wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
+		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
@@ -8902,7 +8901,7 @@ Function Install-MSUpdates {
 						#  Installation type for executables (i.e., Microsoft Office Updates)
 						'.exe' { Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
 						#  Installation type for Windows updates using Windows Update Standalone Installer
-						'.msu' { Execute-Process -Path 'wusa.exe' -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
+						'.msu' { Execute-Process -Path $exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
 						#  Installation type for Windows Installer Patch
 						'.msp' { Execute-MSI -Action 'Patch' -Path $file.FullName -IgnoreExitCodes "*" }
 					}
@@ -9699,7 +9698,7 @@ Function Update-GroupPolicy {
 					[string]$InstallMsg = 'Update Group Policies for the User'
 					Write-Log -Message "$($InstallMsg)..." -Source ${CmdletName}
 				}
-				[psobject]$ExecuteResult = Execute-Process -Path "$envWindir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
+				[psobject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
 
 				If ($ExecuteResult.ExitCode -ne 0) {
 					If ($ExecuteResult.ExitCode -eq 60002) {
@@ -9757,7 +9756,7 @@ Function Enable-TerminalServerInstallMode {
 	Process {
 		Try {
 			Write-Log -Message 'Change terminal server into user install mode...' -Source ${CmdletName}
-			$terminalServerResult = & change.exe User /Install
+			$terminalServerResult = & "$envWinDir\System32\change.exe" User /Install
 
 			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
@@ -9805,7 +9804,7 @@ Function Disable-TerminalServerInstallMode {
 	Process {
 		Try {
 			Write-Log -Message 'Change terminal server into user execute mode...' -Source ${CmdletName}
-			$terminalServerResult = & change.exe User /Execute
+			$terminalServerResult = & "$envWinDir\System32\change.exe" User /Execute
 
 			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
@@ -10501,7 +10500,7 @@ Function Set-ServiceStartMode
 			If ($StartMode -eq 'Manual') { $ScExeStartMode = 'Demand' }
 
 			## Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-			$ChangeStartMode = & sc.exe config $Name start= $ScExeStartMode
+			$ChangeStartMode = & "$envWinDir\System32\sc.exe" config $Name start= $ScExeStartMode
 
 			If ($global:LastExitCode -ne 0) {
 				Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
