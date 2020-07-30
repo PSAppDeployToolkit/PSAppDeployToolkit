@@ -3839,41 +3839,35 @@ Function Convert-RegistryPath {
 	}
 	Process {
 		## Convert the registry key hive to the full path, only match if at the beginning of the line
-		If ($Key -match '^HKLM:\\|^HKCU:\\|^HKCR:\\|^HKU:\\|^HKCC:\\|^HKPD:\\') {
-			#  Converts registry paths that start with, e.g.: HKLM:\
-			$key = $key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\'
-			$key = $key -replace '^HKCR:\\', 'HKEY_CLASSES_ROOT\'
-			$key = $key -replace '^HKCU:\\', 'HKEY_CURRENT_USER\'
-			$key = $key -replace '^HKU:\\', 'HKEY_USERS\'
-			$key = $key -replace '^HKCC:\\', 'HKEY_CURRENT_CONFIG\'
-			$key = $key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\'
+		If ($Key -match '^HKLM') {
+			$Key = $Key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
 		}
-		ElseIf ($Key -match '^HKLM:|^HKCU:|^HKCR:|^HKU:|^HKCC:|^HKPD:') {
-			#  Converts registry paths that start with, e.g.: HKLM:
-			$key = $key -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\'
-			$key = $key -replace '^HKCR:', 'HKEY_CLASSES_ROOT\'
-			$key = $key -replace '^HKCU:', 'HKEY_CURRENT_USER\'
-			$key = $key -replace '^HKU:', 'HKEY_USERS\'
-			$key = $key -replace '^HKCC:', 'HKEY_CURRENT_CONFIG\'
-			$key = $key -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\'
+		elseif ($Key -match '^HKCR') {
+			$Key = $Key -replace '^HKCR:\\', 'HKEY_CLASSES_ROOT\' -replace '^HKCR:', 'HKEY_CLASSES_ROOT\' -replace '^HKCR\\', 'HKEY_CLASSES_ROOT\'
 		}
-		ElseIf ($Key -match '^HKLM\\|^HKCU\\|^HKCR\\|^HKU\\|^HKCC\\|^HKPD\\') {
-			#  Converts registry paths that start with, e.g.: HKLM\
-			$key = $key -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
-			$key = $key -replace '^HKCR\\', 'HKEY_CLASSES_ROOT\'
-			$key = $key -replace '^HKCU\\', 'HKEY_CURRENT_USER\'
-			$key = $key -replace '^HKU\\', 'HKEY_USERS\'
-			$key = $key -replace '^HKCC\\', 'HKEY_CURRENT_CONFIG\'
-			$key = $key -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
+		elseif ($Key -match '^HKCU') {
+			$Key = $Key -replace '^HKCU:\\', 'HKEY_CURRENT_USER\' -replace '^HKCU:', 'HKEY_CURRENT_USER\' -replace '^HKCU\\', 'HKEY_CURRENT_USER\'
 		}
+		elseif ($Key -match '^HKU') {
+			$Key = $Key -replace '^HKU:\\', 'HKEY_USERS\' -replace '^HKU:', 'HKEY_USERS\' -replace '^HKU\\', 'HKEY_USERS\'
+		}
+		elseif ($Key -match '^HKCC') {
+			$Key = $Key -replace '^HKCC:\\', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC:', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC\\', 'HKEY_CURRENT_CONFIG\'
+		}
+		elseif ($Key -match '^HKPD') {
+			$Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
+		}
+
+		## Append the PowerShell provider to the registry key path
+		If ($key -notmatch '^Registry::') {[string]$key = "Registry::$key" }
 
 		If ($PSBoundParameters.ContainsKey('SID')) {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-			If ($key -match '^HKEY_CURRENT_USER\\') { $key = $key -replace '^HKEY_CURRENT_USER\\', "HKEY_USERS\$SID\" }
+			If ($key -match '^Registry::HKEY_CURRENT_USER\\') { $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\" }
+			Else {
+				Write-Log -Message "SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER." -Source ${CmdletName} -Severity 2
+			}
 		}
-
-		## Append the PowerShell drive to the registry key path
-		If ($key -notmatch '^Registry::') {[string]$key = "Registry::$key" }
 
 		If($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
 			## Check for expected key string format
