@@ -6,4 +6,4 @@ Before submitting this PR, I made sure:
 
 - [X] The code I changed has comments with explanation.
 
-- [X] The enconding of the file wasn't changed. It is still UTF8 without BOM.
+- [X] The encoding of the file wasn't changed. It is still UTF8 without BOM.
