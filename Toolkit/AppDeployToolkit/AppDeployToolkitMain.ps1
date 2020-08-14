@@ -5597,7 +5597,7 @@ Function Block-AppExecution {
 		
 		$blockExecutionTempFiles = Get-ChildItem -Path $blockExecutionTempPath
 		foreach ($item in $blockExecutionTempFiles) {
-			Set-Permission -Path $item.FullName -User $Users -Permission 'ReadAndExecute'
+			Set-Permission -Path $item.FullName -User $Users -Permission 'Read'
 		}
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
@@ -5708,7 +5708,7 @@ Function Unblock-AppExecution {
 
 		## Remove BlockAppExection Temporary directory
 		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container' -ErrorAction 'SilentyContinue') {
+		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
 			Remove-Folder -Path $blockExecutionTempPath
 		}
 	}
@@ -10926,7 +10926,7 @@ Function Set-Permission {
 
                 $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)
                 $Acl.AddAccessRule($Rule)
-                Write-Log -Message "ACL - Add($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)" -Source ${CmdletName}
+                Write-Log -Message "[$path] ACL - Add($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)" -Source ${CmdletName}
 
             } Else {
 
@@ -10937,7 +10937,7 @@ Function Set-Permission {
 
                     $RemoveRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Remove.IdentityReference, $Remove.FileSystemRights, $Remove.InheritanceFlags, $Remove.PropagationFlags, $Remove.AccessControlType)
                     $Acl.RemoveAccessRuleAll($RemoveRule)
-                    Write-Loge -Message "ACL - RemoveAll($($Remove.IdentityReference), $($Remove.FileSystemRights), $($Remove.InheritanceFlags), $($Remove.PropagationFlags), $($Remove.AccessControlType))" -Source ${CmdletName}
+                    Write-Loge -Message "[$path] ACL - RemoveAll($($Remove.IdentityReference), $($Remove.FileSystemRights), $($Remove.InheritanceFlags), $($Remove.PropagationFlags), $($Remove.AccessControlType))" -Source ${CmdletName}
 
                 }
             }
