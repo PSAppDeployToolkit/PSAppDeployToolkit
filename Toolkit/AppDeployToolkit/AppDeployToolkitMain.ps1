@@ -5064,13 +5064,25 @@ Function Execute-ProcessAsUser {
 
 		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
 		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container')) {
+			Write-Log -Message "Temporary folder [$dirAppDeployTemp] does not exist and will be created." -Source ${CmdletName}
 			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'Stop'
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
-		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
+		If (((Split-Path -Path $Path -Leaf) -like 'PowerShell*') -or ((Split-Path -Path $Path -Leaf) -like 'cmd*')) {
+			If ($SecureParameters) {
+				Write-Log -Message "Preparing a vbs script that will start [$Path] (Parameters Hidden) as the logged-on user [$userName] silently..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Preparing a vbs script that will start [$Path $Parameters] as the logged-on user [$userName] silently..." -Source ${CmdletName}
+			}
 			# Permit inclusion of double quotes in parameters
-			If ($($Parameters.Substring($Parameters.Length - 1)) -eq '"') {
+			$QuotesIndex = $Parameters.Length - 1
+			If ($QuotesIndex -lt 0) {
+				$QuotesIndex = 0
+			}
+
+			If ($($Parameters.Substring($QuotesIndex)) -eq '"') {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
 			Else {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
