@@ -5070,7 +5070,12 @@ Function Execute-ProcessAsUser {
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
 		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
 			# Permit inclusion of double quotes in parameters
-			If ($($Parameters.Substring($Parameters.Length - 1)) -eq '"') {
+			$QuotesIndex = $Parameters.Length - 1
+			If ($QuotesIndex -lt 0) {
+				$QuotesIndex = 0
+			}
+
+			If ($($Parameters.Substring($QuotesIndex)) -eq '"') {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
 			Else {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
