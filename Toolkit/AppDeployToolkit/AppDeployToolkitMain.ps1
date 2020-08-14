@@ -5568,6 +5568,11 @@ Function Block-AppExecution {
 
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 
+		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
+		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
+		}
+
 		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
 			Remove-Folder -Path $blockExecutionTempPath
 		}
@@ -5582,7 +5587,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
@@ -5595,10 +5600,8 @@ Function Block-AppExecution {
         $UsersAccountName = $UsersSID.Value
 		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
 		
-		$blockExecutionTempFiles = Get-ChildItem -Path $blockExecutionTempPath
-		foreach ($item in $blockExecutionTempFiles) {
-			Set-Permission -Path $item.FullName -User $Users -Permission 'Read'
-		}
+		## Sets read permissions on the files needed for the scheduled task
+		Set-Permissions -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Recurse
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
