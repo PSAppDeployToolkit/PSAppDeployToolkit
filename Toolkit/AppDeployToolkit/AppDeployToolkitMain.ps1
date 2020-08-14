@@ -5029,6 +5029,7 @@ Function Execute-ProcessAsUser {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		[string]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
 	}
 	Process {
 		## Initialize exit code variable
@@ -5062,9 +5063,17 @@ Function Execute-ProcessAsUser {
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 
-		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
-		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container')) {
-			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'Stop'
+		##  Remove and recreate the temporary folder
+		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+			Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." 
+			Remove-Folder -Path $executeAsUserTempPath
+		}
+		Write-Log -Message "Creating [$executeAsUserTempPath]." 
+		Try {
+			$null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+		}
+		Catch {
+			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." 
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
@@ -5078,11 +5087,13 @@ Function Execute-ProcessAsUser {
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
 			$executeProcessAsUserScript += 'WScript.Quit intReturn'
-			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+			$executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
 			$Path = "$envWinDir\System32\wscript.exe"
-			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
+			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
 		}
 
+		Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+		
 		## Prepare working directory insert
 		[string]$WorkingDirectoryInsert = ""
 		If ($WorkingDirectory) {
@@ -5236,6 +5247,16 @@ Function Execute-ProcessAsUser {
 		}
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+
+		## Remove the XML scheduled task file
+		If (Test-Path -LiteralPath $xmlSchTaskFilePath -PathType 'Leaf') {
+			Remove-File -Path $xmlSchTaskFilePath
+		}
+
+		##  Remove the temporary folder
+		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+			Remove-Folder -Path $executeAsUserTempPath
 		}
 	}
 	End {
@@ -5493,7 +5514,8 @@ Function Block-AppExecution {
 		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5546,27 +5568,38 @@ Function Block-AppExecution {
 
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 
-		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
-		}
-		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
-		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-			$null = New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
+			Remove-Folder -Path $blockExecutionTempPath
 		}
 
-		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
+		Try {
+			$null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+		}
+		Catch {
+			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." 
+		}
+
+		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
 		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
-		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
-		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
+		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
-		Set-Permission -Path $dirAppDeployTemp -User "BUILTIN\Users" -Permission Read -Recurse
-
+		## Set contents to be readable for all users (BUILTIN\USERS)
+		$ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-545")
+        $UsersSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
+        $UsersAccountName = $UsersSID.Value
+		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
+		
+		$blockExecutionTempFiles = Get-ChildItem -Path $blockExecutionTempPath
+		foreach ($item in $blockExecutionTempFiles) {
+			Set-Permission -Path $item.FullName -User $Users -Permission 'ReadAndExecute'
+		}
+		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
 		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
@@ -5575,7 +5608,8 @@ Function Block-AppExecution {
 		Else {
 			## Export the scheduled task XML to file
 			Try {
-				#  Specify the filename to export the XML to
+				## Specify the filename to export the XML to
+				## XML does not need to be user readable to stays in protected TEMP folder
 				[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
 				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 			}
@@ -5664,6 +5698,18 @@ Function Unblock-AppExecution {
 		}
 		Catch {
 			Write-Log -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+
+		## Remove BlockAppExecution Schedule Task XML file
+		[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+		If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
+			Remove-Item -Path $xmlSchTaskFilePath
+		}
+
+		## Remove BlockAppExection Temporary directory
+		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container' -ErrorAction 'SilentyContinue') {
+			Remove-Folder -Path $blockExecutionTempPath
 		}
 	}
 	End {
@@ -10787,7 +10833,7 @@ Function Set-Permission {
     [CmdletBinding()]
     Param (
         [Parameter( Mandatory=$True, 
-                    Position=0,
+					Position=0,
                     HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
         [ValidateScript({Test-Path $_})]
         [Alias('File', 'Folder')]
