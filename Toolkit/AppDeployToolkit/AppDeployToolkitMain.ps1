@@ -5601,7 +5601,7 @@ Function Block-AppExecution {
 		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
 		
 		## Sets read permissions on the files needed for the scheduled task
-		Set-Permissions -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Recurse
+		Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Recurse
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
