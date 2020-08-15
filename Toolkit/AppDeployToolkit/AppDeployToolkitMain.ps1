@@ -98,7 +98,6 @@ Param (
 [string]$envCommonStartUp   = $envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction 'SilentlyContinue'
 [string]$envCommonTemplates = $envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction 'SilentlyContinue'
 [string]$envComputerName = [Environment]::MachineName.ToUpper()
-[string]$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 [string]$envHomeDrive = $env:HOMEDRIVE
 [string]$envHomePath = $env:HOMEPATH
 [string]$envHomeShare = $env:HOMESHARE
@@ -132,15 +131,31 @@ Param (
 [string]$envMachineADDomain = ''
 [string]$envLogonServer = ''
 [string]$MachineDomainController = ''
+[string]$envComputerNameFQDN = $envComputerName
 If ($IsMachinePartOfDomain) {
 	[string]$envMachineADDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+	try {
+		$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
+	}
+	catch {
+		# Function GetHostEntry failed, but we can construct the FQDN in another way
+		$envComputerNameFQDN = $envComputerNameFQDN + "." + $envMachineADDomain
+	}
+
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
 		# If running in system context, fall back on the logonserver value stored in the registry
 		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
-		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
 	}
-	Catch { }
+	Catch { 
+		# If GetHostEntry fails, just use the registry value
+		[string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue'
+	}
+
+	try {
+		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
+	} 
+	catch {	}
 }
 Else {
 	[string]$envMachineWorkgroup = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
@@ -201,9 +216,15 @@ If ($Is64Bit) {
 		[string]$envProgramFiles = [Environment]::GetEnvironmentVariable('ProgramW6432')
 		[string]$envCommonProgramFiles = [Environment]::GetEnvironmentVariable('CommonProgramW6432')
 	}
-	
-	[string]$envProgramFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
-	[string]$envCommonProgramFilesX86 = [Environment]::GetFolderPath('CommonProgramFilesX86')
+	## Powershell 2 doesn't support X86 folders so need to use variables instead
+	try {
+		[string]$envProgramFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
+		[string]$envCommonProgramFilesX86 = [Environment]::GetFolderPath('CommonProgramFilesX86')
+	}
+	catch {
+		[string]$envProgramFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+		[string]$envCommonProgramFilesX86 = [Environment]::GetEnvironmentVariable('CommonProgramFiles(x86)')
+	}
 }
 Else {
 	[string]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
@@ -10687,7 +10708,7 @@ Function Get-PendingReboot {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
 		## Initialize variables
-		[string]$private:ComputerName = ([Net.Dns]::GetHostEntry('')).HostName
+		[string]$private:ComputerName = $envComputerNameFQDN
 		$PendRebootErrorMsg = $null
 	}
 	Process {
