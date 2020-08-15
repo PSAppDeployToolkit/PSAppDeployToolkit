@@ -5063,6 +5063,7 @@ Function Execute-ProcessAsUser {
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 
+
 		##  Remove and recreate the temporary folder
 		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
 			Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." 
@@ -5074,12 +5075,24 @@ Function Execute-ProcessAsUser {
 		}
 		Catch {
 			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." 
+
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
-		If (($Path -eq 'PowerShell.exe') -or ((Split-Path -Path $Path -Leaf) -eq 'PowerShell.exe')) {
+		If (((Split-Path -Path $Path -Leaf) -like 'PowerShell*') -or ((Split-Path -Path $Path -Leaf) -like 'cmd*')) {
+			If ($SecureParameters) {
+				Write-Log -Message "Preparing a vbs script that will start [$Path] (Parameters Hidden) as the logged-on user [$userName] silently..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Preparing a vbs script that will start [$Path $Parameters] as the logged-on user [$userName] silently..." -Source ${CmdletName}
+			}
 			# Permit inclusion of double quotes in parameters
-			If ($($Parameters.Substring($Parameters.Length - 1)) -eq '"') {
+			$QuotesIndex = $Parameters.Length - 1
+			If ($QuotesIndex -lt 0) {
+				$QuotesIndex = 0
+			}
+
+			If ($($Parameters.Substring($QuotesIndex)) -eq '"') {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
 			Else {
 				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
@@ -5560,9 +5573,14 @@ Function Block-AppExecution {
 "@
 	}
 	Process {
+		## Bypass if no Admin rights
+		If ($configToolkitRequireAdmin -eq $false) {
+			Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
+			Return
+		}
 		## Bypass if in NonInteractive mode
 		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Function [${CmdletName}] [Mode: $deployMode]." -Source ${CmdletName}
+			Write-Log -Message "Bypassing Function [${CmdletName}], because [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
 
@@ -5671,9 +5689,14 @@ Function Unblock-AppExecution {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
+		## Bypass if no Admin rights
+		If ($configToolkitRequireAdmin -eq $false) {
+			Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
+			Return
+		}
 		## Bypass if in NonInteractive mode
 		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Function [${CmdletName}] [Mode: $deployMode]." -Source ${CmdletName}
+			Write-Log -Message "Bypassing Function [${CmdletName}], because [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
 
