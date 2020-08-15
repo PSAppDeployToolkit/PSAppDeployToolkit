@@ -5029,6 +5029,7 @@ Function Execute-ProcessAsUser {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		[string]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
 	}
 	Process {
 		## Initialize exit code variable
@@ -5062,10 +5063,19 @@ Function Execute-ProcessAsUser {
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 
-		##  Create the temporary App Deploy Toolkit files folder if it doesn't already exist
-		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container')) {
-			Write-Log -Message "Temporary folder [$dirAppDeployTemp] does not exist and will be created." -Source ${CmdletName}
-			New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'Stop'
+
+		##  Remove and recreate the temporary folder
+		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+			Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." 
+			Remove-Folder -Path $executeAsUserTempPath
+		}
+		Write-Log -Message "Creating [$executeAsUserTempPath]." 
+		Try {
+			$null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+		}
+		Catch {
+			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." 
+
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
@@ -5090,11 +5100,13 @@ Function Execute-ProcessAsUser {
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
 			$executeProcessAsUserScript += 'WScript.Quit intReturn'
-			$executeProcessAsUserScript | Out-File -FilePath "$dirAppDeployTemp\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+			$executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
 			$Path = "$envWinDir\System32\wscript.exe"
-			$Parameters = "`"$dirAppDeployTemp\$($schTaskName).vbs`""
+			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
 		}
 
+		Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+		
 		## Prepare working directory insert
 		[string]$WorkingDirectoryInsert = ""
 		If ($WorkingDirectory) {
@@ -5248,6 +5260,16 @@ Function Execute-ProcessAsUser {
 		}
 		Catch {
 			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+
+		## Remove the XML scheduled task file
+		If (Test-Path -LiteralPath $xmlSchTaskFilePath -PathType 'Leaf') {
+			Remove-File -Path $xmlSchTaskFilePath
+		}
+
+		##  Remove the temporary folder
+		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+			Remove-Folder -Path $executeAsUserTempPath
 		}
 	}
 	End {
@@ -5505,7 +5527,8 @@ Function Block-AppExecution {
 		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$dirAppDeployTemp\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5567,21 +5590,37 @@ Function Block-AppExecution {
 		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
 		}
-		## Create Temporary directory (if required) and copy Toolkit so it can be called by scheduled task later if required
-		If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-			$null = New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+
+		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
+			Remove-Folder -Path $blockExecutionTempPath
 		}
 
-		Copy-Item -Path "$scriptRoot\*.*" -Destination $dirAppDeployTemp -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
+		Try {
+			$null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+		}
+		Catch {
+			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." 
+		}
+
+		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$dirAppDeployTemp\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
-		$debuggerBlockScript | Out-File -FilePath "$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
-		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$dirAppDeployTemp\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
+		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
+		## Set contents to be readable for all users (BUILTIN\USERS)
+		$ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-545")
+        $UsersSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
+        $UsersAccountName = $UsersSID.Value
+		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
+		
+		## Sets read permissions on the files needed for the scheduled task
+		Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Recurse
+		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
 		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
@@ -5590,7 +5629,8 @@ Function Block-AppExecution {
 		Else {
 			## Export the scheduled task XML to file
 			Try {
-				#  Specify the filename to export the XML to
+				## Specify the filename to export the XML to
+				## XML does not need to be user readable to stays in protected TEMP folder
 				[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
 				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 			}
@@ -5684,6 +5724,18 @@ Function Unblock-AppExecution {
 		}
 		Catch {
 			Write-Log -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+		}
+
+		## Remove BlockAppExecution Schedule Task XML file
+		[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+		If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
+			Remove-Item -Path $xmlSchTaskFilePath
+		}
+
+		## Remove BlockAppExection Temporary directory
+		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
+			Remove-Folder -Path $blockExecutionTempPath
 		}
 	}
 	End {
@@ -10775,6 +10827,154 @@ Function Get-PendingReboot {
 }
 #endregion
 
+#region Function Set-Permission
+Function Set-Permission {
+
+    <#
+    .SYNOPSYS
+        Allow you to easily change permissions on files or folders
+    .PARAMETER Path
+        Path to the folder or file you want to modify (ex: C:\Temp)
+    .PARAMETER User
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)
+    .PARAMETER Permission
+        To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'
+    .PARAMETER Recurse
+        If you use this switch, permissions will be recursive on folder and file children
+    .EXAMPLE
+        Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and it's files and folders children.
+        PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Recurse
+    .EXAMPLE
+        Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
+        PS C:\>Set-Permission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
+    .EXAMPLE
+        Will remove all permissions to 'John' on 'C:\Temp\Private'
+        PS C:\>Set-Permission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None
+
+        Conditions : John need to have explicit existing permissions on the Path or File
+    .NOTE
+        Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+    #>
+
+    [CmdletBinding()]
+    Param (
+        [Parameter( Mandatory=$True, 
+					Position=0,
+                    HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
+        [ValidateScript({Test-Path $_})]
+        [Alias('File', 'Folder')]
+        [String] $Path,
+
+        [Parameter( Mandatory=$True, 
+                    Position=1,
+                    HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)" )]
+        [Alias('Username', 'Users')]
+        [String[]] $User,
+
+        [Parameter( Mandatory=$True,
+                    Position=2,
+                    HelpMessage = "To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
+        [Alias('Acl', 'Grant')]
+        [ValidateSet("AppendData", "ChangePermissions", "CreateDirectories", "CreateFiles", "Delete", `
+                     "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
+                     "Read", "ReadAndExecute", "ReadAttributes", "ReadData", "ReadExtendedAttributes", "ReadPermissions",`
+                     "Synchronize", "TakeOwnership", "Traverse", "Write", "WriteAttributes", "WriteData", "WriteExtendedAttributes", "None")]
+        [String] $Permission,
+
+        [Parameter( Mandatory=$False, 
+                    HelpMessage = "If you use this switch, permissions will be recursive on folder and file children" )]
+        [Switch] $Recurse
+    )
+
+    Begin {
+
+        # Test run as Administrator
+        If (!$IsAdmin){
+            Write-Log -Message "Unable to use the function, Set-Permissions. Please run elevated." -Source ${CmdletName}
+            Return
+        }
+
+        # Set permissions
+        If ($Permission -ne "None"){
+            $Permission = [System.Security.AccessControl.FileSystemRights]$Permission
+        }
+
+        # Enable recursive permissions
+        If ($Recurse){
+            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]
+            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]($InheritanceFlag::ContainerInherit -bor $InheritanceFlag::ObjectInherit)
+        } Else { 
+            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]::None
+        }
+
+        # Set Propagation
+        $PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
+
+        # Allow Object access
+        $Allow = [System.Security.AccessControl.AccessControlType]::Allow
+
+        # Set permissions for special accounts
+        $ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-544")
+        $AdminsSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
+        $AdminsAccountName = $AdminsSID.Value
+
+        $ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
+        $SystemSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
+        $SystemAccountName = $SystemSID.Value
+        
+        $Admin = New-Object System.Security.Principal.NTAccount($AdminsAccountName)
+        $System = New-Object System.Security.Principal.NTAccount($SystemAccountName)
+    }
+
+    Process {
+
+        # Get object acls
+        $Acl = Get-Acl $Path
+        # Disable inherance, Preserve inherited permissions
+        $Acl.SetAccessRuleProtection($True, $False)
+
+        # Set Permissions for Administrators and System
+        $SpecialPermission = [System.Security.AccessControl.FileSystemRights]::FullControl
+        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Admin, $SpecialPermission, $InheritanceFlag, $PropagationFlag, $Allow)
+        $Acl.AddAccessRule($Rule)
+        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($System, $SpecialPermission, $InheritanceFlag, $PropagationFlag, $Allow)
+        $Acl.AddAccessRule($Rule)
+        $null = Set-Acl -Path $Path -AclObject $Acl
+
+        # Apply permissions on Users
+        Foreach ($U in $User){
+
+            # Set Username
+            $Username = New-Object System.Security.Principal.NTAccount($U)
+
+            # Set or Remove permissions
+            If ($Permission -ne "None"){
+
+                $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)
+                $Acl.AddAccessRule($Rule)
+                Write-Log -Message "[$path] ACL - Add($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)" -Source ${CmdletName}
+
+            } Else {
+
+                # Check If user is in security descriptor
+                $Remove = $Acl.Access | Where { $_.IdentityReference -eq $U }
+
+                If ($Remove){
+
+                    $RemoveRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Remove.IdentityReference, $Remove.FileSystemRights, $Remove.InheritanceFlags, $Remove.PropagationFlags, $Remove.AccessControlType)
+                    $Acl.RemoveAccessRuleAll($RemoveRule)
+                    Write-Loge -Message "[$path] ACL - RemoveAll($($Remove.IdentityReference), $($Remove.FileSystemRights), $($Remove.InheritanceFlags), $($Remove.PropagationFlags), $($Remove.AccessControlType))" -Source ${CmdletName}
+
+                }
+            }
+        }
+    }
+
+    End {
+        $null = Set-Acl -Path $Path -AclObject $Acl
+    }
+}
+#endregion
 
 #endregion
 ##*=============================================
