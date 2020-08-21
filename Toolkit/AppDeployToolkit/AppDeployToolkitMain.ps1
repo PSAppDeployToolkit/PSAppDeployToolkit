@@ -610,8 +610,11 @@ Function Execute-MSP {
 <#
 .SYNOPSIS
 	Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
-	If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
+	If a valid installed product is found, triggers the Execute-MSI function to patch the installation. Uses default config MSI parameters.
 .PARAMETER Path
+	Path to the msp file
+.PARAMETER AddParameters
+	Additional parameters
 .EXAMPLE
 	Execute-MSP -Path 'Adobe_Reader_11.0.3_EN.msp'
 .NOTES
@@ -623,7 +626,10 @@ Function Execute-MSP {
 		[Parameter(Mandatory=$true,HelpMessage='Please enter the path to the MSP file')]
 		[ValidateScript({('.msp' -contains [IO.Path]::GetExtension($_))})]
 		[Alias('FilePath')]
-		[string]$Path
+		[string]$Path,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$AddParameters
 	)
 
 	Begin {
@@ -662,7 +668,14 @@ Function Execute-MSP {
 		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
 		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) } Catch { }
 		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
-		If ($IsMSPNeeded) { Execute-MSI -Action Patch -Path $Path }
+		If ($IsMSPNeeded) { 
+			If ($AddParameters) {
+				Execute-MSI -Action Patch -Path $Path -AddParameters $AddParameters
+			}
+			Else {
+				Execute-MSI -Action Patch -Path $Path
+			}
+		}
 	}
 }
 #endregion
@@ -2579,6 +2592,8 @@ Function Execute-MSI {
 		If ($patch) { $argsMSI = "$argsMSI PATCH=$mspFile" }
 		#  Replace default parameters if specified.
 		If ($Parameters) { $argsMSI = "$argsMSI $Parameters" } Else { $argsMSI = "$argsMSI $msiDefaultParams" }
+		#  Add reinstallmode and reinstall variable for Patch
+		If ($action -eq 'Patch') {$argsMSI += " REINSTALLMODE=ecmus REINSTALL=ALL"}
 		#  Append parameters to default parameters if specified.
 		If ($AddParameters) { $argsMSI = "$argsMSI $AddParameters" }
 		#  Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
