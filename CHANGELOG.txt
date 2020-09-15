@@ -71,7 +71,7 @@ Other
   - ExitOnProcessFailure. Allows setting the script to immediately stop if the process fails and returns the exit code to the caller (e.g. SCCM) (Default: True).
   - RepairFromSource. Allows rewriting local msi cache and repair installation from source
 - Added new parameters to the Execute-Process function:
-  - IgnoreExitCodes. now supports ignoring all exit codes returned by the process (Default: None).
+  - IgnoreExitCodes. Now supports ignoring all exit codes returned by the process (Default: None).
   - PriorityClass. Allows changing the process priority immediately after process starts (Default: Normal).
   - ExitOnProcessFailure. Allows setting the script to immediately stop if the process fails and returns the exit code to the caller (e.g. SCCM) (Default: True).
 - Added async reading of standard error stream to Execute-Process
@@ -109,7 +109,7 @@ Other
 **Version 3.8.0 [09/23/2019]**
 - Added ability to change the dialog banner height, with a configurable maximum
 - Added ability to change the dialog banner and icon filename through the configuration file
-- Added support for animated gifs in the dialog banner
+- Added support for animated GIFS in the dialog banner
 - Added a dynamic dialog banner height with a configurable maximum to the dialogs
 - Added support for flattening folder structure within Copy-File with -Flatten switch
 - Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
