@@ -127,8 +127,8 @@ Other
 - Fixed issue where Get-LoggedOnUser failed to detect if user is member of the Administrators group, when Administrator group has an orphaned account listed
 - Fixed issue where active setup execution fails when StubExePath contains ps1 file in Set-ActiveSetup function
 - Fixed issue where Show-InstallationPrompt would not show when using Title parameter in combination with NoWait
-- Fixed issue where defertimes would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
-- Fixed issue where a .NET Framework error would appear saying the term 'Get-RunningProcessesDynamically' was not recognized
+- Fixed issue where defer times would not decrease from 1 to 0 when Show-InstallationWelcome prompt timed out
+- Fixed issue where a .NET Framework error would appear stating the term 'Get-RunningProcessesDynamically' was not recognized
 - Fixed an ActiveSetup purging error
 - Fixed typo in Remove-Folder function
 - Fixed examples in Enable/Disable-TerminalServerInstallMode
