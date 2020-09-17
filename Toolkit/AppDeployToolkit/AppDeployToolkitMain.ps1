@@ -1258,7 +1258,7 @@ Function Exit-Script {
 		## Disable logging to file so that we can archive the log files
 		. $DisableScriptLogging
 
-		[string]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-hh-mm-ss').ToString()) + '.zip'
+		[string]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString()) + '.zip'
 		New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
 	}
 
