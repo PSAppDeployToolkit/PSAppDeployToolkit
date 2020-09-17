@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a bug report to help us improve
 title: ''
 labels: ''
 assignees: ''
@@ -21,7 +21,10 @@ Steps to reproduce the behavior:
 If applicable, add screenshots to help explain your problem.
 
 **Toolkit Version:**
-[e.g. 3.8.1]
+Version of our toolkit you are using. For example: 3.8.1
+
+**Powershell Version:**
+Version of Powershell you are using to run the toolkit. For example: 5.1
 
 **Additional context**
 Add any other context about the problem here.
