@@ -37,6 +37,7 @@
 - Fixes the issue with config file being read incorrectly and showing incorrect charaters in the UI
 - Modifies Execute-MSI so when the action is Patch, two variables REINSTALLMODE and REINSTALLMODE are appended to parameters as specified here: https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec#update-options
 - Adds -AddParameters for Execute-MSP so people can add additional parameters
+- Changed timestamp of compressed toolkit logs to 24h format to avoid possible double filenames
 
 **Version 3.8.2 [08/05/2020]**
 
@@ -109,7 +110,7 @@ Other
 **Version 3.8.0 [09/23/2019]**
 - Added ability to change the dialog banner height, with a configurable maximum
 - Added ability to change the dialog banner and icon filename through the configuration file
-- Added support for animated GIFS in the dialog banner
+- Added support for animated GIFs in the dialog banner
 - Added a dynamic dialog banner height with a configurable maximum to the dialogs
 - Added support for flattening folder structure within Copy-File with -Flatten switch
 - Added architecture independence for Zero Touch MSIs where filename ends in x64.msi or x86.msi
