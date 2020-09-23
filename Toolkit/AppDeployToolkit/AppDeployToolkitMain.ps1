@@ -5111,7 +5111,6 @@ Function Execute-ProcessAsUser {
 		}
 		Catch {
 			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." 
-
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
@@ -5139,10 +5138,10 @@ Function Execute-ProcessAsUser {
 			$executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
 			$Path = "$envWinDir\System32\wscript.exe"
 			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
+
+			Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
 		}
 
-		Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
-		
 		## Prepare working directory insert
 		[string]$WorkingDirectoryInsert = ""
 		If ($WorkingDirectory) {
@@ -5193,6 +5192,7 @@ Function Execute-ProcessAsUser {
 			#  Specify the filename to export the XML to
 			[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
+			Set-Permission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
 		}
 		Catch {
 			[int32]$executeProcessAsUserExitCode = 60007
@@ -5206,14 +5206,14 @@ Function Execute-ProcessAsUser {
 		## Create Scheduled Task to run the process with a logged-on user account
 		If ($Parameters) {
 			If ($SecureParameters) {
-				Write-Log -Message "Create scheduled task to run the process [$Path] (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Creating scheduled task to run the process [$Path] (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 			Else {
-				Write-Log -Message "Create scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+				Write-Log -Message "Creating scheduled task to run the process [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
 			}
 		}
 		Else {
-			Write-Log -Message "Create scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+			Write-Log -Message "Creating scheduled task to run the process [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
 		}
 		[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
 		If ($schTaskResult.ExitCode -ne 0) {
@@ -5655,7 +5655,7 @@ Function Block-AppExecution {
 		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
 		
 		## Sets read permissions on the files needed for the scheduled task
-		Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Recurse
+		Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ObjectInherit,ContainerInherit
 		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
@@ -10872,14 +10872,18 @@ Function Set-Permission {
     .PARAMETER Path
         Path to the folder or file you want to modify (ex: C:\Temp)
     .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to.
     .PARAMETER Permission
-        To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'
-    .PARAMETER Recurse
-        If you use this switch, permissions will be recursive on folder and file children
+        Permission or list of permissions to be set. To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'
+    .PARAMETER PermissionType
+		Sets Access Control Type of the permissions. Allowed options: Allow, Deny   Default: Allow
+	.PARAMETER Inheritance
+		Sets permission inheritance. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
+	.PARAMETER Propagation
+		Sets how to propagate inheritance. Multiple options can be specified. Allowed options: None, InheritOnly, NoPropagateInherit  Default: None
     .EXAMPLE
         Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and it's files and folders children.
-        PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Recurse
+        PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
     .EXAMPLE
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
         PS C:\>Set-Permission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
@@ -10894,113 +10898,98 @@ Function Set-Permission {
 
     [CmdletBinding()]
     Param (
-        [Parameter( Mandatory=$True, 
-					Position=0,
-                    HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
-        [ValidateScript({Test-Path $_})]
+        [Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
+		[ValidateNotNullOrEmpty()]
         [Alias('File', 'Folder')]
         [String] $Path,
 
-        [Parameter( Mandatory=$True, 
-                    Position=1,
-                    HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)" )]
+        [Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)" )]
         [Alias('Username', 'Users')]
         [String[]] $User,
 
-        [Parameter( Mandatory=$True,
-                    Position=2,
-                    HelpMessage = "To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
-        [Alias('Acl', 'Grant')]
+        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
+        [Alias('Acl', 'Grant', 'Permissions')]
         [ValidateSet("AppendData", "ChangePermissions", "CreateDirectories", "CreateFiles", "Delete", `
                      "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
                      "Read", "ReadAndExecute", "ReadAttributes", "ReadData", "ReadExtendedAttributes", "ReadPermissions",`
                      "Synchronize", "TakeOwnership", "Traverse", "Write", "WriteAttributes", "WriteData", "WriteExtendedAttributes", "None")]
-        [String] $Permission,
+        [String[]] $Permission,
 
-        [Parameter( Mandatory=$False, 
-                    HelpMessage = "If you use this switch, permissions will be recursive on folder and file children" )]
-        [Switch] $Recurse
+        [Parameter( Mandatory=$False, Position=3, HelpMessage = "Whether you want to set Allow or Deny permissions")]
+		[Alias('AccessControlType')]
+        [ValidateSet("Allow", "Deny")]
+		[String] $PermissionType = "Allow",
+
+		[Parameter( Mandatory=$False, Position=4, HelpMessage = "Sets how permissions are inherited")]
+		[ValidateSet("ContainerInherit", "None", "ObjectInherit")]
+		[String[]]$Inheritance = "None",
+
+        [Parameter( Mandatory=$False, Position=5, HelpMessage = "Sets how to propage inheritance flags")]		
+        [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
+		[String[]]$Propagation = "None"
     )
 
     Begin {
 
         # Test run as Administrator
         If (!$IsAdmin){
-            Write-Log -Message "Unable to use the function, Set-Permissions. Please run elevated." -Source ${CmdletName}
-            Return
+            Write-Log -Message "Unable to use the function, Set-Permission, without elevated permissions." -Source ${CmdletName}
+            Throw "Unable to use the function, Set-Permission, without elevated permissions."
         }
 
         # Set permissions
         If ($Permission -ne "None"){
-            $Permission = [System.Security.AccessControl.FileSystemRights]$Permission
+			[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object System.Security.AccessControl.FileSystemRights
+			foreach ($Entry in $Permission) {
+				$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
+			}
         }
 
         # Enable recursive permissions
-        If ($Recurse){
-            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]
-            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]($InheritanceFlag::ContainerInherit -bor $InheritanceFlag::ObjectInherit)
-        } Else { 
-            $InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]::None
-        }
+		$InheritanceFlag = New-Object System.Security.AccessControl.InheritanceFlags
+		foreach ($IFlag in $Inheritance) {
+			$InheritanceFlag = $InheritanceFlag -bor [System.Security.AccessControl.InheritanceFlags]$IFlag
+		}
 
         # Set Propagation
-        $PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
+		$PropagationFlag = New-Object System.Security.AccessControl.PropagationFlags
+		foreach ($PFlag in $Propagation) {
+			$PropagationFlag = $PropagationFlag -bor [System.Security.AccessControl.PropagationFlags]$PFlag
+		}
 
-        # Allow Object access
-        $Allow = [System.Security.AccessControl.AccessControlType]::Allow
-
-        # Set permissions for special accounts
-        $ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-544")
-        $AdminsSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
-        $AdminsAccountName = $AdminsSID.Value
-
-        $ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
-        $SystemSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
-        $SystemAccountName = $SystemSID.Value
-        
-        $Admin = New-Object System.Security.Principal.NTAccount($AdminsAccountName)
-        $System = New-Object System.Security.Principal.NTAccount($SystemAccountName)
+        # Access Control Type
+        $Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
     }
 
     Process {
-
+		If (-not(Test-Path -Path $Path -ErrorAction Stop)) {
+            Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
+            Throw "Specified path does not exist [$Path]."
+		}
         # Get object acls
-        $Acl = Get-Acl $Path
+        $Acl = Get-Acl $Path -ErrorAction Stop
         # Disable inherance, Preserve inherited permissions
-        $Acl.SetAccessRuleProtection($True, $False)
-
-        # Set Permissions for Administrators and System
-        $SpecialPermission = [System.Security.AccessControl.FileSystemRights]::FullControl
-        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Admin, $SpecialPermission, $InheritanceFlag, $PropagationFlag, $Allow)
-        $Acl.AddAccessRule($Rule)
-        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($System, $SpecialPermission, $InheritanceFlag, $PropagationFlag, $Allow)
-        $Acl.AddAccessRule($Rule)
-        $null = Set-Acl -Path $Path -AclObject $Acl
+        $Acl.SetAccessRuleProtection($True, $True)
 
         # Apply permissions on Users
         Foreach ($U in $User){
-
             # Set Username
             $Username = New-Object System.Security.Principal.NTAccount($U)
 
             # Set or Remove permissions
             If ($Permission -ne "None"){
-
-                $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)
+				Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
                 $Acl.AddAccessRule($Rule)
-                Write-Log -Message "[$path] ACL - Add($Username, $Permission, $InheritanceFlag, $PropagationFlag, $Allow)" -Source ${CmdletName}
-
             } Else {
 
                 # Check If user is in security descriptor
                 $Remove = $Acl.Access | Where { $_.IdentityReference -eq $U }
 
                 If ($Remove){
-
                     $RemoveRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Remove.IdentityReference, $Remove.FileSystemRights, $Remove.InheritanceFlags, $Remove.PropagationFlags, $Remove.AccessControlType)
                     $Acl.RemoveAccessRuleAll($RemoveRule)
-                    Write-Loge -Message "[$path] ACL - RemoveAll($($Remove.IdentityReference), $($Remove.FileSystemRights), $($Remove.InheritanceFlags), $($Remove.PropagationFlags), $($Remove.AccessControlType))" -Source ${CmdletName}
-
+                    Write-Log -Message "Removing permissions [Permissions:$($Remove.FileSystemRights), InheritanceFlags:$($Remove.InheritanceFlags), PropagationFlags:$($Remove.PropagationFlags), AccessControlType:$($Remove.AccessControlType))] on path [$path] for user [$Username]." -Source ${CmdletName}
                 }
             }
         }
@@ -11489,7 +11478,7 @@ If ($configToolkitRequireAdmin) {
 	If ((-not $IsAdmin) -and (-not $ShowBlockedAppDialog)) {
 		[string]$AdminPermissionErr = "[$appDeployToolkitName] has an XML config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the XML config file to not require Administrator rights."
 		Write-Log -Message $AdminPermissionErr -Severity 3 -Source $appDeployToolkitName
-		Show-DialogBox -Text $AdminPermissionErr -Icon 'Stop'
+		Show-InstallationPrompt -Message $AdminPermissionErr -Icon 'Error' -ButtonRightText 'OK'
 		Throw $AdminPermissionErr
 	}
 }

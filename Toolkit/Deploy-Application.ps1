@@ -123,8 +123,8 @@ Try {
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-
-
+		Execute-ProcessAsUser -Path notepad -Wait
+		Set-Permission -Path "C:\Users\admin\Desktop\TestFile.txt" -Permission Read -Inheritance ObjectInherit
 		##*===============================================
 		##* INSTALLATION
 		##*===============================================
@@ -232,6 +232,6 @@ Catch {
 	[int32]$mainExitCode = 60001
 	[string]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
-	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
+	Show-InstallationPrompt -Message $mainErrorMessage -Icon 'Error' -ButtonRightText 'OK'
 	Exit-Script -ExitCode $mainExitCode
 }
