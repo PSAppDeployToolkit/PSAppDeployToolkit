@@ -10874,13 +10874,16 @@ Function Set-Permission {
     .PARAMETER User
         One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to.
     .PARAMETER Permission
-        Permission or list of permissions to be set. To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'
+		Permission or list of permissions to be set. To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
+		Permission DeleteSubdirectoriesAndFiles does not apply to files.
     .PARAMETER PermissionType
 		Sets Access Control Type of the permissions. Allowed options: Allow, Deny   Default: Allow
 	.PARAMETER Inheritance
-		Sets permission inheritance. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
+		Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
 	.PARAMETER Propagation
-		Sets how to propagate inheritance. Multiple options can be specified. Allowed options: None, InheritOnly, NoPropagateInherit  Default: None
+		Sets how to propagate inheritance. Does not apply to files. Allowed options: None, InheritOnly, NoPropagateInherit  Default: None
+	.PARAMETER ReplacePermissions
+		Causes the function to remove permissions for the user prior to adding new ones.
     .EXAMPLE
         Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and it's files and folders children.
         PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
@@ -10901,11 +10904,11 @@ Function Set-Permission {
         [Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
 		[ValidateNotNullOrEmpty()]
         [Alias('File', 'Folder')]
-        [String] $Path,
+        [String]$Path,
 
         [Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)" )]
         [Alias('Username', 'Users')]
-        [String[]] $User,
+        [String[]]$User,
 
         [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
         [Alias('Acl', 'Grant', 'Permissions')]
@@ -10913,12 +10916,12 @@ Function Set-Permission {
                      "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
                      "Read", "ReadAndExecute", "ReadAttributes", "ReadData", "ReadExtendedAttributes", "ReadPermissions",`
                      "Synchronize", "TakeOwnership", "Traverse", "Write", "WriteAttributes", "WriteData", "WriteExtendedAttributes", "None")]
-        [String[]] $Permission,
+        [String[]]$Permission,
 
         [Parameter( Mandatory=$False, Position=3, HelpMessage = "Whether you want to set Allow or Deny permissions")]
 		[Alias('AccessControlType')]
         [ValidateSet("Allow", "Deny")]
-		[String] $PermissionType = "Allow",
+		[String]$PermissionType = "Allow",
 
 		[Parameter( Mandatory=$False, Position=4, HelpMessage = "Sets how permissions are inherited")]
 		[ValidateSet("ContainerInherit", "None", "ObjectInherit")]
@@ -10926,18 +10929,21 @@ Function Set-Permission {
 
         [Parameter( Mandatory=$False, Position=5, HelpMessage = "Sets how to propage inheritance flags")]		
         [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
-		[String[]]$Propagation = "None"
+		[String]$Propagation = "None",
+
+		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Causes the function to remove permissions for the user prior to adding new ones.")]
+		[Alias("Replace")]
+		[switch]$ReplacePermissions
     )
 
     Begin {
-
-        # Test run as Administrator
+        # Test elevated perms
         If (!$IsAdmin){
-            Write-Log -Message "Unable to use the function, Set-Permission, without elevated permissions." -Source ${CmdletName}
-            Throw "Unable to use the function, Set-Permission, without elevated permissions."
+            Write-Log -Message "Unable to use the function [Set-Permission] without elevated permissions." -Source ${CmdletName}
+            Throw "Unable to use the function [Set-Permission] without elevated permissions."
         }
 
-        # Set permissions
+        # Permissions
         If ($Permission -ne "None"){
 			[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object System.Security.AccessControl.FileSystemRights
 			foreach ($Entry in $Permission) {
@@ -10945,29 +10951,33 @@ Function Set-Permission {
 			}
         }
 
-        # Enable recursive permissions
+        # InheritanceFlags
 		$InheritanceFlag = New-Object System.Security.AccessControl.InheritanceFlags
 		foreach ($IFlag in $Inheritance) {
 			$InheritanceFlag = $InheritanceFlag -bor [System.Security.AccessControl.InheritanceFlags]$IFlag
 		}
 
-        # Set Propagation
-		$PropagationFlag = New-Object System.Security.AccessControl.PropagationFlags
-		foreach ($PFlag in $Propagation) {
-			$PropagationFlag = $PropagationFlag -bor [System.Security.AccessControl.PropagationFlags]$PFlag
-		}
+        # PropagationFlags
+		$PropagationFlag = [System.Security.AccessControl.PropagationFlags]$Propagation
 
         # Access Control Type
         $Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
     }
 
     Process {
+		# Check path existence
 		If (-not(Test-Path -Path $Path -ErrorAction Stop)) {
             Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
             Throw "Specified path does not exist [$Path]."
 		}
+		# Modify variables to remove file incompatible flags if this is a file
+		If (Test-Path -Path $Path -ErrorAction Stop -PathType Leaf) {
+			$FileSystemRights = $FileSystemRights -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
+			$InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]::None
+			$PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
+		}
         # Get object acls
-        $Acl = Get-Acl $Path -ErrorAction Stop
+        $Acl = (get-item -Path $Path).GetAccessControl('Access')
         # Disable inherance, Preserve inherited permissions
         $Acl.SetAccessRuleProtection($True, $True)
 
@@ -10975,27 +10985,32 @@ Function Set-Permission {
         Foreach ($U in $User){
             # Set Username
             $Username = New-Object System.Security.Principal.NTAccount($U)
+			# Removing previous entries for the user if requested
+			If(($Permission -eq "None") -or $ReplacePermissions)
+			{
+				$Remove = $Acl.Access | Where-Object { $_.IdentityReference -eq $U }
+				If ($Remove){
+					$Acl.RemoveAccessRuleAll($Remove)
+				}
+			}
 
-            # Set or Remove permissions
+            # Set permissions and log
             If ($Permission -ne "None"){
 				Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow] on path [$Path] for user [$Username]." -Source ${CmdletName}
                 $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
-                $Acl.AddAccessRule($Rule)
+                $Acl.SetAccessRule($Rule)
             } Else {
-
-                # Check If user is in security descriptor
-                $Remove = $Acl.Access | Where { $_.IdentityReference -eq $U }
-
-                If ($Remove){
-                    $RemoveRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Remove.IdentityReference, $Remove.FileSystemRights, $Remove.InheritanceFlags, $Remove.PropagationFlags, $Remove.AccessControlType)
-                    $Acl.RemoveAccessRuleAll($RemoveRule)
-                    Write-Log -Message "Removing permissions [Permissions:$($Remove.FileSystemRights), InheritanceFlags:$($Remove.InheritanceFlags), PropagationFlags:$($Remove.PropagationFlags), AccessControlType:$($Remove.AccessControlType))] on path [$path] for user [$Username]." -Source ${CmdletName}
-                }
+				If ($Remove) {
+					Write-Log -Message "Removing permissions [Permissions:$($Remove.FileSystemRights), InheritanceFlags:$($Remove.InheritanceFlags), PropagationFlags:$($Remove.PropagationFlags), AccessControlType:$($Remove.AccessControlType))] on path [$path] for user [$Username]." -Source ${CmdletName}
+				} else {
+					Write-Log -Message "Cannot remove permissions on [$Path] for user [$Username] because the user was not found on the Access Control List." -Source ${CmdletName} -Severity 2
+				}
             }
         }
     }
 
     End {
+		# Use the prepared ACL
         $null = Set-Acl -Path $Path -AclObject $Acl
     }
 }
@@ -11478,7 +11493,7 @@ If ($configToolkitRequireAdmin) {
 	If ((-not $IsAdmin) -and (-not $ShowBlockedAppDialog)) {
 		[string]$AdminPermissionErr = "[$appDeployToolkitName] has an XML config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the XML config file to not require Administrator rights."
 		Write-Log -Message $AdminPermissionErr -Severity 3 -Source $appDeployToolkitName
-		Show-InstallationPrompt -Message $AdminPermissionErr -Icon 'Error' -ButtonRightText 'OK'
+		Show-DialogBox -Text $AdminPermissionErr -Icon 'Stop'
 		Throw $AdminPermissionErr
 	}
 }
