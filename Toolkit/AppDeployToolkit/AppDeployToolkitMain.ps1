@@ -3809,7 +3809,7 @@ Function Remove-File {
 						Write-Log -Message "Delete file(s) recursively in path [$Item]..." -Source ${CmdletName}
 					}
 					ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified"
+						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified" -Source ${CmdletName}
 					Continue
 					}
 					Else {
@@ -5099,18 +5099,17 @@ Function Execute-ProcessAsUser {
 		## Build the scheduled task XML name
 		[string]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
 
-
 		##  Remove and recreate the temporary folder
 		If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-			Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." 
+			Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
 			Remove-Folder -Path $executeAsUserTempPath
 		}
-		Write-Log -Message "Creating [$executeAsUserTempPath]." 
+		Write-Log -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
 		Try {
 			$null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
 		}
 		Catch {
-			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." 
+			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
 		}
 
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
@@ -5139,7 +5138,12 @@ Function Execute-ProcessAsUser {
 			$Path = "$envWinDir\System32\wscript.exe"
 			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
 
-			Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+			try {
+				Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+			}
+			catch {
+				Write-Log -Message "Failed to set read permissions on path [$executeAsUserTempPath\$schTaskName.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+			}
 		}
 
 		## Prepare working directory insert
@@ -5635,7 +5639,7 @@ Function Block-AppExecution {
 			$null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
 		}
 		Catch {
-			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." 
+			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
 		}
 
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
@@ -5649,14 +5653,14 @@ Function Block-AppExecution {
 		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
 		## Set contents to be readable for all users (BUILTIN\USERS)
-		$ObjSID = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-545")
-        $UsersSID = $ObjSID.Translate( [System.Security.Principal.NTAccount])
-        $UsersAccountName = $UsersSID.Value
-		$Users = New-Object System.Security.Principal.NTAccount($UsersAccountName)
-		
-		## Sets read permissions on the files needed for the scheduled task
-		Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ObjectInherit,ContainerInherit
-		
+		try {
+			$Users = ConvertTo-NTAccountOrSID -SID "S-1-5-32-545"
+			Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance "ObjectInherit","ContainerInherit"
+		}
+		catch {
+			Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+		}
+			
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
 		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
@@ -10872,7 +10876,7 @@ Function Set-Permission {
     .PARAMETER Path
         Path to the folder or file you want to modify (ex: C:\Temp)
     .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to.
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
     .PARAMETER Permission
 		Permission or list of permissions to be set. To remove permission use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
 		Permission DeleteSubdirectoriesAndFiles does not apply to files.
@@ -10880,8 +10884,13 @@ Function Set-Permission {
 		Sets Access Control Type of the permissions. Allowed options: Allow, Deny   Default: Allow
 	.PARAMETER Inheritance
 		Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
+		None - The permission entry is not inherited by child objects, ObjectInherit - The permission entry is inherited by child leaf objects. ContainerInherit - The permission entry is inherited by child container objects.
 	.PARAMETER Propagation
 		Sets how to propagate inheritance. Does not apply to files. Allowed options: None, InheritOnly, NoPropagateInherit  Default: None
+		None - Specifies that no inheritance flags are set. NoPropagateInherit - Specifies that the permission entry is not propagated to child objects. InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+	.PARAMETER Method
+		Specifies which method will be used to apply the permissions. Allowed options: Add, Set, Reset. 
+		Add - adds permissions rules, Set - overwrites matching permission rules, Reset - removes matching permissions rules and then adds permission rules. Default: Add
 	.PARAMETER ReplacePermissions
 		Causes the function to remove permissions for the user prior to adding new ones.
     .EXAMPLE
@@ -10906,11 +10915,11 @@ Function Set-Permission {
         [Alias('File', 'Folder')]
         [String]$Path,
 
-        [Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin)" )]
-        [Alias('Username', 'Users')]
+		[Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)" )]
+        [Alias('Username', 'Users', 'SID', 'Usernames')]
         [String[]]$User,
 
-        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
+        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions to be set. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
         [Alias('Acl', 'Grant', 'Permissions')]
         [ValidateSet("AppendData", "ChangePermissions", "CreateDirectories", "CreateFiles", "Delete", `
                      "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
@@ -10931,9 +10940,14 @@ Function Set-Permission {
         [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
 		[String]$Propagation = "None",
 
-		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Makes the function remove permissions for the specified user prior to adding new ones.")]
-		[Alias("Replace")]
-		[switch]$ReplacePermissions
+		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Specifies which method will be used to add permissions.")]
+		[ValidateSet("Add", "Set", "Reset")]
+        [Alias("Method")]
+		[String]$Method = "Add",
+
+		[Parameter( Mandatory=$False, Position=7, HelpMessage = "Removes permissions for the specified user prior to adding new ones.")]
+		[Alias("RemovePrevious")]
+		[switch]$RemovePreviousPermissions
     )
 
     Begin {
@@ -10985,10 +10999,31 @@ Function Set-Permission {
 		$Acl = (get-item -Path $Path).GetAccessControl('Access')
         # Apply permissions on Users
         Foreach ($U in $User){
-            # Set Username
-            $Username = New-Object System.Security.Principal.NTAccount($U)
+			# Trim whitespace and skip if empty
+			$U = $U.Trim()
+			If($U.Length -eq 0) {
+				continue
+			}
+			# Set Username
+			If($U.StartsWith('*')) {
+				# This is a SID, remove the *
+				$U = $U.remove(0,1)
+				try {
+					# Translate the SID
+					$Username = ConvertTo-NTAccountOrSID -SID $U
+				}
+				catch {
+					Write-Log "Failed to translate SID [$U]. Skipping..." -Source ${CmdletName} -Severity 2
+					continue
+				}
+
+				$Username = New-Object System.Security.Principal.NTAccount($UsersAccountName)
+			} else {
+				$Username = New-Object System.Security.Principal.NTAccount($U)				
+			}
+
 			# Removing previous entries for the user if requested
-			If(($Permission -eq "None") -or $ReplacePermissions)
+			If(($Permission -eq "None") -or $RemovePreviousPermissions)
 			{
 				$Remove = $Acl.Access | Where-Object { $_.IdentityReference -eq $U }
 				If ($Remove){
@@ -10999,8 +11034,22 @@ Function Set-Permission {
             # Set permissions and log
             If ($Permission -ne "None"){
 				Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow] on path [$Path] for user [$Username]." -Source ${CmdletName}
-                $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
-                $Acl.SetAccessRule($Rule)
+				$Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
+				switch ($Method) {
+					"Add" {
+						$Acl.AddAccessRule($Rule)
+						break
+					}
+					"Set" {
+						$Acl.SetAccessRule($Rule)
+						break
+					}
+					"Reset" {
+						$Acl.ResetAccessRule($Rule)
+						break
+					}
+				}
+                
             } Else {
 				If ($Remove) {
 					Write-Log -Message "Removing permissions [Permissions:$($Remove.FileSystemRights), InheritanceFlags:$($Remove.InheritanceFlags), PropagationFlags:$($Remove.PropagationFlags), AccessControlType:$($Remove.AccessControlType))] on path [$path] for user [$Username]." -Source ${CmdletName}
