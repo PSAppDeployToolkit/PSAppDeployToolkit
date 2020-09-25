@@ -124,7 +124,7 @@ Try {
 
 		## <Perform Pre-Installation tasks here>
 		Execute-ProcessAsUser -Path notepad -Wait
-		Set-Permission -Path "C:\Users\admin\Desktop\TestFile.txt" -Permission Read -Inheritance ObjectInherit -User $env:username -ReplacePermissions
+		Set-Permission -Path "C:\Users\admin\Desktop\TestFile.txt" -Permission Read -Inheritance ObjectInherit -User $env:username -RemovePreviousPermissions
 		##*===============================================
 		##* INSTALLATION
 		##*===============================================

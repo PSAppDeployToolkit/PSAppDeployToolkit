@@ -10893,8 +10893,10 @@ Function Set-Permission {
 		Add - adds permissions rules, Set - overwrites matching permission rules, Reset - removes matching permissions rules and then adds permission rules. Default: Add
 	.PARAMETER ReplacePermissions
 		Causes the function to remove permissions for the user prior to adding new ones.
+	.PARAMETER EnableInheritance
+		Enables inheritance on the files/folders. 
     .EXAMPLE
-        Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and it's files and folders children.
+        Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
         PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
     .EXAMPLE
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
@@ -10910,16 +10912,17 @@ Function Set-Permission {
 
     [CmdletBinding()]
     Param (
-        [Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)" )]
+		[Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)",ParameterSetName="DisableInheritance" )]
+		[Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)",ParameterSetName="EnableInheritance" )]
 		[ValidateNotNullOrEmpty()]
         [Alias('File', 'Folder')]
         [String]$Path,
 
-		[Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)" )]
+		[Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)", ParameterSetName="DisableInheritance")]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
         [String[]]$User,
 
-        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions to be set. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'")]
+        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions to be set. To remove permissions use: None, to see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName="DisableInheritance")]
         [Alias('Acl', 'Grant', 'Permissions')]
         [ValidateSet("AppendData", "ChangePermissions", "CreateDirectories", "CreateFiles", "Delete", `
                      "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
@@ -10927,36 +10930,59 @@ Function Set-Permission {
                      "Synchronize", "TakeOwnership", "Traverse", "Write", "WriteAttributes", "WriteData", "WriteExtendedAttributes", "None")]
         [String[]]$Permission,
 
-        [Parameter( Mandatory=$False, Position=3, HelpMessage = "Whether you want to set Allow or Deny permissions")]
+        [Parameter( Mandatory=$False, Position=3, HelpMessage = "Whether you want to set Allow or Deny permissions", ParameterSetName="DisableInheritance")]
 		[Alias('AccessControlType')]
         [ValidateSet("Allow", "Deny")]
 		[String]$PermissionType = "Allow",
 
-		[Parameter( Mandatory=$False, Position=4, HelpMessage = "Sets how permissions are inherited")]
+		[Parameter( Mandatory=$False, Position=4, HelpMessage = "Sets how permissions are inherited", ParameterSetName="DisableInheritance")]
 		[ValidateSet("ContainerInherit", "None", "ObjectInherit")]
 		[String[]]$Inheritance = "None",
 
-        [Parameter( Mandatory=$False, Position=5, HelpMessage = "Sets how to propage inheritance flags")]		
+        [Parameter( Mandatory=$False, Position=5, HelpMessage = "Sets how to propage inheritance flags", ParameterSetName="DisableInheritance")]		
         [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
 		[String]$Propagation = "None",
 
-		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Specifies which method will be used to add permissions.")]
+		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Specifies which method will be used to add permissions.", ParameterSetName="DisableInheritance")]
 		[ValidateSet("Add", "Set", "Reset")]
-        [Alias("Method")]
+        [Alias("ApplyMethod")]
 		[String]$Method = "Add",
 
-		[Parameter( Mandatory=$False, Position=7, HelpMessage = "Removes permissions for the specified user prior to adding new ones.")]
+		[Parameter( Mandatory=$False, Position=7, HelpMessage = "Removes permissions for the specified user prior to adding new ones.", ParameterSetName="DisableInheritance")]
 		[Alias("RemovePrevious")]
-		[switch]$RemovePreviousPermissions
-    )
+		[switch]$RemovePreviousPermissions,
 
-    Begin {
+		[Parameter( Mandatory=$True, Position=8, HelpMessage = "Enables inheritance, which removes explicit permissions.", ParameterSetName="EnableInheritance")]
+		[switch]$EnableInheritance
+	)
+
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	}
+
+    Process {
         # Test elevated perms
-        If (!$IsAdmin){
+        If (-not $IsAdmin){
             Write-Log -Message "Unable to use the function [Set-Permission] without elevated permissions." -Source ${CmdletName}
             Throw "Unable to use the function [Set-Permission] without elevated permissions."
-        }
+		}
 
+		# Check path existence
+		If (-not(Test-Path -Path $Path -ErrorAction Stop)) {
+            Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
+            Throw "Specified path does not exist [$Path]."
+		}
+
+		If ($EnableInheritance) {
+			# Get object acls
+			$Acl = (get-item -Path $Path).GetAccessControl('Access')
+			# Enable inherance
+			$Acl.SetAccessRuleProtection($False, $True)
+			$null = Set-Acl -Path $Path -AclObject $Acl
+			return
+		}
         # Permissions
         If ($Permission -ne "None"){
 			[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object System.Security.AccessControl.FileSystemRights
@@ -10975,21 +11001,15 @@ Function Set-Permission {
 		$PropagationFlag = [System.Security.AccessControl.PropagationFlags]$Propagation
 
         # Access Control Type
-        $Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
-    }
-
-    Process {
-		# Check path existence
-		If (-not(Test-Path -Path $Path -ErrorAction Stop)) {
-            Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
-            Throw "Specified path does not exist [$Path]."
-		}
+		$Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
+		
 		# Modify variables to remove file incompatible flags if this is a file
 		If (Test-Path -Path $Path -ErrorAction Stop -PathType Leaf) {
 			$FileSystemRights = $FileSystemRights -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
 			$InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]::None
 			$PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
 		}
+
         # Get object acls
         $Acl = (get-item -Path $Path).GetAccessControl('Access')
         # Disable inherance, Preserve inherited permissions
@@ -11060,7 +11080,11 @@ Function Set-Permission {
 		}
 		# Use the prepared ACL
 		$null = Set-Acl -Path $Path -AclObject $Acl
-    }
+	}
+	
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
 }
 #endregion
 
