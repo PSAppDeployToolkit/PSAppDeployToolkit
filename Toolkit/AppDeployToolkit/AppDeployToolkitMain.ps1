@@ -10931,7 +10931,7 @@ Function Set-Permission {
         [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
 		[String]$Propagation = "None",
 
-		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Causes the function to remove permissions for the user prior to adding new ones.")]
+		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Makes the function remove permissions for the specified user prior to adding new ones.")]
 		[Alias("Replace")]
 		[switch]$ReplacePermissions
     )
@@ -10980,7 +10980,9 @@ Function Set-Permission {
         $Acl = (get-item -Path $Path).GetAccessControl('Access')
         # Disable inherance, Preserve inherited permissions
         $Acl.SetAccessRuleProtection($True, $True)
-
+		$null = Set-Acl -Path $Path -AclObject $Acl
+		# Get updated acls - without inheritance
+		$Acl = (get-item -Path $Path).GetAccessControl('Access')
         # Apply permissions on Users
         Foreach ($U in $User){
             # Set Username
@@ -11006,12 +11008,9 @@ Function Set-Permission {
 					Write-Log -Message "Cannot remove permissions on [$Path] for user [$Username] because the user was not found on the Access Control List." -Source ${CmdletName} -Severity 2
 				}
             }
-        }
-    }
-
-    End {
+		}
 		# Use the prepared ACL
-        $null = Set-Acl -Path $Path -AclObject $Acl
+		$null = Set-Acl -Path $Path -AclObject $Acl
     }
 }
 #endregion
