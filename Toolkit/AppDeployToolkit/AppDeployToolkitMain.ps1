@@ -5444,8 +5444,8 @@ Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvi
 #endregion
 
 
-#region Function Get-ScheduledTask
-Function Get-ScheduledTask {
+#region Function Get-SchedulerTask
+Function Get-SchedulerTask {
 <#
 .SYNOPSIS
 	Retrieve all details for scheduled tasks on the local computer.
@@ -5456,13 +5456,13 @@ Function Get-ScheduledTask {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default: $true.
 .EXAMPLE
-	Get-ScheduledTask
+	Get-SchedulerTask
 	To display a list of all scheduled task properties.
 .EXAMPLE
-	Get-ScheduledTask | Out-GridView
+	Get-SchedulerTask | Out-GridView
 	To display a grid view of all scheduled task properties.
 .EXAMPLE
-	Get-ScheduledTask | Select-Object -Property TaskName
+	Get-SchedulerTask | Select-Object -Property TaskName
 	To display a list of all scheduled task names.
 .NOTES
 .LINK
@@ -5522,6 +5522,10 @@ Function Get-ScheduledTask {
 		Write-Output -InputObject $ScheduledTasks
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
+}
+# If Get-ScheduledTask doesn't exist, add alias Get-ScheduledTask
+If (-not (Get-Command -Name "Get-ScheduledTask" -ErrorAction SilentlyContinue)) {
+	New-Alias -Name "Get-ScheduledTask" -Value "Get-SchedulerTask"
 }
 #endregion
 
@@ -5663,7 +5667,7 @@ Function Block-AppExecution {
 			
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
-		If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+		If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
 		}
 		Else {
@@ -5757,7 +5761,7 @@ Function Unblock-AppExecution {
 		## Remove the scheduled task if it exists
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		Try {
-			If (Get-ScheduledTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+			If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 				Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
 				Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
 			}
