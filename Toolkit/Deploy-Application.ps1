@@ -208,7 +208,7 @@ Try {
 		## Handle Zero-Config MSI Repairs
 		If ($useDefaultMsi) {
 			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile; }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
-		Execute-MSI @ExecuteDefaultMSISplat
+			Execute-MSI @ExecuteDefaultMSISplat
 		}
 		# <Perform Repair tasks here>
 
