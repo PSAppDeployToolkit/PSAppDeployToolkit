@@ -5139,7 +5139,7 @@ Function Execute-ProcessAsUser {
 			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
 
 			try {
-				Set-Permission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+				Set-ItemPermission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
 			}
 			catch {
 				Write-Log -Message "Failed to set read permissions on path [$executeAsUserTempPath\$schTaskName.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
@@ -5196,7 +5196,7 @@ Function Execute-ProcessAsUser {
 			#  Specify the filename to export the XML to
 			[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
 			[string]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-			Set-Permission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
+			Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
 		}
 		Catch {
 			[int32]$executeProcessAsUserExitCode = 60007
@@ -5655,7 +5655,7 @@ Function Block-AppExecution {
 		## Set contents to be readable for all users (BUILTIN\USERS)
 		try {
 			$Users = ConvertTo-NTAccountOrSID -SID "S-1-5-32-545"
-			Set-Permission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance "ObjectInherit","ContainerInherit"
+			Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance "ObjectInherit","ContainerInherit"
 		}
 		catch {
 			Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
@@ -10867,8 +10867,8 @@ Function Get-PendingReboot {
 }
 #endregion
 
-#region Function Set-Permission
-Function Set-Permission {
+#region Function Set-ItemPermission
+Function Set-ItemPermission {
 
     <#
     .SYNOPSYS
@@ -10896,13 +10896,13 @@ Function Set-Permission {
 		Enables inheritance on the files/folders. 
     .EXAMPLE
         Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
-        PS C:\>Set-Permission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+        PS C:\>Set-ItemPermission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
     .EXAMPLE
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
-        PS C:\>Set-Permission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
+        PS C:\>Set-ItemPermission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
     .EXAMPLE
         Will remove all permissions to 'John' on 'C:\Temp\Private'
-        PS C:\>Set-Permission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
+        PS C:\>Set-ItemPermission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
     .NOTE
         Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
     #>
@@ -10958,8 +10958,8 @@ Function Set-Permission {
     Process {
         # Test elevated perms
         If (-not $IsAdmin){
-            Write-Log -Message "Unable to use the function [Set-Permission] without elevated permissions." -Source ${CmdletName}
-            Throw "Unable to use the function [Set-Permission] without elevated permissions."
+            Write-Log -Message "Unable to use the function [Set-ItemPermission] without elevated permissions." -Source ${CmdletName}
+            Throw "Unable to use the function [Set-ItemPermission] without elevated permissions."
 		}
 
 		# Check path existence
