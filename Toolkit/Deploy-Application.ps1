@@ -123,8 +123,8 @@ Try {
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-		Execute-ProcessAsUser -Path notepad -Wait
-		Set-Permission -Path "C:\Users\admin\Desktop\TestFile.txt" -Permission Read -Inheritance ObjectInherit -User $env:username -RemovePreviousPermissions
+
+
 		##*===============================================
 		##* INSTALLATION
 		##*===============================================
@@ -208,7 +208,7 @@ Try {
 		## Handle Zero-Config MSI Repairs
 		If ($useDefaultMsi) {
 			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile; }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
-		Execute-MSI @ExecuteDefaultMSISplat
+			Execute-MSI @ExecuteDefaultMSISplat
 		}
 		# <Perform Repair tasks here>
 
