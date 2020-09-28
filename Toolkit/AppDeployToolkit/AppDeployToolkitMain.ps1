@@ -10890,7 +10890,7 @@ Function Set-Permission {
 		None - Specifies that no inheritance flags are set. NoPropagateInherit - Specifies that the permission entry is not propagated to child objects. InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
 	.PARAMETER Method
 		Specifies which method will be used to apply the permissions. Allowed options: Add, Set, Reset. 
-		Add - adds permissions rules, Set - overwrites matching permission rules, Reset - removes matching permissions rules and then adds permission rules, Remove - Removes matching permission rules, RemoveAll - Removes all permission rules for specified user/s, RemoveSpecific - Removes specific permissions
+		Add - adds permissions rules but it does not remove previous permissions, Set - overwrites matching permission rules with new ones, Reset - removes matching permissions rules and then adds permission rules, Remove - Removes matching permission rules, RemoveSpecific - Removes specific permissions, RemoveAll - Removes all permission rules for specified user/s
 		Default: Add
 	.PARAMETER EnableInheritance
 		Enables inheritance on the files/folders. 
@@ -10902,9 +10902,7 @@ Function Set-Permission {
         PS C:\>Set-Permission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
     .EXAMPLE
         Will remove all permissions to 'John' on 'C:\Temp\Private'
-        PS C:\>Set-Permission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None
-
-        Conditions : John need to have explicit existing permissions on the Path or File
+        PS C:\>Set-Permission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
     .NOTE
         Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
     #>
@@ -10980,8 +10978,10 @@ Function Set-Permission {
 		}
         # Permissions
 		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object System.Security.AccessControl.FileSystemRights
-		foreach ($Entry in $Permission) {
-			$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
+		If ($Permission -ne "None") {
+			foreach ($Entry in $Permission) {
+				$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
+			}
 		}
 
         # InheritanceFlags
