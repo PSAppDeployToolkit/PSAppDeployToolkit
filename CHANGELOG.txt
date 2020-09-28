@@ -1,4 +1,4 @@
-**Version 3.8.3 [15/09/2020]**
+**Version 3.8.3 [30/09/2020]**
 - Adds -UseShellExecute for Execute-Process :
   - WindowStyle Hidden doesnt usually work without this parameter on. CreateNoWindow will usually not work without this off.
   - This parameter changes the way the application is started. It is similar to entering a path into the Run dialog or into the Windows Explorer. If it is a file not an application, then the Shell will open it in a program assigned for this extension. The Shell doesnt stand for command shell but for operating system shell. It also changes how Working Directory is used.
