@@ -37,7 +37,8 @@
 - Fixes the issue with config file being read incorrectly and showing incorrect charaters in the UI
 - Modifies Execute-MSI so when the action is Patch, two variables REINSTALLMODE and REINSTALLMODE are appended to parameters as specified here: https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec#update-options
 - Adds -AddParameters for Execute-MSP so people can add additional parameters
-- Changed timestamp of compressed toolkit logs to 24h format to avoid possible double filenames
+- Changes timestamp of compressed toolkit logs to 24h format to avoid possible double filenames
+- Renames Get-ScheduledTask to Get-SchedulerTask to resolve the conflict on Windows 10 and adds an alias on Powershell versions where this function does not exist
 
 **Version 3.8.2 [08/05/2020]**
 
