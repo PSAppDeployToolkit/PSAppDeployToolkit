@@ -70,9 +70,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.8.2'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.2'
-[string]$appDeployMainScriptDate = '08/05/2020'
+[version]$appDeployMainScriptVersion = [version]'3.8.3'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.3'
+[string]$appDeployMainScriptDate = '30/09/2020'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -11323,6 +11323,8 @@ If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 
 ## Log system/script information
 If ($appScriptVersion) { Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName }
+If ($appScriptDate) { Write-Log -Message "[$installName] script date is [$appScriptDate]" -Source $appDeployToolkitName }
+If ($appScriptAuthor) { Write-Log -Message "[$installName] script author is [$appScriptAuthor]" -Source $appDeployToolkitName }
 If ($deployAppScriptFriendlyName) { Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName }
 If ($deployAppScriptParameters) { Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName }
 If ($appDeployMainScriptFriendlyName) { Write-Log -Message "[$appDeployMainScriptFriendlyName] script version is [$appDeployMainScriptVersion]" -Source $appDeployToolkitName }

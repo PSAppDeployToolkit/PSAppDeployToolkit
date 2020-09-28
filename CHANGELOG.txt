@@ -1,3 +1,45 @@
+**Version 3.8.3 [30/09/2020]**
+- Adds -UseShellExecute for Execute-Process :
+  - WindowStyle Hidden doesnt usually work without this parameter on. CreateNoWindow will usually not work without this off.
+  - This parameter changes the way the application is started. It is similar to entering a path into the Run dialog or into the Windows Explorer. If it is a file not an application, then the Shell will open it in a program assigned for this extension. The Shell doesnt stand for command shell but for operating system shell. It also changes how Working Directory is used.
+  - If this parameter is set to $true there is no output/error stream. Only an exit code. Default value is $false which was also the case before, however you couldnt change it through parameters previously.
+  - Expanded description for WindowStyle, CreateNoWindow and WorkingDirectory parameters.
+- Adds return value for Execute-Process with -PassThru and -NoWait specified: Returns an object with Id, Handle and ProcessName.
+- Fixes visual bugs in Show-InstallationWelcome
+  - The application name is now always displayed.
+  - Fixes uncentered text.
+  - Height of the window is now not limited and scales with the text.
+  - Removes unused variables.
+- Fixes issue with $envOSVersionRevision not being populated on Windows 8 because the "UBR" registry value is only being checked if "$envOSVersionMajor = 10".
+- Fixed an issue where the correct ProgramFiles and CommonProgramFiles paths were not populated if the Toolkit was launched from a 32-bit process on a 64-bit OS.
+- Adds config paths to the config file for installations where RequireAdmin is False.
+- Changes default -Source value for Write-Log to a more useful value: it will be set to Parent's function name and if not inside a function then the name of the script. If not inside a function or a script, then the value will be set to 'Unknown'
+- Fixes visual bugs in Show-InstallationProgress
+  - The window is now centered by default but adds TopCenter as on option.
+  - The status message is now centered correctly.
+  - Removed unused variables and improved performance.
+  - Height of the window is now not limited and scales with the text.
+- Show-InstallationPrompt was reworked so the window scales with the amount of text entered and removed unused space. If there is no icon specified, the text will scale the entire width too.
+- Improves Show-InstallationRestartPrompt so it restarts the computer in Silent and VerySilent deploy modes
+  - Adds NoSilentRestart parameter for the function to retain previous behaviour, which defaults to True.
+  - Renames 'Restart Later' to 'Minimize' to make it more clear to the user.
+- Fixes uses of Execute-Process throughout the toolkit with the -PassThru parameter since -PassThru no longer ignores exit codes.
+- Variables no longer rely on the system variable PATH for system applications.
+- Registry paths no longer use registry PSDrives and contain full paths.
+- Fixes Get-UserProfiles so it ignores "defaultuser0" account
+- Fixes a rare issue in Execute-processasuser causing an error because of negative index for SubString
+  - Improves logging in the function
+  - cmd will now be started silently without a popup just like powershell
+- Changes UnBlock-AppExecution and Block-AppExecution so they don't run without admin rights. Instead of throwing an error, they only write and entry to the log.
+- Adds function Set-Permission that allow you to easily change permissions on files or folders
+- Set READ permissions to BUITLTIN\Users for toolkit's temporary folder so they can get the popup message
+- Adds Powershell 2.0 fixes for GetHostEntry and GetFolderPath
+- Fixes the issue with config file being read incorrectly and showing incorrect charaters in the UI
+- Modifies Execute-MSI so when the action is Patch, two variables REINSTALLMODE and REINSTALLMODE are appended to parameters as specified here: https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec#update-options
+- Adds -AddParameters for Execute-MSP so people can add additional parameters
+- Changes timestamp of compressed toolkit logs to 24h format to avoid possible double filenames
+- Renames Get-ScheduledTask to Get-SchedulerTask to resolve the conflict on Windows 10 and adds an alias on Powershell versions where this function does not exist
+
 **Version 3.8.2 [08/05/2020]**
 
 Security Notice
@@ -20,13 +62,18 @@ Breaking Changes
 	- To ignore specific exit codes, use the new IgnoreExitCodes parameter, using * to ignore all.
 	- To stop the script if the process fails, use the ExitOnProcessFailure parameter.
   - Execute-Process would fail if an exception occurred, even when ContinueOnError was specified. It now ignores exceptions as expected.
-  - ContinueOnError now ignores exceptions as expected. To ignore specific exit codes, use the new IgnoreExitCodes parameter.
+  - ContinueOnError now ignores exceptions as expected. To ignore specific exit codes, use the IgnoreExitCodes parameter.
 
 Other
 
-- Added new parameters to the Execute-Process function:
+- Added new parameters to the Execute-MSI function:
   - NoWait. Allows immediately returning to the script once the process has been started, without waiting for it to complete (Default: False).
   - IgnoreExitCodes. Allows ignoring specific or all exit codes returned by the process (Default: None).
+  - PriorityClass. Allows changing the process priority immediately after process starts (Default: Normal).
+  - ExitOnProcessFailure. Allows setting the script to immediately stop if the process fails and returns the exit code to the caller (e.g. SCCM) (Default: True).
+  - RepairFromSource. Allows rewriting local msi cache and repair installation from source
+- Added new parameters to the Execute-Process function:
+  - IgnoreExitCodes. Now supports ignoring all exit codes returned by the process (Default: None).
   - PriorityClass. Allows changing the process priority immediately after process starts (Default: Normal).
   - ExitOnProcessFailure. Allows setting the script to immediately stop if the process fails and returns the exit code to the caller (e.g. SCCM) (Default: True).
 - Added async reading of standard error stream to Execute-Process
@@ -38,6 +85,8 @@ Other
 - Fixed a number of typos in the documentation.
 - Reverted part of the function Get-InstalledApplication that was causing slowdowns
 - Removed unused variable $processStarted.
+- Added parameter -WorkingDirectory for Execute-ProcessAsUser
+- Fixes for Slovak and Czech translations
 
 **Version 3.8.1 [03/28/2020]**
 - Added support for Repair as an action type (e.g. Install, Uninstall, Repair)
@@ -57,6 +106,7 @@ Other
 - Fixed issue in Set-PinnedApplication where pin action on StartMenu is case sensitive on Windows 10
 - Fixed Set-ActiveSetup purging incorrectly testing registry values
 - Fixed issue with Deploy-Application.exe where it would prompt to download .NET Framework 3.5 on Windows 8 and above
+- Added default -Source parameter value for Write-Log to fix CMTrace not displaying severity
 
 **Version 3.8.0 [09/23/2019]**
 - Added ability to change the dialog banner height, with a configurable maximum
