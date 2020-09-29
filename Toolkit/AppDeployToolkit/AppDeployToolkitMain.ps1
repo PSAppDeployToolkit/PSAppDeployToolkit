@@ -9967,6 +9967,8 @@ Function Set-ActiveSetup {
 	Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry.
 .PARAMETER DisableActiveSetup
 	Disables the Active Setup entry so that the StubPath file will not be executed.
+.PARAMETER ExecuteForCurrentUser
+	Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in. Default: $True
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -10006,6 +10008,9 @@ Function Set-ActiveSetup {
 		[switch]$DisableActiveSetup = $false,
 		[Parameter(Mandatory=$true,ParameterSetName='Purge')]
 		[switch]$PurgeActiveSetupKey,
+		[Parameter(Mandatory=$false,ParameterSetName='Create')]
+		[ValidateNotNullorEmpty()]
+		[boolean]$ExecuteForCurrentUser = $true,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[boolean]$ContinueOnError = $true
@@ -10023,10 +10028,10 @@ Function Set-ActiveSetup {
 
 			## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
 			If ($PurgeActiveSetupKey) {
-				Write-Log -Message "Remove Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
+				Write-Log -Message "Removing Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
 				Remove-RegistryKey -Key $ActiveSetupKey -Recurse
 
-				Write-Log -Message "Remove Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
+				Write-Log -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
 				[scriptblock]$RemoveHKCUActiveSetupKey = {
 					If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID) {
 						Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Recurse
@@ -10119,32 +10124,44 @@ Function Set-ActiveSetup {
 				}
 
 			}
+
+			Write-Log -Message "Adding Active Setup Key for local machine: [$ActiveSetupKey]." -Source ${CmdletName}
 			& $SetActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
 
 			## Execute the StubPath file for the current user as long as not in Session 0
 			If ($SessionZero) {
 				If ($RunAsActiveUser) {
-					Write-Log -Message "Session 0 detected: Execute Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
-					If ($CUArguments) {
-						Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
+					If ($ExecuteForCurrentUser) {
+						Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
+						If ($CUArguments) {
+							Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
+						}
+						Else {
+							Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
+						}				
 					}
-					Else {
-						Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
-					}
+
+					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
 				}
 				Else {
-					Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
+					If ($ExecuteForCurrentUser) {
+						Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
+					}
 				}
 			}
 			Else {
-				Write-Log -Message 'Execute Active Setup StubPath file for the current user.' -Source ${CmdletName}
-				If ($CUArguments) {
-					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
+				If ($ExecuteForCurrentUser) {
+					Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
+					If ($CUArguments) {
+						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
+					}
+					Else {
+						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
+					}
 				}
-				Else {
-					$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
-				}
+
+				Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 				& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
 			}
 		}
