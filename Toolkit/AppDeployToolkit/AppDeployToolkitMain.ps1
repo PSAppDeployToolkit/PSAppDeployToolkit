@@ -10873,9 +10873,8 @@ Function Get-PendingReboot {
 
 #region Function Set-ItemPermission
 Function Set-ItemPermission {
-
     <#
-    .SYNOPSYS
+    .SYNOPSIS
         Allow you to easily change permissions on files or folders
     .PARAMETER Path
         Path to the folder or file you want to modify (ex: C:\Temp)
@@ -10907,8 +10906,10 @@ Function Set-ItemPermission {
     .EXAMPLE
         Will remove all permissions to 'John' on 'C:\Temp\Private'
         PS C:\>Set-ItemPermission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
-    .NOTE
-        Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+    .NOTES
+		Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+	.LINK
+		http://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -10977,6 +10978,7 @@ Function Set-ItemPermission {
 			$Acl = (get-item -Path $Path -ErrorAction Stop).GetAccessControl('Access')
 			# Enable inherance
 			$Acl.SetAccessRuleProtection($False, $True)
+			Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
 			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction Stop
 			return
 		}
