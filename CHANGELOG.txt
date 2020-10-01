@@ -39,6 +39,7 @@
 - Adds -AddParameters for Execute-MSP so people can add additional parameters
 - Changes timestamp of compressed toolkit logs to 24h format to avoid possible double filenames
 - Renames Get-ScheduledTask to Get-SchedulerTask to resolve the conflict on Windows 10 and adds an alias on Powershell versions where this function does not exist
+- Adds -ExecuteForCurrentUser for Set-ActiveSetup, which allows you to disable executing the StubExePath for the current user
 - Disables logging inside Convert-RegistryPath by default, to decrease log clutter
 
 **Version 3.8.2 [08/05/2020]**
