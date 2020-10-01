@@ -3850,6 +3850,8 @@ Function Convert-RegistryPath {
 .PARAMETER SID
 	The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 	Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+.PARAMETER DisableFunctionLogging
+	Disables logging of this function. Default: $true
 .EXAMPLE
 	Convert-RegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 .EXAMPLE
@@ -3865,7 +3867,10 @@ Function Convert-RegistryPath {
 		[string]$Key,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$SID
+		[string]$SID,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[bool]$DisableFunctionLogging = $true
 	)
 
 	Begin {
@@ -3900,14 +3905,16 @@ Function Convert-RegistryPath {
 		If ($PSBoundParameters.ContainsKey('SID')) {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
 			If ($key -match '^Registry::HKEY_CURRENT_USER\\') { $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\" }
-			Else {
+			Elseif (-not ($DisableFunctionLogging)) {
 				Write-Log -Message "SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER." -Source ${CmdletName} -Severity 2
 			}
 		}
 
 		If($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
 			## Check for expected key string format
-			Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
+			If (-not ($DisableFunctionLogging)) {
+				Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
+			}
 			Write-Output -InputObject $key
 		}
 		Else{
@@ -10890,9 +10897,8 @@ Function Get-PendingReboot {
 
 #region Function Set-ItemPermission
 Function Set-ItemPermission {
-
     <#
-    .SYNOPSYS
+    .SYNOPSIS
         Allow you to easily change permissions on files or folders
     .PARAMETER Path
         Path to the folder or file you want to modify (ex: C:\Temp)
@@ -10924,8 +10930,10 @@ Function Set-ItemPermission {
     .EXAMPLE
         Will remove all permissions to 'John' on 'C:\Temp\Private'
         PS C:\>Set-ItemPermission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
-    .NOTE
-        Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+    .NOTES
+		Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+	.LINK
+		http://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -10994,6 +11002,7 @@ Function Set-ItemPermission {
 			$Acl = (get-item -Path $Path -ErrorAction Stop).GetAccessControl('Access')
 			# Enable inherance
 			$Acl.SetAccessRuleProtection($False, $True)
+			Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
 			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction Stop
 			return
 		}
