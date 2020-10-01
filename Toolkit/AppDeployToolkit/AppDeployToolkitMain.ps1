@@ -7670,10 +7670,10 @@ Function Show-InstallationProgress {
 				#  Grey out the X button
 				$script:ProgressSyncHash.Window.add_Loaded({
 					#  Calculate the position on the screen where the progress dialog should be placed
-					[int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-					[int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-					[int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.Width
-					[int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.Height
+					[int32]$screenWidth = [System.Windows.SystemParameters]::PrimaryScreenWidth
+					[int32]$screenHeight = [System.Windows.SystemParameters]::PrimaryScreenHeight
+					[int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
+					[int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
 					#  Set the start position of the Window based on the screen size
 					If ($windowLocation -eq 'BottomRight') {
 						#  Put the window in the corner
