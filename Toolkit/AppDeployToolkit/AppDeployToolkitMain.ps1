@@ -7670,9 +7670,8 @@ Function Show-InstallationProgress {
 				#  Grey out the X button
 				$script:ProgressSyncHash.Window.add_Loaded({
 					#  Calculate the position on the screen where the progress dialog should be placed
-					#  We have to use PrimaryScreenWidth/PrimaryScreenHeight instead of WorkArea because WorkArea does not get updated when the screen size changes in virtual machines
-					[int32]$screenWidth = [System.Windows.SystemParameters]::PrimaryScreenWidth
-					[int32]$screenHeight = [System.Windows.SystemParameters]::PrimaryScreenHeight
+					[int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+					[int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
 					[int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
 					[int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
 					#  Set the start position of the Window based on the screen size
