@@ -1640,7 +1640,7 @@ Function Show-InstallationPrompt {
 		$labelText.MinimumSize = $System_Drawing_Size
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
-		$labelText.Margin = $paddingNone
+		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
 		$labelText.TabIndex = 1
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
@@ -6639,7 +6639,11 @@ Function Show-WelcomePrompt {
 
 		$formWelcome = New-Object -TypeName 'System.Windows.Forms.Form'
 		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$labelWelcomeMessage = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelAppName = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCustomMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCloseAppsMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCountdownMessage = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelDefer = New-Object -TypeName 'System.Windows.Forms.Label'
 		$listBoxCloseApps = New-Object -TypeName 'System.Windows.Forms.ListBox'
@@ -6655,8 +6659,12 @@ Function Show-WelcomePrompt {
 		## Remove all event handlers from the controls
 		[scriptblock]$Form_Cleanup_FormClosed = {
 			Try {
+				$labelWelcomeMessage.remove_Click($handler_labelWelcomeMessage_Click)
 				$labelAppName.remove_Click($handler_labelAppName_Click)
+				$labelCustomMessage.remove_Click($handler_labelCustomMessage_Click)
+				$labelCloseAppsMessage.remove_Click($handler_labelCloseAppsMessage_Click)
 				$labelDefer.remove_Click($handler_labelDefer_Click)
+				$labelCountdownMessage.remove_Click($handler_labelCountdownMessage_Click)
 				$buttonCloseApps.remove_Click($buttonCloseApps_OnClick)
 				$buttonContinue.remove_Click($buttonContinue_OnClick)
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
@@ -6727,12 +6735,7 @@ Function Show-WelcomePrompt {
 					#  Update the form
 					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 					If ($forceCountdown -eq $true) {
-						switch ($deploymentType){
-							'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
-							'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall) + "`n$labelCountdownSeconds" }
-							'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair) + "`n$labelCountdownSeconds" }
-							Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
-						}
+						$labelCountdown.Text = $labelCountdownSeconds
 					}
 					Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
 					[Windows.Forms.Application]::DoEvents()
@@ -6790,8 +6793,24 @@ Function Show-WelcomePrompt {
 		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
 
+		## Label Welcome Message
+		$labelWelcomeMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelWelcomeMessage.Name = 'labelWelcomeMessage'
+		$labelWelcomeMessage.Size = $defaultControlSize
+		$labelWelcomeMessage.MinimumSize = $defaultControlSize
+		$labelWelcomeMessage.MaximumSize = $defaultControlSize
+		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
+		$labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelWelcomeMessage.TabIndex = 1
+		$labelWelcomeMessage.Text = $configDeferPromptWelcomeMessage
+		$labelWelcomeMessage.TextAlign = 'MiddleCenter'
+		$labelWelcomeMessage.Anchor = 'Top'
+		$labelWelcomeMessage.AutoSize = $true
+		$labelWelcomeMessage.add_Click($handler_labelWelcomeMessage_Click)
+
 		## Label App Name
 		$labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelAppName.Font = 'Microsoft Sans Serif, 10pt, style=Bold'
 		$labelAppName.Name = 'labelAppName'
 		$labelAppName.Size = $defaultControlSize
 		$labelAppName.MinimumSize = $defaultControlSize
@@ -6799,20 +6818,41 @@ Function Show-WelcomePrompt {
 		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,5
 		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelAppName.TabIndex = 1
-
-		## Initial form layout: Close Applications / Allow Deferral
-		$labelAppNameText = "$configDeferPromptWelcomeMessage`n`n$installTitle"
-		If ($showCloseApps) {
-			$labelAppNameText = "$labelAppNameText`n`n$configClosePromptMessage"
-		}
-		If ($CustomText -and $configWelcomePromptCustomMessage) {
-			$labelAppNameText = "$labelAppNameText`n`n$configWelcomePromptCustomMessage"
-		}
-		$labelAppName.Text = $labelAppNameText
+		$labelAppName.Text = $installTitle
 		$labelAppName.TextAlign = 'MiddleCenter'
 		$labelAppName.Anchor = 'Top'
 		$labelAppName.AutoSize = $true
 		$labelAppName.add_Click($handler_labelAppName_Click)
+
+		## Label CustomMessage
+		$labelCustomMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCustomMessage.Name = 'labelCustomMessage'
+		$labelCustomMessage.Size = $defaultControlSize
+		$labelCustomMessage.MinimumSize = $defaultControlSize
+		$labelCustomMessage.MaximumSize = $defaultControlSize
+		$labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCustomMessage.TabIndex = 1
+		$labelCustomMessage.Text = $configClosePromptMessage
+		$labelCustomMessage.TextAlign = 'MiddleCenter'
+		$labelCustomMessage.Anchor = 'Top'
+		$labelCustomMessage.AutoSize = $true
+		$labelCustomMessage.add_Click($handler_labelCustomMessage_Click)
+
+		## Label CloseAppsMessage
+		$labelCloseAppsMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCloseAppsMessage.Name = 'labelCloseAppsMessage'
+		$labelCloseAppsMessage.Size = $defaultControlSize
+		$labelCloseAppsMessage.MinimumSize = $defaultControlSize
+		$labelCloseAppsMessage.MaximumSize = $defaultControlSize
+		$labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCloseAppsMessage.TabIndex = 1
+		$labelCloseAppsMessage.Text = $configClosePromptMessage
+		$labelCloseAppsMessage.TextAlign = 'MiddleCenter'
+		$labelCloseAppsMessage.Anchor = 'Top'
+		$labelCloseAppsMessage.AutoSize = $true
+		$labelCloseAppsMessage.add_Click($handler_labelCloseAppsMessage_Click)
 
 		## Listbox Close Applications
 		$listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6851,8 +6891,33 @@ Function Show-WelcomePrompt {
 		$labelDefer.AutoSize = $true
 		$labelDefer.add_Click($handler_labelDefer_Click)
 
+		## Label CountdownMessage
+		$labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCountdownMessage.Name = 'labelCountdownMessage'
+		$labelCountdownMessage.Size = $defaultControlSize
+		$labelCountdownMessage.MinimumSize = $defaultControlSize
+		$labelCountdownMessage.MaximumSize = $defaultControlSize
+		$labelCountdownMessage.Margin = $paddingNone
+		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdownMessage.TabIndex = 1
+		If ($forceCountdown -eq $true) {
+			switch ($deploymentType){
+				'Uninstall' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall);break; }
+				'Repair' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair);break; }
+				Default { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall);break; }
+			}
+		}
+		Else { 
+			$labelCountdownMessage.Text = $configClosePromptCountdownMessage 
+		}
+		$labelCountdownMessage.TextAlign = 'MiddleCenter'
+		$labelCountdownMessage.Anchor = 'Top'
+		$labelCountdownMessage.AutoSize = $true
+		$labelCountdownMessage.add_Click($handler_labelCountdownMessage_Click)
+
 		## Label Countdown
 		$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCountdown.Font = 'Microsoft Sans Serif, 18pt, style=Bold'
 		$labelCountdown.Name = 'labelCountdown'
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
@@ -6860,7 +6925,6 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
 		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdown.TabIndex = 4
-		$labelCountdown.Font = New-Object -TypeName "System.Drawing.Font" -ArgumentList $labelCountdown.Font,1
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
 		$labelCountdown.AutoSize = $true
@@ -6874,10 +6938,22 @@ Function Show-WelcomePrompt {
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
 		$flowLayoutPanel.WrapContents = $true
+		$flowLayoutPanel.Controls.Add($labelWelcomeMessage)
 		$flowLayoutPanel.Controls.Add($labelAppName)
-		If ($showCloseApps) { $flowLayoutPanel.Controls.Add($listBoxCloseApps) }
+
+		If ($CustomText -and $configWelcomePromptCustomMessage) {
+			$labelCustomMessage.Text = $configWelcomePromptCustomMessage
+			$flowLayoutPanel.Controls.Add($labelCustomMessage)
+		}
+		If ($showCloseApps) { 
+			$flowLayoutPanel.Controls.Add($labelCloseAppsMessage)
+			$flowLayoutPanel.Controls.Add($listBoxCloseApps) 
+		}
 		If ($showDefer) { $flowLayoutPanel.Controls.Add($labelDefer) }
-		If ($showCountdown) { $flowLayoutPanel.Controls.Add($labelCountdown) }
+		If ($showCountdown) { 
+			$flowLayoutPanel.Controls.Add($labelCountdownMessage)
+			$flowLayoutPanel.Controls.Add($labelCountdown) 
+		}
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -7637,7 +7713,7 @@ Function Show-InstallationProgress {
 					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
+					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,5,50,5" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
 					<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
 					<Ellipse.RenderTransform>
 						<TransformGroup>
@@ -10136,29 +10212,25 @@ Function Set-ActiveSetup {
 			& $SetActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
 
 			## Execute the StubPath file for the current user as long as not in Session 0
-			If ($SessionZero) {
-				If ($RunAsActiveUser) {
-					If ($ExecuteForCurrentUser) {
+			If ($ExecuteForCurrentUser) {
+				If ($SessionZero) {
+					If ($RunAsActiveUser) {				
 						Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 						If ($CUArguments) {
 							Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
 						}
 						Else {
 							Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
-						}				
-					}
+						}
 
-					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
-				}
-				Else {
-					If ($ExecuteForCurrentUser) {
+						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+					}
+					Else {
 						Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
 					}
 				}
-			}
-			Else {
-				If ($ExecuteForCurrentUser) {
+				Else {
 					Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 					If ($CUArguments) {
 						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
@@ -10166,10 +10238,10 @@ Function Set-ActiveSetup {
 					Else {
 						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
 					}
-				}
 
-				Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-				& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+				}
 			}
 		}
 		Catch {
