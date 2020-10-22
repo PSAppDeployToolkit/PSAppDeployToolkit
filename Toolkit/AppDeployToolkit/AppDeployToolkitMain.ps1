@@ -1725,11 +1725,11 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 
 		## ButtonsPanel
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.AutoSize = $true
 		If ($buttonLeftText) { $panelButtons.Controls.Add($buttonLeft) }
 		If ($buttonMiddleText) { $panelButtons.Controls.Add($buttonMiddle) }
@@ -7016,9 +7016,9 @@ Function Show-WelcomePrompt {
 		$formWelcome.Controls.Add($pictureBanner)
 
 		## Panel Button
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
@@ -7417,9 +7417,9 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.Controls.Add($pictureBanner)
 
 		## Button Panel
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
@@ -7747,7 +7747,7 @@ Function Show-InstallationProgress {
 					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="14" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
+					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,20,50,20" Text="Installation in progress" FontSize="14" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
 					<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
 					<Ellipse.RenderTransform>
 						<TransformGroup>
