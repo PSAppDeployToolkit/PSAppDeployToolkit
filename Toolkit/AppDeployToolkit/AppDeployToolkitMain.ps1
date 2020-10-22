@@ -6695,15 +6695,7 @@ Function Show-WelcomePrompt {
 			## Set up the form
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-			If ($forceCountdown -eq $true) {
-				switch ($deploymentType){
-					'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
-					'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeUninstall.ToLower())) + "`n$labelCountdownSeconds" }
-					'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeRepair.ToLower())) + "`n$labelCountdownSeconds" }
-					Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
-				}
-			}
-			Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
+			$labelCountdown.Text = $labelCountdownSeconds
 		}
 
 		## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
@@ -6734,10 +6726,7 @@ Function Show-WelcomePrompt {
 				Else {
 					#  Update the form
 					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					If ($forceCountdown -eq $true) {
-						$labelCountdown.Text = $labelCountdownSeconds
-					}
-					Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
+					$labelCountdown.Text = $labelCountdownSeconds
 					[Windows.Forms.Application]::DoEvents()
 				}
 			}
