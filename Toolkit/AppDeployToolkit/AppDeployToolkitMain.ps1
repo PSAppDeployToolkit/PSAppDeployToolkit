@@ -6350,7 +6350,7 @@ Function Show-InstallationWelcome {
 					}
 
 					ForEach ($runningProcess in $runningProcesses) {
-						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.Name }
+						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
 						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
 						If (($PromptToSave) -and (-not ($SessionZero -and (-not $IsProcessUserInteractive))) -and ($AllOpenWindowsForRunningProcess) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
 							[timespan]$PromptToSaveTimeout = New-TimeSpan -Seconds $configInstallationPromptToSave
@@ -6358,11 +6358,11 @@ Function Show-InstallationWelcome {
 							$PromptToSaveStopWatch.Reset()
 							ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
 								Try {
-									Write-Log -Message "Stop process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
+									Write-Log -Message "Stop process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
 									[boolean]$IsBringWindowToFrontSuccess = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
 									[boolean]$IsCloseWindowCallSuccess = $runningProcess.CloseMainWindow()
 									If (-not $IsCloseWindowCallSuccess) {
-										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
+										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
 									}
 									Else {
 										$PromptToSaveStopWatch.Start()
@@ -6373,15 +6373,15 @@ Function Show-InstallationWelcome {
 										} While (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
 										$PromptToSaveStopWatch.Reset()
 										If ($IsWindowOpen) {
-											Write-Log -Message "Exceeded the [$configInstallationPromptToSave] seconds timeout value for the user to save work associated with process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
+											Write-Log -Message "Exceeded the [$configInstallationPromptToSave] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
 										}
 										Else {
-											Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)] was successfully closed." -Source ${CmdletName}
+											Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed." -Source ${CmdletName}
 										}
 									}
 								}
 								Catch {
-									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 									Continue
 								}
 								Finally {
@@ -6390,8 +6390,8 @@ Function Show-InstallationWelcome {
 							}
 						}
 						Else {
-							Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
-							Stop-Process -Id $runningProcess.Id -Force -ErrorAction 'SilentlyContinue'
+							Write-Log -Message "Stopping process $($runningProcess.ProcessName)..." -Source ${CmdletName}
+							Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 						}
 					}
 					Start-Sleep -Seconds 2
@@ -6438,15 +6438,15 @@ Function Show-InstallationWelcome {
 			[array]$runningProcesses = $null
 			[array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
 				Write-Log -Message "Force close application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
-				$runningProcesses | Stop-Process -Force -ErrorAction 'SilentlyContinue'
+				$runningProcesses.ProcessName | ForEach-Object -Process {Stop-Process -Name $_ -Force -ErrorAction 'SilentlyContinue'}
 				Start-Sleep -Seconds 2
 			}
 		}
 
 		## Force nsd.exe to stop if Notes is one of the required applications to close
-		If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
+		If (($processObjects).ProcessName -contains 'notes') {
 			## Get the path where Notes is installed
 			[string]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 
@@ -6456,7 +6456,7 @@ Function Show-InstallationWelcome {
 				[string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object {
-					If ((Get-Process | Select-Object -ExpandProperty 'Name') -contains $_) {
+					If ((Get-Process).ProcessName -contains $_) {
 						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
 						Try {
 							If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
@@ -7051,7 +7051,7 @@ Function Show-WelcomePrompt {
 		Function Get-RunningProcessesDynamically {
 			$dynamicRunningProcesses = $null
 			Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
-			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
 				If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
 				# Update the runningProcessDescriptions variable for the next time this function runs
 				Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
@@ -9223,7 +9223,7 @@ Function Get-WindowTitle {
 						[psobject]$VisibleWindow = New-Object -TypeName 'PSObject' -Property @{
 							WindowTitle = $VisibleWindowTitle
 							WindowHandle = $VisibleWindowHandle
-							ParentProcess= $Process.Name
+							ParentProcess= $Process.ProcessName
 							ParentProcessMainWindowHandle = $Process.MainWindowHandle
 							ParentProcessId = $Process.Id
 						}
