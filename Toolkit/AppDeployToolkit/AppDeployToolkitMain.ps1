@@ -6905,7 +6905,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
-		$labelCountdown.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCountdown.Margin = $paddingNone
 		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
@@ -7355,7 +7355,7 @@ Function Show-InstallationRestartPrompt {
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
-		$labelCountdown.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCountdown.Margin = $paddingNone
 		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
