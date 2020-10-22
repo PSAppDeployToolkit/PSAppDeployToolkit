@@ -1604,7 +1604,7 @@ Function Show-InstallationPrompt {
 		$DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1613,7 +1613,6 @@ Function Show-InstallationPrompt {
         $pictureBanner.MinimumSize = $DefaultControlSize
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
-		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
 		$pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 
@@ -1626,7 +1625,6 @@ Function Show-InstallationPrompt {
 			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
 			$pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 24,0,8,0
 			$pictureIcon.SizeMode = "CenterImage"
-			$pictureIcon.TabIndex = 0
 			$pictureIcon.TabStop = $false
 			$pictureIcon.Anchor = 'None'
             $pictureIcon.Margin = $paddingNone
@@ -1640,8 +1638,8 @@ Function Show-InstallationPrompt {
 		$labelText.MinimumSize = $System_Drawing_Size
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
-		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
-		$labelText.TabIndex = 1
+		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
+		$labelText.TabStop = $false
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
 		$labelText.Anchor = 'None'
@@ -1655,7 +1653,7 @@ Function Show-InstallationPrompt {
 		$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonLeft.Name = 'buttonLeft'
 		$buttonLeft.Size = $buttonSize
-		$buttonLeft.TabIndex = 5
+		$buttonLeft.TabIndex = 0
 		$buttonLeft.Text = $buttonLeftText
 		$buttonLeft.DialogResult = 'No'
 		$buttonLeft.AutoSize = $false
@@ -1667,24 +1665,24 @@ Function Show-InstallationPrompt {
 		$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonMiddle.Name = 'buttonMiddle'
 		$buttonMiddle.Size = $buttonSize
-		$buttonMiddle.TabIndex = 6
+		$buttonMiddle.TabIndex = 1
 		$buttonMiddle.Text = $buttonMiddleText
 		$buttonMiddle.DialogResult = 'Ignore'
 		$buttonMiddle.AutoSize = $true
 		$buttonMiddle.UseVisualStyleBackColor = $true
-        $buttonMiddle.Location = "170,5"
+        $buttonMiddle.Location = "160,5"
 		$buttonMiddle.add_Click($buttonMiddle_OnClick)
 
 		## Button Right
 		$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonRight.Name = 'buttonRight'
 		$buttonRight.Size = $buttonSize
-		$buttonRight.TabIndex = 7
+		$buttonRight.TabIndex = 2
 		$buttonRight.Text = $ButtonRightText
 		$buttonRight.DialogResult = 'Yes'
 		$buttonRight.AutoSize = $true
 		$buttonRight.UseVisualStyleBackColor = $true
-		$buttonRight.Location = "325,5"
+		$buttonRight.Location = "305,5"
 		$buttonRight.add_Click($buttonRight_OnClick)
 
 		## Button Abort (Hidden)
@@ -1713,11 +1711,11 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.Controls.Add($labelText)
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,10,5
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,10,0
             $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 64,0
 		} else {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,5,10,5
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 			$labelText.MinimumSize = $DefaultControlSize
 			$labelText.MaximumSize = $DefaultControlSize
 			$labelText.Size = $DefaultControlSize
@@ -6619,8 +6617,7 @@ Function Show-WelcomePrompt {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
 			}
-		}
-		If ($showDefer) {
+		} Else {
 			If ($persistPrompt) { $persistWindow = $true }
 		}
 		## If 'force close apps countdown' was specified, enable that feature.
@@ -6765,7 +6762,7 @@ Function Show-WelcomePrompt {
 		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6785,7 +6782,7 @@ Function Show-WelcomePrompt {
 		$labelWelcomeMessage.Size = $defaultControlSize
 		$labelWelcomeMessage.MinimumSize = $defaultControlSize
 		$labelWelcomeMessage.MaximumSize = $defaultControlSize
-		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
+		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,0
 		$labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelWelcomeMessage.TabStop = $false
 		$labelWelcomeMessage.Text = $configDeferPromptWelcomeMessage
@@ -6845,9 +6842,9 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.FormattingEnabled = $true
 		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 400,100
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 420,100
 		$listBoxCloseApps.Size = $System_Drawing_Size
-		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 25,0,0,0
+		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 15,0,15,0
 		$listBoxCloseApps.TabIndex = 3
 		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
@@ -6959,7 +6956,7 @@ Function Show-WelcomePrompt {
 			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
 		}
 		Else {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 170,5
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 160,5
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
@@ -6972,7 +6969,7 @@ Function Show-WelcomePrompt {
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 325,5
+		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 305,5
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
 		$buttonContinue.TabIndex = 2
@@ -7308,7 +7305,7 @@ Function Show-InstallationRestartPrompt {
 		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 160,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 195,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -7328,7 +7325,7 @@ Function Show-InstallationRestartPrompt {
 		$labelMessage.Size = $defaultControlSize
 		$labelMessage.MinimumSize = $defaultControlSize
 		$labelMessage.MaximumSize = $defaultControlSize
-		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
+		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,0
 		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
 		If ($NoCountdown) { $labelMessage.Text = $configRestartPromptMessage }
@@ -7381,7 +7378,7 @@ Function Show-InstallationRestartPrompt {
 
 		## Label Restart Later
 		$buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 275,5
+		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,5
 		$buttonRestartLater.Name = 'buttonRestartLater'
 		$buttonRestartLater.Size = $buttonSize
 		$buttonRestartLater.TabIndex = 0
@@ -7750,7 +7747,7 @@ Function Show-InstallationProgress {
 					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,5,50,5" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
+					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="14" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
 					<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
 					<Ellipse.RenderTransform>
 						<TransformGroup>
