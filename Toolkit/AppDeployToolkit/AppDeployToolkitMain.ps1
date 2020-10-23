@@ -1653,47 +1653,62 @@ Function Show-InstallationPrompt {
 		$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonLeft.Name = 'buttonLeft'
 		$buttonLeft.Size = $buttonSize
+		$buttonLeft.MinimumSize = $buttonSize
+		$buttonLeft.MaximumSize = $buttonSize
 		$buttonLeft.TabIndex = 0
 		$buttonLeft.Text = $buttonLeftText
 		$buttonLeft.DialogResult = 'No'
 		$buttonLeft.AutoSize = $false
+		$buttonLeft.Margin = $paddingNone
+		$buttonLeft.Padding = $paddingNone
 		$buttonLeft.UseVisualStyleBackColor = $true
-		$buttonLeft.Location = "15,5"
+		$buttonLeft.Location = "14,4"
 		$buttonLeft.add_Click($buttonLeft_OnClick)
 
 		## Button Middle
 		$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonMiddle.Name = 'buttonMiddle'
 		$buttonMiddle.Size = $buttonSize
+		$buttonMiddle.MinimumSize = $buttonSize
+		$buttonMiddle.MaximumSize = $buttonSize
 		$buttonMiddle.TabIndex = 1
 		$buttonMiddle.Text = $buttonMiddleText
 		$buttonMiddle.DialogResult = 'Ignore'
 		$buttonMiddle.AutoSize = $true
+		$buttonMiddle.Margin = $paddingNone
+		$buttonMiddle.Padding = $paddingNone
 		$buttonMiddle.UseVisualStyleBackColor = $true
-        $buttonMiddle.Location = "160,5"
+        $buttonMiddle.Location = "160,4"
 		$buttonMiddle.add_Click($buttonMiddle_OnClick)
 
 		## Button Right
 		$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonRight.Name = 'buttonRight'
 		$buttonRight.Size = $buttonSize
+		$buttonRight.MinimumSize = $buttonSize
+		$buttonRight.MaximumSize = $buttonSize
 		$buttonRight.TabIndex = 2
 		$buttonRight.Text = $ButtonRightText
 		$buttonRight.DialogResult = 'Yes'
 		$buttonRight.AutoSize = $true
+		$buttonRight.Margin = $paddingNone
+		$buttonRight.Padding = $paddingNone
 		$buttonRight.UseVisualStyleBackColor = $true
-		$buttonRight.Location = "305,5"
+		$buttonRight.Location = "306,4"
 		$buttonRight.add_Click($buttonRight_OnClick)
 
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = '1,1'
+		$buttonAbort.MinimumSize = '1,1'
+		$buttonAbort.MaximumSize = '1,1'
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabStop = $false
-		$buttonAbort.Visible = $false
+		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
+		$buttonAbort.Margin = $paddingNone
+		$buttonAbort.Padding = $paddingNone
 		$buttonAbort.UseVisualStyleBackColor = $true
-        $buttonAbort.Location = "0,0"
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
 		## FlowLayoutPanel
@@ -1704,7 +1719,8 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.Anchor = 'Top,Left'
 		$flowLayoutPanel.FlowDirection = 'LeftToRight'
 		$flowLayoutPanel.WrapContents = $true
-        $flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
 		If ($Icon -ne 'None') {
 			$flowLayoutPanel.Controls.Add($pictureIcon)
 		}
@@ -6589,10 +6605,8 @@ Function Show-WelcomePrompt {
 		[datetime]$countdownTime = $startTime
 
 		## Check if the countdown was specified
-		If ($CloseAppsCountdown) {
-			If ($CloseAppsCountdown -gt $configInstallationUITimeout) {
-				Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
-			}
+		If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $configInstallationUITimeout)) {
+			Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
 		}
 
 		## Initial form layout: Close Applications / Allow Deferral
@@ -6917,6 +6931,7 @@ Function Show-WelcomePrompt {
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
@@ -6940,42 +6955,54 @@ Function Show-WelcomePrompt {
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
+		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		$buttonCloseApps.Name = 'buttonCloseApps'
 		$buttonCloseApps.Size = $buttonSize
+		$buttonCloseApps.MinimumSize = $buttonSize
+		$buttonCloseApps.MaximumSize = $buttonSize
 		$buttonCloseApps.TabIndex = 1
 		$buttonCloseApps.Text = $configClosePromptButtonClose
 		$buttonCloseApps.DialogResult = 'Yes'
 		$buttonCloseApps.AutoSize = $true
+		$buttonCloseApps.Margin = $paddingNone
+		$buttonCloseApps.Padding = $paddingNone
 		$buttonCloseApps.UseVisualStyleBackColor = $true
 		$buttonCloseApps.add_Click($buttonCloseApps_OnClick)
 
 		## Button Defer
 		$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		If (-not $showCloseApps) {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		}
 		Else {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 160,5
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 160,4
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
+		$buttonDefer.MinimumSize = $buttonSize
+		$buttonDefer.MaximumSize = $buttonSize
 		$buttonDefer.TabIndex = 0
 		$buttonDefer.Text = $configClosePromptButtonDefer
 		$buttonDefer.DialogResult = 'No'
 		$buttonDefer.AutoSize = $true
+		$buttonDefer.Margin = $paddingNone
+		$buttonDefer.Padding = $paddingNone
 		$buttonDefer.UseVisualStyleBackColor = $true
 		$buttonDefer.add_Click($buttonDefer_OnClick)
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 305,5
+		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 306,4
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
+		$buttonContinue.MinimumSize = $buttonSize
+		$buttonContinue.MaximumSize = $buttonSize
 		$buttonContinue.TabIndex = 2
 		$buttonContinue.Text = $configClosePromptButtonContinue
 		$buttonContinue.DialogResult = 'OK'
 		$buttonContinue.AutoSize = $true
+		$buttonContinue.Margin = $paddingNone
+		$buttonContinue.Padding = $paddingNone
 		$buttonContinue.UseVisualStyleBackColor = $true
 		$buttonContinue.add_Click($buttonContinue_OnClick)
 		If ($showCloseApps) {
@@ -6991,9 +7018,13 @@ Function Show-WelcomePrompt {
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
 		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
+		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
+		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
-		$buttonAbort.Visible = $false
+		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
+		$buttonAbort.Margin = $paddingNone
+		$buttonAbort.Padding = $paddingNone
 		$buttonAbort.UseVisualStyleBackColor = $true
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
@@ -7366,6 +7397,7 @@ Function Show-InstallationRestartPrompt {
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
@@ -7378,22 +7410,30 @@ Function Show-InstallationRestartPrompt {
 
 		## Label Restart Later
 		$buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,5
+		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,4
 		$buttonRestartLater.Name = 'buttonRestartLater'
 		$buttonRestartLater.Size = $buttonSize
+		$buttonRestartLater.MinimumSize = $buttonSize
+		$buttonRestartLater.MaximumSize = $buttonSize
 		$buttonRestartLater.TabIndex = 0
 		$buttonRestartLater.Text = $configRestartPromptButtonRestartLater
 		$buttonRestartLater.AutoSize = $true
+		$buttonRestartLater.Margin = $paddingNone
+		$buttonRestartLater.Padding = $paddingNone
 		$buttonRestartLater.UseVisualStyleBackColor = $true
 		$buttonRestartLater.add_Click($buttonRestartLater_Click)
 
 		## Label Restart Now
 		$buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
+		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		$buttonRestartNow.Name = 'buttonRestartNow'
 		$buttonRestartNow.Size = $buttonSize
+		$buttonRestartNow.MinimumSize = $buttonSize
+		$buttonRestartNow.MaximumSize = $buttonSize
 		$buttonRestartNow.TabIndex = 1
 		$buttonRestartNow.Text = $configRestartPromptButtonRestartNow
+		$buttonRestartNow.Margin = $paddingNone
+		$buttonRestartNow.Padding = $paddingNone
 		$buttonRestartNow.UseVisualStyleBackColor = $true
 		$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
