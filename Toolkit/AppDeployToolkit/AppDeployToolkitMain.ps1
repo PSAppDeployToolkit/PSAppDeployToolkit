@@ -1594,7 +1594,6 @@ Function Show-InstallationPrompt {
 		}
 
 		## Form
-		$formInstallationPrompt.Controls.Add($pictureBanner)
 
 		##----------------------------------------------
 		## Create padding object
@@ -1627,7 +1626,7 @@ Function Show-InstallationPrompt {
 			$pictureIcon.SizeMode = "CenterImage"
 			$pictureIcon.TabStop = $false
 			$pictureIcon.Anchor = 'None'
-            $pictureIcon.Margin = $paddingNone
+            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
 		}
 
 		## Label Text
@@ -1635,7 +1634,11 @@ Function Show-InstallationPrompt {
 		$labelText.Name = 'labelText'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 386,0
 		$labelText.Size = $System_Drawing_Size
-		$labelText.MinimumSize = $System_Drawing_Size
+		If ($Icon -ne 'None') {
+			$labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' 386,$pictureIcon.Height
+		} else {
+			$labelText.MinimumSize = $System_Drawing_Size
+		}
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
 		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
@@ -1700,9 +1703,15 @@ Function Show-InstallationPrompt {
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = '1,1'
-		$buttonAbort.MinimumSize = '1,1'
-		$buttonAbort.MaximumSize = '1,1'
+		$buttonAbort.Size = '0,0'
+		$buttonAbort.MinimumSize = '0,0'
+		$buttonAbort.MaximumSize = '0,0'
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatAppearance.BorderSize = 0;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat;
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabStop = $false
 		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
@@ -1721,10 +1730,6 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.WrapContents = $true
 		$flowLayoutPanel.Margin = $paddingNone
 		$flowLayoutPanel.Padding = $paddingNone
-		If ($Icon -ne 'None') {
-			$flowLayoutPanel.Controls.Add($pictureIcon)
-		}
-		$flowLayoutPanel.Controls.Add($labelText)
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
 			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,10,0
@@ -1737,6 +1742,10 @@ Function Show-InstallationPrompt {
 			$labelText.Size = $DefaultControlSize
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 		}
+		If ($Icon -ne 'None') {
+			$flowLayoutPanel.Controls.Add($pictureIcon)
+		}
+		$flowLayoutPanel.Controls.Add($labelText)
 		$flowLayoutPanel.Controls.Add($buttonAbort)
 		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 
@@ -6766,8 +6775,6 @@ Function Show-WelcomePrompt {
 		}
 
 		## Form
-		$formWelcome.Controls.Add($pictureBanner)
-		$formWelcome.Controls.Add($buttonAbort)
 
 		##----------------------------------------------
 		## Create zero px padding object
@@ -7017,9 +7024,15 @@ Function Show-WelcomePrompt {
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
-		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
-		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
+		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatAppearance.BorderSize = 0;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat;
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
@@ -7045,7 +7058,7 @@ Function Show-WelcomePrompt {
 		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formWelcome.AutoSize = $true
 		$formWelcome.Controls.Add($pictureBanner)
-
+		$formWelcome.Controls.Add($buttonAbort)
 		## Panel Button
 		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
@@ -7328,7 +7341,6 @@ Function Show-InstallationRestartPrompt {
 		}
 
 		## Form
-		$formRestart.Controls.Add($pictureBanner)
 		##----------------------------------------------
 		## Create zero px padding object
 		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
