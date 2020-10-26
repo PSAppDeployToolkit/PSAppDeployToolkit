@@ -1706,12 +1706,12 @@ Function Show-InstallationPrompt {
 		$buttonAbort.Size = '0,0'
 		$buttonAbort.MinimumSize = '0,0'
 		$buttonAbort.MaximumSize = '0,0'
-		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
 		$buttonAbort.FlatAppearance.BorderSize = 0;
-		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabStop = $false
 		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
@@ -6916,6 +6916,7 @@ Function Show-WelcomePrompt {
 			$labelCountdownMessage.Text = $configClosePromptCountdownMessage 
 		}
 		$labelCountdownMessage.TextAlign = 'MiddleCenter'
+		$labelCountdownMessage.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
 		$labelCountdownMessage.Anchor = 'Top'
 		$labelCountdownMessage.AutoSize = $true
 		$labelCountdownMessage.add_Click($handler_labelCountdownMessage_Click)
@@ -7032,12 +7033,12 @@ Function Show-WelcomePrompt {
 		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
 		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
 		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
-		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent;
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
 		$buttonAbort.FlatAppearance.BorderSize = 0;
-		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent;
-		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
