@@ -1725,6 +1725,7 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.MaximumSize = $DefaultControlSize
 		$flowLayoutPanel.Size = $DefaultControlSize
 		$flowLayoutPanel.AutoSize = $true
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
 		$flowLayoutPanel.Anchor = 'Top,Left'
 		$flowLayoutPanel.FlowDirection = 'LeftToRight'
 		$flowLayoutPanel.WrapContents = $true
@@ -1746,7 +1747,6 @@ Function Show-InstallationPrompt {
 			$flowLayoutPanel.Controls.Add($pictureIcon)
 		}
 		$flowLayoutPanel.Controls.Add($labelText)
-		$flowLayoutPanel.Controls.Add($buttonAbort)
 		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 
 		## ButtonsPanel
@@ -1781,6 +1781,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formInstallationPrompt.Controls.Add($pictureBanner)
+		$formInstallationPrompt.Controls.Add($buttonAbort)
 		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
 		## Timer
 		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
@@ -6937,8 +6938,12 @@ Function Show-WelcomePrompt {
 		## Panel Flow Layout
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
+		$flowLayoutPanel.MinimumSize = $DefaultControlSize
+		$flowLayoutPanel.MaximumSize = $DefaultControlSize
+		$flowLayoutPanel.Size = $DefaultControlSize
 		$flowLayoutPanel.Margin = $paddingNone
 		$flowLayoutPanel.Padding = $paddingNone
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
@@ -7408,8 +7413,12 @@ Function Show-InstallationRestartPrompt {
 		## Panel Flow Layout
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
+		$flowLayoutPanel.MinimumSize = $DefaultControlSize
+		$flowLayoutPanel.MaximumSize = $DefaultControlSize
+		$flowLayoutPanel.Size = $DefaultControlSize
 		$flowLayoutPanel.Margin = $paddingNone
 		$flowLayoutPanel.Padding = $paddingNone
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
