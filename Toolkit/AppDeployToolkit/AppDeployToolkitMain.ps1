@@ -7373,7 +7373,7 @@ Function Show-InstallationRestartPrompt {
 		$labelMessage.Size = $defaultControlSize
 		$labelMessage.MinimumSize = $defaultControlSize
 		$labelMessage.MaximumSize = $defaultControlSize
-		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,0
+		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
 		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
 		If ($NoCountdown) { $labelMessage.Text = $configRestartPromptMessage }
@@ -7388,7 +7388,7 @@ Function Show-InstallationRestartPrompt {
 		$labelTimeRemaining.Size = $defaultControlSize
 		$labelTimeRemaining.MinimumSize = $defaultControlSize
 		$labelTimeRemaining.MaximumSize = $defaultControlSize
-		$labelTimeRemaining.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,0
+		$labelTimeRemaining.Margin = $paddingNone
 		$labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelTimeRemaining.TabStop = $false
 		$labelTimeRemaining.Text = $configRestartPromptTimeRemaining
