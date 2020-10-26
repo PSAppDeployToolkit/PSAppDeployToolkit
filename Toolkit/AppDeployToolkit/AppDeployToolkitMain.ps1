@@ -7392,6 +7392,7 @@ Function Show-InstallationRestartPrompt {
 		$labelTimeRemaining.Margin = $paddingNone
 		$labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelTimeRemaining.TabStop = $false
+		$labelTimeRemaining.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
 		$labelTimeRemaining.Text = $configRestartPromptTimeRemaining
 		$labelTimeRemaining.TextAlign = 'MiddleCenter'
 		$labelTimeRemaining.Anchor = 'Top'
