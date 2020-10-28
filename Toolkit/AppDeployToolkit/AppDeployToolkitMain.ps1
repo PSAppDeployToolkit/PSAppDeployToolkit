@@ -1594,7 +1594,6 @@ Function Show-InstallationPrompt {
 		}
 
 		## Form
-		$formInstallationPrompt.Controls.Add($pictureBanner)
 
 		##----------------------------------------------
 		## Create padding object
@@ -1604,7 +1603,7 @@ Function Show-InstallationPrompt {
 		$DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1613,7 +1612,6 @@ Function Show-InstallationPrompt {
         $pictureBanner.MinimumSize = $DefaultControlSize
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
-		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
 		$pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 
@@ -1626,10 +1624,9 @@ Function Show-InstallationPrompt {
 			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
 			$pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 24,0,8,0
 			$pictureIcon.SizeMode = "CenterImage"
-			$pictureIcon.TabIndex = 0
 			$pictureIcon.TabStop = $false
 			$pictureIcon.Anchor = 'None'
-            $pictureIcon.Margin = $paddingNone
+            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
 		}
 
 		## Label Text
@@ -1637,11 +1634,15 @@ Function Show-InstallationPrompt {
 		$labelText.Name = 'labelText'
 		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 386,0
 		$labelText.Size = $System_Drawing_Size
-		$labelText.MinimumSize = $System_Drawing_Size
+		If ($Icon -ne 'None') {
+			$labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' 386,$pictureIcon.Height
+		} else {
+			$labelText.MinimumSize = $System_Drawing_Size
+		}
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
-		$labelText.Margin = $paddingNone
-		$labelText.TabIndex = 1
+		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
+		$labelText.TabStop = $false
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
 		$labelText.Anchor = 'None'
@@ -1655,47 +1656,68 @@ Function Show-InstallationPrompt {
 		$buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonLeft.Name = 'buttonLeft'
 		$buttonLeft.Size = $buttonSize
-		$buttonLeft.TabIndex = 5
+		$buttonLeft.MinimumSize = $buttonSize
+		$buttonLeft.MaximumSize = $buttonSize
+		$buttonLeft.TabIndex = 0
 		$buttonLeft.Text = $buttonLeftText
 		$buttonLeft.DialogResult = 'No'
 		$buttonLeft.AutoSize = $false
+		$buttonLeft.Margin = $paddingNone
+		$buttonLeft.Padding = $paddingNone
 		$buttonLeft.UseVisualStyleBackColor = $true
-		$buttonLeft.Location = "15,5"
+		$buttonLeft.Location = "14,4"
 		$buttonLeft.add_Click($buttonLeft_OnClick)
 
 		## Button Middle
 		$buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonMiddle.Name = 'buttonMiddle'
 		$buttonMiddle.Size = $buttonSize
-		$buttonMiddle.TabIndex = 6
+		$buttonMiddle.MinimumSize = $buttonSize
+		$buttonMiddle.MaximumSize = $buttonSize
+		$buttonMiddle.TabIndex = 1
 		$buttonMiddle.Text = $buttonMiddleText
 		$buttonMiddle.DialogResult = 'Ignore'
 		$buttonMiddle.AutoSize = $true
+		$buttonMiddle.Margin = $paddingNone
+		$buttonMiddle.Padding = $paddingNone
 		$buttonMiddle.UseVisualStyleBackColor = $true
-        $buttonMiddle.Location = "170,5"
+        $buttonMiddle.Location = "160,4"
 		$buttonMiddle.add_Click($buttonMiddle_OnClick)
 
 		## Button Right
 		$buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonRight.Name = 'buttonRight'
 		$buttonRight.Size = $buttonSize
-		$buttonRight.TabIndex = 7
+		$buttonRight.MinimumSize = $buttonSize
+		$buttonRight.MaximumSize = $buttonSize
+		$buttonRight.TabIndex = 2
 		$buttonRight.Text = $ButtonRightText
 		$buttonRight.DialogResult = 'Yes'
 		$buttonRight.AutoSize = $true
+		$buttonRight.Margin = $paddingNone
+		$buttonRight.Padding = $paddingNone
 		$buttonRight.UseVisualStyleBackColor = $true
-		$buttonRight.Location = "325,5"
+		$buttonRight.Location = "306,4"
 		$buttonRight.add_Click($buttonRight_OnClick)
 
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = '1,1'
+		$buttonAbort.Size = '0,0'
+		$buttonAbort.MinimumSize = '0,0'
+		$buttonAbort.MaximumSize = '0,0'
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.BorderSize = 0;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 		$buttonAbort.DialogResult = 'Abort'
 		$buttonAbort.TabStop = $false
-		$buttonAbort.Visible = $false
+		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
+		$buttonAbort.Margin = $paddingNone
+		$buttonAbort.Padding = $paddingNone
 		$buttonAbort.UseVisualStyleBackColor = $true
-        $buttonAbort.Location = "0,0"
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
 		## FlowLayoutPanel
@@ -1703,35 +1725,36 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.MaximumSize = $DefaultControlSize
 		$flowLayoutPanel.Size = $DefaultControlSize
 		$flowLayoutPanel.AutoSize = $true
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
 		$flowLayoutPanel.Anchor = 'Top,Left'
 		$flowLayoutPanel.FlowDirection = 'LeftToRight'
 		$flowLayoutPanel.WrapContents = $true
-        $flowLayoutPanel.Margin = $paddingNone
-		If ($Icon -ne 'None') {
-			$flowLayoutPanel.Controls.Add($pictureIcon)
-		}
-		$flowLayoutPanel.Controls.Add($labelText)
+		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,10,5
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,10,0
             $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 64,0
 		} else {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,5,10,5
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 			$labelText.MinimumSize = $DefaultControlSize
 			$labelText.MaximumSize = $DefaultControlSize
 			$labelText.Size = $DefaultControlSize
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 		}
-		$flowLayoutPanel.Controls.Add($buttonAbort)
+		If ($Icon -ne 'None') {
+			$flowLayoutPanel.Controls.Add($pictureIcon)
+		}
+		$flowLayoutPanel.Controls.Add($labelText)
 		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 
 		## ButtonsPanel
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.AutoSize = $true
 		If ($buttonLeftText) { $panelButtons.Controls.Add($buttonLeft) }
 		If ($buttonMiddleText) { $panelButtons.Controls.Add($buttonMiddle) }
@@ -1758,6 +1781,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formInstallationPrompt.Controls.Add($pictureBanner)
+		$formInstallationPrompt.Controls.Add($buttonAbort)
 		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
 		## Timer
 		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
@@ -6350,7 +6374,7 @@ Function Show-InstallationWelcome {
 					}
 
 					ForEach ($runningProcess in $runningProcesses) {
-						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.Name }
+						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
 						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
 						If (($PromptToSave) -and (-not ($SessionZero -and (-not $IsProcessUserInteractive))) -and ($AllOpenWindowsForRunningProcess) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
 							[timespan]$PromptToSaveTimeout = New-TimeSpan -Seconds $configInstallationPromptToSave
@@ -6358,11 +6382,11 @@ Function Show-InstallationWelcome {
 							$PromptToSaveStopWatch.Reset()
 							ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
 								Try {
-									Write-Log -Message "Stop process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
+									Write-Log -Message "Stop process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$configInstallationPromptToSave] seconds)..." -Source ${CmdletName}
 									[boolean]$IsBringWindowToFrontSuccess = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
 									[boolean]$IsCloseWindowCallSuccess = $runningProcess.CloseMainWindow()
 									If (-not $IsCloseWindowCallSuccess) {
-										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
+										Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
 									}
 									Else {
 										$PromptToSaveStopWatch.Start()
@@ -6373,15 +6397,15 @@ Function Show-InstallationWelcome {
 										} While (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
 										$PromptToSaveStopWatch.Reset()
 										If ($IsWindowOpen) {
-											Write-Log -Message "Exceeded the [$configInstallationPromptToSave] seconds timeout value for the user to save work associated with process [$($runningProcess.Name)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
+											Write-Log -Message "Exceeded the [$configInstallationPromptToSave] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
 										}
 										Else {
-											Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)] was successfully closed." -Source ${CmdletName}
+											Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed." -Source ${CmdletName}
 										}
 									}
 								}
 								Catch {
-									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 									Continue
 								}
 								Finally {
@@ -6390,8 +6414,8 @@ Function Show-InstallationWelcome {
 							}
 						}
 						Else {
-							Write-Log -Message "Stop process $($runningProcess.Name)..." -Source ${CmdletName}
-							Stop-Process -Id $runningProcess.Id -Force -ErrorAction 'SilentlyContinue'
+							Write-Log -Message "Stopping process $($runningProcess.ProcessName)..." -Source ${CmdletName}
+							Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 						}
 					}
 					Start-Sleep -Seconds 2
@@ -6438,15 +6462,15 @@ Function Show-InstallationWelcome {
 			[array]$runningProcesses = $null
 			[array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
 				Write-Log -Message "Force close application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
-				$runningProcesses | Stop-Process -Force -ErrorAction 'SilentlyContinue'
+				$runningProcesses.ProcessName | ForEach-Object -Process {Stop-Process -Name $_ -Force -ErrorAction 'SilentlyContinue'}
 				Start-Sleep -Seconds 2
 			}
 		}
 
 		## Force nsd.exe to stop if Notes is one of the required applications to close
-		If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
+		If (($processObjects).ProcessName -contains 'notes') {
 			## Get the path where Notes is installed
 			[string]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 
@@ -6456,7 +6480,7 @@ Function Show-InstallationWelcome {
 				[string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object {
-					If ((Get-Process | Select-Object -ExpandProperty 'Name') -contains $_) {
+					If ((Get-Process).ProcessName -contains $_) {
 						[string]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
 						Try {
 							If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
@@ -6591,10 +6615,8 @@ Function Show-WelcomePrompt {
 		[datetime]$countdownTime = $startTime
 
 		## Check if the countdown was specified
-		If ($CloseAppsCountdown) {
-			If ($CloseAppsCountdown -gt $configInstallationUITimeout) {
-				Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
-			}
+		If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $configInstallationUITimeout)) {
+			Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
 		}
 
 		## Initial form layout: Close Applications / Allow Deferral
@@ -6619,8 +6641,7 @@ Function Show-WelcomePrompt {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
 			}
-		}
-		If ($showDefer) {
+		} Else {
 			If ($persistPrompt) { $persistWindow = $true }
 		}
 		## If 'force close apps countdown' was specified, enable that feature.
@@ -6639,7 +6660,11 @@ Function Show-WelcomePrompt {
 
 		$formWelcome = New-Object -TypeName 'System.Windows.Forms.Form'
 		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$labelWelcomeMessage = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelAppName = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCustomMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCloseAppsMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+		$labelCountdownMessage = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelDefer = New-Object -TypeName 'System.Windows.Forms.Label'
 		$listBoxCloseApps = New-Object -TypeName 'System.Windows.Forms.ListBox'
@@ -6655,8 +6680,12 @@ Function Show-WelcomePrompt {
 		## Remove all event handlers from the controls
 		[scriptblock]$Form_Cleanup_FormClosed = {
 			Try {
+				$labelWelcomeMessage.remove_Click($handler_labelWelcomeMessage_Click)
 				$labelAppName.remove_Click($handler_labelAppName_Click)
+				$labelCustomMessage.remove_Click($handler_labelCustomMessage_Click)
+				$labelCloseAppsMessage.remove_Click($handler_labelCloseAppsMessage_Click)
 				$labelDefer.remove_Click($handler_labelDefer_Click)
+				$labelCountdownMessage.remove_Click($handler_labelCountdownMessage_Click)
 				$buttonCloseApps.remove_Click($buttonCloseApps_OnClick)
 				$buttonContinue.remove_Click($buttonContinue_OnClick)
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
@@ -6686,16 +6715,7 @@ Function Show-WelcomePrompt {
 
 			## Set up the form
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-			[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-			If ($forceCountdown -eq $true) {
-				switch ($deploymentType){
-					'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
-					'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeUninstall.ToLower())) + "`n$labelCountdownSeconds" }
-					'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeRepair.ToLower())) + "`n$labelCountdownSeconds" }
-					Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $($configDeploymentTypeInstall.ToLower())) + "`n$labelCountdownSeconds" }
-				}
-			}
-			Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
+			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 		}
 
 		## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
@@ -6725,16 +6745,7 @@ Function Show-WelcomePrompt {
 				}
 				Else {
 					#  Update the form
-					[string]$labelCountdownSeconds = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					If ($forceCountdown -eq $true) {
-						switch ($deploymentType){
-							'Install' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
-							'Uninstall' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall) + "`n$labelCountdownSeconds" }
-							'Repair' { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair) + "`n$labelCountdownSeconds" }
-							Default { $labelCountdown.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall) + "`n$labelCountdownSeconds" }
-						}
-					}
-					Else { $labelCountdown.Text = "$configClosePromptCountdownMessage`n$labelCountdownSeconds" }
+					$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 					[Windows.Forms.Application]::DoEvents()
 				}
 			}
@@ -6757,16 +6768,14 @@ Function Show-WelcomePrompt {
 
 		## Process Re-Enumeration Timer
 		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
-				$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
-				$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
-				[scriptblock]$timerRunningProcesses_Tick = { try { Get-RunningProcessesDynamically } catch {} }
-				$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
-				$timerRunningProcesses.Start()
+			$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
+			[scriptblock]$timerRunningProcesses_Tick = { try { Get-RunningProcessesDynamically } catch {} }
+			$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
+			$timerRunningProcesses.Start()
 		}
 
 		## Form
-		$formWelcome.Controls.Add($pictureBanner)
-		$formWelcome.Controls.Add($buttonAbort)
 
 		##----------------------------------------------
 		## Create zero px padding object
@@ -6775,7 +6784,7 @@ Function Show-WelcomePrompt {
 		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 110,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -6787,41 +6796,77 @@ Function Show-WelcomePrompt {
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
-		$pictureBanner.TabIndex = 0
 		$pictureBanner.TabStop = $false
+
+		## Label Welcome Message
+		$labelWelcomeMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelWelcomeMessage.Name = 'labelWelcomeMessage'
+		$labelWelcomeMessage.Size = $defaultControlSize
+		$labelWelcomeMessage.MinimumSize = $defaultControlSize
+		$labelWelcomeMessage.MaximumSize = $defaultControlSize
+		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,0
+		$labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelWelcomeMessage.TabStop = $false
+		$labelWelcomeMessage.Text = $configDeferPromptWelcomeMessage
+		$labelWelcomeMessage.TextAlign = 'MiddleCenter'
+		$labelWelcomeMessage.Anchor = 'Top'
+		$labelWelcomeMessage.AutoSize = $true
+		$labelWelcomeMessage.add_Click($handler_labelWelcomeMessage_Click)
 
 		## Label App Name
 		$labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelAppName.Font = 'Microsoft Sans Serif, 10pt, style=Bold'
 		$labelAppName.Name = 'labelAppName'
 		$labelAppName.Size = $defaultControlSize
 		$labelAppName.MinimumSize = $defaultControlSize
 		$labelAppName.MaximumSize = $defaultControlSize
 		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,5
 		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
-		$labelAppName.TabIndex = 1
-
-		## Initial form layout: Close Applications / Allow Deferral
-		$labelAppNameText = "$configDeferPromptWelcomeMessage`n`n$installTitle"
-		If ($showCloseApps) {
-			$labelAppNameText = "$labelAppNameText`n`n$configClosePromptMessage"
-		}
-		If ($CustomText -and $configWelcomePromptCustomMessage) {
-			$labelAppNameText = "$labelAppNameText`n`n$configWelcomePromptCustomMessage"
-		}
-		$labelAppName.Text = $labelAppNameText
+		$labelAppName.TabStop = $false
+		$labelAppName.Text = $installTitle
 		$labelAppName.TextAlign = 'MiddleCenter'
 		$labelAppName.Anchor = 'Top'
 		$labelAppName.AutoSize = $true
 		$labelAppName.add_Click($handler_labelAppName_Click)
+
+		## Label CustomMessage
+		$labelCustomMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCustomMessage.Name = 'labelCustomMessage'
+		$labelCustomMessage.Size = $defaultControlSize
+		$labelCustomMessage.MinimumSize = $defaultControlSize
+		$labelCustomMessage.MaximumSize = $defaultControlSize
+		$labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCustomMessage.TabStop = $false
+		$labelCustomMessage.Text = $configClosePromptMessage
+		$labelCustomMessage.TextAlign = 'MiddleCenter'
+		$labelCustomMessage.Anchor = 'Top'
+		$labelCustomMessage.AutoSize = $true
+		$labelCustomMessage.add_Click($handler_labelCustomMessage_Click)
+
+		## Label CloseAppsMessage
+		$labelCloseAppsMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCloseAppsMessage.Name = 'labelCloseAppsMessage'
+		$labelCloseAppsMessage.Size = $defaultControlSize
+		$labelCloseAppsMessage.MinimumSize = $defaultControlSize
+		$labelCloseAppsMessage.MaximumSize = $defaultControlSize
+		$labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCloseAppsMessage.TabStop = $false
+		$labelCloseAppsMessage.Text = $configClosePromptMessage
+		$labelCloseAppsMessage.TextAlign = 'MiddleCenter'
+		$labelCloseAppsMessage.Anchor = 'Top'
+		$labelCloseAppsMessage.AutoSize = $true
+		$labelCloseAppsMessage.add_Click($handler_labelCloseAppsMessage_Click)
 
 		## Listbox Close Applications
 		$listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
 		$listBoxCloseApps.FormattingEnabled = $true
 		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 400,100
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 420,100
 		$listBoxCloseApps.Size = $System_Drawing_Size
-		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 25,0,0,0
+		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 15,0,15,0
 		$listBoxCloseApps.TabIndex = 3
 		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
@@ -6833,7 +6878,7 @@ Function Show-WelcomePrompt {
 		$labelDefer.MaximumSize = $defaultControlSize
 		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
 		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
-		$labelDefer.TabIndex = 4
+		$labelDefer.TabStop = $false
 		$deferralText = "$configDeferPromptExpiryMessage`n"
 
 		If ($deferTimes -ge 0) {
@@ -6851,16 +6896,41 @@ Function Show-WelcomePrompt {
 		$labelDefer.AutoSize = $true
 		$labelDefer.add_Click($handler_labelDefer_Click)
 
+		## Label CountdownMessage
+		$labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCountdownMessage.Name = 'labelCountdownMessage'
+		$labelCountdownMessage.Size = $defaultControlSize
+		$labelCountdownMessage.MinimumSize = $defaultControlSize
+		$labelCountdownMessage.MaximumSize = $defaultControlSize
+		$labelCountdownMessage.Margin = $paddingNone
+		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdownMessage.TabStop = $false
+		If ($forceCountdown -eq $true) {
+			switch ($deploymentType){
+				'Uninstall' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall);break; }
+				'Repair' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair);break; }
+				Default { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall);break; }
+			}
+		}
+		Else { 
+			$labelCountdownMessage.Text = $configClosePromptCountdownMessage 
+		}
+		$labelCountdownMessage.TextAlign = 'MiddleCenter'
+		$labelCountdownMessage.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
+		$labelCountdownMessage.Anchor = 'Top'
+		$labelCountdownMessage.AutoSize = $true
+		$labelCountdownMessage.add_Click($handler_labelCountdownMessage_Click)
+
 		## Label Countdown
 		$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
+		$labelCountdown.Font = 'Microsoft Sans Serif, 18pt, style=Bold'
 		$labelCountdown.Name = 'labelCountdown'
 		$labelCountdown.Size = $defaultControlSize
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
-		$labelCountdown.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
+		$labelCountdown.Margin = $paddingNone
 		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
-		$labelCountdown.TabIndex = 4
-		$labelCountdown.Font = New-Object -TypeName "System.Drawing.Font" -ArgumentList $labelCountdown.Font,1
+		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
 		$labelCountdown.AutoSize = $true
@@ -6869,54 +6939,83 @@ Function Show-WelcomePrompt {
 		## Panel Flow Layout
 		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
 		$flowLayoutPanel.Location = $System_Drawing_Point
+		$flowLayoutPanel.MinimumSize = $DefaultControlSize
+		$flowLayoutPanel.MaximumSize = $DefaultControlSize
+		$flowLayoutPanel.Size = $DefaultControlSize
 		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
 		$flowLayoutPanel.AutoSize = $true
 		$flowLayoutPanel.Anchor = 'Top'
 		$flowLayoutPanel.FlowDirection = 'TopDown'
 		$flowLayoutPanel.WrapContents = $true
+		$flowLayoutPanel.Controls.Add($labelWelcomeMessage)
 		$flowLayoutPanel.Controls.Add($labelAppName)
-		If ($showCloseApps) { $flowLayoutPanel.Controls.Add($listBoxCloseApps) }
+
+		If ($CustomText -and $configWelcomePromptCustomMessage) {
+			$labelCustomMessage.Text = $configWelcomePromptCustomMessage
+			$flowLayoutPanel.Controls.Add($labelCustomMessage)
+		}
+		If ($showCloseApps) { 
+			$flowLayoutPanel.Controls.Add($labelCloseAppsMessage)
+			$flowLayoutPanel.Controls.Add($listBoxCloseApps) 
+		}
 		If ($showDefer) { $flowLayoutPanel.Controls.Add($labelDefer) }
-		If ($showCountdown) { $flowLayoutPanel.Controls.Add($labelCountdown) }
+		If ($showCountdown) { 
+			$flowLayoutPanel.Controls.Add($labelCountdownMessage)
+			$flowLayoutPanel.Controls.Add($labelCountdown) 
+		}
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
+		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		$buttonCloseApps.Name = 'buttonCloseApps'
 		$buttonCloseApps.Size = $buttonSize
-		$buttonCloseApps.TabIndex = 5
+		$buttonCloseApps.MinimumSize = $buttonSize
+		$buttonCloseApps.MaximumSize = $buttonSize
+		$buttonCloseApps.TabIndex = 1
 		$buttonCloseApps.Text = $configClosePromptButtonClose
 		$buttonCloseApps.DialogResult = 'Yes'
 		$buttonCloseApps.AutoSize = $true
+		$buttonCloseApps.Margin = $paddingNone
+		$buttonCloseApps.Padding = $paddingNone
 		$buttonCloseApps.UseVisualStyleBackColor = $true
 		$buttonCloseApps.add_Click($buttonCloseApps_OnClick)
 
 		## Button Defer
 		$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		If (-not $showCloseApps) {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 15,5
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		}
 		Else {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 170,5
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 160,4
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
-		$buttonDefer.TabIndex = 6
+		$buttonDefer.MinimumSize = $buttonSize
+		$buttonDefer.MaximumSize = $buttonSize
+		$buttonDefer.TabIndex = 0
 		$buttonDefer.Text = $configClosePromptButtonDefer
 		$buttonDefer.DialogResult = 'No'
 		$buttonDefer.AutoSize = $true
+		$buttonDefer.Margin = $paddingNone
+		$buttonDefer.Padding = $paddingNone
 		$buttonDefer.UseVisualStyleBackColor = $true
 		$buttonDefer.add_Click($buttonDefer_OnClick)
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 325,5
+		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 306,4
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
-		$buttonContinue.TabIndex = 7
+		$buttonContinue.MinimumSize = $buttonSize
+		$buttonContinue.MaximumSize = $buttonSize
+		$buttonContinue.TabIndex = 2
 		$buttonContinue.Text = $configClosePromptButtonContinue
 		$buttonContinue.DialogResult = 'OK'
 		$buttonContinue.AutoSize = $true
+		$buttonContinue.Margin = $paddingNone
+		$buttonContinue.Padding = $paddingNone
 		$buttonContinue.UseVisualStyleBackColor = $true
 		$buttonContinue.add_Click($buttonContinue_OnClick)
 		If ($showCloseApps) {
@@ -6931,11 +7030,20 @@ Function Show-WelcomePrompt {
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 1,1
+		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.BorderSize = 0;
+		$buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+		$buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 		$buttonAbort.TabStop = $false
 		$buttonAbort.DialogResult = 'Abort'
-		$buttonAbort.TabIndex = 5
-		$buttonAbort.Visible = $false
+		$buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
+		$buttonAbort.Margin = $paddingNone
+		$buttonAbort.Padding = $paddingNone
 		$buttonAbort.UseVisualStyleBackColor = $true
 		$buttonAbort.add_Click($buttonAbort_OnClick)
 
@@ -6956,11 +7064,11 @@ Function Show-WelcomePrompt {
 		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formWelcome.AutoSize = $true
 		$formWelcome.Controls.Add($pictureBanner)
-
+		$formWelcome.Controls.Add($buttonAbort)
 		## Panel Button
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,34
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
@@ -6990,7 +7098,7 @@ Function Show-WelcomePrompt {
 		Function Get-RunningProcessesDynamically {
 			$dynamicRunningProcesses = $null
 			Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
-			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
 				If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
 				# Update the runningProcessDescriptions variable for the next time this function runs
 				Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
@@ -7009,7 +7117,7 @@ Function Show-WelcomePrompt {
 				}
 			}
 			# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
-			ElseIf (-not $ProcessDescriptions) {
+			Else {
 				If ($dynamicRunningProcesses) {
 					Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
 					$formWelcome.Dispose()
@@ -7125,9 +7233,11 @@ Function Show-InstallationRestartPrompt {
 		$labelTimeRemaining = New-Object -TypeName 'System.Windows.Forms.Label'
 		$labelMessage = New-Object -TypeName 'System.Windows.Forms.Label'
 		$buttonRestartLater = New-Object -TypeName 'System.Windows.Forms.Button'
-		$picturebox = New-Object -TypeName 'System.Windows.Forms.PictureBox'
+		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
 		$buttonRestartNow = New-Object -TypeName 'System.Windows.Forms.Button'
 		$timerCountdown = New-Object -TypeName 'System.Windows.Forms.Timer'
+		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
+		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 		$InitialFormWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 		[scriptblock]$RestartComputer = {
@@ -7198,7 +7308,7 @@ Function Show-InstallationRestartPrompt {
 			[datetime]$countdownTime = $startTime.AddSeconds($countdownSeconds)
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			## If the countdown is complete, restart the machine
-			If ($countdownTime -lt $currentTime) {
+			If ($countdownTime -le $currentTime) {
 				$buttonRestartNow.PerformClick()
 			}
 			Else {
@@ -7237,90 +7347,153 @@ Function Show-InstallationRestartPrompt {
 		}
 
 		## Form
-		If (-not $NoCountdown) {
-			$formRestart.Controls.Add($labelCountdown)
-			$formRestart.Controls.Add($labelTimeRemaining)
-		}
-		$formRestart.Controls.Add($labelMessage)
-		$formRestart.Controls.Add($buttonRestartLater)
-		$formRestart.Controls.Add($picturebox)
-		$formRestart.Controls.Add($buttonRestartNow)
-		$clientSizeY = 260 + $appDeployLogoBannerHeightDifference
-		$formRestart.ClientSize = "450,$clientSizeY"
-		$formRestart.ControlBox = $false
-		$formRestart.FormBorderStyle = 'FixedDialog'
-		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
-		$formRestart.MaximizeBox = $false
-		$formRestart.MinimizeBox = $false
-		$formRestart.Name = 'formRestart'
-		$formRestart.StartPosition = 'CenterScreen'
-		$formRestart.Text = "$($configRestartPromptTitle): $installTitle"
-		$formRestart.add_Load($FormEvent_Load)
-		$formRestart.add_Resize($formRestart_Resize)
+		##----------------------------------------------
+		## Create zero px padding object
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
+		## Create basic control size
+		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
 
-		## Banner
-		$picturebox.Anchor = 'Top'
-		$picturebox.Image = [Drawing.Image]::Fromfile($AppDeployLogoBanner)
-		$picturebox.Location = '0,0'
-		$picturebox.Name = 'picturebox'
-		$pictureboxSizeY = $appDeployLogoBannerHeight
-		$picturebox.Size = "450,$pictureboxSizeY"
-		$picturebox.SizeMode = 'CenterImage'
-		$picturebox.TabIndex = 1
-		$picturebox.TabStop = $false
+		## Generic Button properties
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 195,24
+
+		## Picture Banner
+		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
+		$pictureBanner.ImageLocation = $appDeployLogoBanner
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+		$pictureBanner.Location = $System_Drawing_Point
+		$pictureBanner.Name = 'pictureBanner'
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
+		$pictureBanner.Size = $System_Drawing_Size
+		$pictureBanner.SizeMode = 'CenterImage'
+		$pictureBanner.Margin = $paddingNone
+		$pictureBanner.TabStop = $false
 
 		## Label Message
-		$labelMessageLocationY = 58 + $appDeployLogoBannerHeightDifference
-		$labelMessage.Location = "20,$labelMessageLocationY"
+		$labelMessage.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelMessage.Name = 'labelMessage'
-		$labelMessage.Size = '400,79'
-		$labelMessage.TabIndex = 3
+		$labelMessage.Size = $defaultControlSize
+		$labelMessage.MinimumSize = $defaultControlSize
+		$labelMessage.MaximumSize = $defaultControlSize
+		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
+		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
 		If ($NoCountdown) { $labelMessage.Text = $configRestartPromptMessage }
 		$labelMessage.TextAlign = 'MiddleCenter'
+		$labelMessage.Anchor = 'Top'
+		$labelMessage.TabStop = $false
+		$labelMessage.AutoSize = $true
 
-		## Label Time Remaining
-		$labelTimeRemainingLocationY = 138 + $appDeployLogoBannerHeightDifference
-		$labelTimeRemaining.Location = "20,$labelTimeRemainingLocationY"
+		## Label Time remaining message
+		$labelTimeRemaining.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelTimeRemaining.Name = 'labelTimeRemaining'
-		$labelTimeRemaining.Size = '400,23'
-		$labelTimeRemaining.TabIndex = 4
+		$labelTimeRemaining.Size = $defaultControlSize
+		$labelTimeRemaining.MinimumSize = $defaultControlSize
+		$labelTimeRemaining.MaximumSize = $defaultControlSize
+		$labelTimeRemaining.Margin = $paddingNone
+		$labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelTimeRemaining.TabStop = $false
+		$labelTimeRemaining.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
 		$labelTimeRemaining.Text = $configRestartPromptTimeRemaining
 		$labelTimeRemaining.TextAlign = 'MiddleCenter'
+		$labelTimeRemaining.Anchor = 'Top'
+		$labelTimeRemaining.AutoSize = $true
 
 		## Label Countdown
+		$labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelCountdown.Font = 'Microsoft Sans Serif, 18pt, style=Bold'
-		$labelCountdownLocationY = 165 + $appDeployLogoBannerHeightDifference
-		$labelCountdown.Location = "20,$labelCountdownLocationY"
 		$labelCountdown.Name = 'labelCountdown'
-		$labelCountdown.Size = '400,30'
-		$labelCountdown.TabIndex = 5
+		$labelCountdown.Size = $defaultControlSize
+		$labelCountdown.MinimumSize = $defaultControlSize
+		$labelCountdown.MaximumSize = $defaultControlSize
+		$labelCountdown.Margin = $paddingNone
+		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
+		$labelCountdown.AutoSize = $true
 
-		# Generic Y location for buttons
-		$buttonsLocationY = 216 + $appDeployLogoBannerHeightDifference
+		## Panel Flow Layout
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
+		$flowLayoutPanel.Location = $System_Drawing_Point
+		$flowLayoutPanel.MinimumSize = $DefaultControlSize
+		$flowLayoutPanel.MaximumSize = $DefaultControlSize
+		$flowLayoutPanel.Size = $DefaultControlSize
+		$flowLayoutPanel.Margin = $paddingNone
+		$flowLayoutPanel.Padding = $paddingNone
+		$flowLayoutPanel.AutoSizeMode = "GrowAndShrink"
+		$flowLayoutPanel.AutoSize = $true
+		$flowLayoutPanel.Anchor = 'Top'
+		$flowLayoutPanel.FlowDirection = 'TopDown'
+		$flowLayoutPanel.WrapContents = $true
+		$flowLayoutPanel.Controls.Add($labelMessage)
+		If (-not $NoCountdown) {
+			$flowLayoutPanel.Controls.Add($labelTimeRemaining)
+			$flowLayoutPanel.Controls.Add($labelCountdown)
+		}
 
 		## Label Restart Later
-		$buttonRestartLater.Anchor = 'Bottom,Left'
-		$buttonRestartLater.Location = "20,$buttonsLocationY"
+		$buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
+		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,4
 		$buttonRestartLater.Name = 'buttonRestartLater'
-		$buttonRestartLater.Size = '159,23'
+		$buttonRestartLater.Size = $buttonSize
+		$buttonRestartLater.MinimumSize = $buttonSize
+		$buttonRestartLater.MaximumSize = $buttonSize
 		$buttonRestartLater.TabIndex = 0
 		$buttonRestartLater.Text = $configRestartPromptButtonRestartLater
+		$buttonRestartLater.AutoSize = $true
+		$buttonRestartLater.Margin = $paddingNone
+		$buttonRestartLater.Padding = $paddingNone
 		$buttonRestartLater.UseVisualStyleBackColor = $true
 		$buttonRestartLater.add_Click($buttonRestartLater_Click)
 
 		## Label Restart Now
-		$buttonRestartNow.Anchor = 'Bottom,Right'
-		$buttonRestartNow.Location = "265,$buttonsLocationY"
+		$buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
+		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		$buttonRestartNow.Name = 'buttonRestartNow'
-		$buttonRestartNow.Size = '159,23'
-		$buttonRestartNow.TabIndex = 2
+		$buttonRestartNow.Size = $buttonSize
+		$buttonRestartNow.MinimumSize = $buttonSize
+		$buttonRestartNow.MaximumSize = $buttonSize
+		$buttonRestartNow.TabIndex = 1
 		$buttonRestartNow.Text = $configRestartPromptButtonRestartNow
+		$buttonRestartNow.Margin = $paddingNone
+		$buttonRestartNow.Padding = $paddingNone
 		$buttonRestartNow.UseVisualStyleBackColor = $true
 		$buttonRestartNow.add_Click($buttonRestartNow_Click)
 
+		## Form Restart
+		$formRestart.Size = $defaultControlSize
+		$formRestart.MinimumSize = $defaultControlSize
+		$formRestart.Padding = $paddingNone
+		$formRestart.Margin = $paddingNone
+		$formRestart.DataBindings.DefaultDataSourceUpdateMode = 0
+		$formRestart.Name = 'formRestart'
+		$formRestart.Text = $installTitle
+		$formRestart.StartPosition = 'CenterScreen'
+		$formRestart.FormBorderStyle = 'FixedDialog'
+		$formRestart.MaximizeBox = $false
+		$formRestart.MinimizeBox = $false
+		$formRestart.TopMost = $true
+		$formRestart.TopLevel = $true
+		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+		$formRestart.AutoSize = $true
+		$formRestart.ControlBox = $false
+		$formRestart.Controls.Add($pictureBanner)
+
+		## Button Panel
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.AutoSize = $true
+		$panelButtons.Padding = $paddingNone
+		$panelButtons.Margin = $paddingNone
+		$panelButtons.Controls.Add($buttonRestartNow)
+		$panelButtons.Controls.Add($buttonRestartLater)
+		## Add the Buttons Panel to the flowPanel
+		$flowLayoutPanel.Controls.Add($panelButtons)
+		## Add FlowPanel to the form
+		$formRestart.Controls.Add($flowLayoutPanel)
+		$formRestart.add_Load($FormEvent_Load)
+		$formRestart.add_Resize($formRestart_Resize)
 		## Timer Countdown
 		If (-not $NoCountdown) { $timerCountdown.add_Tick($timerCountdown_Tick) }
 
@@ -7637,7 +7810,7 @@ Function Show-InstallationProgress {
 					<ColumnDefinition MinWidth="400" MaxWidth="400" Width="400"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
 					<Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,10,50,10" Text="Installation in progress" FontSize="15" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10" TextWrapping="Wrap"></TextBlock>
+					<TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,20,50,20" Text="Installation in progress" FontSize="14" FontFamily="Microsoft Sans Serif" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
 					<Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="25" Width="25" HorizontalAlignment="Right" VerticalAlignment="Center">
 					<Ellipse.RenderTransform>
 						<TransformGroup>
@@ -9110,7 +9283,7 @@ Function Get-WindowTitle {
 						[psobject]$VisibleWindow = New-Object -TypeName 'PSObject' -Property @{
 							WindowTitle = $VisibleWindowTitle
 							WindowHandle = $VisibleWindowHandle
-							ParentProcess= $Process.Name
+							ParentProcess= $Process.ProcessName
 							ParentProcessMainWindowHandle = $Process.MainWindowHandle
 							ParentProcessId = $Process.Id
 						}
@@ -10136,29 +10309,25 @@ Function Set-ActiveSetup {
 			& $SetActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
 
 			## Execute the StubPath file for the current user as long as not in Session 0
-			If ($SessionZero) {
-				If ($RunAsActiveUser) {
-					If ($ExecuteForCurrentUser) {
+			If ($ExecuteForCurrentUser) {
+				If ($SessionZero) {
+					If ($RunAsActiveUser) {				
 						Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 						If ($CUArguments) {
 							Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
 						}
 						Else {
 							Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
-						}				
-					}
+						}
 
-					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
-				}
-				Else {
-					If ($ExecuteForCurrentUser) {
+						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+					}
+					Else {
 						Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
 					}
 				}
-			}
-			Else {
-				If ($ExecuteForCurrentUser) {
+				Else {
 					Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 					If ($CUArguments) {
 						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
@@ -10166,10 +10335,10 @@ Function Set-ActiveSetup {
 					Else {
 						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
 					}
-				}
 
-				Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-				& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+				}
 			}
 		}
 		Catch {
@@ -10354,7 +10523,7 @@ Function Stop-ServiceAndDependencies {
 								Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $DependentService.ServiceName -ErrorAction 'Stop') -Force -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 							}
 							Catch {
-								Write-Log -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
+								Write-Log -Message "Failed to stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
 								Continue
 							}
 						}

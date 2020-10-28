@@ -1,3 +1,23 @@
+**Version 3.8.4 [??/??/2020]**
+- Changed Show-InstallationWelcome:
+  - The buttons are now wider
+  - The listbox is also wider so it is aligned with buttons
+  - The countdown is now bigger and in bold
+  - The appname is now in bold to be more visible
+  - The function now closes processes by name not by ID
+  - Fixed the hidden abort button not working on toolkit timeout
+  - Performance improvements
+- Changed Show-InstallationPrompt:
+  - Fixed the hidden abort button not working on toolkit timeout
+  - The buttons are now identical in size and position to the ones in Show-InstallationWelcome
+  - Increased the gap between the banner and the text when the message is too short
+- Changed Show-InstallationRestartPrompt:
+  - Reworked the window to look consistent with Show-InstallationWelcome
+- Changed Show-InstallationProgress:
+  - Reworked the window to look consistent with Show-InstallationWelcome
+- Fixed Set-ActiveSetup adding executed active setup registry key when -ExecuteForCurrentUser $false was specified
+- Fixed typo in Stop-ServiceAndDependencies saying "start" instead of "stop"
+
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.
 - Added setting READ permissions to BUITLTIN\Users for toolkit's temporary folder so they can get the popup message.
