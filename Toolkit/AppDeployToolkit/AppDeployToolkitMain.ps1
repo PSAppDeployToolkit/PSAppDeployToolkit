@@ -2652,13 +2652,13 @@ Function Execute-MSI {
 												  Parameters = $argsMSI
 												  WindowStyle = 'Normal' }
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
-			If ($ContinueOnError) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
+			If ($PSBoundParameters.ContainsKey("ContinueOnError")) { $ExecuteProcessSplat.Add( 'ContinueOnError', $ContinueOnError) }
 			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
-			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
+			If ($PSBoundParameters.ContainsKey("PassThru")) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
 			If ($IgnoreExitCodes) {  $ExecuteProcessSplat.Add( 'IgnoreExitCodes', $IgnoreExitCodes) }
 			If ($PriorityClass) {  $ExecuteProcessSplat.Add( 'PriorityClass', $PriorityClass) }
-			If ($ExitOnProcessFailure) {  $ExecuteProcessSplat.Add( 'ExitOnProcessFailure', $ExitOnProcessFailure) }
-			If ($NoWait) { $ExecuteProcessSplat.Add( 'NoWait', $NoWait) }
+			If ($PSBoundParameters.ContainsKey("ExitOnProcessFailure")) {  $ExecuteProcessSplat.Add( 'ExitOnProcessFailure', $ExitOnProcessFailure) }
+			If ($PSBoundParameters.ContainsKey("NoWait")) { $ExecuteProcessSplat.Add( 'NoWait', $NoWait) }
 			#  Call the Execute-Process function
 			If ($PassThru) {
 				[psobject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
@@ -2883,13 +2883,13 @@ Function Remove-MSIApplications {
 
 		## Build the hashtable with the options that will be passed to Execute-MSI using splatting
 		[hashtable]$ExecuteMSISplat =  @{ Action = 'Uninstall'; Path = '' }
-		If ($ContinueOnError) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
+		If ($PSBoundParameters.ContainsKey("ContinueOnError")) { $ExecuteMSISplat.Add( 'ContinueOnError', $ContinueOnError) }
 		If ($Parameters) { $ExecuteMSISplat.Add( 'Parameters', $Parameters) }
 		ElseIf ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
 		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
-		If ($PassThru) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
-		If ($IncludeUpdatesAndHotfixes) { $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes) }
+		If ($PSBoundParameters.ContainsKey("PassThru")) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
+		If ($PSBoundParameters.ContainsKey("IncludeUpdatesAndHotfixes")) { $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes) }
 
 		If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
 			ForEach ($removeMSIApplication in $removeMSIApplications) {
