@@ -2652,15 +2652,15 @@ Function Execute-MSI {
 				Path = $exeMsiexec
 				Parameters = $argsMSI
 				WindowStyle = 'Normal'
-				SecureParameters = $SecureParameters
 				ExitOnProcessFailure = $ExitOnProcessFailure
 				ContinueOnError = $ContinueOnError
-				NoWait = $NoWait
-				PassThru = $PassThru
 			}
 			If ($WorkingDirectory) { $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory) }
+			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
+			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
 			If ($IgnoreExitCodes) {  $ExecuteProcessSplat.Add( 'IgnoreExitCodes', $IgnoreExitCodes) }
 			If ($PriorityClass) {  $ExecuteProcessSplat.Add( 'PriorityClass', $PriorityClass) }
+			If ($NoWait) { $ExecuteProcessSplat.Add( 'NoWait', $NoWait) }
 
 			#  Call the Execute-Process function
 			If ($PassThru) {
@@ -2888,14 +2888,14 @@ Function Remove-MSIApplications {
 		[hashtable]$ExecuteMSISplat =  @{
 			Action = 'Uninstall'
 			Path = ''
-			PassThru = $PassThru
 			ContinueOnError = $ContinueOnError
-			IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
 		}
 		If ($Parameters) { $ExecuteMSISplat.Add( 'Parameters', $Parameters) }
 		ElseIf ($AddParameters) { $ExecuteMSISplat.Add( 'AddParameters', $AddParameters) }
 		If ($LoggingOptions) { $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions) }
 		If ($LogName) { $ExecuteMSISplat.Add( 'LogName', $LogName) }
+		If ($PassThru) { $ExecuteMSISplat.Add( 'PassThru', $PassThru) }
+		If ($IncludeUpdatesAndHotfixes) { $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes) }
 
 		If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
 			ForEach ($removeMSIApplication in $removeMSIApplications) {
