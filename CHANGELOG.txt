@@ -17,6 +17,8 @@
   - Reworked the window to look consistent with Show-InstallationWelcome
 - Fixed Set-ActiveSetup adding executed active setup registry key when -ExecuteForCurrentUser $false was specified
 - Fixed typo in Stop-ServiceAndDependencies saying "start" instead of "stop"
+- Fixed the toolkit checking task scheduler services twice
+- Fixed the toolkit not creating $app variables if they are not created in Deploy-Application.ps1
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.

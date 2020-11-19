@@ -6751,9 +6751,7 @@ Function Show-WelcomePrompt {
 		}
 		Else {
 			$script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
-			[scriptblock]$timer_Tick = { 
-				$buttonAbort.PerformClick() 
-			}
+			[scriptblock]$timer_Tick = { $buttonAbort.PerformClick() }
 		}
 
 		$script:welcomeTimer.add_Tick($timer_Tick)
@@ -11381,30 +11379,6 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	}
 }
 
-## Define ScriptBlock to test for and attempt to make a service healthy by checking if it exists, is currently running, and has the specified start mode.
-[scriptblock]$TestServiceHealth = {
-	Param (
-		[string]$ServiceName,
-		[string]$ServiceStartMode = 'Automatic'
-	)
-	Try {
-		[boolean]$IsServiceHealthy = $true
-		If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-			If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne $ServiceStartMode) {
-				Set-ServiceStartMode -Name $ServiceName -StartMode $ServiceStartMode -ContinueOnError $false
-			}
-			Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
-		}
-		Else {
-			[boolean]$IsServiceHealthy = $false
-		}
-	}
-	Catch {
-		[boolean]$IsServiceHealthy = $false
-	}
-	Write-Output -InputObject $IsServiceHealthy
-}
-
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
@@ -11470,6 +11444,12 @@ If (-not $appName) {
 	If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
 	If (-not $appLang) { [string]$appLang = $currentLanguage }
 	If (-not $appRevision) { [string]$appRevision = '01' }
+	If (-not $appArch) { [string]$appArch = '' }
+} else {
+	If (-not $appVendor) { [string]$appVendor = '' }
+	If (-not $appVersion) { [string]$appVersion = '' }
+	If (-not $appLang) { [string]$appLang = '' }
+	If (-not $appRevision) { [string]$appRevision = '' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
 
@@ -11747,19 +11727,26 @@ Catch {
 ## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
 [boolean]$IsTaskSchedulerHealthy = $true
 If ($IsLocalSystemAccount) {
-	#  Check the health of the 'COM+ Event System' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventSystem'
-	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'RpcSs'
-	#  Check the health of the 'Windows Event Log' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the 'Task Scheduler' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'Schedule'
-
+	Try {
+		If (Test-ServiceExists -Name 'Schedule' -ContinueOnError $false) {
+			If ((Get-ServiceStartMode -Name 'Schedule' -ContinueOnError $false) -ne 'Automatic') {
+				Set-ServiceStartMode -Name 'Schedule' -StartMode 'Automatic' -ContinueOnError $false
+			}
+			Start-ServiceAndDependencies -Name 'Schedule' -SkipServiceExistsTest -ContinueOnError $false
+		}
+		Else {
+			[boolean]$IsTaskSchedulerHealthy = $false
+		}
+	}
+	Catch {
+		[boolean]$IsTaskSchedulerHealthy = $false
+	}
+	#  Check the health of the 'Task Scheduler' service
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy." -Source $appDeployToolkitName
 }
 Else {
-	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy because the App Deployment Toolkit is not running under the [$LocalSystemNTAccount] account." -Source $appDeployToolkitName
+	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy, because the App Deployment Toolkit is not running under the [$LocalSystemNTAccount] account." -Source $appDeployToolkitName
 }
 
 ## If script is running in session zero
