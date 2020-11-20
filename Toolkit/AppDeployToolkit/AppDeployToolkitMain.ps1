@@ -3680,7 +3680,6 @@ Function Copy-File {
 	}
 	Process {
 		Try {
-			$null = $fileCopyError
 			If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
 				Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
 				$null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
@@ -6767,7 +6766,11 @@ Function Show-WelcomePrompt {
 		If ($persistWindow) {
 			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { Update-InstallationWelcome }
+			[scriptblock]$timerPersist_Tick = {
+				$formWelcome.BringToFront()
+				$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
+				$formWelcome.Refresh()
+			}
 			$timerPersist.add_Tick($timerPersist_Tick)
 			$timerPersist.Start()
 		}
@@ -6776,7 +6779,35 @@ Function Show-WelcomePrompt {
 		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
 			$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
-			[scriptblock]$timerRunningProcesses_Tick = { try { Get-RunningProcessesDynamically } catch {} }
+			[scriptblock]$timerRunningProcesses_Tick = { try { 
+				$dynamicRunningProcesses = $null
+				Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
+				[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
+					If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+					# Update the runningProcessDescriptions variable for the next time this function runs
+					Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+					If ($dynamicrunningProcesses) {
+						Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+					}
+					# Update the list box with the processes to close
+					$listboxCloseApps.Items.Clear()
+					$script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
+				}
+				# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
+				If ($ProcessDescriptions) {
+					If (-not ($dynamicRunningProcesses)) {
+						Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
+						$formWelcome.Dispose()
+					}
+				}
+				# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
+				Else {
+					If ($dynamicRunningProcesses) {
+						Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
+						$formWelcome.Dispose()
+					}
+				}
+			} catch {} }
 			$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
 			$timerRunningProcesses.Start()
 		}
@@ -7093,43 +7124,6 @@ Function Show-WelcomePrompt {
 		$formWelcome.add_Load($Form_StateCorrection_Load)
 		#  Clean up the control events
 		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
-
-		Function Update-InstallationWelcome {
-			$formWelcome.BringToFront()
-			$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
-			$formWelcome.Refresh()
-		}
-
-		# Function invoked by a timer to periodically check running processes dynamically whilst showing the welcome prompt
-		Function Get-RunningProcessesDynamically {
-			$dynamicRunningProcesses = $null
-			Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging -OutVariable 'dynamicRunningProcesses'
-			[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
-				If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
-				# Update the runningProcessDescriptions variable for the next time this function runs
-				Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-				If ($dynamicrunningProcesses) {
-					Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
-				}
-				# Update the list box with the processes to close
-				$listboxCloseApps.Items.Clear()
-				$script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
-			}
-			# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
-			If ($ProcessDescriptions) {
-				If (-not ($dynamicRunningProcesses)) {
-					Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
-						$formWelcome.Dispose()
-				}
-			}
-			# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
-			Else {
-				If ($dynamicRunningProcesses) {
-					Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
-					$formWelcome.Dispose()
-				}
-			}
-		}
 
 		## Minimize all other windows
 		If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
@@ -7745,11 +7739,12 @@ Function Show-InstallationProgress {
 		If ($deployModeSilent) { Return }
 
 		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
-		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Uninstall')) {
-			$StatusMessage = $configProgressMessageUninstall
-		}
-		If (($StatusMessage -eq $configProgressMessageInstall) -and ($deploymentType -eq 'Repair')) {
-			$StatusMessage = $configProgressMessageRepair
+		If ($StatusMessage -eq $configProgressMessageInstall) {
+			if ($deploymentType -eq 'Uninstall') {
+				$StatusMessage = $configProgressMessageUninstall
+			} elseif ($deploymentType -eq 'Repair') {
+				$StatusMessage = $configProgressMessageRepair
+			}
 		}
 
 		If ($envHost.Name -match 'PowerGUI') {
@@ -7910,7 +7905,7 @@ Function Show-InstallationProgress {
 		ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
 			#  Update the progress text
 			Try {
-				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]'Send', [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
 				Write-Log -Message "Updated progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {
@@ -7933,6 +7928,8 @@ Function Close-InstallationProgress {
 .DESCRIPTION
 	Closes the dialog created by Show-InstallationProgress.
 	This function is called by the Exit-Script function to close a running instance of the progress dialog if found.
+.PARAMETER WaitingTime
+	How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. Range: 1 - 60  Default: 5
 .EXAMPLE
 	Close-InstallationProgress
 .NOTES
@@ -7942,6 +7939,9 @@ Function Close-InstallationProgress {
 #>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory=$false)]
+		[ValidateRange(1,60)]
+		[int]$WaitingTime = 5
 	)
 
 	Begin {
@@ -7950,12 +7950,67 @@ Function Close-InstallationProgress {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
-			## Close the progress thread
-			Write-Log -Message 'Close the installation progress dialog.' -Source ${CmdletName}
+		# Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
+		[int]$Timeout = $WaitingTime
+		while ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
+			if ($Timeout -eq $WaitingTime) {
+				Write-Log -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
+			}
+			$Timeout -= 1
+			Start-Sleep -Seconds 1
+		}
+		# Return if we still have no window
+		if (-not $script:ProgressSyncHash.Window.IsInitialized) {
+			Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
+			return
+		}
+		# If the thread is suspended, resume it
+		if ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Suspended) {
+			Write-Log -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
+			try {
+				$script:ProgressSyncHash.Window.Dispatcher.Thread.Resume()
+			}
+			catch {
+				Write-Log -Message 'Failed to resume the thread for the installation progress dialog.' -Source ${CmdletName} -Severity 2
+			}
+		}
+		# If the thread is changing its state, wait
+		[int]$Timeout = 0
+		while ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
+			if (-not $Timeout) {
+				Write-Log -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
+			}
+			$Timeout += 1
+			Start-Sleep -Seconds 1
+		}
+		# If the thread is running, stop it
+		if ((-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Stopped)) -and (-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted))) {
+			Write-Log -Message 'Closing the installation progress dialog.' -Source ${CmdletName}
 			$script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
+		}
+
+		if ($script:ProgressRunspace) {
+			# If the runspace is still opening, wait
+			[int]$Timeout = 0
+			while ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
+				if (-not $Timeout) {
+					Write-Log -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
+				}
+				$Timeout += 1
+				Start-Sleep -Seconds 1
+			}
+			# If the runspace is opened, close it
+			if ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opened) {
+				Write-Log -Message "Closing the installation progress dialog`'s runspace." -Source ${CmdletName}
+				$script:ProgressRunspace.Close()
+			}
+		} else {
+			Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
+		}
+
+		if ($script:ProgressSyncHash) {
+			# Clear sync hash
 			$script:ProgressSyncHash.Clear()
-			$script:ProgressRunspace.Close()
 		}
 	}
 	End {
@@ -11330,30 +11385,6 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 	}
 }
 
-## Define ScriptBlock to test for and attempt to make a service healthy by checking if it exists, is currently running, and has the specified start mode.
-[scriptblock]$TestServiceHealth = {
-	Param (
-		[string]$ServiceName,
-		[string]$ServiceStartMode = 'Automatic'
-	)
-	Try {
-		[boolean]$IsServiceHealthy = $true
-		If (Test-ServiceExists -Name $ServiceName -ContinueOnError $false) {
-			If ((Get-ServiceStartMode -Name $ServiceName -ContinueOnError $false) -ne $ServiceStartMode) {
-				Set-ServiceStartMode -Name $ServiceName -StartMode $ServiceStartMode -ContinueOnError $false
-			}
-			Start-ServiceAndDependencies -Name $ServiceName -SkipServiceExistsTest -ContinueOnError $false
-		}
-		Else {
-			[boolean]$IsServiceHealthy = $false
-		}
-	}
-	Catch {
-		[boolean]$IsServiceHealthy = $false
-	}
-	Write-Output -InputObject $IsServiceHealthy
-}
-
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
@@ -11419,6 +11450,12 @@ If (-not $appName) {
 	If (-not $appVersion) { [string]$appVersion = $appDeployMainScriptVersion }
 	If (-not $appLang) { [string]$appLang = $currentLanguage }
 	If (-not $appRevision) { [string]$appRevision = '01' }
+	If (-not $appArch) { [string]$appArch = '' }
+} else {
+	If (-not $appVendor) { [string]$appVendor = '' }
+	If (-not $appVersion) { [string]$appVersion = '' }
+	If (-not $appLang) { [string]$appLang = '' }
+	If (-not $appRevision) { [string]$appRevision = '' }
 	If (-not $appArch) { [string]$appArch = '' }
 }
 
@@ -11696,19 +11733,26 @@ Catch {
 ## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
 [boolean]$IsTaskSchedulerHealthy = $true
 If ($IsLocalSystemAccount) {
-	#  Check the health of the 'COM+ Event System' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventSystem'
-	#  Check the health of the 'Remote Procedure Call (RPC)' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'RpcSs'
-	#  Check the health of the 'Windows Event Log' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'EventLog'
 	#  Check the health of the 'Task Scheduler' service
-	[boolean]$IsTaskSchedulerHealthy = & $TestServiceHealth -ServiceName 'Schedule'
-
+	Try {
+		If (Test-ServiceExists -Name 'Schedule' -ContinueOnError $false) {
+			If ((Get-ServiceStartMode -Name 'Schedule' -ContinueOnError $false) -ne 'Automatic') {
+				Set-ServiceStartMode -Name 'Schedule' -StartMode 'Automatic' -ContinueOnError $false
+			}
+			Start-ServiceAndDependencies -Name 'Schedule' -SkipServiceExistsTest -ContinueOnError $false
+		}
+		Else {
+			[boolean]$IsTaskSchedulerHealthy = $false
+		}
+	}
+	Catch {
+		[boolean]$IsTaskSchedulerHealthy = $false
+	}
+	#  Check the health of the 'Task Scheduler' service
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy." -Source $appDeployToolkitName
 }
 Else {
-	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy because the App Deployment Toolkit is not running under the [$LocalSystemNTAccount] account." -Source $appDeployToolkitName
+	Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy, because the App Deployment Toolkit is not running under the [$LocalSystemNTAccount] account." -Source $appDeployToolkitName
 }
 
 ## If script is running in session zero
