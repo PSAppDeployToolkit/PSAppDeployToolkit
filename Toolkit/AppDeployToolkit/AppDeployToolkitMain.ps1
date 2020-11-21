@@ -531,13 +531,7 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
 		[boolean]$UserDisplayScaleFactor = $false
 	}
-	Switch ($dpiPixels) {
-		96 { [int32]$dpiScale = 100 }
-		120 { [int32]$dpiScale = 125 }
-		144 { [int32]$dpiScale = 150 }
-		192 { [int32]$dpiScale = 200 }
-		Default { [int32]$dpiScale = 100 }
-	}
+	[int32]$dpiScale = [math]::Round( ($dpiPixels / 25), 0, 'AwayFromZero' ) * 25		# closest multiple of 25:  100, 125,150,175,200, ...,500.
 }
 #endregion
 ##*=============================================
