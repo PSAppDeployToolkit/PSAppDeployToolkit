@@ -38,7 +38,8 @@ namespace PSADT
 			IntPtr hModuleInstance = LoadLibraryEx("msimsg.dll", IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
 
 			StringBuilder sb = new StringBuilder(255);
-			LoadString(hModuleInstance, errCode, sb, sb.Capacity + 1);
+			uint u = Convert.ToUInt32(errCode);
+			LoadString(hModuleInstance, u, sb, sb.Capacity + 1);
 
 			return sb.ToString();
 		}
@@ -82,8 +83,8 @@ namespace PSADT
 			IntPtr hShell32 = LoadLibrary("shell32.dll");
 			const int nChars  = 255;
 			StringBuilder Buff = new StringBuilder("", nChars);
-
-			LoadString(hShell32, VerbId, Buff, Buff.Capacity);
+			uint u = Convert.ToUInt32(VerbId);
+			LoadString(hShell32, u, Buff, Buff.Capacity);
 			return Buff.ToString();
 		}
 	}

@@ -6383,6 +6383,7 @@ Function Show-InstallationWelcome {
 						Write-Log -Message 'Specified [-PromptToSave] option will not be available because current process is running in session zero and is not interactive.' -Severity 2 -Source ${CmdletName}
 					}
 
+					Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses'
 					ForEach ($runningProcess in $runningProcesses) {
 						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
 						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
@@ -10407,7 +10408,7 @@ Function Set-ActiveSetup {
 				}
 				Else {
 					# Skip if Active Setup reg key is present and IsInstalled is 1
-					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
+					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
 						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 						If ($CUArguments) {
 							$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
