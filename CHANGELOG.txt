@@ -1,4 +1,4 @@
-**Version 3.8.4 [??/??/2020]**
+**Version 3.8.4 [??/??/2021]**
 - Fix Boolean parameters not being passed to Execute-Process
 - Changed Show-InstallationWelcome:
   - The buttons are now wider
@@ -16,12 +16,19 @@
   - Reworked the window to look consistent with Show-InstallationWelcome
 - Changed Show-InstallationProgress:
   - Reworked the window to look consistent with Show-InstallationWelcome
-- Fixed Set-ActiveSetup adding executed active setup registry key when -ExecuteForCurrentUser $false was specified
+  - Function now logs when it is being bypassed due to Deploy Mode
+- Changed Set-ActiveSetup:
+  - Fixed an issue where the function was adding executed active setup registry key when -ExecuteForCurrentUser $false was specified
+  - The function now checks the Active Setup registry key to evaluate whether to execute the StubPath based on the IsInstalled property
 - Fixed typo in Stop-ServiceAndDependencies saying "start" instead of "stop"
 - Fixed the toolkit checking task scheduler services twice
 - Fixed the toolkit not creating $app variables if they are not created in Deploy-Application.ps1
 - Reworked Close-InstallationProgress so it waits a couple of seconds in case the window is not opened yet
   - This fixes an issue where the Show-InstallationProgress dialog would not get closed on slower machines where Close-InstallationProgress was called right after Show-InstallationProgress
+  - Function now gets bypassed due to Silent Deploy Mode
+- Changed Execute-ProcessAsUser:
+  - The function now escapes invalid xml characters prior to using them in a xml file
+- Fixed signatures for a couple of functions inside AppDeployToolkitMain.cs based on official documentation - No breaking changes
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.

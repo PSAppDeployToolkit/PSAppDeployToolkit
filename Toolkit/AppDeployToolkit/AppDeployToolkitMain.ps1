@@ -769,9 +769,10 @@ Function Write-Log {
 
 		## Logging Variables
 		#  Log file date/time
-		[string]$LogTime = (Get-Date -Format 'HH\:mm\:ss.fff').ToString()
-		[string]$LogDate = (Get-Date -Format 'MM-dd-yyyy').ToString()
-		If (-not (Test-Path -LiteralPath 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now).TotalMinutes }
+		[datetime]$DateTimeNow = Get-Date
+		[string]$LogTime = $DateTimeNow.ToString('HH\:mm\:ss.fff')
+		[string]$LogDate = $DateTimeNow.ToString('MM-dd-yyyy')
+		If (-not (Test-Path -LiteralPath 'variable:LogTimeZoneBias')) { [int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset($DateTimeNow).TotalMinutes }
 		[string]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 		#  Initialize variables
 		[boolean]$ExitLoggingFunction = $false
@@ -1534,7 +1535,7 @@ Function Show-InstallationPrompt {
 	Process {
 		## Bypass if in non-interactive mode
 		If ($deployModeSilent) {
-			Write-Log -Message "Bypassing Installation Prompt [Mode: $deployMode]... $Message" -Source ${CmdletName}
+			Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $deployMode]. Message:$Message" -Source ${CmdletName}
 			Return
 		}
 
@@ -1929,7 +1930,7 @@ Function Show-DialogBox {
 	Process {
 		#  Bypass if in non-interactive mode
 		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Dialog Box [Mode: $deployMode]: $Text..." -Source ${CmdletName}
+			Write-Log -Message "Bypassing Show-DialogBox [Mode: $deployMode]. Text:$Text" -Source ${CmdletName}
 			Return
 		}
 
@@ -5148,6 +5149,10 @@ Function Execute-ProcessAsUser {
 			Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
 		}
 
+		## Escape XML characters
+		$EscapedPath = [System.Security.SecurityElement]::Escape($Path)
+		$EscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
+
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
 		If (((Split-Path -Path $Path -Leaf) -like 'PowerShell*') -or ((Split-Path -Path $Path -Leaf) -like 'cmd*')) {
 			If ($SecureParameters) {
@@ -5214,8 +5219,8 @@ Function Execute-ProcessAsUser {
   </Settings>
   <Actions Context="Author">
 	<Exec>
-	  <Command>$Path</Command>
-	  <Arguments>$Parameters</Arguments>$WorkingDirectoryInsert
+	  <Command>$EscapedPath</Command>
+	  <Arguments>$EscapedParameters</Arguments>$WorkingDirectoryInsert
 	</Exec>
   </Actions>
   <Principals>
@@ -6342,7 +6347,7 @@ Function Show-InstallationWelcome {
 			Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope 'Script'
 
 			While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-				[string]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Select-Object -Unique | Sort-Object) -join ','
+				[string]$runningProcessDescriptions = ($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
 				#  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
 				If ($allowDefer) {
 					#  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -7736,7 +7741,10 @@ Function Show-InstallationProgress {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		If ($deployModeSilent) { Return }
+		If ($deployModeSilent) {
+			Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $deployMode]. Status message:$StatusMessage" -Source ${CmdletName}
+			Return
+		}
 
 		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
 		If ($StatusMessage -eq $configProgressMessageInstall) {
@@ -7950,6 +7958,10 @@ Function Close-InstallationProgress {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
+		If ($deployModeSilent) {
+			Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $deployMode]" -Source ${CmdletName}
+			Return
+		}
 		# Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
 		[int]$Timeout = $WaitingTime
 		while ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
@@ -10372,33 +10384,43 @@ Function Set-ActiveSetup {
 			## Execute the StubPath file for the current user as long as not in Session 0
 			If ($ExecuteForCurrentUser) {
 				If ($SessionZero) {
-					If ($RunAsActiveUser) {				
-						Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
-						If ($CUArguments) {
-							Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
-						}
-						Else {
-							Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
-						}
+					If ($RunAsActiveUser) {
+						# Skip if Active Setup reg key is present and IsInstalled is 1
+						If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
+							Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
+							If ($CUArguments) {
+								Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
+							}
+							Else {
+								Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
+							}
 
-						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+							Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+						} else {
+							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)], because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
+						}
 					}
 					Else {
 						Write-Log -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
 					}
 				}
 				Else {
-					Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
-					If ($CUArguments) {
-						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
-					}
-					Else {
-						$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
-					}
+					# Skip if Active Setup reg key is present and IsInstalled is 1
+					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
+						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
+						If ($CUArguments) {
+							$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
+						}
+						Else {
+							$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
+						}
 
-					Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-					& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+					} else {
+						Write-Log -Message "Skipping executing Active Setup StubPath file for current user, because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
+					}
 				}
 			}
 		}
@@ -11728,7 +11750,6 @@ Catch {
 	$runningTaskSequence = $false
 }
 
-
 ## Check to see if the Task Scheduler service is in a healthy state by checking its services to see if they exist, are currently running, and have a start mode of 'Automatic'.
 ## The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
 [boolean]$IsTaskSchedulerHealthy = $true
@@ -11748,7 +11769,7 @@ If ($IsLocalSystemAccount) {
 	Catch {
 		[boolean]$IsTaskSchedulerHealthy = $false
 	}
-	#  Check the health of the 'Task Scheduler' service
+	#  Log the health of the 'Task Scheduler' service
 	Write-Log -Message "The task scheduler service is in a healthy state: $IsTaskSchedulerHealthy." -Source $appDeployToolkitName
 }
 Else {
