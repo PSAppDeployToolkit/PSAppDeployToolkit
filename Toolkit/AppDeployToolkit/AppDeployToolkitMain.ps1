@@ -133,7 +133,7 @@ Param (
 [string]$MachineDomainController = ''
 [string]$envComputerNameFQDN = $envComputerName
 If ($IsMachinePartOfDomain) {
-	[string]$envMachineADDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+	[string]$envMachineADDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | ForEach-Object { if($_){$_.ToLower()} }
 	try {
 		$envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
 	}
@@ -143,7 +143,7 @@ If ($IsMachinePartOfDomain) {
 	}
 
 	Try {
-		[string]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
+		[string]$envLogonServer = $env:LOGONSERVER | ForEach-Object { if(($_) -and (-not $_.Contains('\\MicrosoftAccount'))) { ([Net.Dns]::GetHostEntry($_.TrimStart('\'))).HostName } }
 		# If running in system context, fall back on the logonserver value stored in the registry
 		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
 	}
@@ -158,10 +158,10 @@ If ($IsMachinePartOfDomain) {
 	catch {	}
 }
 Else {
-	[string]$envMachineWorkgroup = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
+	[string]$envMachineWorkgroup = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | ForEach-Object { if($_){$_.ToUpper()} }
 }
-[string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-[string]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
+[string]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | ForEach-Object { if($_){$_.ToLower()} }
+[string]$envUserDNSDomain = $env:USERDNSDOMAIN | ForEach-Object { if($_){$_.ToLower()} }
 Try {
 	[string]$envUserDomain = [Environment]::UserDomainName.ToUpper()
 }
@@ -195,7 +195,7 @@ Switch ($envOSProductType) {
 	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
 #  Get the OS Architecture
-[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
+[boolean]$Is64Bit = [boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | ForEach-Object { if($_.DeviceID -eq 'CPU0') { $_.AddressWidth} }) -eq 64)
 If ($Is64Bit) { [string]$envOSArchitecture = '64-bit' } Else { [string]$envOSArchitecture = '32-bit' }
 
 ## Variables: Current Process Architecture
@@ -1345,7 +1345,7 @@ Function Resolve-Error {
 				[string[]]$Property
 			)
 
-			[string[]]$ObjectProperty = $InputObject | Get-Member -MemberType '*Property' | Select-Object -ExpandProperty 'Name'
+			[string[]]$ObjectProperty = ($InputObject | Get-Member -MemberType '*Property').Name
 			ForEach ($Prop in $Property) {
 				If ($Prop -eq '*') {
 					[string[]]$PropertySelection = $ObjectProperty
@@ -3475,7 +3475,7 @@ Function Test-IsMutexAvailable {
 				If ($MutexName -eq 'Global\_MSIExecute') {
 					## Get the command line for the MSI installation in progress
 					Try {
-						[string]$msiInProgressCmdLine = Get-WmiObject -Class 'Win32_Process' -Filter "name = 'msiexec.exe'" -ErrorAction 'Stop' | Where-Object { $_.CommandLine } | Select-Object -ExpandProperty 'CommandLine' | Where-Object { $_ -match '\.msi' } | ForEach-Object { $_.Trim() }
+						[string]$msiInProgressCmdLine = Get-WmiObject -Class 'Win32_Process' -Filter "name = 'msiexec.exe'" -ErrorAction 'Stop' | ForEach-Object { if ($_.CommandLine -match '\.msi') {$_.CommandLine.Trim()} }
 					}
 					Catch { }
 					Write-Log -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2 -Source ${CmdletName}
@@ -3690,13 +3690,17 @@ Function Copy-File {
 				If ($Recurse) {
 					Write-Log -Message "Copy file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
-							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
+						$null = Get-ChildItem -Path $path -Recurse | ForEach-Object {
+							if(-not($_.PSIsContainer)) {
+								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
+							}
 						}
 					}
 					Else {
-						$null = Get-ChildItem -Path $path -Recurse | Where-Object {!($_.PSIsContainer)} | ForEach-Object {
-							Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+						$null = Get-ChildItem -Path $path -Recurse | ForEach-Object {
+							if(-not($_.PSIsContainer)) {
+								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+							}
 						}
 					}
 				}
@@ -3814,10 +3818,10 @@ Function Remove-File {
 		ForEach ($Item in $SpecifiedPath) {
 			Try {
 				If ($PSCmdlet.ParameterSetName -eq 'Path') {
-					[string[]]$ResolvedPath += Resolve-Path -Path $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+					[string[]]$ResolvedPath += Resolve-Path -Path $Item -ErrorAction 'Stop' | ForEach-Object { if($_.Path) {$_.Path} }
 				}
 				Else {
-					[string[]]$ResolvedPath += Resolve-Path -LiteralPath $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+					[string[]]$ResolvedPath += Resolve-Path -LiteralPath $Item -ErrorAction 'Stop' | ForEach-Object { if($_.Path) {$_.Path} }
 				}
 			}
 			Catch [System.Management.Automation.ItemNotFoundException] {
@@ -3840,7 +3844,7 @@ Function Remove-File {
 					}
 					ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
 						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified" -Source ${CmdletName}
-					Continue
+						Continue
 					}
 					Else {
 						Write-Log -Message "Delete file in path [$Item]..." -Source ${CmdletName}
@@ -4740,10 +4744,11 @@ Function Get-UserProfiles {
 			[string]$UserProfileListRegKey = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
 			[psobject[]]$UserProfiles = Get-ChildItem -LiteralPath $UserProfileListRegKey -ErrorAction 'Stop' |
 			ForEach-Object {
-				Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
+				$ProfileProperties = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
 				Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
-			} |
-            Where-Object { $_.NTAccount } ## This removes "defaultuser0" account, which is Windows's 10 bug
+				## This removes "defaultuser0" account, which is Windows's 10 bug
+				if ($ProfileProperties.NTAccount) {$ProfileProperties}
+			}
 			If ($ExcludeSystemProfiles) {
 				[string[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
 				[psobject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
@@ -4754,17 +4759,17 @@ Function Get-UserProfiles {
 
 			## Find the path to the Default User profile
 			If (-not $ExcludeDefaultUser) {
-				[string]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
+				[string]$UserProfilesDirectory = (Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop').ProfilesDirectory
 
 				#  On Windows Vista or higher
 				If (([version]$envOSVersion).Major -gt 5) {
 					# Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
-					[string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
+					[string]$DefaultUserProfileDirectory = (Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop').Default
 				}
 				#  On Windows XP or lower
 				Else {
 					#  Default User Profile Name: By default, 'Default User'
-					[string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUserProfile'
+					[string]$DefaultUserProfileName = (Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop').DefaultUserProfile
 
 					#  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
 					[string]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
@@ -5464,10 +5469,10 @@ Function Update-SessionEnvironmentVariables {
 			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 
 			## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_ } }
+			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | ForEach-Object { if($_){$envRegPath = $_.PSPath; $_.Property | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_ } } }
 
 			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
-			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';') } | ForEach-Object { $_.Split(';') } | ForEach-Object { $_.Trim() } | ForEach-Object { $_.Trim('"') } | Select-Object -Unique
+			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { $EachPathFolder = (& $GetEnvironmentVar -Key 'PATH' -Scope $_); if($EachPathFolder){ $EachPathFolder.Trim(';').Split(';').Trim().Trim('"') } } | Select-Object -Unique
 			$env:PATH = $PathFolders -join ';'
 		}
 		Catch {
@@ -5708,7 +5713,7 @@ Function Block-AppExecution {
 			
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Create scheduled task to cleanup blocked applications in case installation is interrupted.' -Source ${CmdletName}
-		If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+		If (Get-SchedulerTask -ContinueOnError $true | ForEach-Object { if($_.TaskName -eq "\$schTaskBlockedAppsName") {$_.TaskName} }) {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
 		}
 		Else {
@@ -5802,7 +5807,7 @@ Function Unblock-AppExecution {
 		## Remove the scheduled task if it exists
 		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 		Try {
-			If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+			If (Get-SchedulerTask -ContinueOnError $true | ForEach-Object { if($_.TaskName -eq "\$schTaskBlockedAppsName") {$_.TaskName} }) {
 				Write-Log -Message "Delete Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
 				Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
 			}
@@ -7533,17 +7538,19 @@ Function Show-InstallationRestartPrompt {
 			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
 			## Prepare a list of parameters of this function as a string
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
-				If ($_.Value.GetType().Name -eq 'SwitchParameter') {
-					"-$($_.Key)"
-				}
-				ElseIf ($_.Value.GetType().Name -eq 'Boolean') {
-					"-$($_.Key) `$" + "$($_.Value)".ToLower()
-				}
-				ElseIf ($_.Value.GetType().Name -eq 'Int32') {
-					"-$($_.Key) $($_.Value)"
-				}
-				Else {
-					"-$($_.Key) `"$($_.Value)`""
+				switch ($_.Value.GetType().Name) {
+					'SwitchParameter' {
+						"-$($_.Key)"
+					}
+					'Boolean' {
+						"-$($_.Key) `$" + "$($_.Value)".ToLower()
+					}
+					'Int32' {
+						"-$($_.Key) $($_.Value)"
+					}
+					default {
+						"-$($_.Key) `"$($_.Value)`""
+					}
 				}
 			}) -join ' '
 			## Start another powershell instance silently with function parameters from this function
@@ -7587,7 +7594,7 @@ Function Show-BalloonTip {
 .PARAMETER BalloonTipIcon
 	Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 .PARAMETER BalloonTipTime
-	Time in milliseconds to display the balloon tip. Default: 500.
+	Time in milliseconds to display the balloon tip. Default: 12000.
 .EXAMPLE
 	Show-BalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 .EXAMPLE
@@ -7609,7 +7616,7 @@ Function Show-BalloonTip {
 		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
-		[int32]$BalloonTipTime = 10000
+		[int32]$BalloonTipTime = 12000
 	)
 
 	Begin {
@@ -8833,7 +8840,7 @@ Function Get-MsiTableProperty {
 					$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
 					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View) } Catch { }
 				}
-				ElseIf($SummaryInformation) {
+				ElseIf ($SummaryInformation) {
 					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
 				}
 			}
@@ -9595,20 +9602,22 @@ Function Test-Battery {
 
 		## Determine if the system is using AC power
 		[boolean]$OnACPower = $false
-		If ($PowerLineStatus -eq 'Online') {
-			Write-Log -Message 'System is using AC power.' -Source ${CmdletName}
-			$OnACPower = $true
-		}
-		ElseIf ($PowerLineStatus -eq 'Offline') {
-			Write-Log -Message 'System is using battery power.' -Source ${CmdletName}
-		}
-		ElseIf ($PowerLineStatus -eq 'Unknown') {
-			If (($BatteryChargeStatus -eq 'NoSystemBattery') -or ($BatteryChargeStatus -eq 'Unknown')) {
-				Write-Log -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. This is most likely due to a damaged battery so we will report system is using AC power." -Source ${CmdletName}
-				$OnACPower = $true
+		switch ($PowerLineStatus) {
+			'Online' {
+				Write-Log -Message 'System is using AC power.' -Source ${CmdletName}
+				$OnACPower = $true			
 			}
-			Else {
-				Write-Log -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. Therefore, we will report system is using battery power." -Source ${CmdletName}
+			'Offline' {
+				Write-Log -Message 'System is using battery power.' -Source ${CmdletName}
+			}
+			'Unknown' {
+				If (($BatteryChargeStatus -eq 'NoSystemBattery') -or ($BatteryChargeStatus -eq 'Unknown')) {
+					Write-Log -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. This is most likely due to a damaged battery so we will report system is using AC power." -Source ${CmdletName}
+					$OnACPower = $true
+				}
+				Else {
+					Write-Log -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. Therefore, we will report system is using battery power." -Source ${CmdletName}
+				}
 			}
 		}
 		$SystemTypePowerStatus.Add('IsUsingACPower', $OnACPower)
@@ -9622,12 +9631,14 @@ Function Test-Battery {
 			$IsLaptop = $true
 		}
 		#  Chassis Types
-		[int32[]]$ChassisTypes = Get-WmiObject -Class 'Win32_SystemEnclosure' | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
+		[int32[]]$ChassisTypes = (Get-WmiObject -Class 'Win32_SystemEnclosure').ChassisTypes
 		Write-Log -Message "The following system chassis types were detected [$($ChassisTypes -join ',')]." -Source ${CmdletName}
 		ForEach ($ChassisType in $ChassisTypes) {
 			Switch ($ChassisType) {
-				{ $_ -eq 9 -or $_ -eq 10 -or $_ -eq 14 } { $IsLaptop = $true } # 9=Laptop, 10=Notebook, 14=Sub Notebook
-				{ $_ -eq 3 } { $IsLaptop = $false } # 3=Desktop
+				9 { $IsLaptop = $true; } # 9=Laptop
+				10 { $IsLaptop = $true; } # 10=Notebook
+				14 { $IsLaptop = $true; } # 14=Sub Notebook
+				3 { $IsLaptop = $false; } # 3=Desktop
 			}
 		}
 		#  Add IsLaptop property to hashtable
@@ -10327,7 +10338,12 @@ Function Set-ActiveSetup {
 					[string]$CUArguments = $Arguments
 					[string]$StubPath = "$CUStubExePath"
 				}
-				{'.vbs','.js' -contains $StubExeExt} {
+				'.js' {
+					[string]$CUStubExePath = "$envWinDir\system32\cscript.exe"
+					[string]$CUArguments = "//nologo `"$StubExePath`""
+					[string]$StubPath = "$CUStubExePath $CUArguments"
+				}
+				'.vbs' {
 					[string]$CUStubExePath = "$envWinDir\system32\cscript.exe"
 					[string]$CUArguments = "//nologo `"$StubExePath`""
 					[string]$StubPath = "$CUStubExePath $CUArguments"
@@ -10891,9 +10907,11 @@ Function Set-ServiceStartMode
 
 			## Set the name of the start up mode that will be passed to sc.exe
 			[string]$ScExeStartMode = $StartMode
-			If ($StartMode -eq 'Automatic') { $ScExeStartMode = 'Auto' }
-			If ($StartMode -eq 'Automatic (Delayed Start)') { $ScExeStartMode = 'Delayed-Auto' }
-			If ($StartMode -eq 'Manual') { $ScExeStartMode = 'Demand' }
+			switch ($StartMode) {
+				'Automatic' { $ScExeStartMode = 'Auto'; break }
+				'Automatic (Delayed Start)' { $ScExeStartMode = 'Delayed-Auto'; break }
+				'Manual' { $ScExeStartMode = 'Demand'; break }
+			}
 
 			## Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
 			$ChangeStartMode = & "$envWinDir\System32\sc.exe" config $Name start= $ScExeStartMode
@@ -11112,7 +11130,6 @@ Function Get-PendingReboot {
 		## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
 		Try {
 			If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks' -ErrorAction 'Stop') {
-
 				[nullable[boolean]]$IsAppVRebootPending = $true
 			}
 			Else {
@@ -11421,9 +11438,9 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 If ((-not $appName) -and (-not $ReferredInstallName)){
 	# Build properly formatted Architecture String
 	switch ($Is64Bit) {
-        	$false { $formattedOSArch = "x86" }
-        	$true { $formattedOSArch = "x64" }
-    	}
+       	$false { $formattedOSArch = "x86" }
+       	$true { $formattedOSArch = "x64" }
+    }
 	#  Find the first MSI file in the Files folder and use that as our install
 	if ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq ".msi") -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
 		Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
@@ -11444,7 +11461,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 				[string]$defaultMstFile = ''
 			}
 			#  Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-			[string[]]$defaultMspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
+			[string[]]$defaultMspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | ForEach-Object { if((-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp')) {$_.FullName} }
 			If ($defaultMspFiles) {
 				Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
 			}
