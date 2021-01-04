@@ -6384,7 +6384,7 @@ Function Show-InstallationWelcome {
 					}
 					# Update the process list right before closing, in case it changed
 					$runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects
-					[string]$runningProcessDescriptions = ($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
+					# Close running processes
 					ForEach ($runningProcess in $runningProcesses) {
 						[psobject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
 						#  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
@@ -6430,7 +6430,12 @@ Function Show-InstallationWelcome {
 							Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
 						}
 					}
-					Start-Sleep -Seconds 2
+
+					if ($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging) {
+						# Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again
+						Write-Log -Message 'Sleeping for 2 seconds because the processes are still not closed...' -Source ${CmdletName}
+						Start-Sleep -Seconds 2
+					}
 				}
 				#  Stop the script (if not actioned before the timeout value)
 				ElseIf ($promptResult -eq 'Timeout') {

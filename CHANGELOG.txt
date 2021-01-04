@@ -5,7 +5,7 @@
   - The listbox is also wider so it is aligned with buttons
   - The countdown is now bigger and in bold
   - The appname is now in bold to be more visible
-  - The function now closes processes by name not by ID
+  - The function now internally closes processes by name not by ID
   - Fixed the hidden abort button not working on toolkit timeout
   - Performance improvements
 - Changed Show-InstallationPrompt:
