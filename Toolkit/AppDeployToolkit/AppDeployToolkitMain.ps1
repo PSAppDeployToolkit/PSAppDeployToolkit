@@ -91,12 +91,12 @@ Param (
 [string]$envAllUsersProfile = $env:ALLUSERSPROFILE
 [string]$envAppData = [Environment]::GetFolderPath('ApplicationData')
 [string]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
-[string]$envCommonDesktop   = $envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction 'SilentlyContinue'
-[string]$envCommonDocuments = $envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction 'SilentlyContinue'
-[string]$envCommonStartMenuPrograms  = $envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction 'SilentlyContinue'
-[string]$envCommonStartMenu = $envShellFolders | Select-Object -ExpandProperty 'Common Start Menu' -ErrorAction 'SilentlyContinue'
-[string]$envCommonStartUp   = $envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction 'SilentlyContinue'
-[string]$envCommonTemplates = $envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction 'SilentlyContinue'
+[string]$envCommonDesktop   = $envShellFolders.'Common Desktop'
+[string]$envCommonDocuments = $envShellFolders.'Common Documents'
+[string]$envCommonStartMenuPrograms  = $envShellFolders.'Common Programs'
+[string]$envCommonStartMenu = $envShellFolders.'Common Start Menu'
+[string]$envCommonStartUp   = $envShellFolders.'Common Startup'
+[string]$envCommonTemplates = $envShellFolders.'Common Templates'
 [string]$envComputerName = [Environment]::MachineName.ToUpper()
 [string]$envHomeDrive = $env:HOMEDRIVE
 [string]$envHomePath = $env:HOMEPATH
@@ -5327,11 +5327,11 @@ Function Execute-ProcessAsUser {
 			}
 			#Windows Task Scheduler 1.0
 			Else {
-				While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' | Select-Object -First 1) -eq 'Running') {
+				While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Status' -First 1) -eq 'Running') {
 					Start-Sleep -Seconds 5
 				}
 				#  Get the exit code from the process launched by the scheduled task
-				[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' | Select-Object -First 1
+				[int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-CSV | Select-Object -ExpandProperty 'Last Result' -First 1
 			}
 			Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
 		}
@@ -6277,8 +6277,8 @@ Function Show-InstallationWelcome {
 
 			#  Get the deferral history from the registry
 			$deferHistory = Get-DeferHistory
-			$deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty 'DeferTimesRemaining' -ErrorAction 'SilentlyContinue'
-			$deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty 'DeferDeadline' -ErrorAction 'SilentlyContinue'
+			$deferHistoryTimes = $deferHistory.DeferTimesRemaining
+			$deferHistoryDeadline = $deferHistory.DeferDeadline
 
 			#  Reset Switches
 			$checkDeferDays = $false
@@ -6529,7 +6529,7 @@ Function Show-InstallationWelcome {
 
 			#  Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
 			If ($notesPathExes) {
-				[array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select-Object -ExpandProperty 'ProcessName' | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | Where-Object { ($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes') } | Select-Object -ExpandProperty 'InputObject'
+				[array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects.ProcessName | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | ForEach-Object { if (($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes')) {$_.InputObject} }
 				[array]$processObjects = $processObjects | Where-Object { $processesIgnoringNotesExceptions -contains $_.ProcessName }
 			}
 		}
@@ -6539,7 +6539,7 @@ Function Show-InstallationWelcome {
 			#  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
 			Set-Variable -Name 'BlockExecution' -Value $BlockExecution -Scope 'Script'
 			Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
-			Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty 'ProcessName')
+			Block-AppExecution -ProcessName ($processObjects.ProcessName)
 		}
 	}
 	End {
@@ -9750,7 +9750,7 @@ Function Test-PowerPoint {
 				If ([Environment]::UserInteractive) {
 					#  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
 					#  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT'} | Select-Object -First 1
+					[psobject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { ($_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-') -and ($_.ParentProcess -eq 'POWERPNT') } | Select-Object -First 1
 					If ($PowerPointWindow) {
 						[nullable[boolean]]$IsPowerPointFullScreen = $true
 						Write-Log -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
@@ -9859,8 +9859,13 @@ Function Invoke-SCCMTask {
 
 			## Determine the SCCM Client Version
 			Try {
-				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -ExpandProperty 'Version' -ErrorAction 'Stop'
-				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
+				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | ForEach-Object { if($_.Name -eq 'SmsClient') {$_.Version} }
+				if ($SCCMClientVersion) {
+					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
+				} else {
+					Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+					Throw 'Failed to determine the SCCM client version number.'	
+				}
 			}
 			Catch {
 				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -9982,8 +9987,13 @@ Function Install-SCCMSoftwareUpdates {
 
 			## Determine the SCCM Client Version
 			Try {
-				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | Where-Object { $_.Name -eq 'SmsClient' } | Select-Object -ExpandProperty 'Version' -ErrorAction 'Stop'
-				Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
+				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | ForEach-Object { if($_.Name -eq 'SmsClient') {$_.Version} }
+				if ($SCCMClientVersion) {
+					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
+				} else {
+					Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+					Throw 'Failed to determine the SCCM client version number.'	
+				}
 			}
 			Catch {
 				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
@@ -10834,7 +10844,7 @@ Function Get-ServiceStartMode
 			If (($ServiceStartMode -eq 'Automatic') -and (([version]$envOSVersion).Major -gt 5)) {
 				Try {
 					[string]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
-					[int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
+					[int32]$DelayedAutoStart = (Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop').DelayedAutoStart
 					If ($DelayedAutoStart -eq 1) { $ServiceStartMode = 'Automatic (Delayed Start)' }
 				}
 				Catch { }
@@ -11475,7 +11485,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 			[string]$appVersion = $defaultMsiPropertyList.ProductVersion
 			$GetDefaultMsiTablePropertySplat.Set_Item('Table', 'File')
 			[psobject]$defaultMsiFileList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
-			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Name' -ErrorAction 'Stop' | Where-Object { [IO.Path]::GetExtension($_) -eq '.exe' } | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) }
+			[string[]]$defaultMsiExecutables = Get-Member -InputObject $defaultMsiFileList -ErrorAction 'Stop' | ForEach-Object { if([IO.Path]::GetExtension($_.Name) -eq '.exe') {[IO.Path]::GetFileNameWithoutExtension($_.Name)} }
 			[string]$defaultMsiExecutablesList = $defaultMsiExecutables -join ','
 			Write-Log -Message "App Vendor [$appVendor]." -Source $appDeployToolkitName
 			Write-Log -Message "App Name [$appName]." -Source $appDeployToolkitName
