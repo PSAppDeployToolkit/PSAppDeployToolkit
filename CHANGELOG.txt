@@ -1,5 +1,5 @@
 **Version 3.8.4 [??/??/2021]**
-- Fix Boolean parameters not being passed to Execute-Process
+- Fixed Boolean parameters not being passed to Execute-Process
 - Changed Show-InstallationWelcome:
   - Buttons are now wider
   - Listbox is also wider so it is aligned with buttons
@@ -30,7 +30,6 @@
   - The function now escapes invalid xml characters prior to using them in a xml file
 - Fixed signatures for a couple of functions inside AppDeployToolkitMain.cs based on official documentation - No breaking changes
 - Performance improvements across the toolkit
-- Changed default baloontip time in Show-BalloonTip from 10s to 12s
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.

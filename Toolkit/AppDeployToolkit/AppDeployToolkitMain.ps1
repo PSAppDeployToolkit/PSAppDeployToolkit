@@ -7591,7 +7591,7 @@ Function Show-BalloonTip {
 .PARAMETER BalloonTipIcon
 	Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 .PARAMETER BalloonTipTime
-	Time in milliseconds to display the balloon tip. Default: 12000.
+	Time in milliseconds to display the balloon tip. Default: 10000.
 .EXAMPLE
 	Show-BalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 .EXAMPLE
@@ -7613,7 +7613,7 @@ Function Show-BalloonTip {
 		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
-		[int32]$BalloonTipTime = 12000
+		[int32]$BalloonTipTime = 10000
 	)
 
 	Begin {
