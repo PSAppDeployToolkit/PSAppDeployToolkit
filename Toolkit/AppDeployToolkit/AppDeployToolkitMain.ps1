@@ -11317,7 +11317,7 @@ Function Set-ItemPermission {
 				$U = $U.remove(0,1)
 				try {
 					# Translate the SID
-					$Username = ConvertTo-NTAccountOrSID -SID $U
+					$UsersAccountName = ConvertTo-NTAccountOrSID -SID $U
 				}
 				catch {
 					Write-Log "Failed to translate SID [$U]. Skipping..." -Source ${CmdletName} -Severity 2
