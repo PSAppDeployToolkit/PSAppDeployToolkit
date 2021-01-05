@@ -144,13 +144,10 @@ If ($IsMachinePartOfDomain) {
 
 	Try {
 		[string]$envLogonServer = $env:LOGONSERVER | ForEach-Object { if(($_) -and (-not $_.Contains('\\MicrosoftAccount'))) { ([Net.Dns]::GetHostEntry($_.TrimStart('\'))).HostName } }
-		# If running in system context, fall back on the logonserver value stored in the registry
-		If (-not $envLogonServer) { [string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue' }
 	}
-	Catch { 
-		# If GetHostEntry fails, just use the registry value
-		[string]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue'
-	}
+	Catch { }
+	# If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
+	If (-not $envLogonServer) { [string]$envLogonServer = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue').DCName }
 
 	try {
 		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
@@ -1371,14 +1368,14 @@ Function Resolve-Error {
 			## Capture Error Record
 			If ($GetErrorRecord) {
 				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord -Property $Property
-				$LogErrorRecordMsg = $ErrRecord | Select-Object -Property $SelectedProperties
+				$LogErrorRecordMsg = $ErrRecord.$SelectedProperties
 			}
 
 			## Error Invocation Information
 			If ($GetErrorInvocation) {
 				If ($ErrRecord.InvocationInfo) {
 					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
-					$LogErrorInvocationMsg = $ErrRecord.InvocationInfo | Select-Object -Property $SelectedProperties
+					$LogErrorInvocationMsg = $ErrRecord.InvocationInfo.$SelectedProperties
 				}
 			}
 
@@ -1386,7 +1383,7 @@ Function Resolve-Error {
 			If ($GetErrorException) {
 				If ($ErrRecord.Exception) {
 					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
-					$LogErrorExceptionMsg = $ErrRecord.Exception | Select-Object -Property $SelectedProperties
+					$LogErrorExceptionMsg = $ErrRecord.Exception.$SelectedProperties
 				}
 			}
 
@@ -1424,7 +1421,7 @@ Function Resolve-Error {
 						[string]$InnerExceptionSeperator = '~' * 40
 
 						[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrorInnerException -Property $Property
-						$LogErrorInnerExceptionMsg = $ErrorInnerException | Select-Object -Property $SelectedProperties | Format-List | Out-String
+						$LogErrorInnerExceptionMsg = $ErrorInnerException.$SelectedProperties | Format-List | Out-String
 
 						If ($Count -gt 0) { $LogInnerMessage += $InnerExceptionSeperator }
 						$LogInnerMessage += $LogErrorInnerExceptionMsg
@@ -4125,7 +4122,7 @@ Function Get-RegistryKey {
 
 				## Get all property values for registry key
 				$regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
-				[int32]$regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty 'Count'
+				[int32]$regKeyValuePropertyCount = ($regKeyValue | Measure-Object).Count
 
 				## Select requested property
 				If ($PSBoundParameters.ContainsKey('Value')) {
@@ -4133,7 +4130,7 @@ Function Get-RegistryKey {
 					[boolean]$IsRegistryValueExists = $false
 					If ($regKeyValuePropertyCount -gt 0) {
 						Try {
-							[string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
+							[string[]]$PathProperties = (Get-Item -LiteralPath $Key -ErrorAction 'Stop').Property
 							If ($PathProperties -contains $Value) { $IsRegistryValueExists = $true }
 						}
 						Catch { }
@@ -4153,7 +4150,7 @@ Function Get-RegistryKey {
 							$regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null)
 						}
 						Else {
-							$regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+							$regKeyValue = $regKeyValue.$Value
 						}
 					}
 					Else {
@@ -6494,12 +6491,12 @@ Function Show-InstallationWelcome {
 		## Force nsd.exe to stop if Notes is one of the required applications to close
 		If (($processObjects).ProcessName -contains 'notes') {
 			## Get the path where Notes is installed
-			[string]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
+			[string]$notesPath = (Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty).Path
 
 			## Ensure we aren't running as a Local System Account and Notes install directory was found
 			If ((-not $IsLocalSystemAccount) -and ($notesPath)) {
 				#  Get a list of all the executables in the Notes folder
-				[string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
+				[string[]]$notesPathExes = (Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse).BaseName | Sort-Object
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object {
 					If ((Get-Process).ProcessName -contains $_) {
