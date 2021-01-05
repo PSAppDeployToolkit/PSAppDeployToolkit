@@ -310,16 +310,6 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) { Throw 'App Deploy logo icon file not found.' }
 If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) { Throw 'App Deploy logo banner file not found.' }
 
-Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
-[System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object System.Drawing.Bitmap $appDeployLogoBanner
-[Int32]$appDeployLogoBannerBaseHeight = 50
-
-[Int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
-if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
-	$appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
-}
-[Int32]$appDeployLogoBannerHeightDifference = $appDeployLogoBannerHeight - $appDeployLogoBannerBaseHeight
-
 #  Get Toolkit Options
 [Xml.XmlElement]$xmlToolkitOptions = $xmlConfig.Toolkit_Options
 [boolean]$configToolkitRequireAdmin = [boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
@@ -7653,10 +7643,6 @@ Function Show-BalloonTip {
 					[string]$AppDeployLogoIcon
 				)
 
-				## Load assembly containing class System.Windows.Forms and System.Drawing
-				Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
-				Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
-
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 				$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 					BalloonTipIcon = $BalloonTipIcon
@@ -9457,9 +9443,6 @@ Function Send-Keys {
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-		## Load assembly containing class System.Windows.Forms.SendKeys
-		Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
-
 		[scriptblock]$SendKeys = {
 			Param (
 				[Parameter(Mandatory=$true)]
@@ -9555,9 +9538,6 @@ Function Test-Battery {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-		## PowerStatus class found in this assembly is more reliable than WMI in cases where the battery is failing.
-		Add-Type -Assembly 'System.Windows.Forms' -ErrorAction 'SilentlyContinue'
 
 		## Initialize a hashtable to store information about system type and power status
 		[hashtable]$SystemTypePowerStatus = @{ }
@@ -11568,10 +11548,10 @@ Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
 ## Assemblies: Load
 Try {
+	Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
 	Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
 	Add-Type -AssemblyName 'PresentationFramework' -ErrorAction 'Stop'
 	Add-Type -AssemblyName 'Microsoft.VisualBasic' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
 	Add-Type -AssemblyName 'PresentationCore' -ErrorAction 'Stop'
 	Add-Type -AssemblyName 'WindowsBase' -ErrorAction 'Stop'
 }
@@ -11584,6 +11564,17 @@ Catch {
 		Exit-Script -ExitCode 60004
 	}
 }
+
+# Calculate banner height
+[Int32]$appDeployLogoBannerHeight = 0
+try {
+	[System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object System.Drawing.Bitmap $appDeployLogoBanner
+	[Int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
+	if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
+		$appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
+	}
+}
+catch { }
 
 ## Check how the script was invoked
 If ($invokingScript) {
