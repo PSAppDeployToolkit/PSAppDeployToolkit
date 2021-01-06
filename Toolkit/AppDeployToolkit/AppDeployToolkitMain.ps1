@@ -7625,11 +7625,6 @@ Function Show-BalloonTip {
 
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
-		## Prepare Text - Cut it if longer than 63 chars
-		$BalloonTipIconText = $BalloonTipTitle + " - " + $BalloonTipText
-		if ($BalloonTipIconText.Length -gt 63) {
-			$BalloonTipIconText = $BalloonTipIconText.Substring(0,60) + "..."
-		}
 		## NoWait - Create the balloontip icon asynchronously
 		If ($NoWait) {
 			Write-Log -Message "Display balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
@@ -7655,6 +7650,12 @@ Function Show-BalloonTip {
 
 				## Load assembly containing class System.Windows.Forms and System.Drawing	
 				Add-Type -AssemblyName 'System.Windows.Forms','System.Drawing' -ErrorAction 'Stop'
+
+				## Prepare Text - Cut it if longer than 63 chars
+				$BalloonTipIconText = [String]::Concat($BalloonTipTitle,' - ',$BalloonTipText)
+				if ($BalloonTipIconText.Length -gt 63) {
+					$BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0,60),'...')
+				}
 
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 				$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
@@ -7683,6 +7684,12 @@ Function Show-BalloonTip {
 		## Otherwise create the balloontip icon synchronously
 		Else {
 			Write-Log -Message "Display balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
+
+			## Prepare Text - Cut it if longer than 63 chars
+			$BalloonTipIconText = $BalloonTipTitle + ' - ' + $BalloonTipText
+			if ($BalloonTipIconText.Length -gt 63) {
+				$BalloonTipIconText = $BalloonTipIconText.Substring(0,60) + '...'
+			}
 			[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 			$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 				BalloonTipIcon = $BalloonTipIcon
