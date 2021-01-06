@@ -7613,7 +7613,11 @@ Function Show-BalloonTip {
 	}
 	Process {
 		## Skip balloon if in silent mode
-		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or (Test-PowerPoint)) { Return }
+		$presentationDetected = Test-PowerPoint
+		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or $presentationDetected) { 
+			Write-Log -Message "Bypassing Show-BalloonTip [Mode: $deployMode, Config Show Balloon Notifications:$configShowBalloonNotifications, Presentation Detected:$presentationDetected]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+			Return 
+		}
 
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
