@@ -1224,17 +1224,17 @@ Function Exit-Script {
 		}
 
 		Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
-		If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText }
+		If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText -NoWait }
 	}
 	ElseIf (-not $installSuccess) {
 		Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
 		If (($exitCode -eq $configInstallationUIExitCode) -or ($exitCode -eq $configInstallationDeferExitCode)) {
 			[string]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
-			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText }
+			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait }
 		}
 		Else {
 			[string]$balloonText = "$deploymentTypeName $configBalloonTextError"
-			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText }
+			If ($configShowBalloonNotifications) { Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait }
 		}
 	}
 
@@ -7582,6 +7582,8 @@ Function Show-BalloonTip {
 	Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 .PARAMETER BalloonTipTime
 	Time in milliseconds to display the balloon tip. Default: 10000.
+.PARAMETER NoWait
+	Create the balloontip asynchronously. Default: $false
 .EXAMPLE
 	Show-BalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 .EXAMPLE
@@ -7603,7 +7605,9 @@ Function Show-BalloonTip {
 		[Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
-		[int32]$BalloonTipTime = 10000
+		[int32]$BalloonTipTime = 10000,
+		[Parameter(Mandatory=$false,Position=4)]
+		[switch]$NoWait = $false
 	)
 
 	Begin {
@@ -7612,20 +7616,22 @@ Function Show-BalloonTip {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-		## Skip balloon if in silent mode
+		## Skip balloon if in silent mode, disabled in the config or presentation is detected
 		$presentationDetected = Test-PowerPoint
 		If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or $presentationDetected) { 
-			Write-Log -Message "Bypassing Show-BalloonTip [Mode: $deployMode, Config Show Balloon Notifications:$configShowBalloonNotifications, Presentation Detected:$presentationDetected]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+			Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Config Show Balloon Notifications:$configShowBalloonNotifications, Presentation Detected:$presentationDetected]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
 			Return 
 		}
 
 		## Dispose of previous balloon
 		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
-
-		## Get the calling function so we know when to display the exiting balloon tip notification in an asynchronous script
-		Try { [string]$callingFunction = (Get-Variable -Name MyInvocation -Scope 1).Value.Mycommand.Name } Catch { }
-
-		If ($callingFunction -eq 'Exit-Script') {
+		## Prepare Text - Cut it if longer than 63 chars
+		$BalloonTipIconText = $BalloonTipTitle + " - " + $BalloonTipText
+		if ($BalloonTipIconText.Length -gt 63) {
+			$BalloonTipIconText = $BalloonTipIconText.Substring(0,60) + "..."
+		}
+		## NoWait - Create the balloontip icon asynchronously
+		If ($NoWait) {
 			Write-Log -Message "Display balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
 			## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait
 			[scriptblock]$notifyIconScriptBlock = {
@@ -7647,18 +7653,21 @@ Function Show-BalloonTip {
 					[string]$AppDeployLogoIcon
 				)
 
+				## Load assembly containing class System.Windows.Forms and System.Drawing	
+				Add-Type -AssemblyName 'System.Windows.Forms','System.Drawing' -ErrorAction 'Stop'
+
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 				$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
 					BalloonTipIcon = $BalloonTipIcon
 					BalloonTipText = $BalloonTipText
 					BalloonTipTitle = $BalloonTipTitle
 					Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
-					Text = -join $BalloonTipText[0..62]
+					Text = $BalloonTipIconText
 					Visible = $true
 				}
 
 				## Display the balloon tip notification asynchronously
-				$script:NotifyIcon.ShowBalloonTip($BalloonTipTime)
+				$script:notifyIcon.ShowBalloonTip($BalloonTipTime)
 
 				## Keep the asynchronous PowerShell process running so that we can dispose of the balloon tip icon
 				Start-Sleep -Milliseconds ($BalloonTipTime)
@@ -7667,7 +7676,7 @@ Function Show-BalloonTip {
 
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
-				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} '$BalloonTipText' '$BalloonTipTitle' '$BalloonTipIcon' '$BalloonTipTime' '$AppDeployLogoIcon'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
 			}
 			Catch { }
 		}
@@ -7680,12 +7689,12 @@ Function Show-BalloonTip {
 				BalloonTipText = $BalloonTipText
 				BalloonTipTitle = $BalloonTipTitle
 				Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
-				Text = -join $BalloonTipText[0..62]
+				Text = $BalloonTipIconText
 				Visible = $true
 			}
 
 			## Display the balloon tip notification
-			$script:NotifyIcon.ShowBalloonTip($BalloonTipTime)
+			$script:notifyIcon.ShowBalloonTip($BalloonTipTime)
 		}
 	}
 	End {
@@ -11552,12 +11561,7 @@ Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
 ## Assemblies: Load
 Try {
-	Add-Type -AssemblyName 'System.Drawing' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'PresentationFramework' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'Microsoft.VisualBasic' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'PresentationCore' -ErrorAction 'Stop'
-	Add-Type -AssemblyName 'WindowsBase' -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'System.Drawing','System.Windows.Forms','PresentationFramework','Microsoft.VisualBasic','PresentationCore','WindowsBase' -ErrorAction 'Stop'
 }
 Catch {
 	Write-Log -Message "Failed to load assembly. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
