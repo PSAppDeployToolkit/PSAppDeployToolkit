@@ -35,6 +35,7 @@
   - Function Show-BalloonTip now logs when it is being bypassed
   - Added parameter -NoWait for asynchronous execution
   - The icon tooltip now contains Title - Text
+- Fixed an issue where $envLogonServer would start with backslashes
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.

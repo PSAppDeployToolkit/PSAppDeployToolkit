@@ -148,6 +148,10 @@ If ($IsMachinePartOfDomain) {
 	Catch { }
 	# If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
 	If (-not $envLogonServer) { [string]$envLogonServer = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue').DCName }
+	## Remove backslashes at the beginning
+	while ($envLogonServer.StartsWith('\')) {
+		$envLogonServer = $envLogonServer.Substring(1)
+	}
 
 	try {
 		[string]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
