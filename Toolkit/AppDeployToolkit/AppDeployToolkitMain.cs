@@ -30,7 +30,7 @@ namespace PSADT
 		static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, LoadLibraryFlags dwFlags);
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		static extern int LoadString(IntPtr hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
+		static extern int LoadString(IntPtr hInstance, uint uID, StringBuilder lpBuffer, int nBufferMax);
 
 		// Get MSI exit code message from msimsg.dll resource dll
 		public static string GetMessageFromMsiExitCode(int errCode)
@@ -38,7 +38,8 @@ namespace PSADT
 			IntPtr hModuleInstance = LoadLibraryEx("msimsg.dll", IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
 
 			StringBuilder sb = new StringBuilder(255);
-			LoadString(hModuleInstance, errCode, sb, sb.Capacity + 1);
+			uint u = Convert.ToUInt32(errCode);
+			LoadString(hModuleInstance, u, sb, sb.Capacity + 1);
 
 			return sb.ToString();
 		}
@@ -54,10 +55,10 @@ namespace PSADT
 		static extern bool SendNotifyMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, string lParam, int fuFlags, int uTimeout, IntPtr lpdwResult);
+		private static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
+		private static extern void SHChangeNotify(long eventId, uint flags, IntPtr item1, IntPtr item2);
 
 		public static void RefreshDesktopAndEnvironmentVariables()
 		{
@@ -72,7 +73,7 @@ namespace PSADT
 	public sealed class FileVerb
 	{
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		public static extern int LoadString(IntPtr h, int id, StringBuilder sb, int maxBuffer);
+		public static extern int LoadString(IntPtr h, uint id, StringBuilder sb, int maxBuffer);
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern IntPtr LoadLibrary(string s);
@@ -82,8 +83,8 @@ namespace PSADT
 			IntPtr hShell32 = LoadLibrary("shell32.dll");
 			const int nChars  = 255;
 			StringBuilder Buff = new StringBuilder("", nChars);
-
-			LoadString(hShell32, VerbId, Buff, Buff.Capacity);
+			uint u = Convert.ToUInt32(VerbId);
+			LoadString(hShell32, u, Buff, Buff.Capacity);
 			return Buff.ToString();
 		}
 	}
