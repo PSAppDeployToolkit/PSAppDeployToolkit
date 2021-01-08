@@ -712,7 +712,7 @@ Function Write-Log {
 .EXAMPLE
 	Write-Log -Message "Script is running on Windows 8" -Source 'Test-ValidOS' -LogType 'Legacy'
 .EXAMPLE
-	Write-Log -Message "Test message" -WriteHost $false
+	Write-Log -Message "Log only message" -WriteHost $false
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -10483,7 +10483,7 @@ Function Test-ServiceExists {
 .PARAMETER ComputerName
 	Specify the name of the computer. Default is: the local computer.
 .PARAMETER PassThru
-	Return the WMI service object.
+	Return the WMI service object. To see all the properties use: Test-ServiceExists -Name 'testservice' -PassThru | Get-Member
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -10973,10 +10973,13 @@ Function Get-LoggedOnUser {
 
 	Description of IsActiveUserSession property:
 	If a console user exists, then that will be the active user session.
-	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
+	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that has ConnectState either 'Active' or 'Connected' is the active user.
 
 	Description of IsRdpSession property:
 	Gets a value indicating whether the user is associated with an RDP client session.
+
+	Description of IsLocalAdmin property:
+	Checks whether the user is a member of the Administrators group
 .LINK
 	http://psappdeploytoolkit.com
 #>
