@@ -10483,7 +10483,7 @@ Function Test-ServiceExists {
 .PARAMETER ComputerName
 	Specify the name of the computer. Default is: the local computer.
 .PARAMETER PassThru
-	Return the WMI service object. To see all the properties use: Test-ServiceExists -Name 'testservice' -PassThru | Get-Member
+	Return the WMI service object. To see all the properties use: Test-ServiceExists -Name 'spooler' -PassThru | Get-Member
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
