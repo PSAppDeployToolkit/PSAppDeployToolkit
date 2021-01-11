@@ -266,6 +266,9 @@ Else {
 [boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-6')
 [boolean]$IsProcessUserInteractive = [Environment]::UserInteractive
 [string]$LocalSystemNTAccount = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([Security.Principal.NTAccount]).Value
+[string]$LocalUsersGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+[string]$LocalPowerUsersGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinPowerUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+[string]$LocalAdministratorsGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinAdministratorsSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
@@ -601,13 +604,16 @@ Function Execute-MSP {
 <#
 .SYNOPSIS
 	Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
-	If a valid installed product is found, triggers the Execute-MSI function to patch the installation. Uses default config MSI parameters.
+	If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
+	Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
 .PARAMETER Path
 	Path to the msp file
 .PARAMETER AddParameters
 	Additional parameters
 .EXAMPLE
 	Execute-MSP -Path 'Adobe_Reader_11.0.3_EN.msp'
+.EXAMPLE
+	Execute-MSP -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -709,6 +715,8 @@ Function Write-Log {
 	Write-Log -Message "Installing patch MS15-031" -Source 'Add-Patch' -LogType 'CMTrace'
 .EXAMPLE
 	Write-Log -Message "Script is running on Windows 8" -Source 'Test-ValidOS' -LogType 'Legacy'
+.EXAMPLE
+	Write-Log -Message "Log only message" -WriteHost $false
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -944,6 +952,8 @@ Function Remove-InvalidFileNameChars {
 		Remove invalid characters from the supplied string.
 	.DESCRIPTION
 		Remove invalid characters from the supplied string and returns a valid filename as a string.
+	.PARAMETER Name
+		Text to remove invalid filename characters from.
 	.EXAMPLE
 		Remove-InvalidFileNameChars -Name "Filename/\1"
 	.NOTES
@@ -1168,7 +1178,7 @@ Function Exit-Script {
 .PARAMETER ExitCode
 	The exit code to be passed from the script to the parent process, e.g. SCCM
 .EXAMPLE
-	Exit-Script -ExitCode 0
+	Exit-Script
 .EXAMPLE
 	Exit-Script -ExitCode 1618
 .NOTES
@@ -4220,7 +4230,7 @@ Function Set-RegistryKey {
 .EXAMPLE
 	Set-RegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
 .EXAMPLE
-    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
+    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -4351,6 +4361,8 @@ Function Remove-RegistryKey {
 	Remove-RegistryKey -Key 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
 .EXAMPLE
 	Remove-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
+.EXAMPLE
+    Remove-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -5370,6 +5382,7 @@ Function Update-Desktop {
 .EXAMPLE
 	Update-Desktop
 .NOTES
+	This function has an alias: Refresh-Desktop
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -5420,6 +5433,7 @@ Function Update-SessionEnvironmentVariables {
 .EXAMPLE
 	Update-SessionEnvironmentVariables
 .NOTES
+	This function has an alias: Refresh-SessionEnvironmentVariables
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -5502,6 +5516,7 @@ Function Get-SchedulerTask {
 	Get-SchedulerTask | Select-Object -Property TaskName
 	To display a list of all scheduled task names.
 .NOTES
+	This function has an alias: Get-ScheduledTask if Get-ScheduledTask is not defined
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -5975,6 +5990,8 @@ Function Get-RunningProcesses {
 	Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 .PARAMETER ProcessObjects
 	Custom object containing the process objects to search for. If not supplied, the function just returns $null
+.PARAMETER DisableLogging
+	Disables function logging
 .EXAMPLE
 	Get-RunningProcesses -ProcessObjects $ProcessObjects
 .NOTES
@@ -10470,7 +10487,7 @@ Function Test-ServiceExists {
 .PARAMETER ComputerName
 	Specify the name of the computer. Default is: the local computer.
 .PARAMETER PassThru
-	Return the WMI service object.
+	Return the WMI service object. To see all the properties use: Test-ServiceExists -Name 'spooler' -PassThru | Get-Member
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -10960,10 +10977,13 @@ Function Get-LoggedOnUser {
 
 	Description of IsActiveUserSession property:
 	If a console user exists, then that will be the active user session.
-	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
+	If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that has ConnectState either 'Active' or 'Connected' is the active user.
 
 	Description of IsRdpSession property:
 	Gets a value indicating whether the user is associated with an RDP client session.
+
+	Description of IsLocalAdmin property:
+	Checks whether the user is a member of the Administrators group
 .LINK
 	http://psappdeploytoolkit.com
 #>
