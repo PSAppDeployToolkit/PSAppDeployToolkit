@@ -37,14 +37,10 @@ This cmdlet supports the common parameters: Verbose, Debug, ErrorAction, ErrorVa
 -------------------------- EXAMPLE 1 --------------------------
 
 `PS C:>[scriptblock]$HKCURegistrySettings = {
-
-Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
-
-Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
-
-}`
-
-Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
+  Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
+  Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
+}
+Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings`
 
 ## REMARKS
 
