@@ -1267,6 +1267,11 @@ Function Exit-Script {
 	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
 	## Reset powershell window title to its previous title
 	$Host.UI.RawUI.WindowTitle = $oldPSWindowTitle
+	## Reset variables in case another toolkit is being run in the same session
+	$global:logName = $null
+	$global:installTitle = $null
+	$global:installName = $null
+	$global:appName = $null
 	## Exit the script, returning the exit code to SCCM
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }

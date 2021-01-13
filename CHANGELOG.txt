@@ -36,6 +36,9 @@
   - Added parameter -NoWait for asynchronous execution
   - The icon tooltip now contains Title - Text
 - Fixed an issue where $envLogonServer would start with backslashes
+- Fixed an issue where some global variable did not get cleared on exit
+  - This caused an issue if you ran multiple toolkits in the same powershell session. It would use the same log file for all toolkits.
+  - This only occured if you used the .ps1 files directly. Deploy-Application.exe opens a new session each time.
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.
