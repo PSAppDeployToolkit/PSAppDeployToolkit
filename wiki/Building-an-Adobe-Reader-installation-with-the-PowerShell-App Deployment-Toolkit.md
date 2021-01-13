@@ -29,62 +29,58 @@ This example is provided as a script with the toolkit, in the “Examples” fol
 
 \# Populate these variables with the application and script details:
 
+```PowerShell
 $appVendor = 'Adobe'
-
 $appName = 'Reader'
-
 $appVersion = '11.0.3'
-
 $appArch = ''
-
 $appLang = 'EN'
-
 $appRevision = '01'
-
 $appScriptVersion = '1.0.0'
-
 $appScriptDate = '08/07/2013'
-
 $appScriptAuthor = 'Your Name'
+```
 
 **Pre-Install**
 
+```PowerShell
 \# Prompt the user to close the following applications if they are running and allow the option to defer the installation up to 3 times:
 
 Show-InstallationWelcome -CloseApps 'iexplore,AcroRd32,cidaemon' -AllowDefer -DeferTimes 3
 
 \# Show Progress Message (with the default message)
-
 Show-InstallationProgress
 
 \# Remove any previous versions of Adobe Reader
-
 Remove-MSIApplications -Name 'Adobe Reader'
+```
 
 **Installation**
 
+```PowerShell
 \# Install the base MSI and apply a transform
-
 Execute-MSI -Action Install -Path 'Adobe\_Reader\_11.0.0\_EN.msi' -Transform 'Adobe\_Reader\_11.0.0\_EN\_01.mst'
 
 \# Install the patch
-
 Execute-MSI -Action Patch -Path 'Adobe\_Reader\_11.0.3\_EN.msp'
+```
 
 **Post-Installation**
 
+```PowerShell
 \# No actions required here
+```
 
 **Uninstallation**
 
+```PowerShell
 \# Prompt the user to close the following applications if they are running:
-
 Show-InstallationWelcome -CloseApps 'iexplore,AcroRd32,cidaemon'
 
 \# Show Progress Message (with a message to indicate the application is being uninstalled)
-
 Show-InstallationProgress -StatusMessage "Uninstalling Application $installTitle. Please Wait..."
 
 \# Remove this version of Adobe Reader
-
 Execute-MSI -Action Uninstall -Path '{AC76BA86-7AD7-1033-7B44-AB0000000001}'
+```
+
