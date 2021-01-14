@@ -4916,7 +4916,7 @@ Function New-Shortcut {
 .PARAMETER RunAsAdmin
 	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
 .PARAMETER Hotkey
-    Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
+	Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -5008,26 +5008,16 @@ Function New-Shortcut {
 				$shortcut.Description = $description
 				$shortcut.WorkingDirectory = $workingDirectory
 				$shortcut.WindowStyle = $windowStyleInt
-                If ($hotkey) {$shortcut.Hotkey = $hotkey}
+				If ($hotkey) {$shortcut.Hotkey = $hotkey}
 				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
 				$shortcut.Save()
 
 				## Set shortcut to run program as administrator
 				If ($RunAsAdmin) {
 					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
-					$TempFileName = [IO.Path]::GetRandomFileName()
-					$TempFile = [IO.FileInfo][IO.Path]::Combine($Path.Directory, $TempFileName)
-					$Writer = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($TempFile, ([IO.FileMode]::Create)) -ErrorAction 'Stop'
-					$Reader = $Path.OpenRead()
-					While ($Reader.Position -lt $Reader.Length) {
-						$Byte = $Reader.ReadByte()
-						If ($Reader.Position -eq 22) { $Byte = 34 }
-						$Writer.WriteByte($Byte)
-					}
-					$Reader.Close()
-					$Writer.Close()
-					$Path.Delete()
-					$null = Rename-Item -Path $TempFile -NewName $Path.Name -Force -ErrorAction 'Stop'
+					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
+					$filebytes[21] = $filebytes[21] -bor 32
+					[IO.FIle]::WriteAllBytes($Path,$filebytes)
 				}
 			}
 		}
@@ -5035,6 +5025,164 @@ Function New-Shortcut {
 			Write-Log -Message "Failed to create shortcut [$($path.FullName)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to create shortcut [$($path.FullName)]: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+#region Function Set-Shortcut
+Function Set-Shortcut {
+<#
+.SYNOPSIS
+	Modifies a .lnk or .url type shortcut
+.DESCRIPTION
+	Modifies a shortcut - .lnk or .url file, with configurable options
+.PARAMETER Path
+	Path to the shortcut to change
+.PARAMETER TargetPath
+	Target path or URL that the shortcut launches
+.PARAMETER Arguments
+	Arguments to be passed to the target path
+.PARAMETER IconLocation
+	Location of the icon used for the shortcut
+.PARAMETER IconIndex
+	Executables, DLLs, ICO files with multiple icons need the icon index to be specified
+.PARAMETER Description
+	Description of the shortcut
+.PARAMETER WorkingDirectory
+	Working Directory to be used for the target path
+.PARAMETER WindowStyle
+	Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
+.PARAMETER RunAsAdmin
+	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
+.PARAMETER Hotkey
+	Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+.NOTES
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[string]$Path,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$TargetPath,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Arguments,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconLocation,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconIndex,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Description,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$WorkingDirectory,
+		[Parameter(Mandatory=$false)]
+		[ValidateSet('Normal','Maximized','Minimized')]
+		[string]$WindowStyle,
+		[Parameter(Mandatory=$false)]
+		[System.Nullable[bool]]$RunAsAdmin,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Hotkey,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop' }
+	}
+	Process {
+		Try {
+			If (-not (Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction 'Stop')) {
+				Write-Log -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
+				Throw
+			}
+			$extension = [IO.Path]::GetExtension($Path).ToLower()
+			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
+				Write-Log -Message "Specified file [$Path] is not a valid shortcut." -Severity 3 -Source ${CmdletName}
+				Throw
+			}
+			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
+			If ($extension -eq '.url') {
+				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
+				for($i = 0; $i -lt $URLFile.Length; $i++) {
+					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
+					if($URLFile[$i].StartsWith('IconIndex=') -and $iconIndex) { $URLFile[$i] = "IconIndex=$iconIndex" }
+					if($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$iconLocation" }
+				}
+				[IO.File]::WriteAllLines($Path,$URLFile,(new-object Text.UTF8Encoding -ArgumentList $false))
+			} Else {
+				$shortcut = $shell.CreateShortcut($Path)
+				## TargetPath
+				If ($targetPath) { $shortcut.TargetPath = $targetPath }
+				## Arguments
+				If ($arguments) { $shortcut.Arguments = $arguments }
+				## Description
+				If ($description) { $shortcut.Description = $description }
+				## Working directory
+				If ($workingDirectory) { $shortcut.WorkingDirectory = $workingDirectory }
+				## Window Style
+				Switch ($windowStyle) {
+					'Normal' { $windowStyleInt = 1 }
+					'Maximized' { $windowStyleInt = 3 }
+					'Minimized' { $windowStyleInt = 7 }
+					Default { $windowStyleInt = 1 }
+				}
+				$shortcut.WindowStyle = $windowStyleInt
+				## Hotkey
+				If ($hotkey) { $shortcut.Hotkey = $hotkey }
+				## Icon
+				If (-not $iconIndex) {
+					$iconIndex = 0
+				}
+				If ($iconLocation -and (-not ($iconLocation.Contains(',')))) {
+					$iconLocation = $iconLocation + ",$iconIndex"
+				}
+				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				## Save the changes
+				$shortcut.Save()
+
+				## Set shortcut to run program as administrator
+				If ($RunAsAdmin -eq $true) {
+					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
+					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
+					$filebytes[21] = $filebytes[21] -bor 32
+					[IO.FIle]::WriteAllBytes($Path,$filebytes)
+				} elseif ($RunAsAdmin -eq $false) {
+					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
+					if (($filebytes[21] -band 32) -eq 32) {
+						Write-Log -Message 'Set shortcut to not run program as administrator.' -Source ${CmdletName}
+						$filebytes[21] = $filebytes[21] -bnot 32
+						[IO.FIle]::WriteAllBytes($Path,$filebytes)
+					}			
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to change the shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to change the shortcut [$Path]: $($_.Exception.Message)"
 			}
 		}
 	}
