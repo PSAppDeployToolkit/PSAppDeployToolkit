@@ -4906,7 +4906,7 @@ Function New-Shortcut {
 .PARAMETER IconLocation
 	Location of the icon used for the shortcut
 .PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified
+	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer.
 .PARAMETER Description
 	Description of the shortcut
 .PARAMETER WorkingDirectory
@@ -4922,6 +4922,7 @@ Function New-Shortcut {
 .EXAMPLE
 	New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
+	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 .LINK
 	http://psappdeploytoolkit.com
 #>
@@ -4941,7 +4942,7 @@ Function New-Shortcut {
 		[string]$IconLocation,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[string]$IconIndex,
+		[int]$IconIndex,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
 		[string]$Description,
@@ -4970,12 +4971,39 @@ Function New-Shortcut {
 	}
 	Process {
 		Try {
+			$extension = [IO.Path]::GetExtension($Path).ToLower()
+			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
+				Write-Log -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
 			Try {
-				[IO.FileInfo]$Path = [IO.FileInfo]$Path
-				[string]$PathDirectory = $Path.DirectoryName
+				[string]$FullPath = [IO.Path]::GetFullPath($Path)
+			}
+			Catch {
+				Write-Log -Message "Specified path [$Path] is not valid." -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
 
-				If (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
-					Write-Log -Message "Create shortcut directory [$PathDirectory]." -Source ${CmdletName}
+			Try {
+				[string]$PathDirectory = [IO.Path]::GetDirectoryName($FullPath)
+				If (-not $PathDirectory) {
+					# The path is root or no filename supplied
+					If (-not [IO.Path]::GetFileNameWithoutExtension($FullPath)) {
+						# No filename supplied
+						If (-not $ContinueOnError) {
+							Throw
+						}
+						return
+					}
+					# Continue without creating a folder because the path is root
+				} ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
+					Write-Log -Message "Creating shortcut directory [$PathDirectory]." -Source ${CmdletName}
 					$null = New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop'
 				}
 			}
@@ -4984,158 +5012,18 @@ Function New-Shortcut {
 				Throw
 			}
 
-			Write-Log -Message "Create shortcut [$($path.FullName)]." -Source ${CmdletName}
-			If (($path.FullName).ToLower().EndsWith('.url')) {
+			Write-Log -Message "Create shortcut [$FullPath]." -Source ${CmdletName}
+			If ($extension -eq '.url') {
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
 				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
-				$URLFile | Out-File -FilePath $path.FullName -Force -Encoding 'default' -ErrorAction 'Stop'
+				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			}
-			ElseIf (($path.FullName).ToLower().EndsWith('.lnk')) {
-				If (($iconLocation -and $iconIndex) -and (-not ($iconLocation.Contains(',')))) {
-					$iconLocation = $iconLocation + ",$iconIndex"
-				}
-				Switch ($windowStyle) {
-					'Normal' { $windowStyleInt = 1 }
-					'Maximized' { $windowStyleInt = 3 }
-					'Minimized' { $windowStyleInt = 7 }
-					Default { $windowStyleInt = 1 }
-				}
-				$shortcut = $shell.CreateShortcut($path.FullName)
-				$shortcut.TargetPath = $targetPath
-				$shortcut.Arguments = $arguments
-				$shortcut.Description = $description
-				$shortcut.WorkingDirectory = $workingDirectory
-				$shortcut.WindowStyle = $windowStyleInt
-				If ($hotkey) {$shortcut.Hotkey = $hotkey}
-				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
-				$shortcut.Save()
-
-				## Set shortcut to run program as administrator
-				If ($RunAsAdmin) {
-					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
-					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
-					$filebytes[21] = $filebytes[21] -bor 32
-					[IO.FIle]::WriteAllBytes($Path,$filebytes)
-				}
-			}
-		}
-		Catch {
-			Write-Log -Message "Failed to create shortcut [$($path.FullName)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-			If (-not $ContinueOnError) {
-				Throw "Failed to create shortcut [$($path.FullName)]: $($_.Exception.Message)"
-			}
-		}
-	}
-	End {
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-	}
-}
-#endregion
-
-#region Function Set-Shortcut
-Function Set-Shortcut {
-<#
-.SYNOPSIS
-	Modifies a .lnk or .url type shortcut
-.DESCRIPTION
-	Modifies a shortcut - .lnk or .url file, with configurable options
-.PARAMETER Path
-	Path to the shortcut to change
-.PARAMETER TargetPath
-	Target path or URL that the shortcut launches
-.PARAMETER Arguments
-	Arguments to be passed to the target path
-.PARAMETER IconLocation
-	Location of the icon used for the shortcut
-.PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified
-.PARAMETER Description
-	Description of the shortcut
-.PARAMETER WorkingDirectory
-	Working Directory to be used for the target path
-.PARAMETER WindowStyle
-	Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
-.PARAMETER RunAsAdmin
-	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
-.PARAMETER Hotkey
-	Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
-.PARAMETER ContinueOnError
-	Continue if an error is encountered. Default is: $true.
-.EXAMPLE
-	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
-.NOTES
-.LINK
-	http://psappdeploytoolkit.com
-#>
-	[CmdletBinding()]
-	Param (
-		[Parameter(Mandatory=$true)]
-		[ValidateNotNullorEmpty()]
-		[string]$Path,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$TargetPath,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[string]$Arguments,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$IconLocation,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$IconIndex,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[string]$Description,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[string]$WorkingDirectory,
-		[Parameter(Mandatory=$false)]
-		[ValidateSet('Normal','Maximized','Minimized')]
-		[string]$WindowStyle,
-		[Parameter(Mandatory=$false)]
-		[System.Nullable[bool]]$RunAsAdmin,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullorEmpty()]
-		[string]$Hotkey,
-		[Parameter(Mandatory=$false)]
-		[ValidateNotNullOrEmpty()]
-		[boolean]$ContinueOnError = $true
-	)
-
-	Begin {
-		## Get the name of this function and write header
-		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop' }
-	}
-	Process {
-		Try {
-			If (-not (Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction 'Stop')) {
-				Write-Log -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
-				Throw
-			}
-			$extension = [IO.Path]::GetExtension($Path).ToLower()
-			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
-				Write-Log -Message "Specified file [$Path] is not a valid shortcut." -Severity 3 -Source ${CmdletName}
-				Throw
-			}
-			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
-			If ($extension -eq '.url') {
-				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
-				for($i = 0; $i -lt $URLFile.Length; $i++) {
-					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
-					if($URLFile[$i].StartsWith('IconIndex=') -and $iconIndex) { $URLFile[$i] = "IconIndex=$iconIndex" }
-					if($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$iconLocation" }
-				}
-				[IO.File]::WriteAllLines($Path,$URLFile,(new-object Text.UTF8Encoding -ArgumentList $false))
-			} Else {
-				$shortcut = $shell.CreateShortcut($Path)
+			Else {
+				$shortcut = $shell.CreateShortcut($FullPath)
 				## TargetPath
-				If ($targetPath) { $shortcut.TargetPath = $targetPath }
+				$shortcut.TargetPath = $targetPath
 				## Arguments
 				If ($arguments) { $shortcut.Arguments = $arguments }
 				## Description
@@ -5164,6 +5052,168 @@ Function Set-Shortcut {
 				$shortcut.Save()
 
 				## Set shortcut to run program as administrator
+				If ($RunAsAdmin) {
+					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
+					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
+					$filebytes[21] = $filebytes[21] -bor 32
+					[IO.FIle]::WriteAllBytes($FullPath,$filebytes)
+				}
+			}
+		}
+		Catch {
+			Write-Log -Message "Failed to create shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to create shortcut [$Path]: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
+
+#region Function Set-Shortcut
+Function Set-Shortcut {
+<#
+.SYNOPSIS
+	Modifies a .lnk or .url type shortcut
+.DESCRIPTION
+	Modifies a shortcut - .lnk or .url file, with configurable options. 
+	Only specify the parameters that you want to change.
+.PARAMETER Path
+	Path to the shortcut to change
+.PARAMETER TargetPath
+	Changes target path or URL that the shortcut launches
+.PARAMETER Arguments
+	Changes Arguments to be passed to the target path
+.PARAMETER IconLocation
+	Changes location of the icon used for the shortcut
+.PARAMETER IconIndex
+	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer. Don't specify the parameter to keep the previous value.
+.PARAMETER Description
+	Changes description of the shortcut
+.PARAMETER WorkingDirectory
+	Changes Working Directory to be used for the target path
+.PARAMETER WindowStyle
+	Changes the Windows style of the application. Options: Normal, Maximized, Minimized, DontChange. Default is: DontChange.
+.PARAMETER RunAsAdmin
+	Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut. If not specified or set to $null, the flag will not be changed.
+.PARAMETER Hotkey
+	Changes the Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+.NOTES
+	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true)]
+		[ValidateNotNullorEmpty()]
+		[string]$Path,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$TargetPath,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Arguments,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconLocation,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$IconIndex,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$Description,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[string]$WorkingDirectory,
+		[Parameter(Mandatory=$false)]
+		[ValidateSet('Normal','Maximized','Minimized','DontChange')]
+		[string]$WindowStyle='DontChange',
+		[Parameter(Mandatory=$false)]
+		[System.Nullable[bool]]$RunAsAdmin,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[string]$Hotkey,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop' }
+	}
+	Process {
+		Try {
+			If (-not (Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction 'Stop')) {
+				Write-Log -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
+			$extension = [IO.Path]::GetExtension($Path).ToLower()
+			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
+				Write-Log -Message "Specified file [$Path] is not a valid shortcut." -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
+			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
+			If ($extension -eq '.url') {
+				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
+				for($i = 0; $i -lt $URLFile.Length; $i++) {
+					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
+					if($URLFile[$i].StartsWith('IconIndex=') -and $iconIndex) { $URLFile[$i] = "IconIndex=$iconIndex" }
+					if($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$iconLocation" }
+				}
+				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
+			} Else {
+				$shortcut = $shell.CreateShortcut($Path)
+				## TargetPath
+				If ($targetPath) { $shortcut.TargetPath = $targetPath }
+				## Arguments
+				If ($arguments) { $shortcut.Arguments = $arguments }
+				## Description
+				If ($description) { $shortcut.Description = $description }
+				## Working directory
+				If ($workingDirectory) { $shortcut.WorkingDirectory = $workingDirectory }
+				## Window Style
+				Switch ($windowStyle) {
+					'Normal' { $windowStyleInt = 1 }
+					'Maximized' { $windowStyleInt = 3 }
+					'Minimized' { $windowStyleInt = 7 }
+					'DontChange' { $windowStyleInt = 0 }
+					Default { $windowStyleInt = 1 }
+				}
+				if ($windowStyleInt -ne 0) {
+					$shortcut.WindowStyle = $windowStyleInt
+				}
+				## Hotkey
+				If ($hotkey) { $shortcut.Hotkey = $hotkey }
+				## Icon
+				If (-not $iconIndex) {
+					$iconIndex = 0
+				}
+				If ($iconLocation -and (-not ($iconLocation.Contains(',')))) {
+					$iconLocation = $iconLocation + ",$iconIndex"
+				}
+				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				## Save the changes
+				$shortcut.Save()
+
+				## Set shortcut to run program as administrator
 				If ($RunAsAdmin -eq $true) {
 					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
@@ -5171,11 +5221,9 @@ Function Set-Shortcut {
 					[IO.FIle]::WriteAllBytes($Path,$filebytes)
 				} elseif ($RunAsAdmin -eq $false) {
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
-					if (($filebytes[21] -band 32) -eq 32) {
-						Write-Log -Message 'Set shortcut to not run program as administrator.' -Source ${CmdletName}
-						$filebytes[21] = $filebytes[21] -bnot 32
-						[IO.FIle]::WriteAllBytes($Path,$filebytes)
-					}			
+					Write-Log -Message 'Set shortcut to not run program as administrator.' -Source ${CmdletName}
+					$filebytes[21] = $filebytes[21] -band (-bnot 32)
+					[IO.FIle]::WriteAllBytes($Path,$filebytes)		
 				}
 			}
 		}
