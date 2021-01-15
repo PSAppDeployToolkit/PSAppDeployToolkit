@@ -5012,15 +5012,14 @@ Function New-Shortcut {
 				Throw
 			}
 
-			Write-Log -Message "Create shortcut [$FullPath]." -Source ${CmdletName}
+			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
 				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
 				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
-			}
-			Else {
+			} Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
 				## TargetPath
 				$shortcut.TargetPath = $targetPath
@@ -5053,7 +5052,7 @@ Function New-Shortcut {
 
 				## Set shortcut to run program as administrator
 				If ($RunAsAdmin) {
-					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
+					Write-Log -Message 'Setting shortcut to run program as administrator.' -Source ${CmdletName}
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
 					$filebytes[21] = $filebytes[21] -bor 32
 					[IO.FIle]::WriteAllBytes($FullPath,$filebytes)
@@ -5215,13 +5214,13 @@ Function Set-Shortcut {
 
 				## Set shortcut to run program as administrator
 				If ($RunAsAdmin -eq $true) {
-					Write-Log -Message 'Set shortcut to run program as administrator.' -Source ${CmdletName}
+					Write-Log -Message 'Setting shortcut to run program as administrator.' -Source ${CmdletName}
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
 					$filebytes[21] = $filebytes[21] -bor 32
 					[IO.FIle]::WriteAllBytes($Path,$filebytes)
 				} elseif ($RunAsAdmin -eq $false) {
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
-					Write-Log -Message 'Set shortcut to not run program as administrator.' -Source ${CmdletName}
+					Write-Log -Message 'Setting shortcut to not run program as administrator.' -Source ${CmdletName}
 					$filebytes[21] = $filebytes[21] -band (-bnot 32)
 					[IO.FIle]::WriteAllBytes($Path,$filebytes)		
 				}
