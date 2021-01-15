@@ -4972,7 +4972,7 @@ Function New-Shortcut {
 	Process {
 		Try {
 			$extension = [IO.Path]::GetExtension($Path).ToLower()
-			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
+			If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
 				Write-Log -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw
@@ -5163,7 +5163,7 @@ Function Set-Shortcut {
 				return
 			}
 			$extension = [IO.Path]::GetExtension($Path).ToLower()
-			If ((-not $extension) -or ($extension -ne '.lnk') -or ($extension -ne '.url')) {
+			If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
 				Write-Log -Message "Specified file [$Path] is not a valid shortcut." -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw
