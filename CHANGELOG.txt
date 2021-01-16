@@ -39,6 +39,12 @@
 - Fixed an issue where some global variable did not get cleared on exit
   - This caused an issue if you ran multiple toolkits in the same powershell session. It would use the same log file for all toolkits.
   - This only occured if you used the .ps1 files directly. Deploy-Application.exe opens a new session each time.
+- Added function Set-Shortcut that allows you to change existing shortcuts
+- Changed New-Shortcut:
+  - BREAKING CHANGE: IconIndex parameter is now an Integer. It was previously incorrectly specified as a String.
+  - Reworked the way this functions sets shortcut to run as admin
+  - Added additional checks for the input Path in order to provide better log messages and better handling of relative paths
+  - Improved function help text
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.
