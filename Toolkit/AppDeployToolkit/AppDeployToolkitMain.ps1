@@ -4904,7 +4904,7 @@ Function New-Shortcut {
 .PARAMETER Arguments
 	Arguments to be passed to the target path
 .PARAMETER IconLocation
-	Location of the icon used for the shortcut
+	Location of the icon used for the shortcut. Can include icon index: <icon path>,<icon index>
 .PARAMETER IconIndex
 	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer.
 .PARAMETER Description
@@ -5087,7 +5087,7 @@ Function Set-Shortcut {
 .PARAMETER Arguments
 	Changes Arguments to be passed to the target path
 .PARAMETER IconLocation
-	Changes location of the icon used for the shortcut
+	Changes location of the icon used for the shortcut. Can include icon index: <icon path>,<icon index>
 .PARAMETER IconIndex
 	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer. Don't specify the parameter to keep the previous value.
 .PARAMETER Description
