@@ -5081,7 +5081,7 @@ Function Set-Shortcut {
 	Modifies a shortcut - .lnk or .url file, with configurable options. 
 	Only specify the parameters that you want to change.
 .PARAMETER Path
-	Path to the shortcut to change
+	Path to the shortcut to be changed
 .PARAMETER TargetPath
 	Changes target path or URL that the shortcut launches
 .PARAMETER Arguments
@@ -5273,9 +5273,9 @@ Function Get-Shortcut {
 .SYNOPSIS
 	Get information from a new .lnk or .url type shortcut
 .DESCRIPTION
-	Get information from a new .lnk or .url type shortcut. Returns as a hashtable.
+	Get information from a new .lnk or .url type shortcut. Returns a hashtable.
 .PARAMETER Path
-	Path to the shortcut to read
+	Path to the shortcut to get information from
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -5358,7 +5358,7 @@ Function Get-Shortcut {
 				$Output.IconIndex = $Split[1]
 				## Drop the changes
 				$shortcut = $null
-
+				## Run as admin
 				[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
 				if ($filebytes[21] -band 32) {
 					$Output.RunAsAdmin = $true
