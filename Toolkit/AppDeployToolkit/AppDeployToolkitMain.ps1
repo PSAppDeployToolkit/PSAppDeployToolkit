@@ -5015,6 +5015,11 @@ Function New-Shortcut {
 				Throw
 			}
 
+			If (Test-Path -Path $FullPath -PathType Leaf) {
+				Write-Log -Message "The shortcut [$FullPath] already exists. Deleting the file..." -Source ${CmdletName}
+				Remove-File -Path $FullPath
+			}
+
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				# if the icon path includes the index, split them
