@@ -4980,6 +4980,9 @@ Function New-Shortcut {
 				return
 			}
 			Try {
+				# Make sure Net framework current dir is synced with powershell cwd
+				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				# Get full path
 				[string]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
 			Catch {
@@ -5185,6 +5188,8 @@ Function Set-Shortcut {
 				}
 				return
 			}
+			# Make sure Net framework current dir is synced with powershell cwd
+			[IO.Directory]::SetCurrentDirectory((Get-Location))
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
@@ -5331,6 +5336,9 @@ Function Get-Shortcut {
 				return
 			}
 			Try {
+				# Make sure Net framework current dir is synced with powershell cwd
+				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				# Get full path
 				[string]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
 			Catch {
@@ -5342,7 +5350,6 @@ Function Get-Shortcut {
 			}
 
 			$Output = @{ Path = $FullPath }
-			Write-Log -Message "Reading shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
