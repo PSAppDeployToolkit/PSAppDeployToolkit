@@ -5014,6 +5014,15 @@ Function New-Shortcut {
 
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
+				# if the icon path includes the index, split them
+				If ($IconLocation -and $iconLocation.Contains(',')) {
+					[string[]]$Split = $IconLocation.Split(',')
+					$iconLocation = $Split[0]
+					# only use the index if the iconindex parameter is not used
+					if (-not $iconIndex) {
+						$iconIndex = $Split[1]
+					}
+				}
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
 				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
@@ -5179,6 +5188,15 @@ Function Set-Shortcut {
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
+				# if the icon path includes the index, split them
+				If ($IconLocation -and $iconLocation.Contains(',')) {
+					[string[]]$Split = $IconLocation.Split(',')
+					$iconLocation = $Split[0]
+					# only use the index if the iconindex parameter is not used
+					if (-not $iconIndex) {
+						$iconIndex = $Split[1]
+					}
+				}
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
 					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
@@ -5329,9 +5347,9 @@ Function Get-Shortcut {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
-					if($URLFile[$i].StartsWith('URL=')) { $Output.TargetPath = $URLFile[$i] }
-					elseif($URLFile[$i].StartsWith('IconIndex=')) { $Output.IconIndex = $URLFile[$i] }
-					elseif($URLFile[$i].StartsWith('IconFile=')) { $Output.IconLocation = $URLFile[$i] }
+					if($URLFile[$i].StartsWith('URL=')) { $Output.TargetPath = $URLFile[$i].Replace('URL=','') }
+					elseif($URLFile[$i].StartsWith('IconIndex=')) { $Output.IconIndex = $URLFile[$i].Replace('IconIndex=','') }
+					elseif($URLFile[$i].StartsWith('IconFile=')) { $Output.IconLocation = $URLFile[$i].Replace('IconFile=','') }
 				}
 			} Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
