@@ -5023,18 +5023,18 @@ Function New-Shortcut {
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				# if the icon path includes the index, split them
-				If ($IconLocation -and $iconLocation.Contains(',')) {
+				If ($IconLocation -and $IconLocation.Contains(',')) {
 					[string[]]$Split = $IconLocation.Split(',')
-					$iconLocation = $Split[0]
+					$IconLocation = $Split[0]
 					# only use the index if the iconindex parameter is not used
-					if (-not $iconIndex) {
-						$iconIndex = $Split[1]
+					if (-not $IconIndex) {
+						$IconIndex = $Split[1]
 					}
 				}
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
-				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
-				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
+				If ($IconIndex) { $URLFile += "IconIndex=$IconIndex" }
+				If ($IconLocation) { $URLFile += "IconFile=$IconLocation" }
 				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			} Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
@@ -5057,13 +5057,13 @@ Function New-Shortcut {
 				## Hotkey
 				If ($hotkey) { $shortcut.Hotkey = $hotkey }
 				## Icon
-				If (-not $iconIndex) {
-					$iconIndex = 0
+				If (-not $IconIndex) {
+					$IconIndex = 0
 				}
-				If ($iconLocation -and (-not ($iconLocation.Contains(',')))) {
-					$iconLocation = $iconLocation + ",$iconIndex"
+				If ($IconLocation -and (-not ($IconLocation.Contains(',')))) {
+					$IconLocation = $IconLocation + ",$IconIndex"
 				}
-				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				If ($IconLocation) { $shortcut.IconLocation = $IconLocation }
 				## Save the changes
 				$shortcut.Save()
 
@@ -5199,19 +5199,19 @@ Function Set-Shortcut {
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
 				# if the icon path includes the index, split them
-				If ($IconLocation -and $iconLocation.Contains(',')) {
+				If ($IconLocation -and $IconLocation.Contains(',')) {
 					[string[]]$Split = $IconLocation.Split(',')
-					$iconLocation = $Split[0]
+					$IconLocation = $Split[0]
 					# only use the index if the iconindex parameter is not used
-					if (-not $iconIndex) {
-						$iconIndex = $Split[1]
+					if (-not $IconIndex) {
+						$IconIndex = $Split[1]
 					}
 				}
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
 					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
-					elseif($URLFile[$i].StartsWith('IconIndex=') -and $iconIndex) { $URLFile[$i] = "IconIndex=$iconIndex" }
-					elseif($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$iconLocation" }
+					elseif($URLFile[$i].StartsWith('IconIndex=') -and $IconIndex) { $URLFile[$i] = "IconIndex=$IconIndex" }
+					elseif($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$IconLocation" }
 				}
 				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			} Else {
@@ -5243,28 +5243,28 @@ Function Set-Shortcut {
 				$TempIconLocation = $Split[0]
 				$TempIconIndex = $Split[1]
 				# Check whether a new icon path was specified
-				If ($iconLocation) {
+				If ($IconLocation) {
 					# New icon path was specified. Check whether new icon index was also specified
-					If ($iconIndex) {
+					If ($IconIndex) {
 						# Create new icon path from new icon path and new icon index
-						$iconLocation = $iconLocation + ",$iconIndex"
+						$IconLocation = $IconLocation + ",$IconIndex"
 					} else {
 						# No new icon index was specified as a parameter. Check whether it wasnt supplied as a part of the Path
-						If (-not ($iconLocation.Contains(','))) {
+						If (-not ($IconLocation.Contains(','))) {
 							# New icon index was not specified as a part of the Path, use the index from the shortcut
-							$iconLocation = $iconLocation + ",$TempIconIndex"
+							$IconLocation = $IconLocation + ",$TempIconIndex"
 						}
 						# The new path was specified and the icon index is a part of the path
 					}
 				} else {
 					# New icon path was not specified. Check whether new icon index was specified
-					If ($iconIndex) {
+					If ($IconIndex) {
 						# New icon index was specified, append it to the icon path from the shortcut
-						$iconLocation = $TempIconLocation + ",$iconIndex"
+						$IconLocation = $TempIconLocation + ",$IconIndex"
 					}
 					# New icon index was not specified neither was the icon path
 				}
-				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				If ($IconLocation) { $shortcut.IconLocation = $IconLocation }
 				## Save the changes
 				$shortcut.Save()
 
