@@ -4904,9 +4904,9 @@ Function New-Shortcut {
 .PARAMETER Arguments
 	Arguments to be passed to the target path
 .PARAMETER IconLocation
-	Location of the icon used for the shortcut. Can include icon index: <icon path>,<icon index>
+	Location of the icon used for the shortcut
 .PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer.
+	The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 .PARAMETER Description
 	Description of the shortcut
 .PARAMETER WorkingDirectory
@@ -5023,7 +5023,7 @@ Function New-Shortcut {
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				# if the icon path includes the index, split them
-				If ($IconLocation -and $IconLocation.Contains(',')) {
+				If ($IconLocation) {
 					[string[]]$Split = $IconLocation.Split(',')
 					$IconLocation = $Split[0]
 					# only use the index if the iconindex parameter is not used
@@ -5033,7 +5033,7 @@ Function New-Shortcut {
 				}
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
-				If ($IconIndex) { $URLFile += "IconIndex=$IconIndex" }
+				If ($IconIndex -ne $null) { $URLFile += "IconIndex=$IconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$IconLocation" }
 				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			} Else {
@@ -5104,9 +5104,9 @@ Function Set-Shortcut {
 .PARAMETER Arguments
 	Changes Arguments to be passed to the target path
 .PARAMETER IconLocation
-	Changes location of the icon used for the shortcut. Can include icon index: <icon path>,<icon index>
+	Changes location of the icon used for the shortcut
 .PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer. Don't specify the parameter to keep the previous value.
+	Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 .PARAMETER Description
 	Changes description of the shortcut
 .PARAMETER WorkingDirectory
@@ -5120,7 +5120,7 @@ Function Set-Shortcut {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
 	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 .LINK
@@ -5198,19 +5198,10 @@ Function Set-Shortcut {
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
-				# if the icon path includes the index, split them
-				If ($IconLocation -and $IconLocation.Contains(',')) {
-					[string[]]$Split = $IconLocation.Split(',')
-					$IconLocation = $Split[0]
-					# only use the index if the iconindex parameter is not used
-					if (-not $IconIndex) {
-						$IconIndex = $Split[1]
-					}
-				}
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
 					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
-					elseif($URLFile[$i].StartsWith('IconIndex=') -and $IconIndex) { $URLFile[$i] = "IconIndex=$IconIndex" }
+					elseif($URLFile[$i].StartsWith('IconIndex=') -and ($IconIndex -ne $null)) { $URLFile[$i] = "IconIndex=$IconIndex" }
 					elseif($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$IconLocation" }
 				}
 				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
@@ -5245,20 +5236,16 @@ Function Set-Shortcut {
 				# Check whether a new icon path was specified
 				If ($IconLocation) {
 					# New icon path was specified. Check whether new icon index was also specified
-					If ($IconIndex) {
+					If ($IconIndex -ne $null) {
 						# Create new icon path from new icon path and new icon index
 						$IconLocation = $IconLocation + ",$IconIndex"
 					} else {
-						# No new icon index was specified as a parameter. Check whether it wasnt supplied as a part of the Path
-						If (-not ($IconLocation.Contains(','))) {
-							# New icon index was not specified as a part of the Path, use the index from the shortcut
-							$IconLocation = $IconLocation + ",$TempIconIndex"
-						}
-						# The new path was specified and the icon index is a part of the path
+						# No new icon index was specified as a parameter. We will keep the old one
+						$IconLocation = $IconLocation + ",$TempIconIndex"
 					}
 				} else {
 					# New icon path was not specified. Check whether new icon index was specified
-					If ($IconIndex) {
+					If ($IconIndex -ne $null) {
 						# New icon index was specified, append it to the icon path from the shortcut
 						$IconLocation = $TempIconLocation + ",$IconIndex"
 					}
