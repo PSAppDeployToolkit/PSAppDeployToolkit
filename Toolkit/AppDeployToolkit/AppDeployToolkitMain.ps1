@@ -5022,15 +5022,6 @@ Function New-Shortcut {
 
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
-				# if the icon path includes the index, split them
-				If ($IconLocation) {
-					[string[]]$Split = $IconLocation.Split(',')
-					$IconLocation = $Split[0]
-					# only use the index if the iconindex parameter is not used
-					if (-not $IconIndex) {
-						$IconIndex = $Split[1]
-					}
-				}
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
 				If ($IconIndex -ne $null) { $URLFile += "IconIndex=$IconIndex" }
@@ -5057,13 +5048,10 @@ Function New-Shortcut {
 				## Hotkey
 				If ($hotkey) { $shortcut.Hotkey = $hotkey }
 				## Icon
-				If (-not $IconIndex) {
+				If ($IconIndex -eq $null) {
 					$IconIndex = 0
 				}
-				If ($IconLocation -and (-not ($IconLocation.Contains(',')))) {
-					$IconLocation = $IconLocation + ",$IconIndex"
-				}
-				If ($IconLocation) { $shortcut.IconLocation = $IconLocation }
+				If ($IconLocation) { $shortcut.IconLocation = $IconLocation + ",$IconIndex" }
 				## Save the changes
 				$shortcut.Save()
 
@@ -5373,7 +5361,7 @@ Function Get-Shortcut {
 				[string[]]$Split = $shortcut.IconLocation.Split(',')
 				$Output.IconLocation = $Split[0]
 				$Output.IconIndex = $Split[1]
-				## Drop the changes
+				## Remove the variable
 				$shortcut = $null
 				## Run as admin
 				[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
