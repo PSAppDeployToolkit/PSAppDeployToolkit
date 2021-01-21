@@ -4906,7 +4906,7 @@ Function New-Shortcut {
 .PARAMETER IconLocation
 	Location of the icon used for the shortcut
 .PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer.
+	The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 .PARAMETER Description
 	Description of the shortcut
 .PARAMETER WorkingDirectory
@@ -4928,7 +4928,7 @@ Function New-Shortcut {
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true, Position=0)]
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
 		[Parameter(Mandatory=$true)]
@@ -4980,6 +4980,9 @@ Function New-Shortcut {
 				return
 			}
 			Try {
+				# Make sure Net framework current dir is synced with powershell cwd
+				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				# Get full path
 				[string]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
 			Catch {
@@ -5012,12 +5015,17 @@ Function New-Shortcut {
 				Throw
 			}
 
+			If (Test-Path -Path $FullPath -PathType Leaf) {
+				Write-Log -Message "The shortcut [$FullPath] already exists. Deleting the file..." -Source ${CmdletName}
+				Remove-File -Path $FullPath
+			}
+
 			Write-Log -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
-				If ($iconIndex) { $URLFile += "IconIndex=$iconIndex" }
-				If ($IconLocation) { $URLFile += "IconFile=$iconLocation" }
+				If ($IconIndex -ne $null) { $URLFile += "IconIndex=$IconIndex" }
+				If ($IconLocation) { $URLFile += "IconFile=$IconLocation" }
 				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			} Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
@@ -5040,13 +5048,10 @@ Function New-Shortcut {
 				## Hotkey
 				If ($hotkey) { $shortcut.Hotkey = $hotkey }
 				## Icon
-				If (-not $iconIndex) {
-					$iconIndex = 0
+				If ($IconIndex -eq $null) {
+					$IconIndex = 0
 				}
-				If ($iconLocation -and (-not ($iconLocation.Contains(',')))) {
-					$iconLocation = $iconLocation + ",$iconIndex"
-				}
-				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				If ($IconLocation) { $shortcut.IconLocation = $IconLocation + ",$IconIndex" }
 				## Save the changes
 				$shortcut.Save()
 
@@ -5081,7 +5086,7 @@ Function Set-Shortcut {
 	Modifies a shortcut - .lnk or .url file, with configurable options. 
 	Only specify the parameters that you want to change.
 .PARAMETER Path
-	Path to the shortcut to change
+	Path to the shortcut to be changed
 .PARAMETER TargetPath
 	Changes target path or URL that the shortcut launches
 .PARAMETER Arguments
@@ -5089,7 +5094,7 @@ Function Set-Shortcut {
 .PARAMETER IconLocation
 	Changes location of the icon used for the shortcut
 .PARAMETER IconIndex
-	Executables, DLLs, ICO files with multiple icons need the icon index to be specified. Integer. Don't specify the parameter to keep the previous value.
+	Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 .PARAMETER Description
 	Changes description of the shortcut
 .PARAMETER WorkingDirectory
@@ -5103,17 +5108,20 @@ Function Set-Shortcut {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
 	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 .LINK
 	http://psappdeploytoolkit.com
 #>
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName="Default")]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName="Default")]
 		[ValidateNotNullorEmpty()]
 		[string]$Path,
+		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName="Pipeline")]
+		[ValidateNotNullorEmpty()]
+		[hashtable]$PathHash,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[string]$TargetPath,
@@ -5154,6 +5162,10 @@ Function Set-Shortcut {
 	}
 	Process {
 		Try {
+			if($PsCmdlet.ParameterSetName -eq "Pipeline") {
+				$Path = $PathHash.Path
+			}
+
 			If (-not (Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction 'Stop')) {
 				Write-Log -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
@@ -5169,13 +5181,16 @@ Function Set-Shortcut {
 				}
 				return
 			}
+			# Make sure Net framework current dir is synced with powershell cwd
+			[IO.Directory]::SetCurrentDirectory((Get-Location))
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
 				for($i = 0; $i -lt $URLFile.Length; $i++) {
+					$URLFile[$i] = $URLFile[$i].TrimStart()
 					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
-					if($URLFile[$i].StartsWith('IconIndex=') -and $iconIndex) { $URLFile[$i] = "IconIndex=$iconIndex" }
-					if($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$iconLocation" }
+					elseif($URLFile[$i].StartsWith('IconIndex=') -and ($IconIndex -ne $null)) { $URLFile[$i] = "IconIndex=$IconIndex" }
+					elseif($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$IconLocation" }
 				}
 				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
 			} Else {
@@ -5202,13 +5217,25 @@ Function Set-Shortcut {
 				## Hotkey
 				If ($hotkey) { $shortcut.Hotkey = $hotkey }
 				## Icon
-				If (-not $iconIndex) {
-					$iconIndex = 0
+				# Retrieve previous value and split the path from the index
+				[string[]]$Split = $shortcut.IconLocation.Split(',')
+				$TempIconLocation = $Split[0]
+				$TempIconIndex = $Split[1]
+				# Check whether a new icon path was specified
+				If ($IconLocation) {
+					# New icon path was specified. Check whether new icon index was also specified
+					If ($IconIndex -ne $null) {
+						# Create new icon path from new icon path and new icon index
+						$IconLocation = $IconLocation + ",$IconIndex"
+					} else {
+						# No new icon index was specified as a parameter. We will keep the old one
+						$IconLocation = $IconLocation + ",$TempIconIndex"
+					}
+				} elseif ($IconIndex -ne $null) {
+					# New icon index was specified, but not the icon location. Append it to the icon path from the shortcut
+					$IconLocation = $TempIconLocation + ",$IconIndex"
 				}
-				If ($iconLocation -and (-not ($iconLocation.Contains(',')))) {
-					$iconLocation = $iconLocation + ",$iconIndex"
-				}
-				If ($iconLocation) { $shortcut.IconLocation = $iconLocation }
+				If ($IconLocation) { $shortcut.IconLocation = $IconLocation }
 				## Save the changes
 				$shortcut.Save()
 
@@ -5239,6 +5266,122 @@ Function Set-Shortcut {
 }
 #endregion
 
+#region Function Get-Shortcut
+Function Get-Shortcut {
+<#
+.SYNOPSIS
+	Get information from a new .lnk or .url type shortcut
+.DESCRIPTION
+	Get information from a new .lnk or .url type shortcut. Returns a hashtable.
+.PARAMETER Path
+	Path to the shortcut to get information from
+.PARAMETER ContinueOnError
+	Continue if an error is encountered. Default is: $true.
+.EXAMPLE
+	Get-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
+.NOTES
+	Url shortcuts only support TargetPath, IconLocation and IconIndex.
+.LINK
+	http://psappdeploytoolkit.com
+#>
+	[CmdletBinding()]
+	Param (
+		[Parameter(Mandatory=$true, Position=0)]
+		[ValidateNotNullorEmpty()]
+		[string]$Path,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullOrEmpty()]
+		[boolean]$ContinueOnError = $true
+	)
+
+	Begin {
+		## Get the name of this function and write header
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+		If (-not $Shell) { [__comobject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop' }
+	}
+	Process {
+		Try {
+			$extension = [IO.Path]::GetExtension($Path).ToLower()
+			If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
+				Write-Log -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
+			Try {
+				# Make sure Net framework current dir is synced with powershell cwd
+				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				# Get full path
+				[string]$FullPath = [IO.Path]::GetFullPath($Path)
+			}
+			Catch {
+				Write-Log -Message "Specified path [$Path] is not valid." -Severity 3 -Source ${CmdletName}
+				If (-not $ContinueOnError) {
+					Throw
+				}
+				return
+			}
+
+			$Output = @{ Path = $FullPath }
+			If ($extension -eq '.url') {
+				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
+				for($i = 0; $i -lt $URLFile.Length; $i++) {
+					$URLFile[$i] = $URLFile[$i].TrimStart()
+					if($URLFile[$i].StartsWith('URL=')) { $Output.TargetPath = $URLFile[$i].Replace('URL=','') }
+					elseif($URLFile[$i].StartsWith('IconIndex=')) { $Output.IconIndex = $URLFile[$i].Replace('IconIndex=','') }
+					elseif($URLFile[$i].StartsWith('IconFile=')) { $Output.IconLocation = $URLFile[$i].Replace('IconFile=','') }
+				}
+			} Else {
+				$shortcut = $shell.CreateShortcut($FullPath)
+				## TargetPath
+				$Output.TargetPath = $shortcut.TargetPath
+				## Arguments
+				$Output.Arguments = $shortcut.Arguments
+				## Description
+				$Output.Description = $shortcut.Description
+				## Working directory
+				$Output.WorkingDirectory = $shortcut.WorkingDirectory
+				## Window Style
+				Switch ($shortcut.WindowStyle) {
+					1 { $Output.WindowStyle = 'Normal'}
+					3 { $Output.WindowStyle = 'Maximized'}
+					7 { $Output.WindowStyle = 'Minimized'}
+					Default { $Output.WindowStyle = 'Normal'}
+				}
+				## Hotkey
+				$Output.Hotkey = $shortcut.Hotkey
+				## Icon
+				[string[]]$Split = $shortcut.IconLocation.Split(',')
+				$Output.IconLocation = $Split[0]
+				$Output.IconIndex = $Split[1]
+				## Remove the variable
+				$shortcut = $null
+				## Run as admin
+				[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
+				if ($filebytes[21] -band 32) {
+					$Output.RunAsAdmin = $true
+				}
+				else {
+					$Output.RunAsAdmin = $false
+				}
+			}
+			Write-Output $Output
+		}
+		Catch {
+			Write-Log -Message "Failed to read the shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			If (-not $ContinueOnError) {
+				Throw "Failed to read the shortcut [$Path]: $($_.Exception.Message)"
+			}
+		}
+	}
+	End {
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	}
+}
+#endregion
 
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
