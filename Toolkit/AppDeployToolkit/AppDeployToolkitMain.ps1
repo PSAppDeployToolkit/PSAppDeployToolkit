@@ -5231,13 +5231,9 @@ Function Set-Shortcut {
 						# No new icon index was specified as a parameter. We will keep the old one
 						$IconLocation = $IconLocation + ",$TempIconIndex"
 					}
-				} else {
-					# New icon path was not specified. Check whether new icon index was specified
-					If ($IconIndex -ne $null) {
-						# New icon index was specified, append it to the icon path from the shortcut
-						$IconLocation = $TempIconLocation + ",$IconIndex"
-					}
-					# New icon index was not specified neither was the icon path
+				} elseif ($IconIndex -ne $null) {
+					# New icon index was specified, but not the icon location. Append it to the icon path from the shortcut
+					$IconLocation = $TempIconLocation + ",$IconIndex"
 				}
 				If ($IconLocation) { $shortcut.IconLocation = $IconLocation }
 				## Save the changes
