@@ -46,6 +46,9 @@
   - Reworked the way this function sets shortcut to run as admin
   - Added additional checks for the input Path in order to provide better log messages and better handling of relative paths
   - Improved function help text
+- Changed the way Execute-MSI handles paths for Transforms and Patches:
+  - The only accepted separator is now a semi-colon. Commas can be a part of the paths now.
+  - Double quotes are removed from the paths before the entire string is wrapped in double quotes.
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.
