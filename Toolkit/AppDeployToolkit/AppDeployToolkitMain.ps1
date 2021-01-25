@@ -1822,8 +1822,10 @@ Function Show-InstallationPrompt {
 			$timerPersist.Start()
 		}
 
-		## Close the Installation Progress Dialog if running
-		Close-InstallationProgress
+		if (-not $AsyncToolkitLaunch) {
+			## Close the Installation Progress Dialog if running
+			Close-InstallationProgress
+		}
 
 		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
 		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
@@ -2351,9 +2353,9 @@ Function Execute-MSI {
 .PARAMETER Path
 	The path to the MSI/MSP file or the product code of the installed MSI.
 .PARAMETER Transform
-	The name of the transform file(s) to be applied to the MSI. The transform file is expected to be in the same directory as the MSI file.
+	The name of the transform file(s) to be applied to the MSI. The transform file is expected to be in the same directory as the MSI file. Multiple transforms have to be separated by a semi-colon.
 .PARAMETER Patch
-	The name of the patch (msp) file(s) to be applied to the MSI for use with the "Install" action. The patch file is expected to be in the same directory as the MSI file.
+	The name of the patch (msp) file(s) to be applied to the MSI for use with the "Install" action. The patch file is expected to be in the same directory as the MSI file. Multiple patches have to be separated by a semi-colon.
 .PARAMETER Parameters
 	Overrides the default parameters specified in the XML configuration file. Install default is: "REBOOT=ReallySuppress /QB!". Uninstall default is: "REBOOT=ReallySuppress /QN".
 .PARAMETER AddParameters
@@ -2571,13 +2573,12 @@ Function Execute-MSI {
 
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
-			[string[]]$transforms = $transform -split ','
-			0..($transforms.Length - 1) | ForEach-Object {
-				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_]) -PathType 'Leaf') {
-					$transforms[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$_].Replace('.\','')
-				}
-				Else {
-					$transforms[$_] = $transforms[$_]
+			[string[]]$transforms = $transform -replace "`"","" -split ';'
+			for ($i = 0; $i -lt $transforms.Length; $i++) {
+				[string]$FullPath = $null
+				[string]$FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$i].Replace('.\','')
+				If ($FullPath -and (Test-Path -LiteralPath $FullPath -PathType 'Leaf')) {
+					$transforms[$i] = $FullPath
 				}
 			}
 			[string]$mstFile = "`"$($transforms -join ';')`""
@@ -2585,13 +2586,12 @@ Function Execute-MSI {
 
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
 		If ($patch) {
-			[string[]]$patches = $patch -split ','
-			0..($patches.Length - 1) | ForEach-Object {
-				If (Test-Path -LiteralPath (Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_]) -PathType 'Leaf') {
-					$patches[$_] = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$_].Replace('.\','')
-				}
-				Else {
-					$patches[$_] = $patches[$_]
+			[string[]]$patches = $patch -replace "`"","" -split ';'
+			for ($i = 0; $i -lt $patches.Length; $i++) {
+				[string]$FullPath = $null
+				[string]$FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$i].Replace('.\','')
+				If ($FullPath -and (Test-Path -LiteralPath $FullPath -PathType 'Leaf')) {
+					$patches[$i] = $FullPath
 				}
 			}
 			[string]$mspFile = "`"$($patches -join ';')`""
