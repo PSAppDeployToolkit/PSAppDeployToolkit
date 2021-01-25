@@ -12,6 +12,7 @@
   - Fixed the hidden abort button not working on toolkit timeout
   - Buttons are now identical in size and position to the ones in Show-InstallationWelcome
   - Increased the gap between the banner and the text when the message is too short
+  - The function now doesn't call Close-InstallationProgress when running in async mode
 - Changed Show-InstallationRestartPrompt:
   - Reworked the window to look consistent with Show-InstallationWelcome
 - Changed Show-InstallationProgress:

@@ -1822,8 +1822,10 @@ Function Show-InstallationPrompt {
 			$timerPersist.Start()
 		}
 
-		## Close the Installation Progress Dialog if running
-		Close-InstallationProgress
+		if (-not $AsyncToolkitLaunch) {
+			## Close the Installation Progress Dialog if running
+			Close-InstallationProgress
+		}
 
 		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
 		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
