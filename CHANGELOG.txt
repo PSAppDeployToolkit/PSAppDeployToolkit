@@ -1,4 +1,4 @@
-**Version 3.8.4 [??/??/2021]**
+﻿**Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
 - Changed Show-InstallationWelcome:
   - Buttons are now wider
@@ -50,6 +50,13 @@
 - Changed the way Execute-MSI handles paths for Transforms and Patches:
   - The only accepted separator is now a semi-colon. Commas can be a part of the paths now.
   - Double quotes are removed from the paths before the entire string is wrapped in double quotes.
+- Encoding of the files has been changed back to UTF8 with BOM, back from UTF8 without BOM:
+  - We chose to go with UTF8 without BOM because it is the encoding for Powershell v6+ and because it is one of the most popular encodings in the world.
+    However this caused issues on Windows Powershell for clients that use a different language from English. Due to Microsoft's chaotic coding decisions, Powershell uses the BOM as a verification that the code is written with non-English characters.
+    In their own words:"It's not possible to force PowerShell to use a specific input encoding. PowerShell 5.1 and below, running on Windows with the locale set to en-US, defaults to Windows-1252 encoding when there's no BOM. 
+    Other locale settings may use a different encoding. To ensure interoperability, it's best to save scripts in a Unicode format with a BOM."
+  - Just like changing to UTF8 without BOM, this will not affect the size of the files or their functionality. BOM or Byte Order Mark is just one special character, placed at the start of the files.
+    If you do not use the toolkit on machines with a different language, then this will have no effect on you or your clients. It will however help everyone else display the text in their language correctly.
 
 **Version 3.8.3 [01/10/2020]**
 - Added function Set-ItemPermission that allows you to easily change permissions on files or folders.
