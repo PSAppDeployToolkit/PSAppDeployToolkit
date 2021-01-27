@@ -1,5 +1,5 @@
-// Date Modified: 30/09/2020
-// Version Number: 3.8.3
+﻿// Date Modified: 26/01/2021
+// Version Number: 3.8.4
 
 using System;
 using System.Text;

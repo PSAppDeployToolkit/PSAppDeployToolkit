@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 	# LICENSE #
@@ -70,9 +70,9 @@ Param (
 [string]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[version]$appDeployMainScriptVersion = [version]'3.8.3'
-[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.3'
-[string]$appDeployMainScriptDate = '30/09/2020'
+[version]$appDeployMainScriptVersion = [version]'3.8.4'
+[version]$appDeployMainScriptMinimumConfigVersion = [version]'3.8.4'
+[string]$appDeployMainScriptDate = '26/01/2021'
 [hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture

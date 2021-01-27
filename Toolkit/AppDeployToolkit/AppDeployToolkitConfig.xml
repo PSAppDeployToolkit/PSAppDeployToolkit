@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <AppDeployToolkit_Config>
 <!--# LICENSE #
     PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
@@ -8,8 +8,8 @@
 -->
 	<!--Configuration File Details-->
 	<Config_File>
-		<Config_Version>3.8.3</Config_Version>
-		<Config_Date>30/09/2020</Config_Date>
+		<Config_Version>3.8.4</Config_Version>
+		<Config_Date>26/01/2021</Config_Date>
 	</Config_File>
 
 	<!--Toolkit Options-->

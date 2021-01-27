@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	Displays a graphical console to browse the help for the App Deployment Toolkit functions
     # LICENSE #
@@ -22,8 +22,8 @@
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.8.3'
-[string]$appDeployHelpScriptDate = '30/09/2020'
+[version]$appDeployHelpScriptVersion = [version]'3.8.4'
+[string]$appDeployHelpScriptDate = '26/01/2021'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
