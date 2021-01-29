@@ -7889,18 +7889,19 @@ Function Show-InstallationRestartPrompt {
 			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
 			## Prepare a list of parameters of this function as a string
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
-				switch ($_.Value.GetType().Name) {
+				$item = $_
+				switch ($item.Value.GetType().Name) {
 					'SwitchParameter' {
-						"-$($_.Key)"
+						"-$($item.Key)"
 					}
 					'Boolean' {
-						"-$($_.Key) `$" + "$($_.Value)".ToLower()
+						"-$($item.Key) `$" + "$($item.Value)".ToLower()
 					}
 					'Int32' {
-						"-$($_.Key) $($_.Value)"
+						"-$($item.Key) $($item.Value)"
 					}
 					default {
-						"-$($_.Key) `"$($_.Value)`""
+						"-$($item.Key) `"$($item.Value)`""
 					}
 				}
 			}) -join ' '
