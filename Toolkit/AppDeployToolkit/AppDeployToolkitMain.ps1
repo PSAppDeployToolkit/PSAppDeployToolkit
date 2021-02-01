@@ -6434,13 +6434,13 @@ Function Show-InstallationWelcome {
 .PARAMETER PromptToSave
 	Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 .PARAMETER PersistPrompt
-	Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+	Specify whether to make the Show-InstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 .PARAMETER BlockExecution
-	Option to prevent the user from launching the process/application during the installation.
+	Option to prevent the user from launching processes/applications, specified in -CloseApps, during the installation.
 .PARAMETER AllowDefer
 	Enables an optional defer button to allow the user to defer the installation.
 .PARAMETER AllowDeferCloseApps
-	Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed.
+	Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
 .PARAMETER DeferTimes
 	Specify the number of times the installation can be deferred.
 .PARAMETER DeferDays
@@ -7534,7 +7534,7 @@ Function Show-InstallationRestartPrompt {
 .PARAMETER NoSilentRestart
 	Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $true
 .PARAMETER NoCountdown
-	Specifies not to show a countdown, just the Restart Now and Restart Later buttons.
+	Specifies not to show a countdown.
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .PARAMETER SilentCountdownSeconds
 	Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
@@ -7889,6 +7889,7 @@ Function Show-InstallationRestartPrompt {
 			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
 			## Prepare a list of parameters of this function as a string
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
+				# We have to save current pipeline object $_ because switch has its own $_
 				$item = $_
 				switch ($item.Value.GetType().Name) {
 					'SwitchParameter' {
@@ -8073,7 +8074,7 @@ Function Show-InstallationProgress {
 .PARAMETER StatusMessage
 	The status message to be displayed. The default status message is taken from the XML configuration file.
 .PARAMETER WindowLocation
-	The location of the progress window. Default: just below top, centered.
+	The location of the progress window. Default: center of the screen.
 .PARAMETER TopMost
 	Specifies whether the progress window should be topmost. Default: $true.
 .EXAMPLE
