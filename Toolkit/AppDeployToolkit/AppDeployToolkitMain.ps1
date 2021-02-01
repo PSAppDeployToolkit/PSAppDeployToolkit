@@ -266,9 +266,11 @@ Else {
 [boolean]$IsServiceAccount = [boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-6')
 [boolean]$IsProcessUserInteractive = [Environment]::UserInteractive
 [string]$LocalSystemNTAccount = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'LocalSystemSid', $null)).Translate([Security.Principal.NTAccount]).Value
-[string]$LocalUsersGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
-[string]$LocalPowerUsersGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinPowerUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
-[string]$LocalAdministratorsGroup = (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinAdministratorsSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+[string]$LocalUsersGroup = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+try {
+	[string]$LocalPowerUsersGroup = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinPowerUsersSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
+} catch { }
+[string]$LocalAdministratorsGroup = (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::'BuiltinAdministratorsSid', $null)).Translate([System.Security.Principal.NTAccount]).Value
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 

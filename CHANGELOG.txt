@@ -1,6 +1,7 @@
-﻿**Version 3.8.4.1 [??/02/2021]**
+﻿**Version 3.8.5 [??/??/2021]**
 - Fixed a bug in function Show-InstallationRestartPrompt that caused incorrect handling of parameters when running the function asynchronously
 - Fixed help text for some functions that contained old/incorrect information
+- Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
