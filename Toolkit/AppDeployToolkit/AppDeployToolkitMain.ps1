@@ -10742,14 +10742,16 @@ Function Set-ActiveSetup {
 					[string]$ActiveSetupRegKey,
 					[Parameter(Mandatory=$false)]
 					[ValidateNotNullorEmpty()]
-					[string]$SID
+					[string]$SID,
+					[Parameter(Mandatory=$false)]
+					[bool]$Disable
 				)
 				If ($SID) {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false }
-					If ($DisableActiveSetup) {
+					If ($DisableActiveSetup -or $Disable) {
 						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
 					}
 					Else {
@@ -10761,14 +10763,13 @@ Function Set-ActiveSetup {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
-					If ($DisableActiveSetup) {
+					If ($DisableActiveSetup -or $Disable) {
 						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
 					}
 					Else {
 						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
 					}
 				}
-
 			}
 
 			Write-Log -Message "Adding Active Setup Key for local machine: [$ActiveSetupKey]." -Source ${CmdletName}
@@ -10789,7 +10790,7 @@ Function Set-ActiveSetup {
 							}
 
 							Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID -Disable $true
 						} else {
 							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)], because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
 						}
@@ -10810,7 +10811,7 @@ Function Set-ActiveSetup {
 						}
 
 						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -Disable $true
 					} else {
 						Write-Log -Message "Skipping executing Active Setup StubPath file for current user, because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
 					}
