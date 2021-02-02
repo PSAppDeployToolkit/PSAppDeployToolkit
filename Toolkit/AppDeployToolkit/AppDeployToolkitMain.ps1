@@ -10778,8 +10778,8 @@ Function Set-ActiveSetup {
 			If ($ExecuteForCurrentUser) {
 				If ($SessionZero) {
 					If ($RunAsActiveUser) {
-						# Skip if Active Setup reg key is present and IsInstalled is 1
-						If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
+						# Skip if Active Setup reg key is present and IsInstalled is 0
+						If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 0) {
 							Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 							If ($CUArguments) {
 								Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
@@ -10799,14 +10799,14 @@ Function Set-ActiveSetup {
 					}
 				}
 				Else {
-					# Skip if Active Setup reg key is present and IsInstalled is 1
-					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -Value "IsInstalled" -ContinueOnError $true) -ne 1) {
+					# Skip if Active Setup reg key is present and IsInstalled is 0
+					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -Value "IsInstalled" -ContinueOnError $true) -ne 0) {
 						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 						If ($CUArguments) {
-							$ExecuteResults = Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -PassThru -ExitOnProcessFailure $false
+							Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
 						}
 						Else {
-							$ExecuteResults = Execute-Process -FilePath $CUStubExePath -PassThru -ExitOnProcessFailure $false
+							Execute-Process -FilePath $CUStubExePath -ExitOnProcessFailure $false
 						}
 
 						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
