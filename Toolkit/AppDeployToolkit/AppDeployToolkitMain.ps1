@@ -277,10 +277,10 @@ $GetAccountNameUsingSid = [scriptblock]{
 		return $null 
 	}
 }	
-$LocalSytemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
-$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
-$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
-$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
+[string]$LocalSytemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
+[string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
+[string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
+[string]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
 
