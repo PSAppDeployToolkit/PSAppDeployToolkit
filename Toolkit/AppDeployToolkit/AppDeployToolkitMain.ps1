@@ -10734,6 +10734,47 @@ Function Set-ActiveSetup {
 				If ($StubExeExt -ne '.exe') { [string]$CUArguments = "$CUArguments $Arguments" }
 			}
 
+			[scriptblock]$IsVersionLower = {
+				Param (
+					[Parameter(Mandatory=$true)]
+					[AllowEmptyString()]
+					[string]$HKCUVer,
+					[Parameter(Mandatory=$true)]
+					[AllowEmptyString()]
+					[string]$HKLMVer
+				)
+
+				If ((-not $HKLMVer) -or (-not $HKCUVer)) {
+					return $true
+				}
+
+				[string]$HKLMNumbersOnlyString = ""
+				for($i = 0; $i -lt $HKLMVer.Length; $i++) {
+					if([char]::IsDigit($HKLMVer[$i])) {$HKLMNumbersOnlyString += $HKLMVer[$i]}
+				}
+
+				[string]$HKCUNumbersOnlyString = ""
+				for($i = 0; $i -lt $HKCUVer.Length; $i++) {
+					if([char]::IsDigit($HKCUVer[$i])) {$HKCUNumbersOnlyString += $HKCUVer[$i]}
+				}
+
+				If ((-not $HKLMNumbersOnlyString) -or (-not $HKCUNumbersOnlyString)) {
+					return $true
+				}
+
+				try {
+					If ([uint64]::Parse($HKLMNumbersOnlyString) -gt [uint64]::Parse($HKCUNumbersOnlyString)) {
+						return $true
+					}
+					else {
+						return $false
+					}
+				}
+				catch {
+					return $true
+				}
+			}
+
 			## Create the Active Setup entry in the registry
 			[scriptblock]$SetActiveSetupRegKeys = {
 				Param (
@@ -10742,32 +10783,33 @@ Function Set-ActiveSetup {
 					[string]$ActiveSetupRegKey,
 					[Parameter(Mandatory=$false)]
 					[ValidateNotNullorEmpty()]
-					[string]$SID,
-					[Parameter(Mandatory=$false)]
-					[bool]$Disable
+					[string]$SID
 				)
 				If ($SID) {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID -ContinueOnError $false
-					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false }
-					If ($DisableActiveSetup -or $Disable) {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
+					# Only Add StubPath and IsInstalled to HKLM. In HKCU they do nothing
+					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
+						If ($DisableActiveSetup) {
+							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
+						} Else {
+							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID -ContinueOnError $false
+						}
 					}
-					Else {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID -ContinueOnError $false
-					}
-				}
-				Else {
+				} Else {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -ContinueOnError $false
-					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
-					If ($DisableActiveSetup -or $Disable) {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
-					}
-					Else {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
+					# Only Add StubPath and IsInstalled to HKLM. In HKCU they do nothing
+					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
+						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
+						If ($DisableActiveSetup) {
+							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
+						} Else {
+							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
+						}
 					}
 				}
 			}
@@ -10780,7 +10822,7 @@ Function Set-ActiveSetup {
 				If ($SessionZero) {
 					If ($RunAsActiveUser) {
 						# Skip if Active Setup reg key is present and IsInstalled is 0
-						If ((Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "IsInstalled" -ContinueOnError $true) -ne 0) {
+						If (& $IsVersionLower -HKCUVer (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "Version" -ContinueOnError $true) -HKLMVer (Get-RegistryKey -Key $ActiveSetupKey -Value "Version" -ContinueOnError $true)) {
 							Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 							If ($CUArguments) {
 								Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
@@ -10790,7 +10832,7 @@ Function Set-ActiveSetup {
 							}
 
 							Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID -Disable $true
+							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
 						} else {
 							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)], because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
 						}
@@ -10801,7 +10843,7 @@ Function Set-ActiveSetup {
 				}
 				Else {
 					# Skip if Active Setup reg key is present and IsInstalled is 0
-					If ((Get-RegistryKey -Key $HKCUActiveSetupKey -Value "IsInstalled" -ContinueOnError $true) -ne 0) {
+					If (& $IsVersionLower -HKCUVer (Get-RegistryKey -Key $HKCUActiveSetupKey -Value "Version" -ContinueOnError $true) -HKLMVer (Get-RegistryKey -Key $ActiveSetupKey -Value "Version" -ContinueOnError $true)) {
 						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 						If ($CUArguments) {
 							Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
@@ -10811,7 +10853,7 @@ Function Set-ActiveSetup {
 						}
 
 						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -Disable $true
+						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
 					} else {
 						Write-Log -Message "Skipping executing Active Setup StubPath file for current user, because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
 					}
