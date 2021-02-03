@@ -1348,7 +1348,7 @@ Function Resolve-Error {
 				Return
 			}
 			Else {
-				[array]$ErrorRecord = $global:Error[0]
+				[Management.Automation.ErrorRecord]$ErrorRecord = $global:Error[0]
 			}
 		}
 
@@ -1389,67 +1389,68 @@ Function Resolve-Error {
 			## Capture Error Record
 			If ($GetErrorRecord) {
 				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord -Property $Property
-				$LogErrorRecordMsg = $ErrRecord.$SelectedProperties
+				[string[]]$LogErrorRecordMsg = $null
+				foreach ($item in $SelectedProperties) {
+					$LogErrorRecordMsg += $ErrRecord.$item
+				}
 			}
 
 			## Error Invocation Information
-			If ($GetErrorInvocation) {
-				If ($ErrRecord.InvocationInfo) {
-					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
-					$LogErrorInvocationMsg = $ErrRecord.InvocationInfo.$SelectedProperties
+			If ($GetErrorInvocation -and $ErrRecord.InvocationInfo) {
+				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
+				[string[]]$LogErrorInvocationMsg = $null
+				foreach ($item in $SelectedProperties) {
+					$LogErrorInvocationMsg += $ErrRecord.InvocationInfo.$item
 				}
 			}
 
 			## Capture Error Exception
-			If ($GetErrorException) {
-				If ($ErrRecord.Exception) {
-					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
-					$LogErrorExceptionMsg = $ErrRecord.Exception.$SelectedProperties
+			If ($GetErrorException -and $ErrRecord.Exception) {
+				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
+				[string[]]$LogErrorExceptionMsg = $null
+				foreach ($item in $SelectedProperties) {
+					$LogErrorExceptionMsg += $ErrRecord.Exception.$item
 				}
 			}
 
 			## Display properties in the correct order
 			If ($Property -eq '*') {
 				#  If all properties were chosen for display, then arrange them in the order the error object displays them by default.
-				If ($LogErrorRecordMsg) { [array]$LogErrorMessageTmp += $LogErrorRecordMsg }
-				If ($LogErrorInvocationMsg) { [array]$LogErrorMessageTmp += $LogErrorInvocationMsg }
-				If ($LogErrorExceptionMsg) { [array]$LogErrorMessageTmp += $LogErrorExceptionMsg }
+				If ($LogErrorRecordMsg) { [string[]]$LogErrorMessageTmp += $LogErrorRecordMsg }
+				If ($LogErrorInvocationMsg) { [string[]]$LogErrorMessageTmp += $LogErrorInvocationMsg }
+				If ($LogErrorExceptionMsg) { [string[]]$LogErrorMessageTmp += $LogErrorExceptionMsg }
 			}
 			Else {
 				#  Display selected properties in our custom order
-				If ($LogErrorExceptionMsg) { [array]$LogErrorMessageTmp += $LogErrorExceptionMsg }
-				If ($LogErrorRecordMsg) { [array]$LogErrorMessageTmp += $LogErrorRecordMsg }
-				If ($LogErrorInvocationMsg) { [array]$LogErrorMessageTmp += $LogErrorInvocationMsg }
+				If ($LogErrorExceptionMsg) { [string[]]$LogErrorMessageTmp += $LogErrorExceptionMsg }
+				If ($LogErrorRecordMsg) { [string[]]$LogErrorMessageTmp += $LogErrorRecordMsg }
+				If ($LogErrorInvocationMsg) { [string[]]$LogErrorMessageTmp += $LogErrorInvocationMsg }
 			}
 
 			If ($LogErrorMessageTmp) {
-				$LogErrorMessage = 'Error Record:'
-				$LogErrorMessage += "`n-------------"
-				$LogErrorMsg = $LogErrorMessageTmp | Format-List | Out-String
+				$LogErrorMessage = "Error Record:`n-------------`n"
+				$LogErrorMsg = $LogErrorMessageTmp | Format-List -DisplayError | Out-String
 				$LogErrorMessage += $LogErrorMsg
 			}
 
 			## Capture Error Inner Exception(s)
-			If ($GetErrorInnerException) {
-				If ($ErrRecord.Exception -and $ErrRecord.Exception.InnerException) {
-					$LogInnerMessage = 'Error Inner Exception(s):'
-					$LogInnerMessage += "`n-------------------------"
+			If ($GetErrorInnerException -and $ErrRecord.Exception -and $ErrRecord.Exception.InnerException) {
+				$LogInnerMessage = "Error Inner Exception`(s`):`n-------------------------`n"
 
-					$ErrorInnerException = $ErrRecord.Exception.InnerException
-					$Count = 0
+				$ErrorInnerException = $ErrRecord.Exception.InnerException
+				$Count = 0
 
-					While ($ErrorInnerException) {
-						[string]$InnerExceptionSeperator = '~' * 40
+				While ($ErrorInnerException) {
+					[string]$InnerExceptionSeperator = '~' * 40
 
-						[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrorInnerException -Property $Property
-						$LogErrorInnerExceptionMsg = $ErrorInnerException.$SelectedProperties | Format-List | Out-String
+					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrorInnerException -Property $Property
+					$LogErrorInnerExceptionMsg = $ErrorInnerException.$SelectedProperties | Format-List -DisplayError | Out-String
 
-						If ($Count -gt 0) { $LogInnerMessage += $InnerExceptionSeperator }
-						$LogInnerMessage += $LogErrorInnerExceptionMsg
+					If ($Count -gt 0) { $LogInnerMessage += $InnerExceptionSeperator }
+					$LogInnerMessage += $LogErrorInnerExceptionMsg
 
-						$Count++
-						$ErrorInnerException = $ErrorInnerException.InnerException
-					}
+					$Count++
+					$ErrorInnerException = $ErrorInnerException.InnerException
 				}
 			}
 
@@ -10734,43 +10735,90 @@ Function Set-ActiveSetup {
 				If ($StubExeExt -ne '.exe') { [string]$CUArguments = "$CUArguments $Arguments" }
 			}
 
-			[scriptblock]$IsVersionLower = {
+			[scriptblock]$TestActiveSetup = {
 				Param (
 					[Parameter(Mandatory=$true)]
-					[AllowEmptyString()]
-					[string]$HKCUVer,
+					[ValidateNotNullorEmpty()]
+					[string]$HKLMKey
+					,
 					[Parameter(Mandatory=$true)]
-					[AllowEmptyString()]
-					[string]$HKLMVer
+					[ValidateNotNullorEmpty()]
+					[string]$HKCUKey
+					,
+					[Parameter(Mandatory=$false)]
+					[ValidateNotNullorEmpty()]
+					[string]$UserSID
 				)
-
-				If ((-not $HKLMVer) -or (-not $HKCUVer)) {
+				$HKCUProps = (Get-RegistryKey -Key $HKCUKey -SID $UserSID -ContinueOnError $true)
+				$HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
+				[string]$HKCUVer = $HKCUProps.Version
+				[string]$HKLMVer = $HKLMProps.Version
+				# HKLM entry not present. Nothing to run
+				If (-not $HKLMProps) {
+					return $false
+				}
+				# HKLM entry present and HKCU entry is not. Run the StubPath
+				If (-not $HKCUProps) {
 					return $true
 				}
-
-				[string]$HKLMNumbersOnlyString = ""
-				for($i = 0; $i -lt $HKLMVer.Length; $i++) {
-					if([char]::IsDigit($HKLMVer[$i])) {$HKLMNumbersOnlyString += $HKLMVer[$i]}
+				# Both entries present. HKLM entry does not have Version property. Nothing to run
+				If (-not $HKLMVer) {
+					return $false
 				}
-
-				[string]$HKCUNumbersOnlyString = ""
-				for($i = 0; $i -lt $HKCUVer.Length; $i++) {
-					if([char]::IsDigit($HKCUVer[$i])) {$HKCUNumbersOnlyString += $HKCUVer[$i]}
-				}
-
-				If ((-not $HKLMNumbersOnlyString) -or (-not $HKCUNumbersOnlyString)) {
+				# Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath
+				If (-not $HKCUVer) {
 					return $true
 				}
+				# Both entries present, with a Version property. Compare the Versions
+				## Remove invalid characters from Version. Only digits and commas are allowed
+				[string]$HKLMValidVer = ""
+				for ($i = 0; $i -lt $HKLMVer.Length; $i++) {
+					if([char]::IsDigit($HKLMVer[$i]) -or ($HKLMVer[$i] -eq ',')) {$HKLMValidVer += $HKLMVer[$i]}
+				}
 
-				try {
-					If ([uint64]::Parse($HKLMNumbersOnlyString) -gt [uint64]::Parse($HKCUNumbersOnlyString)) {
+				[string]$HKCUValidVer = ""
+				for ($i = 0; $i -lt $HKCUVer.Length; $i++) {
+					if([char]::IsDigit($HKCUVer[$i]) -or ($HKCUVer[$i] -eq ',')) {$HKCUValidVer += $HKCUVer[$i]}
+				}
+				# After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
+				If (-not $HKLMValidVer) {
+					return $false
+				}
+				# the HKCU Version property is empty while HKLM Version property is not. Run the StubPath
+				If (-not $HKCUValidVer) {
+					return $true
+				}
+				# Both Version properties are present
+				# Split the version by commas
+				[string[]]$SplitHKLMValidVer = $HKLMValidVer.Split(',')
+				[string[]]$SplitHKCUValidVer = $HKCUValidVer.Split(',')
+				# Check whether the Versions were split in the same number of strings
+				If ($SplitHKLMValidVer.Count -ne $SplitHKCUValidVer.Count) {
+					# The versions are different length - more commas
+					If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
+						#HKLM is longer, Run the StubPath
 						return $true
-					}
-					else {
+					} else {
+						#HKCU is longer, Nothing to run
 						return $false
 					}
 				}
+				# The Versions have the same number of strings. Compare them
+				try {
+					for ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++) {
+						# Parse the version is UINT64
+						[uint64]$ParsedHKLMVer = [uint64]::Parse($SplitHKLMValidVer[$i])
+						[uint64]$ParsedHKCUVer = [uint64]::Parse($SplitHKCUValidVer[$i])
+						# The HKCU ver is lower, Run the StubPath
+						If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
+							return $true
+						}
+					}
+					# The HKCU version is equal or higher than HKLM version, Nothing to run
+					return $false
+				}
 				catch {
+					# Failed to parse strings as UInts, Run the StubPath
 					return $true
 				}
 			}
@@ -10788,10 +10836,10 @@ Function Set-ActiveSetup {
 				If ($SID) {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false }
-					# Only Add StubPath and IsInstalled to HKLM. In HKCU they do nothing
+					# Only Add IsInstalled to HKLM
 					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
 						} Else {
@@ -10801,10 +10849,10 @@ Function Set-ActiveSetup {
 				} Else {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
+					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
-					# Only Add StubPath and IsInstalled to HKLM. In HKCU they do nothing
+					# Only IsInstalled to HKLM
 					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
-						Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
 						} Else {
@@ -10821,8 +10869,8 @@ Function Set-ActiveSetup {
 			If ($ExecuteForCurrentUser) {
 				If ($SessionZero) {
 					If ($RunAsActiveUser) {
-						# Skip if Active Setup reg key is present and IsInstalled is 0
-						If (& $IsVersionLower -HKCUVer (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Value "Version" -ContinueOnError $true) -HKLMVer (Get-RegistryKey -Key $ActiveSetupKey -Value "Version" -ContinueOnError $true)) {
+						# Skip if Active Setup reg key is present and Version is equal or higher
+						If (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $RunAsActiveUser.SID) {
 							Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 							If ($CUArguments) {
 								Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
@@ -10842,8 +10890,8 @@ Function Set-ActiveSetup {
 					}
 				}
 				Else {
-					# Skip if Active Setup reg key is present and IsInstalled is 0
-					If (& $IsVersionLower -HKCUVer (Get-RegistryKey -Key $HKCUActiveSetupKey -Value "Version" -ContinueOnError $true) -HKLMVer (Get-RegistryKey -Key $ActiveSetupKey -Value "Version" -ContinueOnError $true)) {
+					# Skip if Active Setup reg key is present and Version is equal or higher
+					If (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey) {
 						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 						If ($CUArguments) {
 							Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
