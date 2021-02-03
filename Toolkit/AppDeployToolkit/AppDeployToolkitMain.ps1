@@ -10749,7 +10749,11 @@ Function Set-ActiveSetup {
 					[ValidateNotNullorEmpty()]
 					[string]$UserSID
 				)
-				$HKCUProps = (Get-RegistryKey -Key $HKCUKey -SID $UserSID -ContinueOnError $true)
+				If ($UserSID) {
+					$HKCUProps = (Get-RegistryKey -Key $HKCUKey -SID $UserSID -ContinueOnError $true)
+				} else {
+					$HKCUProps = (Get-RegistryKey -Key $HKCUKey -ContinueOnError $true)
+				}
 				$HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
 				[string]$HKCUVer = $HKCUProps.Version
 				[string]$HKLMVer = $HKLMProps.Version
