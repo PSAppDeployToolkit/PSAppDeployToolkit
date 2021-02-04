@@ -10591,7 +10591,7 @@ Function Set-ActiveSetup {
 	- Creates StubPath value depending on the file extension of the $StubExePath parameter.
 	- Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
 	- Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-	- Executes the StubPath file for the current user as long as not in Session 0 (no need to logout/login to trigger Active Setup).
+	- Executes the StubPath file for the current user based on $ExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 .PARAMETER StubExePath
 	Full destination path to the file that will be executed for each user that logs in.
 	If this file exists in the 'Files' subdirectory of the script directory, it will be copied to the destination path.
@@ -10602,13 +10602,13 @@ Function Set-ActiveSetup {
 .PARAMETER Key
 	Name of the registry key for the Active Setup entry. Default is: $installName.
 .PARAMETER Version
-	Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation.
+	Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
 .PARAMETER Locale
 	Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
 .PARAMETER PurgeActiveSetupKey
-	Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry.
+	Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry. Function returns after purging.
 .PARAMETER DisableActiveSetup
-	Disables the Active Setup entry so that the StubPath file will not be executed.
+	Disables the Active Setup entry so that the StubPath file will not be executed. This also disables -ExecuteForCurrentUser
 .PARAMETER ExecuteForCurrentUser
 	Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in. Default: $True
 .PARAMETER ContinueOnError

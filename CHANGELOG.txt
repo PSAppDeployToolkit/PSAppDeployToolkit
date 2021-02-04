@@ -2,7 +2,14 @@
 - Fixed a bug in the function Show-InstallationRestartPrompt, that caused incorrect handling of parameters when running the function asynchronously
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
-- Fixed function Set-ActiveSetup not executing the process for the current user correctly
+- Changed function Set-ActiveSetup not executing the process for the current user correctly
+  - Fixed the function not executing the process for the current user correctly
+  - The function now also checks Version and IsInstalled properties when attempting to run the process for current user
+  - Added more logging messages so it is clear from the logs why it was or was not executed for the current user
+  - IsInstalled property is no longer added to the HKCU registry entry
+  - DisableActiveSetup now also disables ExecuteForCurrentUser
+  - Extended function help text
+- Fixed Resolve-Error not returning full error record information
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
