@@ -7812,7 +7812,7 @@ Function Show-InstallationRestartPrompt {
 			$flowLayoutPanel.Controls.Add($labelCountdown)
 		}
 
-		## Label Restart Later
+		## Button Minimize
 		$buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,4
 		$buttonRestartLater.Name = 'buttonRestartLater'
@@ -7827,7 +7827,7 @@ Function Show-InstallationRestartPrompt {
 		$buttonRestartLater.UseVisualStyleBackColor = $true
 		$buttonRestartLater.add_Click($buttonRestartLater_Click)
 
-		## Label Restart Now
+		## Button Restart Now
 		$buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
 		$buttonRestartNow.Name = 'buttonRestartNow'
