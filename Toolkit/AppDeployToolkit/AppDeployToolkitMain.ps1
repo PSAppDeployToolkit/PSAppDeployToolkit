@@ -3451,7 +3451,7 @@ Function Test-IsMutexAvailable {
 		[Threading.Mutex]$OpenExistingMutex = $null
 	}
 	Process {
-		Write-Log -Message "Check to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
+		Write-Log -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
 		Try {
 			## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
 			$private:previousErrorActionPreference = $ErrorActionPreference
@@ -10088,7 +10088,7 @@ Function Test-PowerPoint {
 	}
 	Process {
 		Try {
-			Write-Log -Message 'Check if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
+			Write-Log -Message 'Checking if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
 			Try {
 				[Diagnostics.Process[]]$PowerPointProcess = Get-Process -ErrorAction 'Stop' | Where-Object { $_.ProcessName -eq 'POWERPNT' }
 				If ($PowerPointProcess) {

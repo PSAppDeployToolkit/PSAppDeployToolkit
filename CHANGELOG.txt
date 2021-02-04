@@ -1,4 +1,4 @@
-﻿**Version 3.8.5 [??/??/2021]**
+﻿**Version 3.8.5 [??/02/2021]**
 - Fixed a bug in the function Show-InstallationRestartPrompt, that caused incorrect handling of parameters when running the function asynchronously
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
@@ -10,6 +10,7 @@
   - DisableActiveSetup now also disables ExecuteForCurrentUser
   - Extended function help text
 - Fixed Resolve-Error not returning full error record information
+- Fixed a couple of log message typos across the toolkit
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
