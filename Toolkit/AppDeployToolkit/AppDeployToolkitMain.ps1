@@ -1391,7 +1391,7 @@ Function Resolve-Error {
 				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord -Property $Property
 				[string[]]$LogErrorRecordMsg = $null
 				foreach ($item in $SelectedProperties) {
-					$LogErrorRecordMsg += $ErrRecord.$item
+					$LogErrorRecordMsg += "$item`: $($ErrRecord.$item)" 
 				}
 			}
 
@@ -1400,7 +1400,7 @@ Function Resolve-Error {
 				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
 				[string[]]$LogErrorInvocationMsg = $null
 				foreach ($item in $SelectedProperties) {
-					$LogErrorInvocationMsg += $ErrRecord.InvocationInfo.$item
+					$LogErrorInvocationMsg += "$item`: $($ErrRecord.InvocationInfo.$item)"
 				}
 			}
 
@@ -1409,7 +1409,7 @@ Function Resolve-Error {
 				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
 				[string[]]$LogErrorExceptionMsg = $null
 				foreach ($item in $SelectedProperties) {
-					$LogErrorExceptionMsg += $ErrRecord.Exception.$item
+					$LogErrorExceptionMsg += "$item`: $($ErrRecord.Exception.$item)"
 				}
 			}
 
@@ -10757,20 +10757,30 @@ Function Set-ActiveSetup {
 				$HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
 				[string]$HKCUVer = $HKCUProps.Version
 				[string]$HKLMVer = $HKLMProps.Version
+				[int]$HKLMInst = $HKLMProps.IsInstalled
 				# HKLM entry not present. Nothing to run
 				If (-not $HKLMProps) {
+					Write-Log "HKLM active setup entry is not present."
+					return $false
+				}
+				# HKLM entry present, but disabled. Nothing to run
+				If ($HKLMInst -eq 0) {
+					Write-Log "HKLM active setup entry is present, but it is disabled (IsInstalled set to 0)."
 					return $false
 				}
 				# HKLM entry present and HKCU entry is not. Run the StubPath
 				If (-not $HKCUProps) {
+					Write-Log "HKLM active setup entry is present. HKCU active setup entry is not present."
 					return $true
 				}
 				# Both entries present. HKLM entry does not have Version property. Nothing to run
 				If (-not $HKLMVer) {
+					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is missing."
 					return $false
 				}
 				# Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath
 				If (-not $HKCUVer) {
+					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is missing."
 					return $true
 				}
 				# Both entries present, with a Version property. Compare the Versions
@@ -10786,10 +10796,12 @@ Function Set-ActiveSetup {
 				}
 				# After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
 				If (-not $HKLMValidVer) {
+					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is invalid."
 					return $false
 				}
 				# the HKCU Version property is empty while HKLM Version property is not. Run the StubPath
 				If (-not $HKCUValidVer) {
+					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is invalid."
 					return $true
 				}
 				# Both Version properties are present
@@ -10801,9 +10813,11 @@ Function Set-ActiveSetup {
 					# The versions are different length - more commas
 					If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
 						#HKLM is longer, Run the StubPath
+						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKLM Version has more sub versions."
 						return $true
 					} else {
 						#HKCU is longer, Nothing to run
+						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKCU Version has more sub versions."
 						return $false
 					}
 				}
@@ -10815,14 +10829,17 @@ Function Set-ActiveSetup {
 						[uint64]$ParsedHKCUVer = [uint64]::Parse($SplitHKCUValidVer[$i])
 						# The HKCU ver is lower, Run the StubPath
 						If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
+							Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however HKCU Version property is lower."
 							return $true
 						}
 					}
 					# The HKCU version is equal or higher than HKLM version, Nothing to run
+					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however they are either the same or HKCU Version property is higher."
 					return $false
 				}
 				catch {
 					# Failed to parse strings as UInts, Run the StubPath
+					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however parsing strings to uintegers failed." -Severity 2
 					return $true
 				}
 			}
@@ -10874,7 +10891,8 @@ Function Set-ActiveSetup {
 				If ($SessionZero) {
 					If ($RunAsActiveUser) {
 						# Skip if Active Setup reg key is present and Version is equal or higher
-						If (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $RunAsActiveUser.SID) {
+						[bool]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $RunAsActiveUser.SID)
+						If ($InstallNeeded) {
 							Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
 							If ($CUArguments) {
 								Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
@@ -10886,7 +10904,7 @@ Function Set-ActiveSetup {
 							Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
 						} else {
-							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)], because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
+							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName} -Severity 2
 						}
 					}
 					Else {
@@ -10895,7 +10913,8 @@ Function Set-ActiveSetup {
 				}
 				Else {
 					# Skip if Active Setup reg key is present and Version is equal or higher
-					If (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey) {
+					[bool]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey)
+					If ($InstallNeeded) {
 						Write-Log -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
 						If ($CUArguments) {
 							Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
@@ -10907,7 +10926,7 @@ Function Set-ActiveSetup {
 						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
 					} else {
-						Write-Log -Message "Skipping executing Active Setup StubPath file for current user, because Active Setup registry key already exists and has IsInstalled set to 1." -Source ${CmdletName} -Severity 2
+						Write-Log -Message "Skipping executing Active Setup StubPath file for current user." -Source ${CmdletName} -Severity 2
 					}
 				}
 			}
