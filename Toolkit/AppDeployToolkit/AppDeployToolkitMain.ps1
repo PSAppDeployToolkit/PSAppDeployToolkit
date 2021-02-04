@@ -10760,27 +10760,27 @@ Function Set-ActiveSetup {
 				[int]$HKLMInst = $HKLMProps.IsInstalled
 				# HKLM entry not present. Nothing to run
 				If (-not $HKLMProps) {
-					Write-Log "HKLM active setup entry is not present."
+					Write-Log "HKLM active setup entry is not present." -Source ${CmdletName}
 					return $false
 				}
 				# HKLM entry present, but disabled. Nothing to run
 				If ($HKLMInst -eq 0) {
-					Write-Log "HKLM active setup entry is present, but it is disabled (IsInstalled set to 0)."
+					Write-Log "HKLM active setup entry is present, but it is disabled (IsInstalled set to 0)." -Source ${CmdletName}
 					return $false
 				}
 				# HKLM entry present and HKCU entry is not. Run the StubPath
 				If (-not $HKCUProps) {
-					Write-Log "HKLM active setup entry is present. HKCU active setup entry is not present."
+					Write-Log "HKLM active setup entry is present. HKCU active setup entry is not present." -Source ${CmdletName}
 					return $true
 				}
 				# Both entries present. HKLM entry does not have Version property. Nothing to run
 				If (-not $HKLMVer) {
-					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is missing."
+					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is missing." -Source ${CmdletName}
 					return $false
 				}
 				# Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath
 				If (-not $HKCUVer) {
-					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is missing."
+					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is missing." -Source ${CmdletName}
 					return $true
 				}
 				# Both entries present, with a Version property. Compare the Versions
@@ -10796,12 +10796,12 @@ Function Set-ActiveSetup {
 				}
 				# After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
 				If (-not $HKLMValidVer) {
-					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is invalid."
+					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is invalid." -Source ${CmdletName}
 					return $false
 				}
 				# the HKCU Version property is empty while HKLM Version property is not. Run the StubPath
 				If (-not $HKCUValidVer) {
-					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is invalid."
+					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is invalid." -Source ${CmdletName}
 					return $true
 				}
 				# Both Version properties are present
@@ -10813,11 +10813,11 @@ Function Set-ActiveSetup {
 					# The versions are different length - more commas
 					If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
 						#HKLM is longer, Run the StubPath
-						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKLM Version has more sub versions."
+						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKLM Version has more sub versions." -Source ${CmdletName}
 						return $true
 					} else {
 						#HKCU is longer, Nothing to run
-						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKCU Version has more sub versions."
+						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKCU Version has more sub versions." -Source ${CmdletName}
 						return $false
 					}
 				}
@@ -10829,17 +10829,17 @@ Function Set-ActiveSetup {
 						[uint64]$ParsedHKCUVer = [uint64]::Parse($SplitHKCUValidVer[$i])
 						# The HKCU ver is lower, Run the StubPath
 						If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
-							Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however HKCU Version property is lower."
+							Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however HKCU Version property is lower." -Source ${CmdletName}
 							return $true
 						}
 					}
 					# The HKCU version is equal or higher than HKLM version, Nothing to run
-					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however they are either the same or HKCU Version property is higher."
+					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however they are either the same or HKCU Version property is higher." -Source ${CmdletName}
 					return $false
 				}
 				catch {
 					# Failed to parse strings as UInts, Run the StubPath
-					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however parsing strings to uintegers failed." -Severity 2
+					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however parsing strings to uintegers failed." -Severity 2  -Source ${CmdletName}
 					return $true
 				}
 			}
