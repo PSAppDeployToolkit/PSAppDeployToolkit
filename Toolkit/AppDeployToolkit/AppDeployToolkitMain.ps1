@@ -8265,7 +8265,7 @@ Function Show-InstallationProgress {
 					}
 					catch {
 						# Not a terminating error if we can't grey out the button
-						Write-Log "Failed to grey out the Close button." -Severity 2 -Source ${CmdletName}
+						Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
 					}
 				})
 				#  Prepare the ProgressText variable so we can use it to change the text in the text area
@@ -8281,7 +8281,7 @@ Function Show-InstallationProgress {
 			})
 
 			$progressCmd.Runspace = $script:ProgressRunspace
-			Write-Log -Message "Spin up progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
+			Write-Log -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
 			#  Invoke the progress runspace
 			$null = $progressCmd.BeginInvoke()
 			#  Allow the thread to be spun up safely before invoking actions against it.
@@ -8295,7 +8295,7 @@ Function Show-InstallationProgress {
 			#  Update the progress text
 			Try {
 				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
-				Write-Log -Message "Updated progress message: [$statusMessage]." -Source ${CmdletName}
+				Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {
 				Write-Log -Message "Unable to update the progress message. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
