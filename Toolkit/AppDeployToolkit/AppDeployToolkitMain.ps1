@@ -10871,7 +10871,7 @@ Function Set-ActiveSetup {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
-					# Only IsInstalled to HKLM
+					# Only Add IsInstalled to HKLM
 					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
