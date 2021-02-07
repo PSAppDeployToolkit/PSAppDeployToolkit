@@ -1299,9 +1299,6 @@ Function Resolve-Error {
 	Enumerate an error record, or a collection of error record, properties. By default, the details for the last error will be enumerated.
 .PARAMETER ErrorRecord
 	The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
-.PARAMETER Property
-	The list of properties to display from the error record. Use "*" to display all properties.
-	Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
 .PARAMETER GetErrorRecord
 	Get error record details as represented by $_.
 .PARAMETER GetErrorInvocation
@@ -1326,17 +1323,14 @@ Function Resolve-Error {
 	Param (
 		[Parameter(Mandatory=$false,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
 		[AllowEmptyCollection()]
-		[array]$ErrorRecord,
+		[Management.Automation.ErrorRecord[]]$ErrorRecord,
 		[Parameter(Mandatory=$false,Position=1)]
-		[ValidateNotNullorEmpty()]
-		[string[]]$Property = ('Message','InnerException','FullyQualifiedErrorId','ScriptStackTrace','PositionMessage'),
-		[Parameter(Mandatory=$false,Position=2)]
 		[switch]$GetErrorRecord = $true,
-		[Parameter(Mandatory=$false,Position=3)]
+		[Parameter(Mandatory=$false,Position=2)]
 		[switch]$GetErrorInvocation = $true,
-		[Parameter(Mandatory=$false,Position=4)]
+		[Parameter(Mandatory=$false,Position=3)]
 		[switch]$GetErrorException = $true,
-		[Parameter(Mandatory=$false,Position=5)]
+		[Parameter(Mandatory=$false,Position=4)]
 		[switch]$GetErrorInnerException = $true
 	)
 
@@ -1348,94 +1342,36 @@ Function Resolve-Error {
 				Return
 			}
 			Else {
-				[Management.Automation.ErrorRecord]$ErrorRecord = $global:Error[0]
+				[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0]
 			}
 		}
-
-		## Allows selecting and filtering the properties on the error object if they exist
-		[scriptblock]$SelectProperty = {
-			Param (
-				[Parameter(Mandatory=$true)]
-				[ValidateNotNullorEmpty()]
-				$InputObject,
-				[Parameter(Mandatory=$true)]
-				[ValidateNotNullorEmpty()]
-				[string[]]$Property
-			)
-
-			[string[]]$ObjectProperty = ($InputObject | Get-Member -MemberType '*Property').Name
-			ForEach ($Prop in $Property) {
-				If ($Prop -eq '*') {
-					[string[]]$PropertySelection = $ObjectProperty
-					Break
-				}
-				ElseIf ($ObjectProperty -contains $Prop) {
-					[string[]]$PropertySelection += $Prop
-				}
-			}
-			Write-Output -InputObject $PropertySelection
-		}
-
-		#  Initialize variables to avoid error if 'Set-StrictMode' is set
-		$LogErrorRecordMsg = $null
-		$LogErrorInvocationMsg = $null
-		$LogErrorExceptionMsg = $null
-		$LogErrorMessageTmp = $null
-		$LogInnerMessage = $null
 	}
 	Process {
 		If (-not $ErrorRecord) { Return }
-		ForEach ($ErrRecord in $ErrorRecord) {
+		[Collections.Generic.List[string]]$Output = New-Object Collections.Generic.List[string]
+		If ($ErrorRecord.Count -le 1) {
+			$Output.Add("Error Record:`n-------------`n")
+		} else {
+			$Output.Add("Error Record $($i+1):`n-------------`n")
+		}
+		for ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
+			$ErrRecord = $ErrorRecord[$i]
+			## Capture Error Exception
+			If ($GetErrorException -and $ErrRecord.Exception.Message) {
+				$Output.Add("Exception.Message`: $($ErrRecord.Exception.Message)`n`n")
+			}
 			## Capture Error Record
 			If ($GetErrorRecord) {
-				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord -Property $Property
-				[string[]]$LogErrorRecordMsg = $null
-				foreach ($item in $SelectedProperties) {
-					$LogErrorRecordMsg += "$item`: $($ErrRecord.$item)`n" 
-				}
+				$Output.Add("FullyQualifiedErrorId`: $($ErrRecord.FullyQualifiedErrorId)`n`n")
+				$Output.Add("ScriptStackTrace`: $($ErrRecord.ScriptStackTrace)`n`n")
 			}
-
 			## Error Invocation Information
 			If ($GetErrorInvocation -and $ErrRecord.InvocationInfo) {
-				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.InvocationInfo -Property $Property
-				[string[]]$LogErrorInvocationMsg = $null
-				foreach ($item in $SelectedProperties) {
-					$LogErrorInvocationMsg += "InvocationInfo.$item`: $($ErrRecord.InvocationInfo.$item)`n"
-				}
+				$Output.Add("InvocationInfo.PositionMessage`: $($ErrRecord.InvocationInfo.PositionMessage)`n`n")
 			}
-
-			## Capture Error Exception
-			If ($GetErrorException -and $ErrRecord.Exception) {
-				[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrRecord.Exception -Property $Property
-				[string[]]$LogErrorExceptionMsg = $null
-				foreach ($item in $SelectedProperties) {
-					$LogErrorExceptionMsg += "Exception.$item`: $($ErrRecord.Exception.$item)`n"
-				}
-			}
-
-			## Display properties in the correct order
-			If ($Property -eq '*') {
-				#  If all properties were chosen for display, then arrange them in the order the error object displays them by default.
-				If ($LogErrorRecordMsg) { [string[]]$LogErrorMessageTmp += $LogErrorRecordMsg }
-				If ($LogErrorInvocationMsg) { [string[]]$LogErrorMessageTmp += $LogErrorInvocationMsg }
-				If ($LogErrorExceptionMsg) { [string[]]$LogErrorMessageTmp += $LogErrorExceptionMsg }
-			}
-			Else {
-				#  Display selected properties in our custom order
-				If ($LogErrorExceptionMsg) { [string[]]$LogErrorMessageTmp += $LogErrorExceptionMsg }
-				If ($LogErrorRecordMsg) { [string[]]$LogErrorMessageTmp += $LogErrorRecordMsg }
-				If ($LogErrorInvocationMsg) { [string[]]$LogErrorMessageTmp += $LogErrorInvocationMsg }
-			}
-
-			If ($LogErrorMessageTmp) {
-				$LogErrorMessage = "Error Record:`n-------------`n"
-				$LogErrorMsg = $LogErrorMessageTmp | Format-List -DisplayError | Out-String
-				$LogErrorMessage += $LogErrorMsg
-			}
-
 			## Capture Error Inner Exception(s)
-			If ($GetErrorInnerException -and $ErrRecord.Exception -and $ErrRecord.Exception.InnerException) {
-				$LogInnerMessage = "Error Inner Exception`(s`):`n-------------------------`n"
+			If ($GetErrorInnerException -and $ErrRecord.Exception.InnerException) {
+				$Output.Add("Error Inner Exception`(s`):`n-------------------------`n`n")
 
 				$ErrorInnerException = $ErrRecord.Exception.InnerException
 				$Count = 0
@@ -1443,27 +1379,18 @@ Function Resolve-Error {
 				While ($ErrorInnerException) {
 					[string]$InnerExceptionSeperator = '~' * 40
 
-					[string[]]$SelectedProperties = & $SelectProperty -InputObject $ErrorInnerException -Property $Property
-					$LogErrorInnerExceptionMsg = $ErrorInnerException.$SelectedProperties | Format-List -DisplayError | Out-String
-
-					If ($Count -gt 0) { $LogInnerMessage += $InnerExceptionSeperator }
-					$LogInnerMessage += $LogErrorInnerExceptionMsg
-
+					If ($Count -gt 0) { $Output.Add($InnerExceptionSeperator) }
+					$Output.Add("InnerException.Message`: $($ErrorInnerException.Message)`n`n")
+					$Output.Add("InnerException.Source`: $($ErrorInnerException.Source)`n`n")
+					$Output.Add("InnerException.StackTrace`: $($ErrorInnerException.StackTrace)`n`n")
 					$Count++
 					$ErrorInnerException = $ErrorInnerException.InnerException
 				}
 			}
-
-			If ($LogErrorMessage) { $Output = $LogErrorMessage }
-			If ($LogInnerMessage) { $Output += $LogInnerMessage }
-
-			Write-Output -InputObject $Output
-
-			If (Test-Path -LiteralPath 'variable:Output') { Clear-Variable -Name 'Output' }
-			If (Test-Path -LiteralPath 'variable:LogErrorMessage') { Clear-Variable -Name 'LogErrorMessage' }
-			If (Test-Path -LiteralPath 'variable:LogInnerMessage') { Clear-Variable -Name 'LogInnerMessage' }
-			If (Test-Path -LiteralPath 'variable:LogErrorMessageTmp') { Clear-Variable -Name 'LogErrorMessageTmp' }
+			$ErrRecord = $null
 		}
+		$Output | Write-Output
+		$Output = $null
 	}
 	End {
 	}
