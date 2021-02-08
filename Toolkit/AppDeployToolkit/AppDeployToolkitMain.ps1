@@ -600,7 +600,7 @@ Function Write-FunctionHeaderOrFooter {
 		## Get the parameters that the calling function was invoked with
 		[string]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String
 		If ($CmdletBoundParameters) {
-			Write-Log -Message "Function invoked with bound parameter(s): `n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
+			Write-Log -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
 		}
 		Else {
 			Write-Log -Message 'Function invoked without any bound parameters.' -Source ${CmdletName} -DebugMessage
@@ -853,7 +853,7 @@ Function Write-Log {
 				[boolean]$ExitLoggingFunction = $true
 				#  If error creating directory, write message to console
 				If (-not $ContinueOnError) {
-					Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+					Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
 				}
 				Return
 			}
@@ -914,7 +914,7 @@ Function Write-Log {
 				}
 				Catch {
 					If (-not $ContinueOnError) {
-						Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `n$(Resolve-Error)" -ForegroundColor 'Red'
+						Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
 					}
 				}
 			}
@@ -991,7 +991,7 @@ Function Remove-InvalidFileNameChars {
 			Write-Output -InputObject (([char[]]$Name | Where-Object { $invalidFileNameChars -notcontains $_ }) -join '')
 		}
 		Catch {
-			Write-Log -Message "Failed to remove invalid characters from the supplied filename. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to remove invalid characters from the supplied filename. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -1123,7 +1123,7 @@ Function New-ZipFile {
 							$null = Remove-Item -LiteralPath $Directory -Recurse -Force -ErrorAction 'Stop'
 						}
 						Catch {
-							Write-Log -Message "Failed to recursively delete the source directory [$Directory]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+							Write-Log -Message "Failed to recursively delete the source directory [$Directory]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 						}
 					}
 				}
@@ -1145,7 +1145,7 @@ Function New-ZipFile {
 							$null = Remove-Item -LiteralPath $File.FullName -Force -ErrorAction 'Stop'
 						}
 						Catch {
-							Write-Log -Message "Failed to delete the source file [$($File.FullName)]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+							Write-Log -Message "Failed to delete the source file [$($File.FullName)]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 						}
 					}
 				}
@@ -1159,11 +1159,11 @@ Function New-ZipFile {
 				Set-Acl -Path $DestinationPath -AclObject $DestinationArchiveDirectoryPathAcl -ErrorAction 'Stop'
 			}
 			Catch {
-				Write-Log -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to archive the requested file(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to archive the requested file(s). `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to archive the requested file(s): $($_.Exception.Message)"
 			}
@@ -1334,8 +1334,12 @@ Function Resolve-Error {
 		[switch]$GetErrorInnerException = $true
 	)
 
-	If ((-not $ErrorRecord) -and ($global:Error.Count -eq 0)) {
-		Return
+	If (-not $ErrorRecord) {
+		If ($global:Error.Count -eq 0) {
+			Return
+		} Else {
+			[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0]
+		}
 	}
 	[Collections.Generic.List[string]]$SOutput = New-Object Collections.Generic.List[string]
 	# Do not use newline character in here because it will not be shown consistently in the console and the log. Each $SOutput.Add() is a new line
@@ -2013,7 +2017,7 @@ Function Get-HardwarePlatform {
 			Write-Output -InputObject $hwType
 		}
 		Catch {
-			Write-Log -Message "Failed to retrieve hardware platform information. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to retrieve hardware platform information. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to retrieve hardware platform information: $($_.Exception.Message)"
 			}
@@ -2068,7 +2072,7 @@ Function Get-FreeDiskSpace {
 			Write-Output -InputObject $freeDiskSpace
 		}
 		Catch {
-			Write-Log -Message "Failed to retrieve free disk space for drive [$Drive]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to retrieve free disk space for drive [$Drive]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to retrieve free disk space for drive [$Drive]: $($_.Exception.Message)"
 			}
@@ -2151,14 +2155,14 @@ Function Get-InstalledApplication {
 						If ($regKeyApplicationProps.DisplayName) { [psobject[]]$regKeyApplication += $regKeyApplicationProps }
 					}
 					Catch{
-						Write-Log -Message "Unable to enumerate properties from registry key path [$($UninstallKeyApp.PSPath)]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+						Write-Log -Message "Unable to enumerate properties from registry key path [$($UninstallKeyApp.PSPath)]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 						Continue
 					}
 				}
 			}
 		}
 		If ($ErrorUninstallKeyPath) {
-			Write-Log -Message "The following error(s) took place while enumerating installed applications from the registry. `n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "The following error(s) took place while enumerating installed applications from the registry. `r`n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
 		}
 
 		$UpdatesSkippedCounter = 0
@@ -2253,7 +2257,7 @@ Function Get-InstalledApplication {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to resolve application details from registry for [$appDisplayName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to resolve application details from registry for [$appDisplayName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				Continue
 			}
 		}
@@ -3253,13 +3257,13 @@ Function Execute-Process {
 		Catch {
 			If ([string]::IsNullOrEmpty([string]$returnCode)) {
 				[int32]$returnCode = 60002
-				Write-Log -Message "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Function failed, setting exit code to [$returnCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Function failed, setting exit code to [$returnCode]. $($_.Exception.Message)"
 				}
 			}
 			Else {
-				Write-Log -Message "Execution completed with exit code [$returnCode]. Function failed. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Execution completed with exit code [$returnCode]. Function failed. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 
 			If ($PassThru) {
@@ -3315,7 +3319,7 @@ Function Get-MsiExitCodeMessage {
 			Write-Output -InputObject $MsiExitCodeMsg
 		}
 		Catch {
-			Write-Log -Message "Failed to get message for exit code [$MsiExitCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get message for exit code [$MsiExitCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -3411,7 +3415,7 @@ Function Test-IsMutexAvailable {
 		Catch {
 			$IsUnhandledException = $true
 			## Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-			Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			$IsMutexFree = $true
 		}
 		Finally {
@@ -3494,7 +3498,7 @@ Function New-Folder {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to create folder [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to create folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to create folder [$Path]: $($_.Exception.Message)"
 			}
@@ -3555,11 +3559,11 @@ Function Remove-Folder {
 					}
 
 					If ($ErrorRemoveFolder) {
-						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
+						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
 					}
 				}
 				Catch {
-					Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
 						Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
 					}
@@ -3686,14 +3690,14 @@ Function Copy-File {
 			}
 
 			If ($fileCopyError) {
-				Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `n$FileCopyError" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
 			}
 			Else {
 				Write-Log -Message "File copy completed successfully." -Source ${CmdletName}
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
 			}
@@ -3777,7 +3781,7 @@ Function Remove-File {
 				Write-Log -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
 			}
 			Catch {
-				Write-Log -Message "Failed to resolve file(s) for deletion in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to resolve file(s) for deletion in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to resolve file(s) for deletion in path [$Item]: $($_.Exception.Message)"
 				}
@@ -3801,7 +3805,7 @@ Function Remove-File {
 					$null = Remove-Item @RemoveFileSplat -LiteralPath $Item
 				}
 				Catch {
-					Write-Log -Message "Failed to delete file(s) in path [$Item]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to delete file(s) in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
 						Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
 					}
@@ -3810,7 +3814,7 @@ Function Remove-File {
 		}
 
 		If ($ErrorRemoveItem) {
-			Write-Log -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -4128,13 +4132,13 @@ Function Get-RegistryKey {
 		}
 		Catch {
 			If (-not $Value) {
-				Write-Log -Message "Failed to read registry key [$key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to read registry key [$key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to read registry key [$key]: $($_.Exception.Message)"
 				}
 			}
 			Else {
-				Write-Log -Message "Failed to read registry key [$key] value [$value]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to read registry key [$key] value [$value]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to read registry key [$key] value [$value]: $($_.Exception.Message)"
 				}
@@ -4267,13 +4271,13 @@ Function Set-RegistryKey {
 		}
 		Catch {
 			If ($Name) {
-				Write-Log -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]: $($_.Exception.Message)"
 				}
 			}
 			Else {
-				Write-Log -Message "Failed to set registry key [$key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to set registry key [$key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to set registry key [$key]: $($_.Exception.Message)"
 				}
@@ -4391,13 +4395,13 @@ Function Remove-RegistryKey {
 		}
 		Catch {
 			If (-not ($Name)) {
-				Write-Log -Message "Failed to delete registry key [$Key]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to delete registry key [$Key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
 				}
 			}
 			Else {
-				Write-Log -Message "Failed to delete registry value [$Key] [$Name]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to delete registry value [$Key] [$Name]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to delete registry value [$Key] [$Name]: $($_.Exception.Message)"
 				}
@@ -4489,7 +4493,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 				& $RegistrySettings
 			}
 			Catch {
-				Write-Log -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 			Finally {
 				If ($ManuallyLoadedRegHive) {
@@ -4509,7 +4513,7 @@ Function Invoke-HKCURegistrySettingsForAllUsers {
 						}
 					}
 					Catch {
-						Write-Log -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+						Write-Log -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					}
 				}
 			}
@@ -4633,7 +4637,7 @@ Function ConvertTo-NTAccountOrSID {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -4742,7 +4746,7 @@ Function Get-UserProfiles {
 			Write-Output -InputObject $UserProfiles
 		}
 		Catch {
-			Write-Log -Message "Failed to create a custom object representing all user profiles on the machine. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to create a custom object representing all user profiles on the machine. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -4820,7 +4824,7 @@ Function Get-FileVersion {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to get version info. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get version info. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to get version info: $($_.Exception.Message)"
 			}
@@ -4954,7 +4958,7 @@ Function New-Shortcut {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to create shortcut directory [$PathDirectory]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to create shortcut directory [$PathDirectory]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				Throw
 			}
 
@@ -5008,7 +5012,7 @@ Function New-Shortcut {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to create shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to create shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to create shortcut [$Path]: $($_.Exception.Message)"
 			}
@@ -5197,7 +5201,7 @@ Function Set-Shortcut {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to change the shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to change the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to change the shortcut [$Path]: $($_.Exception.Message)"
 			}
@@ -5314,7 +5318,7 @@ Function Get-Shortcut {
 			Write-Output $Output
 		}
 		Catch {
-			Write-Log -Message "Failed to read the shortcut [$Path]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to read the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to read the shortcut [$Path]: $($_.Exception.Message)"
 			}
@@ -5462,9 +5466,9 @@ Function Execute-ProcessAsUser {
 			}
 
 			If ($($Parameters.Substring($QuotesIndex)) -eq '"') {
-				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
+				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
 			Else {
-				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`n", ';' -replace "`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
+				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
 			[string[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
@@ -5484,7 +5488,7 @@ Function Execute-ProcessAsUser {
 		## Prepare working directory insert
 		[string]$WorkingDirectoryInsert = ""
 		If ($WorkingDirectory) {
-			$WorkingDirectoryInsert = "`n	  <WorkingDirectory>$WorkingDirectory</WorkingDirectory>"
+			$WorkingDirectoryInsert = "`r`n	  <WorkingDirectory>$WorkingDirectory</WorkingDirectory>"
 		}
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
@@ -5535,7 +5539,7 @@ Function Execute-ProcessAsUser {
 		}
 		Catch {
 			[int32]$executeProcessAsUserExitCode = 60007
-			Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
 			}
@@ -5608,7 +5612,7 @@ Function Execute-ProcessAsUser {
 					[int32]$executeProcessAsUserExitCode = $Task.LastTaskResult
 				}
 				Catch {
-					Write-Log -Message "Failed to retrieve information from Task Scheduler. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to retrieve information from Task Scheduler. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				}
 				Finally {
 					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($ScheduleService) } Catch { }
@@ -5634,7 +5638,7 @@ Function Execute-ProcessAsUser {
 			Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
 		}
 		Catch {
-			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Remove the XML scheduled task file
@@ -5690,7 +5694,7 @@ Function Update-Desktop {
 			[PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
 		}
 		Catch {
-			Write-Log -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to refresh the Desktop and the Windows Explorer environment process block: $($_.Exception.Message)"
 			}
@@ -5767,7 +5771,7 @@ Function Update-SessionEnvironmentVariables {
 			$env:PATH = $PathFolders -join ';'
 		}
 		Catch {
-			Write-Log -Message "Failed to refresh the environment variables for this PowerShell session. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to refresh the environment variables for this PowerShell session. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to refresh the environment variables for this PowerShell session: $($_.Exception.Message)"
 			}
@@ -5850,7 +5854,7 @@ Function Get-SchedulerTask {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to retrieve scheduled tasks. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to retrieve scheduled tasks. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to retrieve scheduled tasks: $($_.Exception.Message)"
 			}
@@ -6017,7 +6021,7 @@ Function Block-AppExecution {
 				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 			}
 			Catch {
-				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				Return
 			}
 
@@ -6105,7 +6109,7 @@ Function Unblock-AppExecution {
 			}
 		}
 		Catch {
-			Write-Log -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Error retrieving/deleting Scheduled Task.`r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Remove BlockAppExecution Schedule Task XML file
@@ -6254,7 +6258,7 @@ Function Get-UniversalDate {
 			Write-Output -InputObject $universalDateTime
 		}
 		Catch {
-			Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "The specified date/time [$DateTime] is not in a format recognized by the current culture: $($_.Exception.Message)"
 			}
@@ -6527,7 +6531,7 @@ Function Show-InstallationWelcome {
 					$RequiredDiskSpace = [math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
 				}
 				Catch {
-					Write-Log -Message "Failed to calculate disk space requirement from source files. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				}
 			}
 			If ($freeDiskSpace -lt $RequiredDiskSpace) {
@@ -6617,7 +6621,7 @@ Function Show-InstallationWelcome {
 					[string]$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferDeadline -ErrorAction 'Stop'
 				}
 				Catch {
-					Write-Log -Message "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					Throw "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z': $($_.Exception.Message)"
 				}
 				Write-Log -Message "The user has until [$deferDeadlineUniversal] remaining." -Source ${CmdletName}
@@ -6716,7 +6720,7 @@ Function Show-InstallationWelcome {
 									}
 								}
 								Catch {
-									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+									Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 									Continue
 								}
 								Finally {
@@ -6810,7 +6814,7 @@ Function Show-InstallationWelcome {
 							}
 						}
 						Catch {
-							Write-Log -Message "Failed to launch [$notesNSDExecutable]. `n$(Resolve-Error)" -Source ${CmdletName}
+							Write-Log -Message "Failed to launch [$notesNSDExecutable]. `r`n$(Resolve-Error)" -Source ${CmdletName}
 						}
 
 						Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
@@ -7227,18 +7231,18 @@ Function Show-WelcomePrompt {
 		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
 		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelDefer.TabStop = $false
-		$deferralText = "$configDeferPromptExpiryMessage`n"
+		$deferralText = "$configDeferPromptExpiryMessage`r`n"
 
 		If ($deferTimes -ge 0) {
-			$deferralText = "$deferralText `n$configDeferPromptRemainingDeferrals $([int32]$deferTimes + 1)"
+			$deferralText = "$deferralText `r`n$configDeferPromptRemainingDeferrals $([int32]$deferTimes + 1)"
 		}
 		If ($deferDeadline) {
-			$deferralText = "$deferralText `n$configDeferPromptDeadline $deferDeadline"
+			$deferralText = "$deferralText `r`n$configDeferPromptDeadline $deferDeadline"
 		}
 		If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-			$deferralText = "$deferralText `n$configDeferPromptNoDeadline"
+			$deferralText = "$deferralText `r`n$configDeferPromptNoDeadline"
 		}
-		$deferralText = "$deferralText `n`n$configDeferPromptWarningMessage"
+		$deferralText = "$deferralText `r`n`r`n$configDeferPromptWarningMessage"
 		$labelDefer.Text = $deferralText
 		$labelDefer.TextAlign = 'MiddleCenter'
 		$labelDefer.AutoSize = $true
@@ -7687,7 +7691,7 @@ Function Show-InstallationRestartPrompt {
 		$labelMessage.MaximumSize = $defaultControlSize
 		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
 		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
-		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `n`n$configRestartPromptMessageRestart"
+		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `r`n`r`n$configRestartPromptMessageRestart"
 		If ($NoCountdown) { $labelMessage.Text = $configRestartPromptMessage }
 		$labelMessage.TextAlign = 'MiddleCenter'
 		$labelMessage.Anchor = 'Top'
@@ -8026,7 +8030,7 @@ Function Show-InstallationProgress {
 .EXAMPLE
 	Show-InstallationProgress -StatusMessage 'Installation in Progress...'
 .EXAMPLE
-	Show-InstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
+	Show-InstallationProgress -StatusMessage "Installation in Progress...`r`nThe installation may take 20 minutes to complete."
 .EXAMPLE
 	Show-InstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 .NOTES
@@ -8217,7 +8221,7 @@ Function Show-InstallationProgress {
 			#  Allow the thread to be spun up safely before invoking actions against it.
 			Start-Sleep -Seconds 1
 			If ($script:ProgressSyncHash.Error) {
-				Write-Log -Message "Failure while displaying progress dialog. `n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 		## Check if the progress thread is running before invoking methods on it
@@ -8228,7 +8232,7 @@ Function Show-InstallationProgress {
 				Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {
-				Write-Log -Message "Unable to update the progress message. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Unable to update the progress message. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 			}
 		}
 	}
@@ -8426,7 +8430,7 @@ Function Set-PinnedApplication {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to perform action [$verb] on [$FilePath]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to perform action [$verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 			}
 		}
 		#endregion
@@ -8523,7 +8527,7 @@ Function Set-PinnedApplication {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to execute action [$Action]. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+			Write-Log -Message "Failed to execute action [$Action]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 		}
 		Finally {
 			Try { If ($shellKey) { $shellKey.Close() } } Catch { }
@@ -8591,7 +8595,7 @@ Function Get-IniValue {
 			Write-Output -InputObject $IniValue
 		}
 		Catch {
-			Write-Log -Message "Failed to read INI file key value. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to read INI file key value. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to read INI file key value: $($_.Exception.Message)"
 			}
@@ -8661,7 +8665,7 @@ Function Set-IniValue {
 			[PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
 		}
 		Catch {
-			Write-Log -Message "Failed to write INI file key value. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to write INI file key value. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to write INI file key value: $($_.Exception.Message)"
 			}
@@ -8748,7 +8752,7 @@ Function Get-PEFileArchitecture {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to get the PE file architecture. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to get the PE file architecture. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to get the PE file architecture: $($_.Exception.Message)"
 				}
@@ -8868,7 +8872,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to $($DLLAction.ToLower()) DLL file. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to $($DLLAction.ToLower()) DLL file. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to $($DLLAction.ToLower()) DLL file: $($_.Exception.Message)"
 			}
@@ -9126,7 +9130,7 @@ Function Get-MsiTableProperty {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to get the MSI table [$Table]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get the MSI table [$Table]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
 			}
@@ -9226,7 +9230,7 @@ Function Set-MsiProperty {
 			$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
 		}
 		Catch {
-			Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]: $($_.Exception.Message)"
 			}
@@ -9390,7 +9394,7 @@ Function New-MsiTransform {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to create new transform file in path [$NewTransformPath]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to create new transform file in path [$NewTransformPath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to create new transform file in path [$NewTransformPath]: $($_.Exception.Message)"
 			}
@@ -9482,7 +9486,7 @@ Function Test-MSUpdates {
 						}
 					}
 					If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-						Write-Log -Message "Discovered the following Microsoft Update: `n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
+						Write-Log -Message "Discovered the following Microsoft Update: `r`n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
 						$kbFound = $true
 					}
 					$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
@@ -9504,7 +9508,7 @@ Function Test-MSUpdates {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed discovering Microsoft Update [$kbNumber]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed discovering Microsoft Update [$kbNumber]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed discovering Microsoft Update [$kbNumber]: $($_.Exception.Message)"
 			}
@@ -9687,7 +9691,7 @@ Function Get-WindowTitle {
 			}
 		}
 		Catch {
-			If (-not $DisableFunctionLogging) { Write-Log -Message "Failed to get requested window title(s). `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName} }
+			If (-not $DisableFunctionLogging) { Write-Log -Message "Failed to get requested window title(s). `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName} }
 		}
 	}
 	End {
@@ -9781,7 +9785,7 @@ Function Send-Keys {
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 	}
@@ -9811,7 +9815,7 @@ Function Send-Keys {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to send keys to specified window. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to send keys to specified window. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -10052,7 +10056,7 @@ Function Test-PowerPoint {
 							Write-Log -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
 						}
 						Catch {
-							Write-Log -Message "Unable to retrieve process id(s) for [POWERPNT] process. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+							Write-Log -Message "Unable to retrieve process id(s) for [POWERPNT] process. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 						}
 					}
 
@@ -10083,7 +10087,7 @@ Function Test-PowerPoint {
 		}
 		Catch {
 			[nullable[boolean]]$IsPowerPointFullScreen = $null
-			Write-Log -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -10153,12 +10157,12 @@ Function Invoke-SCCMTask {
 				if ($SCCMClientVersion) {
 					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
 				} else {
-					Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 					Throw 'Failed to determine the SCCM client version number.'	
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 				Throw 'Failed to determine the SCCM client version number.'
 			}
 
@@ -10210,7 +10214,7 @@ Function Invoke-SCCMTask {
 			$null = $SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID)
 		}
 		Catch {
-			Write-Log -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]: $($_.Exception.Message)"
 			}
@@ -10281,12 +10285,12 @@ Function Install-SCCMSoftwareUpdates {
 				if ($SCCMClientVersion) {
 					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
 				} else {
-					Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 					Throw 'Failed to determine the SCCM client version number.'	
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to determine the SCCM client version number. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 				Throw 'Failed to determine the SCCM client version number.'
 			}
 			#  If SCCM 2007 Client or lower, exit function
@@ -10308,7 +10312,7 @@ Function Install-SCCMSoftwareUpdates {
 				[Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'" -ErrorAction 'Stop')
 			}
 			Catch {
-				Write-Log -Message "Failed to find the number of missing software updates. `n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to find the number of missing software updates. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 				Throw 'Failed to find the number of missing software updates.'
 			}
 
@@ -10330,7 +10334,7 @@ Function Install-SCCMSoftwareUpdates {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to trigger installation of missing software updates. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to trigger installation of missing software updates. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to trigger installation of missing software updates: $($_.Exception.Message)"
 			}
@@ -10395,7 +10399,7 @@ Function Update-GroupPolicy {
 				$InstallCount++
 			}
 			Catch {
-				Write-Log -Message "$($InstallMsg) failed. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "$($InstallMsg) failed. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "$($InstallMsg) failed: $($_.Exception.Message)"
 				}
@@ -10445,7 +10449,7 @@ Function Enable-TerminalServerInstallMode {
 			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
 		Catch {
-			Write-Log -Message "Failed to change terminal server into user install mode. `n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to change terminal server into user install mode. `r`n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to change terminal server into user install mode: $($_.Exception.Message)"
 			}
@@ -10493,7 +10497,7 @@ Function Disable-TerminalServerInstallMode {
 			If ($global:LastExitCode -ne 1) { Throw $terminalServerResult }
 		}
 		Catch {
-			Write-Log -Message "Failed to change terminal server into user execute mode. `n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to change terminal server into user execute mode. `r`n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to change terminal server into user execute mode: $($_.Exception.Message)"
 			}
@@ -10861,7 +10865,7 @@ Function Set-ActiveSetup {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to set Active Setup registry entry. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to set Active Setup registry entry. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			If (-not $ContinueOnError) {
 				Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)"
 			}
@@ -11057,7 +11061,7 @@ Function Stop-ServiceAndDependencies {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to stop the service [$Name]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			Write-Log -Message "Failed to stop the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
 			If (-not $ContinueOnError) {
 				Throw "Failed to stop the service [$Name]: $($_.Exception.Message)"
 			}
@@ -11183,7 +11187,7 @@ Function Start-ServiceAndDependencies {
 			}
 		}
 		Catch {
-			Write-Log -Message "Failed to start the service [$Name]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			Write-Log -Message "Failed to start the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
 			If (-not $ContinueOnError) {
 				Throw "Failed to start the service [$Name]: $($_.Exception.Message)"
 			}
@@ -11257,7 +11261,7 @@ Function Get-ServiceStartMode
 			Write-Output -InputObject $ServiceStartMode
 		}
 		Catch {
-			Write-Log -Message "Failed to get the service [$Name] startup mode. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			Write-Log -Message "Failed to get the service [$Name] startup mode. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
 			If (-not $ContinueOnError) {
 				Throw "Failed to get the service [$Name] startup mode: $($_.Exception.Message)"
 			}
@@ -11336,7 +11340,7 @@ Function Set-ServiceStartMode
 			Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 		}
 		Catch {
-			Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+			Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
 			If (-not $ContinueOnError) {
 				Throw "Failed to set service [$Name] startup mode to [$StartMode]: $($_.Exception.Message)"
 			}
@@ -11402,7 +11406,7 @@ Function Get-LoggedOnUser {
 			Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
 		}
 		Catch {
-			Write-Log -Message "Failed to get session information for all logged on users. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 	}
 	End {
@@ -11461,7 +11465,7 @@ Function Get-PendingReboot {
 		Catch {
 			[nullable[datetime]]$LastBootUpTime = $null
 			[string[]]$PendRebootErrorMsg += "Failed to get LastBootUpTime: $($_.Exception.Message)"
-			Write-Log -Message "Failed to get LastBootUpTime. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get LastBootUpTime. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
@@ -11478,7 +11482,7 @@ Function Get-PendingReboot {
 		Catch {
 			[nullable[boolean]]$IsCBServicingRebootPending = $null
 			[string[]]$PendRebootErrorMsg += "Failed to get IsCBServicingRebootPending: $($_.Exception.Message)"
-			Write-Log -Message "Failed to get IsCBServicingRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get IsCBServicingRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Determine if there is a pending reboot from a Windows Update
@@ -11493,7 +11497,7 @@ Function Get-PendingReboot {
 		Catch {
 			[nullable[boolean]]$IsWindowsUpdateRebootPending = $null
 			[string[]]$PendRebootErrorMsg += "Failed to get IsWindowsUpdateRebootPending: $($_.Exception.Message)"
-			Write-Log -Message "Failed to get IsWindowsUpdateRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get IsWindowsUpdateRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Determine if there is a pending reboot from a pending file rename operation
@@ -11508,7 +11512,7 @@ Function Get-PendingReboot {
 			}
 			Catch {
 				[string[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
-				Write-Log -Message "Failed to get PendingFileRenameOperations. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to get PendingFileRenameOperations. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 			}
 		}
 
@@ -11540,7 +11544,7 @@ Function Get-PendingReboot {
 		Catch {
 			[nullable[boolean]]$IsSCCMClientRebootPending = $null
 			[string[]]$PendRebootErrorMsg += "Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)"
-			Write-Log -Message "Failed to get IsSCCMClientRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get IsSCCMClientRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
@@ -11555,7 +11559,7 @@ Function Get-PendingReboot {
 		Catch {
 			[nullable[boolean]]$IsAppVRebootPending = $null
 			[string[]]$PendRebootErrorMsg += "Failed to get IsAppVRebootPending: $($_.Exception.Message)"
-			Write-Log -Message "Failed to get IsAppVRebootPending. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			Write-Log -Message "Failed to get IsAppVRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 		}
 
 		## Determine if there is a pending reboot for the system
@@ -11577,7 +11581,7 @@ Function Get-PendingReboot {
 			PendingFileRenameOperations = $PendingFileRenameOperations
 			ErrorMsg = $PendRebootErrorMsg
 		}
-		Write-Log -Message "Pending reboot status on the local computer [$ComputerName]: `n$($PendingRebootInfo | Format-List | Out-String)" -Source ${CmdletName}
+		Write-Log -Message "Pending reboot status on the local computer [$ComputerName]: `r`n$($PendingRebootInfo | Format-List | Out-String)" -Source ${CmdletName}
 	}
 	End {
 		Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName','LastBootUpTime','IsSystemRebootPending','IsCBServicingRebootPending','IsWindowsUpdateRebootPending','IsSCCMClientRebootPending','IsAppVRebootPending','IsFileRenameRebootPending','PendingFileRenameOperations','ErrorMsg')
@@ -11899,7 +11903,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 			Write-Log -Message "MSI Executable List [$defaultMsiExecutablesList]." -Source $appDeployToolkitName
 		}
 		Catch {
-			Write-Log -Message "Failed to process Zero-Config MSI Deployment. `n$(Resolve-Error)" -Source $appDeployToolkitName
+			Write-Log -Message "Failed to process Zero-Config MSI Deployment. `r`n$(Resolve-Error)" -Source $appDeployToolkitName
 			$useDefaultMsi = $false ; $appVendor = '' ; $appName = '' ; $appVersion = ''
 		}
 	}
@@ -11980,7 +11984,7 @@ Try {
 	Add-Type -AssemblyName 'System.Drawing','System.Windows.Forms','PresentationFramework','Microsoft.VisualBasic','PresentationCore','WindowsBase' -ErrorAction 'Stop'
 }
 Catch {
-	Write-Log -Message "Failed to load assembly. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
+	Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
 	If ($deployModeNonInteractive) {
 		Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
 	}
@@ -12127,7 +12131,7 @@ If ($showBlockedAppDialog) {
 		}
 	}
 	Catch {
-		Write-Log -Message "There was an error in displaying the Installation Prompt. `n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
+		Write-Log -Message "There was an error in displaying the Installation Prompt. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
 		Exit 60005
 	}
 	Finally {
@@ -12137,7 +12141,7 @@ If ($showBlockedAppDialog) {
 }
 
 ## Log details for all currently logged in users
-Write-Log -Message "Display session information for all logged on users: `n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
+Write-Log -Message "Display session information for all logged on users: `r`n$($LoggedOnUserSessions | Format-List | Out-String)" -Source $appDeployToolkitName
 If ($usersLoggedOn) {
 	Write-Log -Message "The following users are logged on to the system: [$($usersLoggedOn -join ', ')]." -Source $appDeployToolkitName
 
