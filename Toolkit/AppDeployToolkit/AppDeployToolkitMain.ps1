@@ -1353,13 +1353,18 @@ Function Resolve-Error {
 		$ErrRecord = $ErrorRecord[$i]
 		## Capture Error Exception
 		If ($GetErrorException -and $ErrRecord.Exception.Message) {
-			$SOutput.Add("Exception.Message: $($ErrRecord.Exception.Message)")
-			$SOutput.Add([String]::Empty)
+			If ($ErrRecord.Exception.Message -eq $ErrRecord.FullyQualifiedErrorId) {
+				$SOutput.Add("Exception.Message/FullyQualifiedErrorId: $($ErrRecord.Exception.Message)")
+				$SOutput.Add([String]::Empty)
+			} Else {
+				$SOutput.Add("Exception.Message: $($ErrRecord.Exception.Message)")
+				$SOutput.Add([String]::Empty)
+				$SOutput.Add("FullyQualifiedErrorId: $($ErrRecord.FullyQualifiedErrorId)")
+				$SOutput.Add([String]::Empty)
+			}
 		}
 		## Capture Error Record
 		If ($GetErrorRecord) {
-			$SOutput.Add("FullyQualifiedErrorId: $($ErrRecord.FullyQualifiedErrorId)")
-			$SOutput.Add([String]::Empty)
 			$SOutput.Add("ScriptStackTrace: ")
 			$SOutput.Add($ErrRecord.ScriptStackTrace)
 			$SOutput.Add([String]::Empty)
@@ -1378,7 +1383,7 @@ Function Resolve-Error {
 			$Count = 0
 
 			While ($ErrorInnerException) {
-				[string]$InnerExceptionSeperator = '~' * 40
+				[string]$InnerExceptionSeperator = '~' * 25
 
 				If ($Count -gt 0) { $SOutput.Add($InnerExceptionSeperator) }
 				$SOutput.Add("InnerException.Message: $($ErrorInnerException.Message)")
