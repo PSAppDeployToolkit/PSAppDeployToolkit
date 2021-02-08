@@ -1323,7 +1323,7 @@ Function Resolve-Error {
 	Param (
 		[Parameter(Mandatory=$false,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
 		[AllowEmptyCollection()]
-		[Management.Automation.ErrorRecord[]]$ErrorRecord,
+		[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0],
 		[Parameter(Mandatory=$false,Position=1)]
 		[switch]$GetErrorRecord = $true,
 		[Parameter(Mandatory=$false,Position=2)]
@@ -1334,66 +1334,69 @@ Function Resolve-Error {
 		[switch]$GetErrorInnerException = $true
 	)
 
-	Begin {
-		## If function was called without specifying an error record, then choose the latest error that occurred
-		If (-not $ErrorRecord) {
-			If ($global:Error.Count -eq 0) {
-				#Write-Warning -Message "The `$Error collection is empty"
-				Return
-			}
-			Else {
-				[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0]
-			}
-		}
+	If ((-not $ErrorRecord) -and ($global:Error.Count -eq 0)) {
+		Return
 	}
-	Process {
-		If (-not $ErrorRecord) { Return }
-		[Collections.Generic.List[string]]$Output = New-Object Collections.Generic.List[string]
+	[Collections.Generic.List[string]]$SOutput = New-Object Collections.Generic.List[string]
+	# Do not use newline character in here because it will not be shown consistently in the console and the log. Each $SOutput.Add() is a new line
+	for ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
 		If ($ErrorRecord.Count -le 1) {
-			$Output.Add("Error Record:`n-------------`n")
+			$SOutput.Add("Error Record:")
 		} else {
-			$Output.Add("Error Record $($i+1):`n-------------`n")
+			$SOutput.Add("Error Record $($i+1):")
 		}
-		for ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
-			$ErrRecord = $ErrorRecord[$i]
-			## Capture Error Exception
-			If ($GetErrorException -and $ErrRecord.Exception.Message) {
-				$Output.Add("Exception.Message`: $($ErrRecord.Exception.Message)`n`n")
-			}
-			## Capture Error Record
-			If ($GetErrorRecord) {
-				$Output.Add("FullyQualifiedErrorId`: $($ErrRecord.FullyQualifiedErrorId)`n`n")
-				$Output.Add("ScriptStackTrace`: $($ErrRecord.ScriptStackTrace)`n`n")
-			}
-			## Error Invocation Information
-			If ($GetErrorInvocation -and $ErrRecord.InvocationInfo) {
-				$Output.Add("InvocationInfo.PositionMessage`: $($ErrRecord.InvocationInfo.PositionMessage)`n`n")
-			}
-			## Capture Error Inner Exception(s)
-			If ($GetErrorInnerException -and $ErrRecord.Exception.InnerException) {
-				$Output.Add("Error Inner Exception`(s`):`n-------------------------`n`n")
-
-				$ErrorInnerException = $ErrRecord.Exception.InnerException
-				$Count = 0
-
-				While ($ErrorInnerException) {
-					[string]$InnerExceptionSeperator = '~' * 40
-
-					If ($Count -gt 0) { $Output.Add($InnerExceptionSeperator) }
-					$Output.Add("InnerException.Message`: $($ErrorInnerException.Message)`n`n")
-					$Output.Add("InnerException.Source`: $($ErrorInnerException.Source)`n`n")
-					$Output.Add("InnerException.StackTrace`: $($ErrorInnerException.StackTrace)`n`n")
-					$Count++
-					$ErrorInnerException = $ErrorInnerException.InnerException
-				}
-			}
-			$ErrRecord = $null
+		$SOutput.Add("-------------")
+		$ErrRecord = $ErrorRecord[$i]
+		## Capture Error Exception
+		If ($GetErrorException -and $ErrRecord.Exception.Message) {
+			$SOutput.Add("Exception.Message: $($ErrRecord.Exception.Message)")
+			$SOutput.Add([String]::Empty)
 		}
-		$Output | Write-Output
-		$Output = $null
+		## Capture Error Record
+		If ($GetErrorRecord) {
+			$SOutput.Add("FullyQualifiedErrorId: $($ErrRecord.FullyQualifiedErrorId)")
+			$SOutput.Add([String]::Empty)
+			$SOutput.Add("ScriptStackTrace: ")
+			$SOutput.Add($ErrRecord.ScriptStackTrace)
+			$SOutput.Add([String]::Empty)
+		}
+		## Error Invocation Information
+		If ($GetErrorInvocation -and $ErrRecord.InvocationInfo) {
+			$SOutput.Add("InvocationInfo.PositionMessage: ")
+			$SOutput.Add($ErrRecord.InvocationInfo.PositionMessage)
+			$SOutput.Add([String]::Empty)
+		}
+		## Capture Error Inner Exception(s)
+		If ($GetErrorInnerException -and $ErrRecord.Exception.InnerException) {
+			$SOutput.Add("Error Inner Exception`(s`): ")
+			$SOutput.Add("-------------------------")
+			$ErrorInnerException = $ErrRecord.Exception.InnerException
+			$Count = 0
+
+			While ($ErrorInnerException) {
+				[string]$InnerExceptionSeperator = '~' * 40
+
+				If ($Count -gt 0) { $SOutput.Add($InnerExceptionSeperator) }
+				$SOutput.Add("InnerException.Message: $($ErrorInnerException.Message)")
+				$SOutput.Add([String]::Empty)
+				$SOutput.Add("InnerException.Source: $($ErrorInnerException.Source)")
+				$SOutput.Add([String]::Empty)
+				$SOutput.Add("InnerException.StackTrace: ")
+				$SOutput.Add($ErrorInnerException.StackTrace)
+				$SOutput.Add([String]::Empty)
+				$Count++
+				$ErrorInnerException = $ErrorInnerException.InnerException
+			}
+		}
+		$ErrRecord = $null
 	}
-	End {
+	#remove trailing newline
+	if([String]::IsNullOrEmpty($SOutput[$SOutput.Count-1])) {
+		$SOutput.RemoveAt($SOutput.Count-1)
 	}
+	$SOutput.Add("-------------")
+	$SOutput | Out-String
+	$SOutput = $null
 }
 #endregion
 
@@ -3252,7 +3255,7 @@ Function Execute-Process {
 				[int32]$returnCode = 60002
 				Write-Log -Message "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
-					Throw "Function failed, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+					Throw "Function failed, setting exit code to [$returnCode]. $($_.Exception.Message)"
 				}
 			}
 			Else {

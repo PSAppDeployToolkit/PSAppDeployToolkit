@@ -9,7 +9,13 @@
   - IsInstalled property is no longer added to the HKCU registry entry
   - DisableActiveSetup now also disables ExecuteForCurrentUser
   - Extended function help text
-- Fixed Resolve-Error not returning full error record information
+- Reworked Resolve-Error because it was not showing complete error information in some cases (e.g. Set-ActiveSetup)
+  - The Property parameter has been removed
+  - The function now displays the name of the property as well as its content, even when the property is empty
+  - The function now displays more properties
+  - Each property is separated by an empty line
+- Changed Execute-Process so it no longer displays the entire error information in the error popup window.
+  - It will only show a short description just like other functions and the details will be available in the log.
 - Fixed a couple of log message typos across the toolkit
 
 **Version 3.8.4 [26/01/2021]**
