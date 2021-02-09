@@ -545,6 +545,25 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 		Default { [int32]$dpiScale = 100 }
 	}
 }
+## Variables: Resolve Parameters. For use in a pipeline
+[scriptblock]$ResolveParameters = {
+	# We have to save current pipeline object $_ because switch has its own $_
+	$item = $_
+	switch ($item.Value.GetType().Name) {
+		'SwitchParameter' {
+			"-$($item.Key)"
+		}
+		'Boolean' {
+			"-$($item.Key) " + "$([int]$item.Value)"
+		}
+		'Int32' {
+			"-$($item.Key) $($item.Value)"
+		}
+		default {
+			"-$($item.Key) `'$($item.Value)`'"
+		}
+	}
+}
 #endregion
 ##*=============================================
 ##* END VARIABLE DECLARATION
@@ -1761,15 +1780,15 @@ Function Show-InstallationPrompt {
 		$timer.Start()
 
 		## Persistence Timer
-		[scriptblock]$RefreshInstallationPrompt = {
-			$formInstallationPrompt.BringToFront()
-			$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
-			$formInstallationPrompt.Refresh()
-		}
 		If ($persistPrompt) {
 			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { & $RefreshInstallationPrompt }
+			[scriptblock]$timerPersist_Tick = { 
+				$formInstallationPrompt.BringToFront()
+				$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
+				$formInstallationPrompt.Refresh()
+				[Windows.Forms.Application]::DoEvents()
+			}
 			$timerPersist.add_Tick($timerPersist_Tick)
 			$timerPersist.Start()
 		}
@@ -1779,7 +1798,7 @@ Function Show-InstallationPrompt {
 			Close-InstallationProgress
 		}
 
-		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
+		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
 		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
 		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
@@ -1787,8 +1806,8 @@ Function Show-InstallationPrompt {
 			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
-			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$Title`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command { & `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch }" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -5919,7 +5938,7 @@ Function Block-AppExecution {
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
 		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `'$blockExecutionTempPath\$scriptFileName`' -CleanupBlockedApps -ReferredInstallName `'$SchInstallName`' -ReferredInstallTitle `'$installTitle`' -ReferredLogName `'$logName`' -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5996,8 +6015,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
-		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
+		[string[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
 		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
@@ -7528,7 +7546,7 @@ Function Show-InstallationRestartPrompt {
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
 				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {Start-Sleep -Seconds $SilentCountdownSeconds;Restart-Computer -Force;}`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
+				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -7840,26 +7858,9 @@ Function Show-InstallationRestartPrompt {
 			$installRestartPromptParameters.Remove("NoSilentRestart")
 			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
 			## Prepare a list of parameters of this function as a string
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
-				# We have to save current pipeline object $_ because switch has its own $_
-				$item = $_
-				switch ($item.Value.GetType().Name) {
-					'SwitchParameter' {
-						"-$($item.Key)"
-					}
-					'Boolean' {
-						"-$($item.Key) `$" + "$($item.Value)".ToLower()
-					}
-					'Int32' {
-						"-$($item.Key) $($item.Value)"
-					}
-					default {
-						"-$($item.Key) `"$($item.Value)`""
-					}
-				}
-			}) -join ' '
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
 			## Start another powershell instance silently with function parameters from this function
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command { & `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch }" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -12023,11 +12024,11 @@ If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -P
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
 #  Save main script parameters hashtable for async execution of the toolkit
 [hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
-If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
-If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
+If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
 
 ## Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
