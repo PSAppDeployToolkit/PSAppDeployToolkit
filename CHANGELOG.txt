@@ -1,4 +1,24 @@
-﻿**Version 3.8.4 [26/01/2021]**
+﻿**Version 3.8.5 [??/02/2021]**
+- Fixed a bug in the function Show-InstallationRestartPrompt, that caused incorrect handling of parameters when running the function asynchronously
+- Fixed help text for some functions that contained old/incorrect information
+- Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
+- Changed function Set-ActiveSetup not executing the process for the current user correctly
+  - Fixed the function not executing the process for the current user correctly
+  - The function now also checks Version and IsInstalled properties when attempting to run the process for current user
+  - Added more logging messages so it is clear from the logs why it was or was not executed for the current user
+  - IsInstalled property is no longer added to the HKCU registry entry
+  - DisableActiveSetup now also disables ExecuteForCurrentUser
+  - Extended function help text
+- Reworked Resolve-Error because it was not showing complete error information in some cases (e.g. Set-ActiveSetup)
+  - The Property parameter has been removed
+  - The function now displays the name of the property as well as its content, even when the property is empty
+  - The function now displays more properties
+  - Each property is separated by an empty line
+- Changed Execute-Process so it no longer displays the entire error information in the error popup window.
+  - It will only show a short description just like other functions and the details will be available in the log.
+- Fixed a couple of log message typos across the toolkit
+
+**Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
 - Changed Show-InstallationWelcome:
   - Buttons are now wider
