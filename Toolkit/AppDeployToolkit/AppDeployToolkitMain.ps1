@@ -1550,6 +1550,16 @@ Function Show-InstallationPrompt {
 			Throw $CountdownTimeoutErr
 		}
 
+		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
+		If ($NoWait) {
+			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
+			$installPromptParameters.Remove('NoWait')
+			# Format the parameters as a string
+			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			return
+		}
+
 		[Windows.Forms.Application]::EnableVisualStyles()
 		$formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
 		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
@@ -1823,43 +1833,34 @@ Function Show-InstallationPrompt {
 		}
 
 		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
-		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
+		Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
-		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
-		If ($NoWait) {
-			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
-			$installPromptParameters.Remove('NoWait')
-			# Format the parameters as a string
-			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
-		}
-		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
-		Else {
-			$showDialog = $true
-			While ($showDialog) {
-				# Minimize all other windows
-				If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
-				# Show the Form
-				$result = $formInstallationPrompt.ShowDialog()
-				If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
-					$showDialog = $false
-				}
+		
+		## Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
+		$showDialog = $true
+		While ($showDialog) {
+			# Minimize all other windows
+			If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
+			# Show the Form
+			$result = $formInstallationPrompt.ShowDialog()
+			If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
+				$showDialog = $false
 			}
-			$formInstallationPrompt.Dispose()
+		}
+		$formInstallationPrompt.Dispose()
 
-			Switch ($result) {
-				'Yes' { Write-Output -InputObject $buttonRightText }
-				'No' { Write-Output -InputObject $buttonLeftText }
-				'Ignore' { Write-Output -InputObject $buttonMiddleText }
-				'Abort' {
-					# Restore minimized windows
-					$null = $shellApp.UndoMinimizeAll()
-					If ($ExitOnTimeout) {
-						Exit-Script -ExitCode $configInstallationUIExitCode
-					}
-					Else {
-						Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
-					}
+		Switch ($result) {
+			'Yes' { Write-Output -InputObject $buttonRightText }
+			'No' { Write-Output -InputObject $buttonLeftText }
+			'Ignore' { Write-Output -InputObject $buttonMiddleText }
+			'Abort' {
+				# Restore minimized windows
+				$null = $shellApp.UndoMinimizeAll()
+				If ($ExitOnTimeout) {
+					Exit-Script -ExitCode $configInstallationUIExitCode
+				}
+				Else {
+					Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
 				}
 			}
 		}
@@ -7586,6 +7587,24 @@ Function Show-InstallationRestartPrompt {
 			Return
 		}
 
+		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
+		If ($deployAppScriptFriendlyName) {
+			If ($NoCountdown) {
+				Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
+			}
+			## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters. 
+			$installRestartPromptParameters.Remove("NoSilentRestart")
+			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
+			## Prepare a list of parameters of this function as a string
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			## Start another powershell instance silently with function parameters from this function
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			return
+		}
+
 		[datetime]$startTime = Get-Date
 		[datetime]$countdownTime = $startTime
 
@@ -7870,38 +7889,20 @@ Function Show-InstallationRestartPrompt {
 		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ If ($_.CloseReason -eq 'UserClosing') { $_.Cancel = $true } }
 		$formRestart.add_FormClosing($formRestartClosing)
 
-		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
-		If ($deployAppScriptFriendlyName) {
-			If ($NoCountdown) {
-				Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
-			}
-			## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters. 
-			$installRestartPromptParameters.Remove("NoSilentRestart")
-			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
-			## Prepare a list of parameters of this function as a string
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
-			## Start another powershell instance silently with function parameters from this function
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+		If ($NoCountdown) {
+			Write-Log -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
 		}
 		Else {
-			If ($NoCountdown) {
-				Write-Log -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
-			}
-
-			#  Show the Form
-			Write-Output -InputObject $formRestart.ShowDialog()
-			$formRestart.Dispose()
-
-			#  Activate the Window
-			[Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
-			[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
+			Write-Log -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
 		}
+
+		#  Show the Form
+		Write-Output -InputObject $formRestart.ShowDialog()
+		$formRestart.Dispose()
+
+		#  Activate the Window
+		[Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
+		[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
