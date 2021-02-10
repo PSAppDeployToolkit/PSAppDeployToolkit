@@ -7570,7 +7570,7 @@ Function Show-InstallationRestartPrompt {
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
 				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
+				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'&{ Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -8008,7 +8008,7 @@ Start-Sleep -Milliseconds ($BalloonTipTime)
 $script:notifyIcon.Dispose() }
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
-				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
 			}
 			Catch { }
 		}
@@ -10689,7 +10689,7 @@ Function Set-ActiveSetup {
 				}
 				'.ps1' {
 					[string]$CUStubExePath = "$PSHOME\powershell.exe"
-					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
+					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"&{& `\`"$StubExePath`\`"}`""
 					[string]$StubPath = "$CUStubExePath $CUArguments"
 				}
 			}
