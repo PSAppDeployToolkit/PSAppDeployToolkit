@@ -551,16 +551,40 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 	$item = $_
 	switch ($item.Value.GetType().Name) {
 		'SwitchParameter' {
-			"-$($item.Key)"
+			"-$($item.Key):`$$($item.Value.tostring().toLower())"
 		}
 		'Boolean' {
-			"-$($item.Key) " + "$([int]$item.Value)"
+			"-$($item.Key):`$$($item.Value.tostring().toLower())"
+		}
+		'Int16' {
+			"-$($item.Key):$($item.Value)"
 		}
 		'Int32' {
-			"-$($item.Key) $($item.Value)"
+			"-$($item.Key):$($item.Value)"
+		}
+		'Int64' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt16' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt32' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt64' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Single' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Double' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Decimal' {
+			"-$($item.Key):$($item.Value)"
 		}
 		default {
-			"-$($item.Key) `'$($item.Value)`'"
+			"-$($item.Key):`'$($item.Value)`'"
 		}
 	}
 }
@@ -1541,7 +1565,7 @@ Function Show-InstallationPrompt {
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 		$InitialFormInstallationPromptWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Install_Prompt_Form_Cleanup_FormClosed = {
 			## Remove all event handlers from the controls
 			Try {
 				$labelText.remove_Click($handler_labelText_Click)
@@ -1549,19 +1573,19 @@ Function Show-InstallationPrompt {
 				$buttonRight.remove_Click($buttonRight_OnClick)
 				$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
-				$timer.remove_Tick($timer_Tick)
-				$timer.Dispose()
-				$timer = $null
-				$timerPersist.remove_Tick($timerPersist_Tick)
-				$timerPersist.Dispose()
-				$timerPersist = $null
-				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
-				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
+				$installPromptTimer.remove_Tick($installPromptTimer_Tick)
+				$installPromptTimer.Dispose()
+				$installPromptTimer = $null
+				$installPromptTimerPersist.remove_Tick($installPromptTimerPersist_Tick)
+				$installPromptTimerPersist.Dispose()
+				$installPromptTimerPersist = $null
+				$formInstallationPrompt.remove_Load($Install_Prompt_Form_StateCorrection_Load)
+				$formInstallationPrompt.remove_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
 
-		[scriptblock]$Form_StateCorrection_Load = {
+		[scriptblock]$Install_Prompt_Form_StateCorrection_Load = {
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formInstallationPrompt.WindowState = 'Normal'
 			$formInstallationPrompt.AutoSize = $true
@@ -1762,9 +1786,9 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.Controls.Add($buttonAbort)
 		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
 		## Timer
-		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
-		$timer.Interval = ($timeout * 1000)
-		$timer.Add_Tick({
+		$installPromptTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
+		$installPromptTimer.Interval = ($timeout * 1000)
+		$installPromptTimer.Add_Tick({
 			Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
 			$buttonAbort.PerformClick()
 		})
@@ -1772,25 +1796,25 @@ Function Show-InstallationPrompt {
 		## Save the initial state of the form
 		$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 		## Init the OnLoad event to correct the initial state of the form
-		$formInstallationPrompt.add_Load($Form_StateCorrection_Load)
+		$formInstallationPrompt.add_Load($Install_Prompt_Form_StateCorrection_Load)
 		## Clean up the control events
-		$formInstallationPrompt.add_FormClosed($Form_Cleanup_FormClosed)
+		$formInstallationPrompt.add_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
 
 		## Start the timer
-		$timer.Start()
+		$installPromptTimer.Start()
 
 		## Persistence Timer
 		If ($persistPrompt) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { 
+			$installPromptTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$installPromptTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
+			[scriptblock]$installPromptTimerPersist_Tick = { 
 				$formInstallationPrompt.BringToFront()
 				$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 				$formInstallationPrompt.Refresh()
 				[Windows.Forms.Application]::DoEvents()
 			}
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
+			$installPromptTimerPersist.Start()
 		}
 
 		if (-not $AsyncToolkitLaunch) {
@@ -1807,7 +1831,7 @@ Function Show-InstallationPrompt {
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command { & `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch }" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
 		Else {
@@ -7021,7 +7045,7 @@ Function Show-WelcomePrompt {
 		$toolTip = New-Object -TypeName 'System.Windows.Forms.ToolTip'
 
 		## Remove all event handlers from the controls
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Welcome_Form_Cleanup_FormClosed = {
 			Try {
 				$labelWelcomeMessage.remove_Click($handler_labelWelcomeMessage_Click)
 				$labelAppName.remove_Click($handler_labelAppName_Click)
@@ -7033,16 +7057,16 @@ Function Show-WelcomePrompt {
 				$buttonContinue.remove_Click($buttonContinue_OnClick)
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
-				$script:welcomeTimer.remove_Tick($timer_Tick)
-				$timerPersist.remove_Tick($timerPersist_Tick)
+				$script:welcomeTimer.remove_Tick($welcomeTimer_Tick)
+				$welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
 				$timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
-				$formWelcome.remove_Load($Form_StateCorrection_Load)
-				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
+				$formWelcome.remove_Load($Welcome_Form_StateCorrection_Load)
+				$formWelcome.remove_FormClosed($Welcome_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
 
-		[scriptblock]$Form_StateCorrection_Load = {
+		[scriptblock]$Welcome_Form_StateCorrection_Load = {
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formWelcome.WindowState = 'Normal'
 			$formWelcome.AutoSize = $true
@@ -7067,7 +7091,7 @@ Function Show-WelcomePrompt {
 		}
 
 		If ($showCountdown) {
-			[scriptblock]$timer_Tick = {
+			[scriptblock]$welcomeTimer_Tick = {
 				## Get the time information
 				[datetime]$currentTime = Get-Date
 				[datetime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
@@ -7095,22 +7119,22 @@ Function Show-WelcomePrompt {
 		}
 		Else {
 			$script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
-			[scriptblock]$timer_Tick = { $buttonAbort.PerformClick() }
+			[scriptblock]$welcomeTimer_Tick = { $buttonAbort.PerformClick() }
 		}
 
-		$script:welcomeTimer.add_Tick($timer_Tick)
+		$script:welcomeTimer.add_Tick($welcomeTimer_Tick)
 
 		## Persistence Timer
 		If ($persistWindow) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = {
+			$welcomeTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$welcomeTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
+			[scriptblock]$welcomeTimerPersist_Tick = {
 				$formWelcome.BringToFront()
 				$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 				$formWelcome.Refresh()
 			}
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$welcomeTimerPersist.add_Tick($welcomeTimerPersist_Tick)
+			$welcomeTimerPersist.Start()
 		}
 
 		## Process Re-Enumeration Timer
@@ -7459,9 +7483,9 @@ Function Show-WelcomePrompt {
 		## Save the initial state of the form
 		$formWelcomeWindowState = $formWelcome.WindowState
 		#  Init the OnLoad event to correct the initial state of the form
-		$formWelcome.add_Load($Form_StateCorrection_Load)
+		$formWelcome.add_Load($Welcome_Form_StateCorrection_Load)
 		#  Clean up the control events
-		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
+		$formWelcome.add_FormClosed($Welcome_Form_Cleanup_FormClosed)
 
 		## Minimize all other windows
 		If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
@@ -7597,7 +7621,7 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.BringToFront()
 		}
 
-		[scriptblock]$Form_StateCorrection_Load = {
+		[scriptblock]$Restart_Form_StateCorrection_Load = {
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formRestart.WindowState = $InitialFormWindowState
 			$formRestart.AutoSize = $true
@@ -7609,9 +7633,9 @@ Function Show-InstallationRestartPrompt {
 
 		## Persistence Timer
 		If ($NoCountdown) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = {
+			$restartTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$restartTimerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
+			[scriptblock]$restartTimerPersist_Tick = {
 				#  Show the Restart Popup
 				$formRestart.WindowState = 'Normal'
 				$formRestart.TopMost = $true
@@ -7620,8 +7644,8 @@ Function Show-InstallationRestartPrompt {
 				$formRestart.Refresh()
 				[Windows.Forms.Application]::DoEvents()
 			}
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$restartTimerPersist.add_Tick($restartTimerPersist_Tick)
+			$restartTimerPersist.Start()
 		}
 
 		[scriptblock]$buttonRestartLater_Click = {
@@ -7629,8 +7653,8 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.WindowState = 'Minimized'
 			If ($NoCountdown) {
 				## Reset the persistence timer
-				$timerPersist.Stop()
-				$timerPersist.Start()
+				$restartTimerPersist.Stop()
+				$restartTimerPersist.Start()
 			}
 		}
 
@@ -7670,16 +7694,16 @@ Function Show-InstallationRestartPrompt {
 		}
 
 		## Remove all event handlers from the controls
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Restart_Form_Cleanup_FormClosed = {
 			Try {
 				$buttonRestartLater.remove_Click($buttonRestartLater_Click)
 				$buttonRestartNow.remove_Click($buttonRestartNow_Click)
 				$formRestart.remove_Load($FormEvent_Load)
 				$formRestart.remove_Resize($formRestart_Resize)
 				$timerCountdown.remove_Tick($timerCountdown_Tick)
-				$timerPersist.remove_Tick($timerPersist_Tick)
-				$formRestart.remove_Load($Form_StateCorrection_Load)
-				$formRestart.remove_FormClosed($Form_Cleanup_FormClosed)
+				$restartTimerPersist.remove_Tick($restartTimerPersist_Tick)
+				$formRestart.remove_Load($Restart_Form_StateCorrection_Load)
+				$formRestart.remove_FormClosed($Restart_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
@@ -7840,9 +7864,9 @@ Function Show-InstallationRestartPrompt {
 		## Save the initial state of the form
 		$InitialFormWindowState = $formRestart.WindowState
 		# Init the OnLoad event to correct the initial state of the form
-		$formRestart.add_Load($Form_StateCorrection_Load)
+		$formRestart.add_Load($Restart_Form_StateCorrection_Load)
 		# Clean up the control events
-		$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
+		$formRestart.add_FormClosed($Restart_Form_Cleanup_FormClosed)
 		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ If ($_.CloseReason -eq 'UserClosing') { $_.Cancel = $true } }
 		$formRestart.add_FormClosing($formRestartClosing)
 
@@ -7860,7 +7884,7 @@ Function Show-InstallationRestartPrompt {
 			## Prepare a list of parameters of this function as a string
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
 			## Start another powershell instance silently with function parameters from this function
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command { & `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch }" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 		}
 		Else {
 			If ($NoCountdown) {
@@ -10665,7 +10689,7 @@ Function Set-ActiveSetup {
 				}
 				'.ps1' {
 					[string]$CUStubExePath = "$PSHOME\powershell.exe"
-					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { & `\`"$StubExePath`\`"}`""
+					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
 					[string]$StubPath = "$CUStubExePath $CUArguments"
 				}
 			}
