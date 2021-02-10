@@ -22,6 +22,7 @@
 - Changed Execute-Process so it no longer displays the entire error information in the error popup window.
   - It will only show a short description just like other functions and the details will be available in the log.
 - Fixed a couple of log message typos across the toolkit
+- Fixed a bug that caused Update-Desktop/Refresh-Desktop to crash Powershell on 32bit systems
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
