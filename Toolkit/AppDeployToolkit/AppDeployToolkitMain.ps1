@@ -521,28 +521,59 @@ If (Test-Path -LiteralPath 'variable:deferHistory') { Remove-Variable -Name 'def
 If (Test-Path -LiteralPath 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
 If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferDays' }
 
-## Variables: System DPI Scale Factor
+## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
 [scriptblock]$GetDisplayScaleFactor = {
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
+	[System.Drawing.Graphics]$GraphicsObject = $null
+	[IntPtr]$DeviceContextHandle = [IntPtr]::Zero
+	[int32]$dpiScale = 0
+	[int32]$dpiPixels = 0
+
+	try {
+		# Get Graphics Object from the current Window Handle
+		[System.Drawing.Graphics]$GraphicsObject = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero);
+		# Get Device Context Handle
+		[IntPtr]$DeviceContextHandle = $GraphicsObject.GetHdc();
+		# Get Logical and Physical screen height
+		[int32]$LogicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int][PSADT.UiAutomation+DeviceCap]::VERTRES);
+		[int32]$PhysicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int][PSADT.UiAutomation+DeviceCap]::DESKTOPVERTRES);
+		# Calculate dpi scale and pixels
+		[int32]$dpiScale = [Math]::Round([double]$PhysicalScreenHeight / [double]$LogicalScreenHeight, 2) * 100;
+		[int32]$dpiPixels = [Math]::Round(($dpiScale / 100)*96,0)
+	}
+	catch {
+		[int32]$dpiScale = 0
+		[int32]$dpiPixels = 0
+	}
+	finally {
+		# Release the device context handle and dispose of the graphics object
+		if ($GraphicsObject -ne $null) {
+			if ($DeviceContextHandle -ne [IntPtr]::Zero) {
+				$GraphicsObject.ReleaseHdc($DeviceContextHandle);
+			}
+			$GraphicsObject.Dispose();
+		}
+	}
+	# Failed to get dpi, try to read them from registry - Might not be accurate
 	If ($RunAsActiveUser) {
-		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
-		If (-not ([string]$dpiPixels)) {
+		If ($dpiPixels -lt 1) {
+			[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
+		}
+		If ($dpiPixels -lt 1) {
 			[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
 		}
 		[boolean]$UserDisplayScaleFactor = $true
 	}
-	If (-not ([string]$dpiPixels)) {
+	# Failed to get dpi from first two registry entries, try to read FontDPI - Usually inaccurate
+	If ($dpiPixels -lt 1) {
 		#  This registry setting only exists if system scale factor has been changed at least once
 		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
 		[boolean]$UserDisplayScaleFactor = $false
 	}
-	Switch ($dpiPixels) {
-		96 { [int32]$dpiScale = 100 }
-		120 { [int32]$dpiScale = 125 }
-		144 { [int32]$dpiScale = 150 }
-		192 { [int32]$dpiScale = 200 }
-		Default { [int32]$dpiScale = 100 }
+	# Calculate dpi scale if its empty and we have dpi pixels
+	if (($dpiScale -lt 1) -and ($dpiPixels -gt 0)) {
+		[int32]$dpiScale = [Math]::Round(($dpiPixels * 100)/96)
 	}
 }
 ## Variables: Resolve Parameters. For use in a pipeline

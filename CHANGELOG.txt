@@ -23,6 +23,9 @@
   - It will only show a short description just like other functions and the details will be available in the log.
 - Fixed a couple of log message typos across the toolkit
 - Fixed a bug that caused Update-Desktop/Refresh-Desktop to crash Powershell on 32bit systems
+- Changed $GetDisplayScaleFactor so it now actually calculates the dpi scale and dpi pixels
+  - If the calculation fails, then it reads the values from registry entries
+  - If reading from registry entries fails or they contain invalid values, $dpiScale and $dpiPixels are set to 0
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process

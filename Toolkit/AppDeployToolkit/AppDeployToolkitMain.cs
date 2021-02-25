@@ -176,6 +176,17 @@ namespace PSADT
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern IntPtr GetShellWindow();
 
+        public enum DeviceCap
+        {
+            HORZRES = 8,
+            VERTRES = 10,
+            DESKTOPVERTRES = 117,
+            DESKTOPHORZRES = 118
+        }
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        public static extern int GetDeviceCaps(IntPtr hDC, int nIndex);
+
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool IsWindowEnabled(IntPtr hWnd);
