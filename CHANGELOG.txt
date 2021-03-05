@@ -2,9 +2,13 @@
 - Changed Show-InstallationRestartPrompt:
   - Fixed a bug in the function, that caused incorrect handling of parameters when running the function asynchronously
   - Changed the function so it doesn't prepare the window when running asynchronously. This also fixes a bug where the timers kept running in the background and were never stopped when running asynchronously.
+  - Enabled the ControlBox but disabled the close button
 - Changed Show-InstallationPrompt:
   - Fixed the function failing to display a window with -NoWait parameter specified
   - Changed the function so it doesn't prepare the window when -NoWait is specified. This also fixes a bug where the timers kept running in the background and were never stopped when -NoWait was specified.
+  - The titlebar close button is now disabled.
+- Changed Show-InstallationWelcome
+  - The titlebar close button is now disabled.
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup not executing the process for the current user correctly

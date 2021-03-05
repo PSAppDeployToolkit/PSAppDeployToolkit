@@ -1627,6 +1627,21 @@ Function Show-InstallationPrompt {
 		}
 
 		[scriptblock]$Install_Prompt_Form_StateCorrection_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formInstallationPrompt.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't grey out the button
+				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+			}
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formInstallationPrompt.WindowState = 'Normal'
 			$formInstallationPrompt.AutoSize = $true
@@ -7099,6 +7114,21 @@ Function Show-WelcomePrompt {
 		}
 
 		[scriptblock]$Welcome_Form_StateCorrection_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formWelcome.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't grey out the button
+				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+			}
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formWelcome.WindowState = 'Normal'
 			$formWelcome.AutoSize = $true
@@ -7658,6 +7688,21 @@ Function Show-InstallationRestartPrompt {
 		}
 
 		[scriptblock]$FormEvent_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formRestart.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't grey out the button
+				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+			}
 			## Initialize the countdown timer
 			[datetime]$currentTime = Get-Date
 			[datetime]$countdownTime = $startTime.AddSeconds($countdownSeconds)
@@ -7888,7 +7933,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.TopLevel = $true
 		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formRestart.AutoSize = $true
-		$formRestart.ControlBox = $false
+		$formRestart.ControlBox = $true
 		$formRestart.Controls.Add($pictureBanner)
 
 		## Button Panel
