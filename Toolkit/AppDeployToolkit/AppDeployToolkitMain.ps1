@@ -8293,7 +8293,7 @@ Function Show-InstallationProgress {
 						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
 						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
 					}
-					#  Grey out the X button
+					#  Disable the X button
 					try {
 						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
 						If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
