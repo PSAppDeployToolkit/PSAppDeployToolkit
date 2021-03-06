@@ -1639,8 +1639,9 @@ Function Show-InstallationPrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't grey out the button
-				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formInstallationPrompt.ControlBox = $false
 			}
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formInstallationPrompt.WindowState = 'Normal'
@@ -7126,8 +7127,9 @@ Function Show-WelcomePrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't grey out the button
-				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formWelcome.ControlBox = $false
 			}
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formWelcome.WindowState = 'Normal'
@@ -7210,7 +7212,7 @@ Function Show-WelcomePrompt {
 					If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
 					# Update the runningProcessDescriptions variable for the next time this function runs
 					Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-					If ($dynamicrunningProcesses) {
+					If ($dynamicRunningProcesses) {
 						Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
 					}
 					# Update the list box with the processes to close
@@ -7700,8 +7702,9 @@ Function Show-InstallationRestartPrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't grey out the button
-				Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
+				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formRestart.ControlBox = $false
 			}
 			## Initialize the countdown timer
 			[datetime]$currentTime = Get-Date
@@ -8305,7 +8308,7 @@ Function Show-InstallationProgress {
 						}
 					}
 					catch {
-						# Not a terminating error if we can't grey out the button
+						# Not a terminating error if we can't disable the close button
 						Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
 					}
 				})
