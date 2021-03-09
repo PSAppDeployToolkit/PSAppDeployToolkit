@@ -7689,7 +7689,7 @@ Function Show-InstallationRestartPrompt {
 			Restart-Computer -Force
 		}
 
-		[scriptblock]$FormEvent_Load = {
+		[scriptblock]$Restart_Form_StateCorrection_Load = {
 			# Disable the X button
 			try {
 				$windowHandle = $formRestart.Handle
@@ -7714,14 +7714,9 @@ Function Show-InstallationRestartPrompt {
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) { $buttonRestartLater.Enabled = $false }
-			$formRestart.WindowState = 'Normal'
-			$formRestart.TopMost = $true
-			$formRestart.BringToFront()
-		}
-
-		[scriptblock]$Restart_Form_StateCorrection_Load = {
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formRestart.WindowState = $InitialFormWindowState
+			$formRestart.WindowState = 'Normal'
 			$formRestart.AutoSize = $true
 			$formRestart.TopMost = $true
 			$formRestart.BringToFront()
@@ -7796,11 +7791,10 @@ Function Show-InstallationRestartPrompt {
 			Try {
 				$buttonRestartLater.remove_Click($buttonRestartLater_Click)
 				$buttonRestartNow.remove_Click($buttonRestartNow_Click)
-				$formRestart.remove_Load($FormEvent_Load)
+				$formRestart.remove_Load($Restart_Form_StateCorrection_Load)
 				$formRestart.remove_Resize($formRestart_Resize)
 				$timerCountdown.remove_Tick($timerCountdown_Tick)
 				$restartTimerPersist.remove_Tick($restartTimerPersist_Tick)
-				$formRestart.remove_Load($Restart_Form_StateCorrection_Load)
 				$formRestart.remove_FormClosed($Restart_Form_Cleanup_FormClosed)
 			}
 			Catch { }
@@ -7952,7 +7946,6 @@ Function Show-InstallationRestartPrompt {
 		$flowLayoutPanel.Controls.Add($panelButtons)
 		## Add FlowPanel to the form
 		$formRestart.Controls.Add($flowLayoutPanel)
-		$formRestart.add_Load($FormEvent_Load)
 		$formRestart.add_Resize($formRestart_Resize)
 		## Timer Countdown
 		If (-not $NoCountdown) { $timerCountdown.add_Tick($timerCountdown_Tick) }
