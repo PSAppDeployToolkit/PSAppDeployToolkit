@@ -1604,7 +1604,6 @@ Function Show-InstallationPrompt {
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
-		$InitialFormInstallationPromptWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 		[scriptblock]$Install_Prompt_Form_Cleanup_FormClosed = {
 			## Remove all event handlers from the controls
@@ -1643,7 +1642,6 @@ Function Show-InstallationPrompt {
 				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
 				$formInstallationPrompt.ControlBox = $false
 			}
-			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formInstallationPrompt.WindowState = 'Normal'
 			$formInstallationPrompt.AutoSize = $true
 			$formInstallationPrompt.TopMost = $true
@@ -1849,9 +1847,6 @@ Function Show-InstallationPrompt {
 			Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
 			$buttonAbort.PerformClick()
 		})
-
-		## Save the initial state of the form
-		$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 		## Init the OnLoad event to correct the initial state of the form
 		$formInstallationPrompt.add_Load($Install_Prompt_Form_StateCorrection_Load)
 		## Clean up the control events
@@ -7682,7 +7677,6 @@ Function Show-InstallationRestartPrompt {
 		$timerCountdown = New-Object -TypeName 'System.Windows.Forms.Timer'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
-		$InitialFormWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 		[scriptblock]$RestartComputer = {
 			Write-Log -Message 'Forcefully restarting the computer...' -Source ${CmdletName}
@@ -7714,8 +7708,6 @@ Function Show-InstallationRestartPrompt {
 			[timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) { $buttonRestartLater.Enabled = $false }
-			## Correct the initial state of the form to prevent the .NET maximized form issue
-			$formRestart.WindowState = $InitialFormWindowState
 			$formRestart.WindowState = 'Normal'
 			$formRestart.AutoSize = $true
 			$formRestart.TopMost = $true
@@ -7949,11 +7941,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.add_Resize($formRestart_Resize)
 		## Timer Countdown
 		If (-not $NoCountdown) { $timerCountdown.add_Tick($timerCountdown_Tick) }
-
 		##----------------------------------------------
-
-		## Save the initial state of the form
-		$InitialFormWindowState = $formRestart.WindowState
 		# Init the OnLoad event to correct the initial state of the form
 		$formRestart.add_Load($Restart_Form_StateCorrection_Load)
 		# Clean up the control events
