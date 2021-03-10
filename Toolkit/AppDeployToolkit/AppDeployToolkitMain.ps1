@@ -1862,8 +1862,6 @@ Function Show-InstallationPrompt {
 			[scriptblock]$installPromptTimerPersist_Tick = { 
 				$formInstallationPrompt.BringToFront()
 				$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
-				$formInstallationPrompt.Refresh()
-				[Windows.Forms.Application]::DoEvents()
 			}
 			$installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
 			$installPromptTimerPersist.Start()
@@ -7172,7 +7170,7 @@ Function Show-WelcomePrompt {
 				Else {
 					#  Update the form
 					$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					[Windows.Forms.Application]::DoEvents()
+					$labelCountdown.Refresh()
 				}
 			}
 		}
@@ -7190,7 +7188,6 @@ Function Show-WelcomePrompt {
 			[scriptblock]$welcomeTimerPersist_Tick = {
 				$formWelcome.BringToFront()
 				$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
-				$formWelcome.Refresh()
 			}
 			$welcomeTimerPersist.add_Tick($welcomeTimerPersist_Tick)
 			$welcomeTimerPersist.Start()
@@ -7726,8 +7723,6 @@ Function Show-InstallationRestartPrompt {
 				$formRestart.TopMost = $true
 				$formRestart.BringToFront()
 				$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-				$formRestart.Refresh()
-				[Windows.Forms.Application]::DoEvents()
 			}
 			$restartTimerPersist.add_Tick($restartTimerPersist_Tick)
 			$restartTimerPersist.Start()
@@ -7761,6 +7756,7 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				## Update the form
 				$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
+				$labelCountdown.Refresh()
 				If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
 					$buttonRestartLater.Enabled = $false
 					#  If the form is hidden when we hit the "No Hide", bring it back up
@@ -7770,11 +7766,8 @@ Function Show-InstallationRestartPrompt {
 						$formRestart.TopMost = $true
 						$formRestart.BringToFront()
 						$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-						$formRestart.Refresh()
-						[Windows.Forms.Application]::DoEvents()
 					}
 				}
-				[Windows.Forms.Application]::DoEvents()
 			}
 		}
 
