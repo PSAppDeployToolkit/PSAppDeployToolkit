@@ -7080,7 +7080,6 @@ Function Show-WelcomePrompt {
 		$buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonCloseApps = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
-		$formWelcomeWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 		$toolTip = New-Object -TypeName 'System.Windows.Forms.ToolTip'
@@ -7170,7 +7169,6 @@ Function Show-WelcomePrompt {
 				Else {
 					#  Update the form
 					$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					$labelCountdown.Refresh()
 				}
 			}
 		}
@@ -7360,7 +7358,7 @@ Function Show-WelcomePrompt {
 		$labelCountdownMessage.Margin = $paddingNone
 		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdownMessage.TabStop = $false
-		If ($forceCountdown -eq $true) {
+		If (($forceCountdown -eq $true) -or (-not $script:runningProcessDescriptions)) {
 			switch ($deploymentType){
 				'Uninstall' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall);break; }
 				'Repair' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair);break; }
@@ -7535,9 +7533,6 @@ Function Show-WelcomePrompt {
 		$flowLayoutPanel.Controls.Add($panelButtons)
 		## Add FlowPanel to the form
 		$formWelcome.Controls.Add($flowLayoutPanel)
-
-		## Save the initial state of the form
-		$formWelcomeWindowState = $formWelcome.WindowState
 		#  Init the OnLoad event to correct the initial state of the form
 		$formWelcome.add_Load($Welcome_Form_StateCorrection_Load)
 		#  Clean up the control events
@@ -7756,7 +7751,6 @@ Function Show-InstallationRestartPrompt {
 			Else {
 				## Update the form
 				$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-				$labelCountdown.Refresh()
 				If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
 					$buttonRestartLater.Enabled = $false
 					#  If the form is hidden when we hit the "No Hide", bring it back up

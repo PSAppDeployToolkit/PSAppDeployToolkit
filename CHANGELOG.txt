@@ -9,6 +9,7 @@
   - The titlebar close button is now disabled.
 - Changed Show-InstallationWelcome
   - The titlebar close button is now disabled.
+  - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup not executing the process for the current user correctly
