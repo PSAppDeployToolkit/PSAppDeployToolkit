@@ -12,8 +12,8 @@
   - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
-- Changed function Set-ActiveSetup not executing the process for the current user correctly
-  - Fixed the function not executing the process for the current user correctly
+- Changed function Set-ActiveSetup:
+  - Fixed the function not executing the process for current user correctly
   - The function now also checks Version and IsInstalled properties when attempting to run the process for current user
   - Added more logging messages so it is clear from the logs why it was or was not executed for the current user
   - IsInstalled property is no longer added to the HKCU registry entry
@@ -31,6 +31,12 @@
 - Changed $GetDisplayScaleFactor so it now actually calculates the dpi scale and dpi pixels
   - If the calculation fails, then it reads the values from registry entries
   - If reading from registry entries fails or they contain invalid values, $dpiScale and $dpiPixels are set to 0
+- Fixed New-Folder not creating the entire path sometimes
+- Changed Remove-Folder:
+  - Parameter -ContinueOnError set to $false now stops the script on all errors
+  - Remorked how the function behaves when -DisableRecursion is specified:
+    - The function now removes everything it can except for non empty folders
+    - It stops the script if -ContinueOnError was set to true and non empty folders were detected
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process

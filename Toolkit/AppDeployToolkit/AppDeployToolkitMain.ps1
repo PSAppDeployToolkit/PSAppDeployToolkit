@@ -1423,7 +1423,7 @@ Function Resolve-Error {
 		} else {
 			$SOutput.Add("Error Record $($i+1):")
 		}
-		$SOutput.Add("-------------")
+		$SOutput.Add("------↓------")
 		$ErrRecord = $ErrorRecord[$i]
 		## Capture Error Exception
 		If ($GetErrorException -and $ErrRecord.Exception.Message) {
@@ -1477,7 +1477,7 @@ Function Resolve-Error {
 	if([String]::IsNullOrEmpty($SOutput[$SOutput.Count-1])) {
 		$SOutput.RemoveAt($SOutput.Count-1)
 	}
-	$SOutput.Add("-------------")
+	$SOutput.Add("------↑------")
 	$SOutput | Out-String
 	$SOutput = $null
 }
@@ -3580,7 +3580,7 @@ Function New-Folder {
 		Try {
 			If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
 				Write-Log -Message "Creating folder [$Path]." -Source ${CmdletName}
-				$null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
+				$null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' -Force
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
@@ -3641,20 +3641,48 @@ Function Remove-Folder {
 				Try {
 					If ($DisableRecursion) {
 						Write-Log -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
-						Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+						# Without recursion we have to go through the subfolder ourselves because Remove-Item asks for confirmation if we are trying to delete a non-empty folder without -Recurse
+						[array]$ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force
+						If ($ListOfChildItems) {
+							$SubfoldersSkipped = 0
+							foreach ($item in $ListOfChildItems) {
+								# Check whether this item is a folder
+								If (Test-Path -LiteralPath $item.FullName -PathType Container) {
+									# Item is a folder. Check if its empty
+									# Get list of child items in the folder
+									[array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction SilentlyContinue -ErrorVariable '+ErrorRemoveFolder'
+									If ($ItemChildItems.Count -eq 0) {
+										# The folder is empty, delete it
+										Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+									} else {
+										# Folder is not empty, skip it
+										$SubfoldersSkipped++
+										continue
+									}
+								} else {
+									# Item is a file. Delete it
+									Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+								}
+							}
+							if ($SubfoldersSkipped -gt 0) {
+								Throw "[$SubfoldersSkipped] subfolders are not empty!"
+							}
+						} Else {
+							Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+						}
 					} else {
 						Write-Log -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
 						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 					}
 
 					If ($ErrorRemoveFolder) {
-						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
+						Throw $ErrorRemoveFolder
 					}
 				}
 				Catch {
-					Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to delete folder(s) and file(s) from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
-						Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
+						Throw "Failed to delete folder(s) and file(s) from path [$path]: $($_.Exception.Message)"
 					}
 				}
 			}
