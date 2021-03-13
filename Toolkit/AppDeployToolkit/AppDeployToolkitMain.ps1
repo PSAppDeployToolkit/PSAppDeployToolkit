@@ -277,7 +277,7 @@ $GetAccountNameUsingSid = [scriptblock]{
 		return $null 
 	}
 }	
-[string]$LocalSytemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
+[string]$LocalSystemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
 [string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
 [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
 [string]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
@@ -1638,7 +1638,7 @@ Function Show-InstallationPrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
 				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
 				$formInstallationPrompt.ControlBox = $false
 			}
@@ -7147,7 +7147,7 @@ Function Show-WelcomePrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
 				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
 				$formWelcome.ControlBox = $false
 			}
@@ -7716,7 +7716,7 @@ Function Show-InstallationRestartPrompt {
 				}
 			}
 			catch {
-				# Not a terminating error if we can't disable out the button. Just disable the Control Box instead
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
 				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
 				$formRestart.ControlBox = $false
 			}

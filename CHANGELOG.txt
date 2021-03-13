@@ -37,6 +37,7 @@
   - Remorked how the function behaves when -DisableRecursion is specified:
     - The function now removes everything it can except for non empty folders
     - It stops the script if -ContinueOnError was set to true and non empty folders were detected
+- Fixed $LocalSystemNTAccount not being populated
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
