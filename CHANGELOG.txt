@@ -24,8 +24,8 @@
   - The function now displays the name of the property as well as its content, even when the property is empty
   - The function now displays more properties
   - Each property is separated by an empty line
-- Changed Execute-Process so it no longer displays the entire error information in the error popup window.
-  - It will only show a short description just like other functions and the details will be available in the log.
+- Changed Execute-Process so it no longer displays the entire error information in the error popup window
+  - It will only show a short description just like other functions and the details will be available in the log
 - Fixed a couple of log message typos across the toolkit
 - Fixed a bug that caused Update-Desktop/Refresh-Desktop to crash Powershell on 32bit systems
 - Changed $GetDisplayScaleFactor so it now actually calculates the dpi scale and dpi pixels
@@ -39,6 +39,8 @@
     - It stops the script if -ContinueOnError was set to true and non empty folders were detected
 - Fixed $LocalSystemNTAccount not being populated
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
+- Changed $installPhase at the end of the Main script
+  - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process

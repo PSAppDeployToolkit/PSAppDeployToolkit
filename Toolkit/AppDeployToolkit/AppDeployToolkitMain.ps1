@@ -12394,6 +12394,12 @@ If ($configToolkitRequireAdmin) {
 ## If terminal server mode was specified, change the installation mode to support it
 If ($terminalServerMode) { Enable-TerminalServerInstallMode }
 
+## If not in install phase Asynchronous, change the install phase so we dont have Initialization phase when we are done initializing
+## This should get overwritten shortly, unless this is not dot sourced by Deploy-Application.ps1
+If (-not $AsyncToolkitLaunch) {
+	$installPhase = 'Execution'
+}
+
 #endregion
 ##*=============================================
 ##* END SCRIPT BODY
