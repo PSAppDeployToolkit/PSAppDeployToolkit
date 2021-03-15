@@ -1515,6 +1515,8 @@ Function Show-InstallationPrompt {
 	Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
 .PARAMETER ExitOnTimeout
 	Specifies whether to exit the script if the UI times out. Default: $true.
+.PARAMETER TopMost
+	Specifies whether the progress window should be topmost. Default: $true.
 .EXAMPLE
 	Show-InstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
 .EXAMPLE
@@ -1556,7 +1558,10 @@ Function Show-InstallationPrompt {
 		[int32]$Timeout = $configInstallationUITimeout,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$ExitOnTimeout = $true
+		[boolean]$ExitOnTimeout = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 
 	Begin {
@@ -1644,7 +1649,7 @@ Function Show-InstallationPrompt {
 			}
 			$formInstallationPrompt.WindowState = 'Normal'
 			$formInstallationPrompt.AutoSize = $true
-			$formInstallationPrompt.TopMost = $true
+			$formInstallationPrompt.TopMost = $TopMost
 			$formInstallationPrompt.BringToFront()
 			# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 			Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
@@ -1833,7 +1838,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.FormBorderStyle = 'FixedDialog'
 		$formInstallationPrompt.MaximizeBox = $false
 		$formInstallationPrompt.MinimizeBox = $false
-		$formInstallationPrompt.TopMost = $true
+		$formInstallationPrompt.TopMost = $TopMost
 		$formInstallationPrompt.TopLevel = $true
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
@@ -7212,6 +7217,8 @@ Function Show-WelcomePrompt {
 			$welcomeTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$welcomeTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$welcomeTimerPersist_Tick = {
+				$formWelcome.WindowState = 'Normal'
+				$formWelcome.TopMost = $TopMost
 				$formWelcome.BringToFront()
 				$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
 			}
@@ -7611,6 +7618,8 @@ Function Show-InstallationRestartPrompt {
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .PARAMETER SilentCountdownSeconds
 	Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+.PARAMETER TopMost
+	Specifies whether the windows is the topmost window. Default: $true.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
@@ -7636,7 +7645,10 @@ Function Show-InstallationRestartPrompt {
 		[switch]$NoCountdown = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[int32]$SilentCountdownSeconds = 5
+		[int32]$SilentCountdownSeconds = 5,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 
 	Begin {
@@ -7730,7 +7742,7 @@ Function Show-InstallationRestartPrompt {
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) { $buttonRestartLater.Enabled = $false }
 			$formRestart.WindowState = 'Normal'
 			$formRestart.AutoSize = $true
-			$formRestart.TopMost = $true
+			$formRestart.TopMost = $TopMost
 			$formRestart.BringToFront()
 			## Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 			Set-Variable -Name 'formInstallationRestartPromptStartPosition' -Value $formRestart.Location -Scope 'Script'
@@ -7743,7 +7755,7 @@ Function Show-InstallationRestartPrompt {
 			[scriptblock]$restartTimerPersist_Tick = {
 				#  Show the Restart Popup
 				$formRestart.WindowState = 'Normal'
-				$formRestart.TopMost = $true
+				$formRestart.TopMost = $TopMost
 				$formRestart.BringToFront()
 				$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
 			}
@@ -7785,7 +7797,7 @@ Function Show-InstallationRestartPrompt {
 					If ($formRestart.WindowState -eq 'Minimized') {
 						#  Show Popup
 						$formRestart.WindowState = 'Normal'
-						$formRestart.TopMost = $true
+						$formRestart.TopMost = $TopMost
 						$formRestart.BringToFront()
 						$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
 					}
@@ -7933,7 +7945,7 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.FormBorderStyle = 'FixedDialog'
 		$formRestart.MaximizeBox = $false
 		$formRestart.MinimizeBox = $false
-		$formRestart.TopMost = $true
+		$formRestart.TopMost = $TopMost
 		$formRestart.TopLevel = $true
 		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formRestart.AutoSize = $true
@@ -7974,10 +7986,6 @@ Function Show-InstallationRestartPrompt {
 		#  Show the Form
 		Write-Output -InputObject $formRestart.ShowDialog()
 		$formRestart.Dispose()
-
-		#  Activate the Window
-		[Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
-		[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
