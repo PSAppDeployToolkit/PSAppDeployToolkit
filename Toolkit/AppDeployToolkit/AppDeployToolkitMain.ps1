@@ -54,10 +54,11 @@ Param (
 	[switch]$ExitOnTimeout = $false,
 	[boolean]$MinimizeWindows = $false,
 	[switch]$PersistPrompt = $false,
-	[int32]$CountdownSeconds,
-	[int32]$CountdownNoHideSeconds,
+	[int32]$CountdownSeconds = 60,
+	[int32]$CountdownNoHideSeconds = 30,
 	[switch]$NoCountdown = $false,
-	[switch]$AsyncToolkitLaunch = $false
+	[switch]$AsyncToolkitLaunch = $false,
+	[bool]$TopMost = $true
 )
 
 ##*=============================================
@@ -79,7 +80,7 @@ Param (
 [datetime]$currentDateTime = Get-Date
 [string]$currentTime = Get-Date -Date $currentDateTime -UFormat '%T'
 [string]$currentDate = Get-Date -Date $currentDateTime -UFormat '%d-%m-%Y'
-[timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
+[timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset($currentDateTime)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
 [Globalization.CultureInfo]$uiculture = Get-UICulture
@@ -1865,6 +1866,8 @@ Function Show-InstallationPrompt {
 			$installPromptTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$installPromptTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
 			[scriptblock]$installPromptTimerPersist_Tick = { 
+				$formInstallationPrompt.WindowState = 'Normal'
+				$formInstallationPrompt.TopMost = $TopMost
 				$formInstallationPrompt.BringToFront()
 				$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
 			}
