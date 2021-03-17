@@ -54,10 +54,11 @@ Param (
 	[switch]$ExitOnTimeout = $false,
 	[boolean]$MinimizeWindows = $false,
 	[switch]$PersistPrompt = $false,
-	[int32]$CountdownSeconds,
-	[int32]$CountdownNoHideSeconds,
+	[int32]$CountdownSeconds = 60,
+	[int32]$CountdownNoHideSeconds = 30,
 	[switch]$NoCountdown = $false,
-	[switch]$AsyncToolkitLaunch = $false
+	[switch]$AsyncToolkitLaunch = $false,
+	[bool]$TopMost = $true
 )
 
 ##*=============================================
@@ -79,7 +80,7 @@ Param (
 [datetime]$currentDateTime = Get-Date
 [string]$currentTime = Get-Date -Date $currentDateTime -UFormat '%T'
 [string]$currentDate = Get-Date -Date $currentDateTime -UFormat '%d-%m-%Y'
-[timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset([datetime]::Now)
+[timespan]$currentTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset($currentDateTime)
 [Globalization.CultureInfo]$culture = Get-Culture
 [string]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
 [Globalization.CultureInfo]$uiculture = Get-UICulture
@@ -277,7 +278,7 @@ $GetAccountNameUsingSid = [scriptblock]{
 		return $null 
 	}
 }	
-[string]$LocalSytemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
+[string]$LocalSystemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
 [string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
 [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
 [string]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
@@ -521,28 +522,102 @@ If (Test-Path -LiteralPath 'variable:deferHistory') { Remove-Variable -Name 'def
 If (Test-Path -LiteralPath 'variable:deferTimes') { Remove-Variable -Name 'deferTimes' }
 If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferDays' }
 
-## Variables: System DPI Scale Factor
+## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
 [scriptblock]$GetDisplayScaleFactor = {
 	#  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
 	[boolean]$UserDisplayScaleFactor = $false
+	[System.Drawing.Graphics]$GraphicsObject = $null
+	[IntPtr]$DeviceContextHandle = [IntPtr]::Zero
+	[int32]$dpiScale = 0
+	[int32]$dpiPixels = 0
+
+	try {
+		# Get Graphics Object from the current Window Handle
+		[System.Drawing.Graphics]$GraphicsObject = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero);
+		# Get Device Context Handle
+		[IntPtr]$DeviceContextHandle = $GraphicsObject.GetHdc();
+		# Get Logical and Physical screen height
+		[int32]$LogicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int][PSADT.UiAutomation+DeviceCap]::VERTRES);
+		[int32]$PhysicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int][PSADT.UiAutomation+DeviceCap]::DESKTOPVERTRES);
+		# Calculate dpi scale and pixels
+		[int32]$dpiScale = [Math]::Round([double]$PhysicalScreenHeight / [double]$LogicalScreenHeight, 2) * 100;
+		[int32]$dpiPixels = [Math]::Round(($dpiScale / 100)*96,0)
+	}
+	catch {
+		[int32]$dpiScale = 0
+		[int32]$dpiPixels = 0
+	}
+	finally {
+		# Release the device context handle and dispose of the graphics object
+		if ($GraphicsObject -ne $null) {
+			if ($DeviceContextHandle -ne [IntPtr]::Zero) {
+				$GraphicsObject.ReleaseHdc($DeviceContextHandle);
+			}
+			$GraphicsObject.Dispose();
+		}
+	}
+	# Failed to get dpi, try to read them from registry - Might not be accurate
 	If ($RunAsActiveUser) {
-		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
-		If (-not ([string]$dpiPixels)) {
+		If ($dpiPixels -lt 1) {
+			[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
+		}
+		If ($dpiPixels -lt 1) {
 			[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
 		}
 		[boolean]$UserDisplayScaleFactor = $true
 	}
-	If (-not ([string]$dpiPixels)) {
+	# Failed to get dpi from first two registry entries, try to read FontDPI - Usually inaccurate
+	If ($dpiPixels -lt 1) {
 		#  This registry setting only exists if system scale factor has been changed at least once
 		[int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
 		[boolean]$UserDisplayScaleFactor = $false
 	}
-	Switch ($dpiPixels) {
-		96 { [int32]$dpiScale = 100 }
-		120 { [int32]$dpiScale = 125 }
-		144 { [int32]$dpiScale = 150 }
-		192 { [int32]$dpiScale = 200 }
-		Default { [int32]$dpiScale = 100 }
+	# Calculate dpi scale if its empty and we have dpi pixels
+	if (($dpiScale -lt 1) -and ($dpiPixels -gt 0)) {
+		[int32]$dpiScale = [Math]::Round(($dpiPixels * 100)/96)
+	}
+}
+## Variables: Resolve Parameters. For use in a pipeline
+[scriptblock]$ResolveParameters = {
+	# We have to save current pipeline object $_ because switch has its own $_
+	$item = $_
+	switch ($item.Value.GetType().Name) {
+		'SwitchParameter' {
+			"-$($item.Key):`$$($item.Value.tostring().toLower())"
+		}
+		'Boolean' {
+			"-$($item.Key):`$$($item.Value.tostring().toLower())"
+		}
+		'Int16' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Int32' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Int64' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt16' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt32' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'UInt64' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Single' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Double' {
+			"-$($item.Key):$($item.Value)"
+		}
+		'Decimal' {
+			"-$($item.Key):$($item.Value)"
+		}
+		default {
+			"-$($item.Key):`'$($item.Value)`'"
+		}
 	}
 }
 #endregion
@@ -1349,7 +1424,7 @@ Function Resolve-Error {
 		} else {
 			$SOutput.Add("Error Record $($i+1):")
 		}
-		$SOutput.Add("-------------")
+		$SOutput.Add("------↓------")
 		$ErrRecord = $ErrorRecord[$i]
 		## Capture Error Exception
 		If ($GetErrorException -and $ErrRecord.Exception.Message) {
@@ -1403,7 +1478,7 @@ Function Resolve-Error {
 	if([String]::IsNullOrEmpty($SOutput[$SOutput.Count-1])) {
 		$SOutput.RemoveAt($SOutput.Count-1)
 	}
-	$SOutput.Add("-------------")
+	$SOutput.Add("------↑------")
 	$SOutput | Out-String
 	$SOutput = $null
 }
@@ -1441,6 +1516,8 @@ Function Show-InstallationPrompt {
 	Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
 .PARAMETER ExitOnTimeout
 	Specifies whether to exit the script if the UI times out. Default: $true.
+.PARAMETER TopMost
+	Specifies whether the progress window should be topmost. Default: $true.
 .EXAMPLE
 	Show-InstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
 .EXAMPLE
@@ -1482,7 +1559,10 @@ Function Show-InstallationPrompt {
 		[int32]$Timeout = $configInstallationUITimeout,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[boolean]$ExitOnTimeout = $true
+		[boolean]$ExitOnTimeout = $true,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 
 	Begin {
@@ -1507,6 +1587,16 @@ Function Show-InstallationPrompt {
 			Throw $CountdownTimeoutErr
 		}
 
+		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
+		If ($NoWait) {
+			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
+			$installPromptParameters.Remove('NoWait')
+			# Format the parameters as a string
+			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			return
+		}
+
 		[Windows.Forms.Application]::EnableVisualStyles()
 		$formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
 		$pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
@@ -1520,9 +1610,8 @@ Function Show-InstallationPrompt {
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
-		$InitialFormInstallationPromptWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Install_Prompt_Form_Cleanup_FormClosed = {
 			## Remove all event handlers from the controls
 			Try {
 				$labelText.remove_Click($handler_labelText_Click)
@@ -1530,23 +1619,38 @@ Function Show-InstallationPrompt {
 				$buttonRight.remove_Click($buttonRight_OnClick)
 				$buttonMiddle.remove_Click($buttonMiddle_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
-				$timer.remove_Tick($timer_Tick)
-				$timer.Dispose()
-				$timer = $null
-				$timerPersist.remove_Tick($timerPersist_Tick)
-				$timerPersist.Dispose()
-				$timerPersist = $null
-				$formInstallationPrompt.remove_Load($Form_StateCorrection_Load)
-				$formInstallationPrompt.remove_FormClosed($Form_Cleanup_FormClosed)
+				$installPromptTimer.remove_Tick($installPromptTimer_Tick)
+				$installPromptTimer.Dispose()
+				$installPromptTimer = $null
+				$installPromptTimerPersist.remove_Tick($installPromptTimerPersist_Tick)
+				$installPromptTimerPersist.Dispose()
+				$installPromptTimerPersist = $null
+				$formInstallationPrompt.remove_Load($Install_Prompt_Form_StateCorrection_Load)
+				$formInstallationPrompt.remove_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
 
-		[scriptblock]$Form_StateCorrection_Load = {
-			## Correct the initial state of the form to prevent the .NET maximized form issue
+		[scriptblock]$Install_Prompt_Form_StateCorrection_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formInstallationPrompt.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formInstallationPrompt.ControlBox = $false
+			}
 			$formInstallationPrompt.WindowState = 'Normal'
 			$formInstallationPrompt.AutoSize = $true
-			$formInstallationPrompt.TopMost = $true
+			$formInstallationPrompt.TopMost = $TopMost
 			$formInstallationPrompt.BringToFront()
 			# Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 			Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
@@ -1735,7 +1839,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.FormBorderStyle = 'FixedDialog'
 		$formInstallationPrompt.MaximizeBox = $false
 		$formInstallationPrompt.MinimizeBox = $false
-		$formInstallationPrompt.TopMost = $true
+		$formInstallationPrompt.TopMost = $TopMost
 		$formInstallationPrompt.TopLevel = $true
 		$formInstallationPrompt.AutoSize = $true
 		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
@@ -1743,35 +1847,32 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.Controls.Add($buttonAbort)
 		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
 		## Timer
-		$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
-		$timer.Interval = ($timeout * 1000)
-		$timer.Add_Tick({
+		$installPromptTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
+		$installPromptTimer.Interval = ($timeout * 1000)
+		$installPromptTimer.Add_Tick({
 			Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
 			$buttonAbort.PerformClick()
 		})
-
-		## Save the initial state of the form
-		$InitialFormInstallationPromptWindowState = $formInstallationPrompt.WindowState
 		## Init the OnLoad event to correct the initial state of the form
-		$formInstallationPrompt.add_Load($Form_StateCorrection_Load)
+		$formInstallationPrompt.add_Load($Install_Prompt_Form_StateCorrection_Load)
 		## Clean up the control events
-		$formInstallationPrompt.add_FormClosed($Form_Cleanup_FormClosed)
+		$formInstallationPrompt.add_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
 
 		## Start the timer
-		$timer.Start()
+		$installPromptTimer.Start()
 
 		## Persistence Timer
-		[scriptblock]$RefreshInstallationPrompt = {
-			$formInstallationPrompt.BringToFront()
-			$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
-			$formInstallationPrompt.Refresh()
-		}
 		If ($persistPrompt) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = { & $RefreshInstallationPrompt }
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$installPromptTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$installPromptTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
+			[scriptblock]$installPromptTimerPersist_Tick = { 
+				$formInstallationPrompt.WindowState = 'Normal'
+				$formInstallationPrompt.TopMost = $TopMost
+				$formInstallationPrompt.BringToFront()
+				$formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
+			}
+			$installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
+			$installPromptTimerPersist.Start()
 		}
 
 		if (-not $AsyncToolkitLaunch) {
@@ -1779,44 +1880,35 @@ Function Show-InstallationPrompt {
 			Close-InstallationProgress
 		}
 
-		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-		Write-Log -Message "Displaying custom installation prompt with the non-default parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
+		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+		Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
-		## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
-		If ($NoWait) {
-			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session
-			$installPromptParameters.Remove('NoWait')
-			# Format the parameters as a string
-			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$Title`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
-		}
-		## Otherwise, show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
-		Else {
-			$showDialog = $true
-			While ($showDialog) {
-				# Minimize all other windows
-				If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
-				# Show the Form
-				$result = $formInstallationPrompt.ShowDialog()
-				If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
-					$showDialog = $false
-				}
+		
+		## Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
+		$showDialog = $true
+		While ($showDialog) {
+			# Minimize all other windows
+			If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
+			# Show the Form
+			$result = $formInstallationPrompt.ShowDialog()
+			If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
+				$showDialog = $false
 			}
-			$formInstallationPrompt.Dispose()
+		}
+		$formInstallationPrompt.Dispose()
 
-			Switch ($result) {
-				'Yes' { Write-Output -InputObject $buttonRightText }
-				'No' { Write-Output -InputObject $buttonLeftText }
-				'Ignore' { Write-Output -InputObject $buttonMiddleText }
-				'Abort' {
-					# Restore minimized windows
-					$null = $shellApp.UndoMinimizeAll()
-					If ($ExitOnTimeout) {
-						Exit-Script -ExitCode $configInstallationUIExitCode
-					}
-					Else {
-						Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
-					}
+		Switch ($result) {
+			'Yes' { Write-Output -InputObject $buttonRightText }
+			'No' { Write-Output -InputObject $buttonLeftText }
+			'Ignore' { Write-Output -InputObject $buttonMiddleText }
+			'Abort' {
+				# Restore minimized windows
+				$null = $shellApp.UndoMinimizeAll()
+				If ($ExitOnTimeout) {
+					Exit-Script -ExitCode $configInstallationUIExitCode
+				}
+				Else {
+					Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
 				}
 			}
 		}
@@ -3496,7 +3588,7 @@ Function New-Folder {
 		Try {
 			If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
 				Write-Log -Message "Creating folder [$Path]." -Source ${CmdletName}
-				$null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
+				$null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' -Force
 			}
 			Else {
 				Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
@@ -3557,20 +3649,48 @@ Function Remove-Folder {
 				Try {
 					If ($DisableRecursion) {
 						Write-Log -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
-						Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+						# Without recursion we have to go through the subfolder ourselves because Remove-Item asks for confirmation if we are trying to delete a non-empty folder without -Recurse
+						[array]$ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force
+						If ($ListOfChildItems) {
+							$SubfoldersSkipped = 0
+							foreach ($item in $ListOfChildItems) {
+								# Check whether this item is a folder
+								If (Test-Path -LiteralPath $item.FullName -PathType Container) {
+									# Item is a folder. Check if its empty
+									# Get list of child items in the folder
+									[array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction SilentlyContinue -ErrorVariable '+ErrorRemoveFolder'
+									If ($ItemChildItems.Count -eq 0) {
+										# The folder is empty, delete it
+										Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+									} else {
+										# Folder is not empty, skip it
+										$SubfoldersSkipped++
+										continue
+									}
+								} else {
+									# Item is a file. Delete it
+									Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+								}
+							}
+							if ($SubfoldersSkipped -gt 0) {
+								Throw "[$SubfoldersSkipped] subfolders are not empty!"
+							}
+						} Else {
+							Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+						}
 					} else {
 						Write-Log -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
 						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 					}
 
 					If ($ErrorRemoveFolder) {
-						Write-Log -Message "The following error(s) took place while deleting folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveFolder)" -Severity 2 -Source ${CmdletName}
+						Throw $ErrorRemoveFolder
 					}
 				}
 				Catch {
-					Write-Log -Message "Failed to delete folder(s) and file(s) recursively from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					Write-Log -Message "Failed to delete folder(s) and file(s) from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
-						Throw "Failed to delete folder(s) and file(s) recursively from path [$path]: $($_.Exception.Message)"
+						Throw "Failed to delete folder(s) and file(s) from path [$path]: $($_.Exception.Message)"
 					}
 				}
 			}
@@ -4933,7 +5053,7 @@ Function New-Shortcut {
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
-				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
 				# Get full path
 				[string]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
@@ -5134,7 +5254,7 @@ Function Set-Shortcut {
 				return
 			}
 			# Make sure Net framework current dir is synced with powershell cwd
-			[IO.Directory]::SetCurrentDirectory((Get-Location))
+			[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
@@ -5265,7 +5385,7 @@ Function Get-Shortcut {
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
-				[IO.Directory]::SetCurrentDirectory((Get-Location))
+				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
 				# Get full path
 				[string]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
@@ -5919,7 +6039,7 @@ Function Block-AppExecution {
 		[string]$SchInstallName = $installName
 		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
 		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `'$blockExecutionTempPath\$scriptFileName`' -CleanupBlockedApps -ReferredInstallName `'$SchInstallName`' -ReferredInstallTitle `'$installTitle`' -ReferredLogName `'$logName`' -AsyncToolkitLaunch"
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5996,8 +6116,7 @@ Function Block-AppExecution {
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string]$debuggerBlockMessageCmd = "`"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
-		[string[]]$debuggerBlockScript = "strCommand = $debuggerBlockMessageCmd"
+		[string[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
 		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
@@ -6997,13 +7116,12 @@ Function Show-WelcomePrompt {
 		$buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonCloseApps = New-Object -TypeName 'System.Windows.Forms.Button'
 		$buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
-		$formWelcomeWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 		$toolTip = New-Object -TypeName 'System.Windows.Forms.ToolTip'
 
 		## Remove all event handlers from the controls
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Welcome_Form_Cleanup_FormClosed = {
 			Try {
 				$labelWelcomeMessage.remove_Click($handler_labelWelcomeMessage_Click)
 				$labelAppName.remove_Click($handler_labelAppName_Click)
@@ -7015,16 +7133,32 @@ Function Show-WelcomePrompt {
 				$buttonContinue.remove_Click($buttonContinue_OnClick)
 				$buttonDefer.remove_Click($buttonDefer_OnClick)
 				$buttonAbort.remove_Click($buttonAbort_OnClick)
-				$script:welcomeTimer.remove_Tick($timer_Tick)
-				$timerPersist.remove_Tick($timerPersist_Tick)
+				$script:welcomeTimer.remove_Tick($welcomeTimer_Tick)
+				$welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
 				$timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
-				$formWelcome.remove_Load($Form_StateCorrection_Load)
-				$formWelcome.remove_FormClosed($Form_Cleanup_FormClosed)
+				$formWelcome.remove_Load($Welcome_Form_StateCorrection_Load)
+				$formWelcome.remove_FormClosed($Welcome_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
 
-		[scriptblock]$Form_StateCorrection_Load = {
+		[scriptblock]$Welcome_Form_StateCorrection_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formWelcome.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formWelcome.ControlBox = $false
+			}
 			## Correct the initial state of the form to prevent the .NET maximized form issue
 			$formWelcome.WindowState = 'Normal'
 			$formWelcome.AutoSize = $true
@@ -7049,7 +7183,7 @@ Function Show-WelcomePrompt {
 		}
 
 		If ($showCountdown) {
-			[scriptblock]$timer_Tick = {
+			[scriptblock]$welcomeTimer_Tick = {
 				## Get the time information
 				[datetime]$currentTime = Get-Date
 				[datetime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
@@ -7071,28 +7205,28 @@ Function Show-WelcomePrompt {
 				Else {
 					#  Update the form
 					$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-					[Windows.Forms.Application]::DoEvents()
 				}
 			}
 		}
 		Else {
 			$script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
-			[scriptblock]$timer_Tick = { $buttonAbort.PerformClick() }
+			[scriptblock]$welcomeTimer_Tick = { $buttonAbort.PerformClick() }
 		}
 
-		$script:welcomeTimer.add_Tick($timer_Tick)
+		$script:welcomeTimer.add_Tick($welcomeTimer_Tick)
 
 		## Persistence Timer
 		If ($persistWindow) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = {
+			$welcomeTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$welcomeTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
+			[scriptblock]$welcomeTimerPersist_Tick = {
+				$formWelcome.WindowState = 'Normal'
+				$formWelcome.TopMost = $TopMost
 				$formWelcome.BringToFront()
 				$formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
-				$formWelcome.Refresh()
 			}
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$welcomeTimerPersist.add_Tick($welcomeTimerPersist_Tick)
+			$welcomeTimerPersist.Start()
 		}
 
 		## Process Re-Enumeration Timer
@@ -7106,7 +7240,7 @@ Function Show-WelcomePrompt {
 					If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
 					# Update the runningProcessDescriptions variable for the next time this function runs
 					Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-					If ($dynamicrunningProcesses) {
+					If ($dynamicRunningProcesses) {
 						Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
 					}
 					# Update the list box with the processes to close
@@ -7262,7 +7396,7 @@ Function Show-WelcomePrompt {
 		$labelCountdownMessage.Margin = $paddingNone
 		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 		$labelCountdownMessage.TabStop = $false
-		If ($forceCountdown -eq $true) {
+		If (($forceCountdown -eq $true) -or (-not $script:runningProcessDescriptions)) {
 			switch ($deploymentType){
 				'Uninstall' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall);break; }
 				'Repair' { $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair);break; }
@@ -7437,13 +7571,10 @@ Function Show-WelcomePrompt {
 		$flowLayoutPanel.Controls.Add($panelButtons)
 		## Add FlowPanel to the form
 		$formWelcome.Controls.Add($flowLayoutPanel)
-
-		## Save the initial state of the form
-		$formWelcomeWindowState = $formWelcome.WindowState
 		#  Init the OnLoad event to correct the initial state of the form
-		$formWelcome.add_Load($Form_StateCorrection_Load)
+		$formWelcome.add_Load($Welcome_Form_StateCorrection_Load)
 		#  Clean up the control events
-		$formWelcome.add_FormClosed($Form_Cleanup_FormClosed)
+		$formWelcome.add_FormClosed($Welcome_Form_Cleanup_FormClosed)
 
 		## Minimize all other windows
 		If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
@@ -7490,6 +7621,8 @@ Function Show-InstallationRestartPrompt {
 	The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 .PARAMETER SilentCountdownSeconds
 	Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+.PARAMETER TopMost
+	Specifies whether the windows is the topmost window. Default: $true.
 .EXAMPLE
 	Show-InstallationRestartPrompt -Countdownseconds 600 -CountdownNoHideSeconds 60
 .EXAMPLE
@@ -7515,7 +7648,10 @@ Function Show-InstallationRestartPrompt {
 		[switch]$NoCountdown = $false,
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
-		[int32]$SilentCountdownSeconds = 5
+		[int32]$SilentCountdownSeconds = 5,
+		[Parameter(Mandatory=$false)]
+		[ValidateNotNullorEmpty()]
+		[boolean]$TopMost = $true
 	)
 
 	Begin {
@@ -7528,7 +7664,7 @@ Function Show-InstallationRestartPrompt {
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
 				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {Start-Sleep -Seconds $SilentCountdownSeconds;Restart-Computer -Force;}`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
+				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'&{ Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -7542,6 +7678,24 @@ Function Show-InstallationRestartPrompt {
 		If (Get-Process | Where-Object { $_.MainWindowTitle -match $configRestartPromptTitle }) {
 			Write-Log -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2 -Source ${CmdletName}
 			Return
+		}
+
+		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
+		If ($deployAppScriptFriendlyName) {
+			If ($NoCountdown) {
+				Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
+			}
+			## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters. 
+			$installRestartPromptParameters.Remove("NoSilentRestart")
+			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
+			## Prepare a list of parameters of this function as a string
+			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			## Start another powershell instance silently with function parameters from this function
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			return
 		}
 
 		[datetime]$startTime = Get-Date
@@ -7558,14 +7712,29 @@ Function Show-InstallationRestartPrompt {
 		$timerCountdown = New-Object -TypeName 'System.Windows.Forms.Timer'
 		$flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
 		$panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
-		$InitialFormWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 		[scriptblock]$RestartComputer = {
 			Write-Log -Message 'Forcefully restarting the computer...' -Source ${CmdletName}
 			Restart-Computer -Force
 		}
 
-		[scriptblock]$FormEvent_Load = {
+		[scriptblock]$Restart_Form_StateCorrection_Load = {
+			# Disable the X button
+			try {
+				$windowHandle = $formRestart.Handle
+				If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+					$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+					If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+						[PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+						[PSADT.UiAutomation]::DestroyMenu($menuHandle)
+					}
+				}
+			}
+			catch {
+				# Not a terminating error if we can't disable the button. Just disable the Control Box instead
+				Write-Log "Failed to disable the Close button. Disabling the Control Box instead." -Severity 2 -Source ${CmdletName}
+				$formRestart.ControlBox = $false
+			}
 			## Initialize the countdown timer
 			[datetime]$currentTime = Get-Date
 			[datetime]$countdownTime = $startTime.AddSeconds($countdownSeconds)
@@ -7575,15 +7744,8 @@ Function Show-InstallationRestartPrompt {
 			$labelCountdown.Text = [string]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
 			If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) { $buttonRestartLater.Enabled = $false }
 			$formRestart.WindowState = 'Normal'
-			$formRestart.TopMost = $true
-			$formRestart.BringToFront()
-		}
-
-		[scriptblock]$Form_StateCorrection_Load = {
-			## Correct the initial state of the form to prevent the .NET maximized form issue
-			$formRestart.WindowState = $InitialFormWindowState
 			$formRestart.AutoSize = $true
-			$formRestart.TopMost = $true
+			$formRestart.TopMost = $TopMost
 			$formRestart.BringToFront()
 			## Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
 			Set-Variable -Name 'formInstallationRestartPromptStartPosition' -Value $formRestart.Location -Scope 'Script'
@@ -7591,19 +7753,17 @@ Function Show-InstallationRestartPrompt {
 
 		## Persistence Timer
 		If ($NoCountdown) {
-			$timerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-			$timerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
-			[scriptblock]$timerPersist_Tick = {
+			$restartTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
+			$restartTimerPersist.Interval = ($configInstallationRestartPersistInterval * 1000)
+			[scriptblock]$restartTimerPersist_Tick = {
 				#  Show the Restart Popup
 				$formRestart.WindowState = 'Normal'
-				$formRestart.TopMost = $true
+				$formRestart.TopMost = $TopMost
 				$formRestart.BringToFront()
 				$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-				$formRestart.Refresh()
-				[Windows.Forms.Application]::DoEvents()
 			}
-			$timerPersist.add_Tick($timerPersist_Tick)
-			$timerPersist.Start()
+			$restartTimerPersist.add_Tick($restartTimerPersist_Tick)
+			$restartTimerPersist.Start()
 		}
 
 		[scriptblock]$buttonRestartLater_Click = {
@@ -7611,8 +7771,8 @@ Function Show-InstallationRestartPrompt {
 			$formRestart.WindowState = 'Minimized'
 			If ($NoCountdown) {
 				## Reset the persistence timer
-				$timerPersist.Stop()
-				$timerPersist.Start()
+				$restartTimerPersist.Stop()
+				$restartTimerPersist.Start()
 			}
 		}
 
@@ -7640,28 +7800,24 @@ Function Show-InstallationRestartPrompt {
 					If ($formRestart.WindowState -eq 'Minimized') {
 						#  Show Popup
 						$formRestart.WindowState = 'Normal'
-						$formRestart.TopMost = $true
+						$formRestart.TopMost = $TopMost
 						$formRestart.BringToFront()
 						$formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
-						$formRestart.Refresh()
-						[Windows.Forms.Application]::DoEvents()
 					}
 				}
-				[Windows.Forms.Application]::DoEvents()
 			}
 		}
 
 		## Remove all event handlers from the controls
-		[scriptblock]$Form_Cleanup_FormClosed = {
+		[scriptblock]$Restart_Form_Cleanup_FormClosed = {
 			Try {
 				$buttonRestartLater.remove_Click($buttonRestartLater_Click)
 				$buttonRestartNow.remove_Click($buttonRestartNow_Click)
-				$formRestart.remove_Load($FormEvent_Load)
+				$formRestart.remove_Load($Restart_Form_StateCorrection_Load)
 				$formRestart.remove_Resize($formRestart_Resize)
 				$timerCountdown.remove_Tick($timerCountdown_Tick)
-				$timerPersist.remove_Tick($timerPersist_Tick)
-				$formRestart.remove_Load($Form_StateCorrection_Load)
-				$formRestart.remove_FormClosed($Form_Cleanup_FormClosed)
+				$restartTimerPersist.remove_Tick($restartTimerPersist_Tick)
+				$formRestart.remove_FormClosed($Restart_Form_Cleanup_FormClosed)
 			}
 			Catch { }
 		}
@@ -7792,11 +7948,11 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.FormBorderStyle = 'FixedDialog'
 		$formRestart.MaximizeBox = $false
 		$formRestart.MinimizeBox = $false
-		$formRestart.TopMost = $true
+		$formRestart.TopMost = $TopMost
 		$formRestart.TopLevel = $true
 		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 		$formRestart.AutoSize = $true
-		$formRestart.ControlBox = $false
+		$formRestart.ControlBox = $true
 		$formRestart.Controls.Add($pictureBanner)
 
 		## Button Panel
@@ -7812,71 +7968,27 @@ Function Show-InstallationRestartPrompt {
 		$flowLayoutPanel.Controls.Add($panelButtons)
 		## Add FlowPanel to the form
 		$formRestart.Controls.Add($flowLayoutPanel)
-		$formRestart.add_Load($FormEvent_Load)
 		$formRestart.add_Resize($formRestart_Resize)
 		## Timer Countdown
 		If (-not $NoCountdown) { $timerCountdown.add_Tick($timerCountdown_Tick) }
-
 		##----------------------------------------------
-
-		## Save the initial state of the form
-		$InitialFormWindowState = $formRestart.WindowState
 		# Init the OnLoad event to correct the initial state of the form
-		$formRestart.add_Load($Form_StateCorrection_Load)
+		$formRestart.add_Load($Restart_Form_StateCorrection_Load)
 		# Clean up the control events
-		$formRestart.add_FormClosed($Form_Cleanup_FormClosed)
+		$formRestart.add_FormClosed($Restart_Form_Cleanup_FormClosed)
 		$formRestartClosing = [Windows.Forms.FormClosingEventHandler]{ If ($_.CloseReason -eq 'UserClosing') { $_.Cancel = $true } }
 		$formRestart.add_FormClosing($formRestartClosing)
 
-		## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
-		If ($deployAppScriptFriendlyName) {
-			If ($NoCountdown) {
-				Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
-			}
-			## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters. 
-			$installRestartPromptParameters.Remove("NoSilentRestart")
-			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
-			## Prepare a list of parameters of this function as a string
-			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object {
-				# We have to save current pipeline object $_ because switch has its own $_
-				$item = $_
-				switch ($item.Value.GetType().Name) {
-					'SwitchParameter' {
-						"-$($item.Key)"
-					}
-					'Boolean' {
-						"-$($item.Key) `$" + "$($item.Value)".ToLower()
-					}
-					'Int32' {
-						"-$($item.Key) $($item.Value)"
-					}
-					default {
-						"-$($item.Key) `"$($item.Value)`""
-					}
-				}
-			}) -join ' '
-			## Start another powershell instance silently with function parameters from this function
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$scriptPath`" -ReferredInstallTitle `"$installTitle`" -ReferredInstallName `"$installName`" -ReferredLogName `"$logName`" -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+		If ($NoCountdown) {
+			Write-Log -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
 		}
 		Else {
-			If ($NoCountdown) {
-				Write-Log -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
-			}
-			Else {
-				Write-Log -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
-			}
-
-			#  Show the Form
-			Write-Output -InputObject $formRestart.ShowDialog()
-			$formRestart.Dispose()
-
-			#  Activate the Window
-			[Diagnostics.Process]$powershellProcess = Get-Process | Where-Object { $_.MainWindowTitle -match $installTitle }
-			[Microsoft.VisualBasic.Interaction]::AppActivate($powershellProcess.ID)
+			Write-Log -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
 		}
+
+		#  Show the Form
+		Write-Output -InputObject $formRestart.ShowDialog()
+		$formRestart.Dispose()
 	}
 	End {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -7983,7 +8095,7 @@ Start-Sleep -Milliseconds ($BalloonTipTime)
 $script:notifyIcon.Dispose() }
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
-				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
 			}
 			Catch { }
 		}
@@ -8191,7 +8303,7 @@ Function Show-InstallationProgress {
 						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
 						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
 					}
-					#  Grey out the X button
+					#  Disable the X button
 					try {
 						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
 						If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
@@ -8203,7 +8315,7 @@ Function Show-InstallationProgress {
 						}
 					}
 					catch {
-						# Not a terminating error if we can't grey out the button
+						# Not a terminating error if we can't disable the close button
 						Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
 					}
 				})
@@ -10664,7 +10776,7 @@ Function Set-ActiveSetup {
 				}
 				'.ps1' {
 					[string]$CUStubExePath = "$PSHOME\powershell.exe"
-					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { & `\`"$StubExePath`\`"}`""
+					[string]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"&{& `\`"$StubExePath`\`"}`""
 					[string]$StubPath = "$CUStubExePath $CUArguments"
 				}
 			}
@@ -12023,11 +12135,11 @@ If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -P
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($deployAppScriptParameters) { [string]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
 #  Save main script parameters hashtable for async execution of the toolkit
 [hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
-If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
-If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { If ($_.Value.GetType().Name -eq 'SwitchParameter') { "-$($_.Key):`$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Boolean') { "-$($_.Key) `$" + "$($_.Value)".ToLower() } ElseIf ($_.Value.GetType().Name -eq 'Int32') { "-$($_.Key) $($_.Value)" } Else { "-$($_.Key) `"$($_.Value)`"" } }) -join ' ' }
+If ($appDeployMainScriptParameters) { [string]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
+If ($appDeployExtScriptParameters) { [string]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
 
 ## Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
@@ -12292,6 +12404,12 @@ If ($configToolkitRequireAdmin) {
 
 ## If terminal server mode was specified, change the installation mode to support it
 If ($terminalServerMode) { Enable-TerminalServerInstallMode }
+
+## If not in install phase Asynchronous, change the install phase so we dont have Initialization phase when we are done initializing
+## This should get overwritten shortly, unless this is not dot sourced by Deploy-Application.ps1
+If (-not $AsyncToolkitLaunch) {
+	$installPhase = 'Execution'
+}
 
 #endregion
 ##*=============================================

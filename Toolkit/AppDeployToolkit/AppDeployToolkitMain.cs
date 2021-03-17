@@ -58,7 +58,7 @@ namespace PSADT
 		private static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		private static extern void SHChangeNotify(long eventId, uint flags, IntPtr item1, IntPtr item2);
+		private static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
 
 		public static void RefreshDesktopAndEnvironmentVariables()
 		{
@@ -175,6 +175,17 @@ namespace PSADT
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern IntPtr GetShellWindow();
+
+        public enum DeviceCap
+        {
+            HORZRES = 8,
+            VERTRES = 10,
+            DESKTOPVERTRES = 117,
+            DESKTOPHORZRES = 118
+        }
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        public static extern int GetDeviceCaps(IntPtr hDC, int nIndex);
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		[return: MarshalAs(UnmanagedType.Bool)]
