@@ -176,7 +176,7 @@ Try {
 			Execute-MSI @ExecuteDefaultMSISplat
 		}
 
-		# <Perform Uninstallation tasks here>
+		## <Perform Uninstallation tasks here>
 
 
 		##*===============================================
@@ -213,7 +213,7 @@ Try {
 			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile; }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
 			Execute-MSI @ExecuteDefaultMSISplat
 		}
-		# <Perform Repair tasks here>
+		## <Perform Repair tasks here>
 
 		##*===============================================
 		##* POST-REPAIR
