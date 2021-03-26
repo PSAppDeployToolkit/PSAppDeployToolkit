@@ -1877,7 +1877,7 @@ Function Show-InstallationPrompt {
 
 		if (-not $AsyncToolkitLaunch) {
 			## Close the Installation Progress Dialog if running
-			Close-InstallationProgress -WaitingTime 1
+			Close-InstallationProgress -WaitingTime 0
 		}
 
 		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
@@ -8369,7 +8369,9 @@ Function Close-InstallationProgress {
 	Closes the dialog created by Show-InstallationProgress.
 	This function is called by the Exit-Script function to close a running instance of the progress dialog if found.
 .PARAMETER WaitingTime
-	How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. Range: 1 - 60  Default: 5
+	How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. 
+	This value is also used for waiting if the thread is changing its state or if the runspace is still opening. Which means at the worst case you can wait up to 3 times this value before the Installation window is closed.
+	Range: 0 - 60  Default: 5
 .EXAMPLE
 	Close-InstallationProgress
 .NOTES
@@ -8380,7 +8382,7 @@ Function Close-InstallationProgress {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$false)]
-		[ValidateRange(1,60)]
+		[ValidateRange(0,60)]
 		[int]$WaitingTime = 5
 	)
 
@@ -8396,18 +8398,22 @@ Function Close-InstallationProgress {
 		}
 		# Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
 		[int]$Timeout = $WaitingTime
-		while ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
+		while (-not $script:ProgressSyncHash.Window.IsInitialized) {
+			if ($Timeout -lt 1) {
+				if ($WaitingTime -gt 0) {
+					Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
+				} else {
+					Write-Log -Message "The installation progress dialog does not exist." -Source ${CmdletName} -Severity 2
+				}
+				return
+			}
 			if ($Timeout -eq $WaitingTime) {
 				Write-Log -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
 			}
 			$Timeout -= 1
 			Start-Sleep -Seconds 1
 		}
-		# Return if we still have no window
-		if (-not $script:ProgressSyncHash.Window.IsInitialized) {
-			Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
-			return
-		}
+
 		# If the thread is suspended, resume it
 		if ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Suspended) {
 			Write-Log -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
@@ -8419,12 +8425,12 @@ Function Close-InstallationProgress {
 			}
 		}
 		# If the thread is changing its state, wait
-		[int]$Timeout = 0
-		while ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
-			if (-not $Timeout) {
+		[int]$Timeout = $WaitingTime
+		while ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::WaitSleepJoin)) -and ($Timeout -gt 0)) {
+			if ($Timeout -eq $WaitingTime) {
 				Write-Log -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
 			}
-			$Timeout += 1
+			$Timeout -= 1
 			Start-Sleep -Seconds 1
 		}
 		# If the thread is running, stop it
@@ -8435,12 +8441,12 @@ Function Close-InstallationProgress {
 
 		if ($script:ProgressRunspace) {
 			# If the runspace is still opening, wait
-			[int]$Timeout = 0
-			while ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
-				if (-not $Timeout) {
+			[int]$Timeout = $WaitingTime
+			while ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::BeforeOpen)) -and ($Timeout -gt 0)) {
+				if ($Timeout -eq $WaitingTime) {
 					Write-Log -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
 				}
-				$Timeout += 1
+				$Timeout -= 1
 				Start-Sleep -Seconds 1
 			}
 			# If the runspace is opened, close it
