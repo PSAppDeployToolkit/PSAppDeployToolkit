@@ -1877,7 +1877,7 @@ Function Show-InstallationPrompt {
 
 		if (-not $AsyncToolkitLaunch) {
 			## Close the Installation Progress Dialog if running
-			Close-InstallationProgress
+			Close-InstallationProgress -WaitingTime 1
 		}
 
 		[string]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
