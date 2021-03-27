@@ -11924,6 +11924,369 @@ Function Set-ItemPermission {
 }
 #endregion
 
+#region Function Test-ADGroupMembership
+function Test-ADGroupMembership
+{
+	<#
+	.SYNOPSIS
+		Checks if a user is member of a specified active directory group
+	.DESCRIPTION
+		Gets all active directory group memberships of the current user or computer recursively and checks whether the user is member in one or more specified groups.
+	.EXAMPLE
+		Test-ADGroupMembership -GroupNames "SWV-3rd-Level","T2535"
+	.INPUTS
+		AD group names to be checked. Switch flag if check should be performed recursively.
+	.PARAMETER User
+		Switch that tells the script to check for AD group memberships for the current user
+	.PARAMETER UserName
+		Specifies the user name for which AD group memberships should be checked. Default is the current user. Requires $CurrentLoggedOnUserSession to be initialized which is done by running AppDeployToolkitMain.ps1
+	.PARAMETER Computer
+		Switch that tells the script to check for AD group memberships for the local machine
+	.PARAMETER ComputerName
+		Specifies the computer name for which AD group memberships should be checked. Default is $env:COMPUTERNAME
+	.PARAMETER GroupNames
+		Specifies one or more names of active directory groups that should be checked. This parameter supports input from the pipeline.
+	.PARAMETER Recurse
+		Switch parameter to determine whether the search should be performed recursively.
+	.PARAMETER Quiet
+		Switch parameter to execute function in quiet mode. If set, the function will only return an array of booleans instead of an ArrayList of PSCustomObject.
+	.PARAMETER ContinueOnError
+		Continue if an exit code is returned by the process that is not recognized by the App Deploy Toolkit. Default: $false.
+	.OUTPUTS
+		PSCustomObject that contains the group names and a boolean flag whether the user is member or not
+	.NOTES
+		Requires .NET 3.5 or later. Relies on System.DirectoryServices.AccountManagement namespace
+	.LINK
+		http://psappdeploytoolkit.com
+	#>
+	param
+	(
+
+		# switch to check group membership of ca user
+		[Parameter(ParameterSetName="User", Mandatory=$true)]
+		[switch]$User,
+
+		# switch to check group membership of current user
+		[Parameter(ParameterSetName="User", Mandatory=$false)]
+		[string]$UserName,
+	
+		# switch to check group membership of a computer
+		[Parameter(ParameterSetName="Computer", Mandatory=$true)]
+		[switch]$Computer,
+
+		# Name of the computer for which to check the group memberships
+		[Parameter(ParameterSetName="Computer", Mandatory=$false)]
+		[string]$ComputerName=$env:COMPUTERNAME,
+
+		# Group names
+		[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+		[string[]]$GroupNames,
+
+		# switch for recursive Active Directory search
+		[Parameter(Mandatory=$false)]
+		[switch]$Recurse,
+
+		# switch for quiet execution. Does not return an array list of PSCustomObjects but only an array of booleans
+		[Parameter(Mandatory=$false)]
+		[switch]$Quiet,
+
+		#swtich to continue on error
+		[Parameter(Mandatory=$false)]
+		[switch]$ContinueOnError
+
+	)
+
+	Begin
+	{
+		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		$ResultList=New-Object System.Collections.ArrayList
+		$Failure=$false
+	
+		try
+		{
+			Write-Verbose "Adding System.DirectoryServices.AccountManagement assembly"
+			Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+		}
+		catch
+		{
+	
+			If ([string]::IsNullOrEmpty([string]$returnCode))
+			{
+				[int32]$returnCode = 65000
+				Write-Log -Message "Error adding System.DirectoryServices.AccountManagement assembly, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Throw "Error adding System.DirectoryServices.AccountManagement assembly, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+			}
+			Else
+			{
+				Write-Log -Message "Execution completed with exit code [$returnCode]. Error adding System.DirectoryServices.AccountManagement assembly. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
+		}
+	
+		# set up domain context
+	
+		try 
+		{
+			Write-Verbose "Setting up domain context"
+			$DomainContext=[System.DirectoryServices.AccountManagement.PrincipalContext]::new(([System.DirectoryServices.AccountManagement.ContextType]::Domain), $env:USERDOMAIN)
+			
+			if($null -eq $DomainContext)
+			{
+				Throw "Error setting up domain context, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+			}
+		}
+		catch
+		{
+			If ([string]::IsNullOrEmpty([string]$returnCode))
+			{
+				[int32]$returnCode = 65001
+				Write-Log -Message "Error setting up domain context, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
+			Else
+			{
+				Write-Log -Message "Execution completed with exit code [$returnCode]. Error setting up domain context. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			}
+		}
+	
+		if($User)
+		{
+			$PrincipalType="User"
+			if($UserName -eq [string]::Empty)
+			{
+				Write-Log -Message "No user name was specified. Looking for group memberships of the currently logged in user."
+				$CurrentUser=$null
+				Write-Log -Message "Checking if a user is logged on."
+				If ($CurrentLoggedOnUserSession)
+				{
+					$CurrentUser=$CurrentLoggedOnUserSession.NTAccount
+					Write-Log -Message "The currently logged in user is $CurrentUser."
+				}
+				Else
+				{
+					Write-Log -Message "Current process is running under a system account. Function cannot continue." -Severity 3
+					return $null
+				}
+			}
+			else 
+			{
+				if($UserName.StartsWith($env:USERDOMAIN) -eq $true)
+				{
+					$CurrentUser=$UserName
+				}
+				else 
+				{
+					$CurrentUser=$env:USERDOMAIN + "\" + $UserName	
+				}
+				Write-Log -Message "Checking group memberships for user $CurrentUser"	
+			}
+			
+	
+			# find user principal
+	
+			try
+			{
+				Write-Verbose "Getting $PrincipalType principal for user [$CurrentUser]."
+				$Principal=[System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($DomainContext, $CurrentUser)
+
+				if($null -eq $Principal)
+				{
+					Throw "Error getting $PrincipalType principal for $CurrentUser, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+				}
+			}
+			catch
+			{
+				If ([string]::IsNullOrEmpty([string]$returnCode))
+				{
+					[int32]$returnCode = 65002
+					Write-Log -Message "Error getting $PrincipalType principal for $CurrentUser, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					return $null
+				}
+				Else
+				{
+					Write-Log -Message "Execution completed with exit code [$returnCode]. Error getting $PrincipalType principal for $CurrentUser. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+			}
+		}
+		else
+		{
+			$PrincipalType="Computer"
+	
+			# find computer principal
+	
+			try
+			{
+				Write-Verbose "Getting $PrincipalType principal for computer [$ComputerName]."
+				$Principal=[System.DirectoryServices.AccountManagement.ComputerPrincipal]::FindByIdentity($DomainContext, $ComputerName)
+
+				if($null -eq $Principal)
+				{
+					Throw "Error getting $PrincipalType principal for $ComputerName, setting exit code to [$returnCode]. `n$(Resolve-Error)"
+				}
+			}
+			catch
+			{
+				If ([string]::IsNullOrEmpty([string]$returnCode))
+				{
+					[int32]$returnCode = 65006
+					Write-Log -Message "Error getting $PrincipalType principal for $ComputerName, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+					return $null
+				}
+				Else
+				{
+					Write-Log -Message "Execution completed with exit code [$returnCode]. Error getting $PrincipalType principal for $ComputerName. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+			}
+		}
+	}
+
+	Process
+	{
+		# find the groups in question
+
+		if($Failure -eq $true)
+		{
+			return
+		}
+
+		foreach($GroupName in $GroupNames)
+		{
+			try 
+			{
+				Write-Verbose "Getting group principal for group [$GroupName]"
+				$GroupPrincipal=[System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($DomainContext, $GroupName)
+				if($null -eq $GroupPrincipal)
+				{
+					Write-Log -Message "The group $GroupName could not be found. Make sure the name is correct." -Severity 3
+
+					if(-not $ContinueOnError)
+					{
+						throw "The group [$GroupName] could not be found. Make sure the name is correct."
+					}
+					
+				}
+			}
+			catch
+			{
+				If ([string]::IsNullOrEmpty([string]$returnCode))
+				{
+					[int32]$returnCode = 65004
+					Write-Log -Message "Error getting group principal for $GroupName, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+				Else
+				{
+					Write-Log -Message "Execution completed with exit code [$returnCode]. Error getting group principal for $GroupName. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+
+				$ResultObject=New-Object PSCustomObject
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "PrincipalName" -Value $Principal.Name -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "GroupName" -Value $GroupName -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "IsMember" -Value "Failure" -Force
+				[void]$ResultList.Add($ResultObject)
+				
+				if( -not $ContinueOnError)
+				{
+					$Failure=$true
+					break
+				}
+				
+			}
+
+			# Check if principal is member of the group
+
+			try 
+			{
+				Write-Log -Message "Checking if $PrincipalType $($Principal.Name) is member of $GroupName. Recursion enabled: $Recurse"
+				
+				if($Recurse)
+				{
+					Write-Verbose "Getting group member principals of group $GroupName recursively."
+					$GroupMemberPrincipals=@($GroupPrincipal.GetMembers($true))
+					$IsMember=$GroupMemberPrincipals.Contains($Principal)
+				}
+				else 
+				{
+					Write-Verbose "Getting group membership for $($Principal.Name)"
+					$IsMember=$Principal.IsMemberOf($GroupPrincipal)
+				}
+				
+
+				if($IsMember -eq $true)
+				{
+					Write-Log -Message "$PrincipalType $($Principal.Name) is member of $GroupName"
+				}
+				elseif($IsMember -eq $false)
+				{
+					Write-Log -Message "User $($Principal.Name) is not member of $GroupName"
+				}
+				else 
+				{
+					Write-Log -Message "Membership of $PrincipalType $($Principal.Name) in group $GroupName could not be determined." -Severity 3	
+				}
+
+				$ResultObject=New-Object PSCustomObject
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "PrincipalName" -Value $Principal.Name -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "GroupName" -Value $GroupName -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "IsMember" -Value $IsMember -Force
+				[void]$ResultList.Add($ResultObject)
+			}
+			catch
+			{
+				If ([string]::IsNullOrEmpty([string]$returnCode))
+				{
+					[int32]$returnCode = 65005
+					Write-Log -Message "Error checking if $($Principal.Name) is member of $GroupName, setting exit code to [$returnCode]. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+				Else
+				{
+					Write-Log -Message "Execution completed with exit code [$returnCode]. Error checking if $($Principal.Name) is member of $GroupName. `n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				}
+
+				$ResultObject=New-Object PSCustomObject
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "PrincipalName" -Value $Principal.Name -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "GroupName" -Value $GroupName -Force
+				$ResultObject | Add-Member -MemberType NoteProperty -Name "IsMember" -Value "Failure" -Force
+				[void]$ResultList.Add($ResultObject)
+								
+				if( -not $ContinueOnError)
+				{
+					$Failure=$true
+					break
+				}
+			}
+		}
+	}
+
+	End
+	{
+		Write-Log -Message "Checking if results have been found."
+
+		if($ResultList.Count -gt 0)
+		{
+			Write-Log -Message "Results have been found for the specified search. Returning the result list."
+			if($Quiet)
+			{
+				Write-Log -Message "Function has been called with the Quiet parameter. Setting result to an array of booleans."
+				$Result=@($ResultList.IsMember)
+			}
+			else 
+			{
+				Write-Log -Message "Function has been called without the Quiet parameter. Setting result to the complete result list.."
+				$Result=$ResultList
+			}
+			
+		}
+		else 
+		{
+			Write-Log -Message "No results have been found. Returning `$null."
+			$Result=$null	
+		}
+
+		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-Output $Result
+	}
+}
+#endregion
+
 #endregion
 ##*=============================================
 ##* END FUNCTION LISTINGS
