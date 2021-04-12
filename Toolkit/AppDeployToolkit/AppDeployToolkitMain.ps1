@@ -1132,8 +1132,9 @@ Function New-ZipFile {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		## Create a Shell object
+		If (-not $ShellApp) { [__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop' }
 	}
 	Process {
 		Try {
@@ -1168,8 +1169,6 @@ Function New-ZipFile {
 				$FileStream.Close()
 			}
 
-			## Create a Shell object
-			If (-not $ShellApp) { [__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop' }
 			## Create an object representing the archive file
 			[__comobject]$Archive = $ShellApp.NameSpace($DestinationPath)
 
@@ -1359,7 +1358,7 @@ Function Exit-Script {
 	$global:installTitle = $null
 	$global:installName = $null
 	$global:appName = $null
-	## Release resources for COM objects Shell and ShellApplication
+	## Release resources for COM objects $Shell and $ShellApp
 	Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($global:ShellApp) } Catch { }
 	Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($global:Shell) } Catch { }
 	## Exit the script, returning the exit code to SCCM
