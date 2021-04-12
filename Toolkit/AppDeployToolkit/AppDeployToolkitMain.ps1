@@ -1169,7 +1169,7 @@ Function New-ZipFile {
 			}
 
 			## Create a Shell object
-			[__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop'
+			If (-not $ShellApp) { [__comobject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop' }
 			## Create an object representing the archive file
 			[__comobject]$Archive = $ShellApp.NameSpace($DestinationPath)
 
@@ -1359,6 +1359,9 @@ Function Exit-Script {
 	$global:installTitle = $null
 	$global:installName = $null
 	$global:appName = $null
+	## Release resources for COM objects Shell and ShellApplication
+	Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($global:ShellApp) } Catch { }
+	Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($global:Shell) } Catch { }
 	## Exit the script, returning the exit code to SCCM
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $exitCode; Exit } Else { Exit $exitCode }
 }
@@ -6653,6 +6656,7 @@ Function Show-InstallationWelcome {
 					#  Determine the size of the Files folder
 					$fso = New-Object -ComObject 'Scripting.FileSystemObject' -ErrorAction 'Stop'
 					$RequiredDiskSpace = [math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($fso) } Catch { }
 				}
 				Catch {
 					Write-Log -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -9215,6 +9219,7 @@ Function Get-MsiTableProperty {
 				While ($Record) {
 					#  Read string data from record and add property/value pair to custom object
 					$TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Record) } Catch { }
 					#  Retrieve the next row in the table
 					[__comobject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
 				}
@@ -9256,10 +9261,10 @@ Function Get-MsiTableProperty {
 			Try {
 				If ($View) {
 					$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
-					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View) } Catch { }
+					$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 				}
 				ElseIf ($SummaryInformation) {
-					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
+					$null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
 				}
 			}
 			Catch { }
@@ -9345,6 +9350,8 @@ Function Set-MsiProperty {
 			}
 			#  Execute the view to set the MSI property
 			$null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
+
+			Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Record) } Catch { }
 		}
 		Catch {
 			Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
