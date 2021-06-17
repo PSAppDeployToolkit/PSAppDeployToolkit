@@ -28,6 +28,14 @@ Specifies not to show a countdown, just the Restart Now and Restart Later button
 
 The UI will restore/reposition itself persistently based on the interval value specified in the config file.
 
+`-NoSilentRestart <bool>`
+
+Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $true
+
+`-SilentCountdownSeconds <int32>`
+
+Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+
 <CommonParameters>
 
 This cmdlet supports the common parameters: Verbose, Debug, ErrorAction, ErrorVariable, WarningAction, WarningVariable, OutBuffer, PipelineVariable, and OutVariable. For more information, see [about_CommonParameters](https:/go.microsoft.com/fwlink/?LinkID=113216).
@@ -39,6 +47,12 @@ This cmdlet supports the common parameters: Verbose, Debug, ErrorAction, ErrorVa
 -------------------------- EXAMPLE 2 --------------------------
 
 `PS C:>Show-InstallationRestartPrompt -NoCountdown`
+
+-------------------------- EXAMPLE 3 --------------------------
+
+`PS Show-InstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10`
+
+*NOTES:	Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 
 ## REMARKS
 
