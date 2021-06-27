@@ -2430,7 +2430,7 @@ Function Execute-MSI {
 .PARAMETER RepairFromSource
 	Specifies whether we should repair from source. Also rewrites local cache. Default: $false
 .PARAMETER ContinueOnError
-	Continue if an error occured while trying to start the process. Default: $false.
+	Continue if an error occurred while trying to start the process. Default: $false.
 .EXAMPLE
 	Execute-MSI -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 	Installs an MSI

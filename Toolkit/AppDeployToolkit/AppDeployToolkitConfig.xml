@@ -139,7 +139,7 @@
 		<ClosePrompt_CountdownMessage>NOTE: The program(s) will be automatically closed in:</ClosePrompt_CountdownMessage>
 		<!-- Text displayed when counting down to automatically closing applications. -->
 		<DeferPrompt_WelcomeMessage>The following application is about to be installed:</DeferPrompt_WelcomeMessage>
-		<!-- Text displayed when only the deferal dialog is to be displayed and there are no applications to close. -->
+		<!-- Text displayed when only the deferral dialog is to be displayed and there are no applications to close. -->
 		<DeferPrompt_ExpiryMessage>You can choose to defer the installation until the deferral expires:</DeferPrompt_ExpiryMessage>
 		<!-- Text displayed when a deferral option is available. -->
 		<DeferPrompt_WarningMessage>Once the deferral has expired, you will no longer have the option to defer.</DeferPrompt_WarningMessage>
