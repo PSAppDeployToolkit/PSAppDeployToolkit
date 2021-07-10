@@ -479,7 +479,7 @@ Function Show-InstallationWelcome {
 			#  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
 			Set-Variable -Name 'BlockExecution' -Value $BlockExecution -Scope 'Script'
 			Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
-			Block-AppExecution -ProcessName ($processObjects.ProcessName)
+			Block-AppExecution -ProcessNames ($processObjects.ProcessName)
 		}
 	}
 	End {

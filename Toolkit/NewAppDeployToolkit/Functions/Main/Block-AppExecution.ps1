@@ -1,8 +1,7 @@
-#region Function Block-AppExecution
 Function Block-AppExecution {
 <#
 .SYNOPSIS
-	Block the execution of an application(s)
+	Blocks the execution of one or multiple applications
 .DESCRIPTION
 	This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
 	1. Makes a copy of this script in a temporary directory on the local machine.
@@ -12,10 +11,10 @@ Function Block-AppExecution {
 	4. Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog.
 	5. When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
 	   The text of this message can be customized in the XML configuration file.
-.PARAMETER ProcessName
-	Name of the process or processes separated by commas
+.PARAMETER ProcessNames
+	array of process names 
 .EXAMPLE
-	Block-AppExecution -ProcessName ('winword','excel')
+	Block-AppExecution -ProcessNames ('winword','excel')
 .NOTES
 	This is an internal script function and should typically not be called directly.
 	It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
@@ -24,25 +23,40 @@ Function Block-AppExecution {
 #>
 	[CmdletBinding()]
 	Param (
-		## Specify process names separated by commas
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
-		[string[]]$ProcessName
+		[string[]]$ProcessNames
 	)
 
 	Begin {
 		## Get the name of this function and write header
-		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		$CmdletName = $PSCmdlet.MyInvocation.MyCommand.Name
+		Write-FunctionHeaderOrFooter -CmdletName $CmdletName -CmdletBoundParameters $PSBoundParameters -Header
 
 		## Remove illegal characters from the scheduled task arguments string
-		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-		[string]$SchInstallName = $installName
-		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
-		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `'$blockExecutionTempPath\$scriptFileName`' -CleanupBlockedApps -ReferredInstallName `'$SchInstallName`' -ReferredInstallTitle `'$installTitle`' -ReferredLogName `'$logName`' -AsyncToolkitLaunch"
+		$InvalidScheduledTaskChars = "$!'`"();\``*?{}[]<>|&%#~@ ".ToCharArray()
+		$SchInstallName = $installName
+
+		ForEach ($invalidChar in $InvalidScheduledTaskChars) { 
+			$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' 
+		}
+
+		$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		$schTaskUnblockAppsCommand = @(
+			"-ExecutionPolicy Bypass",
+			"-NoProfile",
+			"-NoLogo",
+			"-WindowStyle Hidden",
+			"-File '$blockExecutionTempPath\$scriptFileName'",
+			"-CleanupBlockedApps",
+			"-ReferredInstallName '$SchInstallName'",
+			"-ReferredInstallTitle '$installTitle'",
+			"-ReferredLogName '$logName'",
+			"-AsyncToolkitLaunch"
+		)
+		
 		## Specify the scheduled task configuration in XML format
-		[string]$xmlUnblockAppsSchTask = @"
+		$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
 	<RegistrationInfo></RegistrationInfo>
@@ -84,23 +98,25 @@ Function Block-AppExecution {
 </Task>
 "@
 	}
+
 	Process {
 		## Bypass if no Admin rights
-		If ($configToolkitRequireAdmin -eq $false) {
-			Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
-			Return
-		}
-		## Bypass if in NonInteractive mode
-		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Function [${CmdletName}], because [Mode: $deployMode]." -Source ${CmdletName}
+		If (-not $configToolkitRequireAdmin) {
+			Write-Log -Message "Bypassing Function [$CmdletName], because [Require Admin: $configToolkitRequireAdmin]." -Source $CmdletName
 			Return
 		}
 
-		[string]$schTaskBlockedAppsName = $installName + '_BlockedApps'
+		## Bypass if in NonInteractive mode
+		If ($deployModeNonInteractive) {
+			Write-Log -Message "Bypassing Function [$CmdletName], because [Mode: $deployMode]." -Source $CmdletName
+			Return
+		}
+
+		$schTaskBlockedAppsName = "${installName}_BlockedApps"
 
 		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
 		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
+			Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
 		}
 
 		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
@@ -108,68 +124,93 @@ Function Block-AppExecution {
 		}
 
 		Try {
-			$null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
-		}
-		Catch {
+			New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+		} Catch {
 			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
 		}
 
 		Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
 		## Build the debugger block value script
-		[string[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
-		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
-		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
+		$debuggerBlockScript = @(
+			"strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)",
+			'set oWShell = CreateObject("WScript.Shell")',
+			'oWShell.Run strCommand, 0, false'
+		)
+
 		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
-		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
+
+		$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
 		## Set contents to be readable for all users (BUILTIN\USERS)
 		try {
 			$Users = ConvertTo-NTAccountOrSID -SID "S-1-5-32-545"
 			Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance "ObjectInherit","ContainerInherit"
-		}
-		catch {
+		} catch {
 			Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
 		}
 			
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.' -Source ${CmdletName}
-		If (Get-SchedulerTask -ContinueOnError $true | ForEach-Object { if($_.TaskName -eq "\$schTaskBlockedAppsName") {$_.TaskName} }) {
-			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
+
+		$ScheduledTasks = (Get-SchedulerTask -ContinueOnError $True)
+
+		ForEach ($ScheduledTask In $ScheduledTasks) {
+			If ($SchedulerTask.TaskName -eq "\$schTaskBlockedAppsName") {
+				Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
+				$TaskFound = $True
+				Break
+			}
 		}
-		Else {
+
+		If (-not $TaskFound) {
 			## Export the scheduled task XML to file
 			Try {
 				## Specify the filename to export the XML to
 				## XML does not need to be user readable to stays in protected TEMP folder
-				[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
-				[string]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
+				$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+				$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
 			}
 			Catch {
-				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source $CmdletName
 				Return
 			}
 
 			## Import the Scheduled Task XML file to create the Scheduled Task
-			[psobject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+			$schTaskResultSplat = @(
+				Path 				 = $exeSchTasks
+				Parameters 			 = "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`""
+				WindowStyle          = "Hidden"
+				CreateNoWindow       = $True
+				PassThru             = $True
+				ExitOnProcessFailure = $False
+			)
+
+			$schTaskResult = (Execute-Process @schTaskResultSplat)
+
 			If ($schTaskResult.ExitCode -ne 0) {
-				Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
+				Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source $CmdletName
 				Return
 			}
 		}
 
-		[string[]]$blockProcessName = $processName
 		## Append .exe to match registry keys
-		[string[]]$blockProcessName = $blockProcessName | ForEach-Object { $_ + '.exe' } -ErrorAction 'SilentlyContinue'
+		ForEach ($processName In $ProcessNames) {
+			$blockProcessName = "$processName.exe"
 
-		## Enumerate each process and set the debugger value to block application execution
-		ForEach ($blockProcess in $blockProcessName) {
-			Write-Log -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]." -Source ${CmdletName}
-			Set-RegistryKey -Key (Join-Path -Path $regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
+			Write-Log -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcessName]." -Source $CmdletName
+
+			$SetRegistryKeySplat = @(
+				Key             = (Join-Path -Path $regKeyAppExecution -ChildPath $blockProcessName)
+				Name            = 'Debugger'
+				Value           = $debuggerBlockValue
+				ContinueOnError = $true
+			)
+			Set-RegistryKey @SetRegistryKeySplat
 		}
 	}
+	
 	End {
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionHeaderOrFooter -CmdletName $CmdletName -Footer
 	}
 }
-#endregion
