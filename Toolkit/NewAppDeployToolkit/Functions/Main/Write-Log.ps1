@@ -103,14 +103,16 @@ function Write-Log {
 		$LogTime = $DateTimeNow.ToString('HH\:mm\:ss.fff')
 		$LogDate = $DateTimeNow.ToString('MM-dd-yyyy')
 
-		if (-not (Test-Path -LiteralPath 'variable:LogTimeZoneBias')) {
-			[int32]$script:LogTimeZoneBias = [timezone]::CurrentTimeZone.GetUtcOffset($DateTimeNow).TotalMinutes
+		if (-not ($LogTimeZoneBias)) {
+			$LogTimeZoneBias = ([timezone]::CurrentTimeZone.GetUtcOffset($DateTimeNow).TotalMinutes)
 		}
 
 		$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
 
 		# Initialize variables
-		$ExitLoggingFunction = $false
+		if($ExitLoggingFunction){
+			$ExitLoggingFunction = $false
+		}
 
 		# Check if the script section is defined
 		$ScriptSectionDefined = (-not [string]::IsNullOrEmpty($ScriptSection))
@@ -127,6 +129,7 @@ function Write-Log {
 		}
 
 		# Create script block for generating CMTrace.exe compatible log entry
+		# These annoy me
 		$CMTraceLogString = {
 			Param (
 				$lMessage,
@@ -137,6 +140,7 @@ function Write-Log {
 		}
 
 		# Create script block for writing log entry to the console
+		# These annoy me
 		$WriteLogLineToHost = {
 			Param (
 				$lTextLogLine,
@@ -208,43 +212,66 @@ function Write-Log {
 
 		ForEach ($Msg in $Message) {
 			# if the message is not $null or empty, create the log entry for the different logging methods
-			[string]$CMTraceMsg = ''
-			[string]$ConsoleLogLine = ''
-			[string]$LegacyTextLogLine = ''
+			$CMTraceMsg = ''
+			$ConsoleLogLine = ''
+			$LegacyTextLogLine = ''
 			if ($Msg) {
+
 				# Create the CMTrace log message
-				if ($ScriptSectionDefined) { [string]$CMTraceMsg = "[$ScriptSection] :: $Msg" }
+				if ($ScriptSectionDefined) {
+					$CMTraceMsg = "[$ScriptSection] :: $Msg"
+				}
 
 				# Create a Console and Legacy "text" log entry
-				[string]$LegacyMsg = "[$LogDate $LogTime]"
-				if ($ScriptSectionDefined) { [string]$LegacyMsg += " [$ScriptSection]" }
-				if ($Source) {
-					[string]$ConsoleLogLine = "$LegacyMsg [$Source] :: $Msg"
-					Switch ($Severity) {
-						3 { [string]$LegacyTextLogLine = "$LegacyMsg [$Source] [Error] :: $Msg" }
-						2 { [string]$LegacyTextLogLine = "$LegacyMsg [$Source] [Warning] :: $Msg" }
-						1 { [string]$LegacyTextLogLine = "$LegacyMsg [$Source] [Info] :: $Msg" }
-					}
+				$LegacyMsg = "[$LogDate $LogTime]"
+				if ($ScriptSectionDefined) {
+					$LegacyMsg += " [$ScriptSection]"
 				}
-				Else {
-					[string]$ConsoleLogLine = "$LegacyMsg :: $Msg"
+
+				if ($Source) {
+					$ConsoleLogLine = "$LegacyMsg [$Source] :: $Msg"
+
 					Switch ($Severity) {
-						3 { [string]$LegacyTextLogLine = "$LegacyMsg [Error] :: $Msg" }
-						2 { [string]$LegacyTextLogLine = "$LegacyMsg [Warning] :: $Msg" }
-						1 { [string]$LegacyTextLogLine = "$LegacyMsg [Info] :: $Msg" }
+						3 {
+							$LegacyTextLogLine = "$LegacyMsg [$Source] [Error] :: $Msg"
+						}
+
+						2 {
+							$LegacyTextLogLine = "$LegacyMsg [$Source] [Warning] :: $Msg"
+						}
+
+						1 {
+							$LegacyTextLogLine = "$LegacyMsg [$Source] [Info] :: $Msg"
+						}
+					}
+				} Else {
+					$ConsoleLogLine = "$LegacyMsg :: $Msg"
+
+					Switch ($Severity) {
+						3 {
+							$LegacyTextLogLine = "$LegacyMsg [Error] :: $Msg" 
+						}
+
+						2 {
+							$LegacyTextLogLine = "$LegacyMsg [Warning] :: $Msg" 
+						}
+
+						1 {
+							$LegacyTextLogLine = "$LegacyMsg [Info] :: $Msg" 
+						}
 					}
 				}
 			}
 
 			# Execute script block to create the CMTrace.exe compatible log entry
-			[string]$CMTraceLogLine = & $CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity
+			# Aha, this is where that annoying thing comes from.
+			$CMTraceLogLine = (& $CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity)
 
 			# Choose which log type to write to file
 			if ($LogType -ieq 'CMTrace') {
-				[string]$LogLine = $CMTraceLogLine
-			}
-			Else {
-				[string]$LogLine = $LegacyTextLogLine
+				$LogLine = $CMTraceLogLine
+			} Else {
+				$LogLine = $LegacyTextLogLine
 			}
 
 			# Write the log entry to the log file if logging is not currently disabled
@@ -260,6 +287,7 @@ function Write-Log {
 			}
 
 			# Execute script block to write the log entry to the console if $WriteHost is $true
+			# And again.
 			& $WriteLogLineToHost -lTextLogLine $ConsoleLogLine -lSeverity $Severity
 		}
 	}
