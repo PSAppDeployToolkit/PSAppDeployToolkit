@@ -19,14 +19,14 @@ Function Get-DeferHistory {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
 		Write-Log -Message 'Getting deferral history...' -Source ${CmdletName}
 		Get-RegistryKey -Key $regKeyDeferHistory -ContinueOnError $true
 	}
 	End {
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion

@@ -36,7 +36,7 @@ Function Test-IsMutexAvailable {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
 		## Initialize Variables
 		[timespan]$MutexWaitTime = [timespan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
@@ -118,7 +118,7 @@ Function Test-IsMutexAvailable {
 	End {
 		Write-Output -InputObject $IsMutexFree
 
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion

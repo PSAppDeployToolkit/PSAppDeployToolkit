@@ -1,5 +1,4 @@
-#region Function Write-FunctionHeaderOrFooter
-Function Write-FunctionHeaderOrFooter {
+Function Write-FunctionInfo {
 <#
 .SYNOPSIS
 	Write the function header or footer to the log upon first entering or exiting a function.
@@ -15,9 +14,9 @@ Function Write-FunctionHeaderOrFooter {
 .PARAMETER Footer
 	Write the function footer.
 .EXAMPLE
-	Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+	Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 .EXAMPLE
-	Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+	Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 .NOTES
 	This is an internal script function and should typically not be called directly.
 .LINK
@@ -25,32 +24,70 @@ Function Write-FunctionHeaderOrFooter {
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(
+			Mandatory=$true
+		)]
 		[ValidateNotNullorEmpty()]
-		[string]$CmdletName,
-		[Parameter(Mandatory=$true,ParameterSetName='Header')]
+		$CmdletName,
+
+		[Parameter(
+			Mandatory=$true,
+			ParameterSetName='Header'
+		)]
 		[AllowEmptyCollection()]
 		[hashtable]$CmdletBoundParameters,
-		[Parameter(Mandatory=$true,ParameterSetName='Header')]
+
+		[Parameter(
+			Mandatory=$true,
+			ParameterSetName='Header'
+		)]
 		[switch]$Header,
-		[Parameter(Mandatory=$true,ParameterSetName='Footer')]
+
+		[Parameter(
+			Mandatory=$true,
+			ParameterSetName='Footer'
+		)]
 		[switch]$Footer
 	)
 
-	If ($Header) {
-		Write-Log -Message 'Function Start' -Source ${CmdletName} -DebugMessage
+	process{
+		If ($Header) {
+			Write-Log -Message 'Function Start' -Source $CmdletName -DebugMessage
+	
+			## Get the parameters that the calling function was invoked with
+			$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{
+				Label = 'Parameter'
+				Expression = {
+					"[-$($_.Key)]"
+				}
+			},
 
-		## Get the parameters that the calling function was invoked with
-		[string]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String
-		If ($CmdletBoundParameters) {
-			Write-Log -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
-		}
-		Else {
-			Write-Log -Message 'Function invoked without any bound parameters.' -Source ${CmdletName} -DebugMessage
-		}
-	}
-	ElseIf ($Footer) {
-		Write-Log -Message 'Function End' -Source ${CmdletName} -DebugMessage
+			@{
+				Label = 'Value'
+				Expression = {
+					$_.Value
+				}
+				Alignment = 'Left'
+			},
+
+			@{
+				Label = 'Type'
+				Expression = {
+					$_.Value.GetType().Name
+			}
+			Alignment = 'Left'
+			} -AutoSize -Wrap | Out-String
+	
+	
+			If ($CmdletBoundParameters) {
+				Write-Log -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source $CmdletName -DebugMessage
+			}
+			Else {
+				Write-Log -Message 'Function invoked without any bound parameters.' -Source $CmdletName -DebugMessage
+			}
+
+		} ElseIf ($Footer) {
+			Write-Log -Message 'Function End' -Source $CmdletName -DebugMessage
+		}		
 	}
 }
-#endregion

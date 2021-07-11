@@ -37,7 +37,7 @@ Function Convert-RegistryPath {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
 		## Convert the registry key hive to the full path, only match if at the beginning of the line
@@ -84,7 +84,7 @@ Function Convert-RegistryPath {
 		}
 	}
 	End {
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion

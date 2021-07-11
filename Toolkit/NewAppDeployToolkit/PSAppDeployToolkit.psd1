@@ -148,7 +148,7 @@ FunctionsToExport = @(
     ".\Functions\Main\Update-Desktop.ps1",
     ".\Functions\Main\Update-GroupPolicy.ps1",
     ".\Functions\Main\Update-SessionEnvironmentVariables.ps1",
-    ".\Functions\Main\Write-FunctionHeaderOrFooter.ps1",
+    ".\Functions\Main\Write-FunctionInfo.ps1",
     ".\Functions\Main\Write-Log.ps1"
 )
 

@@ -36,7 +36,7 @@ Function Get-SchedulerTask {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
 		[psobject[]]$ScheduledTasks = @()
 	}
@@ -75,7 +75,7 @@ Function Get-SchedulerTask {
 	}
 	End {
 		Write-Output -InputObject $ScheduledTasks
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
 # If Get-ScheduledTask doesn't exist, add alias Get-ScheduledTask

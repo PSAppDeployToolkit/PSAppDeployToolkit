@@ -131,7 +131,7 @@ Function Execute-MSI {
 	Begin {
 		## Get the name of this function and write header
 		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
 		## Initialize variable indicating whether $Path variable is a Product Code or not
@@ -346,7 +346,7 @@ Function Execute-MSI {
 	}
 	End {
 		If ($PassThru) { Write-Output -InputObject $ExecuteResults }
-		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
 #endregion
