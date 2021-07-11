@@ -4097,8 +4097,8 @@ Function Refresh-Desktop {
 #endregion
 
 
-#region Function Refresh-SessionEnvironmentVariables
-Function Refresh-SessionEnvironmentVariables {
+#region Function Update-SessionEnvironmentVariables
+Function Update-SessionEnvironmentVariables {
 <#
 .SYNOPSIS
 	Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
@@ -4108,7 +4108,7 @@ Function Refresh-SessionEnvironmentVariables {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered
 .EXAMPLE
-	Refresh-SessionEnvironmentVariables
+	Update-SessionEnvironmentVariables
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com

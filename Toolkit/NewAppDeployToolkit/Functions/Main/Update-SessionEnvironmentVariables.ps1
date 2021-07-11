@@ -1,4 +1,3 @@
-#region Function Update-SessionEnvironmentVariables
 Function Update-SessionEnvironmentVariables {
 <#
 .SYNOPSIS
@@ -13,26 +12,26 @@ Function Update-SessionEnvironmentVariables {
 .EXAMPLE
 	Update-SessionEnvironmentVariables
 .NOTES
-	This function has an alias: Refresh-SessionEnvironmentVariables
+	This function has an alias: Update-SessionEnvironmentVariables
 .LINK
 	http://psappdeploytoolkit.com
 #>
 	[CmdletBinding()]
 	Param (
-		[Parameter(Mandatory=$false)]
 		[ValidateNotNullOrEmpty()]
-		[switch]$LoadLoggedOnUserEnvironmentVariables = $false,
-		[Parameter(Mandatory=$false)]
+		[Switch]$LoadLoggedOnUserEnvironmentVariables,
+
 		[ValidateNotNullOrEmpty()]
-		[boolean]$ContinueOnError = $true
+		[Switch]$ContinueOnError = $True
 	)
 
-	Begin {
+	begin {
 		## Get the name of this function and write header
-		[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-		Write-FunctionInfo -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		$CmdletName = ($PSCmdlet.MyInvocation.MyCommand.Name)
 
-		[scriptblock]$GetEnvironmentVar = {
+		Write-FunctionInfo -CmdletName $CmdletName -CmdletBoundParameters $PSBoundParameters -Header
+
+		$GetEnvironmentVar = {
 			Param (
 				$Key,
 				$Scope
@@ -40,36 +39,52 @@ Function Update-SessionEnvironmentVariables {
 			[Environment]::GetEnvironmentVariable($Key, $Scope)
 		}
 	}
-	Process {
+
+	process {
 		Try {
+
 			Write-Log -Message 'Refreshing the environment variables for this PowerShell session.' -Source ${CmdletName}
 
 			If ($LoadLoggedOnUserEnvironmentVariables -and $RunAsActiveUser) {
-				[string]$CurrentUserEnvironmentSID = $RunAsActiveUser.SID
+				$CurrentUserEnvironmentSID = $RunAsActiveUser.SID
+			} Else {
+				$CurrentUserEnvironmentSID = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 			}
-			Else {
-				[string]$CurrentUserEnvironmentSID = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+
+			$MachineEnvironmentVars = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+			$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
+
+			# Update all session environment variables. 
+			# Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
+			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | ForEach-Object {
+				if($_) {
+					$envRegPath = $_.PSPath; $_.Property | ForEach-Object {
+						Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_
+					}
+				}
 			}
-			[string]$MachineEnvironmentVars = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
-			[string]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 
-			## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-			$MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | ForEach-Object { if($_){$envRegPath = $_.PSPath; $_.Property | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_ } } }
+			# Set PATH environment variable separately because it is a combination of the user and machine environment variables
+			$PathFolders = 'Machine', 'User' | ForEach-Object {
+				$EachPathFolder = (& $GetEnvironmentVar -Key 'PATH' -Scope $_)
+				
+				if($EachPathFolder){
+					$EachPathFolder.Trim(';').Split(';').Trim().Trim('"')
+				}
+			} | Select-Object -Unique
 
-			## Set PATH environment variable separately because it is a combination of the user and machine environment variables
-			[string[]]$PathFolders = 'Machine', 'User' | ForEach-Object { $EachPathFolder = (& $GetEnvironmentVar -Key 'PATH' -Scope $_); if($EachPathFolder){ $EachPathFolder.Trim(';').Split(';').Trim().Trim('"') } } | Select-Object -Unique
 			$env:PATH = $PathFolders -join ';'
-		}
-		Catch {
+		} Catch {
+
 			Write-Log -Message "Failed to refresh the environment variables for this PowerShell session. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+			
 			If (-not $ContinueOnError) {
 				Throw "Failed to refresh the environment variables for this PowerShell session: $($_.Exception.Message)"
 			}
 		}
 	}
-	End {
+
+	end {
 		Write-FunctionInfo -CmdletName ${CmdletName} -Footer
 	}
 }
-Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
-#endregion

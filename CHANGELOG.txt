@@ -251,7 +251,7 @@ Other
 - Added the Win32_BaseService class to the Test-ServiceExists function
 - Added environment variables; CurrentUILanguage
 - BREAKING CHANGE, The "Regex" filter in Remove-MSIApplications previously escaped RegEx characters, but now parses a RegEx statement as expected. Added "Contains" filter which emulates RegEx filter from previous version.
-- Re-named "Refresh-Desktop" to "Update-Desktop" and "Refresh-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, an alias preserves backwards compatibility with the previous function names
+- Re-named "Refresh-Desktop" to "Update-Desktop" and "Update-SessionEnvironmentVariables" to "Update-SessionEnvironmentVariables" to conform to approved Cmdlet verbs, an alias preserves backwards compatibility with the previous function names
 - Fixed issue where OS Revision Version is not always retrieved correctly in Windows 10
 - Fixed issue in Copy-File where it was not possible to copy an array of file objects
 - Fixed issue in Set-RegistryKey where registry keys with forward slashes now contains actual forward slash [char]0x002F instead of [char]0x2215
@@ -442,7 +442,7 @@ Other
 - Added default active username for -UserName parameter in Execute-ProcessAsUser
 - Added -SkipMSIAlreadyInstalledCheck parameter to Execute-MSI function to allow ability to skip the check that determines if an MSI is already installed on the system
 - Added SID property to Get-LoggedOnUser function results
-- Added -LoadLoggedOnUserEnvironmentVariables parameter to Refresh-SessionEnvironmentVariables function to allow loading user environment variables when running in the SYSTEM context
+- Added -LoadLoggedOnUserEnvironmentVariables parameter to Update-SessionEnvironmentVariables function to allow loading user environment variables when running in the SYSTEM context
 - Added ability in Set-ActiveSetup to execute active setup entry for currently logged on user when running under the SYSTEM account
 - Added ability to detect Primary UI language of active logged in user when running under the SYSTEM account
 - Added function Get-WindowTitle to add ability to search for an open window title and return details about the window
@@ -538,7 +538,7 @@ Other
 - Added ability in Register-DLL / Unregister-DLL to detect bitness of DLL files and register for the correct architecture automatically
 - Added ability for Test-PowerPoint to actually detect if user is presenting slideshow in fullscreen mode
 - Added Get-LoggedOnUser to get session details for all local and RDP logged on users
-- Added Refresh-SessionEnvironmentVariables to allow reloading of newly created environment variables for the current process
+- Added Update-SessionEnvironmentVariables to allow reloading of newly created environment variables for the current process
 - Added new variables for Domain Membership, Process Information, Account Permissions, OS Type and Versions, PowerShell and .NET versions, TimeZone Bias
 - Added TRANSFORMSSECURE=1 as default where Transform parameter is specified
 - Added ability to detect active console user (user with control of the monitor, keyboard, mouse)
