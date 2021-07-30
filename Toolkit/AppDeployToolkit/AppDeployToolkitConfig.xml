@@ -500,8 +500,8 @@
 		Of, sla je werk op en klik op 'Sluit Applicaties'.</ClosePrompt_Message>
 		<ClosePrompt_CountdownMessage>LET OP: De applicatie(s) worden afgesloten over:</ClosePrompt_CountdownMessage>
 		<DeferPrompt_WelcomeMessage>De volgende applicatie wordt zometeen geïnstalleerd:</DeferPrompt_WelcomeMessage>
-		<DeferPrompt_ExpiryMessage>Je kan de installatie uitstellen tot het maximale uitsteltermijn is verstreken:</DeferPrompt_ExpiryMessage>
-		<DeferPrompt_WarningMessage>Na verstrijken van het uitsteltermijn is deze optie niet langer beschikbaar.</DeferPrompt_WarningMessage>
+		<DeferPrompt_ExpiryMessage>Je kan de installatie uitstellen tot de maximale uitsteltermijn is verstreken:</DeferPrompt_ExpiryMessage>
+		<DeferPrompt_WarningMessage>Na verstrijken van de uitsteltermijn is deze optie niet langer beschikbaar.</DeferPrompt_WarningMessage>
 		<DeferPrompt_RemainingDeferrals>Aantal keer uitstellen:</DeferPrompt_RemainingDeferrals>
 		<DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
 
@@ -522,7 +522,7 @@
 		<BlockExecution_Message>Het opstarten van deze applicatie werd tijdelijk geblokkeerd om een installatie uit te voeren.</BlockExecution_Message>
 		<RestartPrompt_Title>Herstart nodig</RestartPrompt_Title>
 		<RestartPrompt_Message>Om de installatie te voltooien is een herstart nodig.</RestartPrompt_Message>
-		<RestartPrompt_MessageTime>Gelieve je werk op te slaan en binnen het toegestane termijn de computer herstarten</RestartPrompt_MessageTime>
+		<RestartPrompt_MessageTime>Gelieve je werk op te slaan en binnen de toegestane termijn de computer herstarten</RestartPrompt_MessageTime>
 		<RestartPrompt_MessageRestart>De computer zal herstarten als de teller op nul staat</RestartPrompt_MessageRestart>
 		<RestartPrompt_TimeRemaining>Resterende tijd:</RestartPrompt_TimeRemaining>
 		<RestartPrompt_ButtonRestartLater>Minimaliseren</RestartPrompt_ButtonRestartLater>
