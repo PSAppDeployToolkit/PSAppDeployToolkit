@@ -2206,6 +2206,9 @@ Function Get-InstalledApplication {
 	Get-InstalledApplication -Name 'Adobe Flash'
 .EXAMPLE
 	Get-InstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+.Outputs
+	For every detected matching Application the Function puts out a custom Object containing the following Properties:
+	DisplayName, DisplayVersion, InstallDate, Publisher, Is64BitApplication, ProductCode, InstallLocation, UninstallSubkey, UninstallString, InstallSource.
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
