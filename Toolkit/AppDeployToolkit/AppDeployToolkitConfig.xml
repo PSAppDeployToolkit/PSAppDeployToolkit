@@ -1200,7 +1200,8 @@
 		<RestartPrompt_ButtonRestartLater>Minimalizál</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Újraindítás most</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_HU>
-		<!-- UI Messages - Finnish -->
+	
+	<!-- UI Messages - Finnish -->
 	<UI_Messages_FI>
 		<!-- Close Program Prompt Text -->
 		<DiskSpace_Message>Kiintolevyllä ei ole riittävästi tilaa asennusta varten:
