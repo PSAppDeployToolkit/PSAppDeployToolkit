@@ -28,7 +28,7 @@ The PowerShell App Deployment Toolkit can be used to replace your WiseScript, VB
 
 The PowerShell App Deployment Toolkit has been developed (and tested) to work with a wide range of Operating Systems from Windows XP to Windows 8.1 (and the Windows Server equivalents) to provide enterprise-wide compatibility. The system requirements are as follows:
 
-  - PowerShell 2.0
+  - PowerShell 2.0 and above
 
   - Windows NT 5.1 and above
 
@@ -48,4 +48,4 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 We have invested our spare time in the creation and ongoing development, maintenance and support of this community tool on a voluntary basis – it is not part of our day jobs\! Donations to the project are welcome, please visit the following page for details on making a contribution:
 
-<http://psappdeploytoolkit.com/about-us/donate>
+<https://psappdeploytoolkit.com/donate>
