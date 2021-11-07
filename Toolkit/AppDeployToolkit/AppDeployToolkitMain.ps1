@@ -3258,7 +3258,7 @@ Function Execute-Process {
 					$process.WaitForExit()
 					
 					## HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
-					While (-not ($process.HasExited)) { $process.Refresh(); Start-Sleep -Seconds 1 }
+					While (-not $process.HasExited) { $process.Refresh(); Start-Sleep -Seconds 1 }
 					
 					## Get the exit code for the process
 					Try {
@@ -4024,14 +4024,14 @@ Function Convert-RegistryPath {
 		If ($PSBoundParameters.ContainsKey('SID')) {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
 			If ($key -match '^Registry::HKEY_CURRENT_USER\\') { $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\" }
-			Elseif (-not ($DisableFunctionLogging)) {
+			Elseif (-not $DisableFunctionLogging) {
 				Write-Log -Message "SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER." -Source ${CmdletName} -Severity 2
 			}
 		}
 
 		If($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
 			## Check for expected key string format
-			If (-not ($DisableFunctionLogging)) {
+			If (-not $DisableFunctionLogging) {
 				Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
 			}
 			Write-Output -InputObject $key
@@ -4481,7 +4481,7 @@ Function Remove-RegistryKey {
 				[string]$Key = Convert-RegistryPath -Key $Key
 			}
 
-			If (-not ($Name)) {
+			If (-not $Name) {
 				If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
 					If ($Recurse) {
 						Write-Log -Message "Deleting registry key recursively [$Key]." -Source ${CmdletName}
@@ -4523,7 +4523,7 @@ Function Remove-RegistryKey {
 			Write-Log -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2 -Source ${CmdletName}
 		}
 		Catch {
-			If (-not ($Name)) {
+			If (-not $Name) {
 				Write-Log -Message "Failed to delete registry key [$Key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
@@ -6765,10 +6765,10 @@ Function Show-InstallationWelcome {
 				}
 			}
 		}
-		If (($deferTimes -lt 0) -and (-not ($deferDeadlineUniversal))) { $AllowDefer = $false }
+		If (($deferTimes -lt 0) -and (-not $deferDeadlineUniversal)) { $AllowDefer = $false }
 
 		## Prompt the user to close running applications and optionally defer if enabled
-		If (-not ($deployModeSilent) -and (-not ($silent))) {
+		If ((-not $deployModeSilent) -and (-not $silent)) {
 			If ($forceCloseAppsCountdown -gt 0) {
 				#  Keep the same variable for countdown to simplify the code:
 				$closeAppsCountdown = $forceCloseAppsCountdown
@@ -6941,7 +6941,7 @@ Function Show-InstallationWelcome {
 								Write-Log -Message "Executing [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
 								[Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
 
-								If (-not ($notesNSDProcess.WaitForExit(10000))) {
+								If (-not $notesNSDProcess.WaitForExit(10000)) {
 									Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
 									Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
 								}
@@ -7188,7 +7188,7 @@ Function Show-WelcomePrompt {
 		}
 
 		## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
-		If (-not ($script:welcomeTimer)) {
+		If (-not $script:welcomeTimer) {
 			$script:welcomeTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
 		}
 
@@ -7260,7 +7260,7 @@ Function Show-WelcomePrompt {
 					}
 					# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
 					If ($ProcessDescriptions) {
-						If (-not ($dynamicRunningProcesses)) {
+						If (-not $dynamicRunningProcesses) {
 							Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
 							$formWelcome.Dispose()
 						}
@@ -8614,7 +8614,7 @@ Function Set-PinnedApplication {
 				}
 
 				[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
-				If (-not ($PinVerbAction)) {
+				If (-not $PinVerbAction) {
 					Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
 				}
 
@@ -8654,7 +8654,7 @@ Function Set-PinnedApplication {
 				}
 				Else {
 					[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
-					If (-not ($PinVerbAction)) {
+					If (-not $PinVerbAction) {
 						Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
 					}
 
@@ -10340,7 +10340,7 @@ Function Invoke-SCCMTask {
 			}
 
 			## Determine if the requested Schedule ID is available on this version of the SCCM Client
-			If (-not ($ScheduleIds.ContainsKey($ScheduleId))) {
+			If (-not $ScheduleIds.ContainsKey($ScheduleId)) {
 				Throw "The requested ScheduleId [$ScheduleId] is not available with this version of the SCCM Client [$SCCMClientVersion]."
 			}
 
