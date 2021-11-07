@@ -8639,13 +8639,13 @@ Function Set-PinnedApplication {
 				Throw "Action [$Action] not supported. Supported actions are [$($Verbs.Keys -join ', ')]."
 			}
 
-			If ($Action.Contains("StartMenu"))
+			If ($Action.Contains('StartMenu'))
 			{
 				If ([Int32]$envOSVersionMajor -ge 10)	{
 					If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
 						Throw "Only shortcut files (.lnk) are supported on Windows 10 and higher."
 					}
-					ElseIf (-not ($FilePath.StartsWith($envUserStartMenu, 'CurrentCultureIgnoreCase') -or $FilePath.StartsWith($envCommonStartMenu, 'CurrentCultureIgnoreCase'))) {
+					ElseIf (-not ($FilePath.StartsWith($envUserStartMenu, 'OrdinalIgnoreCase') -or $FilePath.StartsWith($envCommonStartMenu, 'OrdinalIgnoreCase'))) {
 						Throw "Only shortcut files (.lnk) in [$envUserStartMenu] and [$envCommonStartMenu] are supported on Windows 10 and higher."
 					}
 				}
@@ -8657,7 +8657,7 @@ Function Set-PinnedApplication {
 
 				Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
 			}
-			ElseIf ($Action.Contains("Taskbar")) {
+			ElseIf ($Action.Contains('Taskbar')) {
 				If ([Int32]$envOSVersionMajor -ge 10) {
 					$FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 					$PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
@@ -10970,7 +10970,7 @@ Function Set-ActiveSetup {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false }
 					# Only Add IsInstalled to HKLM
-					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
+					If ($ActiveSetupRegKey.Contains('HKEY_LOCAL_MACHINE')) {
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
 						}
@@ -10985,7 +10985,7 @@ Function Set-ActiveSetup {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
 					If ($Locale) { Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false }
 					# Only Add IsInstalled to HKLM
-					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
+					If ($ActiveSetupRegKey.Contains('HKEY_LOCAL_MACHINE')) {
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
 						}
