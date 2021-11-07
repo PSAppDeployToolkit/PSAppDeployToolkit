@@ -6696,6 +6696,9 @@ Function Show-InstallationWelcome {
 				Catch {
 					Write-Log -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
 				}
+				Finally {
+					Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($fso) } Catch { }
+				}
 			}
 			If ($freeDiskSpace -lt $RequiredDiskSpace) {
 				Write-Log -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3 -Source ${CmdletName}
