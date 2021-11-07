@@ -1359,7 +1359,7 @@ Function Exit-Script {
 		New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
 	}
 
-	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
+	If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch { } }
 	## Reset powershell window title to its previous title
 	$Host.UI.RawUI.WindowTitle = $oldPSWindowTitle
 	## Reset variables in case another toolkit is being run in the same session
@@ -8066,7 +8066,7 @@ Function Show-BalloonTip {
 			Return 
 		}
 		## Dispose of previous balloon
-		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch {} }
+		If ($script:notifyIcon) { Try { $script:notifyIcon.Dispose() } Catch { } }
 		## NoWait - Create the balloontip icon asynchronously
 		If ($NoWait) {
 			Write-Log -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
@@ -8492,13 +8492,13 @@ Function Set-PinnedApplication {
 	Pins or unpins a shortcut to the start menu or task bar.
 	This should typically be run in the user context, as pinned items are stored in the user profile.
 .PARAMETER Action
-	Action to be performed. Options: 'PintoStartMenu','UnpinfromStartMenu','PintoTaskbar','UnpinfromTaskbar'.
+	Action to be performed. Options: 'PinToStartMenu','UnpinFromStartMenu','PinToTaskbar','UnpinFromTaskbar'.
 .PARAMETER FilePath
 	Path to the shortcut file to be pinned or unpinned.
 .EXAMPLE
-	Set-PinnedApplication -Action 'PintoStartMenu' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
+	Set-PinnedApplication -Action 'PinToStartMenu' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
 .EXAMPLE
-	Set-PinnedApplication -Action 'UnpinfromTaskbar' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
+	Set-PinnedApplication -Action 'UnpinFromTaskbar' -FilePath "$envProgramFilesX86\IBM\Lotus\Notes\notes.exe"
 .NOTES
 	Windows 10 logic borrowed from Stuart Pearson (https://pinto10blog.wordpress.com/2016/09/10/pinto10/)
 .LINK
@@ -8507,7 +8507,7 @@ Function Set-PinnedApplication {
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory=$true)]
-		[ValidateSet('PintoStartMenu','UnpinfromStartMenu','PintoTaskbar','UnpinfromTaskbar')]
+		[ValidateSet('PinToStartMenu','UnpinFromStartMenu','PinToTaskbar','UnpinFromTaskbar')]
 		[string]$Action,
 		[Parameter(Mandatory=$true)]
 		[ValidateNotNullorEmpty()]
@@ -8551,22 +8551,22 @@ Function Set-PinnedApplication {
 
 			Try {
 				[string]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-				$verb = $verb.Replace('&','')
+				$Verb = $Verb.Replace('&','')
 				$path = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop'
 				$folder = $shellApp.Namespace($path)
 				$item = $folder.ParseName((Split-Path -Path $FilePath -Leaf -ErrorAction 'Stop'))
-				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $verb } -ErrorAction 'Stop'
+				$itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&','') -eq $Verb } -ErrorAction 'Stop'
 
 				If ($null -eq $itemVerb) {
-					Write-Log -Message "Performing action [$verb] is not programmatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
+					Write-Log -Message "Performing action [$Verb] is not programmatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
 				}
 				Else {
-					Write-Log -Message "Performing action [$verb] on [$FilePath]." -Source ${CmdletName}
+					Write-Log -Message "Performing action [$Verb] on [$FilePath]." -Source ${CmdletName}
 					$itemVerb.DoIt()
 				}
 			}
 			Catch {
-				Write-Log -Message "Failed to perform action [$verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+				Write-Log -Message "Failed to perform action [$Verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 			}
 		}
 		#endregion
@@ -8574,18 +8574,18 @@ Function Set-PinnedApplication {
 		If (([version]$envOSVersion).Major -ge 10) {
 			Write-Log -Message "Detected Windows 10 or higher, using Windows 10 verb codes." -Source ${CmdletName}
 			[hashtable]$Verbs = @{
-				'PintoStartMenu' = 51201
-				'UnpinfromStartMenu' = 51394
-				'PintoTaskbar' = 5386
-				'UnpinfromTaskbar' = 5387
+				'PinToStartMenu' = 51201
+				'UnpinFromStartMenu' = 51394
+				'PinToTaskbar' = 5386
+				'UnpinFromTaskbar' = 5387
 			}
 		}
 		Else {
 			[hashtable]$Verbs = @{
-			'PintoStartMenu' = 5381
-			'UnpinfromStartMenu' = 5382
-			'PintoTaskbar' = 5386
-			'UnpinfromTaskbar' = 5387
+			'PinToStartMenu' = 5381
+			'UnpinFromStartMenu' = 5382
+			'PinToTaskbar' = 5386
+			'UnpinFromTaskbar' = 5387
 			}
 		}
 
@@ -8613,7 +8613,7 @@ Function Set-PinnedApplication {
 					}
 				}
 
-				[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
+				[string]$PinVerbAction = Get-PinVerb -VerbId ($Verbs.$Action)
 				If (-not $PinVerbAction) {
 					Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
 				}
@@ -8625,13 +8625,13 @@ Function Set-PinnedApplication {
 					$FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 					$PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
-					If ($Action -eq 'PintoTaskbar' -and $PinExists) {
+					If ($Action -eq 'PinToTaskbar' -and $PinExists) {
 						If($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
 							Write-Log -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
 							Return
 						}
 					}
-					ElseIf ($Action -eq 'UnpinfromTaskbar' -and $PinExists -eq $false) {
+					ElseIf ($Action -eq 'UnpinFromTaskbar' -and $PinExists -eq $false) {
 						Write-Log -Message "Pin [$FileNameWithoutExtension] does not exist." -Source ${CmdletName}
 						Return
 					}
@@ -8653,7 +8653,7 @@ Function Set-PinnedApplication {
 					}
 				}
 				Else {
-					[string]$PinVerbAction = Get-PinVerb -VerbId $Verbs.$Action
+					[string]$PinVerbAction = Get-PinVerb -VerbId ($Verbs.$Action)
 					If (-not $PinVerbAction) {
 						Throw "Failed to get a localized pin verb for action [$Action]. Action is not supported on this operating system."
 					}
