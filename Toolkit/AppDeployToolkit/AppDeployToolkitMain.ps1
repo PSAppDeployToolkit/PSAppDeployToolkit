@@ -549,8 +549,8 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 	}
 	finally {
 		# Release the device context handle and dispose of the graphics object
-		if ($GraphicsObject -ne $null) {
-			if ($DeviceContextHandle -ne [IntPtr]::Zero) {
+		If ($null -ne $GraphicsObject) {
+			If ($DeviceContextHandle -ne [IntPtr]::Zero) {
 				$GraphicsObject.ReleaseHdc($DeviceContextHandle);
 			}
 			$GraphicsObject.Dispose();
@@ -573,7 +573,7 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 		[boolean]$UserDisplayScaleFactor = $false
 	}
 	# Calculate dpi scale if its empty and we have dpi pixels
-	if (($dpiScale -lt 1) -and ($dpiPixels -gt 0)) {
+	If (($dpiScale -lt 1) -and ($dpiPixels -gt 0)) {
 		[int32]$dpiScale = [Math]::Round(($dpiPixels * 100)/96)
 	}
 }
@@ -827,7 +827,7 @@ Function Write-Log {
 		[int16]$Severity = 1,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNull()]
-		[string]$Source = $([string]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If($parentFunctionName) {$parentFunctionName} Else {'Unknown'}),
+		[string]$Source = $([string]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If ($parentFunctionName) {$parentFunctionName} Else {'Unknown'}),
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[string]$ScriptSection = $script:installPhase,
@@ -1420,16 +1420,18 @@ Function Resolve-Error {
 	If (-not $ErrorRecord) {
 		If ($global:Error.Count -eq 0) {
 			Return
-		} Else {
+		}
+		Else {
 			[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0]
 		}
 	}
 	[Collections.Generic.List[string]]$SOutput = New-Object Collections.Generic.List[string]
 	# Do not use newline character in here because it will not be shown consistently in the console and the log. Each $SOutput.Add() is a new line
-	for ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
+	For ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
 		If ($ErrorRecord.Count -le 1) {
 			$SOutput.Add("Error Record:")
-		} else {
+		}
+		Else {
 			$SOutput.Add("Error Record $($i+1):")
 		}
 		$SOutput.Add("------↓------")
@@ -1439,7 +1441,8 @@ Function Resolve-Error {
 			If ($ErrRecord.Exception.Message -eq $ErrRecord.FullyQualifiedErrorId) {
 				$SOutput.Add("Exception.Message/FullyQualifiedErrorId: $($ErrRecord.Exception.Message)")
 				$SOutput.Add([String]::Empty)
-			} Else {
+			}
+			Else {
 				$SOutput.Add("Exception.Message: $($ErrRecord.Exception.Message)")
 				$SOutput.Add([String]::Empty)
 				$SOutput.Add("FullyQualifiedErrorId: $($ErrRecord.FullyQualifiedErrorId)")
@@ -1483,7 +1486,7 @@ Function Resolve-Error {
 		$ErrRecord = $null
 	}
 	#remove trailing newline
-	if([String]::IsNullOrEmpty($SOutput[$SOutput.Count-1])) {
+	If ([String]::IsNullOrEmpty($SOutput[$SOutput.Count-1])) {
 		$SOutput.RemoveAt($SOutput.Count-1)
 	}
 	$SOutput.Add("------↑------")
@@ -1707,7 +1710,8 @@ Function Show-InstallationPrompt {
 		$labelText.Size = $System_Drawing_Size
 		If ($Icon -ne 'None') {
 			$labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' 386,$pictureIcon.Height
-		} else {
+		}
+		Else {
 			$labelText.MinimumSize = $System_Drawing_Size
 		}
 		$labelText.MaximumSize = $System_Drawing_Size
@@ -1807,7 +1811,8 @@ Function Show-InstallationPrompt {
 			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,10,0
             $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 64,0
-		} else {
+		}
+		Else {
 			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
 			$labelText.MinimumSize = $DefaultControlSize
 			$labelText.MaximumSize = $DefaultControlSize
@@ -1883,7 +1888,7 @@ Function Show-InstallationPrompt {
 			$installPromptTimerPersist.Start()
 		}
 
-		if (-not $AsyncToolkitLaunch) {
+		If (-not $AsyncToolkitLaunch) {
 			## Close the Installation Progress Dialog if running
 			Close-InstallationProgress
 		}
@@ -2371,7 +2376,8 @@ Function Get-InstalledApplication {
 			## Write to log the number of entries skipped due to them being considered updates
 			If ($UpdatesSkippedCounter -eq 1) {
 				Write-Log -Message "Skipped 1 entry while searching, because it was considered a Microsoft update." -Source ${CmdletName}
-			} else {
+			}
+			Else {
 				Write-Log -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates." -Source ${CmdletName}
 			}
 		}
@@ -3661,7 +3667,7 @@ Function Remove-Folder {
 						[array]$ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force
 						If ($ListOfChildItems) {
 							$SubfoldersSkipped = 0
-							foreach ($item in $ListOfChildItems) {
+							ForEach ($item in $ListOfChildItems) {
 								# Check whether this item is a folder
 								If (Test-Path -LiteralPath $item.FullName -PathType Container) {
 									# Item is a folder. Check if its empty
@@ -3670,23 +3676,27 @@ Function Remove-Folder {
 									If ($ItemChildItems.Count -eq 0) {
 										# The folder is empty, delete it
 										Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
-									} else {
+									}
+									Else {
 										# Folder is not empty, skip it
 										$SubfoldersSkipped++
-										continue
+										Continue
 									}
-								} else {
+								}
+								Else {
 									# Item is a file. Delete it
 									Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 								}
 							}
-							if ($SubfoldersSkipped -gt 0) {
+							If ($SubfoldersSkipped -gt 0) {
 								Throw "[$SubfoldersSkipped] subfolders are not empty!"
 							}
-						} Else {
+						}
+						Else {
 							Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 						}
-					} else {
+					}
+					Else {
 						Write-Log -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
 						Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 					}
@@ -3772,19 +3782,19 @@ Function Copy-File {
 				$null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
 			}
 
-			if ($Flatten) {
+			If ($Flatten) {
 				If ($Recurse) {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-							if(-not $_.PSIsContainer) {
+							If (-not $_.PSIsContainer) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
 							}
 						}
 					}
 					Else {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-							if(-not $_.PSIsContainer) {
+							If (-not $_.PSIsContainer) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 							}
 						}
@@ -4002,19 +4012,19 @@ Function Convert-RegistryPath {
 		If ($Key -match '^HKLM') {
 			$Key = $Key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
 		}
-		elseif ($Key -match '^HKCR') {
+		ElseIf ($Key -match '^HKCR') {
 			$Key = $Key -replace '^HKCR:\\', 'HKEY_CLASSES_ROOT\' -replace '^HKCR:', 'HKEY_CLASSES_ROOT\' -replace '^HKCR\\', 'HKEY_CLASSES_ROOT\'
 		}
-		elseif ($Key -match '^HKCU') {
+		ElseIf ($Key -match '^HKCU') {
 			$Key = $Key -replace '^HKCU:\\', 'HKEY_CURRENT_USER\' -replace '^HKCU:', 'HKEY_CURRENT_USER\' -replace '^HKCU\\', 'HKEY_CURRENT_USER\'
 		}
-		elseif ($Key -match '^HKU') {
+		ElseIf ($Key -match '^HKU') {
 			$Key = $Key -replace '^HKU:\\', 'HKEY_USERS\' -replace '^HKU:', 'HKEY_USERS\' -replace '^HKU\\', 'HKEY_USERS\'
 		}
-		elseif ($Key -match '^HKCC') {
+		ElseIf ($Key -match '^HKCC') {
 			$Key = $Key -replace '^HKCC:\\', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC:', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC\\', 'HKEY_CURRENT_CONFIG\'
 		}
-		elseif ($Key -match '^HKPD') {
+		ElseIf ($Key -match '^HKPD') {
 			$Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
 		}
 
@@ -4024,19 +4034,19 @@ Function Convert-RegistryPath {
 		If ($PSBoundParameters.ContainsKey('SID')) {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
 			If ($key -match '^Registry::HKEY_CURRENT_USER\\') { $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\" }
-			Elseif (-not $DisableFunctionLogging) {
+			ElseIf (-not $DisableFunctionLogging) {
 				Write-Log -Message "SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER." -Source ${CmdletName} -Severity 2
 			}
 		}
 
-		If($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
+		If ($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
 			## Check for expected key string format
 			If (-not $DisableFunctionLogging) {
 				Write-Log -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
 			}
 			Write-Output -InputObject $key
 		}
-		Else{
+		Else {
 			#  If key string is not properly formatted, throw an error
 			Throw "Unable to detect target registry hive in string [$key]."
 		}
@@ -4831,7 +4841,7 @@ Function Get-UserProfiles {
 				$ProfileProperties = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
 				Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
 				## This removes "defaultuser0" account, which is Windows's 10 bug
-				if ($ProfileProperties.NTAccount) {$ProfileProperties}
+				If ($ProfileProperties.NTAccount) { $ProfileProperties }
 			}
 			If ($ExcludeSystemProfiles) {
 				[string[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
@@ -4929,7 +4939,8 @@ Function Get-FileVersion {
 				$fileVersionInfo = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo
 				If ($ProductVersion) {
 					$fileVersion = $fileVersionInfo.ProductVersion
-				} else {
+				}
+				Else {
 					$fileVersion = $fileVersionInfo.FileVersion
 				}
 
@@ -4937,8 +4948,7 @@ Function Get-FileVersion {
 					If ($ProductVersion) {
 						Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
 					}
-					else
-					{
+					Else {
 						Write-Log -Message "File version is [$fileVersion]." -Source ${CmdletName}
 					}
 
@@ -5081,7 +5091,8 @@ Function New-Shortcut {
 						Return
 					}
 					# Continue without creating a folder because the path is root
-				} ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
+				}
+				ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
 					Write-Log -Message "Creating shortcut directory [$PathDirectory]." -Source ${CmdletName}
 					$null = New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop'
 				}
@@ -5100,10 +5111,11 @@ Function New-Shortcut {
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = '[InternetShortcut]'
 				$URLFile += "URL=$targetPath"
-				If ($IconIndex -ne $null) { $URLFile += "IconIndex=$IconIndex" }
+				If ($null -ne $IconIndex) { $URLFile += "IconIndex=$IconIndex" }
 				If ($IconLocation) { $URLFile += "IconFile=$IconLocation" }
-				[IO.File]::WriteAllLines($FullPath,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
-			} Else {
+				[IO.File]::WriteAllLines($FullPath, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
+			}
+			Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
 				## TargetPath
 				$shortcut.TargetPath = $targetPath
@@ -5238,7 +5250,7 @@ Function Set-Shortcut {
 	}
 	Process {
 		Try {
-			if($PsCmdlet.ParameterSetName -eq "Pipeline") {
+			If ($PsCmdlet.ParameterSetName -eq "Pipeline") {
 				$Path = $PathHash.Path
 			}
 
@@ -5262,14 +5274,21 @@ Function Set-Shortcut {
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
-				for($i = 0; $i -lt $URLFile.Length; $i++) {
+				For ($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
-					if($URLFile[$i].StartsWith('URL=') -and $targetPath) { $URLFile[$i] = "URL=$targetPath" }
-					elseif($URLFile[$i].StartsWith('IconIndex=') -and ($IconIndex -ne $null)) { $URLFile[$i] = "IconIndex=$IconIndex" }
-					elseif($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) { $URLFile[$i] = "IconFile=$IconLocation" }
+					If ($URLFile[$i].StartsWith('URL=') -and $targetPath) {
+						$URLFile[$i] = "URL=$targetPath"
+					}
+					ElseIf ($URLFile[$i].StartsWith('IconIndex=') -and ($IconIndex -ne $null)) {
+						$URLFile[$i] = "IconIndex=$IconIndex"
+					}
+					ElseIf ($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) {
+						$URLFile[$i] = "IconFile=$IconLocation"
+					}
 				}
 				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
-			} Else {
+			}
+			Else {
 				$shortcut = $shell.CreateShortcut($Path)
 				## TargetPath
 				If ($targetPath) { $shortcut.TargetPath = $targetPath }
@@ -5287,11 +5306,11 @@ Function Set-Shortcut {
 					'DontChange' { $windowStyleInt = 0 }
 					Default { $windowStyleInt = 1 }
 				}
-				if ($windowStyleInt -ne 0) {
+				If ($windowStyleInt -ne 0) {
 					$shortcut.WindowStyle = $windowStyleInt
 				}
 				## Hotkey
-				If ($hotkey) { $shortcut.Hotkey = $hotkey }
+				If ($Hotkey) { $shortcut.Hotkey = $Hotkey }
 				## Icon
 				# Retrieve previous value and split the path from the index
 				[string[]]$Split = $shortcut.IconLocation.Split(',')
@@ -5300,14 +5319,16 @@ Function Set-Shortcut {
 				# Check whether a new icon path was specified
 				If ($IconLocation) {
 					# New icon path was specified. Check whether new icon index was also specified
-					If ($IconIndex -ne $null) {
+					If ($null -ne $IconIndex) {
 						# Create new icon path from new icon path and new icon index
 						$IconLocation = $IconLocation + ",$IconIndex"
-					} else {
+					}
+					Else {
 						# No new icon index was specified as a parameter. We will keep the old one
 						$IconLocation = $IconLocation + ",$TempIconIndex"
 					}
-				} elseif ($IconIndex -ne $null) {
+				}
+				ElseIf ($null -ne $IconIndex) {
 					# New icon index was specified, but not the icon location. Append it to the icon path from the shortcut
 					$IconLocation = $TempIconLocation + ",$IconIndex"
 				}
@@ -5321,7 +5342,8 @@ Function Set-Shortcut {
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
 					$filebytes[21] = $filebytes[21] -bor 32
 					[IO.FIle]::WriteAllBytes($Path,$filebytes)
-				} elseif ($RunAsAdmin -eq $false) {
+				}
+				ElseIf ($RunAsAdmin -eq $false) {
 					[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
 					Write-Log -Message 'Setting shortcut to not run program as administrator.' -Source ${CmdletName}
 					$filebytes[21] = $filebytes[21] -band (-bnot 32)
@@ -5404,13 +5426,20 @@ Function Get-Shortcut {
 			$Output = @{ Path = $FullPath }
 			If ($extension -eq '.url') {
 				[string[]]$URLFile = [IO.File]::ReadAllLines($Path)
-				for($i = 0; $i -lt $URLFile.Length; $i++) {
+				For ($i = 0; $i -lt $URLFile.Length; $i++) {
 					$URLFile[$i] = $URLFile[$i].TrimStart()
-					if($URLFile[$i].StartsWith('URL=')) { $Output.TargetPath = $URLFile[$i].Replace('URL=','') }
-					elseif($URLFile[$i].StartsWith('IconIndex=')) { $Output.IconIndex = $URLFile[$i].Replace('IconIndex=','') }
-					elseif($URLFile[$i].StartsWith('IconFile=')) { $Output.IconLocation = $URLFile[$i].Replace('IconFile=','') }
+					If ($URLFile[$i].StartsWith('URL=')) {
+						$Output.TargetPath = $URLFile[$i].Replace('URL=', '')
+					}
+					ElseIf ($URLFile[$i].StartsWith('IconIndex=')) {
+						$Output.IconIndex = $URLFile[$i].Replace('IconIndex=', '')
+					}
+					ElseIf($URLFile[$i].StartsWith('IconFile=')) {
+						$Output.IconLocation = $URLFile[$i].Replace('IconFile=', '')
+					}
 				}
-			} Else {
+			}
+			Else {
 				$shortcut = $shell.CreateShortcut($FullPath)
 				## TargetPath
 				$Output.TargetPath = $shortcut.TargetPath
@@ -5437,14 +5466,14 @@ Function Get-Shortcut {
 				$shortcut = $null
 				## Run as admin
 				[byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
-				if ($filebytes[21] -band 32) {
+				If ($filebytes[21] -band 32) {
 					$Output.RunAsAdmin = $true
 				}
-				else {
+				Else {
 					$Output.RunAsAdmin = $false
 				}
 			}
-			Write-Output $Output
+			Write-Output -InputObject $Output
 		}
 		Catch {
 			Write-Log -Message "Failed to read the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -6868,7 +6897,7 @@ Function Show-InstallationWelcome {
 						}
 					}
 
-					if ($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging) {
+					If ($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging) {
 						# Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again
 						Write-Log -Message 'Sleeping for 2 seconds because the processes are still not closed...' -Source ${CmdletName}
 						Start-Sleep -Seconds 2
@@ -8095,7 +8124,7 @@ Function Show-BalloonTip {
 				Add-Type -AssemblyName 'System.Windows.Forms','System.Drawing' -ErrorAction 'Stop'
 
 				$BalloonTipIconText = [String]::Concat($BalloonTipTitle,' - ',$BalloonTipText)
-				if ($BalloonTipIconText.Length -gt 63) { $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0,60),'...') }
+				If ($BalloonTipIconText.Length -gt 63) { $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0,60),'...') }
 				[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 
 				$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
@@ -8123,7 +8152,7 @@ Function Show-BalloonTip {
 			Write-Log -Message "Displaying balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
 			## Prepare Text - Cut it if longer than 63 chars
 			$BalloonTipIconText = [String]::Concat($BalloonTipTitle,' - ',$BalloonTipText)
-			if ($BalloonTipIconText.Length -gt 63) { $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0,60),'...') }
+			If ($BalloonTipIconText.Length -gt 63) { $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0,60),'...') }
 			## Create the BalloonTip
 			[Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
 			$script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
@@ -8199,9 +8228,10 @@ Function Show-InstallationProgress {
 
 		## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
 		If ($StatusMessage -eq $configProgressMessageInstall) {
-			if ($deploymentType -eq 'Uninstall') {
+			If ($deploymentType -eq 'Uninstall') {
 				$StatusMessage = $configProgressMessageUninstall
-			} elseif ($deploymentType -eq 'Repair') {
+			}
+			ElseIf ($deploymentType -eq 'Repair') {
 				$StatusMessage = $configProgressMessageRepair
 			}
 		}
@@ -8323,7 +8353,7 @@ Function Show-InstallationProgress {
 						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
 					}
 					#  Disable the X button
-					try {
+					Try {
 						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
 						If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
 							$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
@@ -8333,7 +8363,7 @@ Function Show-InstallationProgress {
 							}
 						}
 					}
-					catch {
+					Catch {
 						# Not a terminating error if we can't disable the close button
 						Write-Log "Failed to disable the Close button." -Severity 2 -Source ${CmdletName}
 					}
@@ -8415,63 +8445,64 @@ Function Close-InstallationProgress {
 		}
 		# Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
 		[int]$Timeout = $WaitingTime
-		while ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
-			if ($Timeout -eq $WaitingTime) {
+		While ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
+			If ($Timeout -eq $WaitingTime) {
 				Write-Log -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
 			}
 			$Timeout -= 1
 			Start-Sleep -Seconds 1
 		}
 		# Return if we still have no window
-		if (-not $script:ProgressSyncHash.Window.IsInitialized) {
+		If (-not $script:ProgressSyncHash.Window.IsInitialized) {
 			Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
 			Return
 		}
 		# If the thread is suspended, resume it
-		if ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Suspended) {
+		If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Suspended) {
 			Write-Log -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
-			try {
+			Try {
 				$script:ProgressSyncHash.Window.Dispatcher.Thread.Resume()
 			}
-			catch {
+			Catch {
 				Write-Log -Message 'Failed to resume the thread for the installation progress dialog.' -Source ${CmdletName} -Severity 2
 			}
 		}
 		# If the thread is changing its state, wait
 		[int]$Timeout = 0
-		while ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
-			if (-not $Timeout) {
+		While ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
+			If (-not $Timeout) {
 				Write-Log -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
 			}
 			$Timeout += 1
 			Start-Sleep -Seconds 1
 		}
 		# If the thread is running, stop it
-		if ((-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Stopped)) -and (-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted))) {
+		If ((-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Stopped)) -and (-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Unstarted))) {
 			Write-Log -Message 'Closing the installation progress dialog.' -Source ${CmdletName}
 			$script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
 		}
 
-		if ($script:ProgressRunspace) {
+		If ($script:ProgressRunspace) {
 			# If the runspace is still opening, wait
 			[int]$Timeout = 0
-			while ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
-				if (-not $Timeout) {
+			While ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
+				If (-not $Timeout) {
 					Write-Log -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
 				}
 				$Timeout += 1
 				Start-Sleep -Seconds 1
 			}
 			# If the runspace is opened, close it
-			if ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opened) {
+			If ($script:ProgressRunspace.RunspaceStateInfo.State -eq [system.management.automation.runspaces.runspacestate]::Opened) {
 				Write-Log -Message "Closing the installation progress dialog`'s runspace." -Source ${CmdletName}
 				$script:ProgressRunspace.Close()
 			}
-		} else {
+		}
+		Else {
 			Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
 		}
 
-		if ($script:ProgressSyncHash) {
+		If ($script:ProgressSyncHash) {
 			# Clear sync hash
 			$script:ProgressSyncHash.Clear()
 		}
@@ -8625,13 +8656,13 @@ Function Set-PinnedApplication {
 					$FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 					$PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
-					If ($Action -eq 'PinToTaskbar' -and $PinExists) {
-						If($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
+					If (($Action -eq 'PinToTaskbar') -and ($PinExists)) {
+						If ($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
 							Write-Log -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
 							Return
 						}
 					}
-					ElseIf ($Action -eq 'UnpinFromTaskbar' -and $PinExists -eq $false) {
+					ElseIf (($Action -eq 'UnpinFromTaskbar') -and ($PinExists -eq $false)) {
 						Write-Log -Message "Pin [$FileNameWithoutExtension] does not exist." -Source ${CmdletName}
 						Return
 					}
@@ -10290,9 +10321,10 @@ Function Invoke-SCCMTask {
 			## Determine the SCCM Client Version
 			Try {
 				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | ForEach-Object { if($_.Name -eq 'SmsClient') {$_.Version} }
-				if ($SCCMClientVersion) {
+				If ($SCCMClientVersion) {
 					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
-				} else {
+				}
+				Else {
 					Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 					Throw 'Failed to determine the SCCM client version number.'	
 				}
@@ -10418,9 +10450,10 @@ Function Install-SCCMSoftwareUpdates {
 			## Determine the SCCM Client Version
 			Try {
 				[version]$SCCMClientVersion = Get-WmiObject -Namespace 'ROOT\CCM' -Class 'CCM_InstalledComponent' -ErrorAction 'Stop' | ForEach-Object { if($_.Name -eq 'SmsClient') {$_.Version} }
-				if ($SCCMClientVersion) {
+				If ($SCCMClientVersion) {
 					Write-Log -Message "Installed SCCM Client Version Number [$SCCMClientVersion]." -Source ${CmdletName}
-				} else {
+				}
+				Else {
 					Write-Log -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
 					Throw 'Failed to determine the SCCM client version number.'	
 				}
@@ -10820,7 +10853,8 @@ Function Set-ActiveSetup {
 				)
 				If ($UserSID) {
 					$HKCUProps = (Get-RegistryKey -Key $HKCUKey -SID $UserSID -ContinueOnError $true)
-				} else {
+				}
+				Else {
 					$HKCUProps = (Get-RegistryKey -Key $HKCUKey -ContinueOnError $true)
 				}
 				$HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
@@ -10855,13 +10889,13 @@ Function Set-ActiveSetup {
 				# Both entries present, with a Version property. Compare the Versions
 				## Remove invalid characters from Version. Only digits and commas are allowed
 				[string]$HKLMValidVer = ""
-				for ($i = 0; $i -lt $HKLMVer.Length; $i++) {
-					if([char]::IsDigit($HKLMVer[$i]) -or ($HKLMVer[$i] -eq ',')) {$HKLMValidVer += $HKLMVer[$i]}
+				For ($i = 0; $i -lt $HKLMVer.Length; $i++) {
+					If ([char]::IsDigit($HKLMVer[$i]) -or ($HKLMVer[$i] -eq ',')) { $HKLMValidVer += $HKLMVer[$i] }
 				}
 
 				[string]$HKCUValidVer = ""
-				for ($i = 0; $i -lt $HKCUVer.Length; $i++) {
-					if([char]::IsDigit($HKCUVer[$i]) -or ($HKCUVer[$i] -eq ',')) {$HKCUValidVer += $HKCUVer[$i]}
+				For ($i = 0; $i -lt $HKCUVer.Length; $i++) {
+					If([char]::IsDigit($HKCUVer[$i]) -or ($HKCUVer[$i] -eq ',')) { $HKCUValidVer += $HKCUVer[$i] }
 				}
 				# After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
 				If (-not $HKLMValidVer) {
@@ -10973,7 +11007,8 @@ Function Set-ActiveSetup {
 
 							Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 							& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
-						} else {
+						}
+						Else {
 							Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName} -Severity 2
 						}
 					}
@@ -10995,7 +11030,8 @@ Function Set-ActiveSetup {
 
 						Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
 						& $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
-					} else {
+					}
+					Else {
 						Write-Log -Message "Skipping executing Active Setup StubPath file for current user." -Source ${CmdletName} -Severity 2
 					}
 				}
@@ -11895,13 +11931,14 @@ Function Set-ItemPermission {
 				}
 
 				$Username = New-Object System.Security.Principal.NTAccount($UsersAccountName)
-			} else {
+			}
+			Else {
 				$Username = New-Object System.Security.Principal.NTAccount($U)				
 			}
 
 			# Set/Add/Remove/Replace permissions and log the changes
 			$Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
-			switch ($Method) {
+			Switch ($Method) {
 				"Add" {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.AddAccessRule($Rule)
@@ -11999,10 +12036,10 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
        	$true { $formattedOSArch = "x64" }
     }
 	#  Find the first MSI file in the Files folder and use that as our install
-	if ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq ".msi") -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
+	If ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
 		Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
 	}
-	elseif ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq ".msi") } | Select-Object -ExpandProperty 'FullName' -First 1)) {
+	ElseIf ([string]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1)) {
 		Write-Log -Message "Discovered Arch-Independent Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
 	}
 	If ($defaultMsiFile) {
@@ -12054,7 +12091,8 @@ If (-not $appName) {
 	If (-not $appLang) { [string]$appLang = $currentLanguage }
 	If (-not $appRevision) { [string]$appRevision = '01' }
 	If (-not $appArch) { [string]$appArch = '' }
-} else {
+}
+Else {
 	If (-not $appVendor) { [string]$appVendor = '' }
 	If (-not $appVersion) { [string]$appVersion = '' }
 	If (-not $appLang) { [string]$appLang = '' }
@@ -12131,15 +12169,15 @@ Catch {
 }
 
 # Calculate banner height
-[Int32]$appDeployLogoBannerHeight = 0
-try {
-	[System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object System.Drawing.Bitmap $appDeployLogoBanner
-	[Int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
-	if ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
+[int32]$appDeployLogoBannerHeight = 0
+Try {
+	[System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object -TypeName 'System.Drawing.Bitmap' -ArgumentList ($appDeployLogoBanner)
+	[int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
+	If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
 		$appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
 	}
 }
-catch { }
+Catch { }
 
 ## Check how the script was invoked
 If ($invokingScript) {
