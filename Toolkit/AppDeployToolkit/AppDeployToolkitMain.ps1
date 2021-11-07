@@ -4362,16 +4362,13 @@ Function Set-RegistryKey {
 				Try {
 					Write-Log -Message "Creating registry key [$key]." -Source ${CmdletName}
 					# No forward slash found in Key. Use New-Item cmdlet to create registry key
-					If ((($Key -split '/').Count - 1) -eq 0)
-					{
+					If ((($Key -split '/').Count - 1) -eq 0) {
 						$null = New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop'
 					}
 					# Forward slash was found in Key. Use REG.exe ADD to create registry key
-					Else
-					{
+					Else {
 						[string]$CreateRegkeyResult = & "$envWinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))"
-						If ($global:LastExitCode -ne 0)
-						{
+						If ($global:LastExitCode -ne 0) {
 							Throw "Failed to create registry key [$Key]"
 						}
 					}
