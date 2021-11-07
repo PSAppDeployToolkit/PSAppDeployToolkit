@@ -3785,53 +3785,53 @@ Function Copy-File {
 			If ($Flatten) {
 				If ($Recurse) {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
-					If (-not $ContinueFileCopyOnError) {
-						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-							If (-not $_.PSIsContainer) {
-								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
-							}
-						}
-					}
-					Else {
+					If ($ContinueFileCopyOnError) {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
 							If (-not $_.PSIsContainer) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 							}
 						}
 					}
+					Else {
+						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+							If (-not $_.PSIsContainer) {
+								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
+							}
+						}
+					}
 				}
 				Else {
 					Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-					If (-not $ContinueFileCopyOnError) {
-						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
+					If ($ContinueFileCopyOnError) {
+						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 					Else {
-						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
 					}
 				}
 			}
 			Else {
 				If ($Recurse) {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-					If (-not $ContinueFileCopyOnError) {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
+					If ($ContinueFileCopyOnError) {
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 					Else {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
 					}
 				}
 				Else {
 					Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-					If (-not $ContinueFileCopyOnError) {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
+					If ($ContinueFileCopyOnError) {
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 					Else {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
 					}
 				}
 			}
 
-			If ($fileCopyError) {
+			If ($FileCopyError) {
 				Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
 			}
 			Else {
@@ -4033,7 +4033,9 @@ Function Convert-RegistryPath {
 
 		If ($PSBoundParameters.ContainsKey('SID')) {
 			## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-			If ($key -match '^Registry::HKEY_CURRENT_USER\\') { $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\" }
+			If ($key -match '^Registry::HKEY_CURRENT_USER\\') {
+				$key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
+			}
 			ElseIf (-not $DisableFunctionLogging) {
 				Write-Log -Message "SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER." -Source ${CmdletName} -Severity 2
 			}
