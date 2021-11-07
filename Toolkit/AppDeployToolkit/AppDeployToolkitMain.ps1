@@ -6246,7 +6246,7 @@ Function Unblock-AppExecution {
 		## Remove BlockAppExecution Schedule Task XML file
 		[string]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
 		If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
-			Remove-Item -Path $xmlSchTaskFilePath
+			$null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'SilentlyContinue'
 		}
 
 		## Remove BlockAppExection Temporary directory
