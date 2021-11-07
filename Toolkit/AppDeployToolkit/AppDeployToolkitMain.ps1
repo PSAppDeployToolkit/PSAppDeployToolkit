@@ -827,7 +827,7 @@ Function Write-Log {
 		[Int16]$Severity = 1,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNull()]
-		[String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If ($parentFunctionName) {$parentFunctionName} Else {'Unknown'}),
+		[String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If ($parentFunctionName) { $parentFunctionName } Else { 'Unknown' }),
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[String]$ScriptSection = $script:installPhase,
@@ -2632,7 +2632,7 @@ Function Execute-MSI {
 		## Enumerate all transforms specified, qualify the full path if possible and enclose in quotes
 		If ($transform) {
 			[String[]]$transforms = $transform -replace "`"","" -split ';'
-			for ($i = 0; $i -lt $transforms.Length; $i++) {
+			For ($i = 0; $i -lt $transforms.Length; $i++) {
 				[String]$FullPath = $null
 				[String]$FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $transforms[$i].Replace('.\','')
 				If ($FullPath -and (Test-Path -LiteralPath $FullPath -PathType 'Leaf')) {
@@ -2645,7 +2645,7 @@ Function Execute-MSI {
 		## Enumerate all patches specified, qualify the full path if possible and enclose in quotes
 		If ($patch) {
 			[String[]]$patches = $patch -replace "`"","" -split ';'
-			for ($i = 0; $i -lt $patches.Length; $i++) {
+			For ($i = 0; $i -lt $patches.Length; $i++) {
 				[String]$FullPath = $null
 				[String]$FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$i].Replace('.\','')
 				If ($FullPath -and (Test-Path -LiteralPath $FullPath -PathType 'Leaf')) {
@@ -7124,7 +7124,8 @@ Function Show-WelcomePrompt {
 				Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
 				$showCountdown = $true
 			}
-		} Else {
+		}
+		Else {
 			If ($persistPrompt) { $persistWindow = $true }
 		}
 		## If 'force close apps countdown' was specified, enable that feature.
@@ -7714,7 +7715,7 @@ Function Show-InstallationRestartPrompt {
 			Return
 		}
 		## Get the parameters passed to the function for invoking the function asynchronously
-		[Hashtable]$installRestartPromptParameters = $psBoundParameters
+		[Hashtable]$installRestartPromptParameters = $PSBoundParameters
 
 		## Check if we are already displaying a restart prompt
 		If (Get-Process | Where-Object { $_.MainWindowTitle -match $configRestartPromptTitle }) {
@@ -10314,7 +10315,8 @@ Function Invoke-SCCMTask {
 				If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
 					Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
 				}
-			} Else {
+			}
+			Else {
 				Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
 			}
 
@@ -10443,7 +10445,8 @@ Function Install-SCCMSoftwareUpdates {
 				If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
 					Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
 				}
-			} Else {
+			}
+			Else {
 				Throw 'SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.'
 			}
 
@@ -10925,7 +10928,7 @@ Function Set-ActiveSetup {
 				}
 				# The Versions have the same number of strings. Compare them
 				Try {
-					for ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++) {
+					For ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++) {
 						# Parse the version is UINT64
 						[UInt64]$ParsedHKLMVer = [UInt64]::Parse($SplitHKLMValidVer[$i])
 						[UInt64]$ParsedHKCUVer = [UInt64]::Parse($SplitHKCUValidVer[$i])
@@ -10965,11 +10968,13 @@ Function Set-ActiveSetup {
 					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
-						} Else {
+						}
+						Else {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID -ContinueOnError $false
 						}
 					}
-				} Else {
+				}
+				Else {
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
 					Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
@@ -10978,7 +10983,8 @@ Function Set-ActiveSetup {
 					If ($ActiveSetupRegKey.Contains("HKEY_LOCAL_MACHINE")) {
 						If ($DisableActiveSetup) {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
-						} Else {
+						}
+						Else {
 							Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
 						}
 					}
@@ -11876,14 +11882,14 @@ Function Set-ItemPermission {
         # Permissions
 		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object 'System.Security.AccessControl.FileSystemRights'
 		If ($Permission -ne 'None') {
-			foreach ($Entry in $Permission) {
+			ForEach ($Entry in $Permission) {
 				$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
 			}
 		}
 
         # InheritanceFlags
 		$InheritanceFlag = New-Object System.Security.AccessControl.InheritanceFlags
-		foreach ($IFlag in $Inheritance) {
+		ForEach ($IFlag in $Inheritance) {
 			$InheritanceFlag = $InheritanceFlag -bor [System.Security.AccessControl.InheritanceFlags]$IFlag
 		}
 
