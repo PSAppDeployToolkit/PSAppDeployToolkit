@@ -11056,7 +11056,7 @@ Function Test-ServiceExists {
 		Try {
 			$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop'
 			# If nothing is returned from Win32_Service, check Win32_BaseService
-			If (-not ($ServiceObject) ) {
+			If (-not $ServiceObject) {
 				$ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_BaseService' -Filter "Name='$Name'" -ErrorAction 'Stop'
 			}
 
