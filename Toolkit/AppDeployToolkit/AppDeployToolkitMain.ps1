@@ -5279,7 +5279,7 @@ Function Set-Shortcut {
 					If ($URLFile[$i].StartsWith('URL=') -and $targetPath) {
 						$URLFile[$i] = "URL=$targetPath"
 					}
-					ElseIf ($URLFile[$i].StartsWith('IconIndex=') -and ($IconIndex -ne $null)) {
+					ElseIf ($URLFile[$i].StartsWith('IconIndex=') -and ($null -ne $IconIndex)) {
 						$URLFile[$i] = "IconIndex=$IconIndex"
 					}
 					ElseIf ($URLFile[$i].StartsWith('IconFile=') -and $IconLocation) {
