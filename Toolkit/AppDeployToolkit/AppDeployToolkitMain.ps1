@@ -236,7 +236,7 @@ Else {
 }
 
 ## Variables: Hardware
-[int32]$envSystemRAM = Get-WMIObject -Class Win32_PhysicalMemory -ComputerName $env:COMPUTERNAME -ErrorAction 'SilentlyContinue' | Measure-Object -Property Capacity -Sum -ErrorAction SilentlyContinue | ForEach-Object {[Math]::Round(($_.sum / 1GB),2)}
+[int32]$envSystemRAM = Get-WMIObject -Class 'Win32_PhysicalMemory' -ErrorAction 'SilentlyContinue' | Measure-Object -Property 'Capacity' -Sum -ErrorAction 'SilentlyContinue' | ForEach-Object {[Math]::Round(($_.Sum / 1GB),2)}
 
 ## Variables: PowerShell And CLR (.NET) Versions
 [hashtable]$envPSVersionTable = $PSVersionTable
