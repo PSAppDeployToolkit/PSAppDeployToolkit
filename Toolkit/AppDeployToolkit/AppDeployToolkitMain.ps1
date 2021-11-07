@@ -6466,7 +6466,7 @@ Function Get-RunningProcesses {
 				Return
 			}
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object ProcessName
+			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object -Property 'ProcessName'
 
 			If (-not $DisableLogging) {
 				If ($runningProcesses) {
