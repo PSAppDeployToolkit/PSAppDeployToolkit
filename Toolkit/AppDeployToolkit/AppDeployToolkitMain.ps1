@@ -311,7 +311,7 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 [string]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 
 ## Import variables from XML configuration file
-[Xml.XmlDocument]$xmlConfigFile = Get-Content -LiteralPath $AppDeployConfigFile -Encoding UTF8
+[Xml.XmlDocument]$xmlConfigFile = Get-Content -LiteralPath $AppDeployConfigFile -Encoding 'UTF8'
 [Xml.XmlElement]$xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
 #  Get Config File Details
 [Xml.XmlElement]$configConfigDetails = $xmlConfig.Config_File
@@ -5591,6 +5591,7 @@ Function Execute-ProcessAsUser {
 			Else {
 				Write-Log -Message "Preparing a vbs script that will start [$Path $Parameters] as the logged-on user [$userName] silently..." -Source ${CmdletName}
 			}
+
 			# Permit inclusion of double quotes in parameters
 			$QuotesIndex = $Parameters.Length - 1
 			If ($QuotesIndex -lt 0) {
@@ -5598,30 +5599,34 @@ Function Execute-ProcessAsUser {
 			}
 
 			If ($($Parameters.Substring($QuotesIndex)) -eq '"') {
-				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)' }
+				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + ' & chr(34)'
+			}
 			Else {
-				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"' }
+				[string]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$','') + '"'
+			}
+
 			[string[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
 			$executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
 			$executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
 			$executeProcessAsUserScript += 'WScript.Quit intReturn'
-			$executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+			$executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
 			$Path = "$envWinDir\System32\wscript.exe"
 			$Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
 
-			try {
+			Try {
 				Set-ItemPermission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
 			}
-			catch {
+			Catch {
 				Write-Log -Message "Failed to set read permissions on path [$executeAsUserTempPath\$schTaskName.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
 			}
 		}
 
 		## Prepare working directory insert
-		[string]$WorkingDirectoryInsert = ""
+		[string]$WorkingDirectoryInsert = ''
 		If ($WorkingDirectory) {
 			$WorkingDirectoryInsert = "`r`n	  <WorkingDirectory>$WorkingDirectory</WorkingDirectory>"
 		}
+
 		## Specify the scheduled task configuration in XML format
 		[string]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -5732,7 +5737,7 @@ Function Execute-ProcessAsUser {
 			#If on Windows Vista or higer, Windows Task Scheduler 2.0 is supported. 'Schedule.Service' ComObject output is UI language independent
 			If (([version]$envOSVersion).Major -gt 5) {
 				Try {
-					[__comobject]$ScheduleService = New-Object -ComObject 'Schedule.Service' -ErrorAction Stop
+					[__comobject]$ScheduleService = New-Object -ComObject 'Schedule.Service' -ErrorAction 'Stop'
 					$ScheduleService.Connect()
 					$RootFolder = $ScheduleService.GetFolder('\')
 					$Task = $RootFolder.GetTask("$schTaskName")
@@ -6126,7 +6131,7 @@ Function Block-AppExecution {
 		[string[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
 		$debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
 		$debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
-		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'default' -ErrorAction 'SilentlyContinue'
+		$debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
 		[string]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
 		## Set contents to be readable for all users (BUILTIN\USERS)
