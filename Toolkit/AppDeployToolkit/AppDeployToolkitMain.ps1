@@ -3777,14 +3777,14 @@ Function Copy-File {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-							if(-not($_.PSIsContainer)) {
+							if(-not $_.PSIsContainer) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
 							}
 						}
 					}
 					Else {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-							if(-not($_.PSIsContainer)) {
+							if(-not $_.PSIsContainer) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 							}
 						}
