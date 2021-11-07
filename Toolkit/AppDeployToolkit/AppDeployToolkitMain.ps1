@@ -829,7 +829,7 @@ Function Write-Log {
 		[Int16]$Severity = 1,
 		[Parameter(Mandatory=$false,Position=2)]
 		[ValidateNotNull()]
-		[String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name MyInvocation -Scope 1 -ErrorAction SilentlyContinue).Value.MyCommand.Name); If ($parentFunctionName) { $parentFunctionName } Else { 'Unknown' }),
+		[String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name); If ($parentFunctionName) { $parentFunctionName } Else { 'Unknown' }),
 		[Parameter(Mandatory=$false,Position=3)]
 		[ValidateNotNullorEmpty()]
 		[String]$ScriptSection = $script:installPhase,
@@ -1592,7 +1592,7 @@ Function Show-InstallationPrompt {
 		}
 
 		## Get parameters for calling function asynchronously
-		[Hashtable]$installPromptParameters = $psBoundParameters
+		[Hashtable]$installPromptParameters = $PSBoundParameters
 
 		## Check if the countdown was specified
 		If ($timeout -gt $configInstallationUITimeout) {
@@ -3228,7 +3228,7 @@ Function Execute-Process {
 
 				$null = $process.Start()
 				## Set priority
-				If ($PriorityClass -ne "Normal") {
+				If ($PriorityClass -ne 'Normal') {
 					Try {
 						If ($process.HasExited -eq $false) {
 							Write-Log -Message "Changing the priority class for the process to [$PriorityClass]" -Source ${CmdletName}
@@ -3243,7 +3243,7 @@ Function Execute-Process {
 						Write-Log -Message 'Failed to change the priority class for the process.' -Severity 2 -Source ${CmdletName}
 					}
 				}
-				## NoWait specified, return process details. If it isnt specified, start reading standard Output and Error streams
+				## NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams
 				If ($NoWait) {
 					Write-Log -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
 
@@ -5011,7 +5011,7 @@ Function New-Shortcut {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+	New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
 	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 .LINK
@@ -5201,7 +5201,7 @@ Function Set-Shortcut {
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
-	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\system32\notepad.exe" -IconLocation "$envWinDir\system32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+	Set-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 .NOTES
 	Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 .LINK
@@ -5591,7 +5591,7 @@ Function Execute-ProcessAsUser {
 
 		## Check whether the specified Working Directory exists
 		If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
-			Write-Log -Message "The specified working directory does not exist or is not a directory. The scheduled task might not work as expected." -Severity 2 -Source ${CmdletName}
+			Write-Log -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
 		}
 
 		## Build the scheduled task XML name
@@ -9017,10 +9017,10 @@ Function Invoke-RegisterOrUnregisterDLL {
 			If ($Is64Bit) {
 				If ($DLLFileBitness -eq '64BIT') {
 					If ($Is64BitProcess) {
-						[String]$RegSvr32Path = "$envWinDir\system32\regsvr32.exe"
+						[String]$RegSvr32Path = "$envWinDir\System32\regsvr32.exe"
 					}
 					Else {
-						[String]$RegSvr32Path = "$envWinDir\sysnative\regsvr32.exe"
+						[String]$RegSvr32Path = "$envWinDir\Sysnative\regsvr32.exe"
 					}
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
@@ -9032,7 +9032,7 @@ Function Invoke-RegisterOrUnregisterDLL {
 					Throw "File [$filePath] cannot be $($DLLAction.ToLower()) because it is a 64-bit file on a 32-bit operating system."
 				}
 				ElseIf ($DLLFileBitness -eq '32BIT') {
-					[String]$RegSvr32Path = "$envWinDir\system32\regsvr32.exe"
+					[String]$RegSvr32Path = "$envWinDir\System32\regsvr32.exe"
 				}
 			}
 
@@ -10566,7 +10566,7 @@ Function Update-GroupPolicy {
 					[String]$InstallMsg = 'Updating Group Policies for the User'
 				}
 				Write-Log -Message "$($InstallMsg)..." -Source ${CmdletName}
-				[PSObject]$ExecuteResult = Execute-Process -Path "$envWinDir\system32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
+				[PSObject]$ExecuteResult = Execute-Process -Path "$envWinDir\System32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
 
 				If ($ExecuteResult.ExitCode -ne 0) {
 					If ($ExecuteResult.ExitCode -eq 60002) {
@@ -10823,17 +10823,17 @@ Function Set-ActiveSetup {
 					[String]$StubPath = "$CUStubExePath"
 				}
 				'.js' {
-					[String]$CUStubExePath = "$envWinDir\system32\cscript.exe"
+					[String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
 					[String]$CUArguments = "//nologo `"$StubExePath`""
 					[String]$StubPath = "$CUStubExePath $CUArguments"
 				}
 				'.vbs' {
-					[String]$CUStubExePath = "$envWinDir\system32\cscript.exe"
+					[String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
 					[String]$CUArguments = "//nologo `"$StubExePath`""
 					[String]$StubPath = "$CUStubExePath $CUArguments"
 				}
 				'.cmd' {
-					[String]$CUStubExePath = "$envWinDir\system32\CMD.exe"
+					[String]$CUStubExePath = "$envWinDir\System32\CMD.exe"
 					[String]$CUArguments = "/C `"$StubExePath`""
 					[String]$StubPath = "$CUStubExePath $CUArguments"
 				}
