@@ -150,7 +150,7 @@ If ($IsMachinePartOfDomain) {
 	# If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
 	If (-not $envLogonServer) { [String]$envLogonServer = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue').DCName }
 	## Remove backslashes at the beginning
-	while ($envLogonServer.StartsWith('\')) {
+	While ($envLogonServer.StartsWith('\')) {
 		$envLogonServer = $envLogonServer.Substring(1)
 	}
 
@@ -6034,8 +6034,8 @@ Function Get-SchedulerTask {
 	}
 }
 # If Get-ScheduledTask doesn't exist, add alias Get-ScheduledTask
-If (-not (Get-Command -Name "Get-ScheduledTask" -ErrorAction SilentlyContinue)) {
-	New-Alias -Name "Get-ScheduledTask" -Value "Get-SchedulerTask"
+If (-not (Get-Command -Name 'Get-ScheduledTask' -ErrorAction 'SilentlyContinue')) {
+	New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'
 }
 #endregion
 
@@ -6167,13 +6167,13 @@ Function Block-AppExecution {
 
 		## Set contents to be readable for all users (BUILTIN\USERS)
 		Try {
-			$Users = ConvertTo-NTAccountOrSID -SID "S-1-5-32-545"
-			Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance "ObjectInherit","ContainerInherit"
+			$Users = ConvertTo-NTAccountOrSID -SID 'S-1-5-32-545'
+			Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ('ObjectInherit', 'ContainerInherit')
 		}
 		Catch {
 			Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
 		}
-			
+		
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.' -Source ${CmdletName}
 		If (Get-SchedulerTask -ContinueOnError $true | ForEach-Object { if($_.TaskName -eq "\$schTaskBlockedAppsName") {$_.TaskName} }) {
