@@ -4491,7 +4491,7 @@ Function Remove-RegistryKey {
 						$null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
 					}
 					Else {
-						If ($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')){
+						If ($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')) {
 							## Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
 							Write-Log -Message "Deleting registry key [$Key]." -Source ${CmdletName}
 							$null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
@@ -5125,9 +5125,9 @@ Function New-Shortcut {
 				}
 				$shortcut.WindowStyle = $windowStyleInt
 				## Hotkey
-				If ($hotkey) { $shortcut.Hotkey = $hotkey }
+				If ($Hotkey) { $shortcut.Hotkey = $Hotkey }
 				## Icon
-				If ($IconIndex -eq $null) {
+				If ($null -eq $IconIndex) {
 					$IconIndex = 0
 				}
 				If ($IconLocation) { $shortcut.IconLocation = $IconLocation + ",$IconIndex" }
