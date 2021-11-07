@@ -272,15 +272,15 @@ $GetAccountNameUsingSid = [scriptblock]{
 	)
 	
 	Try {
-		return (New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList ([Security.Principal.WellKnownSidType]::"$SecurityIdentifier", $null)).Translate([System.Security.Principal.NTAccount]).Value
+		Return (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::"$SecurityIdentifier", $null)).Translate([System.Security.Principal.NTAccount]).Value
 	}
 	Catch { 
-		return $null 
+		Return $null 
 	}
 }	
-[string]$LocalSystemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
+[string]$LocalSystemNTAccount = & $GetAccountNameUsingSid 'LocalSystemSid'
 [string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
-[string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
+[string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
 [string]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
@@ -1602,7 +1602,7 @@ Function Show-InstallationPrompt {
 			# Format the parameters as a string
 			[string]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
-			return
+			Return
 		}
 
 		[Windows.Forms.Application]::EnableVisualStyles()
@@ -5056,7 +5056,7 @@ Function New-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
@@ -5069,7 +5069,7 @@ Function New-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 
 			Try {
@@ -5081,7 +5081,7 @@ Function New-Shortcut {
 						If (-not $ContinueOnError) {
 							Throw
 						}
-						return
+						Return
 					}
 					# Continue without creating a folder because the path is root
 				} ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
@@ -5250,7 +5250,7 @@ Function Set-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 			$extension = [IO.Path]::GetExtension($Path).ToLower()
 			If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
@@ -5258,7 +5258,7 @@ Function Set-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 			# Make sure Net framework current dir is synced with powershell cwd
 			[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
@@ -5388,7 +5388,7 @@ Function Get-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
@@ -5401,7 +5401,7 @@ Function Get-Shortcut {
 				If (-not $ContinueOnError) {
 					Throw
 				}
-				return
+				Return
 			}
 
 			$Output = @{ Path = $FullPath }
@@ -6436,7 +6436,7 @@ Function Get-RunningProcesses {
 	Process {
 		If ($processObjects -and $processObjects[0].ProcessName) {
 			[string]$runningAppsCheck = $processObjects.ProcessName -join ','
-			If (-not($DisableLogging)) {
+			If (-not $DisableLogging) {
 				Write-Log -Message "Checking for running applications: [$runningAppsCheck]" -Source ${CmdletName}
 			}
 			## Prepare a filter for Where-Object
@@ -6455,18 +6455,18 @@ Function Get-RunningProcesses {
 							#  Fall back on the process name if no description is provided by the process or as a parameter to the function
 							Add-Member -InputObject $_ -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $_.ProcessName -Force -PassThru -ErrorAction 'SilentlyContinue'
 						}
-						Write-Output $true
-						return;
+						Write-Output -InputObject $true
+						Return
 					}
 				}
 
-				Write-Output $false
-				return;
+				Write-Output -InputObject $false
+				Return
 			}
 			## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
 			[Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object ProcessName
 
-			If (-not($DisableLogging)) {
+			If (-not $DisableLogging) {
 				If ($runningProcesses) {
 					[string]$runningProcessList = ($runningProcesses.ProcessName | Select-Object -Unique) -join ','
 					Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
@@ -6476,7 +6476,8 @@ Function Get-RunningProcesses {
 				}
 			}
 			Write-Output -InputObject $runningProcesses
-		} Else {
+		}
+		Else {
 			Write-Output -InputObject $null
 		}
 	}
@@ -7702,7 +7703,7 @@ Function Show-InstallationRestartPrompt {
 			[string]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
 			## Start another powershell instance silently with function parameters from this function
 			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
-			return
+			Return
 		}
 
 		[datetime]$startTime = Get-Date
@@ -8419,7 +8420,7 @@ Function Close-InstallationProgress {
 		# Return if we still have no window
 		if (-not $script:ProgressSyncHash.Window.IsInitialized) {
 			Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
-			return
+			Return
 		}
 		# If the thread is suspended, resume it
 		if ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [system.threading.threadstate]::Suspended) {
@@ -8622,12 +8623,12 @@ Function Set-PinnedApplication {
 					If ($Action -eq 'PintoTaskbar' -and $PinExists) {
 						If($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
 							Write-Log -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
-							return
+							Return
 						}
 					}
 					ElseIf ($Action -eq 'UnpinfromTaskbar' -and $PinExists -eq $false) {
 						Write-Log -Message "Pin [$FileNameWithoutExtension] does not exist." -Source ${CmdletName}
-						return
+						Return
 					}
 
 					$ExplorerCommandHandler = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
@@ -10824,27 +10825,27 @@ Function Set-ActiveSetup {
 				# HKLM entry not present. Nothing to run
 				If (-not $HKLMProps) {
 					Write-Log "HKLM active setup entry is not present." -Source ${CmdletName}
-					return $false
+					Return $false
 				}
 				# HKLM entry present, but disabled. Nothing to run
 				If ($HKLMInst -eq 0) {
 					Write-Log "HKLM active setup entry is present, but it is disabled (IsInstalled set to 0)." -Source ${CmdletName}
-					return $false
+					Return $false
 				}
 				# HKLM entry present and HKCU entry is not. Run the StubPath
 				If (-not $HKCUProps) {
 					Write-Log "HKLM active setup entry is present. HKCU active setup entry is not present." -Source ${CmdletName}
-					return $true
+					Return $true
 				}
 				# Both entries present. HKLM entry does not have Version property. Nothing to run
 				If (-not $HKLMVer) {
 					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is missing." -Source ${CmdletName}
-					return $false
+					Return $false
 				}
 				# Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath
 				If (-not $HKCUVer) {
 					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is missing." -Source ${CmdletName}
-					return $true
+					Return $true
 				}
 				# Both entries present, with a Version property. Compare the Versions
 				## Remove invalid characters from Version. Only digits and commas are allowed
@@ -10860,12 +10861,12 @@ Function Set-ActiveSetup {
 				# After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
 				If (-not $HKLMValidVer) {
 					Write-Log "HKLM and HKCU active setup entries are present. HKLM Version property is invalid." -Source ${CmdletName}
-					return $false
+					Return $false
 				}
 				# the HKCU Version property is empty while HKLM Version property is not. Run the StubPath
 				If (-not $HKCUValidVer) {
 					Write-Log "HKLM and HKCU active setup entries are present. HKCU Version property is invalid." -Source ${CmdletName}
-					return $true
+					Return $true
 				}
 				# Both Version properties are present
 				# Split the version by commas
@@ -10877,11 +10878,12 @@ Function Set-ActiveSetup {
 					If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
 						#HKLM is longer, Run the StubPath
 						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKLM Version has more sub versions." -Source ${CmdletName}
-						return $true
-					} else {
+						Return $true
+					}
+					Else {
 						#HKCU is longer, Nothing to run
 						Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKCU Version has more sub versions." -Source ${CmdletName}
-						return $false
+						Return $false
 					}
 				}
 				# The Versions have the same number of strings. Compare them
@@ -10893,17 +10895,17 @@ Function Set-ActiveSetup {
 						# The HKCU ver is lower, Run the StubPath
 						If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
 							Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however HKCU Version property is lower." -Source ${CmdletName}
-							return $true
+							Return $true
 						}
 					}
 					# The HKCU version is equal or higher than HKLM version, Nothing to run
 					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however they are either the same or HKCU Version property is higher." -Source ${CmdletName}
-					return $false
+					Return $false
 				}
 				catch {
 					# Failed to parse strings as UInts, Run the StubPath
 					Write-Log "HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however parsing strings to uintegers failed." -Severity 2  -Source ${CmdletName}
-					return $true
+					Return $true
 				}
 			}
 
@@ -11829,12 +11831,12 @@ Function Set-ItemPermission {
 			# Enable inherance
 			$Acl.SetAccessRuleProtection($False, $True)
 			Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
-			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction Stop
-			return
+			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
+			Return
 		}
         # Permissions
-		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object System.Security.AccessControl.FileSystemRights
-		If ($Permission -ne "None") {
+		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object 'System.Security.AccessControl.FileSystemRights'
+		If ($Permission -ne 'None') {
 			foreach ($Entry in $Permission) {
 				$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
 			}
