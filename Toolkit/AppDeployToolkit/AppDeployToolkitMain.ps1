@@ -1425,7 +1425,7 @@ Function Resolve-Error {
 			[Management.Automation.ErrorRecord[]]$ErrorRecord = $global:Error[0]
 		}
 	}
-	[Collections.Generic.List[String]]$SOutput = New-Object Collections.Generic.List[String]
+	[Collections.Generic.List[String]]$SOutput = New-Object -TypeName 'Collections.Generic.List[String]'
 	# Do not use newline character in here because it will not be shown consistently in the console and the log. Each $SOutput.Add() is a new line
 	For ($i = 0; $i -lt $ErrorRecord.Count; $i++) {
 		If ($ErrorRecord.Count -le 1) {
@@ -1671,52 +1671,52 @@ Function Show-InstallationPrompt {
 
 		##----------------------------------------------
 		## Create padding object
-		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
 
 		## Default control size
-		$DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
+		$DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (130, 24)
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$pictureBanner.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
+		$pictureBanner.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
         $pictureBanner.MinimumSize = $DefaultControlSize
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabStop = $false
-		$pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+		$pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 
 		## Picture Icon
 		If ($Icon -ne 'None') {
 			$pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
 			$pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap()
 			$pictureIcon.Name = 'pictureIcon'
-			$pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
-			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 64,32
-			$pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 24,0,8,0
+			$pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
+			$pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
+			$pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (24, 0, 8, 0)
 			$pictureIcon.SizeMode = "CenterImage"
 			$pictureIcon.TabStop = $false
 			$pictureIcon.Anchor = 'None'
-            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
+            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
 		}
 
 		## Label Text
 		$labelText.DataBindings.DefaultDataSourceUpdateMode = 0
 		$labelText.Name = 'labelText'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' 386,0
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, 0)
 		$labelText.Size = $System_Drawing_Size
 		If ($Icon -ne 'None') {
-			$labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' 386,$pictureIcon.Height
+			$labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, $pictureIcon.Height)
 		}
 		Else {
 			$labelText.MinimumSize = $System_Drawing_Size
 		}
 		$labelText.MaximumSize = $System_Drawing_Size
 		$labelText.AutoSize = $true
-		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
+		$labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
 		$labelText.TabStop = $false
 		$labelText.Text = $message
 		$labelText.TextAlign = "Middle$($MessageAlignment)"
@@ -1808,29 +1808,29 @@ Function Show-InstallationPrompt {
 		$flowLayoutPanel.Padding = $paddingNone
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,10,0
-            $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
-			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 64,0
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 10, 0)
+            $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
+			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
 		}
 		Else {
-			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 			$labelText.MinimumSize = $DefaultControlSize
 			$labelText.MaximumSize = $DefaultControlSize
 			$labelText.Size = $DefaultControlSize
-			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 		}
 		If ($Icon -ne 'None') {
 			$flowLayoutPanel.Controls.Add($pictureIcon)
 		}
 		$flowLayoutPanel.Controls.Add($labelText)
-		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
+		$flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
 
 		## ButtonsPanel
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
 		$panelButtons.AutoSize = $true
 		If ($buttonLeftText) { $panelButtons.Controls.Add($buttonLeft) }
 		If ($buttonMiddleText) { $panelButtons.Controls.Add($buttonMiddle) }
@@ -1855,7 +1855,7 @@ Function Show-InstallationPrompt {
 		$formInstallationPrompt.TopMost = $TopMost
 		$formInstallationPrompt.TopLevel = $true
 		$formInstallationPrompt.AutoSize = $true
-		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+		$formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
 		$formInstallationPrompt.Controls.Add($pictureBanner)
 		$formInstallationPrompt.Controls.Add($buttonAbort)
 		$formInstallationPrompt.Controls.Add($flowLayoutPanel)
@@ -3198,9 +3198,9 @@ Function Execute-Process {
 				If ($processStartInfo.UseShellExecute -eq $false) {
 					## Add event handler to capture process's standard output redirection
 					[ScriptBlock]$processEventHandler = { If (-not [String]::IsNullOrEmpty($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
-					$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
+					$stdOutBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ('')
 					$stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'OutputDataReceived' -MessageData $stdOutBuilder -ErrorAction 'Stop'
-					$stdErrBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ''
+					$stdErrBuilder = New-Object -TypeName 'System.Text.StringBuilder' -ArgumentList ('')
 					$stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName 'ErrorDataReceived' -MessageData $stdErrBuilder -ErrorAction 'Stop'
 				}
 
@@ -4727,7 +4727,7 @@ Function ConvertTo-NTAccountOrSID {
 					[String]$msg = "the SID [$SID] to an NT Account name"
 					Write-Log -Message "Converting $msg." -Source ${CmdletName}
 
-					$NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList $SID
+					$NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($SID)
 					$NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
 					Write-Output -InputObject ($NTAccount)
 				}
@@ -4735,7 +4735,7 @@ Function ConvertTo-NTAccountOrSID {
 					[String]$msg = "the NT Account [$AccountName] to a SID"
 					Write-Log -Message "Converting $msg." -Source ${CmdletName}
 
-					$NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList $AccountName
+					$NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($AccountName)
 					$NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
 					Write-Output -InputObject ($NTAccountSID)
 				}
@@ -4752,7 +4752,7 @@ Function ConvertTo-NTAccountOrSID {
 					#  Get the SID for the root domain
 					Try {
 						$MachineRootDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop').Domain.ToLower()
-						$ADDomainObj = New-Object -TypeName 'System.DirectoryServices.DirectoryEntry' -ArgumentList "LDAP://$MachineRootDomain"
+						$ADDomainObj = New-Object -TypeName 'System.DirectoryServices.DirectoryEntry' -ArgumentList ("LDAP://$MachineRootDomain")
 						$DomainSidInBinary = $ADDomainObj.ObjectSid
 						$DomainSid = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($DomainSidInBinary[0], 0)
 					}
@@ -5286,7 +5286,7 @@ Function Set-Shortcut {
 						$URLFile[$i] = "IconFile=$IconLocation"
 					}
 				}
-				[IO.File]::WriteAllLines($Path,$URLFile,(new-object -TypeName Text.UTF8Encoding -ArgumentList $false))
+				[IO.File]::WriteAllLines($Path, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
 			}
 			Else {
 				$shortcut = $shell.CreateShortcut($Path)
@@ -7313,20 +7313,20 @@ Function Show-WelcomePrompt {
 
 		##----------------------------------------------
 		## Create zero px padding object
-		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
 		## Create basic control size
-		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
+		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 130,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (130, 24)
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
@@ -7338,8 +7338,8 @@ Function Show-WelcomePrompt {
 		$labelWelcomeMessage.Size = $defaultControlSize
 		$labelWelcomeMessage.MinimumSize = $defaultControlSize
 		$labelWelcomeMessage.MaximumSize = $defaultControlSize
-		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,0
-		$labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
+		$labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelWelcomeMessage.TabStop = $false
 		$labelWelcomeMessage.Text = $configDeferPromptWelcomeMessage
 		$labelWelcomeMessage.TextAlign = 'MiddleCenter'
@@ -7354,8 +7354,8 @@ Function Show-WelcomePrompt {
 		$labelAppName.Size = $defaultControlSize
 		$labelAppName.MinimumSize = $defaultControlSize
 		$labelAppName.MaximumSize = $defaultControlSize
-		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,5,0,5
-		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 5, 0, 5)
+		$labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelAppName.TabStop = $false
 		$labelAppName.Text = $installTitle
 		$labelAppName.TextAlign = 'MiddleCenter'
@@ -7369,8 +7369,8 @@ Function Show-WelcomePrompt {
 		$labelCustomMessage.Size = $defaultControlSize
 		$labelCustomMessage.MinimumSize = $defaultControlSize
 		$labelCustomMessage.MaximumSize = $defaultControlSize
-		$labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
-		$labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+		$labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelCustomMessage.TabStop = $false
 		$labelCustomMessage.Text = $configClosePromptMessage
 		$labelCustomMessage.TextAlign = 'MiddleCenter'
@@ -7384,8 +7384,8 @@ Function Show-WelcomePrompt {
 		$labelCloseAppsMessage.Size = $defaultControlSize
 		$labelCloseAppsMessage.MinimumSize = $defaultControlSize
 		$labelCloseAppsMessage.MaximumSize = $defaultControlSize
-		$labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
-		$labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+		$labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelCloseAppsMessage.TabStop = $false
 		$labelCloseAppsMessage.Text = $configClosePromptMessage
 		$labelCloseAppsMessage.TextAlign = 'MiddleCenter'
@@ -7398,9 +7398,9 @@ Function Show-WelcomePrompt {
 		$listBoxCloseApps.FormattingEnabled = $true
 		$listBoxCloseApps.HorizontalScrollbar = $true
 		$listBoxCloseApps.Name = 'listBoxCloseApps'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 420,100
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (420, 100)
 		$listBoxCloseApps.Size = $System_Drawing_Size
-		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 15,0,15,0
+		$listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (15, 0, 15, 0)
 		$listBoxCloseApps.TabIndex = 3
 		$ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
@@ -7410,8 +7410,8 @@ Function Show-WelcomePrompt {
 		$labelDefer.Size = $defaultControlSize
 		$labelDefer.MinimumSize = $defaultControlSize
 		$labelDefer.MaximumSize = $defaultControlSize
-		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,5
-		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+		$labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelDefer.TabStop = $false
 		$deferralText = "$configDeferPromptExpiryMessage`r`n"
 
@@ -7437,7 +7437,7 @@ Function Show-WelcomePrompt {
 		$labelCountdownMessage.MinimumSize = $defaultControlSize
 		$labelCountdownMessage.MaximumSize = $defaultControlSize
 		$labelCountdownMessage.Margin = $paddingNone
-		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelCountdownMessage.TabStop = $false
 		If (($forceCountdown -eq $true) -or (-not $script:runningProcessDescriptions)) {
 			Switch ($deploymentType){
@@ -7463,7 +7463,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
 		$labelCountdown.Margin = $paddingNone
-		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
@@ -7471,7 +7471,7 @@ Function Show-WelcomePrompt {
 		$labelCountdown.add_Click($handler_labelDefer_Click)
 
 		## Panel Flow Layout
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.MinimumSize = $DefaultControlSize
 		$flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -7502,7 +7502,7 @@ Function Show-WelcomePrompt {
 
 		## Button Close For Me
 		$buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
+		$buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
 		$buttonCloseApps.Name = 'buttonCloseApps'
 		$buttonCloseApps.Size = $buttonSize
 		$buttonCloseApps.MinimumSize = $buttonSize
@@ -7519,10 +7519,10 @@ Function Show-WelcomePrompt {
 		## Button Defer
 		$buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
 		If (-not $showCloseApps) {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
 		}
 		Else {
-			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 160,4
+			$buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (160, 4)
 		}
 		$buttonDefer.Name = 'buttonDefer'
 		$buttonDefer.Size = $buttonSize
@@ -7539,7 +7539,7 @@ Function Show-WelcomePrompt {
 
 		## Button Continue
 		$buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 306,4
+		$buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (306, 4)
 		$buttonContinue.Name = 'buttonContinue'
 		$buttonContinue.Size = $buttonSize
 		$buttonContinue.MinimumSize = $buttonSize
@@ -7564,9 +7564,9 @@ Function Show-WelcomePrompt {
 		## Button Abort (Hidden)
 		$buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
 		$buttonAbort.Name = 'buttonAbort'
-		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
-		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
-		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 0,0
+		$buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
+		$buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
+		$buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
 		$buttonAbort.BackColor = [System.Drawing.Color]::Transparent
 		$buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
 		$buttonAbort.FlatAppearance.BorderSize = 0;
@@ -7595,14 +7595,14 @@ Function Show-WelcomePrompt {
 		$formWelcome.MinimizeBox = $false
 		$formWelcome.TopMost = $TopMost
 		$formWelcome.TopLevel = $true
-		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+		$formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
 		$formWelcome.AutoSize = $true
 		$formWelcome.Controls.Add($pictureBanner)
 		$formWelcome.Controls.Add($buttonAbort)
 		## Panel Button
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
@@ -7868,20 +7868,20 @@ Function Show-InstallationRestartPrompt {
 		## Form
 		##----------------------------------------------
 		## Create zero px padding object
-		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,0,0,0
+		$paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
 		## Create basic control size
-		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,0
+		$defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
 
 		## Generic Button properties
-		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 195,24
+		$buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (195, 24)
 
 		## Picture Banner
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,0
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 		$pictureBanner.Location = $System_Drawing_Point
 		$pictureBanner.Name = 'pictureBanner'
-		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,$appDeployLogoBannerHeight
+		$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
 		$pictureBanner.Size = $System_Drawing_Size
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
@@ -7893,8 +7893,8 @@ Function Show-InstallationRestartPrompt {
 		$labelMessage.Size = $defaultControlSize
 		$labelMessage.MinimumSize = $defaultControlSize
 		$labelMessage.MaximumSize = $defaultControlSize
-		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 0,10,0,5
-		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
+		$labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelMessage.Text = "$configRestartPromptMessage $configRestartPromptMessageTime `r`n`r`n$configRestartPromptMessageRestart"
 		If ($NoCountdown) { $labelMessage.Text = $configRestartPromptMessage }
 		$labelMessage.TextAlign = 'MiddleCenter'
@@ -7909,7 +7909,7 @@ Function Show-InstallationRestartPrompt {
 		$labelTimeRemaining.MinimumSize = $defaultControlSize
 		$labelTimeRemaining.MaximumSize = $defaultControlSize
 		$labelTimeRemaining.Margin = $paddingNone
-		$labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelTimeRemaining.TabStop = $false
 		$labelTimeRemaining.Font = 'Microsoft Sans Serif, 9pt, style=Bold'
 		$labelTimeRemaining.Text = $configRestartPromptTimeRemaining
@@ -7925,14 +7925,14 @@ Function Show-InstallationRestartPrompt {
 		$labelCountdown.MinimumSize = $defaultControlSize
 		$labelCountdown.MaximumSize = $defaultControlSize
 		$labelCountdown.Margin = $paddingNone
-		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList 10,0,10,0
+		$labelCountdown.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
 		$labelCountdown.TabStop = $false
 		$labelCountdown.Text = '00:00:00'
 		$labelCountdown.TextAlign = 'MiddleCenter'
 		$labelCountdown.AutoSize = $true
 
 		## Panel Flow Layout
-		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 0,$appDeployLogoBannerHeight
+		$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
 		$flowLayoutPanel.Location = $System_Drawing_Point
 		$flowLayoutPanel.MinimumSize = $DefaultControlSize
 		$flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -7952,7 +7952,7 @@ Function Show-InstallationRestartPrompt {
 
 		## Button Minimize
 		$buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 240,4
+		$buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (240, 4)
 		$buttonRestartLater.Name = 'buttonRestartLater'
 		$buttonRestartLater.Size = $buttonSize
 		$buttonRestartLater.MinimumSize = $buttonSize
@@ -7967,7 +7967,7 @@ Function Show-InstallationRestartPrompt {
 
 		## Button Restart Now
 		$buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
-		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList 14,4
+		$buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
 		$buttonRestartNow.Name = 'buttonRestartNow'
 		$buttonRestartNow.Size = $buttonSize
 		$buttonRestartNow.MinimumSize = $buttonSize
@@ -7993,15 +7993,15 @@ Function Show-InstallationRestartPrompt {
 		$formRestart.MinimizeBox = $false
 		$formRestart.TopMost = $TopMost
 		$formRestart.TopLevel = $true
-		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+		$formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
 		$formRestart.AutoSize = $true
 		$formRestart.ControlBox = $true
 		$formRestart.Controls.Add($pictureBanner)
 
 		## Button Panel
-		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
-		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
-		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList 450,39
+		$panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+		$panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+		$panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
 		$panelButtons.AutoSize = $true
 		$panelButtons.Padding = $paddingNone
 		$panelButtons.Margin = $paddingNone
@@ -8132,7 +8132,7 @@ Function Show-BalloonTip {
 					BalloonTipIcon = $BalloonTipIcon
 					BalloonTipText = $BalloonTipText
 					BalloonTipTitle = $BalloonTipTitle
-					Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+					Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
 					Text = $BalloonTipIconText
 					Visible = $true
 				}
@@ -8160,7 +8160,7 @@ Function Show-BalloonTip {
 				BalloonTipIcon = $BalloonTipIcon
 				BalloonTipText = $BalloonTipText
 				BalloonTipTitle = $BalloonTipTitle
-				Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
+				Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
 				Text = $BalloonTipIconText
 				Visible = $true
 			}
@@ -8320,7 +8320,7 @@ Function Show-InstallationProgress {
 					</Grid>
 				</Window>
 '@
-				[Xml.XmlDocument]$xamlProgress = New-Object 'System.Xml.XmlDocument'
+				[Xml.XmlDocument]$xamlProgress = New-Object -TypeName 'System.Xml.XmlDocument'
 				$xamlProgress.LoadXml($xamlProgressString)
 				## Set the configurable values using variables added to the runspace from the parent thread
 				$xamlProgress.Window.TopMost = $topMost
@@ -8329,7 +8329,7 @@ Function Show-InstallationProgress {
 				$xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
 				$xamlProgress.Window.Title = $installTitle
 				#  Parse the XAML
-				$progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList $xamlProgress
+				$progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
 				$script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
 				#  Grey out the X button
 				$script:ProgressSyncHash.Window.add_Loaded({
@@ -8355,7 +8355,7 @@ Function Show-InstallationProgress {
 					}
 					#  Disable the X button
 					Try {
-						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
+						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList ($this)).Handle
 						If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
 							$menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
 							If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
@@ -8894,7 +8894,7 @@ Function Get-PEFileArchitecture {
 					Throw "Invalid file type. Please specify one of the following PE file types: $($PEFileExtensions -join ', ')"
 				}
 
-				[Byte[]]$data = New-Object -TypeName 'System.Byte[]' -ArgumentList 4096
+				[Byte[]]$data = New-Object -TypeName 'System.Byte[]' -ArgumentList (4096)
 				$stream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($Path.FullName, 'Open', 'Read')
 				$null = $stream.Read($data, 0, 4096)
 				$stream.Flush()
@@ -9633,7 +9633,7 @@ Function Test-MSUpdates {
 				Write-Log -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}
 
 				## Check for update using ComObject method (to catch Office updates)
-				[__ComObject]$UpdateSession = New-Object -ComObject "Microsoft.Update.Session"
+				[__ComObject]$UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
 				[__ComObject]$UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
 				#  Indicates whether the search results include updates that are superseded by other updates in the search results
 				$UpdateSearcher.IncludePotentiallySupersededUpdates = $false
@@ -11880,7 +11880,7 @@ Function Set-ItemPermission {
 			Return
 		}
         # Permissions
-		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object 'System.Security.AccessControl.FileSystemRights'
+		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object -TypeName 'System.Security.AccessControl.FileSystemRights'
 		If ($Permission -ne 'None') {
 			ForEach ($Entry in $Permission) {
 				$FileSystemRights = $FileSystemRights -bor [System.Security.AccessControl.FileSystemRights]$Entry
@@ -11888,7 +11888,7 @@ Function Set-ItemPermission {
 		}
 
         # InheritanceFlags
-		$InheritanceFlag = New-Object System.Security.AccessControl.InheritanceFlags
+		$InheritanceFlag = New-Object -TypeName 'System.Security.AccessControl.InheritanceFlags'
 		ForEach ($IFlag in $Inheritance) {
 			$InheritanceFlag = $InheritanceFlag -bor [System.Security.AccessControl.InheritanceFlags]$IFlag
 		}
@@ -11934,14 +11934,14 @@ Function Set-ItemPermission {
 					Continue
 				}
 
-				$Username = New-Object System.Security.Principal.NTAccount($UsersAccountName)
+				$Username = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($UsersAccountName)
 			}
 			Else {
-				$Username = New-Object System.Security.Principal.NTAccount($U)				
+				$Username = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($U)				
 			}
 
 			# Set/Add/Remove/Replace permissions and log the changes
-			$Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
+			$Rule = New-Object TypeName 'System.Security.AccessControl.FileSystemAccessRule' -ArgumentList ($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
 			Switch ($Method) {
 				"Add" {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
