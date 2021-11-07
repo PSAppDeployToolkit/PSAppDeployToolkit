@@ -3785,7 +3785,7 @@ Function Copy-File {
 					Else {
 						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
 							if(-not($_.PSIsContainer)) {
-								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 							}
 						}
 					}
@@ -3796,19 +3796,18 @@ Function Copy-File {
 						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
 					}
 					Else {
-						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+						$null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 				}
 			}
 			Else {
-				$null = $FileCopyError
 				If ($Recurse) {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
 						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
 					}
 					Else {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 				}
 				Else {
@@ -3817,7 +3816,7 @@ Function Copy-File {
 						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
 					}
 					Else {
-						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
+						$null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
 					}
 				}
 			}
@@ -3929,7 +3928,7 @@ Function Remove-File {
 						Write-Log -Message "Deleting file(s) recursively in path [$Item]..." -Source ${CmdletName}
 					}
 					ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified" -Source ${CmdletName}
+						Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified." -Source ${CmdletName}
 						Continue
 					}
 					Else {
