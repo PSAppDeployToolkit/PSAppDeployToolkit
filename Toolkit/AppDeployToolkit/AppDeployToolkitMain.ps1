@@ -7243,35 +7243,38 @@ Function Show-WelcomePrompt {
 		If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
 			$timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
 			$timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
-			[scriptblock]$timerRunningProcesses_Tick = { try { 
-				$dynamicRunningProcesses = $null
-				$dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging 
-				[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
-					If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
-					# Update the runningProcessDescriptions variable for the next time this function runs
-					Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
-					If ($dynamicRunningProcesses) {
-						Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+			[scriptblock]$timerRunningProcesses_Tick = {
+				Try { 
+					$dynamicRunningProcesses = $null
+					$dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging 
+					[string]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
+						If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+						# Update the runningProcessDescriptions variable for the next time this function runs
+						Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+						If ($dynamicRunningProcesses) {
+							Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+						}
+						# Update the list box with the processes to close
+						$listboxCloseApps.Items.Clear()
+						$script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 					}
-					# Update the list box with the processes to close
-					$listboxCloseApps.Items.Clear()
-					$script:runningProcessDescriptions -split "," | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
-				}
-				# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
-				If ($ProcessDescriptions) {
-					If (-not ($dynamicRunningProcesses)) {
-						Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
-						$formWelcome.Dispose()
+					# If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
+					If ($ProcessDescriptions) {
+						If (-not ($dynamicRunningProcesses)) {
+							Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
+							$formWelcome.Dispose()
+						}
+					}
+					# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
+					Else {
+						If ($dynamicRunningProcesses) {
+							Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
+							$formWelcome.Dispose()
+						}
 					}
 				}
-				# If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
-				Else {
-					If ($dynamicRunningProcesses) {
-						Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
-						$formWelcome.Dispose()
-					}
-				}
-			} catch {} }
+				Catch { }
+			}
 			$timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
 			$timerRunningProcesses.Start()
 		}
