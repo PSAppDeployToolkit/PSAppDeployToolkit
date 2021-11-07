@@ -6953,15 +6953,15 @@ Function Show-InstallationWelcome {
 			[Array]$runningProcesses = $null
 			[Array]$runningProcesses = Get-RunningProcesses $processObjects
 			If ($runningProcesses) {
-				[String]$runningProcessDescriptions = ($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
+				[String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
 				Write-Log -Message "Force closing application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
-				$runningProcesses.ProcessName | ForEach-Object -Process {Stop-Process -Name $_ -Force -ErrorAction 'SilentlyContinue'}
+				$runningProcesses.ProcessName | ForEach-Object -Process { Stop-Process -Name $_ -Force -ErrorAction 'SilentlyContinue' }
 				Start-Sleep -Seconds 2
 			}
 		}
 
 		## Force nsd.exe to stop if Notes is one of the required applications to close
-		If (($processObjects).ProcessName -contains 'notes') {
+		If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
 			## Get the path where Notes is installed
 			[String]$notesPath = (Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty).Path
 
@@ -6971,7 +6971,7 @@ Function Show-InstallationWelcome {
 				[String[]]$notesPathExes = (Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse).BaseName | Sort-Object
 				## Check for running Notes executables and run NSD if any are found
 				$notesPathExes | ForEach-Object {
-					If ((Get-Process).ProcessName -contains $_) {
+					If ((Get-Process | Select-Object -ExpandProperty 'Name') -contains $_) {
 						[String]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
 						Try {
 							If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
@@ -7285,7 +7285,7 @@ Function Show-WelcomePrompt {
 				Try { 
 					$dynamicRunningProcesses = $null
 					$dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging 
-					[String]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses.ProcessDescription | Sort-Object -Unique) -join ','
+					[String]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
 						If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
 						# Update the runningProcessDescriptions variable for the next time this function runs
 						Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
