@@ -686,6 +686,7 @@ Function Write-FunctionHeaderOrFooter {
 	}
 }
 #endregion
+
 #region Function Execute-MSP
 Function Execute-MSP {
 <#
@@ -736,28 +737,35 @@ Function Execute-MSP {
 			}
 			Continue
 		}
-		Write-Log -Message 'Checking MSP file for valid product codes' -Source ${CmdletName}
+		Write-Log -Message 'Checking MSP file for valid product codes.' -Source ${CmdletName}
 
 		[boolean]$IsMSPNeeded = $false
 
-		$Installer = New-Object -com WindowsInstaller.Installer
-		$Database = $Installer.GetType().InvokeMember("OpenDatabase", "InvokeMethod", $Null, $Installer, $($mspFile,([int32]32)))
+		## Create a Windows Installer object
+		[__comobject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
+
+		## Define properties for how the MSI database is opened
+		[int32]$msiOpenDatabaseModePatchFile = 32
+		[int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile
+		## Open database in read only mode
+		[__comobject]$Database = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($mspFile, $msiOpenDatabaseMode)
+		## Get the SummaryInformation from the windows installer database
 		[__comobject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
 		[hashtable]$SummaryInfoProperty = @{}
-		$all = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
-		Foreach($FormattedProductCode in $all) {
+		$AllTargetedProductCodes = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
+		Foreach($FormattedProductCode in $AllTargetedProductCodes) {
 			[psobject]$MSIInstalled = Get-InstalledApplication -ProductCode $FormattedProductCode
 			If ($MSIInstalled) {[boolean]$IsMSPNeeded = $true }
 		}
 		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation) } Catch { }
-		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($DataBase) } Catch { }
+		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Database) } Catch { }
 		Try { $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer) } Catch { }
 		If ($IsMSPNeeded) { 
 			If ($AddParameters) {
-				Execute-MSI -Action Patch -Path $Path -AddParameters $AddParameters
+				Execute-MSI -Action 'Patch' -Path $Path -AddParameters $AddParameters
 			}
 			Else {
-				Execute-MSI -Action Patch -Path $Path
+				Execute-MSI -Action 'Patch' -Path $Path
 			}
 		}
 	}
