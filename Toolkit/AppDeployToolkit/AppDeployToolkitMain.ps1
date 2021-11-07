@@ -3776,14 +3776,14 @@ Function Copy-File {
 				If ($Recurse) {
 					Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
 					If (-not $ContinueFileCopyOnError) {
-						$null = Get-ChildItem -Path $path -Recurse | ForEach-Object {
+						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
 							if(-not($_.PSIsContainer)) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
 							}
 						}
 					}
 					Else {
-						$null = Get-ChildItem -Path $path -Recurse | ForEach-Object {
+						$null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
 							if(-not($_.PSIsContainer)) {
 								Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable FileCopyError
 							}
@@ -8106,7 +8106,7 @@ Function Show-BalloonTip {
 				Start-Sleep -Milliseconds ($BalloonTipTime)
 				$script:notifyIcon.Dispose()
 			}
-			
+
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
 				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
