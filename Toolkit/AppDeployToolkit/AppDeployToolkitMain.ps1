@@ -687,6 +687,7 @@ Function Write-FunctionHeaderOrFooter {
 }
 #endregion
 
+
 #region Function Execute-MSP
 Function Execute-MSP {
 <#
@@ -771,6 +772,7 @@ Function Execute-MSP {
 	}
 }
 #endregion
+
 
 #region Function Write-Log
 Function Write-Log {
@@ -1039,6 +1041,7 @@ Function Write-Log {
 	}
 }
 #endregion
+
 
 #region Function Remove-InvalidFileNameChars
 Function Remove-InvalidFileNameChars {
@@ -2375,7 +2378,7 @@ Function Get-InstalledApplication {
 		If (-not $IncludeUpdatesAndHotfixes) {
 			## Write to log the number of entries skipped due to them being considered updates
 			If ($UpdatesSkippedCounter -eq 1) {
-				Write-Log -Message "Skipped 1 entry while searching, because it was considered a Microsoft update." -Source ${CmdletName}
+				Write-Log -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.' -Source ${CmdletName}
 			}
 			Else {
 				Write-Log -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates." -Source ${CmdletName}
@@ -2383,7 +2386,7 @@ Function Get-InstalledApplication {
 		}
 
 		If (-not $installedApplication) {
-			Write-Log -Message "Found no application based on the supplied parameters." -Source ${CmdletName}
+			Write-Log -Message 'Found no application based on the supplied parameters.' -Source ${CmdletName}
 		}
 
 		Write-Output -InputObject ($installedApplication)
@@ -3160,7 +3163,7 @@ Function Execute-Process {
 				If (-not $MsiExecAvailable) {
 					#  Default MSI exit code for install already in progress
 					[Int32]$returnCode = 1618
-					Write-Log -Message "Another MSI installation is already in progress and needs to be completed before proceeding with this installation." -Severity 3 -Source ${CmdletName}
+					Write-Log -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3 -Source ${CmdletName}
 					If (-not $ContinueOnError) {
 						Throw 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.'
 					}
@@ -3227,7 +3230,7 @@ Function Execute-Process {
 				## Set priority
 				If ($PriorityClass -ne "Normal") {
 					Try {
-						If ($process.HasExited -eq $False) {
+						If ($process.HasExited -eq $false) {
 							Write-Log -Message "Changing the priority class for the process to [$PriorityClass]" -Source ${CmdletName}
 							$process.PriorityClass = $PriorityClass
 						}
@@ -3237,7 +3240,7 @@ Function Execute-Process {
 
 					}
 					Catch {
-						Write-Log -Message "Failed to change the priority class for the process." -Severity 2 -Source ${CmdletName}
+						Write-Log -Message 'Failed to change the priority class for the process.' -Severity 2 -Source ${CmdletName}
 					}
 				}
 				## NoWait specified, return process details. If it isnt specified, start reading standard Output and Error streams
@@ -3251,7 +3254,7 @@ Function Execute-Process {
 							Write-Output -InputObject ($ProcessDetails)
 						}
 						Else {
-							Write-Log -Message "PassThru parameter specified, however the process has already exited." -Source ${CmdletName}
+							Write-Log -Message 'PassThru parameter specified, however the process has already exited.' -Source ${CmdletName}
 						}
 					}
 				}
@@ -3308,7 +3311,7 @@ Function Execute-Process {
 				$ignoreExitCodeMatch = $false
 				If ($ignoreExitCodes) {
 					## Check whether * was specified, which would tell us to ignore all exit codes
-					If ($ignoreExitCodes.Trim() -eq "*") {
+					If ($ignoreExitCodes.Trim() -eq '*') {
 						$ignoreExitCodeMatch = $true
 					}
 					Else {
@@ -3322,7 +3325,7 @@ Function Execute-Process {
 
 				## If the passthru switch is specified, return the exit code and any output from process
 				If ($PassThru) {
-					Write-Log -Message "PassThru parameter specified, returning execution results object." -Source ${CmdletName}
+					Write-Log -Message 'PassThru parameter specified, returning execution results object.' -Source ${CmdletName}
 					[PSObject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) { $stdOut } Else { '' }; StdErr = If ($stdErr) { $stdErr } Else { '' } }
 					Write-Output -InputObject ($ExecutionResults)
 				}
@@ -8674,7 +8677,7 @@ Function Set-PinnedApplication {
 					}
 
 					$ExplorerCommandHandler = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
-					$classesStarKey = (Get-Item "Registry::HKEY_USERS\$($RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey("*", $true)
+					$classesStarKey = (Get-Item "Registry::HKEY_USERS\$($RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey('*', $true)
 					$shellKey = $classesStarKey.CreateSubKey("shell", $true)
 					$specialKey = $shellKey.CreateSubKey("{:}", $true)
 					$specialKey.SetValue("ExplorerCommandHandler", $ExplorerCommandHandler)
@@ -9737,10 +9740,10 @@ Function Install-MSUpdates {
 				Write-Log -Message "Installing [$redistDescription $redistVersion]..." -Source ${CmdletName}
 				#  Handle older redistributables (ie, VC++ 2005)
 				If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
-					Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes "*"
+					Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
 				}
 				Else {
-					Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes "*"
+					Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
 				}
 			}
 			Else {
@@ -9753,11 +9756,11 @@ Function Install-MSUpdates {
 					Write-Log -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
 					Switch ($file.Extension) {
 						#  Installation type for executables (i.e., Microsoft Office Updates)
-						'.exe' { Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
+						'.exe' { Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*' }
 						#  Installation type for Windows updates using Windows Update Standalone Installer
-						'.msu' { Execute-Process -Path $exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes "*" }
+						'.msu' { Execute-Process -Path $exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*' }
 						#  Installation type for Windows Installer Patch
-						'.msp' { Execute-MSI -Action 'Patch' -Path $file.FullName -IgnoreExitCodes "*" }
+						'.msp' { Execute-MSI -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*' }
 					}
 				}
 				Else {
