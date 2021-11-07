@@ -754,7 +754,7 @@ Function Execute-MSP {
 		[__ComObject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
 		[Hashtable]$SummaryInfoProperty = @{}
 		$AllTargetedProductCodes = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(";")
-		Foreach($FormattedProductCode in $AllTargetedProductCodes) {
+		ForEach($FormattedProductCode in $AllTargetedProductCodes) {
 			[PSObject]$MSIInstalled = Get-InstalledApplication -ProductCode $FormattedProductCode
 			If ($MSIInstalled) {[Boolean]$IsMSPNeeded = $true }
 		}
@@ -4842,12 +4842,12 @@ Function Get-UserProfiles {
 			## Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine
 			[String]$UserProfileListRegKey = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
 			[PSObject[]]$UserProfiles = Get-ChildItem -LiteralPath $UserProfileListRegKey -ErrorAction 'Stop' |
-			ForEach-Object {
-				$ProfileProperties = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
-				Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
-				## This removes "defaultuser0" account, which is Windows's 10 bug
-				If ($ProfileProperties.NTAccount) { $ProfileProperties }
-			}
+										ForEach-Object {
+											$ProfileProperties = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
+											Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
+											## This removes the "defaultuser0" account, which is a Windows 10 bug
+											If ($ProfileProperties.NTAccount) { $ProfileProperties }
+										}
 			If ($ExcludeSystemProfiles) {
 				[String[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
 				[PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
@@ -5617,10 +5617,10 @@ Function Execute-ProcessAsUser {
 		## If PowerShell.exe is being launched, then create a VBScript to launch PowerShell so that we can suppress the console window that flashes otherwise
 		If (((Split-Path -Path $Path -Leaf) -like 'PowerShell*') -or ((Split-Path -Path $Path -Leaf) -like 'cmd*')) {
 			If ($SecureParameters) {
-				Write-Log -Message "Preparing a vbs script that will start [$Path] (Parameters Hidden) as the logged-on user [$userName] silently..." -Source ${CmdletName}
+				Write-Log -Message "Preparing a VBScript that will start [$Path] (Parameters Hidden) as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
 			}
 			Else {
-				Write-Log -Message "Preparing a vbs script that will start [$Path $Parameters] as the logged-on user [$userName] silently..." -Source ${CmdletName}
+				Write-Log -Message "Preparing a VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
 			}
 
 			# Permit inclusion of double quotes in parameters
@@ -10723,7 +10723,7 @@ Function Set-ActiveSetup {
 .PARAMETER DisableActiveSetup
 	Disables the Active Setup entry so that the StubPath file will not be executed. This also disables -ExecuteForCurrentUser
 .PARAMETER ExecuteForCurrentUser
-	Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in. Default: $True
+	Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in. Default: $true
 .PARAMETER ContinueOnError
 	Continue if an error is encountered. Default is: $true.
 .EXAMPLE
@@ -11804,58 +11804,58 @@ Function Set-ItemPermission {
 		Enables inheritance on the files/folders. 
     .EXAMPLE
         Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
-        PS C:\>Set-ItemPermission -Path "C:\Temp" -User "DOMAIN\John", "BUILTIN\Utilisateurs" -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+        PS C:\>Set-ItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
     .EXAMPLE
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
-        PS C:\>Set-ItemPermission -Path "C:\Temp\pic.png" -User "DOMAIN\John" -Permission Read
+        PS C:\>Set-ItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
     .EXAMPLE
         Will remove all permissions to 'John' on 'C:\Temp\Private'
-        PS C:\>Set-ItemPermission -Path "C:\Temp\Private" -User "DOMAIN\John" -Permission None -Method RemoveAll
+        PS C:\>Set-ItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
     .NOTES
-		Original Author : Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
+		Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
 	.LINK
 		http://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
     Param (
-		[Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)",ParameterSetName="DisableInheritance" )]
-		[Parameter( Mandatory=$True, Position=0, HelpMessage = "Path to the folder or file you want to modify (ex: C:\Temp)",ParameterSetName="EnableInheritance" )]
+		[Parameter( Mandatory=$true, Position=0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)',ParameterSetName='DisableInheritance' )]
+		[Parameter( Mandatory=$true, Position=0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)',ParameterSetName='EnableInheritance' )]
 		[ValidateNotNullOrEmpty()]
         [Alias('File', 'Folder')]
         [String]$Path,
 
-		[Parameter( Mandatory=$True, Position=1, HelpMessage = "One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)", ParameterSetName="DisableInheritance")]
+		[Parameter( Mandatory=$true, Position=1, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName='DisableInheritance')]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
         [String[]]$User,
 
-        [Parameter( Mandatory=$True, Position=2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName="DisableInheritance")]
+        [Parameter( Mandatory=$true, Position=2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName='DisableInheritance')]
         [Alias('Acl', 'Grant', 'Permissions', 'Deny')]
-        [ValidateSet("AppendData", "ChangePermissions", "CreateDirectories", "CreateFiles", "Delete", `
-                     "DeleteSubdirectoriesAndFiles", "ExecuteFile", "FullControl", "ListDirectory", "Modify",`
-                     "Read", "ReadAndExecute", "ReadAttributes", "ReadData", "ReadExtendedAttributes", "ReadPermissions",`
-                     "Synchronize", "TakeOwnership", "Traverse", "Write", "WriteAttributes", "WriteData", "WriteExtendedAttributes", "None")]
+        [ValidateSet('AppendData', 'ChangePermissions', 'CreateDirectories', 'CreateFiles', 'Delete', `
+                     'DeleteSubdirectoriesAndFiles', 'ExecuteFile', 'FullControl', 'ListDirectory', 'Modify',`
+                     'Read', 'ReadAndExecute', 'ReadAttributes', 'ReadData', 'ReadExtendedAttributes', 'ReadPermissions',`
+                     'Synchronize', 'TakeOwnership', 'Traverse', 'Write', 'WriteAttributes', 'WriteData', 'WriteExtendedAttributes', 'None')]
         [String[]]$Permission,
 
-        [Parameter( Mandatory=$False, Position=3, HelpMessage = "Whether you want to set Allow or Deny permissions", ParameterSetName="DisableInheritance")]
+        [Parameter( Mandatory=$false, Position=3, HelpMessage = 'Whether you want to set Allow or Deny permissions', ParameterSetName='DisableInheritance')]
 		[Alias('AccessControlType')]
-        [ValidateSet("Allow", "Deny")]
-		[String]$PermissionType = "Allow",
+        [ValidateSet('Allow', 'Deny')]
+		[String]$PermissionType = 'Allow',
 
-		[Parameter( Mandatory=$False, Position=4, HelpMessage = "Sets how permissions are inherited", ParameterSetName="DisableInheritance")]
-		[ValidateSet("ContainerInherit", "None", "ObjectInherit")]
-		[String[]]$Inheritance = "None",
+		[Parameter( Mandatory=$false, Position=4, HelpMessage = 'Sets how permissions are inherited', ParameterSetName='DisableInheritance')]
+		[ValidateSet('ContainerInherit', 'None', 'ObjectInherit')]
+		[String[]]$Inheritance = 'None',
 
-        [Parameter( Mandatory=$False, Position=5, HelpMessage = "Sets how to propage inheritance flags", ParameterSetName="DisableInheritance")]		
-        [ValidateSet("None", "InheritOnly", "NoPropagateInherit")]
-		[String]$Propagation = "None",
+        [Parameter( Mandatory=$false, Position=5, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName='DisableInheritance')]		
+        [ValidateSet('None', 'InheritOnly', 'NoPropagateInherit')]
+		[String]$Propagation = 'None',
 
-		[Parameter( Mandatory=$False, Position=6, HelpMessage = "Specifies which method will be used to add/remove/replace permissions.", ParameterSetName="DisableInheritance")]
-		[ValidateSet("Add", "Set", "Reset", "Remove", "RemoveSpecific", "RemoveAll")]
-        [Alias("ApplyMethod", "ApplicationMethod")]
-		[String]$Method = "Add",
+		[Parameter( Mandatory=$false, Position=6, HelpMessage = 'Specifies which method will be used to add/remove/replace permissions.', ParameterSetName='DisableInheritance')]
+		[ValidateSet('Add', 'Set', 'Reset', 'Remove', 'RemoveSpecific', 'RemoveAll')]
+        [Alias('ApplyMethod', 'ApplicationMethod')]
+		[String]$Method = 'Add',
 
-		[Parameter( Mandatory=$True, Position=1, HelpMessage = "Enables inheritance, which removes explicit permissions.", ParameterSetName="EnableInheritance")]
+		[Parameter( Mandatory=$true, Position=1, HelpMessage = 'Enables inheritance, which removes explicit permissions.', ParameterSetName='EnableInheritance')]
 		[Switch]$EnableInheritance
 	)
 
@@ -11873,16 +11873,16 @@ Function Set-ItemPermission {
 		}
 
 		# Check path existence
-		If (-not (Test-Path -Path $Path -ErrorAction Stop)) {
+		If (-not (Test-Path -Path $Path -ErrorAction 'Stop')) {
             Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
             Throw "Specified path does not exist [$Path]."
 		}
 
 		If ($EnableInheritance) {
 			# Get object acls
-			$Acl = (get-item -Path $Path -ErrorAction Stop).GetAccessControl('Access')
+			$Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
 			# Enable inherance
-			$Acl.SetAccessRuleProtection($False, $True)
+			$Acl.SetAccessRuleProtection($false, $true)
 			Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
 			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
 			Return
@@ -11908,22 +11908,22 @@ Function Set-ItemPermission {
 		$Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
 		
 		# Modify variables to remove file incompatible flags if this is a file
-		If (Test-Path -Path $Path -ErrorAction Stop -PathType Leaf) {
+		If (Test-Path -Path $Path -ErrorAction 'Stop' -PathType 'Leaf') {
 			$FileSystemRights = $FileSystemRights -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
 			$InheritanceFlag = [System.Security.AccessControl.InheritanceFlags]::None
 			$PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
 		}
 
         # Get object acls
-        $Acl = (get-item -Path $Path -ErrorAction Stop).GetAccessControl('Access')
+        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
         # Disable inherance, Preserve inherited permissions
-        $Acl.SetAccessRuleProtection($True, $True)
-		$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction Stop
+        $Acl.SetAccessRuleProtection($true, $true)
+		$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
 		# Get updated acls - without inheritance
 		$Acl = $null
-		$Acl = (get-item -Path $Path -ErrorAction Stop).GetAccessControl('Access')
+		$Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
         # Apply permissions on Users
-        Foreach ($U in $User) {
+        ForEach ($U in $User) {
 			# Trim whitespace and skip if empty
 			$U = $U.Trim()
 			If ($U.Length -eq 0) {
@@ -11951,32 +11951,32 @@ Function Set-ItemPermission {
 			# Set/Add/Remove/Replace permissions and log the changes
 			$Rule = New-Object TypeName 'System.Security.AccessControl.FileSystemAccessRule' -ArgumentList ($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
 			Switch ($Method) {
-				"Add" {
+				'Add' {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.AddAccessRule($Rule)
 					Break
 				}
-				"Set" {
+				'Set' {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.SetAccessRule($Rule)
 					Break
 				}
-				"Reset" {
+				'Reset' {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.ResetAccessRule($Rule)
 					Break
 				}
-				"Remove" {
+				'Remove' {
 					Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.RemoveAccessRule($Rule)
 					Break
 				}
-				"RemoveSpecific" {
+				'RemoveSpecific' {
 					Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.RemoveAccessRuleSpecific($Rule)
 					Break
 				}
-				"RemoveAll" {
+				'RemoveAll' {
 					Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
 					$Acl.RemoveAccessRuleAll($Rule)
 					Break
@@ -11984,7 +11984,7 @@ Function Set-ItemPermission {
 			}
 		}
 		# Use the prepared ACL
-		$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction Stop
+		$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
 	}
 	
 	End {
