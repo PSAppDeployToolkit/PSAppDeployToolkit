@@ -12125,7 +12125,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 			}
 
 			## Read the MSI and get the installation details
-			Res$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
+			[Hashtable]$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
 			If ($defaultMstFile) { $GetDefaultMsiTablePropertySplat.Add('TransformPath', $defaultMstFile) }
 			[PSObject]$defaultMsiPropertyList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[String]$appVendor = $defaultMsiPropertyList.Manufacturer
