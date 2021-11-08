@@ -579,44 +579,47 @@ If (Test-Path -LiteralPath 'variable:deferDays') { Remove-Variable -Name 'deferD
 }
 ## Variables: Resolve Parameters. For use in a pipeline
 [ScriptBlock]$ResolveParameters = {
-	# We have to save current pipeline object $_ because switch has its own $_
-	$item = $_
-	Switch ($item.Value.GetType().Name) {
+	Param (
+		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+		[ValidateNotNullOrEmpty()]$Parameter
+	)
+
+	Switch ($Parameter.Value.GetType().Name) {
 		'SwitchParameter' {
-			"-$($item.Key):`$$($item.Value.tostring().toLower())"
+			"-$($Parameter.Key):`$$($Parameter.Value.ToString().ToLower())"
 		}
 		'Boolean' {
-			"-$($item.Key):`$$($item.Value.tostring().toLower())"
+			"-$($Parameter.Key):`$$($Parameter.Value.ToString().ToLower())"
 		}
 		'Int16' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'Int32' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'Int64' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'UInt16' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'UInt32' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'UInt64' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'Single' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'Double' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		'Decimal' {
-			"-$($item.Key):$($item.Value)"
+			"-$($Parameter.Key):$($Parameter.Value)"
 		}
 		default {
-			"-$($item.Key):`'$($item.Value)`'"
+			"-$($Parameter.Key):`'$($Parameter.Value)`'"
 		}
 	}
 }
@@ -1663,8 +1666,10 @@ Function Show-InstallationPrompt {
 			# Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
 			$installPromptParameters.Remove('NoWait')
 			# Format the parameters as a string
-			[String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			[String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+
+
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 			Return
 		}
 
@@ -1953,7 +1958,7 @@ Function Show-InstallationPrompt {
 			Close-InstallationProgress
 		}
 
-		[String]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+		[String]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
 		Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
 		
@@ -3719,7 +3724,7 @@ Function Remove-Folder {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 	Process {
-			If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction SilentlyContinue) {
+			If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'SilentlyContinue') {
 				Try {
 					If ($DisableRecursion) {
 						Write-Log -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
@@ -3732,7 +3737,7 @@ Function Remove-Folder {
 								If (Test-Path -LiteralPath $item.FullName -PathType Container) {
 									# Item is a folder. Check if its empty
 									# Get list of child items in the folder
-									[Array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction SilentlyContinue -ErrorVariable '+ErrorRemoveFolder'
+									[Array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
 									If ($ItemChildItems.Count -eq 0) {
 										# The folder is empty, delete it
 										Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
@@ -5124,7 +5129,7 @@ Function New-Shortcut {
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
-				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
 				# Get full path
 				[String]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
@@ -5159,7 +5164,7 @@ Function New-Shortcut {
 				Throw
 			}
 
-			If (Test-Path -Path $FullPath -PathType Leaf) {
+			If (Test-Path -Path $FullPath -PathType 'Leaf') {
 				Write-Log -Message "The shortcut [$FullPath] already exists. Deleting the file..." -Source ${CmdletName}
 				Remove-File -Path $FullPath
 			}
@@ -5259,12 +5264,12 @@ Function Set-Shortcut {
 .LINK
 	http://psappdeploytoolkit.com
 #>
-	[CmdletBinding(DefaultParameterSetName="Default")]
+	[CmdletBinding(DefaultParameterSetName='Default')]
 	Param (
-		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName="Default")]
+		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName='Default')]
 		[ValidateNotNullorEmpty()]
 		[String]$Path,
-		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName="Pipeline")]
+		[Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, ParameterSetName='Pipeline')]
 		[ValidateNotNullorEmpty()]
 		[Hashtable]$PathHash,
 		[Parameter(Mandatory=$false)]
@@ -5307,11 +5312,11 @@ Function Set-Shortcut {
 	}
 	Process {
 		Try {
-			If ($PsCmdlet.ParameterSetName -eq "Pipeline") {
+			If ($PsCmdlet.ParameterSetName -eq 'Pipeline') {
 				$Path = $PathHash.Path
 			}
 
-			If (-not (Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction 'Stop')) {
+			If (-not (Test-Path -LiteralPath $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
 				Write-Log -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
 				If (-not $ContinueOnError) {
 					Throw
@@ -5327,7 +5332,7 @@ Function Set-Shortcut {
 				Return
 			}
 			# Make sure Net framework current dir is synced with powershell cwd
-			[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+			[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
 			Write-Log -Message "Changing shortcut [$Path]." -Source ${CmdletName}
 			If ($extension -eq '.url') {
 				[String[]]$URLFile = [IO.File]::ReadAllLines($Path)
@@ -5468,7 +5473,7 @@ Function Get-Shortcut {
 			}
 			Try {
 				# Make sure Net framework current dir is synced with powershell cwd
-				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+				[IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
 				# Get full path
 				[String]$FullPath = [IO.Path]::GetFullPath($Path)
 			}
@@ -7767,7 +7772,7 @@ Function Show-InstallationRestartPrompt {
 		If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
 				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'&{ Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
+				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -7795,9 +7800,9 @@ Function Show-InstallationRestartPrompt {
 			$installRestartPromptParameters.Remove("NoSilentRestart")
 			$installRestartPromptParameters.Remove("SilentCountdownSeconds")
 			## Prepare a list of parameters of this function as a string
-			[String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' '
+			[String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
 			## Start another powershell instance silently with function parameters from this function
-			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+			Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
 			Return
 		}
 
@@ -8199,7 +8204,7 @@ $script:notifyIcon.Dispose() }
 
 			## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
 			Try {
-				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command &{$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+				Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
 			}
 			Catch { }
 		}
@@ -10886,7 +10891,7 @@ Function Set-ActiveSetup {
 				}
 				'.ps1' {
 					[String]$CUStubExePath = "$PSHOME\powershell.exe"
-					[String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"&{& `\`"$StubExePath`\`"}`""
+					[String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
 					[String]$StubPath = "$CUStubExePath $CUArguments"
 				}
 			}
@@ -12252,11 +12257,11 @@ If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -P
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) { [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
+If ($deployAppScriptParameters) { [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' ' }
 #  Save main script parameters hashtable for async execution of the toolkit
 [Hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
-If ($appDeployMainScriptParameters) { [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
-If ($appDeployExtScriptParameters) { [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object $ResolveParameters) -join ' ' }
+If ($appDeployMainScriptParameters) { [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' ' }
+If ($appDeployExtScriptParameters) { [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' ' }
 
 ## Check the XML config file version
 If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
