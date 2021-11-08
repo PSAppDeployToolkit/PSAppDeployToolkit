@@ -21,11 +21,6 @@
   - IsInstalled property is no longer added to the HKCU registry entry
   - DisableActiveSetup now also disables ExecuteForCurrentUser
   - Extended function help text
-- Reworked Resolve-Error because it was not showing complete error information in some cases (e.g. Set-ActiveSetup)
-  - The Property parameter has been removed
-  - The function now displays the name of the property as well as its content, even when the property is empty
-  - The function now displays more properties
-  - Each property is separated by an empty line
 - Changed Execute-Process so it no longer displays the entire error information in the error popup window
   - It will only show a short description just like other functions and the details will be available in the log
 - Fixed a couple of log message typos across the toolkit
@@ -43,6 +38,19 @@
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
+- Updated entire toolkit to align with toolkit styling and formatting standards
+- Updated Execute-MSP functions to utilize toolkit MSI database helper functions
+- Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
+- Updated Copy-File function to remove unnecessary variable assignment to $null
+- Updated command to remove BlockAppExecution Schedule Task XML file in Unblock-AppExecution function so that it is more robust
+- Modified how $IconIndex variable is being checked for $null condition in function New-Shortcut
+- Release $fso ComObject in Show-InstallationWelcome after use
+- Updated Set-PinnedApplication to use "OrdinalIgnoreCase" instead of "CurrentCultureIgnoreCase" to ignore case of pin action on Windows 10
+- Set the ErrorAction of the "Unregister-Event'" command in the Finally block of the Execute-Process function to "SilentlyContinue"
+- Reverted some changes in "Show-InstallationWelcome" and "Show-WelcomePrompt" to maintain compatibility with PowerShell 2.0
+- Reverted changes that removed "Select-Object -ExpandProperty" calls to maintain compatibility with PowerShell 2.0
+- Reverted unnecessary conversions of Where-Object pipeline pattern to less readable ForEach-Object pattern. Where-Object pattern is not more performant than ForEach-Object (ForEach or For however would be, but the micro-optimization is unnecessary for our usecase).
+- Reverted Resolve-Error function code to that from v3.8.3 to undo all changes
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
