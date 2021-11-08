@@ -1748,7 +1748,7 @@ Function Show-InstallationPrompt {
 		$pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
 		$pictureBanner.ImageLocation = $appDeployLogoBanner
 		$pictureBanner.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
-        $pictureBanner.MinimumSize = $DefaultControlSize
+		$pictureBanner.MinimumSize = $DefaultControlSize
 		$pictureBanner.SizeMode = 'CenterImage'
 		$pictureBanner.Margin = $paddingNone
 		$pictureBanner.TabStop = $false
@@ -1765,7 +1765,7 @@ Function Show-InstallationPrompt {
 			$pictureIcon.SizeMode = "CenterImage"
 			$pictureIcon.TabStop = $false
 			$pictureIcon.Anchor = 'None'
-            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
+			$pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
 		}
 
 		## Label Text
@@ -1821,7 +1821,7 @@ Function Show-InstallationPrompt {
 		$buttonMiddle.Margin = $paddingNone
 		$buttonMiddle.Padding = $paddingNone
 		$buttonMiddle.UseVisualStyleBackColor = $true
-        $buttonMiddle.Location = "160,4"
+		$buttonMiddle.Location = "160,4"
 		$buttonMiddle.add_Click($buttonMiddle_OnClick)
 
 		## Button Right
@@ -1874,7 +1874,7 @@ Function Show-InstallationPrompt {
 		## Make sure label text is positioned correctly
 		If ($Icon -ne 'None') {
 			$labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 10, 0)
-            $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
+			$pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 			$labelText.Location =  New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
 		}
 		Else {
@@ -1907,7 +1907,7 @@ Function Show-InstallationPrompt {
 
 		## Form Installation Prompt
 		$formInstallationPrompt.MinimumSize = $DefaultControlSize
-        $formInstallationPrompt.Size = $DefaultControlSize
+		$formInstallationPrompt.Size = $DefaultControlSize
 		$formInstallationPrompt.Padding = $paddingNone
 		$formInstallationPrompt.Margin = $paddingNone
 		$formInstallationPrompt.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -2871,7 +2871,7 @@ Function Remove-MSIApplications {
 			('Is64BitApplication', $true, 'Exact'),
 			('DisplayName', 'Java 8 Update 45', 'Exact'),
 			('DisplayName', 'Java 8 Update 4*', 'WildCard'),
-            ('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
+			('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
 			('DisplayName', 'Java 8 Update', 'Contains')
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
@@ -4387,7 +4387,7 @@ Function Set-RegistryKey {
 .EXAMPLE
 	Set-RegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
 .EXAMPLE
-    Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
+	Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -4516,7 +4516,7 @@ Function Remove-RegistryKey {
 .EXAMPLE
 	Remove-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
 .EXAMPLE
-    Remove-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
+	Remove-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 .NOTES
 .LINK
 	http://psappdeploytoolkit.com
@@ -7770,13 +7770,13 @@ Function Show-InstallationRestartPrompt {
 	Process {
 		## If in non-interactive mode
 		If ($deployModeSilent) {
-            If ($NoSilentRestart -eq $false) {
+			If ($NoSilentRestart -eq $false) {
 				Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
 				Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `'& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`'" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'   
-            }
-            Else {
-                Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
-            }
+			}
+			Else {
+				Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
+			}
 			Return
 		}
 		## Get the parameters passed to the function for invoking the function asynchronously
@@ -11830,17 +11830,17 @@ Function Get-PendingReboot {
 
 #region Function Set-ItemPermission
 Function Set-ItemPermission {
-    <#
-    .SYNOPSIS
-        Allow you to easily change permissions on files or folders
-    .PARAMETER Path
-        Path to the folder or file you want to modify (ex: C:\Temp)
-    .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
-    .PARAMETER Permission
+	<#
+	.SYNOPSIS
+		Allow you to easily change permissions on files or folders
+	.PARAMETER Path
+		Path to the folder or file you want to modify (ex: C:\Temp)
+	.PARAMETER User
+		One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
+	.PARAMETER Permission
 		Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
 		Permission DeleteSubdirectoriesAndFiles does not apply to files.
-    .PARAMETER PermissionType
+	.PARAMETER PermissionType
 		Sets Access Control Type of the permissions. Allowed options: Allow, Deny   Default: Allow
 	.PARAMETER Inheritance
 		Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
@@ -11854,57 +11854,57 @@ Function Set-ItemPermission {
 		Default: Add
 	.PARAMETER EnableInheritance
 		Enables inheritance on the files/folders. 
-    .EXAMPLE
-        Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
-        PS C:\>Set-ItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
-    .EXAMPLE
-        Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
-        PS C:\>Set-ItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
-    .EXAMPLE
-        Will remove all permissions to 'John' on 'C:\Temp\Private'
-        PS C:\>Set-ItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
-    .NOTES
+	.EXAMPLE
+		Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
+		PS C:\>Set-ItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+	.EXAMPLE
+		Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
+		PS C:\>Set-ItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
+	.EXAMPLE
+		Will remove all permissions to 'John' on 'C:\Temp\Private'
+		PS C:\>Set-ItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
+	.NOTES
 		Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission
 	.LINK
 		http://psappdeploytoolkit.com
-    #>
+	#>
 
-    [CmdletBinding()]
-    Param (
+	[CmdletBinding()]
+	Param (
 		[Parameter( Mandatory=$true, Position=0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)',ParameterSetName='DisableInheritance' )]
 		[Parameter( Mandatory=$true, Position=0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)',ParameterSetName='EnableInheritance' )]
 		[ValidateNotNullOrEmpty()]
-        [Alias('File', 'Folder')]
-        [String]$Path,
+		[Alias('File', 'Folder')]
+		[String]$Path,
 
 		[Parameter( Mandatory=$true, Position=1, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName='DisableInheritance')]
-        [Alias('Username', 'Users', 'SID', 'Usernames')]
-        [String[]]$User,
+		[Alias('Username', 'Users', 'SID', 'Usernames')]
+		[String[]]$User,
 
-        [Parameter( Mandatory=$true, Position=2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName='DisableInheritance')]
-        [Alias('Acl', 'Grant', 'Permissions', 'Deny')]
-        [ValidateSet('AppendData', 'ChangePermissions', 'CreateDirectories', 'CreateFiles', 'Delete', `
-                     'DeleteSubdirectoriesAndFiles', 'ExecuteFile', 'FullControl', 'ListDirectory', 'Modify',`
-                     'Read', 'ReadAndExecute', 'ReadAttributes', 'ReadData', 'ReadExtendedAttributes', 'ReadPermissions',`
-                     'Synchronize', 'TakeOwnership', 'Traverse', 'Write', 'WriteAttributes', 'WriteData', 'WriteExtendedAttributes', 'None')]
-        [String[]]$Permission,
+		[Parameter( Mandatory=$true, Position=2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName='DisableInheritance')]
+		[Alias('Acl', 'Grant', 'Permissions', 'Deny')]
+		[ValidateSet('AppendData', 'ChangePermissions', 'CreateDirectories', 'CreateFiles', 'Delete', `
+					 'DeleteSubdirectoriesAndFiles', 'ExecuteFile', 'FullControl', 'ListDirectory', 'Modify',`
+					 'Read', 'ReadAndExecute', 'ReadAttributes', 'ReadData', 'ReadExtendedAttributes', 'ReadPermissions',`
+					 'Synchronize', 'TakeOwnership', 'Traverse', 'Write', 'WriteAttributes', 'WriteData', 'WriteExtendedAttributes', 'None')]
+		[String[]]$Permission,
 
-        [Parameter( Mandatory=$false, Position=3, HelpMessage = 'Whether you want to set Allow or Deny permissions', ParameterSetName='DisableInheritance')]
+		[Parameter( Mandatory=$false, Position=3, HelpMessage = 'Whether you want to set Allow or Deny permissions', ParameterSetName='DisableInheritance')]
 		[Alias('AccessControlType')]
-        [ValidateSet('Allow', 'Deny')]
+		[ValidateSet('Allow', 'Deny')]
 		[String]$PermissionType = 'Allow',
 
 		[Parameter( Mandatory=$false, Position=4, HelpMessage = 'Sets how permissions are inherited', ParameterSetName='DisableInheritance')]
 		[ValidateSet('ContainerInherit', 'None', 'ObjectInherit')]
 		[String[]]$Inheritance = 'None',
 
-        [Parameter( Mandatory=$false, Position=5, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName='DisableInheritance')]		
-        [ValidateSet('None', 'InheritOnly', 'NoPropagateInherit')]
+		[Parameter( Mandatory=$false, Position=5, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName='DisableInheritance')]		
+		[ValidateSet('None', 'InheritOnly', 'NoPropagateInherit')]
 		[String]$Propagation = 'None',
 
 		[Parameter( Mandatory=$false, Position=6, HelpMessage = 'Specifies which method will be used to add/remove/replace permissions.', ParameterSetName='DisableInheritance')]
 		[ValidateSet('Add', 'Set', 'Reset', 'Remove', 'RemoveSpecific', 'RemoveAll')]
-        [Alias('ApplyMethod', 'ApplicationMethod')]
+		[Alias('ApplyMethod', 'ApplicationMethod')]
 		[String]$Method = 'Add',
 
 		[Parameter( Mandatory=$true, Position=1, HelpMessage = 'Enables inheritance, which removes explicit permissions.', ParameterSetName='EnableInheritance')]
@@ -11917,17 +11917,17 @@ Function Set-ItemPermission {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 	}
 
-    Process {
-        # Test elevated perms
-        If (-not $IsAdmin){
-            Write-Log -Message "Unable to use the function [Set-ItemPermission] without elevated permissions." -Source ${CmdletName}
-            Throw "Unable to use the function [Set-ItemPermission] without elevated permissions."
+	Process {
+		# Test elevated perms
+		If (-not $IsAdmin){
+			Write-Log -Message "Unable to use the function [Set-ItemPermission] without elevated permissions." -Source ${CmdletName}
+			Throw "Unable to use the function [Set-ItemPermission] without elevated permissions."
 		}
 
 		# Check path existence
 		If (-not (Test-Path -Path $Path -ErrorAction 'Stop')) {
-            Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
-            Throw "Specified path does not exist [$Path]."
+			Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
+			Throw "Specified path does not exist [$Path]."
 		}
 
 		If ($EnableInheritance) {
@@ -11939,7 +11939,7 @@ Function Set-ItemPermission {
 			$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
 			Return
 		}
-        # Permissions
+		# Permissions
 		[System.Security.AccessControl.FileSystemRights]$FileSystemRights = New-Object -TypeName 'System.Security.AccessControl.FileSystemRights'
 		If ($Permission -ne 'None') {
 			ForEach ($Entry in $Permission) {
@@ -11947,16 +11947,16 @@ Function Set-ItemPermission {
 			}
 		}
 
-        # InheritanceFlags
+		# InheritanceFlags
 		$InheritanceFlag = New-Object -TypeName 'System.Security.AccessControl.InheritanceFlags'
 		ForEach ($IFlag in $Inheritance) {
 			$InheritanceFlag = $InheritanceFlag -bor [System.Security.AccessControl.InheritanceFlags]$IFlag
 		}
 
-        # PropagationFlags
+		# PropagationFlags
 		$PropagationFlag = [System.Security.AccessControl.PropagationFlags]$Propagation
 
-        # Access Control Type
+		# Access Control Type
 		$Allow = [System.Security.AccessControl.AccessControlType]$PermissionType
 		
 		# Modify variables to remove file incompatible flags if this is a file
@@ -11966,16 +11966,16 @@ Function Set-ItemPermission {
 			$PropagationFlag = [System.Security.AccessControl.PropagationFlags]::None
 		}
 
-        # Get object acls
-        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
-        # Disable inherance, Preserve inherited permissions
-        $Acl.SetAccessRuleProtection($true, $true)
+		# Get object acls
+		$Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+		# Disable inherance, Preserve inherited permissions
+		$Acl.SetAccessRuleProtection($true, $true)
 		$null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
 		# Get updated acls - without inheritance
 		$Acl = $null
 		$Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
-        # Apply permissions on Users
-        ForEach ($U in $User) {
+		# Apply permissions on Users
+		ForEach ($U in $User) {
 			# Trim whitespace and skip if empty
 			$U = $U.Trim()
 			If ($U.Length -eq 0) {
@@ -12096,9 +12096,9 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 If ((-not $appName) -and (-not $ReferredInstallName)){
 	# Build properly formatted Architecture String
 	Switch ($Is64Bit) {
-       	$false { $formattedOSArch = 'x86' }
-       	$true { $formattedOSArch = 'x64' }
-    }
+		$false { $formattedOSArch = 'x86' }
+		$true { $formattedOSArch = 'x64' }
+	}
 	#  Find the first MSI file in the Files folder and use that as our install
 	If ([String]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
 		Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
@@ -12125,7 +12125,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)){
 			}
 
 			## Read the MSI and get the installation details
-			[Hashtable]$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
+			Res$GetDefaultMsiTablePropertySplat = @{ Path = $defaultMsiFile; Table = 'Property'; ContinueOnError = $false; ErrorAction = 'Stop' }
 			If ($defaultMstFile) { $GetDefaultMsiTablePropertySplat.Add('TransformPath', $defaultMstFile) }
 			[PSObject]$defaultMsiPropertyList = Get-MsiTableProperty @GetDefaultMsiTablePropertySplat
 			[String]$appVendor = $defaultMsiPropertyList.Manufacturer
