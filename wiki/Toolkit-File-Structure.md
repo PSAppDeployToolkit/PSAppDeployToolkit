@@ -1,6 +1,6 @@
 ### Files
 
-The toolkit is comprised of the following files:
+The toolkit comprises the following files:
 
 **Deploy-Application.ps1**
 
