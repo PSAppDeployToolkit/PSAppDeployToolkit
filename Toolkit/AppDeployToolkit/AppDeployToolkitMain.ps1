@@ -190,6 +190,7 @@ If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()
 [boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
 [boolean]$IsDomainControllerOS = [boolean]($envOSProductType -eq 2)
 [boolean]$IsWorkStationOS = [boolean]($envOSProductType -eq 1)
+[boolean]$IsMultiSessionOS = [boolean]($envOSName -match '^Microsoft Windows \d+ Enterprise for Virtual Desktops$')
 Switch ($envOSProductType) {
 	3 { [string]$envOSProductTypeName = 'Server' }
 	2 { [string]$envOSProductTypeName = 'Domain Controller' }
