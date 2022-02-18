@@ -8160,7 +8160,7 @@ Function Show-InstallationProgress {
 		[ValidateNotNullorEmpty()]
 		[string]$StatusMessage = $configProgressMessageInstall,
 		[Parameter(Mandatory=$false)]
-		[ValidateSet('Default','BottomRight','TopCenter')]
+		[ValidateSet('Default', 'BottomRight', 'TopCenter', 'BottomLeft', 'Bottom', 'Top', 'TopLeft', 'TopRight')]
 		[string]$WindowLocation = 'Default',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
@@ -8289,20 +8289,48 @@ Function Show-InstallationProgress {
 					[int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
 					[int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
 					#  Set the start position of the Window based on the screen size
-					If ($windowLocation -eq 'BottomRight') {
-						#  Put the window in the corner
-						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
-						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
-					}
-					ElseIf($windowLocation -eq 'TopCenter'){
-						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
-					}
-					Else {
-						#  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
-					}
+					If ($windowLocation -eq 'BottomRight')
+                    {
+                        #  Put the window in the corner
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                        $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                    }
+                    ElseIf ($windowLocation -eq 'TopLeft')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double](0)
+                        $script:ProgressSyncHash.Window.Top = [Double](0)
+                    }
+                    ElseIf ($windowLocation -eq 'Top')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                        $script:ProgressSyncHash.Window.Top = [Double](0)
+                    }
+                    ElseIf ($windowLocation -eq 'TopRight')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                        $script:ProgressSyncHash.Window.Top = [Double](0)
+                    }
+                    ElseIf ($windowLocation -eq 'TopCenter')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                        $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
+                    }
+                    ElseIf ($windowLocation -eq 'BottomLeft')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double](0)
+                        $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                    }
+                    ElseIf ($windowLocation -eq 'Bottom')
+                    {
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                        $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                    }
+                    Else
+                    {
+                        #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+                        $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                        $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
+                    }
 					#  Disable the X button
 					try {
 						$windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList $this).Handle
