@@ -1890,6 +1890,22 @@ Function Show-InstallationPrompt {
 		While ($showDialog) {
 			# Minimize all other windows
 			If ($minimizeWindows) { $null = $shellApp.MinimizeAll() }
+            
+            #Inelegant fix for Issue #696
+            #If Timer is NOT Enabled OR Timer is Equal to $null
+			if((-not $Timer.Enabled) -or ($Timer -eq $null)){
+				## Timer
+				$timer = New-Object -TypeName 'System.Windows.Forms.Timer'
+				$timer.Interval = ($timeout * 1000)
+				$timer.Add_Tick({
+					Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
+					$buttonAbort.PerformClick()
+				})
+				
+				## Start the timer
+				$timer.Start()
+			}
+            
 			# Show the Form
 			$result = $formInstallationPrompt.ShowDialog()
 			If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
