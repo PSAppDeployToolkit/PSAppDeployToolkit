@@ -1,4 +1,4 @@
-﻿**Version 3.8.5 [??/03/2021]**
+﻿**Version 3.8.5 [??/03/2022]**
 - Changed Show-InstallationRestartPrompt:
   - Fixed a bug in the function, that caused incorrect handling of parameters when running the function asynchronously
   - Changed the function so it doesn't prepare the window when running asynchronously. This also fixes a bug where the timers kept running in the background and were never stopped when running asynchronously.
@@ -41,6 +41,7 @@
 - Updated entire toolkit to align with toolkit styling and formatting standards
 - Updated Execute-MSP functions to utilize toolkit MSI database helper functions
 - Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
+- Added Greek translations
 - Updated Copy-File function to remove unnecessary variable assignment to $null
 - Updated command to remove BlockAppExecution Schedule Task XML file in Unblock-AppExecution function so that it is more robust
 - Modified how $IconIndex variable is being checked for $null condition in function New-Shortcut
