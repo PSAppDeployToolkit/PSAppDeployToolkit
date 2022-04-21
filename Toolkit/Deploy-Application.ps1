@@ -22,13 +22,13 @@
 .PARAMETER DisableLogging
 	Disables logging to file for the script. Default is: $false.
 .EXAMPLE
-    powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeployMode 'Silent'; Exit $LastExitCode }"
+	powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeployMode 'Silent'; Exit $LastExitCode }"
 .EXAMPLE
-    powershell.exe -Command "& { & '.\Deploy-Application.ps1' -AllowRebootPassThru; Exit $LastExitCode }"
+	powershell.exe -Command "& { & '.\Deploy-Application.ps1' -AllowRebootPassThru; Exit $LastExitCode }"
 .EXAMPLE
-    powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeploymentType 'Uninstall'; Exit $LastExitCode }"
+	powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeploymentType 'Uninstall'; Exit $LastExitCode }"
 .EXAMPLE
-    Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
+	Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
 .NOTES
 	Toolkit Exit Code Ranges:
 	60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
@@ -41,10 +41,10 @@
 Param (
 	[Parameter(Mandatory=$false)]
 	[ValidateSet('Install','Uninstall','Repair')]
-	[string]$DeploymentType = 'Install',
+	[String]$DeploymentType = 'Install',
 	[Parameter(Mandatory=$false)]
 	[ValidateSet('Interactive','Silent','NonInteractive')]
-	[string]$DeployMode = 'Interactive',
+	[String]$DeployMode = 'Interactive',
 	[Parameter(Mandatory=$false)]
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
@@ -61,44 +61,44 @@ Try {
 	##* VARIABLE DECLARATION
 	##*===============================================
 	## Variables: Application
-	[string]$appVendor = ''
-	[string]$appName = ''
-	[string]$appVersion = ''
-	[string]$appArch = ''
-	[string]$appLang = 'EN'
-	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = 'XX/XX/20XX'
-	[string]$appScriptAuthor = '<author name>'
+	[String]$appVendor = ''
+	[String]$appName = ''
+	[String]$appVersion = ''
+	[String]$appArch = ''
+	[String]$appLang = 'EN'
+	[String]$appRevision = '01'
+	[String]$appScriptVersion = '1.0.0'
+	[String]$appScriptDate = 'XX/XX/20XX'
+	[String]$appScriptAuthor = '<author name>'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
-	[string]$installName = ''
-	[string]$installTitle = ''
+	[String]$installName = ''
+	[String]$installTitle = ''
 
 	##* Do not modify section below
 	#region DoNotModify
 
 	## Variables: Exit Code
-	[int32]$mainExitCode = 0
+	[Int32]$mainExitCode = 0
 
 	## Variables: Script
-	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.8.4'
-	[string]$deployAppScriptDate = '26/01/2021'
-	[hashtable]$deployAppScriptParameters = $psBoundParameters
+	[String]$deployAppScriptFriendlyName = 'Deploy Application'
+	[Version]$deployAppScriptVersion = [Version]'3.8.5'
+	[String]$deployAppScriptDate = '11/08/2021'
+	[Hashtable]$deployAppScriptParameters = $PsBoundParameters
 
 	## Variables: Environment
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
-	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
+	[String]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
 
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
-		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
+		[String]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 		If (-not (Test-Path -LiteralPath $moduleAppDeployToolkitMain -PathType 'Leaf')) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
 		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
-		If ($mainExitCode -eq 0){ [int32]$mainExitCode = 60008 }
+		If ($mainExitCode -eq 0){ [Int32]$mainExitCode = 60008 }
 		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		## Exit the script, returning the exit code to SCCM
 		If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $mainExitCode; Exit } Else { Exit $mainExitCode }
@@ -114,7 +114,7 @@ Try {
 		##*===============================================
 		##* PRE-INSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Pre-Installation'
+		[String]$installPhase = 'Pre-Installation'
 
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
 		Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
@@ -128,11 +128,11 @@ Try {
 		##*===============================================
 		##* INSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Installation'
+		[String]$installPhase = 'Installation'
 
 		## Handle Zero-Config MSI Installations
 		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			[Hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
 			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
 		}
 
@@ -142,19 +142,18 @@ Try {
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Post-Installation'
+		[String]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
 
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
-	ElseIf ($deploymentType -ieq 'Uninstall')
-	{
+	ElseIf ($deploymentType -ieq 'Uninstall') {
 		##*===============================================
 		##* PRE-UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Pre-Uninstallation'
+		[String]$installPhase = 'Pre-Uninstallation'
 
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
 		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
@@ -168,11 +167,11 @@ Try {
 		##*===============================================
 		##* UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Uninstallation'
+		[String]$installPhase = 'Uninstallation'
 
 		## Handle Zero-Config MSI Uninstallations
 		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Uninstall'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			[Hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Uninstall'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
 			Execute-MSI @ExecuteDefaultMSISplat
 		}
 
@@ -182,18 +181,17 @@ Try {
 		##*===============================================
 		##* POST-UNINSTALLATION
 		##*===============================================
-		[string]$installPhase = 'Post-Uninstallation'
+		[String]$installPhase = 'Post-Uninstallation'
 
 		## <Perform Post-Uninstallation tasks here>
 
 
 	}
-	ElseIf ($deploymentType -ieq 'Repair')
-	{
+	ElseIf ($deploymentType -ieq 'Repair') {
 		##*===============================================
 		##* PRE-REPAIR
 		##*===============================================
-		[string]$installPhase = 'Pre-Repair'
+		[String]$installPhase = 'Pre-Repair'
 
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
 		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
@@ -206,11 +204,11 @@ Try {
 		##*===============================================
 		##* REPAIR
 		##*===============================================
-		[string]$installPhase = 'Repair'
+		[String]$installPhase = 'Repair'
 
 		## Handle Zero-Config MSI Repairs
 		If ($useDefaultMsi) {
-			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile; }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
+			[Hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Repair'; Path = $defaultMsiFile; }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
 			Execute-MSI @ExecuteDefaultMSISplat
 		}
 		## <Perform Repair tasks here>
@@ -218,12 +216,12 @@ Try {
 		##*===============================================
 		##* POST-REPAIR
 		##*===============================================
-		[string]$installPhase = 'Post-Repair'
+		[String]$installPhase = 'Post-Repair'
 
 		## <Perform Post-Repair tasks here>
 
 
-    }
+	}
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================
@@ -232,8 +230,8 @@ Try {
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {
-	[int32]$mainExitCode = 60001
-	[string]$mainErrorMessage = "$(Resolve-Error)"
+	[Int32]$mainExitCode = 60001
+	[String]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
 	Exit-Script -ExitCode $mainExitCode

@@ -2,14 +2,14 @@
 <AppDeployToolkit_Config>
 <!--# LICENSE #
     PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
-    Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
+    Copyright (C) 2022 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 	<!--Configuration File Details-->
 	<Config_File>
-		<Config_Version>3.8.4</Config_Version>
-		<Config_Date>26/01/2021</Config_Date>
+		<Config_Version>3.8.5</Config_Version>
+		<Config_Date>27/03/2022</Config_Date>
 	</Config_File>
 
 	<!--Toolkit Options-->
@@ -70,6 +70,25 @@
 		<!-- The length of time in seconds to wait for the MSI installer service to become available. Default is 600 seconds (10 minutes) -->
 	</MSI_Options>
 	<!--MSI Options-->
+
+	<!--Winget Options-->
+	<Winget_Options>
+		<Winget_LoggingOptions>--log</Winget_LoggingOptions>
+		<!-- Logging level used for Winget logging. -->
+		<Winget_LogPath>$envWinDir\Logs\Software</Winget_LogPath>
+		<!-- Log path used for Winget logging. -->
+		<Winget_LogPathNoAdminRights>$envProgramData\Logs\Software</Winget_LogPathNoAdminRights>
+		<!-- Log path used for Winget logging when RequireAdmin is False. -->
+		<Winget_InstallParams>--interactive --exact --accept-source-agreements --accept-package-agreements</Winget_InstallParams>
+		<!-- Installation parameters used for non-silent Winget actions. -->
+		<Winget_SilentParams>--silent --exact --accept-source-agreements --accept-package-agreements</Winget_SilentParams>
+		<!-- Installation parameters used for silent Winget actions. -->
+		<Winget_UninstallParams>--exact</Winget_UninstallParams>
+		<!-- Installation parameters used for Winget uninstall actions. -->
+		<Winget_SilentUninstallParams>--silent --exact</Winget_SilentUninstallParams>
+		<!-- Installation parameters used for Winget silent uninstall actions. -->
+	</Winget_Options>
+	<!--Winget Options-->
 
 	<!--UI Options-->
 	<UI_Options>
@@ -1199,5 +1218,81 @@
 		<RestartPrompt_ButtonRestartLater>Minimalizál</RestartPrompt_ButtonRestartLater>
 		<RestartPrompt_ButtonRestartNow>Újraindítás most</RestartPrompt_ButtonRestartNow>
 	</UI_Messages_HU>
+	<UI_Messages_EL>
+		<!-- Close Program Prompt Text -->
+		<DiskSpace_Message>Δεν υπάρχει αρκετός αποθηκευτικός χώρος για να ολοκληρώσετε την εγκατάσταση του:
+		{0}
 
+		Απαιτούμενος χώρος: {1}MB
+		Διαθέσιμος χώρος: {2}MB
+
+		Παρακαλούμε απελευθερώστε αρκετό χώρο για να προχωρήσει η εγκατάσταση.</DiskSpace_Message>
+		<ClosePrompt_ButtonContinue>Συνέχεια</ClosePrompt_ButtonContinue>
+		<!-- Text displayed on the continue button when prompting to close running programs. -->
+		<ClosePrompt_ButtonContinueTooltip>Πατήστε "Συνέχεια" μόνο αφού κλείσετε τις παρακάτω εφαρμογές.</ClosePrompt_ButtonContinueTooltip>
+		<!-- Tooltip text displayed on the continue button when prompting to close running programs. -->
+		<ClosePrompt_ButtonClose>Κλείσιμο</ClosePrompt_ButtonClose>
+		<!-- Text displayed on the close button when prompting to close running programs. -->
+		<ClosePrompt_ButtonDefer>Αναβολή</ClosePrompt_ButtonDefer>
+		<!-- Text displayed on the defer button when prompting to close running programs. -->
+		<ClosePrompt_Message>Τα παρακάτω προγράμματα πρέπει να κλείσουν για να προχωρήσει η εγκατάσταση.
+
+		Παρακαλούμε αποθηκεύστε την εργασία σας και, στη συνέχεια, κλείστε τα προγράμματα.
+		Εναλλακτικά, αποθηκεύστε την εργασία σας και επιλέξτε "Κλείσιμο", για να κλείσουμε εμείς τα προγράμματα για εσάς.</ClosePrompt_Message>
+		<!-- Text displayed when prompting to close running programs. -->
+		<ClosePrompt_CountdownMessage>ΕΙΔΟΠΟΙΗΣΗ: Τα προγράμματα θα κλείσουν αυτόματα σε:</ClosePrompt_CountdownMessage>
+		<!-- Text displayed when counting down to automatically closing applications. -->
+		<DeferPrompt_WelcomeMessage>Πρόκειται να εγκατασταθεί η παρακάτω εφαρμογή:</DeferPrompt_WelcomeMessage>
+		<!-- Text displayed when only the deferal dialog is to be displayed and there are no applications to close. -->
+		<DeferPrompt_ExpiryMessage>Μπορείτε να επιλέξετε να αναβάλετε την εγκατάσταση μέχρι να λήξει η προθεσμία αναβολής:</DeferPrompt_ExpiryMessage>
+		<!-- Text displayed when a deferral option is available. -->
+		<DeferPrompt_WarningMessage>Μόλις παρέλθει η προθεσμία αναβολής, δεν θα έχετε δυνατότητα να αναβάλετε την εγκατάσταση.</DeferPrompt_WarningMessage>
+		<!-- Text displayed after the deferral options. -->
+		<DeferPrompt_RemainingDeferrals>Υπολειπόμενες αναβολές:</DeferPrompt_RemainingDeferrals>
+		<!-- Text displayed when there are a specific number of deferrals remaining. -->
+		<DeferPrompt_Deadline>Προθεσμία:</DeferPrompt_Deadline>
+		<!-- Text displayed when there is a specific deferral deadline. -->
+
+		<WelcomePrompt_CountdownMessage>Η {0} θα συνεχίσει αυτόματα σε:</WelcomePrompt_CountdownMessage>
+		<!-- The countdown message displayed at the Welcome Screen to indicate when the install will continue if no response from user. -->
+		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
+		<!-- This is a custom message to display at the Welcome Screen window. -->
+
+		<DeploymentType_Install>Η εγκατάσταση</DeploymentType_Install>
+		<!-- Name displayed in UI for installation deployment type. -->
+		<DeploymentType_UnInstall>Η απεγκατάσταση</DeploymentType_UnInstall>
+		<!-- Name displayed in UI for uninstallation deployment type. -->
+		<DeploymentType_Repair>Η επιδιόρθωση</DeploymentType_Repair>
+		<!-- Name displayed in UI for repair deployment type. -->
+
+		<!-- Balloon Tip Text -->
+		<BalloonText_Start>ξεκίνησε.</BalloonText_Start>
+		<!-- Text displayed in the balloon tip for the start of a deployment type. -->
+		<BalloonText_Complete>ολοκληρώθηκε.</BalloonText_Complete>
+		<!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+		<BalloonText_RestartRequired>ολοκληρώθηκε. Απαιτείται επανεκκίνηση.</BalloonText_RestartRequired>
+		<!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+		<BalloonText_Error>απέτυχε.</BalloonText_Error>
+		<!-- Text displayed in the balloon tip for a failed deployment type. -->
+		<BalloonText_FastRetry>δεν ολοκληρώθηκε.</BalloonText_FastRetry>
+		<!-- Text displayed in the balloon tip for fast retry of a deployment -->
+
+		<Progress_MessageInstall>Εγκατάσταση σε εξέλιξη. Παρακαλώ περιμένετε...</Progress_MessageInstall>
+		<!-- Default text displayed in the progress bar for installations. -->
+		<Progress_MessageUninstall>Απεγκατάσταση σε εξέλιξη. Παρακαλώ περιμένετε...</Progress_MessageUninstall>
+		<!-- Default text displayed in the progress bar for uninstallations. -->
+		<Progress_MessageRepair>Επιδιόρθωση σε εξέλιξη. Παρακαλώ περιμένετε...</Progress_MessageRepair>
+		<!-- Default text displayed in the progress bar for repairs. -->
+		<BlockExecution_Message>Η εκκίνηση της εφαρμογής δεν επιτρέπεται προσωρινά, μέχρι να ολοκληρωθεί η εγκατάσταση.</BlockExecution_Message>
+		<!-- Text displayed when prompting user that an application has been blocked. -->
+		<RestartPrompt_Title>Απαιτείται επανεκκίνηση</RestartPrompt_Title>
+		<!-- Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it. -->
+		<RestartPrompt_Message>Για να ολοκληρωθεί η εγκατάσταση, πρέπει να επανεκκινήσετε τη συσκευή σας.</RestartPrompt_Message>
+		<RestartPrompt_MessageTime>Παρακαλούμε αποθηκεύστε την εργασία σας και, επανεκκινήστε τον υπολογιστή εντός του προκαθορισμένου χρόνου.</RestartPrompt_MessageTime>
+		<RestartPrompt_MessageRestart>Η συσκευή σας θα επανεκκινηθεί στο τέλος της αντίστροφης μέτρησης.</RestartPrompt_MessageRestart>
+		<!-- Text displayed on the restart prompt. -->
+		<RestartPrompt_TimeRemaining>Χρόνος που απομένει:</RestartPrompt_TimeRemaining>
+		<RestartPrompt_ButtonRestartLater>Ελαχιστοποίηση</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartNow>Επανεκκίνηση τώρα.</RestartPrompt_ButtonRestartNow>
+	</UI_Messages_EL>
 </AppDeployToolkit_Config>
