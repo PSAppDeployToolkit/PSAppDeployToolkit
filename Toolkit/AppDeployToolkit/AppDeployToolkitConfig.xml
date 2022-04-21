@@ -71,6 +71,25 @@
 	</MSI_Options>
 	<!--MSI Options-->
 
+	<!--Winget Options-->
+	<Winget_Options>
+		<Winget_LoggingOptions>--log</Winget_LoggingOptions>
+		<!-- Logging level used for Winget logging. -->
+		<Winget_LogPath>$envWinDir\Logs\Software</Winget_LogPath>
+		<!-- Log path used for Winget logging. -->
+		<Winget_LogPathNoAdminRights>$envProgramData\Logs\Software</Winget_LogPathNoAdminRights>
+		<!-- Log path used for Winget logging when RequireAdmin is False. -->
+		<Winget_InstallParams>--interactive --exact --accept-source-agreements --accept-package-agreements</Winget_InstallParams>
+		<!-- Installation parameters used for non-silent Winget actions. -->
+		<Winget_SilentParams>--silent --exact --accept-source-agreements --accept-package-agreements</Winget_SilentParams>
+		<!-- Installation parameters used for silent Winget actions. -->
+		<Winget_UninstallParams>--exact</Winget_UninstallParams>
+		<!-- Installation parameters used for Winget uninstall actions. -->
+		<Winget_SilentUninstallParams>--silent --exact</Winget_SilentUninstallParams>
+		<!-- Installation parameters used for Winget silent uninstall actions. -->
+	</Winget_Options>
+	<!--Winget Options-->
+
 	<!--UI Options-->
 	<UI_Options>
 		<InstallationUI_LanguageOverride></InstallationUI_LanguageOverride>

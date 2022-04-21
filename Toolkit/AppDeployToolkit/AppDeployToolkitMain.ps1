@@ -349,6 +349,14 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) { Throw
 [String]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
 [String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [Int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
+#  Get Winget Options
+[Xml.XmlElement]$xmlConfigWingetOptions = $xmlConfig.Winget_Options
+[String]$configWingetLoggingOptions = $xmlConfigWingetOptions.Winget_LoggingOptions
+[String]$configWingetInstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigWingetOptions.Winget_InstallParams)
+[String]$configWingetSilentParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigWingetOptions.Winget_SilentParams)
+[String]$configWingetUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigWingetOptions.Winget_UninstallParams)
+[String]$configWingetSilentUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigWingetOptions.Winget_SilentUninstallParams)
+[String]$configWingetLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigWingetOptions.Winget_LogPath)
 #  Change paths to user accessible ones if RequireAdmin is false
 If ($configToolkitRequireAdmin -eq $false){
 	If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {
@@ -489,6 +497,27 @@ If (-not $deploymentType) { [String]$deploymentType = 'Install' }
 [String]$exeWusa = "$envWinDir\System32\wusa.exe" # Installs Standalone Windows Updates
 [String]$exeMsiexec = "$envWinDir\System32\msiexec.exe" # Installs MSI Installers
 [String]$exeSchTasks = "$envWinDir\System32\schtasks.exe" # Manages Scheduled Tasks
+[String]$exeWinget = '' # Winget Package Manager
+try {
+	# System context
+	$ResolveWingetPath = Resolve-Path "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe"
+	# Select the latest version if multiple exist
+	$WingetPath = $ResolveWingetPath[-1].Path
+	# Version < 1.17
+	if (Test-Path "$WingetPath\AppInstallerCLI.exe"){
+		[String]$exeWinget = "$WingetPath\AppInstallerCLI.exe"
+	}
+
+	if (Test-Path "$WingetPath\winget.exe"){
+		[String]$exeWinget = "$WingetPath\winget.exe"
+	}
+} catch {
+	# User context
+	$WingetCmd = Get-Command winget.exe -ErrorAction SilentlyContinue
+	if ($WingetCmd){
+		[String]$exeWinget = $WingetCmd.Source
+	}
+}
 
 ## Variables: RegEx Patterns
 [String]$MSIProductCodeRegExPattern = '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$'
@@ -12044,6 +12073,207 @@ Function Set-ItemPermission {
 	}
 }
 #endregion
+
+#region Function Execute-Winget
+Function Execute-Winget {
+	<#
+	.SYNOPSIS
+		Executes winget.exe to perform the following actions: Install, Uninstall.
+	.DESCRIPTION
+		Executes winget.exe to perform the following actions: Install, Uninstall.
+		Sets default switches to be passed to winget based on the preferences in the XML configuration file.
+		Automatically generates a log file name and creates a verbose log file for all winget operations.
+	.PARAMETER Action
+		The action to perform. Options: Install, Uninstall, Upgrade.
+	.PARAMETER Id
+		The Id of the package to action.
+	.PARAMETER Override
+		The name of the transform file(s) to be applied to the MSI. The transform file is expected to be in the same directory as the MSI file. Multiple transforms have to be separated by a semi-colon.
+	.PARAMETER Parameters
+		Overrides the default parameters specified in the XML configuration file. Install default is: "--exact --silent --accept-source-agreements --accept-package-agreements". Uninstall default is: "--exact --silent".
+	.PARAMETER SecureParameters
+		Hides all parameters passed to Winget from the toolkit Log file.
+	.PARAMETER LoggingOptions
+		Overrides the default logging options specified in the XML configuration file. Default options are: "--log".
+	.PARAMETER LogName
+		Overrides the default log file name. The default log file name is generated from the Id parameter. If LogName does not end in .log, it will be automatically appended.
+	.PARAMETER NoWait
+		Immediately continue after executing the process.
+	.PARAMETER PassThru
+		Returns ExitCode, STDOut, and STDErr output from the process.
+	.PARAMETER IgnoreExitCodes
+		List the exit codes to ignore or * to ignore all exit codes.
+	.PARAMETER ExitOnProcessFailure
+		Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
+	.PARAMETER ContinueOnError
+		Continue if an error occurred while trying to start the process. Default: $false.
+	.EXAMPLE
+		Execute-Winget -Action 'Install' -Id 'Python.Python.3'
+		Installs the latest Python 3 package
+	.EXAMPLE
+		Execute-Winget -Action 'Install' -Id 'Python.Python.3' -Override '/Q TargetDir=\""C:\Program Files\Python3\"" InstallAllUsers=1'
+		Installs Python 3, applying an override.
+	.EXAMPLE
+		Execute-Winget -Action 'Uninstall' -Id 'Python.Python.3'
+		Uninstalls a Winget package
+	.NOTES
+	.LINK
+		http://psappdeploytoolkit.com
+	#>
+		[CmdletBinding()]
+		Param (
+			[Parameter(Mandatory=$false)]
+			[ValidateSet('Install','Uninstall')]
+			[String]$Action = 'Install',
+			[Parameter(Mandatory=$true,HelpMessage='Please enter the Id')]
+			[String]$Id,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[String]$Override,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[String]$Parameters,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[String]$AddParameters,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[Switch]$SecureParameters = $false,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[String]$LoggingOptions,
+			[Parameter(Mandatory=$false)]
+			[String]$private:LogName,
+			[Parameter(Mandatory=$false)]
+			[Switch]$NoWait = $false,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[Switch]$PassThru = $false,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[String]$IgnoreExitCodes,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[Boolean]$ExitOnProcessFailure = $true,
+			[Parameter(Mandatory=$false)]
+			[ValidateNotNullorEmpty()]
+			[Boolean]$ContinueOnError = $false
+		)
+	
+		Begin {
+			## Get the name of this function and write header
+			[String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
+			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+		}
+		Process {
+	
+			# TODO: Exit if winget is not found, or maybe install it?
+			If ($exeWinget){
+				Write-Log -Message "Winget $exeWinget will be used." -Severity 2 -Source ${CmdletName}
+			} else {
+				Write-Log -Message "Failed to find Winget." -Severity 3 -Source ${CmdletName}
+				Exit $exitCode
+			}
+
+			#  Build the log file name
+			If (-not $logName) {
+				$logName = $Id
+			}
+	
+			If ($configToolkitCompressLogs) {
+				## Build the log file path
+				[String]$logPath = Join-Path -Path $logTempFolder -ChildPath $logName
+			}
+			Else {
+				## Create the Log directory if it doesn't already exist
+				If (-not (Test-Path -LiteralPath $configWingetLogDir -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+					$null = New-Item -Path $configWingetLogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+				}
+				## Build the log file path
+				[String]$logPath = Join-Path -Path $configWingetLogDir -ChildPath $logName
+			}
+	
+			## Set the installation Parameters
+			If ($deployModeSilent) {
+				$wingetInstallDefaultParams = $configWingetSilentParams
+				$wingetUninstallDefaultParams = $configWingetSilentUninstallParams
+			}
+			Else {
+				$wingetInstallDefaultParams = $configwingetInstallParams
+				$wingetUninstallDefaultParams = $configwingetUninstallParams
+			}
+	
+			## Build winget Parameters
+			Switch ($action) {
+				'Install' { $option = 'install'; [String]$wingetLogFile = "$logPath" + '_Install'; $wingetDefaultParams = $wingetInstallDefaultParams }
+				'Uninstall' { $option = 'uninstall'; [String]$wingetLogFile = "$logPath" + '_Uninstall'; $wingetDefaultParams = $wingetUninstallDefaultParams }
+			}
+	
+			## Append ".log" to the Winget logfile path and enclose in quotes
+			If ([IO.Path]::GetExtension($wingetLogFile) -ne '.log') {
+				[String]$wingetLogFile = $wingetLogFile + '.log'
+				[String]$wingetLogFile = "`"$wingetLogFile`""
+			}
+
+			# Confirm winget package exists
+			# TODO: AddParameters should maybe go here for example when using --version
+			If (Start-Process -FilePath "$exeWinget" -ArgumentList "search $Id --exact" -PassThru -NoNewWindow) {
+				Write-Log -Message "Winget id [$Id] found." -Severity 2 -Source ${CmdletName}
+			}
+			Else {
+				Write-Log -Message "Failed to find Winget id [$Id]." -Severity 3 -Source ${CmdletName}
+				# TODO: Does it make sense to allow continue here?
+				If (-not $ContinueOnError) {
+					Throw "Failed to find Winget id [$Id]."
+				}
+				Continue
+			}
+	
+			## Quotes to avoid issues with spaces
+			[String]$Id = "`"$Id`""
+	
+			## Build the Winget command line starting with the base action
+			[String]$argsWinget = "$option --id $Id"
+			#  Add Override
+			If ($Override) { $argsWinget = "$argsWinget --override=""$Override""" }
+			#  Replace default parameters if specified.
+			If ($Parameters) { $argsWinget = "$argsWinget $Parameters" } Else { $argsWinget = "$argsWinget $wingetDefaultParams" }
+			#  Append parameters to default parameters if specified.
+			If ($AddParameters) { $argsWinget = "$argsWinget $AddParameters" }
+			#  Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
+			If ($LoggingOptions) { $argsWinget = "$argsWinget $LoggingOptions $wingetLogFile" } Else { $argsWinget = "$argsWinget $configWingetLoggingOptions $wingetLogFile" }
+	
+			# TODO : Check if its installed and change Install action to Upgrade?
+			Write-Log -Message "Executing Winget action [$Action]..." -Source ${CmdletName}
+			#  Build the hashtable with the options that will be passed to Execute-Process using splatting
+			[Hashtable]$ExecuteProcessSplat =  @{
+				Path = $exeWinget
+				Parameters = $argsWinget
+				WindowStyle = 'Normal'
+				ExitOnProcessFailure = $ExitOnProcessFailure
+				ContinueOnError = $ContinueOnError
+			}
+			If ($SecureParameters) { $ExecuteProcessSplat.Add( 'SecureParameters', $SecureParameters) }
+			If ($PassThru) { $ExecuteProcessSplat.Add( 'PassThru', $PassThru) }
+			If ($IgnoreExitCodes) {  $ExecuteProcessSplat.Add( 'IgnoreExitCodes', $IgnoreExitCodes) }
+			If ($NoWait) { $ExecuteProcessSplat.Add( 'NoWait', $NoWait) }
+
+			#  Call the Execute-Process function
+			If ($PassThru) {
+				[PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
+			}
+			Else {
+				Execute-Process @ExecuteProcessSplat
+			}
+			#  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
+			Update-Desktop
+		}
+		End {
+			If ($PassThru) { Write-Output -InputObject ($ExecuteResults) }
+			Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+		}
+	}
+	#endregion
 
 #endregion
 ##*=============================================
