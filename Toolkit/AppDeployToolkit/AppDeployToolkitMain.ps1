@@ -12001,7 +12001,7 @@ Function Set-ItemPermission {
 			}
 
 			# Set/Add/Remove/Replace permissions and log the changes
-			$Rule = New-Object TypeName 'System.Security.AccessControl.FileSystemAccessRule' -ArgumentList ($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
+			$Rule = New-Object -TypeName 'System.Security.AccessControl.FileSystemAccessRule' -ArgumentList ($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
 			Switch ($Method) {
 				'Add' {
 					Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
