@@ -280,7 +280,9 @@ $GetAccountNameUsingSid = [scriptblock]{
 }	
 [string]$LocalSystemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
 [string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
-[string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
+if(-not((Get-ComputerInfo | Select -Property WindowsProductName).WindowsProductName -like "*Home*")){
+    [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
+}
 [string]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) { $SessionZero = $true } Else { $SessionZero = $false }
