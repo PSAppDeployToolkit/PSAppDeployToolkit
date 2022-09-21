@@ -280,6 +280,7 @@ $GetAccountNameUsingSid = [scriptblock]{
 }	
 [string]$LocalSystemNTAccount = & $GetAccountNameUsingSid  'LocalSystemSid'
 [string]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
+# Test if the current Windows is a Home edition
 if(-not((Get-ComputerInfo | Select -Property WindowsProductName).WindowsProductName -like "*Home*")){
     [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid  'BuiltinPowerUsersSid'
 }
