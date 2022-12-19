@@ -12,6 +12,7 @@
 - Changed Show-InstallationWelcome
   - The titlebar close button is now disabled.
   - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
+- Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup:
@@ -41,6 +42,7 @@
 - Updated entire toolkit to align with toolkit styling and formatting standards
 - Updated Execute-MSP functions to utilize toolkit MSI database helper functions
 - Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
+- Added detection of defaultuser0 OOBE or ESP process to enable silent mode
 - Added Greek translations
 - Updated Copy-File function to remove unnecessary variable assignment to $null
 - Updated command to remove BlockAppExecution Schedule Task XML file in Unblock-AppExecution function so that it is more robust

@@ -10870,29 +10870,29 @@ Function Set-ActiveSetup {
 			## Define Active Setup StubPath according to file extension of $StubExePath
 			Switch ($StubExeExt) {
 				'.exe' {
-					[String]$CUStubExePath = $StubExePath
+					[String]$CUStubExePath = "$StubExePath"
 					[String]$CUArguments = $Arguments
-					[String]$StubPath = "$CUStubExePath"
+					[String]$StubPath = "`"$CUStubExePath`""
 				}
 				'.js' {
 					[String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
 					[String]$CUArguments = "//nologo `"$StubExePath`""
-					[String]$StubPath = "$CUStubExePath $CUArguments"
+					[String]$StubPath = "`"$CUStubExePath`" $CUArguments"
 				}
 				'.vbs' {
 					[String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
 					[String]$CUArguments = "//nologo `"$StubExePath`""
-					[String]$StubPath = "$CUStubExePath $CUArguments"
+					[String]$StubPath = "`"$CUStubExePath`" $CUArguments"
 				}
 				'.cmd' {
 					[String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
 					[String]$CUArguments = "/C `"$StubExePath`""
-					[String]$StubPath = "$CUStubExePath $CUArguments"
+					[String]$StubPath = "`"$CUStubExePath`" $CUArguments"
 				}
 				'.ps1' {
 					[String]$CUStubExePath = "$PSHOME\powershell.exe"
 					[String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
-					[String]$StubPath = "$CUStubExePath $CUArguments"
+					[String]$StubPath = "`"$CUStubExePath`" $CUArguments"
 				}
 			}
 			If ($Arguments) {
@@ -12390,6 +12390,12 @@ If ($usersLoggedOn) {
 	}
 	Else {
 		Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]." -Source $appDeployToolkitName
+	}
+
+	# Check if user session is running under defaultuser0 account (Autopilot OOBE) or if application is installing during ESP and if so change deployment to run silently
+	If ($CurrentLoggedOnUserSession.UserName -match "defaultuser0" -or (((Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue').count) -gt 0)) {
+		Write-Log -Message "Autopilot OOBE user [$($CurrentLoggedOnUserSession.UserName)] or ESP process 'wwahost' detected, changing deployment mode to silent." -Source $appDeployToolkitExtName
+		$deployMode = 'Silent'
 	}
 
 	#  Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
