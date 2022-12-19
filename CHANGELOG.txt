@@ -37,6 +37,7 @@
     - It stops the script if -ContinueOnError was set to true and non empty folders were detected
 - Fixed $LocalSystemNTAccount not being populated
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
+- Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
 - Updated entire toolkit to align with toolkit styling and formatting standards

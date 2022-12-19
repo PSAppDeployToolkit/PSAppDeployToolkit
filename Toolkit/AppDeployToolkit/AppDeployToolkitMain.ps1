@@ -12240,6 +12240,7 @@ Try {
 	If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
 		$appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
 	}
+	$appDeployLogoBannerObject.Dispose() # Must dispose() when installing from local cache or else AppDeployToolkitBanner.png is locked and cannot be removed
 }
 Catch { }
 
