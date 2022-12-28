@@ -16,7 +16,8 @@
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup:
-  - Fixed the function not executing the process for current user correctly
+  - Fixed the function not executing the process for current user correctly (#644)
+  - Fixed issue where ActiveSetup would not correctly evaluate whether to execute while running as system (#707)
   - The function now also checks Version and IsInstalled properties when attempting to run the process for current user
   - Added more logging messages so it is clear from the logs why it was or was not executed for the current user
   - IsInstalled property is no longer added to the HKCU registry entry
@@ -39,7 +40,6 @@
 - Fixed $LocalSystemNTAccount not being populated
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
 - Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session (#717)
-- Fixed issue where ActiveSetup would not correctly evaluate whether to execute while running as system (#707)
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
 - Updated entire toolkit to align with toolkit styling and formatting standards
