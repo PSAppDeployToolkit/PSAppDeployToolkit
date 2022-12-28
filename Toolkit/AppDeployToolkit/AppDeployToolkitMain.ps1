@@ -6189,11 +6189,6 @@ Function Block-AppExecution {
 			Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
 			Return
 		}
-		## Bypass if in NonInteractive mode
-		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Function [${CmdletName}], because [Mode: $deployMode]." -Source ${CmdletName}
-			Return
-		}
 
 		[String]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 
@@ -6302,11 +6297,6 @@ Function Unblock-AppExecution {
 		## Bypass if no Admin rights
 		If ($configToolkitRequireAdmin -eq $false) {
 			Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
-			Return
-		}
-		## Bypass if in NonInteractive mode
-		If ($deployModeNonInteractive) {
-			Write-Log -Message "Bypassing Function [${CmdletName}], because [Mode: $deployMode]." -Source ${CmdletName}
 			Return
 		}
 
