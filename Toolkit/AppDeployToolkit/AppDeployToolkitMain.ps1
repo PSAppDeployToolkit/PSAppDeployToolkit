@@ -2794,7 +2794,8 @@ Function Execute-MSI {
 
 			#  Call the Execute-Process function
 			If ($PassThru) {
-				[PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
+				If (($Action -eq 'Install') -and ($IsMsiInstalled)) { [PSObject]$ExecuteResults = @{ ExitCode = 0; StdOut = 0; StdErr = '' } }
+				Else { [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat }
 			}
 			Else {
 				Execute-Process @ExecuteProcessSplat

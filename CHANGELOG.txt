@@ -38,7 +38,7 @@
     - It stops the script if -ContinueOnError was set to true and non empty folders were detected
 - Fixed $LocalSystemNTAccount not being populated
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
-- Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session
+- Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session (#717)
 - Fixed issue where ActiveSetup would not correctly evaluate whether to execute while running as system (#707)
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
@@ -47,6 +47,7 @@
 - Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
 - Added detection of defaultuser0 OOBE or ESP process to enable silent mode
 - Added Greek translations
+- Added the appropriate exit code for MSIs that are already installed to the Execute-MSI function (#686)
 - Updated Copy-File function to remove unnecessary variable assignment to $null
 - Updated command to remove BlockAppExecution Schedule Task XML file in Unblock-AppExecution function so that it is more robust
 - Modified how $IconIndex variable is being checked for $null condition in function New-Shortcut
