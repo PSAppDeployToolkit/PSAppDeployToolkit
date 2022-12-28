@@ -10830,8 +10830,8 @@ Function Set-ActiveSetup {
 
 				Write-Log -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
 				[ScriptBlock]$RemoveHKCUActiveSetupKey = {
-					If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID) {
-						Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $UserProfile.SID -Recurse
+					If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $RunAsActiveUser.SID) {
+						Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $RunAsActiveUser.SID -Recurse
 					}
 				}
 				Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)

@@ -12,7 +12,7 @@
 - Changed Show-InstallationWelcome
   - The titlebar close button is now disabled.
   - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
-- Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces
+- Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces (#726)
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup:
@@ -24,7 +24,7 @@
   - Extended function help text
 - Changed Execute-Process so it no longer displays the entire error information in the error popup window
   - It will only show a short description just like other functions and the details will be available in the log
-- Changed Block-AppExecution and Unblock-AppExecution so the functions also run during Non-Interactive installs.
+- Changed Block-AppExecution and Unblock-AppExecution so the functions also run during Non-Interactive installs (#699)
 - Fixed a couple of log message typos across the toolkit
 - Fixed a bug that caused Update-Desktop/Refresh-Desktop to crash Powershell on 32bit systems
 - Changed $GetDisplayScaleFactor so it now actually calculates the dpi scale and dpi pixels
@@ -39,6 +39,7 @@
 - Fixed $LocalSystemNTAccount not being populated
 - Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
 - Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session
+- Fixed issue where ActiveSetup would not correctly evaluate whether to execute while running as system (#707)
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
 - Updated entire toolkit to align with toolkit styling and formatting standards
