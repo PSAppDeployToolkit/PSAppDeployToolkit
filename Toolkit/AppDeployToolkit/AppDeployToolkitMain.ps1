@@ -2356,9 +2356,9 @@ Function Get-InstalledApplication {
 				}
 
 				## Remove any control characters which may interfere with logging and creating file path names from these variables
-				$appDisplayName = $regKeyApp.DisplayName -replace '[^\u001F-\u007F]',''
-				$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\u001F-\u007F]',''
-				$appPublisher = $regKeyApp.Publisher -replace '[^\u001F-\u007F]',''
+				$appDisplayName = $regKeyApp.DisplayName -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]',''
+				$appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]',''
+				$appPublisher = $regKeyApp.Publisher -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]',''
 
 
 				## Determine if application is a 64-bit application
