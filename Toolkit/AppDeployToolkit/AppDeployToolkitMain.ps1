@@ -2857,23 +2857,23 @@ Function Remove-MSIApplications {
 	Remove-MSIApplications -Name 'Adobe'
 	Removes all versions of software that match the name "Adobe"
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication ('Is64BitApplication', $false, 'Exact'),('Publisher', 'Oracle Corporation', 'Exact')
+	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(@('Is64BitApplication', $false, 'Exact'), @('Publisher', 'Oracle Corporation', 'Exact'))
 	Removes all versions of software that match the name "Java 8 Update" where the software is 32-bits and the publisher is "Oracle Corporation".
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication (,('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'Contains'))
+	Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(, @('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall @(, @('DisplayName', 'Java 8 Update 45', 'Contains'))
 	Removes all versions of software that match the name "Java 8 Update" and also have "Oracle Corporation" as the Publisher; however, it does not uninstall "Java 8 Update 45" of the software.
 	NOTE: if only specifying a single row in the two-dimensional arrays, the array must have the extra parentheses and leading comma as in this example.
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall (,('DisplayName', 'Java 8 Update 45', 'Contains'))
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(, @('DisplayName', 'Java 8 Update 45', 'Contains'))
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall "Java 8 Update 45" of the software.
 	NOTE: if only specifying a single row in the two-dimensional array, the array must have the extra parentheses and leading comma as in this example.
 .EXAMPLE
-	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall
-			('Is64BitApplication', $true, 'Exact'),
-			('DisplayName', 'Java 8 Update 45', 'Exact'),
-			('DisplayName', 'Java 8 Update 4*', 'WildCard'),
-			('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
-			('DisplayName', 'Java 8 Update', 'Contains')
+	Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(
+			@('Is64BitApplication', $true, 'Exact'),
+			@('DisplayName', 'Java 8 Update 45', 'Exact'),
+			@('DisplayName', 'Java 8 Update 4*', 'WildCard'),
+			@('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
+			@('DisplayName', 'Java 8 Update', 'Contains'))
 	Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
 .NOTES
 	More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
@@ -2944,14 +2944,18 @@ Function Remove-MSIApplications {
 				}
 
 				#  Filter the results from Get-InstalledApplication to only those that should be uninstalled
+				[Boolean]$addAppToRemoveList = $true
 				If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
 					Write-Log -Message "Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication]." -Source ${CmdletName}
-					[Boolean]$addAppToRemoveList = $false
 					ForEach ($Filter in $FilterApplication) {
 						If ($Filter[2] -eq 'RegEx') {
 							If ($installedApplication.($Filter[0]) -match $Filter[1]) {
 								[Boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+							Else {
+								[Boolean]$addAppToRemoveList = $false
+								Break
 							}
 						}
 						ElseIf ($Filter[2] -eq 'Contains') {
@@ -2959,11 +2963,19 @@ Function Remove-MSIApplications {
 								[Boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria." -Source ${CmdletName}
 							}
+							Else {
+								[Boolean]$addAppToRemoveList = $false
+								Break
+							}
 						}
 						ElseIf ($Filter[2] -eq 'WildCard') {
 							If ($installedApplication.($Filter[0]) -like $Filter[1]) {
 								[Boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria." -Source ${CmdletName}
+							}
+							Else {
+								[Boolean]$addAppToRemoveList = $false
+								Break
 							}
 						}
 						ElseIf ($Filter[2] -eq 'Exact') {
@@ -2971,11 +2983,12 @@ Function Remove-MSIApplications {
 								[Boolean]$addAppToRemoveList = $true
 								Write-Log -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria." -Source ${CmdletName}
 							}
+							Else {
+								[Boolean]$addAppToRemoveList = $false
+								Break
+							}
 						}
 					}
-				}
-				Else {
-					[Boolean]$addAppToRemoveList = $true
 				}
 
 				#  Filter the results from Get-InstalledApplication to remove those that should never be uninstalled
@@ -2985,24 +2998,28 @@ Function Remove-MSIApplications {
 							If ($installedApplication.($Exclude[0]) -match $Exclude[1]) {
 								[Boolean]$addAppToRemoveList = $false
 								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+								Break
 							}
 						}
 						ElseIf ($Exclude[2] -eq 'Contains') {
 							If ($installedApplication.($Exclude[0]) -match [RegEx]::Escape($Exclude[1])) {
 								[Boolean]$addAppToRemoveList = $false
 								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+								Break
 							}
 						}
 						ElseIf ($Exclude[2] -eq 'WildCard') {
 							If ($installedApplication.($Exclude[0]) -like $Exclude[1]) {
 								[Boolean]$addAppToRemoveList = $false
 								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+								Break
 							}
 						}
 						ElseIf ($Exclude[2] -eq 'Exact') {
 							If ($installedApplication.($Exclude[0]) -eq $Exclude[1]) {
 								[Boolean]$addAppToRemoveList = $false
 								Write-Log -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+								Break
 							}
 						}
 					}
