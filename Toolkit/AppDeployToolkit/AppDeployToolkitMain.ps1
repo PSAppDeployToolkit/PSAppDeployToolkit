@@ -3,7 +3,7 @@
 	This script contains the functions and logic engine for the Deploy-Application.ps1 script.
 	# LICENSE #
 	PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
-	Copyright (C) 2023 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
+	Copyright (C) 2023 - Sean Lillis, Dan Cunningham, Muhammad Mashwani.
 	This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 	You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 .DESCRIPTION
@@ -8278,7 +8278,7 @@ Function Show-InstallationProgress {
 		[String]$StatusMessage = $configProgressMessageInstall,
 		[Parameter(Mandatory=$false)]
 		[ValidateSet('Default','BottomRight','TopCenter')]
-		[String]$WindowLocation = 'Default',
+		[String]$windowLocation = 'Default',
 		[Parameter(Mandatory=$false)]
 		[ValidateNotNullorEmpty()]
 		[Boolean]$TopMost = $true
@@ -8404,13 +8404,12 @@ Function Show-InstallationProgress {
 					#  Calculate the position on the screen where the progress dialog should be placed
 					[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
 					[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-					[Int32]$screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
-					[Int32]$screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
+					[Int32]$script:screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
+					[Int32]$script:screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
 					#  Set the start position of the Window based on the screen size
-					If ($windowLocation -eq 'BottomRight') {
-						#  Put the window in the corner
+					If ($windowLocation -eq 'BottomRight') {			
 						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
-						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+						$script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
 					}
 					ElseIf($windowLocation -eq 'TopCenter'){
 						$script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
@@ -8461,9 +8460,34 @@ Function Show-InstallationProgress {
 		}
 		## Check if the progress thread is running before invoking methods on it
 		ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
-			#  Update the progress text
 			Try {
+				#  Update the progress text			
 				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+				#  Calculate the position on the screen where the progress dialog should be placed			
+				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ 
+					#  Set the start position of the Window based on the screen size
+					If ($windowLocation -eq 'BottomRight') {
+						#  Put the window in the corner
+						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+						$script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
+						$script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
+					}
+					ElseIf($windowLocation -eq 'TopCenter'){
+						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+						$script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
+						$script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 6)
+					}
+					Else {
+						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+						#  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+						$script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
+						$script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 2)
+					}	
+				}, $null, $null)					
+				
 				Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
 			}
 			Catch {

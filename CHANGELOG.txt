@@ -1,4 +1,4 @@
-﻿**Version 3.8.5 [??/03/2022]**
+﻿**Version 3.9.0 [??/01/2023]**
 - Changed Show-InstallationRestartPrompt:
   - Fixed a bug in the function, that caused incorrect handling of parameters when running the function asynchronously
   - Changed the function so it doesn't prepare the window when running asynchronously. This also fixes a bug where the timers kept running in the background and were never stopped when running asynchronously.
@@ -12,6 +12,9 @@
 - Changed Show-InstallationWelcome
   - The titlebar close button is now disabled.
   - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
+- Changed Show-InstallationProgress
+  - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs.
+  - When the WindowLocation is set to -BottomRight, the position is now offset so as not to overlap with toast notifications.
 - Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces (#726)
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
