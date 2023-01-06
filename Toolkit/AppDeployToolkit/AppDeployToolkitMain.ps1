@@ -8465,23 +8465,19 @@ Function Show-InstallationProgress {
 				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
 				#  Calculate the position on the screen where the progress dialog should be placed			
 				$script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler]{ 
+					[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+					[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
 					#  Set the start position of the Window based on the screen size
 					If ($windowLocation -eq 'BottomRight') {
-						#  Put the window in the corner
-						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+						#  Put the window in the corner						
 						$script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
 						$script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
 					}
 					ElseIf($windowLocation -eq 'TopCenter'){
-						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
 						$script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
 						$script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 6)
 					}
 					Else {
-						[Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-						[Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
 						#  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
 						$script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
 						$script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 2)
