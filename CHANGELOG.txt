@@ -13,8 +13,8 @@
   - The titlebar close button is now disabled.
   - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
 - Changed Show-InstallationProgress
-  - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs.
-  - When the WindowLocation is set to -BottomRight, the position is now offset so as not to overlap with toast notifications.
+  - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs (#685)
+  - When the WindowLocation is set to BottomRight, the position is now offset so as not to overlap with toast notifications (#685)
 - Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces (#726)
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
