@@ -16,6 +16,7 @@
   - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs (#685)
   - When the WindowLocation is set to BottomRight, the position is now offset so as not to overlap with toast notifications (#685)
 - Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces (#726)
+- Fixed -FilterApplication logic in Remove-Applications (#665)
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
 - Changed function Set-ActiveSetup:
@@ -45,6 +46,7 @@
 - Fixed issue where the banner file object is locked and needs to be deleted in the same PowerShell session (#717)
 - Changed $installPhase at the end of the Main script
   - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
+- Updated Get-InstalledApplication to make removal of control characters less aggressive (#691)
 - Updated entire toolkit to align with toolkit styling and formatting standards
 - Updated Execute-MSP functions to utilize toolkit MSI database helper functions
 - Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
