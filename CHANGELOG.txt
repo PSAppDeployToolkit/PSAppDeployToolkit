@@ -1,4 +1,9 @@
-﻿**Version 3.9.0 [??/01/2023]**
+﻿**Version 3.9.0 [10/01/2023]**
+- AddedRefreshed UI components with updated PSAppDeployToolkit branding
+- Added support for Windows Toast Notifications, instead of using a BalloonTip (only for Windows 10 and above)
+- Changes to dialogs so that the default system font is used for all labels and buttons, adding a more consistnent look and feel.
+- Improved documentation - new overview, features and benefits detail to enhance value proposition. Improved Function documentation and overall PDF document layout.
+- Updated text and structure for Comment-Based-Help to align with PowerShell Best Practices
 - Show-InstallationPrompt now has a -TopMost parameter. Fixed the function failing to display a window with -NoWait parameter specified.
 - Show-InstallationWelcome will now display the countdown message if there are no processes running when CloseApps timer is enabled.
 - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs (#685). When the WindowLocation is set to BottomRight, the position is now offset so as not to overlap with toast notifications (#685)
@@ -89,7 +94,7 @@
 - Encoding of the files has been changed back to UTF8 with BOM, back from UTF8 without BOM:
   - We chose to go with UTF8 without BOM because it is the encoding for Powershell v6+ and because it is one of the most popular encodings in the world.
     However this caused issues on Windows Powershell for clients that use a different language from English. Due to Microsoft's chaotic coding decisions, Powershell uses the BOM as a verification that the code is written with non-English characters.
-    In their own words:"It's not possible to force PowerShell to use a specific input encoding. PowerShell 5.1 and below, running on Windows with the locale set to en-US, defaults to Windows-1252 encoding when there's no BOM. 
+    In their own words:"It's not possible to force PowerShell to use a specific input encoding. PowerShell 5.1 and below, running on Windows with the locale set to en-US, defaults to Windows-1252 encoding when there's no BOM.
     Other locale settings may use a different encoding. To ensure interoperability, it's best to save scripts in a Unicode format with a BOM."
   - Just like changing to UTF8 without BOM, this will not affect the size of the files or their functionality. BOM or Byte Order Mark is just one special character, placed at the start of the files.
     If you do not use the toolkit on machines with a different language, then this will have no effect on you or your clients. It will however help everyone else display the text in their language correctly.
