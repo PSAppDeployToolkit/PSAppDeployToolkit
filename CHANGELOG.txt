@@ -4,6 +4,7 @@
 - Changes to dialogs so that the default system font is used for all labels and buttons, adding a more consistnent look and feel.
 - Improved documentation - new overview, features and benefits detail to enhance value proposition. Improved Function documentation and overall PDF document layout.
 - Updated text and structure for Comment-Based-Help to align with PowerShell Best Practices
+- Added detection of defaultuser0 OOBE or ESP process to enable Non-Interactive deployment mode for Intune Autopilot/ESP scenarios.
 - Show-InstallationPrompt now has a -TopMost parameter. Fixed the function failing to display a window with -NoWait parameter specified.
 - Show-InstallationWelcome will now display the countdown message if there are no processes running when CloseApps timer is enabled.
 - Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs (#685). When the WindowLocation is set to BottomRight, the position is now offset so as not to overlap with toast notifications (#685)
@@ -28,7 +29,6 @@
 - Updated entire toolkit to align with toolkit styling and formatting standards
 - Updated Execute-MSP functions to utilize toolkit MSI database helper functions
 - Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
-- Added detection of defaultuser0 OOBE or ESP process to enable Non-Interactive deployment mode for Autopilot/ESP scenarios.
 - Added Greek translations
 - Added the appropriate exit code for MSIs that are already installed to the Execute-MSI function (#686)
 - Improved Unblock-AppExecution function removal of the BlockAppExecution Schedule Task XML file
