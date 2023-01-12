@@ -1,6 +1,7 @@
 ﻿**Version 3.9.1 [xx/01/2023]**
 - Added Finnish language translations to the UI components (#681)
 - Added variable $IsMultiSessionOS (#697)
+- Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function (#721)
 
 
 **Version 3.9.0 [10/01/2023]**
