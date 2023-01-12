@@ -100,6 +100,7 @@
 			 KO 				Korean 			|		ZH-Hant 			Chinese (Traditional)
 			 RU 				Russian			|		SK 					Slovak
 			 HU 				Hungarian		|		CZ					Czech
+			 FI					Finnish			|
 		-->
         <ShowBalloonNotifications>True</ShowBalloonNotifications>
         <!-- [True/False] - Used to turn automatic balloon notifications on or off. -->
@@ -1191,25 +1192,102 @@
         <WelcomePrompt_CountdownMessage>A(z) {0} automatikusan folytatódik:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
-        <DeploymentType_Install>Telepítés</DeploymentType_Install>
-        <DeploymentType_UnInstall>Eltávolítás</DeploymentType_UnInstall>
-        <DeploymentType_Repair>Javítás</DeploymentType_Repair>
-        <BalloonText_Start>elindult.</BalloonText_Start>
-        <BalloonText_Complete>elkészült.</BalloonText_Complete>
-        <BalloonText_RestartRequired>elkészült.Újraindítás szükséges.</BalloonText_RestartRequired>
-        <BalloonText_Error>sikertelen.</BalloonText_Error>
-        <BalloonText_FastRetry>nem lehet befejezni.</BalloonText_FastRetry>
-        <Progress_MessageInstall>Telepítés folyamatban. Kérem várjon...</Progress_MessageInstall>
-        <Progress_MessageUninstall>Eltávolítás folyamatban. Kérem várjon...</Progress_MessageUninstall>
-        <Progress_MessageRepair>Javítás folyamatban. Kérem várjon...</Progress_MessageRepair>
-        <BlockExecution_Message> A következő alkalmazások blokkolva lesznek, annak érdekében hogy a telepítés problémamentesen végrehajtódjon.</BlockExecution_Message>
-        <RestartPrompt_Title>Újraindítás szükséges</RestartPrompt_Title>
-        <RestartPrompt_Message>A telepítés befejezéséhez a számítógépet újraindítása szükséges.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Kérem mentse munkáját, és a megadott időn belül indítsa újra..</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>A hátralévő idő leteltével a számítógép újraindul.</RestartPrompt_MessageRestart>
-        <RestartPrompt_TimeRemaining>Hátralévő idő:</RestartPrompt_TimeRemaining>
-        <RestartPrompt_ButtonRestartLater>Minimalizál</RestartPrompt_ButtonRestartLater>
-        <RestartPrompt_ButtonRestartNow>Újraindítás most</RestartPrompt_ButtonRestartNow>
-    </UI_Messages_HU>
+		<DeploymentType_Install>Telepítés</DeploymentType_Install>
+		<DeploymentType_UnInstall>Eltávolítás</DeploymentType_UnInstall>
+		<DeploymentType_Repair>Javítás</DeploymentType_Repair>
+		<BalloonText_Start>elindult.</BalloonText_Start>
+		<BalloonText_Complete>elkészült.</BalloonText_Complete>
+		<BalloonText_RestartRequired>elkészült.Újraindítás szükséges.</BalloonText_RestartRequired>
+		<BalloonText_Error>sikertelen.</BalloonText_Error>
+		<BalloonText_FastRetry>nem lehet befejezni.</BalloonText_FastRetry>
+		<Progress_MessageInstall>Telepítés folyamatban. Kérem várjon...</Progress_MessageInstall>
+		<Progress_MessageUninstall>Eltávolítás folyamatban. Kérem várjon...</Progress_MessageUninstall>
+		<Progress_MessageRepair>Javítás folyamatban. Kérem várjon...</Progress_MessageRepair>
+		<BlockExecution_Message> A következő alkalmazások blokkolva lesznek, annak érdekében hogy a telepítés problémamentesen végrehajtódjon.</BlockExecution_Message>
+		<RestartPrompt_Title>Újraindítás szükséges</RestartPrompt_Title>
+		<RestartPrompt_Message>A telepítés befejezéséhez a számítógépet újraindítása szükséges.</RestartPrompt_Message>
+		<RestartPrompt_MessageTime>Kérem mentse munkáját, és a megadott időn belül indítsa újra..</RestartPrompt_MessageTime>
+		<RestartPrompt_MessageRestart>A hátralévő idő leteltével a számítógép újraindul.</RestartPrompt_MessageRestart>
+		<RestartPrompt_TimeRemaining>Hátralévő idő:</RestartPrompt_TimeRemaining>
+		<RestartPrompt_ButtonRestartLater>Minimalizál</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartNow>Újraindítás most</RestartPrompt_ButtonRestartNow>
+	</UI_Messages_HU>
+	
+	<!-- UI Messages - Finnish -->
+	<UI_Messages_FI>
+		<!-- Close Program Prompt Text -->
+		<DiskSpace_Message>Kiintolevyllä ei ole riittävästi tilaa asennusta varten:
+		{0}
+
+		Vaadittu levytila: {1}MB
+		Levytilaa käytettävissä: {2}MB
+
+		Vapauta levytilaa, jotta asennus voi jatkua.</DiskSpace_Message>
+		<ClosePrompt_ButtonContinue>Jatka</ClosePrompt_ButtonContinue>
+		<!-- Text displayed on the continue button when prompting to close running programs. -->
+		<ClosePrompt_ButtonContinueTooltip>Valitse jatka, kun olet sulkenut ohjelmat.</ClosePrompt_ButtonContinueTooltip>
+		<!-- Tooltip text displayed on the continue button when prompting to close running programs. -->
+		<ClosePrompt_ButtonClose>Sulje ohjelmat</ClosePrompt_ButtonClose>
+		<!-- Text displayed on the close button when prompting to close running programs. -->
+		<ClosePrompt_ButtonDefer>Myöhemmin</ClosePrompt_ButtonDefer>
+		<!-- Text displayed on the defer button when prompting to close running programs. -->
+		<ClosePrompt_Message>Seuraavat ohjelmat on suljettava ennen asennusta
+
+		Tallenna työsi ja jatka.
+		Vaihtoehtoisesti voit tallentaa työsi ja valita "Sulje ohjelmat".
+		</ClosePrompt_Message>
+		<!-- Text displayed when prompting to close running programs. -->
+		<ClosePrompt_CountdownMessage>HUOMIO: Ohjelma(t) suljetaan automaattisesti:</ClosePrompt_CountdownMessage>
+		<!-- Text displayed when counting down to automatically closing applications. -->
+		<DeferPrompt_WelcomeMessage>Ohjelma joka asennetaan seuraavaksi:</DeferPrompt_WelcomeMessage>
+		<!-- Text displayed when only the deferal dialog is to be displayed and there are no applications to close. -->
+		<DeferPrompt_ExpiryMessage>Voit siirtää asennusta myöhemmäksi:</DeferPrompt_ExpiryMessage>
+		<!-- Text displayed when a deferral option is available. -->
+		<DeferPrompt_WarningMessage>Tietyn ajan kuluessa et voi enää siirtää asennusta myöhemmäksi.</DeferPrompt_WarningMessage>
+		<!-- Text displayed after the deferral options. -->
+		<DeferPrompt_RemainingDeferrals>Jäljellä olevia siirtoja myöhempään ajankohtaan:</DeferPrompt_RemainingDeferrals>
+		<!-- Text displayed when there are a specific number of deferrals remaining. -->
+		<DeferPrompt_Deadline>Määräaika:</DeferPrompt_Deadline>
+		<!-- Text displayed when there is a specific deferral deadline. -->
+
+		<WelcomePrompt_CountdownMessage>{0} jatkaa automaattisesti:</WelcomePrompt_CountdownMessage>
+		<!-- The countdown message displayed at the Welcome Screen to indicate when the install will continue if no response from user. -->
+		<WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
+		<!-- This is a custom message to display at the Welcome Screen window. -->
+
+		<DeploymentType_Install>Asennus</DeploymentType_Install>
+		<!-- Name displayed in UI for installation deployment type. -->
+		<DeploymentType_UnInstall>Ohjelmiston poisto</DeploymentType_UnInstall>
+		<!-- Name displayed in UI for uninstallation deployment type. -->
+
+		<!-- Balloon Tip Text -->
+		<BalloonText_Start>alkoi.</BalloonText_Start>
+		<!-- Text displayed in the balloon tip for the start of a deployment type. -->
+		<BalloonText_Complete>valmis.</BalloonText_Complete>
+		<!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+		<BalloonText_RestartRequired>valmis. Tietokone on käynnistettävä uudelleen.</BalloonText_RestartRequired>
+		<!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+		<BalloonText_Error>epäonnistui.</BalloonText_Error>
+		<!-- Text displayed in the balloon tip for a failed deployment type. -->
+		<BalloonText_FastRetry>ei ole valmis.</BalloonText_FastRetry>
+		<!-- Text displayed in the balloon tip for fast retry of a deployment -->
+
+		<Progress_MessageInstall>Asentaa. Odota...</Progress_MessageInstall>
+		<!-- Default text displayed in the progress bar for installations. -->
+		<Progress_MessageUninstall>Ohjelmistoa poistetaan. Odota...</Progress_MessageUninstall>
+		<!-- Default text displayed in the progress bar for uninstallations. -->
+		<BlockExecution_Message>Ohjelmiston käynnistäminen on tilapäisesti estetty, jotta ohjelmisto voi onnistuneesti asentua.</BlockExecution_Message>
+		<!-- Text displayed when prompting user that an application has been blocked. -->
+		<RestartPrompt_Title>Tietokone on käynnistettävä uudelleen</RestartPrompt_Title>
+		<!-- Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it. -->
+		<RestartPrompt_Message>Tietokone on käynnistettävä uudelleen, ennen kuin ohjelmiston asennus on valmis.</RestartPrompt_Message>
+		<RestartPrompt_MessageTime>Tallenna työsi ja käynnistä tietokone uudelleen aikarajan sisällä.</RestartPrompt_MessageTime>
+		<RestartPrompt_MessageRestart>Tietokone käynnistyy uudelleen, kun laskuri on saavuttanut nollan.</RestartPrompt_MessageRestart>
+		<!-- Text displayed on the restart prompt. -->
+		<RestartPrompt_TimeRemaining>Aikaa jäljellä:</RestartPrompt_TimeRemaining>
+		<RestartPrompt_ButtonRestartLater>Käynnistä uudelleen myöhemmin</RestartPrompt_ButtonRestartLater>
+		<RestartPrompt_ButtonRestartNow>Käynnistä uudelleen heti</RestartPrompt_ButtonRestartNow>
+	</UI_Messages_FI>
+
 
 </AppDeployToolkit_Config>
