@@ -99,6 +99,7 @@ The toolkit has a number of internal variables which can be used in your script.
 | $IsServerOS                              | Is server OS? (e.g. $true/$false)                                                             |
 | $IsDomainControllerOS                    | Is domain controller OS? (e.g. $true/$false)                                                  |
 | $IsWorkStationOS                         | Is workstation OS? (e.g. $true/$false)                                                        |
+| $IsMultiSessionOS                         | Is Multi-Session OS? (e.g. $true/$false)                                                    |
 | $envOSProductTypeName                    | OS product type name (e.g. Server/Domain Controller/Workstation/Unknown)                      |
 | $Is64Bit                                 | Is this a 64-bit OS? (e.g. $true/$false)                                                      |
 | $envOSArchitecture                       | Represents the OS architecture (e.g. 32-Bit/64-Bit)                                           |

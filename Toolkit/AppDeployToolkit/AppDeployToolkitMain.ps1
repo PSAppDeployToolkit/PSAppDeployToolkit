@@ -224,33 +224,25 @@ If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Micros
 ElseIf ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'BuildLabEx') {
     [String]$envOSVersionRevision = , ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
 }
-If ($envOSVersionRevision -notmatch '^[\d\.]+$') {
-    $envOSVersionRevision = ''
+If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
+If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [string]$envOSVersion = "$($envOSVersion.ToString())" }
+#  Get the operating system type
+[int32]$envOSProductType = $envOS.ProductType
+[boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
+[boolean]$IsDomainControllerOS = [boolean]($envOSProductType -eq 2)
+[boolean]$IsWorkStationOS = [boolean]($envOSProductType -eq 1)
+[boolean]$IsMultiSessionOS = [boolean]($envOSName -match '^Microsoft Windows \d+ Enterprise for Virtual Desktops$')
+Switch ($envOSProductType) {
+	3 { [string]$envOSProductTypeName = 'Server' }
+	2 { [string]$envOSProductTypeName = 'Domain Controller' }
+	1 { [string]$envOSProductTypeName = 'Workstation' }
+	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
 If ($envOSVersionRevision) {
     [String]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision"
 }
 Else {
     [String]$envOSVersion = "$($envOSVersion.ToString())"
-}
-#  Get the operating system type
-[Int32]$envOSProductType = $envOS.ProductType
-[Boolean]$IsServerOS = [Boolean]($envOSProductType -eq 3)
-[Boolean]$IsDomainControllerOS = [Boolean]($envOSProductType -eq 2)
-[Boolean]$IsWorkStationOS = [Boolean]($envOSProductType -eq 1)
-Switch ($envOSProductType) {
-    3 {
-        [String]$envOSProductTypeName = 'Server'
-    }
-    2 {
-        [String]$envOSProductTypeName = 'Domain Controller'
-    }
-    1 {
-        [String]$envOSProductTypeName = 'Workstation'
-    }
-    Default {
-        [String]$envOSProductTypeName = 'Unknown'
-    }
 }
 #  Get the OS Architecture
 [Boolean]$Is64Bit = [Boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
