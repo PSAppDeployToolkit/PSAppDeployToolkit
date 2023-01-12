@@ -1,4 +1,8 @@
-﻿**Version 3.9.0 [10/01/2023]**
+﻿**Version 3.9.1 [xx/01/2023]**
+- Added variable $IsMultiSessionOS (#697)
+
+
+**Version 3.9.0 [10/01/2023]**
 - AddedRefreshed UI components with updated PSAppDeployToolkit branding
 - Added support for Windows Toast Notifications, instead of using a BalloonTip (only for Windows 10 and above)
 - Changes to dialogs so that the default system font is used for all labels and buttons, adding a more consistnent look and feel.

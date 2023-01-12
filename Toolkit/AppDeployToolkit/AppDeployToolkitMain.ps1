@@ -238,12 +238,6 @@ Switch ($envOSProductType) {
 	1 { [string]$envOSProductTypeName = 'Workstation' }
 	Default { [string]$envOSProductTypeName = 'Unknown' }
 }
-If ($envOSVersionRevision) {
-    [String]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision"
-}
-Else {
-    [String]$envOSVersion = "$($envOSVersion.ToString())"
-}
 #  Get the OS Architecture
 [Boolean]$Is64Bit = [Boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
 If ($Is64Bit) {
