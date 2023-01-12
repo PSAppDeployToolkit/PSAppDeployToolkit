@@ -12286,7 +12286,7 @@ Specify the path where the new transform file with the desired properties will b
 Default is: a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
 				b) If only -MsiPath was specified, then <MsiPath>.mst
 
-..PARAMETER TransformProperties
+.PARAMETER TransformProperties
 
 Hashtable which contains calls to Set-MsiProperty for configuring the desired properties which should be included in new transform file.
 
@@ -15088,7 +15088,7 @@ Value		 Description
 -----		 -----------
 Active		 A user is logged on to the session.
 ConnectQuery The session is in the process of connecting to a client.
-onnected	 A client is connected to the session.
+Connected	 A client is connected to the session.
 Disconnected The session is active, but the client has disconnected from it.
 Down		 The session is down due to an error.
 Idle		 The session is waiting for a client to connect.
@@ -15178,7 +15178,7 @@ Returns a custom object with the following properties
 
 Get-PendingReboot
 
-Returns ca ustom object with following properties:
+Returns caustom object with following properties:
 - ComputerName
 - LastBootUpTime
 - IsSystemRebootPending
