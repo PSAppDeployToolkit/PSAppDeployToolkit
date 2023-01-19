@@ -3585,6 +3585,7 @@ https://psappdeploytoolkit.com
 
         If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
             Write-Log -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
+            [PSObject]$ExecuteResults = @{ ExitCode = 1638; StdOut = 0; StdErr = '' }
         }
         ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
             Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
@@ -3617,12 +3618,7 @@ https://psappdeploytoolkit.com
 
             #  Call the Execute-Process function
             If ($PassThru) {
-                If (($Action -eq 'Install') -and ($IsMsiInstalled)) {
-                    [PSObject]$ExecuteResults = @{ ExitCode = 0; StdOut = 0; StdErr = '' }
-                }
-                Else {
-                    [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
-                }
+                [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat 
             }
             Else {
                 Execute-Process @ExecuteProcessSplat

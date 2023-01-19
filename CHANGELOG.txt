@@ -4,6 +4,7 @@
 - Added variable $IsMultiSessionOS for virtual environments (#697)
 - Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function which resulted in failing to set read permissions on the BlockExecution path. (#721)
 - Resolved an issue where a PowerShell prompt would flash on screen when invoking a PowerShell script using Execute-ProcessAsUser (#735)
+- Added the appropriate exit code 1638 for MSIs that are already installed when using the Execute-MSI function with -PassThru (#736)
 
 
 **Version 3.9.0 [10/01/2023]**
