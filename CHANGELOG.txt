@@ -1,4 +1,5 @@
 ﻿**Version 3.9.1 [xx/01/2023]**
+- Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
 - Added Finnish language translations to the UI components (#681)
 - Added variable $IsMultiSessionOS (#697)
 - Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function (#721)

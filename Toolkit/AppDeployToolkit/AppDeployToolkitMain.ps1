@@ -10524,15 +10524,50 @@ https://psappdeploytoolkit.com
         }
         Else {
             Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
+            
+            [scriptblock]$toastScriptBlock  = {
+                Param(
+                    [Parameter(Mandatory = $true, Position = 0)]
+                    [ValidateNotNullOrEmpty()]
+                    [String]$BalloonTipText,
+                    [Parameter(Mandatory = $false, Position = 1)]
+                    [ValidateNotNullorEmpty()]
+                    [String]$BalloonTipTitle,                                 
+                    [Parameter(Mandatory = $false, Position = 4)]
+                    [ValidateNotNullorEmpty()]
+                    [String]$AppDeployLogoImage
+                )
+            
+                # Check for required entries in registry for when using Powershell as application for the toast
+                # Register the AppID in the registry for use with the Action Center, if required
+                $regPathNotificationSettings = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings'
+                $toastAppId =  '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe'
 
-            $toastAppId = '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe'
-            [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-            [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                # Create the registry entries if they don't exist
+                If (-not (Test-Path -Path "$regPathNotificationSettings\$toastAppId") ) {
+                    $null = New-Item -Path "$regPathNotificationSettings\$toastAppId" -Force
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD'
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'Enabled' -Value 1 -PropertyType 'DWORD'
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'SoundFile' -PropertyType 'STRING'
+                }
+                # Make sure the app used with the action center is enabled
+                If ((Get-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'ShowInActionCenter' -ErrorAction 'SilentlyContinue').ShowInActionCenter -ne '1') {
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' -Force
+                }
+                If ((Get-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'Enabled' -ErrorAction 'SilentlyContinue').Enabled -ne '1') {
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'Enabled' -Value 1 -PropertyType 'DWORD' -Force
+                }
+                If (!(Get-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'SoundFile' -ErrorAction 'SilentlyContinue')) {
+                    $null = New-ItemProperty -Path "$regPathNotificationSettings\$toastAppId" -Name 'SoundFile' -PropertyType 'STRING' -Force
+                }
+                
+                [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
-            ## Gets the Template XML so we can manipulate the values
-            $Template = [Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01
-            [xml] $ToastTemplate = ([Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($Template).GetXml())
-            [xml] $ToastTemplate = @"
+                ## Gets the Template XML so we can manipulate the values
+                $Template = [Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01
+                [xml] $ToastTemplate = ([Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($Template).GetXml())
+                [xml] $ToastTemplate = @"
 <toast launch="app-defined-string">
 	<visual>
 		<binding template="ToastImageAndText02">
@@ -10544,18 +10579,24 @@ https://psappdeploytoolkit.com
 </toast>
 "@
 
-            $ToastXml = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
-            $ToastXml.LoadXml($ToastTemplate.OuterXml)
+                $ToastXml = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
+                $ToastXml.LoadXml($ToastTemplate.OuterXml)
 
+                $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastAppId)
+                $notifier.Show($toastXml)
 
-            $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastAppId)
-            $notifier.Show($toastXml)
+                Start-Sleep 5 #so Icon is shown properly in Toast
+            }
 
-            Start-Sleep -Seconds 10 #so Icon is shown properly in Toast
-
+            ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
+            Try {                
+                $executeToastAsUserScript = "$configToolkitTempPath\$($appDeployToolkitName)-ToastNotification.ps1"
+                Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
+                Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -Wait
+            }
+            Catch {
+            }
         }
-
-
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
