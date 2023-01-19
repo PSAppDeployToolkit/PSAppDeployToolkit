@@ -8024,16 +8024,14 @@ https://psappdeploytoolkit.com
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-        ## Remove illegal characters from the scheduled task arguments string
-        [Char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [String]$SchInstallName = $installName
-        ForEach ($invalidChar in $invalidScheduledTaskChars) {
-            [String]$SchInstallName = $SchInstallName -replace [RegEx]::Escape($invalidChar), ''
-        }
-        [String]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-        [String]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `'$blockExecutionTempPath\$scriptFileName`' -CleanupBlockedApps -ReferredInstallName `'$SchInstallName`' -ReferredInstallTitle `'$installTitle`' -ReferredLogName `'$logName`' -AsyncToolkitLaunch"
-        ## Specify the scheduled task configuration in XML format
-        [String]$xmlUnblockAppsSchTask = @"
+		## Remove illegal characters from the scheduled task arguments string
+		[char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
+		[string]$SchInstallName = $installName
+		ForEach ($invalidChar in $invalidScheduledTaskChars) { [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' }
+		[string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+		[string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+		## Specify the scheduled task configuration in XML format
+		[string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
 	<RegistrationInfo></RegistrationInfo>
