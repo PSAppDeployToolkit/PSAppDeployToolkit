@@ -1,8 +1,9 @@
 ﻿**Version 3.9.1 [xx/01/2023]**
 - Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
 - Added Finnish language translations to the UI components (#681)
-- Added variable $IsMultiSessionOS (#697)
-- Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function (#721)
+- Added variable $IsMultiSessionOS for virtual environments (#697)
+- Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function which resulted in failing to set read permissions on the BlockExecution path. (#721)
+- Resolved an issue where a PowerShell prompt would flash on screen when invoking a PowerShell script using Execute-ProcessAsUser (#735)
 
 
 **Version 3.9.0 [10/01/2023]**

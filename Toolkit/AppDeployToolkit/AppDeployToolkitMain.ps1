@@ -7481,8 +7481,8 @@ https://psappdeploytoolkit.com
             $executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
             $Path = "$envWinDir\System32\wscript.exe"
             $Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
-            $EscapedPath = $Path
-            $EscapedParameters = $Parameters
+            $EscapedPath = [System.Security.SecurityElement]::Escape($Path)
+            $EscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
 
             Try {
                 Set-ItemPermission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
