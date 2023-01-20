@@ -553,6 +553,10 @@ If ($configToolkitRequireAdmin -eq $false) {
 [String]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
 [String]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
 
+If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+    New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
+}
+
 ## Set the deployment type to "Install" if it has not been specified
 If (-not $deploymentType) {
     [String]$deploymentType = 'Install'
@@ -10405,6 +10409,8 @@ Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -B
 
 .NOTES
 
+For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip. The toast notification does not use tte BalloonTipIcon if specified.
+
 .LINK
 
 https://psappdeploytoolkit.com
@@ -10583,8 +10589,7 @@ https://psappdeploytoolkit.com
 
                 $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastAppId)
                 $notifier.Show($toastXml)
-
-                Start-Sleep 5 #so Icon is shown properly in Toast
+  
             }
 
             ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context

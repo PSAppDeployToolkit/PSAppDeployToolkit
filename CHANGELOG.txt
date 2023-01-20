@@ -1,4 +1,4 @@
-﻿**Version 3.9.1 [xx/01/2023]**
+﻿**Version 3.9.1 [20/01/2023]**
 - Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
 - Added Finnish language translations to the UI components (#681)
 - Added variable $IsMultiSessionOS for virtual environments (#697)
@@ -6,6 +6,7 @@
 - Resolved an issue introduced in v3.8.4 where registry entries set by Block-AppExecution would not be cleaned up after an interrupted installation (#714)
 - Resolved an issue where a PowerShell prompt would flash on screen when invoking a PowerShell script using Execute-ProcessAsUser (#735)
 - Added the appropriate exit code 1638 for MSIs that are already installed when using the Execute-MSI function with -PassThru (#736)
+- Added creation of the $dirAppDeployTemp directory by default so the variable can be used for general actions (#708)
 
 
 **Version 3.9.0 [10/01/2023]**
