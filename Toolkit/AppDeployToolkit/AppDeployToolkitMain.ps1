@@ -107,9 +107,9 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.9.0'
+[Version]$appDeployMainScriptVersion = [Version]'3.9.1'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.0'
-[String]$appDeployMainScriptDate = '10/01/2023'
+[String]$appDeployMainScriptDate = '20/01/2023'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
