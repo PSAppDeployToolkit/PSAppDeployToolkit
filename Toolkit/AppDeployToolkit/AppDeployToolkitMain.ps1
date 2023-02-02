@@ -107,9 +107,9 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.9.1'
+[Version]$appDeployMainScriptVersion = [Version]'3.9.2'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.0'
-[String]$appDeployMainScriptDate = '20/01/2023'
+[String]$appDeployMainScriptDate = '02/02/2023'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -285,6 +285,23 @@ Else {
     [String]$envProgramFilesX86 = $envProgramFiles
     [String]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
     [String]$envCommonProgramFilesX86 = $envCommonProgramFiles
+}
+
+## Variables: Office C2R version, bitness and channel
+If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'VersionToReport') {
+    [String]$envOfficeVersion = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'VersionToReport' -ErrorAction 'SilentlyContinue').VersionToReport
+}
+If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'Platform') {
+    [String]$envOfficeBitness = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'Platform' -ErrorAction 'SilentlyContinue').Platform
+}
+If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'CDNBaseURL') {
+    [String]$envOfficeCDNBaseURL = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'CDNBaseURL' -ErrorAction 'SilentlyContinue').CDNBaseURL
+    Switch -regex ([String]$envofficeCDNBaseURL) {
+        "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {$envOfficeChannel = "monthly"}
+        "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {$envOfficeChannel = "semi-annual"}
+        "64256afe-f5d9-4f86-8936-8840a6a4f5be" {$envOfficeChannel = "monthly targeted"}
+        "b8f9b850-328d-4355-9145-c59439a0c4cf" {$envOfficeChannel = "semi-annual targeted"}
+    }
 }
 
 ## Variables: Hardware
@@ -7481,7 +7498,7 @@ https://psappdeploytoolkit.com
             $executeProcessAsUserScript += 'WScript.Quit intReturn'
             $executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
             $Path = "$envWinDir\System32\wscript.exe"
-            $Parameters = "`"$executeAsUserTempPath\$($schTaskName).vbs`""
+            $Parameters = "/e:vbscript `"$executeAsUserTempPath\$($schTaskName).vbs`""
             $EscapedPath = [System.Security.SecurityElement]::Escape($Path)
             $EscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
 
@@ -10591,14 +10608,19 @@ https://psappdeploytoolkit.com
                 $notifier.Show($toastXml)
   
             }
-
-            ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
-            Try {                
-                $executeToastAsUserScript = "$configToolkitTempPath\$($appDeployToolkitName)-ToastNotification.ps1"
-                Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -Wait
+            
+            If ( -not $IsAdmin) {
+                Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage
             }
-            Catch {
+            Else {
+                ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
+                Try {                
+                    $executeToastAsUserScript = "$configToolkitTempPath\$($appDeployToolkitName)-ToastNotification.ps1"
+                    Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
+                    Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -Wait
+                }
+                Catch {
+                }
             }
         }
     }

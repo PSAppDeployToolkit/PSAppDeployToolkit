@@ -47,8 +47,8 @@ https://psappdeploytoolkit.com
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.9.1'
-[string]$appDeployHelpScriptDate = '20/01/2023'
+[version]$appDeployHelpScriptVersion = [version]'3.9.2'
+[string]$appDeployHelpScriptDate = '02/02/2023'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent

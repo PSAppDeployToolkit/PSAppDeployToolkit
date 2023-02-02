@@ -1,4 +1,10 @@
-﻿**Version 3.9.1 [20/01/2023]**
+﻿**Version 3.9.2 [xx/xx/2023]**
+- Resolved an issue where Show-BalloonTip would not work as a standard user. (#741)
+- Resolved an issue where Execute-ProcessAsUser fails due to an unexpected VBS file association. (#741)
+- Added variables for Office C2R: $envOfficeVersion, $envOfficeBitness, $envOfficeCDNBaseURL, $envOfficeChannel
+
+
+**Version 3.9.1 [20/01/2023]**
 - Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
 - Added Finnish language translations to the UI components (#681)
 - Added variable $IsMultiSessionOS for virtual environments (#697)
