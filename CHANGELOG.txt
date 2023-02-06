@@ -3,8 +3,8 @@
 - Added variables for Office C2R: $envOfficeVersion, $envOfficeBitness, $envOfficeCDNBaseURL, $envOfficeChannel
 - Resolved an issue where toast notifications invoked from Show-BalloonTip would not work when running as a standard user in scenarios where a standard user does not have access to the $envTemp directory or to the profile of another user. (#741)
 - Resolved an issue where Execute-ProcessAsUser fails due to an unexpected VBS file association. (#741)
-- Resolved the costmetic console output related to creation of a temporary directoy. (#739)
 - Resolved an issue where the script would fail on Windows Home editions due to the check for Power Users Group which doesn't exist on Home editions. (#728)
+- Resolved the costmetic console output related to creation of a temporary directoy. (#739)
 
 **Version 3.9.1 [20/01/2023]**
 - Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
