@@ -1,8 +1,9 @@
-﻿**Version 3.9.2 [xx/xx/2023]**
-- Resolved an issue where Show-BalloonTip would not work as a standard user. (#741)
+﻿**Version 3.9.2 [06/02/2023]**
+- Resolved an issue where Show-BalloonTip would not work when running as a standard user. (#741)
 - Resolved an issue where Execute-ProcessAsUser fails due to an unexpected VBS file association. (#741)
+- Improved Execute-ProcessAsUser to save in the target user's profile which resolves issues where users would not have access to the default $envTemp directory or the profile of another user when invoked as another user. (#741)
+- Resolved the costmetic console output related to creation of a temporary directoy. (#739)
 - Added variables for Office C2R: $envOfficeVersion, $envOfficeBitness, $envOfficeCDNBaseURL, $envOfficeChannel
-
 
 **Version 3.9.1 [20/01/2023]**
 - Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
@@ -13,7 +14,6 @@
 - Resolved an issue where a PowerShell prompt would flash on screen when invoking a PowerShell script using Execute-ProcessAsUser (#735)
 - Added the appropriate exit code 1638 for MSIs that are already installed when using the Execute-MSI function with -PassThru (#736)
 - Added creation of the $dirAppDeployTemp directory by default so the variable can be used for general actions (#708)
-
 
 **Version 3.9.0 [10/01/2023]**
 - AddedRefreshed UI components with updated PSAppDeployToolkit branding

@@ -7324,6 +7324,10 @@ Logged in Username under which to run the process from. Default is: The active c
 
 Path to the file being executed.
 
+.PARAMETER TempPath
+
+Path to the temporary directory used to store the script to be executed as user. Defaults to the current logged on user.
+
 .PARAMETER Parameters
 
 Arguments to be passed to the file being executed.
@@ -7396,6 +7400,9 @@ https://psappdeploytoolkit.com
         [String]$Path,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
+        [String]$TempPath = $loggedOnUserTempPath,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
         [String]$Parameters = '',
         [Parameter(Mandatory = $false)]
         [Switch]$SecureParameters = $false,
@@ -7419,7 +7426,24 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-        [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
+        
+        If ($UserName -eq $RunAsActiveUser.NTAccount) { 
+            $executeAsUserTempPath = $loggedOnUserTempPath
+        }
+        Else {
+            [String]$dirUserProfile = Split-path $envUserProfile -ErrorAction 'SilentlyContinue'
+            [String]$userProfileName = Split-Path -Path $userName -Leaf
+            If (Test-Path (Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue')) {
+                [String]$runasUserProfile = Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue'
+                [String]$executeAsUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')  
+                If (-not (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+                    $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
+                }            
+            }
+            Else {
+                [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
+            }         
+        }
     }
     Process {
         ## Initialize exit code variable
@@ -7612,7 +7636,7 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
             #  Delete Scheduled Task
             Write-Log -Message 'Deleting the scheduled task which did not trigger.' -Source ${CmdletName}
-            Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
+            #Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
             If (-not $ContinueOnError) {
                 Throw "Failed to trigger scheduled task [$schTaskName]."
             }
@@ -7665,7 +7689,7 @@ https://psappdeploytoolkit.com
         ## Delete scheduled task
         Try {
             Write-Log -Message "Deleting scheduled task [$schTaskName]." -Source ${CmdletName}
-            Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
+            #Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
         }
         Catch {
             Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7673,12 +7697,12 @@ https://psappdeploytoolkit.com
 
         ## Remove the XML scheduled task file
         If (Test-Path -LiteralPath $xmlSchTaskFilePath -PathType 'Leaf') {
-            Remove-File -Path $xmlSchTaskFilePath
+            #Remove-File -Path $xmlSchTaskFilePath
         }
 
         ##  Remove the temporary folder
         If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-            Remove-Folder -Path $executeAsUserTempPath
+            #Remove-Folder -Path $executeAsUserTempPath
         }
     }
     End {
@@ -10544,8 +10568,7 @@ https://psappdeploytoolkit.com
                 $script:notifyIcon.ShowBalloonTip($BalloonTipTime)
             }
         }
-        Else {
-            Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
+        Else {            
             
             [scriptblock]$toastScriptBlock  = {
                 Param(
@@ -10609,13 +10632,15 @@ https://psappdeploytoolkit.com
   
             }
             
-            If ( -not $IsAdmin) {
+            If ($ProcessNTAccount -eq $runAsActiveUser.NTAccount) {
+                Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
                 Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage
             }
             Else {
                 ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
-                Try {                
-                    $executeToastAsUserScript = "$configToolkitTempPath\$($appDeployToolkitName)-ToastNotification.ps1"
+                Try {   
+                    Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}             
+                    $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
                     Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -Wait
                 }
@@ -15714,6 +15739,24 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
     }
 }
 
+[ScriptBlock]$GetLoggedOnUserTempPath = {
+    # When running in system context we can derive the native "C:\Users" base path from the Public environment variable
+    [String]$dirUserProfile = Split-path $envPublic -ErrorAction 'SilentlyContinue'
+    If ($null -ne $RunAsActiveUser.NTAccount) {
+        [String]$userProfileName = $RunAsActiveUser.UserName
+        If (Test-Path (Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue')) {
+            [String]$runasUserProfile = Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue'
+            [String]$loggedOnUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')  
+            If (-not (Test-Path -LiteralPath $loggedOnUserTempPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
+                $null = New-Item -Path $loggedOnUserTempPath -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
+            }            
+        }
+    }
+    Else {
+        [String]$loggedOnUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
+    }
+}
+
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
@@ -15989,6 +16032,9 @@ Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
 . $GetLoggedOnUserDetails
+
+## Dot source ScriptBlock to create temporary directory of logged on user
+. $GetLoggedOnUserTempPath
 
 ## Dot source ScriptBlock to load localized UI messages from config XML
 . $xmlLoadLocalizedUIMessages
