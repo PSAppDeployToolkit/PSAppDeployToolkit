@@ -1,9 +1,9 @@
 ﻿<AppDeployToolkit_Config>
     <!--
-    PSApppDeployToolkit - This XML configuration file is used to set defaults for the PSADT core
+    PSAppDeployToolkit - This XML configuration file is used to set defaults for the PSADT core
     runtime and functions.
 
-    PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team
+    PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team
     (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU
