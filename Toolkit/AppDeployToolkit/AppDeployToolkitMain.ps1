@@ -7326,7 +7326,7 @@ Path to the file being executed.
 
 .PARAMETER TempPath
 
-Path to the temporary directory used to store the script to be executed as user. Defaults to the current logged on user.
+Path to the temporary directory used to store the script to be executed as user. If using a user writable directory, ensure you select -RunLevel 'LeastPrivilege'.
 
 .PARAMETER Parameters
 
@@ -7400,7 +7400,7 @@ https://psappdeploytoolkit.com
         [String]$Path,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$TempPath = $loggedOnUserTempPath,
+        [String]$TempPath,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$Parameters = '',
@@ -7427,23 +7427,15 @@ https://psappdeploytoolkit.com
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
         
-        If ($UserName -eq $RunAsActiveUser.NTAccount) { 
-            $executeAsUserTempPath = $loggedOnUserTempPath
+        If ($null -ne $tempPath) {             
+            $executeAsUserTempPath = $tempPath
+            If (($tempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq "HighestPrivilege")) {
+                Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the HighestPrivilege creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
+            }
         }
         Else {
-            [String]$dirUserProfile = Split-path $envUserProfile -ErrorAction 'SilentlyContinue'
-            [String]$userProfileName = Split-Path -Path $userName -Leaf
-            If (Test-Path (Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue')) {
-                [String]$runasUserProfile = Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue'
-                [String]$executeAsUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')  
-                If (-not (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-                    $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
-                }            
-            }
-            Else {
-                [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
-            }         
-        }
+            [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
+        }   
     }
     Process {
         ## Initialize exit code variable
@@ -10642,7 +10634,7 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}             
                     $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -Wait
+                    Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"$executeToastAsUserScript `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`'`"; Exit `$LastExitCode }" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
                 }
                 Catch {
                 }

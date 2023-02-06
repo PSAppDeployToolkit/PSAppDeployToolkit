@@ -1,7 +1,7 @@
 ﻿**Version 3.9.2 [06/02/2023]**
-- Resolved an issue where Show-BalloonTip would not work when running as a standard user. (#741)
+- Resolved an issue where toast notifications invoked from Show-BalloonTip would not work when running as a standard user in scenarios where a standard user does not have access to the $envTemp directory or to the profile of another user (when invoked as another user.)
 - Resolved an issue where Execute-ProcessAsUser fails due to an unexpected VBS file association. (#741)
-- Improved Execute-ProcessAsUser to save in the target user's profile which resolves issues where users would not have access to the default $envTemp directory or the profile of another user when invoked as another user. (#741)
+- Added TempPath variable to Execute-ProcessAsUser to save in the target user's profile which resolves issues where users would not have access to the default $envTemp directory or the profile of another user when invoked as another user. A user writable directory must be used with -RunLevel 'LeastPrivilege' (#741)
 - Resolved the costmetic console output related to creation of a temporary directoy. (#739)
 - Added variables for Office C2R: $envOfficeVersion, $envOfficeBitness, $envOfficeCDNBaseURL, $envOfficeChannel
 
