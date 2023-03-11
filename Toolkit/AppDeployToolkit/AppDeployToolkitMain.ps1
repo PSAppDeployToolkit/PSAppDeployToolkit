@@ -350,9 +350,12 @@ $GetAccountNameUsingSid = [ScriptBlock] {
 [String]$LocalSystemNTAccount = & $GetAccountNameUsingSid 'LocalSystemSid'
 [String]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
 # Test if the current Windows is a Home edition
-If (!((Get-ComputerInfo -ErrorAction 'SilentlyContinue' | Select -Property WindowsProductName).WindowsProductName -like "*Home*")){
-    [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
+Try {
+    If (!((Get-WmiObject -Class Win32_OperatingSystem | Select -Expand Caption) -like "*Home*")){
+        [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
+    }
 }
+Catch{}
 [String]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
 #  Check if script is running in session zero
 If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) {
