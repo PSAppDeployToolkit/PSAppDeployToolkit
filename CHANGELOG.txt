@@ -1,6 +1,7 @@
 ﻿**Version 3.9.3 [xx/xx/xxxx]**
 - Resolved an issue where Execute-ProcessAsUser would not work since 3.9.2 #749 #776
 - Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765
+- Added XML configuration option to define the standard app display name of the toast notification #778
 
 **Version 3.9.2 [06/02/2023]**
 - Toast notifications now show the custom logo in the notification header (#745)

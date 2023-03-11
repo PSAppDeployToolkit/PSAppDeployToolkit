@@ -51,6 +51,12 @@
     </Toolkit_Options>
     <!--Toolkit Options-->
 
+    <!--Toast Notification Options-->
+    <Toast_Options>
+        <Toast_AppName>PSAppDeployToolkit</Toast_AppName>
+    </Toast_Options>
+    <!--Toast Notification Options-->
+        
     <!--Banner, Logo & Icon Options-->
     <BannerIcon_Options>
         <Icon_Filename>AppDeployToolkitLogo.ico</Icon_Filename>
