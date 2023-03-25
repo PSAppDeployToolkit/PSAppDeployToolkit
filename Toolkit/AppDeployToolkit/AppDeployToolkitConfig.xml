@@ -18,8 +18,8 @@
 
 <!--Configuration File Details-->
     <Config_File>
-        <Config_Version>3.9.0</Config_Version>
-        <Config_Date>26/01/2021</Config_Date>
+        <Config_Version>3.9.3</Config_Version>
+        <Config_Date>25/03/2023</Config_Date>
     </Config_File>
 
     <!--Toolkit Options-->
@@ -53,6 +53,7 @@
 
     <!--Toast Notification Options-->
     <Toast_Options>
+        <Toast_Disable>False</Toast_Disable>
         <Toast_AppName>PSAppDeployToolkit</Toast_AppName>
     </Toast_Options>
     <!--Toast Notification Options-->

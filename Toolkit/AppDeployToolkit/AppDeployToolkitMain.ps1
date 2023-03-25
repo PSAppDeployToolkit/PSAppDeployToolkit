@@ -107,9 +107,9 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.9.2'
-[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.0'
-[String]$appDeployMainScriptDate = '02/02/2023'
+[Version]$appDeployMainScriptVersion = [Version]'3.9.3'
+[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.3'
+[String]$appDeployMainScriptDate = '25/03/2023'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -411,6 +411,7 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 
 # Get Toast Notification Options
 [Xml.XmlElement]$xmlToastOptions = $xmlConfig.Toast_Options
+[String]$configToastDisable = $xmlToastOptions.Toast_Disable
 [String]$configToastAppName = $xmlToastOptions.Toast_AppName
 
 [String]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName
@@ -10497,7 +10498,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If ($envOSVersionMajor -lt 10) {
+        If (($envOSVersionMajor -lt 10) -or ($configToastDisable -eq $true)) {
             ## NoWait - Create the balloontip icon asynchronously
             If ($NoWait) {
                 Write-Log -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
@@ -10570,6 +10571,7 @@ https://psappdeploytoolkit.com
                 $script:notifyIcon.ShowBalloonTip($BalloonTipTime)
             }
         }
+        # Otherwise use toast notification
         Else {
             $toastAppID = $appDeployToolkitName
             $toastAppDisplayName = $configToastAppName
