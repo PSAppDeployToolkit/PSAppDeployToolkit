@@ -15264,7 +15264,7 @@ Returns a custom object with the following properties
 
 Get-PendingReboot
 
-Returns caustom object with following properties:
+Returns custom object with following properties:
 - ComputerName
 - LastBootUpTime
 - IsSystemRebootPending
