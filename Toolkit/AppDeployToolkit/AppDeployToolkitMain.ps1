@@ -7639,7 +7639,7 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
             #  Delete Scheduled Task
             Write-Log -Message 'Deleting the scheduled task which did not trigger.' -Source ${CmdletName}
-            #Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
+            Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
             If (-not $ContinueOnError) {
                 Throw "Failed to trigger scheduled task [$schTaskName]."
             }
@@ -7692,7 +7692,7 @@ https://psappdeploytoolkit.com
         ## Delete scheduled task
         Try {
             Write-Log -Message "Deleting scheduled task [$schTaskName]." -Source ${CmdletName}
-            #Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
+            Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
         }
         Catch {
             Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -7700,12 +7700,12 @@ https://psappdeploytoolkit.com
 
         ## Remove the XML scheduled task file
         If (Test-Path -LiteralPath $xmlSchTaskFilePath -PathType 'Leaf') {
-            #Remove-File -Path $xmlSchTaskFilePath
+            Remove-File -Path $xmlSchTaskFilePath
         }
 
         ##  Remove the temporary folder
         If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-            #Remove-Folder -Path $executeAsUserTempPath
+            Remove-Folder -Path $executeAsUserTempPath
         }
     }
     End {

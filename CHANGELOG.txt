@@ -1,7 +1,7 @@
 ﻿**Version 3.9.3 [xx/xx/xxxx]**
 - Resolved an issue where Execute-ProcessAsUser would not work since 3.9.2 #749 #776 #784
 - Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765
-- Added XML configuration option <Toast_Disable> to turn toast notifications off in favour of balloon tip notifications, default value is False.
+- Added XML configuration option <Toast_Disable> to turn toast notifications off, default value is TRUE, thus reverting to balloon tip notifications as standard until stability is reached in the toast function.
 - Added XML configuration option <Toast_AppName> to define the standard app display name of the toast notification #778
 
 **Version 3.9.2 [06/02/2023]**
