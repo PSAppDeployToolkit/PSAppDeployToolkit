@@ -1,4 +1,5 @@
 ﻿**Version 3.9.3 [xx/xx/xxxx]**
+- Improved accuracy of detection of Intune ESP / Provisioning #801
 - Resolved an issue where Execute-ProcessAsUser would not work correctly since 3.9.2 #749 #776 #784
 - Resolved an issue where Execute-ProcessAsUser Scheduled Task is not removed after execution since 3.9.0 #791 #793
 - Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765

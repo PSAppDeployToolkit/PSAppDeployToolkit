@@ -16139,7 +16139,7 @@ If ($usersLoggedOn) {
     }
 
     # Check if user session is running under defaultuser0 account (Autopilot OOBE) or if application is installing during ESP and if so change deployment to run silently
-    If ($CurrentLoggedOnUserSession.UserName -match 'defaultuser0' -or (((Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue').count) -gt 0)) {
+    If ($RunAsActiveUser.NTAccount -like '*\defaultuser0' -and (((Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue').count) -gt 0)) {
         Write-Log -Message "Autopilot OOBE user [$($CurrentLoggedOnUserSession.UserName)] or ESP process 'wwahost' detected, changing deployment mode to silent." -Source $appDeployToolkitExtName
         $deployMode = 'Silent'
     }
