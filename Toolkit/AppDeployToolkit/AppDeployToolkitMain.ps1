@@ -7478,7 +7478,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Build the scheduled task XML name
-        [String]$schTaskName = "$appDeployToolkitName-ExecuteAsUser"
+        [String]$schTaskName = (("$appDeployToolkitName-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')
 
         ##  Remove and recreate the temporary folder
         If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
@@ -10453,7 +10453,7 @@ Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -B
 
 .NOTES
 
-For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip. The toast notification does not use tte BalloonTipIcon if specified.
+For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
 .LINK
 
