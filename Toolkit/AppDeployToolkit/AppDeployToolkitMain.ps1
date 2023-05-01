@@ -1,7 +1,7 @@
 ﻿<#
 .SYNOPSIS
 
-PSApppDeployToolkit - This script contains the PSADT core runtime and functions using by a Deploy-Application.ps1 script.
+PSAppDeployToolkit - This script contains the PSADT core runtime and functions using by a Deploy-Application.ps1 script.
 
 .DESCRIPTION
 
@@ -9,7 +9,7 @@ The script can be called directly to dot-source the toolkit functions for testin
 
 The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 
-PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
+PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -3651,7 +3651,7 @@ https://psappdeploytoolkit.com
 
             #  Call the Execute-Process function
             If ($PassThru) {
-                [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat 
+                [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
             }
             Else {
                 Execute-Process @ExecuteProcessSplat
@@ -4896,6 +4896,14 @@ This function does not generate any output.
 .EXAMPLE
 
 Remove-Folder -Path "$envWinDir\Downloaded Program Files"
+
+Deletes all files and subfolders in the Windows\Downloads Program Files folder
+
+.EXAMPLE
+
+Remove-Folder -Path "$envTemp\MyAppCache" -DisableRecursion
+
+Deletes all files in the Temp\MyAppCache folder but does not delete any subfolders.
 
 .NOTES
 
@@ -7437,8 +7445,8 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-        
-        If ((![string]::IsNullOrEmpty($tempPath))) {             
+
+        If ((![string]::IsNullOrEmpty($tempPath))) {
             $executeAsUserTempPath = $tempPath
             If (($tempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq "HighestPrivilege")) {
                 Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the HighestPrivilege creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
@@ -7446,7 +7454,7 @@ https://psappdeploytoolkit.com
         }
         Else {
             [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
-        }   
+        }
     }
     Process {
         ## Initialize exit code variable
@@ -8076,7 +8084,7 @@ https://psappdeploytoolkit.com
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
         [string]$SchInstallName = $installName
         ForEach ($invalidChar in $invalidScheduledTaskChars) {
-            [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),'' 
+            [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
         [string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
         [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
@@ -10575,7 +10583,7 @@ https://psappdeploytoolkit.com
         Else {
             $toastAppID = $appDeployToolkitName
             $toastAppDisplayName = $configToastAppName
-            
+
             [scriptblock]$toastScriptBlock  = {
                 Param(
                     [Parameter(Mandatory = $true, Position = 0)]
@@ -10583,7 +10591,7 @@ https://psappdeploytoolkit.com
                     [String]$BalloonTipText,
                     [Parameter(Mandatory = $false, Position = 1)]
                     [ValidateNotNullorEmpty()]
-                    [String]$BalloonTipTitle,                                 
+                    [String]$BalloonTipTitle,
                     [Parameter(Mandatory = $false, Position = 2)]
                     [ValidateNotNullorEmpty()]
                     [String]$AppDeployLogoImage,
@@ -10594,26 +10602,26 @@ https://psappdeploytoolkit.com
                     [ValidateNotNullorEmpty()]
                     [String]$toastAppDisplayName
                 )
-            
+
                 # Check for required entries in registry for when using Powershell as application for the toast
                 # Register the AppID in the registry for use with the Action Center, if required
                 $regPathToastNotificationSettings = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings'
                 $regPathToastApp = 'Registry::HKEY_CURRENT_USER\Software\Classes\AppUserModelId'
 
-                # Create the registry entries            
+                # Create the registry entries
                 $null = New-Item -Path "$regPathToastNotificationSettings\$toastAppId" -Force
                 # Make sure the app used with the action center is enabled
                 $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' -Force
                 $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'Enabled' -Value 1 -PropertyType 'DWORD' -Force
                 $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'SoundFile' -PropertyType 'STRING' -Force
-                
-                # Create the registry entries           
+
+                # Create the registry entries
                 $null = New-Item -Path "$regPathToastApp\$toastAppId" -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'DisplayName' -Value "$($toastAppDisplayName)" -PropertyType 'STRING' -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'ShowInSettings' -Value 0 -PropertyType 'DWORD' -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconUri' -Value $appDeployLogoImage -PropertyType 'ExpandString' -Force
-                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force                               
-                
+                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force
+
                 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
                 [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
@@ -10639,15 +10647,15 @@ https://psappdeploytoolkit.com
                 $notifier.Show($toastXml)
 
             }
-                
+
             If ($ProcessNTAccount -eq $runAsActiveUser.NTAccount) {
                 Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
                 Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage, $toastAppID, $toastAppDisplayName
             }
             Else {
                 ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
-                Try {   
-                    Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}             
+                Try {
+                    Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
                     $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
                     Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"`'$executeToastAsUserScript`' `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`' `'$toastAppID`' `'$toastAppDisplayName`'`"; Exit `$LastExitCode }" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
@@ -15754,10 +15762,10 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
         [String]$userProfileName = $RunAsActiveUser.UserName
         If (Test-Path (Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue')) {
             [String]$runasUserProfile = Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue'
-            [String]$loggedOnUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')  
+            [String]$loggedOnUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')
             If (-not (Test-Path -LiteralPath $loggedOnUserTempPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
                 $null = New-Item -Path $loggedOnUserTempPath -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
-            }            
+            }
         }
     }
     Else {
