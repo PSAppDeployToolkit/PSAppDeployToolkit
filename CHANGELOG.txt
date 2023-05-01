@@ -5,6 +5,7 @@
 - Resolved an issue where Execute-ProcessAsUser Scheduled Task is not removed after execution since 3.9.0 #791 #793
 - Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765
 - Resolved an issue where Execute-ProcessAsUser would fail due to a whitespace in the $installName if called prior to the Initialization phase #788
+- Resolved an issue where the status text on Show-InstallationProgress was not centered #780
 - Fixed French translation for WelcomePrompt_CountdownMessage #796
 - Added XML configuration option <Toast_Disable> to turn toast notifications off, default value is TRUE, thus reverting to balloon tip notifications as standard until stability is reached in the toast function.
 - Added XML configuration option <Toast_AppName> to define the standard app display name of the toast notification #778

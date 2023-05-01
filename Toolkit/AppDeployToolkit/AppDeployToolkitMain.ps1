@@ -10833,7 +10833,7 @@ https://psappdeploytoolkit.com
                         <ColumnDefinition MinWidth="350" MaxWidth="350" Width="350"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-                    <TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,20,30" Text="Installation in progress" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
+                    <TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,64,30" Text="Installation in progress" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
                     <Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="32" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Ellipse.RenderTransform>
                         <TransformGroup>
