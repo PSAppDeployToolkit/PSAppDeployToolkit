@@ -10,6 +10,8 @@
 - Added XML configuration option <Toast_Disable> to turn toast notifications off, default value is TRUE, thus reverting to balloon tip notifications as standard until stability is reached in the toast function.
 - Added XML configuration option <Toast_AppName> to define the standard app display name of the toast notification #778
 - Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
+- Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
+- Improved documentation of Set-ActiveSetup function.
 
 **Version 3.9.2 [06/02/2023]**
 - Toast notifications now show the custom logo in the notification header (#745)
