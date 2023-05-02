@@ -109,7 +109,7 @@ Param (
 ## Variables: Script Info
 [Version]$appDeployMainScriptVersion = [Version]'3.9.3'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.3'
-[String]$appDeployMainScriptDate = '25/03/2023'
+[String]$appDeployMainScriptDate = '02/05/2023'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
