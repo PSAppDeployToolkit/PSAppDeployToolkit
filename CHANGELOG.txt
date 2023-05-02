@@ -1,4 +1,4 @@
-﻿**Version 3.9.3 [xx/xx/xxxx]**
+﻿**Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801
 - Resolved an issue where Show-InstallationRestartPrompt would not work with -NoSilentRestart $false #785
 - Resolved an issue where Execute-ProcessAsUser would not work correctly since 3.9.2 #749 #776 #784
