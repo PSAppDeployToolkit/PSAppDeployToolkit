@@ -1,10 +1,16 @@
-﻿**Version 3.9.3 [xx/xx/xxxx]**
+﻿**Version 3.9.4 [xx/xx/xxxx]**
+- Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
+- Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
+- Improved documentation of Set-ActiveSetup function.
+
+**Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801
 - Resolved an issue where Show-InstallationRestartPrompt would not work with -NoSilentRestart $false #785
 - Resolved an issue where Execute-ProcessAsUser would not work correctly since 3.9.2 #749 #776 #784
 - Resolved an issue where Execute-ProcessAsUser Scheduled Task is not removed after execution since 3.9.0 #791 #793
 - Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765
 - Resolved an issue where Execute-ProcessAsUser would fail due to a whitespace in the $installName if called prior to the Initialization phase #788
+- Resolved an issue where the status text on Show-InstallationProgress was not centered #780
 - Fixed French translation for WelcomePrompt_CountdownMessage #796
 - Added XML configuration option <Toast_Disable> to turn toast notifications off, default value is TRUE, thus reverting to balloon tip notifications as standard until stability is reached in the toast function.
 - Added XML configuration option <Toast_AppName> to define the standard app display name of the toast notification #778

@@ -4243,6 +4243,11 @@ https://psappdeploytoolkit.com
                 $WorkingDirectory = Split-Path -Path $Path -Parent -ErrorAction 'Stop'
             }
 
+            ## If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true'.
+            If ($WindowStyle -eq 'Hidden') {
+                $UseShellExecute = $true
+            }
+
             ## If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
             ## Please note that a race condition is possible after this check where another process waiting for the MSI installer
             ##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
@@ -10833,7 +10838,7 @@ https://psappdeploytoolkit.com
                         <ColumnDefinition MinWidth="350" MaxWidth="350" Width="350"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-                    <TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,20,30" Text="Installation in progress" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
+                    <TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,64,30" Text="Installation in progress" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
                     <Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="32" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Ellipse.RenderTransform>
                         <TransformGroup>
@@ -14064,9 +14069,9 @@ This Function:
 
 .PARAMETER StubExePath
 
-Full destination path to the file that will be executed for each user that logs in.
+Use this parameter to specify the destination path of the file that will be executed upon user login.
 
-If this file exists in the 'Files' subdirectory of the script directory, it will be copied to the destination path.
+Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specificed in this parameter.
 
 .PARAMETER Arguments
 
@@ -14083,6 +14088,10 @@ Name of the registry key for the Active Setup entry. Default is: $installName.
 .PARAMETER Version
 
 Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
+
+Note: 
+    - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
+    - In Windows 10, Scripts and EXEs might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
 
 .PARAMETER Locale
 
@@ -14270,37 +14279,39 @@ https://psappdeploytoolkit.com
                 Else {
                     $HKCUProps = (Get-RegistryKey -Key $HKCUKey -ContinueOnError $true)
                 }
+
                 $HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
                 [String]$HKCUVer = $HKCUProps.Version
                 [String]$HKLMVer = $HKLMProps.Version
                 [Int32]$HKLMInst = $HKLMProps.IsInstalled
-                # HKLM entry not present. Nothing to run
+
+                # HKLM entry not present. Nothing to run.
                 If (-not $HKLMProps) {
                     Write-Log 'HKLM active setup entry is not present.' -Source ${CmdletName}
                     Return ($false)
                 }
-                # HKLM entry present, but disabled. Nothing to run
+                # HKLM entry present, but disabled. Nothing to run.
                 If ($HKLMInst -eq 0) {
                     Write-Log 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).' -Source ${CmdletName}
                     Return ($false)
                 }
-                # HKLM entry present and HKCU entry is not. Run the StubPath
+                # HKLM entry present and HKCU entry is not. Run the StubPath.
                 If (-not $HKCUProps) {
                     Write-Log 'HKLM active setup entry is present. HKCU active setup entry is not present.' -Source ${CmdletName}
                     Return ($true)
                 }
-                # Both entries present. HKLM entry does not have Version property. Nothing to run
+                # Both entries present. HKLM entry does not have Version property. Nothing to run.
                 If (-not $HKLMVer) {
                     Write-Log 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.' -Source ${CmdletName}
                     Return ($false)
                 }
-                # Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath
+                # Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath.
                 If (-not $HKCUVer) {
                     Write-Log 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.' -Source ${CmdletName}
                     Return ($true)
                 }
-                # Both entries present, with a Version property. Compare the Versions
-                ## Remove invalid characters from Version. Only digits and commas are allowed
+
+                # Remove invalid characters from Version property. Only digits and commas are allowed.
                 [String]$HKLMValidVer = ''
                 For ($i = 0; $i -lt $HKLMVer.Length; $i++) {
                     If ([Char]::IsDigit($HKLMVer[$i]) -or ($HKLMVer[$i] -eq ',')) {
@@ -14314,34 +14325,60 @@ https://psappdeploytoolkit.com
                         $HKCUValidVer += $HKCUVer[$i]
                     }
                 }
-                # After cleanup, the HKLM Version is empty. Considering it missing. HKCU is present so nothing to run.
+
+                # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
                 If (-not $HKLMValidVer) {
                     Write-Log 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.' -Source ${CmdletName}
                     Return ($false)
                 }
-                # the HKCU Version property is empty while HKLM Version property is not. Run the StubPath
+
+                # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
                 If (-not $HKCUValidVer) {
                     Write-Log 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.' -Source ${CmdletName}
                     Return ($true)
                 }
-                # Both Version properties are present
-                # Split the version by commas
-                [String[]]$SplitHKLMValidVer = $HKLMValidVer.Split(',')
-                [String[]]$SplitHKCUValidVer = $HKCUValidVer.Split(',')
-                # Check whether the Versions were split in the same number of strings
-                If ($SplitHKLMValidVer.Count -ne $SplitHKCUValidVer.Count) {
-                    # The versions are different length - more commas
-                    If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
-                        #HKLM is longer, Run the StubPath
-                        Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKLM Version has more sub versions." -Source ${CmdletName}
+
+                ## Both entries present, with a Version property. Compare the Versions.
+                # Convert the version property to Version type and compare
+                [Version]$VersionHKLMValidVer = $null
+                [Version]$VersionHKCUValidVer = $null
+                Try {
+                    [Version]$VersionHKLMValidVer = [Version]$HKLMValidVer.Replace(',','.')
+                    [Version]$VersionHKCUValidVer = [Version]$HKCUValidVer.Replace(',','.')
+                    
+                    If ($VersionHKLMValidVer -gt $VersionHKCUValidVer) {
+                        # HKLM is greater, run the StubPath.
+                        Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater." -Source ${CmdletName}
                         Return ($true)
                     }
                     Else {
-                        #HKCU is longer, Nothing to run
-                        Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, however they don't contain the same amount of sub versions. HKCU Version has more sub versions." -Source ${CmdletName}
+                        # The HKCU version is equal or higher than HKLM version, Nothing to run
+                        Write-Log 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.' -Source ${CmdletName}
                         Return ($false)
                     }
                 }
+                Catch {
+                    # Failed to convert version property to Version type.
+                }
+
+                # Check whether the Versions were split into the same number of strings
+                # Split the version by commas
+                [String[]]$SplitHKLMValidVer = $HKLMValidVer.Split(',')
+                [String[]]$SplitHKCUValidVer = $HKCUValidVer.Split(',')
+                If ($SplitHKLMValidVer.Count -ne $SplitHKCUValidVer.Count) {
+                    # The versions are different length - more commas
+                    If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
+                        # HKLM is longer, Run the StubPath
+                        Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields." -Source ${CmdletName}
+                        Return ($true)
+                    }
+                    Else {
+                        # HKCU is longer, Nothing to run
+                        Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields." -Source ${CmdletName}
+                        Return ($false)
+                    }
+                }
+                
                 # The Versions have the same number of strings. Compare them
                 Try {
                     For ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++) {
@@ -14350,17 +14387,17 @@ https://psappdeploytoolkit.com
                         [UInt64]$ParsedHKCUVer = [UInt64]::Parse($SplitHKCUValidVer[$i])
                         # The HKCU ver is lower, Run the StubPath
                         If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
-                            Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however HKCU Version property is lower.' -Source ${CmdletName}
+                            Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.' -Source ${CmdletName}
                             Return ($true)
                         }
                     }
                     # The HKCU version is equal or higher than HKLM version, Nothing to run
-                    Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however they are either the same or HKCU Version property is higher.' -Source ${CmdletName}
+                    Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.' -Source ${CmdletName}
                     Return ($false)
                 }
                 Catch {
-                    # Failed to parse strings as UInts, Run the StubPath
-                    Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid, however parsing strings to uintegers failed.' -Severity 2 -Source ${CmdletName}
+                    # Failed to parse strings as UInt64, Run the StubPath
+                    Write-Log 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2 -Source ${CmdletName}
                     Return ($true)
                 }
             }
