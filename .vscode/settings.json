@@ -1,0 +1,30 @@
+{
+    "files.exclude": {
+        ".github": true,
+        "docs": true,
+        "Examples": true,
+        "material": true,
+        "Sources": true,
+        "Testing": true,
+        "wiki": true,
+        "**/Deploy-Application.exe": true,
+        "**/Deploy-Application.exe.config": true,
+        ".editorconfig": true,
+        ".gitattributes": true,
+        ".gitignore": true,
+        "CHANGELOG.txt": true,
+        "COPYING.Lesser": true,
+        "LICENSE": true,
+        "AppDeployToolkitLogo.png": true,
+        "mkdocs.yml": true,
+        "PSAppDeployToolkit.pdf": true,
+        "README.md": true,
+        "TODO.txt": true,
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    }
+}
