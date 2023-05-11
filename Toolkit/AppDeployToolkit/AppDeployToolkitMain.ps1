@@ -16189,6 +16189,11 @@ If ($usersLoggedOn) {
         $deployMode = 'Silent'
     }
 
+    [Int]$defenderHideSysTray = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray' -Value 'HideSystray'
+    If ($defenderHideSysTray -ne "1" -and ($null -eq (Get-Process -Name SecurityHealthSystray -ErrorAction SilentlyContinue)) {
+        $deployMode = 'Silent'
+    }
+
     #  Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
     If ($CurrentConsoleUserSession) {
         Write-Log -Message "The following user is the console user [$($CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $appDeployToolkitName
