@@ -1,48 +1,79 @@
-﻿**Version 3.8.5 [??/03/2021]**
-- Changed Show-InstallationRestartPrompt:
-  - Fixed a bug in the function, that caused incorrect handling of parameters when running the function asynchronously
-  - Changed the function so it doesn't prepare the window when running asynchronously. This also fixes a bug where the timers kept running in the background and were never stopped when running asynchronously.
-  - The titlebar now shows the toolkit icon. The close button is disabled.
-  - Added -TopMost parameter
-- Changed Show-InstallationPrompt:
-  - Fixed the function failing to display a window with -NoWait parameter specified
-  - Changed the function so it doesn't prepare the window when -NoWait is specified. This also fixes a bug where the timers kept running in the background and were never stopped when -NoWait was specified.
-  - The titlebar close button is now disabled.
-  - Added -TopMost parameter
-- Changed Show-InstallationWelcome
-  - The titlebar close button is now disabled.
-  - If CloseApps timer is enabled, but none of the processes are running, the countdown message will now be the same as the one when only the Countdown is enabled without CloseApps.
+﻿**Version 3.9.4 [xx/xx/xxxx]**
+- Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
+- Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
+- Improved detection of Intune Provisioning/ESP detection 
+- Improved documentation of Set-ActiveSetup function.
+
+**Version 3.9.3 [01/05/2023]**
+- Improved accuracy of Intune Provisioning/ESP detection #779 #801
+- Resolved an issue where Show-InstallationRestartPrompt would not work with -NoSilentRestart $false #785
+- Resolved an issue where Execute-ProcessAsUser would not work correctly since 3.9.2 #749 #776 #784
+- Resolved an issue where Execute-ProcessAsUser Scheduled Task is not removed after execution since 3.9.0 #791 #793
+- Resolved an issue where 3.9.2 would fail on devices running PowerShell versions below 5.1 due to the function Get-ComputerInfo #765
+- Resolved an issue where Execute-ProcessAsUser would fail due to a whitespace in the $installName if called prior to the Initialization phase #788
+- Resolved an issue where the status text on Show-InstallationProgress was not centered #780
+- Fixed French translation for WelcomePrompt_CountdownMessage #796
+- Added XML configuration option <Toast_Disable> to turn toast notifications off, default value is TRUE, thus reverting to balloon tip notifications as standard until stability is reached in the toast function.
+- Added XML configuration option <Toast_AppName> to define the standard app display name of the toast notification #778
+
+**Version 3.9.2 [06/02/2023]**
+- Toast notifications now show the custom logo in the notification header (#745)
+- Added variables for Office C2R: $envOfficeVersion, $envOfficeBitness, $envOfficeCDNBaseURL, $envOfficeChannel
+- Resolved an issue where toast notifications invoked from Show-BalloonTip would not work when running as a standard user in scenarios where a standard user does not have access to the $envTemp directory or to the profile of another user. (#741)
+- Resolved an issue where Execute-ProcessAsUser fails due to an unexpected VBS file association. (#741)
+- Resolved an issue where the script would fail on Windows Home editions due to the check for Power Users Group which doesn't exist on Home editions. (#728)
+- Removed the (cosmetic) console output related to creation of a temporary directory. (#739)
+
+**Version 3.9.1 [20/01/2023]**
+- Resolved an issue introduced in v3.9.0 where toast notifications would not display when run in the system context (#733)
+- Added Finnish language translations to the UI components (#681)
+- Added variable $IsMultiSessionOS for virtual environments (#697)
+- Add missing dash before TypeName parameter used with New-Object in the in Set-ItemPermission function which resulted in failing to set read permissions on the BlockExecution path. (#721)
+- Resolved an issue introduced in v3.8.4 where registry entries set by Block-AppExecution would not be cleaned up after an interrupted installation (#714)
+- Resolved an issue where a PowerShell prompt would flash on screen when invoking a PowerShell script using Execute-ProcessAsUser (#735)
+- Added the appropriate exit code 1638 for MSIs that are already installed when using the Execute-MSI function with -PassThru (#736)
+- Added creation of the $dirAppDeployTemp directory by default so the variable can be used for general actions (#708)
+
+**Version 3.9.0 [10/01/2023]**
+- AddedRefreshed UI components with updated PSAppDeployToolkit branding
+- Added support for Windows Toast Notifications, instead of using a BalloonTip (only for Windows 10 and above)
+- Changes to dialogs so that the default system font is used for all labels and buttons, adding a more consistnent look and feel.
+- Improved documentation - new overview, features and benefits detail to enhance value proposition. Improved Function documentation and overall PDF document layout.
+- Updated text and structure for Comment-Based-Help to align with PowerShell Best Practices
+- Added detection of defaultuser0 OOBE or ESP process to enable Non-Interactive deployment mode for Intune Autopilot/ESP scenarios.
+- Show-InstallationPrompt now has a -TopMost parameter. Fixed the function failing to display a window with -NoWait parameter specified.
+- Show-InstallationWelcome will now display the countdown message if there are no processes running when CloseApps timer is enabled.
+- Show-InstallationProgress now supports moving the WindowLocation dynamically for existing progress dialogs (#685). When the WindowLocation is set to BottomRight, the position is now offset so as not to overlap with toast notifications (#685)
+- Show-InstallationRestartPrompt now has a -TopMost parameter. Resolved an issue where parameters were not handled correctly when running asynchronously. The titlebar now shows the toolkit icon.
+- Fixed vulnerability CWE-428 ensuring quotes are added to ActiveSetup paths with spaces (#726)
+- Fixed -FilterApplication logic in Remove-Applications (#665)
 - Fixed help text for some functions that contained old/incorrect information
 - Fixed $LocalPowerUsersGroup throwing errors on machines where it does not exist (e.g. Domain Controllers)
-- Changed function Set-ActiveSetup:
-  - Fixed the function not executing the process for current user correctly
-  - The function now also checks Version and IsInstalled properties when attempting to run the process for current user
-  - Added more logging messages so it is clear from the logs why it was or was not executed for the current user
-  - IsInstalled property is no longer added to the HKCU registry entry
-  - DisableActiveSetup now also disables ExecuteForCurrentUser
-  - Extended function help text
-- Reworked Resolve-Error because it was not showing complete error information in some cases (e.g. Set-ActiveSetup)
-  - The Property parameter has been removed
-  - The function now displays the name of the property as well as its content, even when the property is empty
-  - The function now displays more properties
-  - Each property is separated by an empty line
-- Changed Execute-Process so it no longer displays the entire error information in the error popup window
-  - It will only show a short description just like other functions and the details will be available in the log
-- Fixed a couple of log message typos across the toolkit
+- Resolved an issue with Set-ActiveSetup where the function would not correctly execute the process for the current user (#644)
+- Resolved an issue where Set-ActiveSetup would not correctly evaluate whether to execute while running as system (#707)
+- Set-ActiveSetup now also checks Version and IsInstalled properties when attempting to run the process for current user. DisableActiveSetup now also disables ExecuteForCurrentUser. Enhanced logging.
+- Execute-Process now shows a shorter error description rather than the full error information in the popup window, the full error details are available in the log.
+- Changed Block-AppExecution and Unblock-AppExecution so the functions also run during Non-Interactive installs (#699)
 - Fixed a bug that caused Update-Desktop/Refresh-Desktop to crash Powershell on 32bit systems
-- Changed $GetDisplayScaleFactor so it now actually calculates the dpi scale and dpi pixels
-  - If the calculation fails, then it reads the values from registry entries
-  - If reading from registry entries fails or they contain invalid values, $dpiScale and $dpiPixels are set to 0
-- Fixed New-Folder not creating the entire path sometimes
-- Changed Remove-Folder:
-  - Parameter -ContinueOnError set to $false now stops the script on all errors
-  - Remorked how the function behaves when -DisableRecursion is specified:
-    - The function now removes everything it can except for non empty folders
-    - It stops the script if -ContinueOnError was set to true and non empty folders were detected
-- Fixed $LocalSystemNTAccount not being populated
-- Fixed New-Shortcut, Set-Shortcut and Get-Shortcut not handling UNC paths
-- Changed $installPhase at the end of the Main script
-  - This does not change anything if you run Deploy-Application.ps1, but if you dot source Main.ps1, this will make it so you're not stuck in Initialization
+- Improved calculation of dpi scale and pixels in the $GetDisplayScaleFactor variable.
+- Resolved an issue where New-Folder would not create the entire path name in some scenarios.
+- CHANGE: If the -ContinueOnError parameter on The Remove-Folder function now stops the script on all errors if the -ContinueOnError paramenter is set to $false. The -DisableRecursion parameter now removes everything except non-empty folders.
+- Resolved an issue where the $LocalSystemNTAccount variable was not populated.
+- Resolved an issue where UNC paths were not handled by New-Shortcut, Set-Shortcut and Get-Shortcut. Minor improvement to $iconIndex logic in New-Shortcut.
+- Resolved an issues where the banner file object is locked and cannot be deleted in the same PowerShell session (#717)
+- Updated Get-InstalledApplication to make removal of control characters less aggressive (#691)
+- Updated entire toolkit to align with toolkit styling and formatting standards
+- Updated Execute-MSP functions to utilize toolkit MSI database helper functions
+- Added "-Force" and "-ErrorAction" parameters to "Get-ChildItem" calls in "Copy-File" function
+- Added Greek translations
+- Added the appropriate exit code for MSIs that are already installed to the Execute-MSI function (#686)
+- Improved Unblock-AppExecution function removal of the BlockAppExecution Schedule Task XML file
+- Updated Set-PinnedApplication to use "OrdinalIgnoreCase" instead of "CurrentCultureIgnoreCase" to ignore case of pin action on Windows 10
+- Set the ErrorAction of the "Unregister-Event'" command in the Finally block of the Execute-Process function to "SilentlyContinue"
+- Reverted some changes in "Show-InstallationWelcome" and "Show-WelcomePrompt" to maintain compatibility with PowerShell 2.0
+- Reverted changes that removed "Select-Object -ExpandProperty" calls to maintain compatibility with PowerShell 2.0
+- Reverted unnecessary conversions of Where-Object pipeline pattern to less readable ForEach-Object pattern. Where-Object pattern is not more performant than ForEach-Object (ForEach or For would be, but the micro-optimization is unnecessary for our usecase).
+- Reverted Resolve-Error function code to that from v3.8.3 to undo all changes
 
 **Version 3.8.4 [26/01/2021]**
 - Fixed Boolean parameters not being passed to Execute-Process
@@ -99,7 +130,7 @@
 - Encoding of the files has been changed back to UTF8 with BOM, back from UTF8 without BOM:
   - We chose to go with UTF8 without BOM because it is the encoding for Powershell v6+ and because it is one of the most popular encodings in the world.
     However this caused issues on Windows Powershell for clients that use a different language from English. Due to Microsoft's chaotic coding decisions, Powershell uses the BOM as a verification that the code is written with non-English characters.
-    In their own words:"It's not possible to force PowerShell to use a specific input encoding. PowerShell 5.1 and below, running on Windows with the locale set to en-US, defaults to Windows-1252 encoding when there's no BOM. 
+    In their own words:"It's not possible to force PowerShell to use a specific input encoding. PowerShell 5.1 and below, running on Windows with the locale set to en-US, defaults to Windows-1252 encoding when there's no BOM.
     Other locale settings may use a different encoding. To ensure interoperability, it's best to save scripts in a Unicode format with a BOM."
   - Just like changing to UTF8 without BOM, this will not affect the size of the files or their functionality. BOM or Byte Order Mark is just one special character, placed at the start of the files.
     If you do not use the toolkit on machines with a different language, then this will have no effect on you or your clients. It will however help everyone else display the text in their language correctly.

@@ -1,4 +1,4 @@
-# ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png) PowerShell App Deployment Toolkit
+# ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png)
 
 ### What is the PowerShell App Deployment Toolkit?
 

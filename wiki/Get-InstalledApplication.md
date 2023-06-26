@@ -52,6 +52,12 @@ This cmdlet supports the common parameters: Verbose, Debug, ErrorAction, ErrorVa
 
 `PS C:>Get-InstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'`
 
+## Output
+
+For every detected matching Application the Function puts out a custom Object containing the following Properties:
+
+	DisplayName, DisplayVersion, InstallDate, Publisher, Is64BitApplication, ProductCode, InstallLocation, UninstallSubkey, UninstallString, InstallSource.
+
 ## REMARKS
 
 To see the examples, type: `Get-Help Get-InstalledApplication -Examples`

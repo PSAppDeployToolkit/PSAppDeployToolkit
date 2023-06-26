@@ -1,21 +1,45 @@
 ﻿<#
 .SYNOPSIS
-	This script is a template that allows you to extend the toolkit with your own custom functions.
-    # LICENSE #
-    PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows.
-    Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-    This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-    You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+PSAppDeployToolkit - Provides the ability to extend and customise the toolkit by adding your own functions that can be re-used.
+
 .DESCRIPTION
-	The script is automatically dot-sourced by the AppDeployToolkitMain.ps1 script.
+
+This script is a template that allows you to extend the toolkit with your own custom functions.
+
+This script is dot-sourced by the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
+
+PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+.EXAMPLE
+
+powershell.exe -File .\AppDeployToolkitHelp.ps1
+
+.INPUTS
+
+None
+
+You cannot pipe objects to this script.
+
+.OUTPUTS
+
+None
+
+This script does not generate any output.
+
 .NOTES
-    Toolkit Exit Code Ranges:
-    60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
-    69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
-    70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
+
 .LINK
-	http://psappdeploytoolkit.com
+
+https://psappdeploytoolkit.com
 #>
+
+
 [CmdletBinding()]
 Param (
 )
@@ -27,8 +51,8 @@ Param (
 # Variables: Script
 [string]$appDeployToolkitExtName = 'PSAppDeployToolkitExt'
 [string]$appDeployExtScriptFriendlyName = 'App Deploy Toolkit Extensions'
-[version]$appDeployExtScriptVersion = [version]'3.8.4'
-[string]$appDeployExtScriptDate = '26/01/2021'
+[version]$appDeployExtScriptVersion = [version]'3.9.3'
+[string]$appDeployExtScriptDate = '02/05/2023'
 [hashtable]$appDeployExtScriptParameters = $PSBoundParameters
 
 ##*===============================================
@@ -46,9 +70,10 @@ Param (
 ##*===============================================
 
 If ($scriptParentPath) {
-	Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable -Name MyInvocation).Value).ScriptName)]" -Source $appDeployToolkitExtName
-} Else {
-	Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] invoked directly" -Source $appDeployToolkitExtName
+    Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable -Name MyInvocation).Value).ScriptName)]" -Source $appDeployToolkitExtName
+}
+Else {
+    Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] invoked directly" -Source $appDeployToolkitExtName
 }
 
 ##*===============================================
