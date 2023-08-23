@@ -957,17 +957,17 @@
         <DeferPrompt_RemainingDeferrals>Оставшиеся отсрочки:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Дата истечения:</DeferPrompt_Deadline>
 
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} начнется автоматически через:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Установка</DeploymentType_Install>
         <DeploymentType_UnInstall>Удаление</DeploymentType_UnInstall>
-        <DeploymentType_Repair>ремонт</DeploymentType_Repair>
-        <BalloonText_Start>начата.</BalloonText_Start>
-        <BalloonText_Complete>выполнена.</BalloonText_Complete>
-        <BalloonText_RestartRequired>выполнена. Требуется перезагрузка.</BalloonText_RestartRequired>
-        <BalloonText_Error>не выполнена.</BalloonText_Error>
-        <BalloonText_FastRetry>не завершена.</BalloonText_FastRetry>
+        <DeploymentType_Repair>Восстановление</DeploymentType_Repair>
+        <BalloonText_Start>начата(о).</BalloonText_Start>
+        <BalloonText_Complete>выполнена(о).</BalloonText_Complete>
+        <BalloonText_RestartRequired>выполнена(о). Требуется перезагрузка.</BalloonText_RestartRequired>
+        <BalloonText_Error>не выполнена(о).</BalloonText_Error>
+        <BalloonText_FastRetry>не завершена(о).</BalloonText_FastRetry>
         <Progress_MessageInstall>Идет установка. Пожалуйста, подождите...</Progress_MessageInstall>
         <Progress_MessageUninstall>Идет удаление. Пожалуйста, подождите...</Progress_MessageUninstall>
         <Progress_MessageRepair>Идет ремонт. Пожалуйста, подождите...</Progress_MessageRepair>
