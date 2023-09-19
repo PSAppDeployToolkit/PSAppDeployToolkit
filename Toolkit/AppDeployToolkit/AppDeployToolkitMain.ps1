@@ -16183,9 +16183,31 @@ If ($usersLoggedOn) {
         Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]." -Source $appDeployToolkitName
     }
 
-    # Check if user session is running under defaultuser0 account (Autopilot OOBE) or if application is installing during ESP and if so change deployment to run silently
-    If ($RunAsActiveUser.NTAccount -like '*\defaultuser0' -and (((Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue').count) -gt 0)) {
-        Write-Log -Message "Autopilot OOBE user [$($CurrentLoggedOnUserSession.UserName)] or ESP process 'wwahost' detected, changing deployment mode to silent." -Source $appDeployToolkitExtName
+    # Check if OOBE / ESP is running [credit Michael Niehaus]
+    $TypeDef = @"
+ 
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+ 
+namespace Api
+{
+ public class Kernel32
+ {
+   [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+   public static extern int OOBEComplete(ref int bIsOOBEComplete);
+ }
+}
+"@
+ 
+Add-Type -TypeDefinition $TypeDef -Language CSharp
+ 
+$IsOOBEComplete = $false
+$hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
+ 
+    If (!($IsOOBEComplete)) {
+        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
         $deployMode = 'Silent'
     }
 
