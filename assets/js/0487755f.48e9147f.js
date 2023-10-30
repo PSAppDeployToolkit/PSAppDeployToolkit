@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkpsadt_docs=self.webpackChunkpsadt_docs||[]).push([[1768],{5338:(e,t,s)=>{s.r(t),s.d(t,{default:()=>l});var a=s(9496),c=s(3951);function l(){return a.createElement(c.Z,{title:"Hello",description:"Hello React Page"})}}}]);

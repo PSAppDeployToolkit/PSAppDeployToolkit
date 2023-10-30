@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://psappdeploytoolkit.com/blog</id>
+    <title>PSAppDeployToolkit Blog</title>
+    <updated>2023-10-30T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://psappdeploytoolkit.com/blog"/>
+    <subtitle>PSAppDeployToolkit Blog</subtitle>
+    <icon>https://psappdeploytoolkit.com/stagic/images/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[PSAppDeployToolkit has a new home]]></title>
+        <id>https://psappdeploytoolkit.com/blog/2023/10/30/new-website</id>
+        <link href="https://psappdeploytoolkit.com/blog/2023/10/30/new-website"/>
+        <updated>2023-10-30T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This is our 1st post on the new PSADT website!]]></summary>
+        <content type="html"><![CDATA[<p>Oh wow, this has been a long time coming! Oh ...  I'm not talking about the long overdue v4. I'm talking about the new website!</p><p>PSAppDeployToolkit is feeling revitalized, and kinda cute, so it was only fair that we apply a fresh coat of paint to the site. And it's not just a little bit of paint, we've been working on this for a while now. </p><h2 class="anchor anchorWithStickyNavbar_bJ7R" id="whats-new">What's New?<a href="#whats-new" class="hash-link" aria-label="Direct link to What's New?" title="Direct link to What's New?">​</a></h2><p>We've completely re-built the site from the ground up, and we've added a bunch of new features. We've invested a lot of time in improving the flow of the documentation, so it's easier to follow and quicker to get up to speed with the toolkit.</p><p>And we've created an all-important reference guide for the toolkit's Exit Codes, Variables and Functions to the top of the page, so it's easy to find.</p><h2 class="anchor anchorWithStickyNavbar_bJ7R" id="stay-tuned">Stay Tuned!<a href="#stay-tuned" class="hash-link" aria-label="Direct link to Stay Tuned!" title="Direct link to Stay Tuned!">​</a></h2><p>This isn't the only new thing on the horizon. More news very very soon.</p><p>Dan, Sean &amp; Mo.</p>]]></content>
+        <author>
+            <name>Dan Cunningham</name>
+            <uri>https://github.com/sintaxasn/</uri>
+        </author>
+        <category label="psappdeploytoolkit" term="psappdeploytoolkit"/>
+        <category label="powershell" term="powershell"/>
+        <category label="website" term="website"/>
+    </entry>
+</feed>
