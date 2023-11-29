@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkpsadt_docs=self.webpackChunkpsadt_docs||[]).push([[2535],{425:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"PSAppDeployToolkit has a new home","permalink":"/blog/2023/10/30/new-website","unlisted":false}]}')}}]);
