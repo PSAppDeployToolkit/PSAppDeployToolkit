@@ -16050,18 +16050,36 @@ If ($deployAppScriptFriendlyName) {
     Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName
 }
 If ($deployAppScriptParameters) {
+	$CommandLinePasswords = $deployAppScriptParameters | Select-String -Pattern "-(Password|Pwd|Passwords|Pwds):'([\w\d*.!@#$%^&(){}\[\]:"";'<>,.?/~`_+-=|\\]+)'[\s]?" -AllMatches | ForEach-Object { $_.Matches }
+
+	foreach ($CommandLinePassword in $CommandLinePasswords) {
+		$deployAppScriptParameters = $deployAppScriptParameters.replace($CommandLinePassword.groups[2].Value, "*******")
+	}
+
     Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName
 }
 If ($appDeployMainScriptFriendlyName) {
     Write-Log -Message "[$appDeployMainScriptFriendlyName] script version is [$appDeployMainScriptVersion]" -Source $appDeployToolkitName
 }
 If ($appDeployMainScriptParameters) {
+	$CommandLinePasswords = $appDeployMainScriptParameters | Select-String -Pattern "-(Password|Pwd|Passwords|Pwds):'([\w\d*.!@#$%^&(){}\[\]:"";'<>,.?/~`_+-=|\\]+)'[\s]?" -AllMatches | ForEach-Object { $_.Matches }
+
+	foreach ($CommandLinePassword in $CommandLinePasswords) {
+		$appDeployMainScriptParameters = $appDeployMainScriptParameters.replace($CommandLinePassword.groups[2].Value, "*******")
+	}
+
     Write-Log -Message "The following non-default parameters were passed to [$appDeployMainScriptFriendlyName]: [$appDeployMainScriptParameters]" -Source $appDeployToolkitName
 }
 If ($appDeployExtScriptFriendlyName) {
     Write-Log -Message "[$appDeployExtScriptFriendlyName] version is [$appDeployExtScriptVersion]" -Source $appDeployToolkitName
 }
 If ($appDeployExtScriptParameters) {
+	$CommandLinePasswordss = $appDeployExtScriptParameters | Select-String -Pattern "-(Password|Pwd|Passwords|Pwds):'([\w\d*.!@#$%^&(){}\[\]:"";'<>,.?/~`_+-=|\\]+)'[\s]?" -AllMatches | ForEach-Object { $_.Matches }
+
+	foreach ($CommandLinePassword in $CommandLinePasswords) {
+		$appDeployExtScriptParameters = $appDeployExtScriptParameters.replace($CommandLinePassword.groups[2].Value, "*******")
+	}
+
     Write-Log -Message "The following non-default parameters were passed to [$appDeployExtScriptFriendlyName]: [$appDeployExtScriptParameters]" -Source $appDeployToolkitName
 }
 Write-Log -Message "Computer Name is [$envComputerNameFQDN]" -Source $appDeployToolkitName
