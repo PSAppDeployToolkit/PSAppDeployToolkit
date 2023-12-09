@@ -1,0 +1,40 @@
+{
+    "version": "2.0.0",
+     "tasks": [ 
+        {               
+            "type": "shell", 
+            "label": "Open PSADT Help", 
+            "detail": "Use AppDeployToolkitHelp.ps1 to display PSADT functions.",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy",
+                "ByPass",
+                "-File",
+                "${cwd}\\Toolkit\\AppDeployToolkit\\AppDeployToolkitHelp.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "close": true
+            }
+        },
+        {               
+            "type": "shell", 
+            "label": "Create Win32 App", 
+            "detail": "Use IntuneWinAppUtil to package PSADT application.",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy",
+                "ByPass",
+                "-File",
+                "${cwd}\\.vscode\\build.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }  
+    ] 
+}

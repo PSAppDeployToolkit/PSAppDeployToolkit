@@ -1,0 +1,54 @@
+{
+    "files.exclude": {
+        ".editorconfig": true,
+        ".gitattributes": true,
+        ".github": true,
+        ".gitignore": true,
+        "**/Deploy-Application.exe": true,
+        "**/Deploy-Application.exe.config": true,
+        "AppDeployToolkitLogo.png": true,
+        "CHANGELOG.txt": true,
+        "COPYING.Lesser": true,
+        "docs": true,
+        "Examples": true,
+        "LICENSE": true,
+        "material": true,
+        "mkdocs.yml": true,
+        "PSAppDeployToolkit.pdf": true,
+        "Sources": true,
+        "Testing": true,
+        "TODO.txt": true,
+        "wiki": true
+    },
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "PowerShell Devops": {
+            "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "source": "PowerShell",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "RemoteSigned"
+            ]
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell Devops",
+    "files.defaultLanguage": "powershell",
+    "terminal.integrated.enablePersistentSessions": false,
+    "terminal.integrated.persistentSessionReviveProcess": "never"
+}

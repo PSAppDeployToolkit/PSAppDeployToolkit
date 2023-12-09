@@ -106,7 +106,7 @@ Try {
     ##*===============================================
     ##* VARIABLE DECLARATION
     ##*===============================================
-    ## Variables: Application
+    ## TODO Variables: Application
     [String]$appVendor = ''
     [String]$appName = ''
     [String]$appVersion = ''
@@ -187,7 +187,7 @@ Try {
         ## Show Progress Message (with the default message)
         Show-InstallationProgress
 
-        ## <Perform Pre-Installation tasks here>
+        ## TODO <Perform Pre-Installation tasks here>
 
 
         ##*===============================================
@@ -205,7 +205,7 @@ Try {
             }
         }
 
-        ## <Perform Installation tasks here>
+        ## TODO <Perform Installation tasks here>
 
 
         ##*===============================================
@@ -232,7 +232,7 @@ Try {
         ## Show Progress Message (with the default message)
         Show-InstallationProgress
 
-        ## <Perform Pre-Uninstallation tasks here>
+        ## TODO <Perform Pre-Uninstallation tasks here>
 
 
         ##*===============================================
@@ -248,7 +248,7 @@ Try {
             Execute-MSI @ExecuteDefaultMSISplat
         }
 
-        ## <Perform Uninstallation tasks here>
+        ## TODO <Perform Uninstallation tasks here>
 
 
         ##*===============================================
@@ -256,7 +256,7 @@ Try {
         ##*===============================================
         [String]$installPhase = 'Post-Uninstallation'
 
-        ## <Perform Post-Uninstallation tasks here>
+        ## TODO <Perform Post-Uninstallation tasks here>
 
 
     }
@@ -272,7 +272,7 @@ Try {
         ## Show Progress Message (with the default message)
         Show-InstallationProgress
 
-        ## <Perform Pre-Repair tasks here>
+        ## TODO <Perform Pre-Repair tasks here>
 
         ##*===============================================
         ##* REPAIR
@@ -286,14 +286,14 @@ Try {
             }
             Execute-MSI @ExecuteDefaultMSISplat
         }
-        ## <Perform Repair tasks here>
+        ## TODO <Perform Repair tasks here>
 
         ##*===============================================
         ##* POST-REPAIR
         ##*===============================================
         [String]$installPhase = 'Post-Repair'
 
-        ## <Perform Post-Repair tasks here>
+        ## TODO <Perform Post-Repair tasks here>
 
 
     }
