@@ -107,9 +107,9 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.9.3'
-[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.3'
-[String]$appDeployMainScriptDate = '02/05/2023'
+[Version]$appDeployMainScriptVersion = [Version]'3.9.4'
+[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.4'
+[String]$appDeployMainScriptDate = 'XX/03/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -380,6 +380,8 @@ Else {
     #  If this script was not invoked by another script, fall back to the directory one level above this script
     [String]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
+# Reset the check for existing log files on each script run
+[Boolean]$script:LogFileExistsCheck = $false
 
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
@@ -436,6 +438,7 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
 [Boolean]$configToolkitLogWriteToHost = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogWriteToHost)
 [Boolean]$configToolkitLogDebugMessage = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDebugMessage)
+[Boolean]$configToolkitLogDoNotAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDoNotAppend)
 #  Get MSI Options
 [Xml.XmlElement]$xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [String]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
@@ -959,7 +962,6 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
-
 #region Function Write-Log
 Function Write-Log {
     <#
@@ -1007,6 +1009,10 @@ Maximum file size limit for log file in megabytes (MB). Default is 10 MB.
 .PARAMETER WriteHost
 
 Write the log message to the console.
+
+.PARAMETER DoNotAppendToLogFile
+
+Create a new log file, do not append to existing log file. Default is: $false.	
 
 .PARAMETER ContinueOnError
 
@@ -1093,14 +1099,16 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, Position = 8)]
         [ValidateNotNullorEmpty()]
         [Boolean]$WriteHost = $configToolkitLogWriteToHost,
-        [Parameter(Mandatory = $false, Position = 9)]
+        [Parameter(Mandatory=$false,Position=9)]
+        [Switch]$DoNotAppendToLogFile = $configToolkitLogDoNotAppend,
+        [Parameter(Mandatory=$false,Position=10)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true,
-        [Parameter(Mandatory = $false, Position = 10)]
+	    [Parameter(Mandatory=$false,Position=11)]
         [Switch]$PassThru = $false,
-        [Parameter(Mandatory = $false, Position = 11)]
+	    [Parameter(Mandatory=$false,Position=12)]
         [Switch]$DebugMessage = $false,
-        [Parameter(Mandatory = $false, Position = 12)]
+	    [Parameter(Mandatory=$false,Position=13)]
         [Boolean]$LogDebugMessage = $configToolkitLogDebugMessage
     )
 
@@ -1209,6 +1217,25 @@ https://psappdeploytoolkit.com
 
         ## Assemble the fully qualified path to the log file
         [String]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
+
+		# Check if the log file exists on first run and if the $DoNotAppendToLogFile switch is set then delete the existing log file and set the LogFileExistsCheck variable to $true
+		If ($DoNotAppendToLogFile -and (!($script:LogFileExistsCheck))) {
+            # Set the LogFileExistsCheck variable to $true with scope script
+			$script:LogFileExistsCheck = $true
+			If (Test-Path -LiteralPath $LogFilePath -PathType 'Leaf') {
+				Try {
+					Remove-Item -LiteralPath $LogFilePath -Force -ErrorAction 'Stop'
+				}
+				Catch {
+					[Boolean]$ExitLoggingFunction = $fals
+					#  If error deleting log file, write message to console
+					If (-not $ContinueOnError) {
+						Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to delete the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+					}
+					Return
+				}
+			}
+		}
     }
     Process {
         ## Exit function if logging is disabled
