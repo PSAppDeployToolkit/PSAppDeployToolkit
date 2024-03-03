@@ -1,4 +1,5 @@
 ﻿**Version 3.9.4 [xx/xx/xxxx]**
+- Added -DoNotAppendToLogFile Parameter to Write-Log function to create a new log file each deployment rather than append. The default $false is defined in the config.xml
 - Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
 - Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
 - Improved detection of OOBE / ESP
