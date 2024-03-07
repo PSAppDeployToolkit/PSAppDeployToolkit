@@ -6363,17 +6363,27 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
                     [String]$msg = "the SID [$SID] to an NT Account name"
                     Write-Log -Message "Converting $msg." -Source ${CmdletName}
 
-                    $NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($SID)
-                    $NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
-                    Write-Output -InputObject ($NTAccount)
+                    Try {
+                        $NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($SID)
+                        $NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
+                        Write-Output -InputObject ($NTAccount)
+                    }
+                    Catch {
+                        Write-Log -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                    }
                 }
                 'NTAccountToSID' {
                     [String]$msg = "the NT Account [$AccountName] to a SID"
                     Write-Log -Message "Converting $msg." -Source ${CmdletName}
 
-                    $NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($AccountName)
-                    $NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
-                    Write-Output -InputObject ($NTAccountSID)
+                    Try {
+                        $NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($AccountName)
+                        $NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
+                        Write-Output -InputObject ($NTAccountSID)
+                    }
+                    Catch {
+                        Write-Log -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                    }
                 }
                 'WellKnownName' {
                     If ($WellKnownToNTAccount) {
