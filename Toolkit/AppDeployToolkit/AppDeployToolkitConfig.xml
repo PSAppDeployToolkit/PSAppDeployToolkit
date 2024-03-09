@@ -48,8 +48,12 @@
         <!-- Specify maximum file size limit for log file in megabytes (MB). -->
         <Toolkit_LogWriteToHost>True</Toolkit_LogWriteToHost>
         <!-- Specify if log messages should be written to the console. -->
-    <Toolkit_LogDoNotAppend>True</Toolkit_LogDoNotAppend>
+        <Toolkit_LogDoNotAppend>True</Toolkit_LogDoNotAppend>
 		<!-- Specify if an existing log file should not be appended to. -->
+        <Toolkit_UseRobocopy>True</Toolkit_UseRobocopy>
+		<!-- Specify if Robocopy should be used with the Copy-File function. -->
+        <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
+		<!-- Specify the path for the cache folder --> 
 	</Toolkit_Options>
     <!--Toolkit Options-->
 
