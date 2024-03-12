@@ -3,8 +3,7 @@
 - Added the ability to copy the Toolkit folder and files to a cache folder on the local machine and execute from there. Function: Copy-ContentToCache. The cache path can be configured in the config.xml file, default is $envProgramData\SoftwareCache
 - Changed Copy-File to use Robocopy by default, overcoming the 260 character limitation of native PowerShell Copy-Item and providing more comprehensive file copy functionality and logging. This can be toggled off in the config.xml file by setting Toolkit_UseRobocopy = $false
 - Added -DoNotAppendToLogFile Parameter to the Write-Log function to create a new log file for each deployment rather than append. The default $false is defined in the config.xml #829
-- Improved Russian translations PR #843
-- Resolved and issue where Get-UserProfiles interacts with defaultuser0 and causes CloudExperienceHostBroker.exe to reset OOBE and reboot. PR #856
+- Improved Russian translations #843
 - Resolved an issue where ConvertTo-NTAccountOrSID would throw an error when attempting to convert orphaned accounts, a warning is now displayed rather than an error. #865
 - Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
 - Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
