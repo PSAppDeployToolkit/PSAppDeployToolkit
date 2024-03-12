@@ -5179,7 +5179,13 @@ https://psappdeploytoolkit.com
                         6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
                         7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
                         8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
-                        ($_ -gt 8) { 
+                        16 { 
+                            Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
+                            If (-not $ContinueOnError) {
+                                Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                            }
+                        }
+                        (default) { 
                             Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                             If (-not $ContinueOnError) {
                                 Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
