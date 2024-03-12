@@ -15968,6 +15968,102 @@ Function Copy-ContentToCache {
 }
 #endregion
 
+#region Function Configure-EdgeExtension
+
+Function Configure-EdgeExtension {
+    <#
+    .SYNOPSIS
+    Configure-EdgeExtension
+    .DESCRIPTION
+    This function configures an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide
+    This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. 
+    This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+    .PARAMETER ConfigureMode
+    The deployment mode of the extension. Allowed values: Add, Remove
+    .PARAMETER ExtensionID
+    The ID of the extension to install.
+    .PARAMETER InstallationMode
+    The installation mode of the extension. Allowed values: blocked, allowed, removed, force_installed, normal_installed
+    .PARAMETER UpdateUrl
+    The update URL of the extension. This is the URL where the extension will check for updates.
+    .PARAMETER MinimumVersionRequired
+    The minimum version of the extension required for installation.
+    .EXAMPLE
+    Configure-EdgeExtension -ExtensionID "extensionID" -InstallationMode "Force" -UpdateUrl "https://www.contoso.com/extension"
+    Configure-EdgeExtension -ConfigureMode "Remove" -ExtensionID "extensionID"
+    .NOTES
+    This function is provided as a template to install an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+    #>
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $true)]    
+        [ValidateSet('Add', 'Remove')]
+        [String]$configureMode,
+        [Parameter(Mandatory = $true)]
+        [String]$extensionID,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')]
+        [String]$InstallationMode,
+        [Parameter(Mandatory = $false)]
+        [String]$UpdateUrl,
+        [Parameter(Mandatory = $false)]
+        [String]$MinimumVersionRequired
+        )
+    
+    If ($configureMode -eq 'Add') {
+        If ($MinimumVersionRequired) {
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl] with minimum version required [$MinimumVersionRequired]." -Severity 1
+        }
+        Else {      
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
+        } 
+    Else {
+        Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)]." -Severity 1
+    }
+    
+    $regKeyEdgeExtensions = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
+    # Check if the ExtensionSettings registry key exists if not create it        
+    If (!(Test-RegistryValue -Key $regKeyEdgeExtensions -Value ExtensionSettings)) {
+        Set-RegistryKey -Key $regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
+    }
+    Else {
+        # Get the installed extensions
+        $installedExtensions = Get-RegistryKey -Key $regKeyEdgeExtensions -Value ExtensionSettings | ConvertFrom-Json -ErrorAction SilentlyContinue
+        Write-Log -Message "Configured extensions: [$($installedExtensions | ConvertTo-Json -Compress -ErrorAction SilentlyContinue)]." -Severity 1
+    }            
+
+    Try {
+        If ($configureMode -ieq 'Remove') {
+            If ($installedExtensions.$($extensionID)) {
+                # If the deploymentmode is Remove, remove the extension from the list                
+                Write-Log -Message "Removing extension with ID [$extensionID]." -Severity 1
+                $installedExtensions.PSObject.Properties.Remove($extensionID)
+                $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
+                Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
+            }
+            Else { # If the extension is not configured
+                Write-Log -Message "Extension with ID [$extensionID] is not configured. Removal not required." -Severity 1  
+            }
+        }
+        # Configure the extension
+        ElseIf ($configureMode -ieq 'Add') {
+            Write-Log -Message "Configuring extension ID [$extensionID]." -Severity 1
+            If ($MinimumVersionRequired) {
+                $installedExtensions | Add-Member -Name $($extensionID) -Value $(@{ "installation_mode" = $InstallationMode; "update_url" = $UpdateUrl; "minimum_version_required" = $MinimumVersionRequired }) -MemberType NoteProperty -Force
+            }
+            Else {
+                $installedExtensions | Add-Member -Name $($extensionID) -Value $(@{ "installation_mode" = $InstallationMode; "update_url" = $UpdateUrl }) -MemberType NoteProperty -Force
+            }
+            $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
+            Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
+        }        
+    }   
+    Catch {
+        Write-Log -Message "Failed to configure extension with ID $extensionID. `r`n$(Resolve-Error)" -Severity 3
+        Exit-Script -ExitCode 60001
+    }         
+} #End Function Deploy-EdgeExtension
+
 #endregion
 ##*=============================================
 ##* END FUNCTION LISTINGS
