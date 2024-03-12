@@ -15982,7 +15982,12 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
         ## Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
         #  If a console user exists, then that will be the active user session.
         #  If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
-        [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
+        If ($IsMultiSessionOS) {
+            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
+        }
+        Else {
+            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
+        }
     }
 }
 
