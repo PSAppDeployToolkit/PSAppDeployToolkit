@@ -7454,7 +7454,7 @@ https://psappdeploytoolkit.com
 
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
-    <#
+<#
 .SYNOPSIS
 
 Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
@@ -7655,21 +7655,31 @@ https://psappdeploytoolkit.com
                 [String]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + '"'
             }
 
+            [String]$executeProcessAsUserScriptCount = '001'
+            [String]$executeProcessAsUserScriptFileName = "$($schTaskName)-$($executeProcessAsUserScriptCount).vbs"
+            If (Test-Path -Path "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)") {
+                [Int32]$vbscriptScriptCount = Get-ChildItem -Path "$($executeAsUserTempPath)\*" -Attributes '!Directory' -Include '*.vbs' | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1 | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) } | ForEach-Object { $_.Substring($_.length - 3, 3) }
+                [String]$executeProcessAsUserScriptCount = '{0:d3}' -f $vbscriptScriptCount++
+                [String]$executeProcessAsUserScriptFileName = "$($schTaskName)-$($executeProcessAsUserScriptCount).vbs"
+            }
+            $schTaskName = "$($schTaskName)-$($executeProcessAsUserScriptCount)"
+            
+
             [String[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
             $executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
             $executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
             $executeProcessAsUserScript += 'WScript.Quit intReturn'
-            $executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
+            $executeProcessAsUserScript | Out-File -FilePath "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
             $Path = "$envWinDir\System32\wscript.exe"
-            $Parameters = "/e:vbscript `"$executeAsUserTempPath\$($schTaskName).vbs`""
+            $Parameters = "/e:vbscript `"$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)`""
             $EscapedPath = [System.Security.SecurityElement]::Escape($Path)
             $EscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
 
             Try {
-                Set-ItemPermission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+                Set-ItemPermission -Path "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)" -User $UserName -Permission 'Read'
             }
             Catch {
-                Write-Log -Message "Failed to set read permissions on path [$executeAsUserTempPath\$schTaskName.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+                Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
             }
         }
 
@@ -7722,7 +7732,7 @@ https://psappdeploytoolkit.com
         ## Export the XML to file
         Try {
             #  Specify the filename to export the XML to
-            [String]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
+            [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
             [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
         }
