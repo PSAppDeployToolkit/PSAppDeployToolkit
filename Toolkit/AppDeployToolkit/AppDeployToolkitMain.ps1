@@ -3443,34 +3443,36 @@ https://psappdeploytoolkit.com
             }
 
             #  Build the log file name
-            If (-not $logName) {
+            If (-not $LogName) {
                 If ($productCodeNameVersion) {
                     If ($productCodeNameVersion.Publisher) {
-                        $logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                     Else {
-                        $logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                 }
                 Else {
                     #  Out of other options, make the Product Code the name of the log file
-                    $logName = $Path
+                    $LogName = $Path
                 }
             }
         }
         Else {
             #  Get the log file name without file extension
-            If (-not $logName) {
-                $logName = ([IO.FileInfo]$path).BaseName
+            If (-not $LogName) {
+                $LogName = ([IO.FileInfo]$path).BaseName
             }
-            ElseIf ('.log', '.txt' -contains [IO.Path]::GetExtension($logName)) {
-                $logName = [IO.Path]::GetFileNameWithoutExtension($logName)
+            ElseIf ('.log', '.txt' -contains [IO.Path]::GetExtension($LogName)) {
+                While ('.log', '.txt' -contains [IO.Path]::GetExtension($LogName)) {
+                    $LogName = [IO.Path]::GetFileNameWithoutExtension($LogName)
+                }
             }
         }
 
         If ($configToolkitCompressLogs) {
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $logTempFolder -ChildPath $logName
+            [String]$logPath = Join-Path -Path $logTempFolder -ChildPath $LogName
         }
         Else {
             ## Create the Log directory if it doesn't already exist
@@ -3478,7 +3480,7 @@ https://psappdeploytoolkit.com
                 $null = New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
             }
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
+            [String]$logPath = Join-Path -Path $configMSILogDir -ChildPath $LogName
         }
 
         ## Set the installation Parameters
