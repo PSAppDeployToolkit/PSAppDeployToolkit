@@ -6609,7 +6609,7 @@ https://psappdeploytoolkit.com
                     Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
                         Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
                     } |
-                    Where-Object { $_.NTAccount -notmatch 'defaultuser0$'} # This excludes the "defaultuser0" account used by CloudExperienceHostBroker.exe
+                    Where-Object { $_.NTAccount } # This removes the "defaultuser0" account, which is a Windows 10 bug
             If ($ExcludeSystemProfiles) {
                 [String[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
                 [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
