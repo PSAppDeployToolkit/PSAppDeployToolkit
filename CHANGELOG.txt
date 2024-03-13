@@ -9,6 +9,7 @@
 - Improved documentation of Set-ActiveSetup function.
 - Resolved an issue where Execute-ProcessAsUser ran into issue when called multiple times because it overwrote files from previous invocation #333
 - Resolved an issue where Get-LoggedOnUser choose the wrong user session on Windows multi-session workstation operating systems #863
+- Improved Execute-Process with a useful example #835
 
 **Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801
