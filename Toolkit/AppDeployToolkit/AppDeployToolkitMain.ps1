@@ -2839,11 +2839,17 @@ https://psappdeploytoolkit.com
             ElseIf ($hwBIOS.SerialNumber -like '*VMware*') {
                 $hwType = 'Virtual:VMWare'
             }
+            ElseIf ($hwBIOS.SerialNumber -like '*Parallels*') {
+                $hwType = 'Virtual:Parallels'
+            }
             ElseIf (($hwMakeModel.Manufacturer -like '*Microsoft*') -and ($hwMakeModel.Model -notlike '*Surface*')) {
                 $hwType = 'Virtual:Hyper-V'
             }
             ElseIf ($hwMakeModel.Manufacturer -like '*VMWare*') {
                 $hwType = 'Virtual:VMWare'
+            }
+            ElseIf ($hwMakeModel.Manufacturer -like '*Parallels*') {
+                $hwType = 'Virtual:Parallels'
             }
             ElseIf ($hwMakeModel.Model -like '*Virtual*') {
                 $hwType = 'Virtual'
