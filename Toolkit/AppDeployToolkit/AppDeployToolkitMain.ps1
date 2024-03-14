@@ -5065,7 +5065,7 @@ Copy a file or group of files to a destination path.
 
 .PARAMETER Path
 
-Path of the file to copy.
+Path of the file to copy. Multiple paths can be specified 
 
 .PARAMETER Destination
 
@@ -5164,12 +5164,19 @@ https://psappdeploytoolkit.com
     Process {
         If ($UseRobocopy) {
             Try {
+                # Check if the path is a file or folder. If a file is specified in the path variable, then set $useRobocopy to false
+                Foreach ($p in $Path) {
+                    If (Test-Path -LiteralPath $p -PathType Leaf) {
+                        $UseRobocopy = $false
+                        Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                    }
+                }
                 # Check if Robocopy is on the system
                 If (-not (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)) {
-                    Write-Log -Message "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2 -Source ${CmdletName}
                     $UseRobocopy = $false
+                    Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                 }
-                Else {         
+                If ($UseRobocopy) {         
                     If ($Recurse) {
                         Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
                     }
@@ -5177,51 +5184,53 @@ https://psappdeploytoolkit.com
                         Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
                     }
                     # Build Robocopy command   
-                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                    $RobocopyArgsCopy = "/IM"
-                    $path = $path.TrimEnd('\')
-                    $RobocopyArgsPath =  "`"$path`" `"$destination`""
-                    $destination = $destination.TrimEnd('\')
-                    $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
-                    If ($Recurse) {
-                        $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
-                    }
-                    If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
-                        $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
-                    }      
-                    $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
-                    Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                    $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                    Foreach ($srcPath in $Path) {
+                        $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                        $RobocopyArgsCopy = "/IM"
+                        $srcPath = $srcPath.TrimEnd('\')
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`""
+                        $destination = $destination.TrimEnd('\')
+                        $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
+                        If ($Recurse) {
+                            $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
+                        }
+                        If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
+                            $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
+                        }      
+                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
+                        Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
 
-                    Switch ($RobocopyResult.ExitCode) {
-                        0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
-                        1 { Write-Log -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
-                        2 { Write-Log -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
-                        3 { Write-Log -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
-                        4 { Write-Log -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
-                        5 { Write-Log -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
-                        6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
-                        7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
-                        8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
-                        16 { 
-                            Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
-                            If (-not $ContinueOnError) {
-                                Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                        Switch ($RobocopyResult.ExitCode) {
+                            0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
+                            1 { Write-Log -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
+                            2 { Write-Log -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
+                            3 { Write-Log -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
+                            4 { Write-Log -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
+                            5 { Write-Log -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
+                            6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
+                            7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
+                            8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
+                            16 {
+                                Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
+                                If (-not $ContinueOnError) {
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                }
                             }
-                        }
-                        (default) { 
-                            Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                            If (-not $ContinueOnError) {
-                                Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                            default {
+                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                                If (-not $ContinueOnError) {
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                }
                             }
-                        }
-                    }            
+                        } 
+                    }           
                 }
             }
             Catch {
-                Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
-                    Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
                 }
             }        
         }
