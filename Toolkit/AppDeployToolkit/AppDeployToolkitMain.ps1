@@ -15989,7 +15989,8 @@ Function Configure-EdgeExtension {
         }
         Else {      
             Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
-        } 
+        }
+    }
     Else {
         Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)]." -Severity 1
     }
