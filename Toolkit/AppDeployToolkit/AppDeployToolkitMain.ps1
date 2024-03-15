@@ -10636,9 +10636,12 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Skip balloon if in silent mode, disabled in the config or presentation is detected
-        $presentationDetected = Test-PowerPoint
-        If (($deployModeSilent) -or (-not $configShowBalloonNotifications) -or $presentationDetected) {
-            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Config Show Balloon Notifications:$configShowBalloonNotifications, Presentation Detected:$presentationDetected]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+        If (($deployModeSilent) -or (-not $configShowBalloonNotifications)) {
+            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Config Show Balloon Notifications:$configShowBalloonNotifications]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+            Return
+        }
+        If (Test-PowerPoint) {
+            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Presentation Detected:$true]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
         ## Dispose of previous balloon
