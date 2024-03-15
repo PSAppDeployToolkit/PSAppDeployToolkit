@@ -3100,10 +3100,6 @@ https://psappdeploytoolkit.com
         [PSObject[]]$installedApplication = @()
         ForEach ($regKeyApp in $regKeyApplication) {
             Try {
-                [String]$appDisplayName = ''
-                [String]$appDisplayVersion = ''
-                [String]$appPublisher = ''
-
                 ## Bypass any updates or hotfixes
                 If ((-not $IncludeUpdatesAndHotfixes) -and (($regKeyApp.DisplayName -match '(?i)kb\d+') -or ($regKeyApp.DisplayName -match 'Cumulative Update') -or ($regKeyApp.DisplayName -match 'Security Update') -or ($regKeyApp.DisplayName -match 'Hotfix'))) {
                     $UpdatesSkippedCounter += 1
@@ -3111,9 +3107,9 @@ https://psappdeploytoolkit.com
                 }
 
                 ## Remove any control characters which may interfere with logging and creating file path names from these variables
-                $appDisplayName = $regKeyApp.DisplayName -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
-                $appDisplayVersion = $regKeyApp.DisplayVersion -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
-                $appPublisher = $regKeyApp.Publisher -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
+                [String]$appDisplayName = $regKeyApp.DisplayName -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
+                [String]$appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction SilentlyContinue) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
+                [String]$appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction SilentlyContinue) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
 
 
                 ## Determine if application is a 64-bit application
