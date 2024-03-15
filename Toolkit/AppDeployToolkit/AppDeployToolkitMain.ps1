@@ -15909,9 +15909,6 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Name,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = 'localhost', # Not used but kept for backwards compatibility
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
         [String]$StartMode,
