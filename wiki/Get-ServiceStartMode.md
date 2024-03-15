@@ -18,10 +18,6 @@ Get the service startup mode.
 
 Specify the name of the service.
 
-`-ComputerName <String>`
-
-Specify the name of the computer. Default is: the local computer.
-
 `-ContinueOnError <Boolean>`
 
 Continue if an error is encountered. Default is: `$true`.
