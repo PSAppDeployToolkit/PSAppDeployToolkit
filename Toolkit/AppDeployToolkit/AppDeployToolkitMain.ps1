@@ -11089,10 +11089,13 @@ https://psappdeploytoolkit.com
             #  Invoke the progress runspace
             $null = $progressCmd.BeginInvoke()
             #  Allow the thread to be spun up safely before invoking actions against it.
-            Start-Sleep -Seconds 1
-            If ($script:ProgressSyncHash.Error) {
-                Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
-            }
+            do {
+                $running = $(try {$script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running'} catch {$false})
+                If ($script:ProgressSyncHash.ContainsKey('Error')) {
+                    Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
+                    break
+                }
+            } until ($running)
         }
         ## Check if the progress thread is running before invoking methods on it
         ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
