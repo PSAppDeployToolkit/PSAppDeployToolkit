@@ -3592,8 +3592,8 @@ https://psappdeploytoolkit.com
         }
 
         ## Get the ProductCode of the MSI
-        If ($PathIsProductCode) {
-            [String]$MSIProductCode = $path
+        [String]$MSIProductCode = If ($PathIsProductCode) {
+            $path
         }
         ElseIf ([IO.Path]::GetExtension($msiFile) -eq '.msi') {
             Try {
@@ -3601,7 +3601,7 @@ https://psappdeploytoolkit.com
                 If ($transforms) {
                     $GetMsiTablePropertySplat.Add( 'TransformPath', $transforms )
                 }
-                [String]$MSIProductCode = Get-MsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
+                Get-MsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
             }
             Catch {
                 Write-Log -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
