@@ -482,6 +482,7 @@ If ($configToolkitRequireAdmin -eq $false) {
     #  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
     If ($RunAsActiveUser) {
         #  Read language defined by Group Policy
+        [String[]]$HKULanguages = $null
         If (-not $HKULanguages) {
             [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
         }
