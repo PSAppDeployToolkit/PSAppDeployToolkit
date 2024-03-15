@@ -11072,6 +11072,8 @@ https://psappdeploytoolkit.com
         ## Check if the progress thread is running before invoking methods on it
         ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
             Try {
+                #  Update the window title
+                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.Window.Title = $installTitle }, $null, $null)
                 #  Update the progress text
                 $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
                 #  Calculate the position on the screen where the progress dialog should be placed
