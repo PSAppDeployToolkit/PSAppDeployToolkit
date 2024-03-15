@@ -4228,6 +4228,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             $private:returnCode = $null
+            $stdOut = $stdErr = $null
 
             ## Validate and find the fully qualified path for the $Path variable.
             If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
