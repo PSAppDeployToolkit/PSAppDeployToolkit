@@ -9577,16 +9577,6 @@ https://psappdeploytoolkit.com
         ## Remove all event handlers from the controls
         [ScriptBlock]$Welcome_Form_Cleanup_FormClosed = {
             Try {
-                $labelWelcomeMessage.remove_Click($handler_labelWelcomeMessage_Click)
-                $labelAppName.remove_Click($handler_labelAppName_Click)
-                $labelCustomMessage.remove_Click($handler_labelCustomMessage_Click)
-                $labelCloseAppsMessage.remove_Click($handler_labelCloseAppsMessage_Click)
-                $labelDefer.remove_Click($handler_labelDefer_Click)
-                $labelCountdownMessage.remove_Click($handler_labelCountdownMessage_Click)
-                $buttonCloseApps.remove_Click($buttonCloseApps_OnClick)
-                $buttonContinue.remove_Click($buttonContinue_OnClick)
-                $buttonDefer.remove_Click($buttonDefer_OnClick)
-                $buttonAbort.remove_Click($buttonAbort_OnClick)
                 $script:welcomeTimer.remove_Tick($welcomeTimer_Tick)
                 $welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
                 $timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
@@ -9768,7 +9758,6 @@ https://psappdeploytoolkit.com
         $labelWelcomeMessage.TextAlign = 'MiddleCenter'
         $labelWelcomeMessage.Anchor = 'Top'
         $labelWelcomeMessage.AutoSize = $true
-        $labelWelcomeMessage.add_Click($handler_labelWelcomeMessage_Click)
 
         ## Label App Name
         $labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9784,7 +9773,6 @@ https://psappdeploytoolkit.com
         $labelAppName.TextAlign = 'MiddleCenter'
         $labelAppName.Anchor = 'Top'
         $labelAppName.AutoSize = $true
-        $labelAppName.add_Click($handler_labelAppName_Click)
 
         ## Label CustomMessage
         $labelCustomMessage.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9800,7 +9788,6 @@ https://psappdeploytoolkit.com
         $labelCustomMessage.TextAlign = 'MiddleCenter'
         $labelCustomMessage.Anchor = 'Top'
         $labelCustomMessage.AutoSize = $true
-        $labelCustomMessage.add_Click($handler_labelCustomMessage_Click)
 
         ## Label CloseAppsMessage
         $labelCloseAppsMessage.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9816,7 +9803,6 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage.TextAlign = 'MiddleCenter'
         $labelCloseAppsMessage.Anchor = 'Top'
         $labelCloseAppsMessage.AutoSize = $true
-        $labelCloseAppsMessage.add_Click($handler_labelCloseAppsMessage_Click)
 
         ## Listbox Close Applications
         $listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9856,7 +9842,6 @@ https://psappdeploytoolkit.com
         $labelDefer.Text = $deferralText
         $labelDefer.TextAlign = 'MiddleCenter'
         $labelDefer.AutoSize = $true
-        $labelDefer.add_Click($handler_labelDefer_Click)
 
         ## Label CountdownMessage
         $labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9887,7 +9872,6 @@ https://psappdeploytoolkit.com
         $labelCountdownMessage.TextAlign = 'MiddleCenter'
         $labelCountdownMessage.Anchor = 'Top'
         $labelCountdownMessage.AutoSize = $true
-        $labelCountdownMessage.add_Click($handler_labelCountdownMessage_Click)
 
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9902,7 +9886,6 @@ https://psappdeploytoolkit.com
         $labelCountdown.Text = '00:00:00'
         $labelCountdown.TextAlign = 'MiddleCenter'
         $labelCountdown.AutoSize = $true
-        $labelCountdown.add_Click($handler_labelDefer_Click)
 
         ## Panel Flow Layout
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
@@ -9951,7 +9934,6 @@ https://psappdeploytoolkit.com
         $buttonCloseApps.Margin = $paddingNone
         $buttonCloseApps.Padding = $paddingNone
         $buttonCloseApps.UseVisualStyleBackColor = $true
-        $buttonCloseApps.add_Click($buttonCloseApps_OnClick)
 
         ## Button Defer
         $buttonDefer.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9973,7 +9955,6 @@ https://psappdeploytoolkit.com
         $buttonDefer.Margin = $paddingNone
         $buttonDefer.Padding = $paddingNone
         $buttonDefer.UseVisualStyleBackColor = $true
-        $buttonDefer.add_Click($buttonDefer_OnClick)
 
         ## Button Continue
         $buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -9990,7 +9971,6 @@ https://psappdeploytoolkit.com
         $buttonContinue.Margin = $paddingNone
         $buttonContinue.Padding = $paddingNone
         $buttonContinue.UseVisualStyleBackColor = $true
-        $buttonContinue.add_Click($buttonContinue_OnClick)
         If ($showCloseApps) {
             #  Add tooltip to Continue button
             $toolTip.BackColor = [Drawing.Color]::LightGoldenrodYellow
@@ -10019,7 +9999,6 @@ https://psappdeploytoolkit.com
         $buttonAbort.Margin = $paddingNone
         $buttonAbort.Padding = $paddingNone
         $buttonAbort.UseVisualStyleBackColor = $true
-        $buttonAbort.add_Click($buttonAbort_OnClick)
 
         ## Form Welcome
         $formWelcome.Size = $defaultControlSize
