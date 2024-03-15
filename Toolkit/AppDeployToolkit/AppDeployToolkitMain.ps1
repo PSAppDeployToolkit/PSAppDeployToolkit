@@ -12261,9 +12261,7 @@ https://psappdeploytoolkit.com
             ## Create a Windows Installer object
             [__ComObject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
             ## Determine if the database file is a patch (.msp) or not
-            If ([IO.Path]::GetExtension($Path) -eq '.msp') {
-                [Boolean]$IsMspFile = $true
-            }
+            [Boolean]$IsMspFile = [IO.Path]::GetExtension($Path) -eq '.msp'
             ## Define properties for how the MSI database is opened
             [Int32]$msiOpenDatabaseModeReadOnly = 0
             [Int32]$msiSuppressApplyTransformErrors = 63
