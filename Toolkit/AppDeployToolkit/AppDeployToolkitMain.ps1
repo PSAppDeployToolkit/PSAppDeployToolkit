@@ -1069,7 +1069,7 @@ https://psappdeploytoolkit.com
         [Alias('Text')]
         [String[]]$Message,
         [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateRange(1, 3)]
+        [ValidateRange(0, 3)]
         [Int16]$Severity = 1,
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNull()]
@@ -1177,6 +1177,9 @@ https://psappdeploytoolkit.com
                         1 {
                             Write-Host -Object $lTextLogLine
                         }
+                        0 {
+                            Write-Host -Object $lTextLogLine -ForegroundColor 'Green' -BackgroundColor 'Black'
+                        }
                     }
                 }
                 #  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
@@ -1274,6 +1277,9 @@ https://psappdeploytoolkit.com
                         1 {
                             [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Info] :: $Msg"
                         }
+                        0 {
+                            [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Success] :: $Msg"
+                        }
                     }
                 }
                 Else {
@@ -1287,6 +1293,9 @@ https://psappdeploytoolkit.com
                         }
                         1 {
                             [String]$LegacyTextLogLine = "$LegacyMsg [Info] :: $Msg"
+                        }
+                        0 {
+                            [String]$LegacyTextLogLine = "$LegacyMsg [Success] :: $Msg"
                         }
                     }
                 }
