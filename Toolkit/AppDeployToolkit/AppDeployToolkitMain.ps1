@@ -16367,7 +16367,7 @@ This function does not return any objects.
 
         If ($EnableInheritance) {
             # Get object acls
-            $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+            $Acl = Get-Acl -Path $Path -ErrorAction Stop
             # Enable inherance
             $Acl.SetAccessRuleProtection($false, $true)
             Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
@@ -16402,13 +16402,13 @@ This function does not return any objects.
         }
 
         # Get object acls
-        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+        $Acl = Get-Acl -Path $Path -ErrorAction Stop
         # Disable inherance, Preserve inherited permissions
         $Acl.SetAccessRuleProtection($true, $true)
         $null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
         # Get updated acls - without inheritance
         $Acl = $null
-        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+        $Acl = Get-Acl -Path $Path -ErrorAction Stop
         # Apply permissions on Users
         ForEach ($U in $User) {
             # Trim whitespace and skip if empty
