@@ -3426,6 +3426,7 @@ https://psappdeploytoolkit.com
     Process {
         ## Initialize variable indicating whether $Path variable is a Product Code or not
         [Boolean]$PathIsProductCode = $false
+        [String[]]$transforms = $null
 
         ## If the path matches a product code
         If ($Path -match $MSIProductCodeRegExPattern) {
