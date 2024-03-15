@@ -2244,12 +2244,6 @@ https://psappdeploytoolkit.com
         [ScriptBlock]$Install_Prompt_Form_Cleanup_FormClosed = {
             ## Remove all event handlers from the controls
             Try {
-                $labelText.remove_Click($handler_labelText_Click)
-                $buttonLeft.remove_Click($buttonLeft_OnClick)
-                $buttonRight.remove_Click($buttonRight_OnClick)
-                $buttonMiddle.remove_Click($buttonMiddle_OnClick)
-                $buttonAbort.remove_Click($buttonAbort_OnClick)
-                $installPromptTimer.remove_Tick($installPromptTimer_Tick)
                 $installPromptTimer.Dispose()
                 $installPromptTimer = $null
                 $installPromptTimerPersist.remove_Tick($installPromptTimerPersist_Tick)
@@ -2345,7 +2339,6 @@ https://psappdeploytoolkit.com
         $labelText.TextAlign = "Middle$($MessageAlignment)"
         $labelText.Anchor = 'None'
         $labelText.AutoSize = $true
-        $labelText.add_Click($handler_labelText_Click)
 
         If ($Icon -ne 'None') {
             # Add margin for the icon based on labelText Height so its centered
@@ -2366,7 +2359,6 @@ https://psappdeploytoolkit.com
         $buttonLeft.Padding = $paddingNone
         $buttonLeft.UseVisualStyleBackColor = $true
         $buttonLeft.Location = '14,4'
-        $buttonLeft.add_Click($buttonLeft_OnClick)
 
         ## Button Middle
         $buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -2383,7 +2375,6 @@ https://psappdeploytoolkit.com
         $buttonMiddle.Padding = $paddingNone
         $buttonMiddle.UseVisualStyleBackColor = $true
         $buttonMiddle.Location = '160,4'
-        $buttonMiddle.add_Click($buttonMiddle_OnClick)
 
         ## Button Right
         $buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -2400,7 +2391,6 @@ https://psappdeploytoolkit.com
         $buttonRight.Padding = $paddingNone
         $buttonRight.UseVisualStyleBackColor = $true
         $buttonRight.Location = '306,4'
-        $buttonRight.add_Click($buttonRight_OnClick)
 
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -2421,7 +2411,6 @@ https://psappdeploytoolkit.com
         $buttonAbort.Margin = $paddingNone
         $buttonAbort.Padding = $paddingNone
         $buttonAbort.UseVisualStyleBackColor = $true
-        $buttonAbort.add_Click($buttonAbort_OnClick)
 
         ## FlowLayoutPanel
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
