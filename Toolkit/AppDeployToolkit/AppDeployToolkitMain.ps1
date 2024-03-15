@@ -16339,7 +16339,7 @@ Try {
 }
 Catch {
     Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
-    If ($deployModeNonInteractive) {
+    If ($deployMode -eq 'Silent') {
         Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
     }
     Else {
