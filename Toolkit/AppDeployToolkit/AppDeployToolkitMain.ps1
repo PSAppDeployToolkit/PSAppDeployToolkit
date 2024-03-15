@@ -1806,7 +1806,7 @@ https://psappdeploytoolkit.com
         New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
     }
 
-    If ($script:notifyIcon) {
+    If (Test-Path -LiteralPath 'variable:notifyIcon') {
         Try {
             $script:notifyIcon.Dispose()
         }
@@ -10665,7 +10665,7 @@ https://psappdeploytoolkit.com
             Return
         }
         ## Dispose of previous balloon
-        If ($script:notifyIcon) {
+        If (Test-Path -LiteralPath 'variable:notifyIcon') {
             Try {
                 $script:notifyIcon.Dispose()
             }
