@@ -16096,6 +16096,9 @@ If ($invokingScript) {
 ## Add the custom types required for the toolkit
 If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
     [String[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
+    If ($PSVersionTable.PSEdition.Equals('Core')) {
+        $ReferencedAssemblies += 'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
+    }
     Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
