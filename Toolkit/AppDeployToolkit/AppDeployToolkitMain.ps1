@@ -8772,18 +8772,21 @@ https://psappdeploytoolkit.com
             [ScriptBlock]$whereObjectFilter = {
                 ForEach ($processObject in $processObjects) {
                     If ($_.ProcessName -ieq $processObject.ProcessName) {
-                        If ($processObject.ProcessDescription) {
-                            #  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-                            Add-Member -InputObject $_ -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $processObject.ProcessDescription -Force -PassThru -ErrorAction 'SilentlyContinue'
-                        }
-                        ElseIf ($_.Description) {
-                            #  If the process already has a description field specified, then use it
-                            Add-Member -InputObject $_ -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $_.Description -Force -PassThru -ErrorAction 'SilentlyContinue'
-                        }
-                        Else {
-                            #  Fall back on the process name if no description is provided by the process or as a parameter to the function
-                            Add-Member -InputObject $_ -MemberType 'NoteProperty' -Name 'ProcessDescription' -Value $_.ProcessName -Force -PassThru -ErrorAction 'SilentlyContinue'
-                        }
+                        Add-Member -InputObject $_ -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                            If ($processObject.ProcessDescription) {
+                                #  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
+                                $processObject.ProcessDescription
+                            }
+                            ElseIf ($_.Description) {
+                                #  If the process already has a description field specified, then use it
+                                $_.Description
+                            }
+                            Else {
+                                #  Fall back on the process name if no description is provided by the process or as a parameter to the function
+                                $_.ProcessName
+                            }
+                        )
+
                         Write-Output -InputObject ($true)
                         Return
                     }
