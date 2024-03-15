@@ -9087,6 +9087,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Check Deferral history and calculate remaining deferrals
+        [String]$deferDeadlineUniversal = $null
         If (($allowDefer) -or ($AllowDeferCloseApps)) {
             #  Set $allowDefer to true if $AllowDeferCloseApps is true
             $allowDefer = $true
