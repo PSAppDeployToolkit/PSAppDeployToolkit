@@ -450,8 +450,8 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [String]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
 [String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [Int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
-#  Change paths to user accessible ones if RequireAdmin is false
-If ($configToolkitRequireAdmin -eq $false) {
+#  Change paths to user accessible ones if user isn't an admin
+If (!$IsAdmin) {
     If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {
         [String]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPathNoAdminRights)
     }
@@ -8276,8 +8276,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if no Admin rights
-        If ($configToolkitRequireAdmin -eq $false) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
+        If (!$IsAdmin) {
+            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $ProcessNTAccount] is not admin." -Source ${CmdletName}
             Return
         }
 
@@ -8408,8 +8408,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if no Admin rights
-        If ($configToolkitRequireAdmin -eq $false) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [Require Admin: $configToolkitRequireAdmin]." -Source ${CmdletName}
+        If (!$IsAdmin) {
+            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $ProcessNTAccount] is not admin." -Source ${CmdletName}
             Return
         }
 
