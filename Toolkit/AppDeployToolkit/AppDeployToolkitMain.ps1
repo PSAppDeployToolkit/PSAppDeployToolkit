@@ -16172,6 +16172,23 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
+## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
+. $GetLoggedOnUserDetails
+
+## Dot source ScriptBlock to create temporary directory of logged on user
+. $GetLoggedOnUserTempPath
+
+## Dot source ScriptBlock to load localized UI messages from config XML
+. $xmlLoadLocalizedUIMessages
+
+## Dot source ScriptBlock to get system DPI scale factor
+. $GetDisplayScaleFactor
+
+## Dot Source script extensions
+If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
+    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
+}
+
 ## If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly
 If ((-not $appName) -and (-not $ReferredInstallName)) {
     # Build properly formatted Architecture String
@@ -16370,11 +16387,6 @@ Else {
     Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
 }
 
-## Dot Source script extensions
-If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
-    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
-}
-
 ## Evaluate non-default parameters passed to the scripts
 If ($deployAppScriptParameters) {
     [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
@@ -16438,24 +16450,6 @@ Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHo
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
-
-## Disable logging
-. $DisableScriptLogging
-
-## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
-. $GetLoggedOnUserDetails
-
-## Dot source ScriptBlock to create temporary directory of logged on user
-. $GetLoggedOnUserTempPath
-
-## Dot source ScriptBlock to load localized UI messages from config XML
-. $xmlLoadLocalizedUIMessages
-
-## Dot source ScriptBlock to get system DPI scale factor
-. $GetDisplayScaleFactor
-
-## Revert script logging to original setting
-. $RevertScriptLogging
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($AsyncToolkitLaunch) {
