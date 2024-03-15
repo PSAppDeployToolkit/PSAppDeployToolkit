@@ -9663,7 +9663,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
-        If (-not $script:welcomeTimer) {
+        If (!(Test-Path -LiteralPath 'variable:welcomeTimer')) {
             $script:welcomeTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
         }
 
