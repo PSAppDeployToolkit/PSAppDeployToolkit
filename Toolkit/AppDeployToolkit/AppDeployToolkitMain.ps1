@@ -11924,7 +11924,7 @@ https://psappdeploytoolkit.com
         If (-not $DLLAction) {
             Throw 'Parameter validation failed. Please specify the [-DLLAction] parameter to determine whether to register or unregister the DLL.'
         }
-        [String]$DLLAction = ((Get-Culture).TextInfo).ToTitleCase($DLLAction.ToLower())
+        [String]$DLLAction = $culture.TextInfo.ToTitleCase($DLLAction.ToLower())
         Switch ($DLLAction) {
             'Register' {
                 [String]$DLLActionParameters = "/s `"$FilePath`""
