@@ -3645,29 +3645,18 @@ https://psappdeploytoolkit.com
         }
 
         ## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
-        If ($MSIProductCode) {
-            If ($SkipMSIAlreadyInstalledCheck) {
-                [Boolean]$IsMsiInstalled = $false
-            }
-            Else {
+        [Boolean]$IsMsiInstalled = If ($MSIProductCode) {
+            If (!$SkipMSIAlreadyInstalledCheck) {
                 If ($IncludeUpdatesAndHotfixes) {
-                    [PSObject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes
+                    !!(Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes)
                 }
                 Else {
-                    [PSObject]$MsiInstalled = Get-InstalledApplication -ProductCode $MSIProductCode
-                }
-                If ($MsiInstalled) {
-                    [Boolean]$IsMsiInstalled = $true
+                    !!(Get-InstalledApplication -ProductCode $MSIProductCode)
                 }
             }
         }
         Else {
-            If ($Action -eq 'Install') {
-                [Boolean]$IsMsiInstalled = $false
-            }
-            Else {
-                [Boolean]$IsMsiInstalled = $true
-            }
+            $Action -ne 'Install'
         }
 
         If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
