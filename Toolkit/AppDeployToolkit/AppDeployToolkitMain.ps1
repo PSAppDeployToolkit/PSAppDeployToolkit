@@ -3074,15 +3074,14 @@ https://psappdeploytoolkit.com
         }
 
         ## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
-        [PSObject[]]$regKeyApplication = @()
-        ForEach ($regKey in $regKeyApplications) {
+        [PSObject[]]$regKeyApplication = ForEach ($regKey in $regKeyApplications) {
             If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
                 [PSObject[]]$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath'
                 ForEach ($UninstallKeyApp in $UninstallKeyApps) {
                     Try {
                         [PSObject]$regKeyApplicationProps = Get-ItemProperty -LiteralPath $UninstallKeyApp.PSPath -ErrorAction 'Stop'
-                        If ($regKeyApplicationProps.DisplayName) {
-                            [PSObject[]]$regKeyApplication += $regKeyApplicationProps
+                        If ($regKeyApplicationProps | Select-Object -ExpandProperty DisplayName -ErrorAction Ignore) {
+                            $regKeyApplicationProps
                         }
                     }
                     Catch {
