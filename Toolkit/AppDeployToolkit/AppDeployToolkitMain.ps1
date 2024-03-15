@@ -2679,8 +2679,8 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        #  Bypass if in non-interactive mode
-        If ($deployModeNonInteractive) {
+        #  Bypass if in silent mode
+        If ($deployModeSilent) {
             Write-Log -Message "Bypassing Show-DialogBox [Mode: $deployMode]. Text:$Text" -Source ${CmdletName}
             Return
         }
