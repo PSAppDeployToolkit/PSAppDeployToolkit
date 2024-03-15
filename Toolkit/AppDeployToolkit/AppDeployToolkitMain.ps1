@@ -415,7 +415,7 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 
 # Get Toast Notification Options
 [Xml.XmlElement]$xmlToastOptions = $xmlConfig.Toast_Options
-[String]$configToastDisable = $xmlToastOptions.Toast_Disable
+[Boolean]$configToastDisable = [Boolean]::Parse($xmlToastOptions.Toast_Disable)
 [String]$configToastAppName = $xmlToastOptions.Toast_AppName
 
 [String]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName
