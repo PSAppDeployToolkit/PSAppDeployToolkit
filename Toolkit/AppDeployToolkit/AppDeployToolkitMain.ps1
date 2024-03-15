@@ -9102,21 +9102,20 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If ($CloseApps) {
-            ## Create a Process object with custom descriptions where they are provided (split on an '=' sign)
-            [PSObject[]]$processObjects = @()
+        ## Create a Process object with custom descriptions where they are provided (split on an '=' sign)
+        [PSObject[]]$processObjects = If ($CloseApps) {
             #  Split multiple processes on a comma, then split on equal sign, then create custom object with process name and description
             ForEach ($process in ($CloseApps -split ',' | Where-Object { $_ })) {
                 If ($process.Contains('=')) {
                     [String[]]$ProcessSplit = $process -split '='
-                    $processObjects += New-Object -TypeName 'PSObject' -Property @{
+                    New-Object -TypeName 'PSObject' -Property @{
                         ProcessName        = $ProcessSplit[0]
                         ProcessDescription = $ProcessSplit[1]
                     }
                 }
                 Else {
                     [String]$ProcessInfo = $process
-                    $processObjects += New-Object -TypeName 'PSObject' -Property @{
+                    New-Object -TypeName 'PSObject' -Property @{
                         ProcessName        = $process
                         ProcessDescription = ''
                     }
