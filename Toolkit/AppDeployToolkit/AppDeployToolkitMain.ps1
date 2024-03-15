@@ -15247,10 +15247,6 @@ Set the service startup mode.
 
 Specify the name of the service.
 
-.PARAMETER ComputerName
-
-Specify the name of the computer. Default is: the local computer.
-
 .PARAMETER StartMode
 
 Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
@@ -15286,9 +15282,6 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Name,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
         [String]$StartMode,
