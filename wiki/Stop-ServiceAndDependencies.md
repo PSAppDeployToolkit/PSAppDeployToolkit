@@ -20,10 +20,6 @@ Stop Windows service and its dependencies.
 
 Specify the name of the service.
 
-`-ComputerName <String>`
-
-Specify the name of the computer. Default is: the local computer.
-
 `-SkipServiceExistsTest [<SwitchParameter>]`
 
 Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
