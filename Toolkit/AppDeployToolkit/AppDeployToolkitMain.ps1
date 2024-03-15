@@ -10918,7 +10918,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Check if the progress thread is running before invoking methods on it
-        If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne 'Running') {
+        If (!(Test-Path -LiteralPath 'variable:ProgressRunspace') -or !(Test-Path -LiteralPath 'variable:ProgressSyncHash') -or !$script:ProgressSyncHash.ContainsKey('Window') -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne 'Running')) {
             #  Notify user that the software installation has started
             $balloonText = "$deploymentTypeName $configBalloonTextStart"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
