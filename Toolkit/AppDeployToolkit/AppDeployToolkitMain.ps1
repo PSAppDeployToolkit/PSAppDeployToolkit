@@ -1134,6 +1134,9 @@ https://psappdeploytoolkit.com
         If (-not (Test-Path -LiteralPath 'variable:DisableLogging')) {
             $DisableLogging = $false
         }
+        If ([System.String]::IsNullOrWhiteSpace($LogFileName)) {
+            $DisableLogging = $true
+        }
         #  Check if the script section is defined
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
         #  Get the file name of the source script
