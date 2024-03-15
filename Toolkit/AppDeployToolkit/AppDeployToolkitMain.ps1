@@ -10846,6 +10846,10 @@ The location of the progress window. Default: center of the screen.
 
 Specifies whether the progress window should be topmost. Default: $true.
 
+.PARAMETER Quiet
+
+Specifies whether to not log the success of updating the progress message. Default: $false.
+
 .INPUTS
 
 None
@@ -10892,7 +10896,9 @@ https://psappdeploytoolkit.com
         [String]$WindowLocation = 'Default',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Boolean]$TopMost = $true
+        [Boolean]$TopMost = $true,
+        [Parameter(Mandatory = $false)]
+        [Switch]$Quiet
     )
 
     Begin {
@@ -10902,7 +10908,9 @@ https://psappdeploytoolkit.com
     }
     Process {
         If ($deployModeSilent) {
-            Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $deployMode]. Status message:$StatusMessage" -Source ${CmdletName}
+            If (!$Quiet) {
+                Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $deployMode]. Status message:$StatusMessage" -Source ${CmdletName}
+            }
             Return
         }
 
@@ -11097,7 +11105,9 @@ https://psappdeploytoolkit.com
                         }
                     }, $null, $null)
 
-                Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
+                If (!$Quiet) {
+                    Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
+                }
             }
             Catch {
                 Write-Log -Message "Unable to update the progress message. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
