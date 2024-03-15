@@ -1714,11 +1714,6 @@ https://psappdeploytoolkit.com
     ## Get the name of this function
     [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 
-    ## Stop the Close Program Dialog if running
-    If ($formCloseApps) {
-        $formCloseApps.Close
-    }
-
     ## Close the Installation Progress Dialog if running
     Close-InstallationProgress
 
