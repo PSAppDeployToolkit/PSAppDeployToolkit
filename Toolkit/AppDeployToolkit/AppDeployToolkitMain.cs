@@ -242,6 +242,9 @@ namespace PSADT
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern IntPtr DestroyMenu(IntPtr hWnd);
 
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+		public static extern bool SetProcessDPIAware();
+
 		public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 
 		public static bool EnumWindowsProc(IntPtr hWnd, ref IntPtr lItems)

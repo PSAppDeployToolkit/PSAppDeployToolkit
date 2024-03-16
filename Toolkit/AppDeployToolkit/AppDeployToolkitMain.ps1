@@ -2229,6 +2229,7 @@ https://psappdeploytoolkit.com
 
         [Windows.Forms.Application]::EnableVisualStyles()
         $formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
+        $formInstallationPrompt.SuspendLayout()
         $pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
         If ($Icon -ne 'None') {
             $pictureIcon = New-Object -TypeName 'System.Windows.Forms.PictureBox'
@@ -2279,12 +2280,6 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formInstallationPrompt.ControlBox = $false
             }
-            $formInstallationPrompt.WindowState = 'Normal'
-            $formInstallationPrompt.AutoSize = $true
-            $formInstallationPrompt.AutoScaleMode = 'Font'
-            $formInstallationPrompt.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
-            $formInstallationPrompt.TopMost = $TopMost
-            $formInstallationPrompt.BringToFront()
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
         }
@@ -2304,9 +2299,9 @@ https://psappdeploytoolkit.com
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
         $pictureBanner.ImageLocation = $appDeployLogoBanner
-        $pictureBanner.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
+        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
         $pictureBanner.MinimumSize = $DefaultControlSize
-        $pictureBanner.SizeMode = 'CenterImage'
+        $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
         $pictureBanner.TabStop = $false
         $pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
@@ -2317,7 +2312,7 @@ https://psappdeploytoolkit.com
             $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap()
             $pictureIcon.Name = 'pictureIcon'
             $pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
-            $pictureIcon.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
+            $pictureIcon.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
             $pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (24, 0, 8, 0)
             $pictureIcon.SizeMode = 'CenterImage'
             $pictureIcon.TabStop = $false
@@ -2330,7 +2325,7 @@ https://psappdeploytoolkit.com
         $labelText.Font = $defaultFont
         $labelText.Name = 'labelText'
         $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, 0)
-        $labelText.Size = $System_Drawing_Size
+        $labelText.ClientSize = $System_Drawing_Size
         If ($Icon -ne 'None') {
             $labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, $pictureIcon.Height)
         }
@@ -2355,7 +2350,7 @@ https://psappdeploytoolkit.com
         $buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonLeft.Name = 'buttonLeft'
         $buttonLeft.Font = $defaultFont
-        $buttonLeft.Size = $buttonSize
+        $buttonLeft.ClientSize = $buttonSize
         $buttonLeft.MinimumSize = $buttonSize
         $buttonLeft.MaximumSize = $buttonSize
         $buttonLeft.TabIndex = 0
@@ -2372,7 +2367,7 @@ https://psappdeploytoolkit.com
         $buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonMiddle.Name = 'buttonMiddle'
         $buttonMiddle.Font = $defaultFont
-        $buttonMiddle.Size = $buttonSize
+        $buttonMiddle.ClientSize = $buttonSize
         $buttonMiddle.MinimumSize = $buttonSize
         $buttonMiddle.MaximumSize = $buttonSize
         $buttonMiddle.TabIndex = 1
@@ -2389,7 +2384,7 @@ https://psappdeploytoolkit.com
         $buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRight.Name = 'buttonRight'
         $buttonRight.Font = $defaultFont
-        $buttonRight.Size = $buttonSize
+        $buttonRight.ClientSize = $buttonSize
         $buttonRight.MinimumSize = $buttonSize
         $buttonRight.MaximumSize = $buttonSize
         $buttonRight.TabIndex = 2
@@ -2406,7 +2401,7 @@ https://psappdeploytoolkit.com
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
         $buttonAbort.Font = $defaultFont
-        $buttonAbort.Size = '0,0'
+        $buttonAbort.ClientSize = '0,0'
         $buttonAbort.MinimumSize = '0,0'
         $buttonAbort.MaximumSize = '0,0'
         $buttonAbort.BackColor = [System.Drawing.Color]::Transparent
@@ -2426,7 +2421,7 @@ https://psappdeploytoolkit.com
         ## FlowLayoutPanel
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
-        $flowLayoutPanel.Size = $DefaultControlSize
+        $flowLayoutPanel.ClientSize = $DefaultControlSize
         $flowLayoutPanel.AutoSize = $true
         $flowLayoutPanel.AutoSizeMode = 'GrowAndShrink'
         $flowLayoutPanel.Anchor = 'Top,Left'
@@ -2444,7 +2439,7 @@ https://psappdeploytoolkit.com
             $labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
             $labelText.MinimumSize = $DefaultControlSize
             $labelText.MaximumSize = $DefaultControlSize
-            $labelText.Size = $DefaultControlSize
+            $labelText.ClientSize = $DefaultControlSize
             $labelText.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         }
         If ($Icon -ne 'None') {
@@ -2455,7 +2450,7 @@ https://psappdeploytoolkit.com
 
         ## ButtonsPanel
         $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         If ($Icon -ne 'None') {
             $panelButtons.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
         }
@@ -2481,7 +2476,7 @@ https://psappdeploytoolkit.com
 
         ## Form Installation Prompt
         $formInstallationPrompt.MinimumSize = $DefaultControlSize
-        $formInstallationPrompt.Size = $DefaultControlSize
+        $formInstallationPrompt.ClientSize = $DefaultControlSize
         $formInstallationPrompt.Padding = $paddingNone
         $formInstallationPrompt.Margin = $paddingNone
         $formInstallationPrompt.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -2494,8 +2489,8 @@ https://psappdeploytoolkit.com
         $formInstallationPrompt.TopMost = $TopMost
         $formInstallationPrompt.TopLevel = $true
         $formInstallationPrompt.AutoSize = $true
-        $formInstallationPrompt.AutoScaleMode = 'Font'
-        $formInstallationPrompt.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
+        $formInstallationPrompt.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
+        $formInstallationPrompt.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
         $formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
         $formInstallationPrompt.Controls.Add($pictureBanner)
         $formInstallationPrompt.Controls.Add($buttonAbort)
@@ -2546,6 +2541,7 @@ https://psappdeploytoolkit.com
                 $null = $shellApp.MinimizeAll()
             }
             # Show the Form
+            $formInstallationPrompt.ResumeLayout()
             $result = $formInstallationPrompt.ShowDialog()
             If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
                 $showDialog = $false
@@ -9556,6 +9552,7 @@ https://psappdeploytoolkit.com
         [Windows.Forms.Application]::EnableVisualStyles()
 
         $formWelcome = New-Object -TypeName 'System.Windows.Forms.Form'
+        $formWelcome.SuspendLayout()
         $pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
         $labelWelcomeMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelAppName = New-Object -TypeName 'System.Windows.Forms.Label'
@@ -9613,13 +9610,6 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formWelcome.ControlBox = $false
             }
-            ## Correct the initial state of the form to prevent the .NET maximized form issue
-            $formWelcome.WindowState = 'Normal'
-            $formWelcome.AutoSize = $true
-            $formWelcome.AutoScaleMode = 'Font'
-            $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
-            $formWelcome.TopMost = $TopMost
-            $formWelcome.BringToFront()
             #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
 
@@ -9748,8 +9738,8 @@ https://psappdeploytoolkit.com
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
         $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
-        $pictureBanner.Size = $System_Drawing_Size
-        $pictureBanner.SizeMode = 'CenterImage'
+        $pictureBanner.ClientSize = $System_Drawing_Size
+        $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
         $pictureBanner.TabStop = $false
 
@@ -9757,7 +9747,7 @@ https://psappdeploytoolkit.com
         $labelWelcomeMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelWelcomeMessage.Font = $defaultFont
         $labelWelcomeMessage.Name = 'labelWelcomeMessage'
-        $labelWelcomeMessage.Size = $defaultControlSize
+        $labelWelcomeMessage.ClientSize = $defaultControlSize
         $labelWelcomeMessage.MinimumSize = $defaultControlSize
         $labelWelcomeMessage.MaximumSize = $defaultControlSize
         $labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
@@ -9773,7 +9763,7 @@ https://psappdeploytoolkit.com
         $labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelAppName.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Bold"
         $labelAppName.Name = 'labelAppName'
-        $labelAppName.Size = $defaultControlSize
+        $labelAppName.ClientSize = $defaultControlSize
         $labelAppName.MinimumSize = $defaultControlSize
         $labelAppName.MaximumSize = $defaultControlSize
         $labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 5, 0, 5)
@@ -9789,7 +9779,7 @@ https://psappdeploytoolkit.com
         $labelCustomMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCustomMessage.Font = $defaultFont
         $labelCustomMessage.Name = 'labelCustomMessage'
-        $labelCustomMessage.Size = $defaultControlSize
+        $labelCustomMessage.ClientSize = $defaultControlSize
         $labelCustomMessage.MinimumSize = $defaultControlSize
         $labelCustomMessage.MaximumSize = $defaultControlSize
         $labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
@@ -9805,7 +9795,7 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCloseAppsMessage.Font = $defaultFont
         $labelCloseAppsMessage.Name = 'labelCloseAppsMessage'
-        $labelCloseAppsMessage.Size = $defaultControlSize
+        $labelCloseAppsMessage.ClientSize = $defaultControlSize
         $labelCloseAppsMessage.MinimumSize = $defaultControlSize
         $labelCloseAppsMessage.MaximumSize = $defaultControlSize
         $labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
@@ -9824,7 +9814,7 @@ https://psappdeploytoolkit.com
         $listBoxCloseApps.HorizontalScrollbar = $true
         $listBoxCloseApps.Name = 'listBoxCloseApps'
         $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (420, 100)
-        $listBoxCloseApps.Size = $System_Drawing_Size
+        $listBoxCloseApps.ClientSize = $System_Drawing_Size
         $listBoxCloseApps.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (15, 0, 15, 0)
         $listBoxCloseApps.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $listBoxCloseApps.TabIndex = 3
@@ -9834,7 +9824,7 @@ https://psappdeploytoolkit.com
         $labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelDefer.Font = $defaultFont
         $labelDefer.Name = 'labelDefer'
-        $labelDefer.Size = $defaultControlSize
+        $labelDefer.ClientSize = $defaultControlSize
         $labelDefer.MinimumSize = $defaultControlSize
         $labelDefer.MaximumSize = $defaultControlSize
         $labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
@@ -9861,7 +9851,7 @@ https://psappdeploytoolkit.com
         $labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdownMessage.Name = 'labelCountdownMessage'
         $labelCountdownMessage.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
-        $labelCountdownMessage.Size = $defaultControlSize
+        $labelCountdownMessage.ClientSize = $defaultControlSize
         $labelCountdownMessage.MinimumSize = $defaultControlSize
         $labelCountdownMessage.MaximumSize = $defaultControlSize
         $labelCountdownMessage.Margin = $paddingNone
@@ -9892,7 +9882,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdown.Name = 'labelCountdown'
         $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
-        $labelCountdown.Size = $defaultControlSize
+        $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
         $labelCountdown.MaximumSize = $defaultControlSize
         $labelCountdown.Margin = $paddingNone
@@ -9908,7 +9898,7 @@ https://psappdeploytoolkit.com
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
-        $flowLayoutPanel.Size = $DefaultControlSize
+        $flowLayoutPanel.ClientSize = $DefaultControlSize
         $flowLayoutPanel.Margin = $paddingNone
         $flowLayoutPanel.Padding = $paddingNone
         $flowLayoutPanel.AutoSizeMode = 'GrowAndShrink'
@@ -9940,7 +9930,7 @@ https://psappdeploytoolkit.com
         $buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
         $buttonCloseApps.Font = $defaultFont
         $buttonCloseApps.Name = 'buttonCloseApps'
-        $buttonCloseApps.Size = $buttonSize
+        $buttonCloseApps.ClientSize = $buttonSize
         $buttonCloseApps.MinimumSize = $buttonSize
         $buttonCloseApps.MaximumSize = $buttonSize
         $buttonCloseApps.TabIndex = 1
@@ -9962,7 +9952,7 @@ https://psappdeploytoolkit.com
         }
         $buttonDefer.Name = 'buttonDefer'
         $buttonDefer.Font = $defaultFont
-        $buttonDefer.Size = $buttonSize
+        $buttonDefer.ClientSize = $buttonSize
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.TabIndex = 0
@@ -9979,7 +9969,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (306, 4)
         $buttonContinue.Name = 'buttonContinue'
         $buttonContinue.Font = $defaultFont
-        $buttonContinue.Size = $buttonSize
+        $buttonContinue.ClientSize = $buttonSize
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
         $buttonContinue.TabIndex = 2
@@ -10003,7 +9993,7 @@ https://psappdeploytoolkit.com
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
         $buttonAbort.Font = $defaultFont
-        $buttonAbort.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
+        $buttonAbort.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.BackColor = [System.Drawing.Color]::Transparent
@@ -10021,7 +10011,7 @@ https://psappdeploytoolkit.com
         $buttonAbort.add_Click($buttonAbort_OnClick)
 
         ## Form Welcome
-        $formWelcome.Size = $defaultControlSize
+        $formWelcome.ClientSize = $defaultControlSize
         $formWelcome.MinimumSize = $defaultControlSize
         $formWelcome.Padding = $paddingNone
         $formWelcome.Margin = $paddingNone
@@ -10036,13 +10026,13 @@ https://psappdeploytoolkit.com
         $formWelcome.TopLevel = $true
         $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
         $formWelcome.AutoSize = $true
-        $formWelcome.AutoScaleMode = 'Font'
-        $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
+        $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
+        $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
         $formWelcome.Controls.Add($pictureBanner)
         $formWelcome.Controls.Add($buttonAbort)
         ## Panel Button
         $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
@@ -10070,6 +10060,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Show the form
+        $formWelcome.ResumeLayout()
         $result = $formWelcome.ShowDialog()
         $formWelcome.Dispose()
 
@@ -10239,6 +10230,7 @@ https://psappdeploytoolkit.com
 
         [Windows.Forms.Application]::EnableVisualStyles()
         $formRestart = New-Object -TypeName 'System.Windows.Forms.Form'
+        $formRestart.SuspendLayout()
         $labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelTimeRemaining = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelMessage = New-Object -TypeName 'System.Windows.Forms.Label'
@@ -10281,12 +10273,6 @@ https://psappdeploytoolkit.com
             If ($remainingTime.TotalSeconds -le $countdownNoHideSeconds) {
                 $buttonRestartLater.Enabled = $false
             }
-            $formRestart.WindowState = 'Normal'
-            $formRestart.AutoSize = $true
-            $formRestart.AutoScaleMode = 'Font'
-            $formRestart.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
-            $formRestart.TopMost = $TopMost
-            $formRestart.BringToFront()
             ## Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formInstallationRestartPromptStartPosition' -Value $formRestart.Location -Scope 'Script'
         }
@@ -10382,8 +10368,8 @@ https://psappdeploytoolkit.com
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
         $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
-        $pictureBanner.Size = $System_Drawing_Size
-        $pictureBanner.SizeMode = 'CenterImage'
+        $pictureBanner.ClientSize = $System_Drawing_Size
+        $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
         $pictureBanner.TabStop = $false
 
@@ -10391,7 +10377,7 @@ https://psappdeploytoolkit.com
         $labelMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelMessage.Font = $defaultFont
         $labelMessage.Name = 'labelMessage'
-        $labelMessage.Size = $defaultControlSize
+        $labelMessage.ClientSize = $defaultControlSize
         $labelMessage.MinimumSize = $defaultControlSize
         $labelMessage.MaximumSize = $defaultControlSize
         $labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
@@ -10409,7 +10395,7 @@ https://psappdeploytoolkit.com
         $labelTimeRemaining.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelTimeRemaining.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
         $labelTimeRemaining.Name = 'labelTimeRemaining'
-        $labelTimeRemaining.Size = $defaultControlSize
+        $labelTimeRemaining.ClientSize = $defaultControlSize
         $labelTimeRemaining.MinimumSize = $defaultControlSize
         $labelTimeRemaining.MaximumSize = $defaultControlSize
         $labelTimeRemaining.Margin = $paddingNone
@@ -10424,7 +10410,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
         $labelCountdown.Name = 'labelCountdown'
-        $labelCountdown.Size = $defaultControlSize
+        $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
         $labelCountdown.MaximumSize = $defaultControlSize
         $labelCountdown.Margin = $paddingNone
@@ -10439,7 +10425,7 @@ https://psappdeploytoolkit.com
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
-        $flowLayoutPanel.Size = $DefaultControlSize
+        $flowLayoutPanel.ClientSize = $DefaultControlSize
         $flowLayoutPanel.Margin = $paddingNone
         $flowLayoutPanel.Padding = $paddingNone
         $flowLayoutPanel.AutoSizeMode = 'GrowAndShrink'
@@ -10458,7 +10444,7 @@ https://psappdeploytoolkit.com
         $buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (240, 4)
         $buttonRestartLater.Name = 'buttonRestartLater'
         $buttonRestartLater.Font = $defaultFont
-        $buttonRestartLater.Size = $buttonSize
+        $buttonRestartLater.ClientSize = $buttonSize
         $buttonRestartLater.MinimumSize = $buttonSize
         $buttonRestartLater.MaximumSize = $buttonSize
         $buttonRestartLater.TabIndex = 0
@@ -10474,7 +10460,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
         $buttonRestartNow.Name = 'buttonRestartNow'
         $buttonRestartNow.Font = $defaultFont
-        $buttonRestartNow.Size = $buttonSize
+        $buttonRestartNow.ClientSize = $buttonSize
         $buttonRestartNow.MinimumSize = $buttonSize
         $buttonRestartNow.MaximumSize = $buttonSize
         $buttonRestartNow.TabIndex = 1
@@ -10485,7 +10471,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.add_Click($buttonRestartNow_Click)
 
         ## Form Restart
-        $formRestart.Size = $defaultControlSize
+        $formRestart.ClientSize = $defaultControlSize
         $formRestart.MinimumSize = $defaultControlSize
         $formRestart.Padding = $paddingNone
         $formRestart.Margin = $paddingNone
@@ -10500,14 +10486,14 @@ https://psappdeploytoolkit.com
         $formRestart.TopLevel = $true
         $formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
         $formRestart.AutoSize = $true
-        $formRestart.AutoScaleMode = 'Font'
-        $formRestart.AutoScaleDimensions = New-Object System.Drawing.SizeF(6, 13) #Set as if using 96 DPI
+        $formRestart.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
+        $formRestart.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
         $formRestart.ControlBox = $true
         $formRestart.Controls.Add($pictureBanner)
 
         ## Button Panel
         $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
@@ -10541,6 +10527,7 @@ https://psappdeploytoolkit.com
         }
 
         #  Show the Form
+        $formRestart.ResumeLayout()
         Write-Output -InputObject ($formRestart.ShowDialog())
         $formRestart.Dispose()
     }
@@ -16070,6 +16057,9 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
     Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
+## Set process as DPI-aware for better dialog rendering.
+[System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
+
 ## Define ScriptBlocks to disable/revert script logging
 [ScriptBlock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
 [ScriptBlock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
@@ -16292,7 +16282,7 @@ Catch {
 [Int32]$appDeployLogoBannerHeight = 0
 Try {
     [System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object -TypeName 'System.Drawing.Bitmap' -ArgumentList ($appDeployLogoBanner)
-    [Int32]$appDeployLogoBannerHeight = $appDeployLogoBannerObject.Height
+    [Int32]$appDeployLogoBannerHeight = [System.Math]::Floor(450 * ($appDeployLogoBannerObject.Height/$appDeployLogoBannerObject.Width))
     If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
         $appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
     }
