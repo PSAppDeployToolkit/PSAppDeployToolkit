@@ -16347,7 +16347,7 @@ Catch {
 [Int32]$appDeployLogoBannerHeight = 0
 Try {
     [System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object -TypeName 'System.Drawing.Bitmap' -ArgumentList ($appDeployLogoBanner)
-    [Int32]$appDeployLogoBannerHeight = [System.Math]::Floor(450 * ($appDeployLogoBannerObject.Height/$appDeployLogoBannerObject.Width))
+    [Int32]$appDeployLogoBannerHeight = [System.Math]::Ceiling(450 * ($appDeployLogoBannerObject.Height/$appDeployLogoBannerObject.Width))
     If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
         $appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
     }
