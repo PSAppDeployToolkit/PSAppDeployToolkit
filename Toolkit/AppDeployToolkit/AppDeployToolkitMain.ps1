@@ -2859,11 +2859,17 @@ https://psappdeploytoolkit.com
             ElseIf ($hwBIOS.SerialNumber -like '*VMware*') {
                 $hwType = 'Virtual:VMWare'
             }
+            ElseIf ($hwBIOS.SerialNumber -like '*Parallels*') {
+                $hwType = 'Virtual:Parallels'
+            }
             ElseIf (($hwMakeModel.Manufacturer -like '*Microsoft*') -and ($hwMakeModel.Model -notlike '*Surface*')) {
                 $hwType = 'Virtual:Hyper-V'
             }
             ElseIf ($hwMakeModel.Manufacturer -like '*VMWare*') {
                 $hwType = 'Virtual:VMWare'
+            }
+            ElseIf ($hwMakeModel.Manufacturer -like '*Parallels*') {
+                $hwType = 'Virtual:Parallels'
             }
             ElseIf ($hwMakeModel.Model -like '*Virtual*') {
                 $hwType = 'Virtual'
@@ -3463,34 +3469,36 @@ https://psappdeploytoolkit.com
             }
 
             #  Build the log file name
-            If (-not $logName) {
+            If (-not $LogName) {
                 If ($productCodeNameVersion) {
                     If ($productCodeNameVersion.Publisher) {
-                        $logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                     Else {
-                        $logName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                 }
                 Else {
                     #  Out of other options, make the Product Code the name of the log file
-                    $logName = $Path
+                    $LogName = $Path
                 }
             }
         }
         Else {
             #  Get the log file name without file extension
-            If (-not $logName) {
-                $logName = ([IO.FileInfo]$path).BaseName
+            If (-not $LogName) {
+                $LogName = ([IO.FileInfo]$path).BaseName
             }
-            ElseIf ('.log', '.txt' -contains [IO.Path]::GetExtension($logName)) {
-                $logName = [IO.Path]::GetFileNameWithoutExtension($logName)
+            ElseIf ('.log', '.txt' -contains [IO.Path]::GetExtension($LogName)) {
+                While ('.log', '.txt' -contains [IO.Path]::GetExtension($LogName)) {
+                    $LogName = [IO.Path]::GetFileNameWithoutExtension($LogName)
+                }
             }
         }
 
         If ($configToolkitCompressLogs) {
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $logTempFolder -ChildPath $logName
+            [String]$logPath = Join-Path -Path $logTempFolder -ChildPath $LogName
         }
         Else {
             ## Create the Log directory if it doesn't already exist
@@ -3498,7 +3506,7 @@ https://psappdeploytoolkit.com
                 $null = New-Item -Path $configMSILogDir -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
             }
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $configMSILogDir -ChildPath $logName
+            [String]$logPath = Join-Path -Path $configMSILogDir -ChildPath $LogName
         }
 
         ## Set the installation Parameters
@@ -4187,6 +4195,21 @@ Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log 
 Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$configToolkitLogDir\$installName.log`"`""
 
 Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
+
+.EXAMPLE
+
+Use SCCM to create a single Package and Deployment Type that can run "whether or not a user is logged on" and also displays interaction for logged-on users including RDP session users.
+
+If no user is logged on, in Deploy-Application.ps1:
+Execute-Process -Path "Deploy-Application.exe" -Parameters $DeploymentType
+
+If a user is logged on, in Deploy-Application.ps1:
+[String]$PsExecParameters = "-accepteula -s -w `"$dirSupportFiles`" `"$dirSupportFiles\ServiceUI_x64.exe`" -process:explorer.exe ..\Deploy-Application.exe $DeploymentType"
+[PsObject]$ExecuteProcessResult = Execute-Process -Path "$dirSupportFiles\PsExec64.exe" -Parameters $PsExecParameters -PassThru
+
+Launch PsExec with parameters for ServiceUI and Deploy-Application.exe. Will work with spaces in $scriptParentPath.
+
+If ServiceUI is run directly from SCCM's command line, then execution does not work for RDP session users. Using PsExec in this context also ensures greater chance of success for unknown reasons.
 
 .NOTES
 
@@ -7489,7 +7512,7 @@ https://psappdeploytoolkit.com
 
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
-    <#
+<#
 .SYNOPSIS
 
 Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
@@ -7609,10 +7632,10 @@ https://psappdeploytoolkit.com
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-        If ((![string]::IsNullOrEmpty($tempPath))) {
+        If ((-not [String]::IsNullOrEmpty($tempPath))) {
             $executeAsUserTempPath = $tempPath
-            If (($tempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq "HighestPrivilege")) {
-                Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the HighestPrivilege creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
+            If (($tempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
+                Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
         Else {
@@ -7690,21 +7713,31 @@ https://psappdeploytoolkit.com
                 [String]$executeProcessAsUserParametersVBS = 'chr(34) & ' + "`"$($Path)`"" + ' & chr(34) & ' + '" ' + ($Parameters -replace "`r`r`n", ';' -replace "`r`n", ';' -replace '"', "`" & chr(34) & `"" -replace ' & chr\(34\) & "$', '') + '"'
             }
 
+            [String]$executeProcessAsUserScriptCount = '001'
+            [String]$executeProcessAsUserScriptFileName = "$($schTaskName)-$($executeProcessAsUserScriptCount).vbs"
+            If (Test-Path -Path "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)") {
+                [Int32]$vbscriptScriptCount = Get-ChildItem -Path "$($executeAsUserTempPath)\*" -Attributes '!Directory' -Include '*.vbs' | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1 | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) } | ForEach-Object { $_.Substring($_.length - 3, 3) }
+                [String]$executeProcessAsUserScriptCount = '{0:d3}' -f $vbscriptScriptCount++
+                [String]$executeProcessAsUserScriptFileName = "$($schTaskName)-$($executeProcessAsUserScriptCount).vbs"
+            }
+            $schTaskName = "$($schTaskName)-$($executeProcessAsUserScriptCount)"
+            
+
             [String[]]$executeProcessAsUserScript = "strCommand = $executeProcessAsUserParametersVBS"
             $executeProcessAsUserScript += 'set oWShell = CreateObject("WScript.Shell")'
             $executeProcessAsUserScript += 'intReturn = oWShell.Run(strCommand, 0, true)'
             $executeProcessAsUserScript += 'WScript.Quit intReturn'
-            $executeProcessAsUserScript | Out-File -FilePath "$executeAsUserTempPath\$($schTaskName).vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
+            $executeProcessAsUserScript | Out-File -FilePath "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
             $Path = "$envWinDir\System32\wscript.exe"
-            $Parameters = "/e:vbscript `"$executeAsUserTempPath\$($schTaskName).vbs`""
+            $Parameters = "/e:vbscript `"$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)`""
             $EscapedPath = [System.Security.SecurityElement]::Escape($Path)
             $EscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
 
             Try {
-                Set-ItemPermission -Path "$executeAsUserTempPath\$schTaskName.vbs" -User $UserName -Permission 'Read'
+                Set-ItemPermission -Path "$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)" -User $UserName -Permission 'Read'
             }
             Catch {
-                Write-Log -Message "Failed to set read permissions on path [$executeAsUserTempPath\$schTaskName.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+                Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\$($executeProcessAsUserScriptFileName)]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
             }
         }
 
@@ -7757,7 +7790,7 @@ https://psappdeploytoolkit.com
         ## Export the XML to file
         Try {
             #  Specify the filename to export the XML to
-            [String]$xmlSchTaskFilePath = "$dirAppDeployTemp\$schTaskName.xml"
+            [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
             [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
         }
@@ -16109,7 +16142,12 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
         ## Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
         #  If a console user exists, then that will be the active user session.
         #  If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
-        [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
+        If ($IsMultiSessionOS) {
+            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
+        }
+        Else {
+            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
+        }
     }
 }
 
