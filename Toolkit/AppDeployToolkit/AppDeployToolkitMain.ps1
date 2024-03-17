@@ -10781,8 +10781,19 @@ https://psappdeploytoolkit.com
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconUri' -Value $appDeployLogoImage -PropertyType 'ExpandString' -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force
 
-                [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-                [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                # Handle PowerShell 7-specific setup.
+                If ($PSVersionTable.PSEdition.Equals('Core')) {
+                    If ($pkg = Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore) {
+                        Add-Type -AssemblyName (Get-ChildItem -Path "$([System.IO.Path]::GetDirectoryName($pkg.Source))\lib\*\*.dll").FullName
+                    }
+                    Else {
+                        exit 60003
+                    }
+                }
+                else {
+                    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                }
 
                 ## Gets the Template XML so we can manipulate the values
                 $Template = [Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01
@@ -10817,7 +10828,7 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
                     $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"`'$executeToastAsUserScript`' `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`' `'$toastAppID`' `'$toastAppDisplayName`'`"; Exit `$LastExitCode }" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
+                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
                 }
                 Catch {
                 }
@@ -16165,6 +16176,17 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 
 ## Dot source ScriptBlock to get system DPI scale factor
 . $GetDisplayScaleFactor
+
+## Install required assemblies for toast notifications if conditions are right.
+If (!$configToastDisable -and $PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore)) {
+    try {
+        Write-Log -Message "Installing WinRT assemblies for PowerShell 7 toast notification support. This will take at least 5 minutes, please wait..." -Source $appDeployToolkitName
+        Install-Package -Name Microsoft.Windows.SDK.NET.Ref -ProviderName NuGet -Force -Confirm:$false | Out-Null
+    }
+    catch {
+        Write-Log -Message "An error occurred while preparing WinRT assemblies for usage. Toast notifications will not be available for this execution." -Severity 2 -Source $appDeployToolkitName
+    }
+}
 
 ## Dot Source script extensions
 If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
