@@ -1231,33 +1231,33 @@ https://psappdeploytoolkit.com
 
         if (Test-Path -Path $LogFilePath -PathType Leaf) {
             Try {
-                $ExistingLogFile = Get-Item $LogFilePath
-                [Decimal]$ExistingLogFileSizeMB = $ExistingLogFile.Length / 1MB
+                $LogFile = Get-Item $LogFilePath
+                [Decimal]$LogFileSizeMB = $LogFile.Length / 1MB
 
                 # Check if log file needs to be rotated
-                if ((!$script:LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB)) {
+                if ((!$script:LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB)) {
 
                     # Get new log file path
                     $LogFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($LogFileName)
                     $LogFileExtension = [IO.Path]::GetExtension($LogFileName)
-                    $Timestamp = Get-Date -Format 'yyyy-MM-dd-HH-mm-ss'
-                    $ArchivedLogFileName = "{0}_{1}{2}" -f $LogFileNameWithoutExtension, $Timestamp, $LogFileExtension
-                    [String]$ArchivedLogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $ArchivedLogFileName
+                    $Timestamp = $LogFile.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                    $ArchiveLogFileName = "{0}_{1}{2}" -f $LogFileNameWithoutExtension, $Timestamp, $LogFileExtension
+                    [String]$ArchiveLogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $ArchiveLogFileName
 
-                    if ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB) {
+                    if ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB) {
                         [Hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFileName; LogType = $LogType; MaxLogFileSizeMB = 0; AppendToLogFile = $true; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
 
                         ## Log message about archiving the log file
-                        $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedLogFileName]."
+                        $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchiveLogFileName]."
                         Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
                     }
 
                     # Rename the file
-                    Move-Item -Path $LogFilePath -Destination $ArchivedLogFilePath -Force -ErrorAction 'Stop'
+                    Move-Item -Path $LogFilePath -Destination $ArchiveLogFilePath -Force -ErrorAction 'Stop'
 
-                    if ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB) {
+                    if ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB) {
                         ## Start new log file and Log message about archiving the old log file
-                        $NewLogMessage = "Previous log file was renamed to [$ArchivedLogFileName] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
+                        $NewLogMessage = "Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
                         Write-Log -Message $NewLogMessage @ArchiveLogParams
                     }
 
