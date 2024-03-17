@@ -698,48 +698,68 @@ If (Test-Path -LiteralPath 'variable:deferDays') {
     }
 }
 ## Variables: Resolve Parameters. For use in a pipeline
-[ScriptBlock]$ResolveParameters = {
+filter Resolve-Parameters {
     Param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]$Parameter
     )
 
-    Switch ($Parameter.Value.GetType().Name) {
-        'SwitchParameter' {
-            "-$($Parameter.Key):`$$($Parameter.Value.ToString().ToLower())"
+    Switch ($Parameter) {
+        {$_.Value -is [System.Management.Automation.SwitchParameter]} {
+            "-$($_.Key):`$$($_.Value.ToString().ToLower())"
+            break
         }
-        'Boolean' {
-            "-$($Parameter.Key):`$$($Parameter.Value.ToString().ToLower())"
+        {$_.Value -is [System.Boolean]} {
+            "-$($_.Key):`$$($_.Value.ToString().ToLower())"
+            break
         }
-        'Int16' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Int16]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'Int32' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Int32]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'Int64' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Int64]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'UInt16' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.UInt16]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'UInt32' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.UInt32]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'UInt64' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.UInt64]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'Single' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Single]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'Double' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Double]} {
+            "-$($_.Key):$($_.Value)"
+            break
         }
-        'Decimal' {
-            "-$($Parameter.Key):$($Parameter.Value)"
+        {$_.Value -is [System.Decimal]} {
+            "-$($_.Key):$($_.Value)"
+            break
+        }
+        {$_.Value -is [System.Collections.IDictionary]} {
+            "-$($_.Key):'$(($_.Value.GetEnumerator() | Resolve-Parameters).Replace("'",'"') -join "', '")'"
+            break
+        }
+        {$_.Value -is [System.Collections.IEnumerable]} {
+            "-$($_.Key):'$($_.Value -join "', '")'"
+            break
         }
         default {
-            "-$($Parameter.Key):`'$($Parameter.Value)`'"
+            "-$($_.Key):'$($_.Value)'"
+            break
         }
     }
 }
@@ -2221,7 +2241,7 @@ https://psappdeploytoolkit.com
             # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
             $installPromptParameters.Remove('NoWait')
             # Format the parameters as a string
-            [String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+            [String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 
 
             Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
@@ -2535,7 +2555,7 @@ https://psappdeploytoolkit.com
             Close-InstallationProgress
         }
 
-        [String]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+        [String]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
         Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
 
@@ -10266,7 +10286,7 @@ https://psappdeploytoolkit.com
             $installRestartPromptParameters.Remove('NoSilentRestart')
             $installRestartPromptParameters.Remove('SilentCountdownSeconds')
             ## Prepare a list of parameters of this function as a string
-            [String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+            [String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
             ## Start another powershell instance silently with function parameters from this function
             Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return
@@ -16362,15 +16382,15 @@ If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -P
 
 ## Evaluate non-default parameters passed to the scripts
 If ($deployAppScriptParameters) {
-    [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+    [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 }
 #  Save main script parameters hashtable for async execution of the toolkit
 [Hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
 If ($appDeployMainScriptParameters) {
-    [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+    [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 }
 If ($appDeployExtScriptParameters) {
-    [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | ForEach-Object { & $ResolveParameters $_ }) -join ' '
+    [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 }
 
 ## Check the XML config file version
