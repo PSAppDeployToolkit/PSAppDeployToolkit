@@ -2495,7 +2495,6 @@ https://psappdeploytoolkit.com
         }
 
         ## Form Installation Prompt
-        $formInstallationPrompt.MinimumSize = $DefaultControlSize
         $formInstallationPrompt.ClientSize = $DefaultControlSize
         $formInstallationPrompt.Padding = $paddingNone
         $formInstallationPrompt.Margin = $paddingNone
@@ -10039,7 +10038,6 @@ https://psappdeploytoolkit.com
 
         ## Form Welcome
         $formWelcome.ClientSize = $defaultControlSize
-        $formWelcome.MinimumSize = $defaultControlSize
         $formWelcome.Padding = $paddingNone
         $formWelcome.Margin = $paddingNone
         $formWelcome.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -10499,7 +10497,6 @@ https://psappdeploytoolkit.com
 
         ## Form Restart
         $formRestart.ClientSize = $defaultControlSize
-        $formRestart.MinimumSize = $defaultControlSize
         $formRestart.Padding = $paddingNone
         $formRestart.Margin = $paddingNone
         $formRestart.DataBindings.DefaultDataSourceUpdateMode = 0
