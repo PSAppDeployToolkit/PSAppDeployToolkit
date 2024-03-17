@@ -289,19 +289,19 @@ Else {
 }
 
 ## Variables: Office C2R version, bitness and channel
-If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'VersionToReport') {
-    [String]$envOfficeVersion = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'VersionToReport' -ErrorAction 'SilentlyContinue').VersionToReport
+[PSObject]$envOfficeVars = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue'
+[String]$envOfficeVersion = If ($envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction SilentlyContinue) {
+    $envOfficeVars.VersionToReport
 }
-If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'Platform') {
-    [String]$envOfficeBitness = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'Platform' -ErrorAction 'SilentlyContinue').Platform
+[String]$envOfficeBitness = If ($envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction SilentlyContinue) {
+    $envOfficeVars.Platform
 }
-If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'CDNBaseURL') {
-    [String]$envOfficeCDNBaseURL = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -Name 'CDNBaseURL' -ErrorAction 'SilentlyContinue').CDNBaseURL
-    Switch -regex ([String]$envofficeCDNBaseURL) {
-        "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {$envOfficeChannel = "monthly"}
-        "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {$envOfficeChannel = "semi-annual"}
-        "64256afe-f5d9-4f86-8936-8840a6a4f5be" {$envOfficeChannel = "monthly targeted"}
-        "b8f9b850-328d-4355-9145-c59439a0c4cf" {$envOfficeChannel = "semi-annual targeted"}
+[String]$envOfficeChannel = If ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction SilentlyContinue) {
+    Switch -regex ($envOfficeVars.CDNBaseURL) {
+        "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {"monthly"}
+        "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {"semi-annual"}
+        "64256afe-f5d9-4f86-8936-8840a6a4f5be" {"monthly targeted"}
+        "b8f9b850-328d-4355-9145-c59439a0c4cf" {"semi-annual targeted"}
     }
 }
 
