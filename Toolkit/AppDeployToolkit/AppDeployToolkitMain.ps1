@@ -381,8 +381,6 @@ Else {
     #  If this script was not invoked by another script, fall back to the directory one level above this script
     [String]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
-# Reset the check for existing log files on each script run
-[Boolean]$script:LogFileExistsCheck = $false
 
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
@@ -436,10 +434,11 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
 [Boolean]$configToolkitCompressLogs = [Boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 [String]$configToolkitLogStyle = $xmlToolkitOptions.Toolkit_LogStyle
-[Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
 [Boolean]$configToolkitLogWriteToHost = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogWriteToHost)
 [Boolean]$configToolkitLogDebugMessage = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDebugMessage)
-[Boolean]$configToolkitLogDoNotAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDoNotAppend)
+[Boolean]$configToolkitLogAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogAppend)
+[Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
+[Int]$configToolkitLogMaxHistory = $xmlToolkitOptions.Toolkit_LogMaxHistory
 [Boolean]$configToolkitUseRobocopy = [Boolean]::Parse($xmlToolkitOptions.Toolkit_UseRobocopy)
 [String]$configToolkitCachePath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_CachePath)
 #  Get MSI Options
@@ -627,6 +626,7 @@ Else {
 [Boolean]$BlockExecution = $false
 [Boolean]$installationStarted = $false
 [Boolean]$runningTaskSequence = $false
+[Boolean]$LogFileInitialized = $false
 If (Test-Path -LiteralPath 'variable:welcomeTimer') {
     Remove-Variable -Name 'welcomeTimer' -Scope 'Script'
 }
@@ -1005,21 +1005,25 @@ Set the directory where the log file will be saved.
 
 Set the name of the log file.
 
+.PARAMETER AppendToLogFile
+
+Append to existing log file rather than creating a new one upon toolkit initialization. Default value is defined in AppDeployToolkitConfig.xml.
+
+.PARAMETER MaxLogHistory
+
+Maximum number of previous log files to retain. Default value is defined in AppDeployToolkitConfig.xml.
+
 .PARAMETER MaxLogFileSizeMB
 
-Maximum file size limit for log file in megabytes (MB). Default is 10 MB.
-
-.PARAMETER WriteHost
-
-Write the log message to the console.
-
-.PARAMETER DoNotAppendToLogFile
-
-Create a new log file, do not append to existing log file. Default is: $false.	
+Maximum file size limit for log file in megabytes (MB). Default value is defined in AppDeployToolkitConfig.xml.
 
 .PARAMETER ContinueOnError
 
 Suppress writing log message to console on failure to write message to log file. Default is: $true.
+
+.PARAMETER WriteHost
+
+Write the log message to the console.
 
 .PARAMETER PassThru
 
@@ -1096,22 +1100,26 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, Position = 6)]
         [ValidateNotNullorEmpty()]
         [String]$LogFileName = $logName,
-        [Parameter(Mandatory = $false, Position = 7)]
+        [Parameter(Mandatory=$false,Position=7)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$AppendToLogFile = $configToolkitLogAppend,
+        [Parameter(Mandatory=$false,Position=8)]
+        [ValidateNotNullorEmpty()]
+        [Int]$MaxLogHistory = $configToolkitLogMaxHistory,
+        [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullorEmpty()]
         [Decimal]$MaxLogFileSizeMB = $configToolkitLogMaxSize,
-        [Parameter(Mandatory = $false, Position = 8)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$WriteHost = $configToolkitLogWriteToHost,
-        [Parameter(Mandatory=$false,Position=9)]
-        [Switch]$DoNotAppendToLogFile = $configToolkitLogDoNotAppend,
-        [Parameter(Mandatory=$false,Position=10)]
+	    [Parameter(Mandatory=$false,Position=10)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true,
-	    [Parameter(Mandatory=$false,Position=11)]
+        [Parameter(Mandatory = $false, Position = 11)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$WriteHost = $configToolkitLogWriteToHost,
+        [Parameter(Mandatory=$false,Position=12)]
         [Switch]$PassThru = $false,
-	    [Parameter(Mandatory=$false,Position=12)]
-        [Switch]$DebugMessage = $false,
 	    [Parameter(Mandatory=$false,Position=13)]
+        [Switch]$DebugMessage = $false,
+	    [Parameter(Mandatory=$false,Position=14)]
         [Boolean]$LogDebugMessage = $configToolkitLogDebugMessage
     )
 
@@ -1221,24 +1229,58 @@ https://psappdeploytoolkit.com
         ## Assemble the fully qualified path to the log file
         [String]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 
-		# Check if the log file exists on first run and if the $DoNotAppendToLogFile switch is set then delete the existing log file and set the LogFileExistsCheck variable to $true
-		If ($DoNotAppendToLogFile -and (!($script:LogFileExistsCheck))) {
-            # Set the LogFileExistsCheck variable to $true with scope script
-			$script:LogFileExistsCheck = $true
-			If (Test-Path -LiteralPath $LogFilePath -PathType 'Leaf') {
-				Try {
-					Remove-Item -LiteralPath $LogFilePath -Force -ErrorAction 'Stop'
-				}
-				Catch {
-					[Boolean]$ExitLoggingFunction = $fals
-					#  If error deleting log file, write message to console
-					If (-not $ContinueOnError) {
-						Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to delete the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
-					}
-					Return
-				}
-			}
-		}
+        if (Test-Path -Path $LogFilePath -PathType Leaf) {
+            Try {
+                $ExistingLogFile = Get-Item $LogFilePath
+                [Decimal]$ExistingLogFileSizeMB = $ExistingLogFile.Length / 1MB
+
+                # Check if log file needs to be rotated
+                if ((!$script:LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB)) {
+
+                    # Get new log file path
+                    $LogFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($LogFileName)
+                    $LogFileExtension = [IO.Path]::GetExtension($LogFileName)
+                    $Timestamp = Get-Date -Format 'yyyy-MM-dd-HH-mm-ss'
+                    $ArchivedLogFileName = "{0}_{1}{2}" -f $LogFileNameWithoutExtension, $Timestamp, $LogFileExtension
+                    [String]$ArchivedLogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $ArchivedLogFileName
+
+                    if ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB) {
+                        [Hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFileName; LogType = $LogType; MaxLogFileSizeMB = 0; AppendToLogFile = $true; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
+
+                        ## Log message about archiving the log file
+                        $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedLogFileName]."
+                        Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
+                    }
+
+                    # Rename the file
+                    Move-Item -Path $LogFilePath -Destination $ArchivedLogFilePath -Force -ErrorAction 'Stop'
+
+                    if ($MaxLogFileSizeMB -gt 0 -and $ExistingLogFileSizeMB -gt $MaxLogFileSizeMB) {
+                        ## Start new log file and Log message about archiving the old log file
+                        $NewLogMessage = "Previous log file was renamed to [$ArchivedLogFileName] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
+                        Write-Log -Message $NewLogMessage @ArchiveLogParams
+                    }
+
+                    # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
+                    $LogFiles = @(Get-ChildItem -LiteralPath $LogFileDirectory -Filter ("{0}_*{1}" -f $LogFileNameWithoutExtension, $LogFileExtension)) + @(Get-Item -LiteralPath ([IO.Path]::ChangeExtension($LogFilePath, 'lo_')) -ErrorAction Ignore) | Sort-Object LastWriteTime
+
+                    # Keep only the max number of log files
+                    if ($LogFiles.Count -gt $MaxLogHistory) {
+                        $LogFiles | Select-Object -First ($LogFiles.Count - $MaxLogHistory) | Remove-Item -ErrorAction 'Stop'
+                    }
+                }
+            }
+            Catch {
+                Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+                # Treat log rotation errors as non-terminating by default
+                If (-not $ContinueOnError) {
+                    [Boolean]$ExitLoggingFunction = $true                    
+                    Return
+                }
+            }
+        }
+
+        $script:LogFileInitialized = $true
     }
     Process {
         ## Exit function if logging is disabled
@@ -1320,36 +1362,8 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        ## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
-        Try {
-            If ((-not $ExitLoggingFunction) -and (-not $DisableLogging)) {
-                [IO.FileInfo]$LogFile = Get-ChildItem -LiteralPath $LogFilePath -ErrorAction 'Stop'
-                [Decimal]$LogFileSizeMB = $LogFile.Length / 1MB
-                If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
-                    ## Change the file extension to "lo_"
-                    [String]$ArchivedOutLogFile = [IO.Path]::ChangeExtension($LogFilePath, 'lo_')
-                    [Hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFileName; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
-
-                    ## Log message about archiving the log file
-                    $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedOutLogFile]."
-                    Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
-
-                    ## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
-                    Move-Item -LiteralPath $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
-
-                    ## Start new log file and Log message about archiving the old log file
-                    $NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
-                    Write-Log -Message $NewLogMessage @ArchiveLogParams
-                }
-            }
-        }
-        Catch {
-            ## If renaming of file fails, script will continue writing to log file even if size goes over the max file size
-        }
-        Finally {
-            If ($PassThru) {
-                Write-Output -InputObject ($Message)
-            }
+        If ($PassThru) {
+            Write-Output -InputObject ($Message)
         }
     }
 }
@@ -1787,8 +1801,22 @@ https://psappdeploytoolkit.com
         ## Disable logging to file so that we can archive the log files
         . $DisableScriptLogging
 
-        [String]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString()) + '.zip'
-        New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+        Try {
+            # Get all archive files sorted by last write time
+            $ArchiveFiles = Get-ChildItem -LiteralPath $configToolkitLogDir -Filter ($installName + '_' + $deploymentType + '_*.zip') | Sort-Object LastWriteTime
+
+            # Keep only the max number of archive files
+            if ($ArchiveFiles.Count -gt $configToolkitLogMaxHistory) {
+                $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $configToolkitLogMaxHistory) | Remove-Item -ErrorAction 'Stop'
+            }
+
+            [String]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString()) + '.zip'
+            New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+        }
+        Catch {
+            Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to manage archive file [$DestinationArchiveFileName]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+        }
+
     }
 
     If ($script:notifyIcon) {

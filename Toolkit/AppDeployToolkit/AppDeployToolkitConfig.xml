@@ -44,12 +44,14 @@
         <!-- Specify if log file should be a CMTrace compatible log file or a Legacy text log file. -->
         <Toolkit_LogDebugMessage>False</Toolkit_LogDebugMessage>
         <!-- Specify if debug messages such as bound parameters passed to a function should be logged. -->
-        <Toolkit_LogMaxSize>10</Toolkit_LogMaxSize>
-        <!-- Specify maximum file size limit for log file in megabytes (MB). -->
         <Toolkit_LogWriteToHost>True</Toolkit_LogWriteToHost>
         <!-- Specify if log messages should be written to the console. -->
-        <Toolkit_LogDoNotAppend>False</Toolkit_LogDoNotAppend>
-        <!-- Specify if an existing log file should not be appended to. -->
+        <Toolkit_LogAppend>True</Toolkit_LogAppend>
+        <!-- Specify if an existing log file should be appended to. -->
+        <Toolkit_LogMaxSize>10</Toolkit_LogMaxSize>
+        <!-- Specify maximum file size limit for log file in megabytes (MB). -->
+        <Toolkit_LogMaxHistory>10</Toolkit_LogMaxHistory>
+        <!-- Specify maximum number of previous log files to retain. -->
         <Toolkit_UseRobocopy>True</Toolkit_UseRobocopy>
         <!-- Specify if Robocopy should be used with the Copy-File function. -->
         <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
