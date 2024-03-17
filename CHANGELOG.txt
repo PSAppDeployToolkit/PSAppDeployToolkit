@@ -17,6 +17,7 @@
 - Improved Get-HardwarePlatform to add support for detecting Parallels virtual machines #838
 - Improved Execute-ProcessAsUser and how it parses and executes commandline arguments. #794 #894 #782 #762 #851
 - Improved setup for $ResolveParameters (uses proper filter and piping, supports arrays and dictionaries) #874
+- Improved setup for setting $ScriptSource in Write-Log.
 
 **Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801

@@ -1157,16 +1157,11 @@ https://psappdeploytoolkit.com
         #  Check if the script section is defined
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
         #  Get the file name of the source script
-        Try {
-            If ($script:MyInvocation.Value.ScriptName) {
-                [String]$ScriptSource = Split-Path -Path $script:MyInvocation.Value.ScriptName -Leaf -ErrorAction 'Stop'
-            }
-            Else {
-                [String]$ScriptSource = Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction 'Stop'
-            }
+        $ScriptSource = If (![System.String]::IsNullOrWhiteSpace($script:MyInvocation.ScriptName)) {
+            Split-Path -Path $script:MyInvocation.ScriptName -Leaf -ErrorAction SilentlyContinue
         }
-        Catch {
-            $ScriptSource = ''
+        Else {
+            Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction SilentlyContinue
         }
 
         ## Create script block for generating CMTrace.exe compatible log entry
