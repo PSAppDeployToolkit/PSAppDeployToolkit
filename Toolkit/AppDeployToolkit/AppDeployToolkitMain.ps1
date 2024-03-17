@@ -296,8 +296,14 @@ Else {
 [String]$envOfficeBitness = If ($envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction SilentlyContinue) {
     $envOfficeVars.Platform
 }
-[String]$envOfficeChannel = If ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction SilentlyContinue) {
-    Switch -regex ($envOfficeVars.CDNBaseURL) {
+[String]$envOfficeChannelProperty = If ($envOfficeVars | Select-Object -ExpandProperty UpdateChannel -ErrorAction SilentlyContinue) {
+    $envOfficeVars.UpdateChannel
+}
+ElseIf ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction SilentlyContinue) {
+    $envOfficeVars.CDNBaseURL
+}
+[String]$envOfficeChannel = If ($envOfficeChannelProperty) {
+    Switch -regex ($envOfficeChannelProperty) {
         "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {"monthly"}
         "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {"semi-annual"}
         "64256afe-f5d9-4f86-8936-8840a6a4f5be" {"monthly targeted"}
