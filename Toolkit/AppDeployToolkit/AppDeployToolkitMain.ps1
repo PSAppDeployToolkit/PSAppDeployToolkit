@@ -5065,7 +5065,7 @@ Copy a file or group of files to a destination path.
 
 .PARAMETER Path
 
-Path of the file to copy.
+Path of the file to copy. Multiple paths can be specified 
 
 .PARAMETER Destination
 
@@ -5164,12 +5164,19 @@ https://psappdeploytoolkit.com
     Process {
         If ($UseRobocopy) {
             Try {
+                # Check if the path is a file or folder. If a file is specified in the path variable, then set $useRobocopy to false
+                Foreach ($p in $Path) {
+                    If (Test-Path -LiteralPath $p -PathType Leaf) {
+                        $UseRobocopy = $false
+                        Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                    }
+                }
                 # Check if Robocopy is on the system
                 If (-not (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)) {
-                    Write-Log -Message "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2 -Source ${CmdletName}
                     $UseRobocopy = $false
+                    Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                 }
-                Else {         
+                If ($UseRobocopy) {         
                     If ($Recurse) {
                         Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
                     }
@@ -5177,45 +5184,53 @@ https://psappdeploytoolkit.com
                         Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
                     }
                     # Build Robocopy command   
-                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                    $RobocopyArgsCopy = "/IM"
-                    $path = $path.TrimEnd('\')
-                    $RobocopyArgsPath =  "`"$path`" `"$destination`""
-                    $destination = $destination.TrimEnd('\')
-                    $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
-                    If ($Recurse) {
-                        $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
-                    }
-                    If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
-                        $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
-                    }      
-                    $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
-                    Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                    $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
-
-                    Switch ($RobocopyResult.ExitCode) {
-                        0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
-                        1 { Write-Log -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
-                        2 { Write-Log -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
-                        3 { Write-Log -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
-                        4 { Write-Log -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
-                        5 { Write-Log -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
-                        6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
-                        7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
-                        8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
-                        ($_ -gt 8) { 
-                            Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                            If (-not $ContinueOnError) {
-                                Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
-                            }
+                    Foreach ($srcPath in $Path) {
+                        $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                        $RobocopyArgsCopy = "/IM"
+                        $srcPath = $srcPath.TrimEnd('\')
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`""
+                        $destination = $destination.TrimEnd('\')
+                        $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
+                        If ($Recurse) {
+                            $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
-                    }            
+                        If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
+                            $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
+                        }      
+                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
+                        Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+
+                        Switch ($RobocopyResult.ExitCode) {
+                            0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
+                            1 { Write-Log -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
+                            2 { Write-Log -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
+                            3 { Write-Log -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
+                            4 { Write-Log -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
+                            5 { Write-Log -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
+                            6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
+                            7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
+                            8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
+                            16 {
+                                Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
+                                If (-not $ContinueOnError) {
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                }
+                            }
+                            default {
+                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                                If (-not $ContinueOnError) {
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                }
+                            }
+                        } 
+                    }           
                 }
             }
             Catch {
-                Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
-                    Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
                 }
             }        
         }
@@ -15919,6 +15934,11 @@ Function Copy-ContentToCache {
 .EXAMPLE
     Copy-ContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
 .NOTES
+    This function is provided as a template to copy the toolkit content to a cache folder on the local machine and set the $dirFiles directory to the cache path.
+    This can be used in the absence of an Endpoint Management solution that provides a managed cache for source files, e.g. Intune is lacking this functionality whereas ConfigMgr includes this functionality.
+    Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions. 
+    This can be done using [Remove-File -Path "$configToolkitCachePath\$installName" -Recurse -ContinueOnError $true]
+    
 .LINK
     https://psappdeploytoolkit.com
 #>
@@ -15967,6 +15987,103 @@ Function Copy-ContentToCache {
     }
 }
 #endregion
+
+#region Function Configure-EdgeExtension
+
+Function Configure-EdgeExtension {
+    <#
+    .SYNOPSIS
+    Configure-EdgeExtension
+    .DESCRIPTION
+    This function configures an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide
+    This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. 
+    This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+    .PARAMETER ConfigureMode
+    The deployment mode of the extension. Allowed values: Add, Remove
+    .PARAMETER ExtensionID
+    The ID of the extension to install.
+    .PARAMETER InstallationMode
+    The installation mode of the extension. Allowed values: blocked, allowed, removed, force_installed, normal_installed
+    .PARAMETER UpdateUrl
+    The update URL of the extension. This is the URL where the extension will check for updates.
+    .PARAMETER MinimumVersionRequired
+    The minimum version of the extension required for installation.
+    .EXAMPLE
+    Configure-EdgeExtension -ExtensionID "extensionID" -InstallationMode "Force" -UpdateUrl "https://www.contoso.com/extension"
+    Configure-EdgeExtension -ConfigureMode "Remove" -ExtensionID "extensionID"
+    .NOTES
+    This function is provided as a template to install an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+    #>
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $true)]    
+        [ValidateSet('Add', 'Remove')]
+        [String]$configureMode,
+        [Parameter(Mandatory = $true)]
+        [String]$extensionID,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')]
+        [String]$InstallationMode,
+        [Parameter(Mandatory = $false)]
+        [String]$UpdateUrl,
+        [Parameter(Mandatory = $false)]
+        [String]$MinimumVersionRequired
+        )
+    
+    If ($configureMode -eq 'Add') {
+        If ($MinimumVersionRequired) {
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl] with minimum version required [$MinimumVersionRequired]." -Severity 1
+        }
+        Else {      
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
+        }
+    }
+    Else {
+        Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)]." -Severity 1
+    }
+    
+    $regKeyEdgeExtensions = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
+    # Check if the ExtensionSettings registry key exists if not create it        
+    If (!(Test-RegistryValue -Key $regKeyEdgeExtensions -Value ExtensionSettings)) {
+        Set-RegistryKey -Key $regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
+    }
+    Else {
+        # Get the installed extensions
+        $installedExtensions = Get-RegistryKey -Key $regKeyEdgeExtensions -Value ExtensionSettings | ConvertFrom-Json -ErrorAction SilentlyContinue
+        Write-Log -Message "Configured extensions: [$($installedExtensions | ConvertTo-Json -Compress -ErrorAction SilentlyContinue)]." -Severity 1
+    }            
+
+    Try {
+        If ($configureMode -ieq 'Remove') {
+            If ($installedExtensions.$($extensionID)) {
+                # If the deploymentmode is Remove, remove the extension from the list                
+                Write-Log -Message "Removing extension with ID [$extensionID]." -Severity 1
+                $installedExtensions.PSObject.Properties.Remove($extensionID)
+                $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
+                Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
+            }
+            Else { # If the extension is not configured
+                Write-Log -Message "Extension with ID [$extensionID] is not configured. Removal not required." -Severity 1  
+            }
+        }
+        # Configure the extension
+        ElseIf ($configureMode -ieq 'Add') {
+            Write-Log -Message "Configuring extension ID [$extensionID]." -Severity 1
+            If ($MinimumVersionRequired) {
+                $installedExtensions | Add-Member -Name $($extensionID) -Value $(@{ "installation_mode" = $InstallationMode; "update_url" = $UpdateUrl; "minimum_version_required" = $MinimumVersionRequired }) -MemberType NoteProperty -Force
+            }
+            Else {
+                $installedExtensions | Add-Member -Name $($extensionID) -Value $(@{ "installation_mode" = $InstallationMode; "update_url" = $UpdateUrl }) -MemberType NoteProperty -Force
+            }
+            $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
+            Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
+        }        
+    }   
+    Catch {
+        Write-Log -Message "Failed to configure extension with ID $extensionID. `r`n$(Resolve-Error)" -Severity 3
+        Exit-Script -ExitCode 60001
+    }         
+} #End Function Deploy-EdgeExtension
 
 #endregion
 ##*=============================================

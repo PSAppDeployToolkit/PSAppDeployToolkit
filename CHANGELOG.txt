@@ -1,6 +1,9 @@
 ﻿**Version 3.9.4 [xx/xx/xxxx]**
-- Changed Copy-File to use Robocopy by default, overcoming the 260 character limitation of native PowerShell Copy-Item. This can be toggled off in the config.xml file by setting Toolkit_UseRobocopy = $false
+- Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+- Added the ability to copy the Toolkit folder and files to a cache folder on the local machine and execute from there. Function: Copy-ContentToCache. The cache path can be configured in the config.xml file, default is $envProgramData\SoftwareCache
+- Changed Copy-File to use Robocopy by default, overcoming the 260 character limitation of native PowerShell Copy-Item and providing more comprehensive file copy functionality and logging. This can be toggled off in the config.xml file by setting Toolkit_UseRobocopy = $false
 - Added -DoNotAppendToLogFile Parameter to the Write-Log function to create a new log file for each deployment rather than append. The default $false is defined in the config.xml #829
+- Improved Russian translations PR #843
 - Resolved an issue where ConvertTo-NTAccountOrSID would throw an error when attempting to convert orphaned accounts, a warning is now displayed rather than an error. #865
 - Resolved an issue where if WindowStyle parameter is set to 'Hidden', then the UseShellExecute parameter to should be set to '$true' #678
 - Resolved an issue with how Set-ActiveSetup comma-separated version strings were compared to determine which was greater #743
