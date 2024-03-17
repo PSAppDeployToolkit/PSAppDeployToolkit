@@ -20,6 +20,7 @@
 - Improved setup for setting $ScriptSource in Write-Log.
 - Improve $envOffice variable setup by reducing the number of Get-ItemProperty calls.
 - Factor in GPO-configured UpdateChannel property vs. CDNBaseURL property for $envOfficeChannel. #837
+- Add "monthly enterprise" UUID to $envOfficeChannel setup.
 
 **Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801
