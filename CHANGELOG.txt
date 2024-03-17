@@ -12,6 +12,7 @@
 - Improved Execute-Process with a useful example #835
 - Improved Execute-MSI so that all repetitive references to .log or .txt file extension in $LogName variable are all removed #759
 - Improved Get-HardwarePlatform to add support for detecting Parallels virtual machines #838
+- Improved Execute-ProcessAsUser and how it parses and executes commandline arguments. #794 #894 #782 #762 #851
 
 **Version 3.9.3 [01/05/2023]**
 - Improved accuracy of Intune Provisioning/ESP detection #779 #801
