@@ -383,7 +383,7 @@ Else {
 
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
-[String]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
+[String]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.dll'
 If (-not (Test-Path -LiteralPath $appDeployConfigFile -PathType 'Leaf')) {
     Throw 'App Deploy XML configuration file not found.'
 }
