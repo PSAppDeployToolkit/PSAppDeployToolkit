@@ -18,8 +18,8 @@
 
 <!--Configuration File Details-->
     <Config_File>
-        <Config_Version>3.9.4</Config_Version>
-        <Config_Date>03/03/2024</Config_Date>
+        <Config_Version>3.9.3</Config_Version>
+        <Config_Date>02/05/2023</Config_Date>
     </Config_File>
 
     <!--Toolkit Options-->
@@ -48,12 +48,6 @@
         <!-- Specify maximum file size limit for log file in megabytes (MB). -->
         <Toolkit_LogWriteToHost>True</Toolkit_LogWriteToHost>
         <!-- Specify if log messages should be written to the console. -->
-        <Toolkit_LogDoNotAppend>False</Toolkit_LogDoNotAppend>
-        <!-- Specify if an existing log file should not be appended to. -->
-        <Toolkit_UseRobocopy>True</Toolkit_UseRobocopy>
-        <!-- Specify if Robocopy should be used with the Copy-File function. -->
-        <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
-        <!-- Specify the path for the cache folder --> 
     </Toolkit_Options>
     <!--Toolkit Options-->
 
@@ -963,12 +957,12 @@
         <DeferPrompt_RemainingDeferrals>Оставшиеся отсрочки:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Дата истечения:</DeferPrompt_Deadline>
 
-        <WelcomePrompt_CountdownMessage>{0} автоматически продолжится через:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} начнется автоматически через:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Установка</DeploymentType_Install>
         <DeploymentType_UnInstall>Удаление</DeploymentType_UnInstall>
-        <DeploymentType_Repair>Исправление</DeploymentType_Repair>
+        <DeploymentType_Repair>Восстановление</DeploymentType_Repair>
         <BalloonText_Start>начата(о).</BalloonText_Start>
         <BalloonText_Complete>выполнена(о).</BalloonText_Complete>
         <BalloonText_RestartRequired>выполнена(о). Требуется перезагрузка.</BalloonText_RestartRequired>
@@ -976,7 +970,7 @@
         <BalloonText_FastRetry>не завершена(о).</BalloonText_FastRetry>
         <Progress_MessageInstall>Идет установка. Пожалуйста, подождите...</Progress_MessageInstall>
         <Progress_MessageUninstall>Идет удаление. Пожалуйста, подождите...</Progress_MessageUninstall>
-        <Progress_MessageRepair>Идет исправление. Пожалуйста, подождите...</Progress_MessageRepair>
+        <Progress_MessageRepair>Идет ремонт. Пожалуйста, подождите...</Progress_MessageRepair>
         <BlockExecution_Message>Запуск этого приложения временно заблокирован для завершения процесса установки.</BlockExecution_Message>
         <RestartPrompt_Title>Требуется перезагрузка</RestartPrompt_Title>
         <RestartPrompt_Message>Для завершения установки необходимо перезагрузить ваш компьютер.</RestartPrompt_Message>
