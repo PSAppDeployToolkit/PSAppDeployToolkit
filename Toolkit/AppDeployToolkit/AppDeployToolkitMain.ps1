@@ -8754,63 +8754,63 @@ https://psappdeploytoolkit.com
         [Switch]$DisableLogging
     )
 
-    Begin {
+    begin {
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
-    Process {
-        If ($processObjects -and $processObjects[0].ProcessName) {
-            [String]$runningAppsCheck = $processObjects.ProcessName -join ','
-            If (-not $DisableLogging) {
-                Write-Log -Message "Checking for running applications: [$runningAppsCheck]" -Source ${CmdletName}
-            }
-            ## Prepare a filter for Where-Object
-            [ScriptBlock]$whereObjectFilter = {
-                ForEach ($processObject in $processObjects) {
-                    If ($_.ProcessName -ieq $processObject.ProcessName) {
-                        Add-Member -InputObject $_ -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                            If ($processObject.ProcessDescription) {
-                                #  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-                                $processObject.ProcessDescription
-                            }
-                            ElseIf ($_.Description) {
-                                #  If the process already has a description field specified, then use it
-                                $_.Description
-                            }
-                            Else {
-                                #  Fall back on the process name if no description is provided by the process or as a parameter to the function
-                                $_.ProcessName
-                            }
-                        )
 
-                        Write-Output -InputObject ($true)
-                        Return
-                    }
-                }
-
-                Write-Output -InputObject ($false)
-                Return
-            }
-            ## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-            [Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object -Property 'ProcessName'
-
-            If (-not $DisableLogging) {
-                If ($runningProcesses) {
-                    [String]$runningProcessList = ($runningProcesses.ProcessName | Select-Object -Unique) -join ','
-                    Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
-                }
-            }
-            Write-Output -InputObject ($runningProcesses)
+    process {
+        ## Confirm input isn't null before proceeding.
+        if (!$processObjects -or !$processObjects[0].ProcessName)
+        {
+            return
         }
-        Else {
-            Write-Output -InputObject ($null)
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -Source ${CmdletName}
         }
+
+        ## Get all running processes and append properties.
+        [Diagnostics.Process[]]$runningProcesses = foreach ($process in (Get-Process -Name $processObjects.ProcessName -ErrorAction SilentlyContinue))
+        {
+            Add-Member -InputObject $process -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
+                {
+                    # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
+                    $objDescription
+                }
+                elseif ($process.Description)
+                {
+                    # If the process already has a description field specified, then use it
+                    $process.Description
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function
+                    $process.ProcessName
+                }
+            )
+        }
+
+        ## Return output if there's any.
+        if (!$runningProcesses)
+        {
+            if (!$DisableLogging)
+            {
+                Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
+            }
+            return
+        }
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -Source ${CmdletName}
+        }
+        return ($runningProcesses | Sort-Object)
     }
-    End {
+
+    end {
+        ## Write out the footer
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
@@ -9215,7 +9215,7 @@ https://psappdeploytoolkit.com
             $promptResult = $null
 
             While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-                [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
+                [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction SilentlyContinue | Sort-Object -Unique) -join ','
                 #  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 If ($allowDefer) {
                     #  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
