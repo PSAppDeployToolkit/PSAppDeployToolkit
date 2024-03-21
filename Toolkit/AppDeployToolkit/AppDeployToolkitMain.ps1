@@ -5178,6 +5178,10 @@ https://psappdeploytoolkit.com
                     $UseRobocopy = $false
                     Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                 }
+                If ($Flatten) {
+                    Write-Log "-Flatten not supported by Robocopy, falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                    $UseRobocopy = $false
+                }
                 If ($UseRobocopy) {         
                     If ($Recurse) {
                         Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
@@ -5244,31 +5248,20 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
                     $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                 }
-
+                If ($Flatten -and -not $Recurse) {
+                    Write-Log "-Flatten only supported in conjunction with -Recurse." -Source ${CmdletName} -Severity 2
+                    $Flatten = $false
+                }
                 If ($Flatten) {
-                    If ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            If ($UseRobocopy) {
-
-                            }
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                            }
-                        }
-                        Else {
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
-                            }
+                    Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
+                    If ($ContinueFileCopyOnError) {
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                     }
                     Else {
-                        Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                        }
-                        Else {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
                         }
                     }
                 }
