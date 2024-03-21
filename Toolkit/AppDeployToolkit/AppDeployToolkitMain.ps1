@@ -5133,7 +5133,7 @@ https://psappdeploytoolkit.com
         [String]$Destination,
         [Parameter(Mandatory = $false)]
         [Switch]$Recurse = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'PowerShell')]
+        [Parameter(Mandatory = $false)]
         [Switch]$Flatten,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -5141,10 +5141,10 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$ContinueFileCopyOnError = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null
         )    
