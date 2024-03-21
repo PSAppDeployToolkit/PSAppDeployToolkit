@@ -5171,7 +5171,10 @@ https://psappdeploytoolkit.com
                     }
                 }
                 # Check if Robocopy is on the system
-                If (-not (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)) {
+                If (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
+                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                }
+                Else {
                     $UseRobocopy = $false
                     Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                 }
@@ -5184,9 +5187,9 @@ https://psappdeploytoolkit.com
                     }
                     # Build Robocopy command   
                     Foreach ($srcPath in $Path) {
-                        $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same
                         $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`"" 
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination`"" 
                         If ($Recurse) {
                             $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
