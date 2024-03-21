@@ -5089,11 +5089,7 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 .PARAMETER UseRobocopy
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Default is configured in the AppDeployToolkitConfig.xml file: $true
-
-.PARAMETER LogFileRobocopy
-
-Log file for Robocopy. Default is: $configToolkitLogDir\$installName_Robocopy.log
+Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
 .PARAMETER RobocopyAdditionalParams
 
@@ -5148,9 +5144,6 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
         [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
-        [Parameter(Mandatory = $true, ParameterSetName = 'Robocopy')]
-        [ValidateNotNullOrEmpty()]
-        [String]$LogFileRobocopy = ("$configToolkitLogDir\$installName" + "_Robocopy.log"),
         [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null
@@ -5169,6 +5162,12 @@ https://psappdeploytoolkit.com
                     If (Test-Path -LiteralPath $p -PathType Leaf) {
                         $UseRobocopy = $false
                         Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
+                    }
+                    If ($p -match '\*') {
+                        $UseRobocopy = $false
+                        Write-Log "Asterisk wildcard specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
                     }
                 }
                 # Check if Robocopy is on the system
@@ -5186,20 +5185,20 @@ https://psappdeploytoolkit.com
                     # Build Robocopy command   
                     Foreach ($srcPath in $Path) {
                         $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                        $RobocopyArgsCopy = "/IM"
-                        $srcPath = $srcPath.TrimEnd('\')
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`""
-                        $destination = $destination.TrimEnd('\')
-                        $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
+                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`"" 
                         If ($Recurse) {
                             $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
                         }      
-                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
+                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
+                        $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
+                        Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
