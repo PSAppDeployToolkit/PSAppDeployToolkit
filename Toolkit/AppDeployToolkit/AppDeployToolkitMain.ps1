@@ -388,8 +388,6 @@ Else {
     #  If this script was not invoked by another script, fall back to the directory one level above this script
     [String]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
-# Reset the check for existing log files on each script run
-[Boolean]$script:LogFileExistsCheck = $false
 
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
@@ -444,10 +442,11 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
 [Boolean]$configToolkitCompressLogs = [Boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
 [String]$configToolkitLogStyle = $xmlToolkitOptions.Toolkit_LogStyle
-[Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
 [Boolean]$configToolkitLogWriteToHost = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogWriteToHost)
 [Boolean]$configToolkitLogDebugMessage = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDebugMessage)
-[Boolean]$configToolkitLogDoNotAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDoNotAppend)
+[Boolean]$configToolkitLogAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogAppend)
+[Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
+[Int]$configToolkitLogMaxHistory = $xmlToolkitOptions.Toolkit_LogMaxHistory
 [Boolean]$configToolkitUseRobocopy = [Boolean]::Parse($xmlToolkitOptions.Toolkit_UseRobocopy)
 [String]$configToolkitCachePath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_CachePath)
 #  Get MSI Options
@@ -636,6 +635,7 @@ Else {
 [Boolean]$BlockExecution = $false
 [Boolean]$installationStarted = $false
 [Boolean]$runningTaskSequence = $false
+[Boolean]$LogFileInitialized = $false
 If (Test-Path -LiteralPath 'variable:welcomeTimer') {
     Remove-Variable -Name 'welcomeTimer' -Scope 'Script'
 }
@@ -1034,21 +1034,25 @@ Set the directory where the log file will be saved.
 
 Set the name of the log file.
 
+.PARAMETER AppendToLogFile
+
+Append to existing log file rather than creating a new one upon toolkit initialization. Default value is defined in AppDeployToolkitConfig.xml.
+
+.PARAMETER MaxLogHistory
+
+Maximum number of previous log files to retain. Default value is defined in AppDeployToolkitConfig.xml.
+
 .PARAMETER MaxLogFileSizeMB
 
-Maximum file size limit for log file in megabytes (MB). Default is 10 MB.
-
-.PARAMETER WriteHost
-
-Write the log message to the console.
-
-.PARAMETER DoNotAppendToLogFile
-
-Create a new log file, do not append to existing log file. Default is: $false.	
+Maximum file size limit for log file in megabytes (MB). Default value is defined in AppDeployToolkitConfig.xml.
 
 .PARAMETER ContinueOnError
 
 Suppress writing log message to console on failure to write message to log file. Default is: $true.
+
+.PARAMETER WriteHost
+
+Write the log message to the console.
 
 .PARAMETER PassThru
 
@@ -1125,22 +1129,26 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, Position = 6)]
         [ValidateNotNullorEmpty()]
         [String]$LogFileName = $logName,
-        [Parameter(Mandatory = $false, Position = 7)]
+        [Parameter(Mandatory=$false,Position=7)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$AppendToLogFile = $configToolkitLogAppend,
+        [Parameter(Mandatory=$false,Position=8)]
+        [ValidateNotNullorEmpty()]
+        [Int]$MaxLogHistory = $configToolkitLogMaxHistory,
+        [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullorEmpty()]
         [Decimal]$MaxLogFileSizeMB = $configToolkitLogMaxSize,
-        [Parameter(Mandatory = $false, Position = 8)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$WriteHost = $configToolkitLogWriteToHost,
-        [Parameter(Mandatory=$false,Position=9)]
-        [Switch]$DoNotAppendToLogFile = $configToolkitLogDoNotAppend,
-        [Parameter(Mandatory=$false,Position=10)]
+	    [Parameter(Mandatory=$false,Position=10)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true,
-	    [Parameter(Mandatory=$false,Position=11)]
+        [Parameter(Mandatory = $false, Position = 11)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$WriteHost = $configToolkitLogWriteToHost,
+        [Parameter(Mandatory=$false,Position=12)]
         [Switch]$PassThru = $false,
-	    [Parameter(Mandatory=$false,Position=12)]
-        [Switch]$DebugMessage = $false,
 	    [Parameter(Mandatory=$false,Position=13)]
+        [Switch]$DebugMessage = $false,
+	    [Parameter(Mandatory=$false,Position=14)]
         [Boolean]$LogDebugMessage = $configToolkitLogDebugMessage
     )
 
@@ -1251,24 +1259,58 @@ https://psappdeploytoolkit.com
         ## Assemble the fully qualified path to the log file
         [String]$LogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $LogFileName
 
-		# Check if the log file exists on first run and if the $DoNotAppendToLogFile switch is set then delete the existing log file and set the LogFileExistsCheck variable to $true
-		If ($DoNotAppendToLogFile -and (!($script:LogFileExistsCheck))) {
-            # Set the LogFileExistsCheck variable to $true with scope script
-			$script:LogFileExistsCheck = $true
-			If (Test-Path -LiteralPath $LogFilePath -PathType 'Leaf') {
-				Try {
-					Remove-Item -LiteralPath $LogFilePath -Force -ErrorAction 'Stop'
-				}
-				Catch {
-					[Boolean]$ExitLoggingFunction = $fals
-					#  If error deleting log file, write message to console
-					If (-not $ContinueOnError) {
-						Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to delete the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
-					}
-					Return
-				}
-			}
-		}
+        if (Test-Path -Path $LogFilePath -PathType Leaf) {
+            Try {
+                $LogFile = Get-Item $LogFilePath
+                [Decimal]$LogFileSizeMB = $LogFile.Length / 1MB
+
+                # Check if log file needs to be rotated
+                if ((!$script:LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB)) {
+
+                    # Get new log file path
+                    $LogFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($LogFileName)
+                    $LogFileExtension = [IO.Path]::GetExtension($LogFileName)
+                    $Timestamp = $LogFile.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                    $ArchiveLogFileName = "{0}_{1}{2}" -f $LogFileNameWithoutExtension, $Timestamp, $LogFileExtension
+                    [String]$ArchiveLogFilePath = Join-Path -Path $LogFileDirectory -ChildPath $ArchiveLogFileName
+
+                    if ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB) {
+                        [Hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFileName; LogType = $LogType; MaxLogFileSizeMB = 0; AppendToLogFile = $true; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
+
+                        ## Log message about archiving the log file
+                        $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchiveLogFileName]."
+                        Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
+                    }
+
+                    # Rename the file
+                    Move-Item -Path $LogFilePath -Destination $ArchiveLogFilePath -Force -ErrorAction 'Stop'
+
+                    if ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB) {
+                        ## Start new log file and Log message about archiving the old log file
+                        $NewLogMessage = "Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
+                        Write-Log -Message $NewLogMessage @ArchiveLogParams
+                    }
+
+                    # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
+                    $LogFiles = @(Get-ChildItem -LiteralPath $LogFileDirectory -Filter ("{0}_*{1}" -f $LogFileNameWithoutExtension, $LogFileExtension)) + @(Get-Item -LiteralPath ([IO.Path]::ChangeExtension($LogFilePath, 'lo_')) -ErrorAction Ignore) | Sort-Object LastWriteTime
+
+                    # Keep only the max number of log files
+                    if ($LogFiles.Count -gt $MaxLogHistory) {
+                        $LogFiles | Select-Object -First ($LogFiles.Count - $MaxLogHistory) | Remove-Item -ErrorAction 'Stop'
+                    }
+                }
+            }
+            Catch {
+                Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+                # Treat log rotation errors as non-terminating by default
+                If (-not $ContinueOnError) {
+                    [Boolean]$ExitLoggingFunction = $true                    
+                    Return
+                }
+            }
+        }
+
+        $script:LogFileInitialized = $true
     }
     Process {
         ## Exit function if logging is disabled
@@ -1356,36 +1398,8 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        ## Archive log file if size is greater than $MaxLogFileSizeMB and $MaxLogFileSizeMB > 0
-        Try {
-            If ((-not $ExitLoggingFunction) -and (-not $DisableLogging)) {
-                [IO.FileInfo]$LogFile = Get-ChildItem -LiteralPath $LogFilePath -ErrorAction 'Stop'
-                [Decimal]$LogFileSizeMB = $LogFile.Length / 1MB
-                If (($LogFileSizeMB -gt $MaxLogFileSizeMB) -and ($MaxLogFileSizeMB -gt 0)) {
-                    ## Change the file extension to "lo_"
-                    [String]$ArchivedOutLogFile = [IO.Path]::ChangeExtension($LogFilePath, 'lo_')
-                    [Hashtable]$ArchiveLogParams = @{ ScriptSection = $ScriptSection; Source = ${CmdletName}; Severity = 2; LogFileDirectory = $LogFileDirectory; LogFileName = $LogFileName; LogType = $LogType; MaxLogFileSizeMB = 0; WriteHost = $WriteHost; ContinueOnError = $ContinueOnError; PassThru = $false }
-
-                    ## Log message about archiving the log file
-                    $ArchiveLogMessage = "Maximum log file size [$MaxLogFileSizeMB MB] reached. Rename log file to [$ArchivedOutLogFile]."
-                    Write-Log -Message $ArchiveLogMessage @ArchiveLogParams
-
-                    ## Archive existing log file from <filename>.log to <filename>.lo_. Overwrites any existing <filename>.lo_ file. This is the same method SCCM uses for log files.
-                    Move-Item -LiteralPath $LogFilePath -Destination $ArchivedOutLogFile -Force -ErrorAction 'Stop'
-
-                    ## Start new log file and Log message about archiving the old log file
-                    $NewLogMessage = "Previous log file was renamed to [$ArchivedOutLogFile] because maximum log file size of [$MaxLogFileSizeMB MB] was reached."
-                    Write-Log -Message $NewLogMessage @ArchiveLogParams
-                }
-            }
-        }
-        Catch {
-            ## If renaming of file fails, script will continue writing to log file even if size goes over the max file size
-        }
-        Finally {
-            If ($PassThru) {
-                Write-Output -InputObject ($Message)
-            }
+        If ($PassThru) {
+            Write-Output -InputObject ($Message)
         }
     }
 }
@@ -1818,8 +1832,22 @@ https://psappdeploytoolkit.com
         ## Disable logging to file so that we can archive the log files
         . $DisableScriptLogging
 
-        [String]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString()) + '.zip'
-        New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+        Try {
+            # Get all archive files sorted by last write time
+            $ArchiveFiles = Get-ChildItem -LiteralPath $configToolkitLogDir -Filter ($installName + '_' + $deploymentType + '_*.zip') | Sort-Object LastWriteTime
+
+            # Keep only the max number of archive files
+            if ($ArchiveFiles.Count -gt $configToolkitLogMaxHistory) {
+                $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $configToolkitLogMaxHistory) | Remove-Item -ErrorAction 'Stop'
+            }
+
+            [String]$DestinationArchiveFileName = $installName + '_' + $deploymentType + '_' + ((Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString()) + '.zip'
+            New-ZipFile -DestinationArchiveDirectoryPath $configToolkitLogDir -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+        }
+        Catch {
+            Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to manage archive file [$DestinationArchiveFileName]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+        }
+
     }
 
     If (Test-Path -LiteralPath 'variable:notifyIcon') {
@@ -5089,11 +5117,7 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 .PARAMETER UseRobocopy
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Default is configured in the AppDeployToolkitConfig.xml file: $true
-
-.PARAMETER LogFileRobocopy
-
-Log file for Robocopy. Default is: $configToolkitLogDir\$installName_Robocopy.log
+Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
 .PARAMETER RobocopyAdditionalParams
 
@@ -5137,7 +5161,7 @@ https://psappdeploytoolkit.com
         [String]$Destination,
         [Parameter(Mandatory = $false)]
         [Switch]$Recurse = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'PowerShell')]
+        [Parameter(Mandatory = $false)]
         [Switch]$Flatten,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -5145,13 +5169,10 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$ContinueFileCopyOnError = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
-        [Parameter(Mandatory = $true, ParameterSetName = 'Robocopy')]
-        [ValidateNotNullOrEmpty()]
-        [String]$LogFileRobocopy = ("$configToolkitLogDir\$installName" + "_Robocopy.log"),
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null
         )    
@@ -5169,12 +5190,25 @@ https://psappdeploytoolkit.com
                     If (Test-Path -LiteralPath $p -PathType Leaf) {
                         $UseRobocopy = $false
                         Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
+                    }
+                    If ($p -match '\*') {
+                        $UseRobocopy = $false
+                        Write-Log "Asterisk wildcard specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
                     }
                 }
                 # Check if Robocopy is on the system
-                If (-not (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)) {
+                If (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
+                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                }
+                Else {
                     $UseRobocopy = $false
                     Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                }
+                If ($Flatten) {
+                    Write-Log "-Flatten not supported by Robocopy, falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                    $UseRobocopy = $false
                 }
                 If ($UseRobocopy) {         
                     If ($Recurse) {
@@ -5185,21 +5219,23 @@ https://psappdeploytoolkit.com
                     }
                     # Build Robocopy command   
                     Foreach ($srcPath in $Path) {
-                        $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                        $RobocopyArgsCopy = "/IM"
-                        $srcPath = $srcPath.TrimEnd('\')
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`""
-                        $destination = $destination.TrimEnd('\')
-                        $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
+                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same
+                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
+                        # Append subfolder from source to destination, so that Robocopy produces similar results to native Powershell
+                        $SubFolder = Split-Path -Path $srcPath -Leaf
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination\$SubFolder`"" 
                         If ($Recurse) {
                             $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
                         }      
-                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
+                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
+                        $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
+                        Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
@@ -5240,31 +5276,20 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
                     $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                 }
-
+                If ($Flatten -and -not $Recurse) {
+                    Write-Log "-Flatten only supported in conjunction with -Recurse." -Source ${CmdletName} -Severity 2
+                    $Flatten = $false
+                }
                 If ($Flatten) {
-                    If ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            If ($UseRobocopy) {
-
-                            }
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                            }
-                        }
-                        Else {
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
-                            }
+                    Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
+                    If ($ContinueFileCopyOnError) {
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                     }
                     Else {
-                        Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                        }
-                        Else {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
                         }
                     }
                 }
@@ -8757,63 +8782,63 @@ https://psappdeploytoolkit.com
         [Switch]$DisableLogging
     )
 
-    Begin {
+    begin {
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
-    Process {
-        If ($processObjects -and $processObjects[0].ProcessName) {
-            [String]$runningAppsCheck = $processObjects.ProcessName -join ','
-            If (-not $DisableLogging) {
-                Write-Log -Message "Checking for running applications: [$runningAppsCheck]" -Source ${CmdletName}
-            }
-            ## Prepare a filter for Where-Object
-            [ScriptBlock]$whereObjectFilter = {
-                ForEach ($processObject in $processObjects) {
-                    If ($_.ProcessName -ieq $processObject.ProcessName) {
-                        Add-Member -InputObject $_ -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                            If ($processObject.ProcessDescription) {
-                                #  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-                                $processObject.ProcessDescription
-                            }
-                            ElseIf ($_.Description) {
-                                #  If the process already has a description field specified, then use it
-                                $_.Description
-                            }
-                            Else {
-                                #  Fall back on the process name if no description is provided by the process or as a parameter to the function
-                                $_.ProcessName
-                            }
-                        )
 
-                        Write-Output -InputObject ($true)
-                        Return
-                    }
-                }
-
-                Write-Output -InputObject ($false)
-                Return
-            }
-            ## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-            [Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object -Property 'ProcessName'
-
-            If (-not $DisableLogging) {
-                If ($runningProcesses) {
-                    [String]$runningProcessList = ($runningProcesses.ProcessName | Select-Object -Unique) -join ','
-                    Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
-                }
-            }
-            Write-Output -InputObject ($runningProcesses)
+    process {
+        ## Confirm input isn't null before proceeding.
+        if (!$processObjects -or !$processObjects[0].ProcessName)
+        {
+            return
         }
-        Else {
-            Write-Output -InputObject ($null)
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -Source ${CmdletName}
         }
+
+        ## Get all running processes and append properties.
+        [Diagnostics.Process[]]$runningProcesses = foreach ($process in (Get-Process -Name $processObjects.ProcessName -ErrorAction SilentlyContinue))
+        {
+            Add-Member -InputObject $process -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
+                {
+                    # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
+                    $objDescription
+                }
+                elseif ($process.Description)
+                {
+                    # If the process already has a description field specified, then use it
+                    $process.Description
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function
+                    $process.ProcessName
+                }
+            )
+        }
+
+        ## Return output if there's any.
+        if (!$runningProcesses)
+        {
+            if (!$DisableLogging)
+            {
+                Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
+            }
+            return
+        }
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -Source ${CmdletName}
+        }
+        return ($runningProcesses | Sort-Object)
     }
-    End {
+
+    end {
+        ## Write out the footer
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
@@ -9218,7 +9243,7 @@ https://psappdeploytoolkit.com
             $promptResult = $null
 
             While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-                [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
+                [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction SilentlyContinue | Sort-Object -Unique) -join ','
                 #  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 If ($allowDefer) {
                     #  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop

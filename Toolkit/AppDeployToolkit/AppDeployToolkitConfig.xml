@@ -44,17 +44,19 @@
         <!-- Specify if log file should be a CMTrace compatible log file or a Legacy text log file. -->
         <Toolkit_LogDebugMessage>False</Toolkit_LogDebugMessage>
         <!-- Specify if debug messages such as bound parameters passed to a function should be logged. -->
-        <Toolkit_LogMaxSize>10</Toolkit_LogMaxSize>
-        <!-- Specify maximum file size limit for log file in megabytes (MB). -->
         <Toolkit_LogWriteToHost>True</Toolkit_LogWriteToHost>
         <!-- Specify if log messages should be written to the console. -->
-        <Toolkit_LogDoNotAppend>True</Toolkit_LogDoNotAppend>
-		<!-- Specify if an existing log file should not be appended to. -->
+        <Toolkit_LogAppend>True</Toolkit_LogAppend>
+        <!-- Specify if an existing log file should be appended to. -->
+        <Toolkit_LogMaxSize>10</Toolkit_LogMaxSize>
+        <!-- Specify maximum file size limit for log file in megabytes (MB). -->
+        <Toolkit_LogMaxHistory>10</Toolkit_LogMaxHistory>
+        <!-- Specify maximum number of previous log files to retain. -->
         <Toolkit_UseRobocopy>True</Toolkit_UseRobocopy>
-		<!-- Specify if Robocopy should be used with the Copy-File function. -->
+        <!-- Specify if Robocopy should be used with the Copy-File function. -->
         <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
-		<!-- Specify the path for the cache folder --> 
-	</Toolkit_Options>
+        <!-- Specify the path for the cache folder --> 
+    </Toolkit_Options>
     <!--Toolkit Options-->
 
     <!--Toast Notification Options-->
@@ -324,10 +326,10 @@
             Freier Speicherplatz: {2}MB
 
             Bitte geben Sie ausreichend Speicherplatz frei, um mit der Installation fortzufahren.</DiskSpace_Message>
-        <ClosePrompt_ButtonContinue>Weiter</ClosePrompt_ButtonContinue>
+        <ClosePrompt_ButtonContinue>&amp;Weiter</ClosePrompt_ButtonContinue>
         <ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf „Weiter“, nachdem Sie die obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
-        <ClosePrompt_ButtonClose>Programme Schließen</ClosePrompt_ButtonClose>
-        <ClosePrompt_ButtonDefer>Aufschieben</ClosePrompt_ButtonDefer>
+        <ClosePrompt_ButtonClose>Programme &amp;schließen</ClosePrompt_ButtonClose>
+        <ClosePrompt_ButtonDefer>&amp;Aufschieben</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.
 
             Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort.
