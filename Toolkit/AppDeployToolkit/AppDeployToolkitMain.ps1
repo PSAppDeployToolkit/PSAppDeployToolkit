@@ -5117,11 +5117,7 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 .PARAMETER UseRobocopy
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Default is configured in the AppDeployToolkitConfig.xml file: $true
-
-.PARAMETER LogFileRobocopy
-
-Log file for Robocopy. Default is: $configToolkitLogDir\$installName_Robocopy.log
+Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
 .PARAMETER RobocopyAdditionalParams
 
@@ -5165,7 +5161,7 @@ https://psappdeploytoolkit.com
         [String]$Destination,
         [Parameter(Mandatory = $false)]
         [Switch]$Recurse = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'PowerShell')]
+        [Parameter(Mandatory = $false)]
         [Switch]$Flatten,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -5173,13 +5169,10 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$ContinueFileCopyOnError = $false,
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
-        [Parameter(Mandatory = $true, ParameterSetName = 'Robocopy')]
-        [ValidateNotNullOrEmpty()]
-        [String]$LogFileRobocopy = ("$configToolkitLogDir\$installName" + "_Robocopy.log"),
-        [Parameter(Mandatory = $false, ParameterSetName = 'Robocopy')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null
         )    
@@ -5197,12 +5190,25 @@ https://psappdeploytoolkit.com
                     If (Test-Path -LiteralPath $p -PathType Leaf) {
                         $UseRobocopy = $false
                         Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
+                    }
+                    If ($p -match '\*') {
+                        $UseRobocopy = $false
+                        Write-Log "Asterisk wildcard specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Break
                     }
                 }
                 # Check if Robocopy is on the system
-                If (-not (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)) {
+                If (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
+                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                }
+                Else {
                     $UseRobocopy = $false
                     Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                }
+                If ($Flatten) {
+                    Write-Log "-Flatten not supported by Robocopy, falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                    $UseRobocopy = $false
                 }
                 If ($UseRobocopy) {         
                     If ($Recurse) {
@@ -5213,21 +5219,23 @@ https://psappdeploytoolkit.com
                     }
                     # Build Robocopy command   
                     Foreach ($srcPath in $Path) {
-                        $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                        $RobocopyArgsCopy = "/IM"
-                        $srcPath = $srcPath.TrimEnd('\')
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$destination`""
-                        $destination = $destination.TrimEnd('\')
-                        $RobocopyArgsLogFile = "/LOG:`"$LogFileRobocopy`""        
+                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same
+                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
+                        # Append subfolder from source to destination, so that Robocopy produces similar results to native Powershell
+                        $SubFolder = Split-Path -Path $srcPath -Leaf
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination\$SubFolder`"" 
                         If ($Recurse) {
                             $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
                         }      
-                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath $RobocopyArgsLogFile"
+                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -WindowStyle 'Hidden' -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
+                        $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
+                        Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
@@ -5268,31 +5276,20 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
                     $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                 }
-
+                If ($Flatten -and -not $Recurse) {
+                    Write-Log "-Flatten only supported in conjunction with -Recurse." -Source ${CmdletName} -Severity 2
+                    $Flatten = $false
+                }
                 If ($Flatten) {
-                    If ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            If ($UseRobocopy) {
-
-                            }
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                            }
-                        }
-                        Else {
-                            $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
-                            }
+                    Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
+                    If ($ContinueFileCopyOnError) {
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                     }
                     Else {
-                        Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                        }
-                        Else {
-                            $null = Copy-Item -Path $path -Destination $destination -Force -ErrorAction 'Stop'
+                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
+                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
                         }
                     }
                 }
@@ -8785,63 +8782,63 @@ https://psappdeploytoolkit.com
         [Switch]$DisableLogging
     )
 
-    Begin {
+    begin {
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
-    Process {
-        If ($processObjects -and $processObjects[0].ProcessName) {
-            [String]$runningAppsCheck = $processObjects.ProcessName -join ','
-            If (-not $DisableLogging) {
-                Write-Log -Message "Checking for running applications: [$runningAppsCheck]" -Source ${CmdletName}
-            }
-            ## Prepare a filter for Where-Object
-            [ScriptBlock]$whereObjectFilter = {
-                ForEach ($processObject in $processObjects) {
-                    If ($_.ProcessName -ieq $processObject.ProcessName) {
-                        Add-Member -InputObject $_ -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                            If ($processObject.ProcessDescription) {
-                                #  The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-                                $processObject.ProcessDescription
-                            }
-                            ElseIf ($_.Description) {
-                                #  If the process already has a description field specified, then use it
-                                $_.Description
-                            }
-                            Else {
-                                #  Fall back on the process name if no description is provided by the process or as a parameter to the function
-                                $_.ProcessName
-                            }
-                        )
 
-                        Write-Output -InputObject ($true)
-                        Return
-                    }
-                }
-
-                Write-Output -InputObject ($false)
-                Return
-            }
-            ## Get all running processes and escape special characters. Match against the process names to search for to find running processes.
-            [Diagnostics.Process[]]$runningProcesses = Get-Process | Where-Object -FilterScript $whereObjectFilter | Sort-Object -Property 'ProcessName'
-
-            If (-not $DisableLogging) {
-                If ($runningProcesses) {
-                    [String]$runningProcessList = ($runningProcesses.ProcessName | Select-Object -Unique) -join ','
-                    Write-Log -Message "The following processes are running: [$runningProcessList]." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
-                }
-            }
-            Write-Output -InputObject ($runningProcesses)
+    process {
+        ## Confirm input isn't null before proceeding.
+        if (!$processObjects -or !$processObjects[0].ProcessName)
+        {
+            return
         }
-        Else {
-            Write-Output -InputObject ($null)
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -Source ${CmdletName}
         }
+
+        ## Get all running processes and append properties.
+        [Diagnostics.Process[]]$runningProcesses = foreach ($process in (Get-Process -Name $processObjects.ProcessName -ErrorAction SilentlyContinue))
+        {
+            Add-Member -InputObject $process -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
+                {
+                    # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
+                    $objDescription
+                }
+                elseif ($process.Description)
+                {
+                    # If the process already has a description field specified, then use it
+                    $process.Description
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function
+                    $process.ProcessName
+                }
+            )
+        }
+
+        ## Return output if there's any.
+        if (!$runningProcesses)
+        {
+            if (!$DisableLogging)
+            {
+                Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
+            }
+            return
+        }
+        if (!$DisableLogging)
+        {
+            Write-Log -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -Source ${CmdletName}
+        }
+        return ($runningProcesses | Sort-Object)
     }
-    End {
+
+    end {
+        ## Write out the footer
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
@@ -9246,7 +9243,7 @@ https://psappdeploytoolkit.com
             $promptResult = $null
 
             While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-                [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
+                [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction SilentlyContinue | Sort-Object -Unique) -join ','
                 #  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 If ($allowDefer) {
                     #  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -10930,7 +10927,7 @@ https://psappdeploytoolkit.com
         [ValidateNotNullorEmpty()]
         [String]$StatusMessage = $configProgressMessageInstall,
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Default', 'BottomRight', 'TopCenter')]
+        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [String]$WindowLocation = 'Default',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
@@ -11045,65 +11042,85 @@ https://psappdeploytoolkit.com
                     </Grid>
                 </Window>
 '@
-                    [Xml.XmlDocument]$xamlProgress = New-Object -TypeName 'System.Xml.XmlDocument'
-                    $xamlProgress.LoadXml($xamlProgressString)
-                    ## Set the configurable values using variables added to the runspace from the parent thread
-                    $xamlProgress.Window.TopMost = $topMost
-                    $xamlProgress.Window.Icon = $AppDeployLogoIcon
-                    $xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
-                    $xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
-                    $xamlProgress.Window.Title = $installTitle
-                    #  Parse the XAML
-                    $progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
-                    $script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
-                    #  Grey out the X button
-                    $script:ProgressSyncHash.Window.add_Loaded({
-                            #  Calculate the position on the screen where the progress dialog should be placed
-                            [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-                            [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-                            [Int32]$script:screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
-                            [Int32]$script:screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
-                            #  Set the start position of the Window based on the screen size
-                            If ($windowLocation -eq 'BottomRight') {
-                                $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
-                                $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
-                            }
-                            ElseIf ($windowLocation -eq 'TopCenter') {
-                                $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                                $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
-                            }
-                            Else {
-                                #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                                $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                                $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
-                            }
-                            #  Disable the X button
-                            Try {
-                                $windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList ($this)).Handle
-                                If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
-                                    $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-                                    If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
-                                        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-                                        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
-                                    }
+                [Xml.XmlDocument]$xamlProgress = New-Object -TypeName 'System.Xml.XmlDocument'
+                $xamlProgress.LoadXml($xamlProgressString)
+                ## Set the configurable values using variables added to the runspace from the parent thread
+                $xamlProgress.Window.TopMost = $topMost
+                $xamlProgress.Window.Icon = $AppDeployLogoIcon
+                $xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
+                $xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
+                $xamlProgress.Window.Title = $installTitle
+                #  Parse the XAML
+                $progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
+                $script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
+                #  Grey out the X button
+                $script:ProgressSyncHash.Window.add_Loaded({
+                        #  Calculate the position on the screen where the progress dialog should be placed
+                        [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
+                        [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
+                        [Int32]$script:screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
+                        [Int32]$script:screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
+                        #  Set the start position of the Window based on the screen size
+                        If ($windowLocation -eq 'TopLeft') {
+                            $script:ProgressSyncHash.Window.Left = [Double](0)
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                        }
+                        ElseIf ($windowLocation -eq 'Top') {
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                        }
+                        ElseIf ($windowLocation -eq 'TopRight') {
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                        }
+                        ElseIf ($windowLocation -eq 'TopCenter') {
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
+                        }
+                        ElseIf ($windowLocation -eq 'BottomLeft') {
+                            $script:ProgressSyncHash.Window.Left = [Double](0)
+                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                        }
+                        ElseIf ($windowLocation -eq 'Bottom') {
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                        }
+                        ElseIf ($windowLocation -eq 'BottomRight') {
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
+                        }
+                        Else {
+                            #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
+                        }
+                        #  Disable the X button
+                        Try {
+                            $windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList ($this)).Handle
+                            If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
+                                $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
+                                If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+                                    [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+                                    [PSADT.UiAutomation]::DestroyMenu($menuHandle)
                                 }
                             }
-                            Catch {
-                                # Not a terminating error if we can't disable the close button
-                                Write-Log 'Failed to disable the Close button.' -Severity 2 -Source ${CmdletName}
-                            }
-                        })
-                    #  Prepare the ProgressText variable so we can use it to change the text in the text area
-                    $script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
-                    #  Add an action to the Window.Closing event handler to disable the close button
-                    $script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
-                    #  Allow the window to be dragged by clicking on it anywhere
-                    $script:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $script:ProgressSyncHash.Window.DragMove() })
-                    #  Add a tooltip
-                    $script:ProgressSyncHash.Window.ToolTip = $installTitle
-                    $null = $script:ProgressSyncHash.Window.ShowDialog()
-                    $script:ProgressSyncHash.Error = $Error
-                })
+                        }
+                        Catch {
+                            # Not a terminating error if we can't disable the close button
+                            Write-Log 'Failed to disable the Close button.' -Severity 2 -Source ${CmdletName}
+                        }
+                    })
+                #  Prepare the ProgressText variable so we can use it to change the text in the text area
+                $script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
+                #  Add an action to the Window.Closing event handler to disable the close button
+                $script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
+                #  Allow the window to be dragged by clicking on it anywhere
+                $script:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $script:ProgressSyncHash.Window.DragMove() })
+                #  Add a tooltip
+                $script:ProgressSyncHash.Window.ToolTip = $installTitle
+                $null = $script:ProgressSyncHash.Window.ShowDialog()
+                $script:ProgressSyncHash.Error = $Error
+            })
 
             $progressCmd.Runspace = $script:ProgressRunspace
             Write-Log -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
@@ -11130,21 +11147,40 @@ https://psappdeploytoolkit.com
                         [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
                         [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
                         #  Set the start position of the Window based on the screen size
-                        If ($windowLocation -eq 'BottomRight') {
-                            #  Put the window in the corner
+                        If ($windowLocation -eq 'TopLeft') {
+                            $script:ProgressSyncHash.Window.Left = [Double](0)
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                        }
+                        ElseIf ($windowLocation -eq 'Top') {
+                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                        }
+                        ElseIf ($windowLocation -eq 'TopRight') {
                             $script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
-                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
+                            $script:ProgressSyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'TopCenter') {
                             $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
                             $script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 6)
+                        }
+                        ElseIf ($windowLocation -eq 'BottomLeft') {
+                            $script:ProgressSyncHash.Window.Left = [Double](0)
+                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight)
+                        }
+                        ElseIf ($windowLocation -eq 'Bottom') {
+                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
+                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight)
+                        }
+                        ElseIf ($windowLocation -eq 'BottomRight') {
+                            $script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
+                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
                         }
                         Else {
                             #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
                             $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
                             $script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 2)
                         }
-                    }, $null, $null)
+                }, $null, $null)
 
                 If (!$Quiet) {
                     Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}

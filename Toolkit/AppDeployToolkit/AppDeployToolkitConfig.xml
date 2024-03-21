@@ -326,10 +326,10 @@
             Freier Speicherplatz: {2}MB
 
             Bitte geben Sie ausreichend Speicherplatz frei, um mit der Installation fortzufahren.</DiskSpace_Message>
-        <ClosePrompt_ButtonContinue>Weiter</ClosePrompt_ButtonContinue>
+        <ClosePrompt_ButtonContinue>&amp;Weiter</ClosePrompt_ButtonContinue>
         <ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf „Weiter“, nachdem Sie die obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
-        <ClosePrompt_ButtonClose>Programme Schließen</ClosePrompt_ButtonClose>
-        <ClosePrompt_ButtonDefer>Aufschieben</ClosePrompt_ButtonDefer>
+        <ClosePrompt_ButtonClose>Programme &amp;schließen</ClosePrompt_ButtonClose>
+        <ClosePrompt_ButtonDefer>&amp;Aufschieben</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.
 
             Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort.
