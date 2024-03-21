@@ -5189,7 +5189,9 @@ https://psappdeploytoolkit.com
                     Foreach ($srcPath in $Path) {
                         # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same
                         $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination`"" 
+                        # Append subfolder from source to destination, so that Robocopy produces similar results to native Powershell
+                        $SubFolder = Split-Path -Path $srcPath -Leaf
+                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination\$SubFolder`"" 
                         If ($Recurse) {
                             $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
                         }
