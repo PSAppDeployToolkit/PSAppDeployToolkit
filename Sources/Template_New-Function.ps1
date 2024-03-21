@@ -1,4 +1,5 @@
-﻿## Microsoft Function Naming Convention: http://msdn.microsoft.com/en-us/library/ms714428(v=vs.85).aspx
+﻿## Microsoft Function Naming Convention: https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions?view=powershell-5.1#functions-with-parameters
+## Microsoft Function approved Verbs: https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-5.1
 Function Verb-Noun {
 <#
 .SYNOPSIS
