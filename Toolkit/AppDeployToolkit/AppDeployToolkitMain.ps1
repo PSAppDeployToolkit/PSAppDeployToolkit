@@ -5738,6 +5738,10 @@ Converts registry key hives to their full paths. Example: HKLM is converted to "
 
 Path to the registry key to convert (can be a registry hive or fully qualified path)
 
+.PARAMETER Wow6432Node
+
+Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
+
 .PARAMETER SID
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
@@ -5780,6 +5784,8 @@ https://psappdeploytoolkit.com
         [ValidateNotNullorEmpty()]
         [String]$Key,
         [Parameter(Mandatory = $false)]
+        [Switch]$Wow6432Node = $false,
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$SID,
         [Parameter(Mandatory = $false)]
@@ -5811,6 +5817,21 @@ https://psappdeploytoolkit.com
         }
         ElseIf ($Key -match '^HKPD') {
             $Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
+        }
+
+        If ($Wow6432Node -and $Is64BitProcess) {        
+            If ($Key -match '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)') {
+                $Key = $Key -replace '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'
+            }
+            ElseIf ($Key -match '^HKEY_LOCAL_MACHINE\\SOFTWARE\\') {
+                $Key = $Key -replace '^HKEY_LOCAL_MACHINE\\SOFTWARE\\', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
+            }
+            ElseIf ($Key -match '^HKEY_LOCAL_MACHINE\\SOFTWARE$') {
+                $Key = $Key -replace '^HKEY_LOCAL_MACHINE\\SOFTWARE$', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
+            }
+            ElseIf ($Key -match '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\') {
+                $Key = $Key -replace '^HKEY_CURRENT_USER\\Software\\Wow6432Node\\Microsoft\\Active Setup\\Installed Components\\', 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
+            }
         }
 
         ## Append the PowerShell provider to the registry key path
@@ -5872,6 +5893,10 @@ The security identifier (SID) for a user. Specifying this parameter will convert
 
 Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
 
+.PARAMETER Wow6432Node
+
+Specify this switch to check the 32-bit registry (Wow6432Node) on 64-bit systems.
+
 .INPUTS
 
 System.String
@@ -5905,7 +5930,9 @@ https://psappdeploytoolkit.com
         [ValidateNotNullOrEmpty()]$Value,
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullorEmpty()]
-        [String]$SID
+        [String]$SID,
+        [Parameter(Mandatory = $false)]
+        [Switch]$Wow6432Node = $false
     )
 
     Begin {
@@ -5917,10 +5944,10 @@ https://psappdeploytoolkit.com
         ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
         Try {
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$Key = Convert-RegistryPath -Key $Key -SID $SID
+                [String]$Key = Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID 
             }
             Else {
-                [String]$Key = Convert-RegistryPath -Key $Key
+                [String]$Key = Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node
             }
         }
         Catch {
@@ -5973,6 +6000,10 @@ Path of the registry key.
 .PARAMETER Value
 
 Value to retrieve (optional).
+
+.PARAMETER Wow6432Node
+
+Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
 
 .PARAMETER SID
 
@@ -6041,6 +6072,8 @@ https://psappdeploytoolkit.com
         [ValidateNotNullOrEmpty()]
         [String]$Value,
         [Parameter(Mandatory = $false)]
+        [Switch]$Wow6432Node = $false,
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$SID,
         [Parameter(Mandatory = $false)]
@@ -6063,10 +6096,10 @@ https://psappdeploytoolkit.com
         Try {
             ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$key = Convert-RegistryPath -Key $key -SID $SID
+                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
             }
             Else {
-                [String]$key = Convert-RegistryPath -Key $key
+                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node
             }
 
             ## Check if the registry key exists
@@ -6191,6 +6224,10 @@ The type of registry value to create or set. Options: 'Binary','DWord','ExpandSt
 
 DWord should be specified as a decimal.
 
+.PARAMETER Wow6432Node
+
+Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
+
 .PARAMETER SID
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
@@ -6253,6 +6290,8 @@ https://psappdeploytoolkit.com
         [ValidateSet('Binary', 'DWord', 'ExpandString', 'MultiString', 'None', 'QWord', 'String', 'Unknown')]
         [Microsoft.Win32.RegistryValueKind]$Type = 'String',
         [Parameter(Mandatory = $false)]
+        [Switch]$Wow6432Node = $false,
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$SID,
         [Parameter(Mandatory = $false)]
@@ -6271,10 +6310,10 @@ https://psappdeploytoolkit.com
 
             ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$key = Convert-RegistryPath -Key $key -SID $SID
+                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
             }
             Else {
-                [String]$key = Convert-RegistryPath -Key $key
+                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node
             }
 
             ## Create registry key if it doesn't exist
@@ -6287,7 +6326,13 @@ https://psappdeploytoolkit.com
                     }
                     # Forward slash was found in Key. Use REG.exe ADD to create registry key
                     Else {
-                        [String]$CreateRegkeyResult = & "$envWinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))"
+                        If ($Is64BitProcess -and -not $Wow6432Node) {
+                            $RegMode = '/reg:64'
+                        }
+                        Else {
+                            $RegMode = '/reg:32'
+                        }
+                        [String]$CreateRegkeyResult = & "$envWinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode
                         If ($global:LastExitCode -ne 0) {
                             Throw "Failed to create registry key [$Key]"
                         }
@@ -14551,6 +14596,10 @@ Description for the Active Setup. Users will see "Setting up personalized settin
 
 Name of the registry key for the Active Setup entry. Default is: $installName.
 
+.PARAMETER Wow6432Node
+
+Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. Default is: $false.
+
 .PARAMETER Version
 
 Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
@@ -14627,6 +14676,8 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$Key = $installName,
+        [Parameter(Mandatory = $false)]
+        [Switch]$Wow6432Node = $false,
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullorEmpty()]
         [String]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
@@ -14653,8 +14704,14 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            [String]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
-            [String]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
+            if ($Wow6432Node -and $Is64Bit) {
+                [String]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+                [String]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+            }
+            else {
+                [String]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
+                [String]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
+            }
 
             ## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
             If ($PurgeActiveSetupKey) {
