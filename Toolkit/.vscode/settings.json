@@ -1,0 +1,29 @@
+// PSAppDeployToolkit default settings to ensure consistent code formatting and file encoding
+{
+    //-------- Indentation configuration --------
+    "editor.detectIndentation": true,
+    "editor.formatOnPaste": true,
+    "editor.insertSpaces": false,
+    "editor.renderWhitespace": "boundary",
+    "editor.tabSize": 4,
+    //-------- Files configuration --------
+    "files.autoGuessEncoding": true,
+    "files.encoding": "utf8",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    //-------- PowerShell configuration --------
+    "powershell.codeFormatting.addWhitespaceAroundPipe": true,
+    "powershell.codeFormatting.autoCorrectAliases": true,
+    "powershell.codeFormatting.ignoreOneLineBlock": true,
+    "powershell.codeFormatting.newLineAfterCloseBrace": true,
+    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+    "powershell.codeFormatting.useConstantStrings": true,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.codeFormatting.whitespaceAfterSeparator": true,
+    "powershell.codeFormatting.whitespaceAroundOperator": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
+    "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
+    "powershell.scriptAnalysis.settingsPath": ".\\.vscode\\PSScriptAnalyzerSettings.psd1"
+}
