@@ -5151,10 +5151,10 @@ https://psappdeploytoolkit.com
 #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullorEmpty()]
         [String[]]$Path,
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true, Position = 1)]
         [ValidateNotNullorEmpty()]
         [String]$Destination,
         [Parameter(Mandatory = $false)]
