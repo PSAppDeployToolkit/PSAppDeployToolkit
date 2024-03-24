@@ -5270,7 +5270,8 @@ https://psappdeploytoolkit.com
         }
         If ($UseRobocopy -eq $false) {
             Try {
-                If ((-not ([IO.Path]::HasExtension($Destination))) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
+                # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
+                If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
                     Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
                     $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                 }
