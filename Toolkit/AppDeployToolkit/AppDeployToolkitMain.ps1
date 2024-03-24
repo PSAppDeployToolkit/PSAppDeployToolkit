@@ -5115,7 +5115,7 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 .PARAMETER UseRobocopy
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true
+Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
 .PARAMETER RobocopyAdditionalParams
 
@@ -5179,51 +5179,72 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+
+        # Check if Robocopy is on the system
+        If ($UseRobocopy) {
+            If (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
+                $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+            }
+            Else {
+                $UseRobocopy = $false
+                Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+            }
+        }
+        Else {
+            $UseRobocopy = $false
+        }
     }
     Process {
-        If ($UseRobocopy) {
-            Try {
-                # Check if the path is a file or folder. If a file is specified in the path variable, then set $useRobocopy to false
-                Foreach ($p in $Path) {
-                    If (Test-Path -LiteralPath $p -PathType Leaf) {
-                        $UseRobocopy = $false
-                        Write-Log "File specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-                        Break
+        Foreach ($srcPath in $Path) {
+            $UseRobocopyThis = $UseRobocopy
+            If ($UseRobocopyThis) {
+                Try {
+                    # Disable Robocopy if $Path has a folder containing a * wildcard
+                    If ($srcPath -match '\*.*\\') {
+                        $UseRobocopyThis = $false
+                        Write-Log "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                     }
-                    If ($p -match '\*') {
-                        $UseRobocopy = $false
-                        Write-Log "Asterisk wildcard specified in path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-                        Break
-                    }
-                }
-                # Check if Robocopy is on the system
-                If (Test-Path -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
-                    $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
-                }
-                Else {
-                    $UseRobocopy = $false
-                    Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-                }
-                If ($Flatten) {
-                    Write-Log "-Flatten not supported by Robocopy, falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-                    $UseRobocopy = $false
-                }
-                If ($UseRobocopy) {         
-                    If ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
-                    }
-                    Else {
-                        Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                    }
-                    # Build Robocopy command   
-                    Foreach ($srcPath in $Path) {
-                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same
-                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS"
-                        # Append subfolder from source to destination, so that Robocopy produces similar results to native Powershell
-                        $SubFolder = Split-Path -Path $srcPath -Leaf
-                        $RobocopyArgsPath =  "`"$srcPath`" `"$Destination\$SubFolder`"" 
-                        If ($Recurse) {
-                            $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
+                    If ($UseRobocopyThis) {
+                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
+                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /MT:4 /R:1 /W:1"
+                        If (Test-Path -Path $SrcPath -PathType Leaf) {
+                            # If source is a file, split args to the format <SourceFolder> <DestinationFolder> <FileName>
+                            $RobocopyArgsPath =  "`"$((Split-Path -Path $srcPath -Parent))`" `"$Destination`" `"$((Split-Path -Path $srcPath -Leaf))`""
+                            Write-Log -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        }
+                        ElseIf (Test-Path -Path $SrcPath -PathType Container) {
+                            If ($Flatten) {
+                                Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
+                                [Hashtable]$CopyFileSplat = @{
+                                    Path                    = (Join-Path $SrcPath '*')
+                                    Destination             = $Destination
+                                    Recurse                 = $Recurse
+                                    Flatten                 = $Flatten
+                                    ContinueOnError         = $ContinueOnError
+                                    ContinueFileCopyOnError = $ContinueFileCopyOnError
+                                    UseRobocopy             = $UseRobocopy
+                                }
+                                if ($RobocopyAdditionalParams) {
+                                    $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
+                                }
+                                Copy-File @CopyFileSplat
+                                Get-ChildItem -Path $srcPath -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                                    $CopyFileSplat.Path = Join-Path $_.FullName '*'
+                                    Copy-File @CopyFileSplat
+                                }
+                                # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function 
+                                Continue
+                            }
+                            ElseIf ($Recurse) {
+                                $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
+                                Write-Log -Message "Copying folder recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                            }
+                            Else {
+                                Write-Log -Message "Copying folder in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                            }
+                            # If source is a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
+                            $NewDestination = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
+                            $RobocopyArgsPath =  "`"$srcPath`" `"$NewDestination`""
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
@@ -5248,82 +5269,76 @@ https://psappdeploytoolkit.com
                             16 {
                                 Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
                                 If (-not $ContinueOnError) {
-                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default {
-                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                                 If (-not $ContinueOnError) {
-                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
+                                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
-                        } 
-                    }           
+                        }
+                    }
+                }
+                Catch {
+                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    If (-not $ContinueOnError) {
+                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
+                    }
                 }
             }
-            Catch {
-                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$destination]: $($_.Exception.Message)"
-                }
-            }        
-        }
-        If ($UseRobocopy -eq $false) {
-            Try {
-                # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
-                If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
-                    Write-Log -Message "Destination folder does not exist, creating destination folder [$destination]." -Source ${CmdletName}
-                    $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
-                }
-                If ($Flatten -and -not $Recurse) {
-                    Write-Log "-Flatten only supported in conjunction with -Recurse." -Source ${CmdletName} -Severity 2
-                    $Flatten = $false
-                }
-                If ($Flatten) {
-                    Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination] root folder, flattened." -Source ${CmdletName}
-                    If ($ContinueFileCopyOnError) {
-                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+            If ($UseRobocopyThis -eq $false) {
+                Try {
+                    # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
+                    If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
+                        Write-Log -Message "Destination folder does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
+                        $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
+                    }
+                    If ($Flatten) {
+                        Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
+                        If ($ContinueFileCopyOnError) {
+                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                                Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                            }
+                        }
+                        Else {
+                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                                Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Stop'
+                            }
+                        }
+                    }
+                    ElseIf ($Recurse) {
+                        Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        If ($ContinueFileCopyOnError) {
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                        }
+                        Else {
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
                         }
                     }
                     Else {
-                        $null = Get-ChildItem -Path $path -Recurse -Force -ErrorAction 'SilentlyContinue' | Where-Object { -not $_.PSIsContainer } | ForEach-Object {
-                            Copy-Item -Path ($_.FullName) -Destination $destination -Force -ErrorAction 'Stop'
-                        }
-                    }
-                }
-                Else {
-                    If ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$path] to destination [$destination]." -Source ${CmdletName}
+                        Write-Log -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                         Else {
-                            $null = Copy-Item -Path $Path -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'Stop'
                         }
+                    }
+    
+                    If ($FileCopyError) {
+                        Write-Log -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
                     }
                     Else {
-                        Write-Log -Message "Copying file in path [$path] to destination [$destination]." -Source ${CmdletName}
-                        If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
-                        }
-                        Else {
-                            $null = Copy-Item -Path $Path -Destination $Destination -Force -ErrorAction 'Stop'
-                        }
+                        Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
                     }
                 }
-
-                If ($FileCopyError) {
-                    Write-Log -Message "The following warnings were detected while copying file(s) in path [$path] to destination [$destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
-                }
-            }
-            Catch {
-                Write-Log -Message "Failed to copy file(s) in path [$path] to destination [$destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "Failed to copy file(s) in path [$path] to destination [$destination]: $($_.Exception.Message)"
+                Catch {
+                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    If (-not $ContinueOnError) {
+                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
+                    }
                 }
             }
         }
