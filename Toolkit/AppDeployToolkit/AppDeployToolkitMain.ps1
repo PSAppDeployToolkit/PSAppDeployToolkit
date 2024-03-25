@@ -5224,8 +5224,8 @@ https://psappdeploytoolkit.com
                                 [Hashtable]$CopyFileSplat = @{
                                     Path                    = (Join-Path $srcPath '*')
                                     Destination             = $Destination
-                                    Recurse                 = $Recurse
-                                    Flatten                 = $Flatten
+                                    Recurse                 = $false
+                                    Flatten                 = $false
                                     ContinueOnError         = $ContinueOnError
                                     ContinueFileCopyOnError = $ContinueFileCopyOnError
                                     UseRobocopy             = $UseRobocopy
