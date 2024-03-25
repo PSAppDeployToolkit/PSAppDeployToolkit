@@ -3667,15 +3667,13 @@ https://psappdeploytoolkit.com
             $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
         }
 
-        ## Check if the MSI is already installed. If no valid ProductCode to check, then continue with requested MSI action.
-        [Boolean]$IsMsiInstalled = If ($MSIProductCode) {
-            If (!$SkipMSIAlreadyInstalledCheck) {
-                If ($IncludeUpdatesAndHotfixes) {
-                    !!(Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes)
-                }
-                Else {
-                    !!(Get-InstalledApplication -ProductCode $MSIProductCode)
-                }
+        ## Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
+        [Boolean]$IsMsiInstalled = If ($MSIProductCode -and -not $SkipMSIAlreadyInstalledCheck) {
+            If ($IncludeUpdatesAndHotfixes) {
+                !!(Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes)
+            }
+            Else {
+                !!(Get-InstalledApplication -ProductCode $MSIProductCode)
             }
         }
         Else {
