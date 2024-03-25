@@ -5212,45 +5212,40 @@ https://psappdeploytoolkit.com
                             $SourceFolderPath = (Split-Path -Path $srcPath -Parent)
                             $SourceFilePath = (Split-Path -Path $srcPath -Leaf)
                             $RobocopyArgsPath =  "`"$SourceFolderPath`" `"$Destination`" `"$SourceFilePath`""
-                            If ($Recurse -and $SourceFilePath -match '\*') {
-                                $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
-                                Write-Log -Message "Copying file in path [$srcPath] recursively to destination [$Destination]." -Source ${CmdletName}
-                            }
-                            Write-Log -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
-                        ElseIf (Test-Path -Path $srcPath -PathType Container) {
-                            If ($Flatten) {
-                                Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
-                                [Hashtable]$CopyFileSplat = @{
-                                    Path                    = (Join-Path $srcPath '*')
-                                    Destination             = $Destination
-                                    Recurse                 = $false
-                                    Flatten                 = $false
-                                    ContinueOnError         = $ContinueOnError
-                                    ContinueFileCopyOnError = $ContinueFileCopyOnError
-                                    UseRobocopy             = $UseRobocopy
-                                }
-                                if ($RobocopyAdditionalParams) {
-                                    $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
-                                }
-                                Copy-File @CopyFileSplat
-                                Get-ChildItem -Path $srcPath -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-                                    $CopyFileSplat.Path = Join-Path $_.FullName '*'
-                                    Copy-File @CopyFileSplat
-                                }
-                                # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function 
-                                Continue
-                            }
-                            ElseIf ($Recurse) {
-                                $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
-                                Write-Log -Message "Copying folder recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
-                            }
-                            Else {
-                                Write-Log -Message "Copying folder in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
-                            }
+                        Else {
                             # If source is a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
-                            $NewDestination = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
-                            $RobocopyArgsPath =  "`"$srcPath`" `"$NewDestination`""
+                            $DestinationFolderPath = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
+                            $RobocopyArgsPath =  "`"$srcPath`" `"$DestinationFolderPath`" *"
+                        }
+                        If ($Flatten) {
+                            Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
+                            [Hashtable]$CopyFileSplat = @{
+                                Path                    = (Join-Path $srcPath '*')
+                                Destination             = $Destination
+                                Recurse                 = $false
+                                Flatten                 = $false
+                                ContinueOnError         = $ContinueOnError
+                                ContinueFileCopyOnError = $ContinueFileCopyOnError
+                                UseRobocopy             = $UseRobocopy
+                            }
+                            if ($RobocopyAdditionalParams) {
+                                $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
+                            }
+                            Copy-File @CopyFileSplat
+                            Get-ChildItem -Path $srcPath -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                                $CopyFileSplat.Path = Join-Path $_.FullName '*'
+                                Copy-File @CopyFileSplat
+                            }
+                            # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function 
+                            Continue
+                        }
+                        ElseIf ($Recurse) {
+                            $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
+                            Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        }
+                        Else {
+                            Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
