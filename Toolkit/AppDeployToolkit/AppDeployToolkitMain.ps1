@@ -5210,6 +5210,9 @@ https://psappdeploytoolkit.com
 
                     }
                     If ($UseRobocopyThis) {
+                        # Trim ending backslash from paths which can cause problems
+                        $srcPath = $srcPath.TrimEnd('\')
+                        $Destination = $Destination.TrimEnd('\')
                         # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
                         $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /MT:4 /R:1 /W:1"
                         If (Test-Path -Path $srcPath -PathType Leaf) {
