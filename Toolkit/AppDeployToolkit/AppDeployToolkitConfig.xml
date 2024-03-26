@@ -55,7 +55,7 @@
         <Toolkit_UseRobocopy>True</Toolkit_UseRobocopy>
         <!-- Specify if Robocopy should be used with the Copy-File function. -->
         <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
-        <!-- Specify the path for the cache folder --> 
+<!-- Specify the path for the cache folder -->
     </Toolkit_Options>
     <!--Toolkit Options-->
 
@@ -65,7 +65,7 @@
         <Toast_AppName>PSAppDeployToolkit</Toast_AppName>
     </Toast_Options>
     <!--Toast Notification Options-->
-        
+
     <!--Banner, Logo & Icon Options-->
     <BannerIcon_Options>
         <Icon_Filename>AppDeployToolkitLogo.ico</Icon_Filename>
@@ -271,13 +271,13 @@
 
     <!-- UI Messages - French -->
     <UI_Messages_FR>
-        <DiskSpace_Message>Vous n’avez pas assez d’espace sur le disque pour compléter l’installation de:
+<DiskSpace_Message>Vous n'avez pas assez d'espace sur le disque pour compléter l'installation de:
             {0}
 
             Espace requis: {1}MB
             Espace disponible: {2}MB
 
-        Merci de vous assurez d’avoir assez d’espace libre pour pouvoir continuer l’installation.</DiskSpace_Message>
+        Merci de vous assurez d'avoir assez d'espace libre pour pouvoir continuer l'installation.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Poursuivre</ClosePrompt_ButtonContinue>
         <ClosePrompt_ButtonContinueTooltip>Veuillez cliquer sur « Poursuivre » uniquement après avoir fermé la ou les application(s) ci-dessus.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Fermer Programmes</ClosePrompt_ButtonClose>
@@ -327,13 +327,13 @@
 
             Bitte geben Sie ausreichend Speicherplatz frei, um mit der Installation fortzufahren.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>&amp;Weiter</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf „Weiter“, nachdem Sie die obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
+<ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf "Weiter", nachdem Sie die obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Programme &amp;schließen</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>&amp;Aufschieben</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.
 
             Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort.
-        Alternativ können Sie Ihre Arbeit speichern und dann auf „Programme Schließen“ klicken.</ClosePrompt_Message>
+        Alternativ können Sie Ihre Arbeit speichern und dann auf "Programme Schließen" klicken.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>HINWEIS: Diese Programme werden automatisch geschlossen:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Die folgende Anwendung soll installiert werden:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Sie können die Installation verzögern, bis die Rückstellung abläuft:</DeferPrompt_ExpiryMessage>
@@ -567,17 +567,17 @@
 
             Proszę zwiększyć ilość miejsca usuwając zbędne pliki.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Kontynuuj</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Tylko wybrać „Kontynuuj” po zamknięciu wyżej wymienione aplikacje.</ClosePrompt_ButtonContinueTooltip>
+<ClosePrompt_ButtonContinueTooltip>Tylko wybrać "Kontynuuj" po zamknięciu wyżej wymienione aplikacje.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Zamknij Programy</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Odłóż</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Następujące programy muszą zostać zamknięte przed rozpoczęciem instalacji.
 
-        Proszę zapisać wszystkie dokumenty i zamknąć programy, a następnie kliknąć przycisk „Kontynuuj”.
-        Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk „Zamknij Programy”.</ClosePrompt_Message>
+        Proszę zapisać wszystkie dokumenty i zamknąć programy, a następnie kliknąć przycisk "Kontynuuj".
+        Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk "Zamknij Programy".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>UWAGA: Programy zostaną automatycznie zamknięte za:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Zostanie zainstalowana następująca aplikacja:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Instalacja może zostać przełożona na późniejszy termin.</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Jeżeli zostanie przekroczona możliwa ilość przełożeń, opcja „Odłóż” będzie niedostępna.</DeferPrompt_WarningMessage>
+<DeferPrompt_WarningMessage>Jeżeli zostanie przekroczona możliwa ilość przełożeń, opcja "Odłóż" będzie niedostępna.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Pozostała ilość przełożeń instalacji:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Ostateczny termin instalacji:</DeferPrompt_Deadline>
 
@@ -1189,14 +1189,14 @@
             Szabad lemezterület: {2}MB
             Kérem szabadítson fel elegendő lemezterületet a telepítés végrehajtásához.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Tovább</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Csak azután kattintson a „Tovább”-ra, ha a fentebb látható alkalmazás(oka)t bezárta.</ClosePrompt_ButtonContinueTooltip>
+<ClosePrompt_ButtonContinueTooltip>Csak azután kattintson a "Tovább"-ra, ha a fentebb látható alkalmazás(oka)t bezárta.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Alkalmazások bezárása</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer> Elhalaszt</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message> Az alábbi programokat szíveskedjen bezárni, mielőtt a telepítés elkezdődik.
 
             Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat.
             Vagy
-        Kérjük mentse munkáját és kattintson a „Programok bezárása”-ra.</ClosePrompt_Message>
+        Kérjük mentse munkáját és kattintson a "Programok bezárása"-ra.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>Megjegyzés: a programok automatikusan bezárásra kerülnek,:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>A következő alkalmazások telepítésre kerülnek:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>A telepítést elhalaszthatja amíg a rendelkezésre álló idő lejár:</DeferPrompt_ExpiryMessage>
