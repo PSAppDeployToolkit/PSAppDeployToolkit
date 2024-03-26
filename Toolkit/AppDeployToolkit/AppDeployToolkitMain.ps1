@@ -16352,7 +16352,7 @@ Function Copy-ContentToCache {
             Copy-File -Path (Join-Path $scriptParentPath '*') -Destination $Path -Recurse
             # Set the Files directory to the cache path
             Set-Variable -Name 'dirFiles' -Value "$Path\Files" -Scope 'Script'
-            Set-Variable -Name 'dirFiles' -Value "$Path\SupportFiles" -Scope 'Script'
+            Set-Variable -Name 'dirSupportFiles' -Value "$Path\SupportFiles" -Scope 'Script'
         }
         Catch {
             Write-Log -Message "Failed to copy toolkit content to cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
