@@ -9,7 +9,7 @@ Displays a graphical console to browse the help for the App Deployment Toolkit f
 
 The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
 
-PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
+PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -47,8 +47,8 @@ https://psappdeploytoolkit.com
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.9.3'
-[string]$appDeployHelpScriptDate = '02/05/2023'
+[version]$appDeployHelpScriptVersion = [version]'3.9.4'
+[string]$appDeployHelpScriptDate = '03/27/2024'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent

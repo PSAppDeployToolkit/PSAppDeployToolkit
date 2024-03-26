@@ -9,7 +9,7 @@ The script can be called directly to dot-source the toolkit functions for testin
 
 The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 
-PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
+PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -109,7 +109,7 @@ Param (
 ## Variables: Script Info
 [Version]$appDeployMainScriptVersion = [Version]'3.9.4'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.4'
-[String]$appDeployMainScriptDate = 'XX/03/2024'
+[String]$appDeployMainScriptDate = '03/27/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -1304,7 +1304,7 @@ https://psappdeploytoolkit.com
                 Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
                 # Treat log rotation errors as non-terminating by default
                 If (-not $ContinueOnError) {
-                    [Boolean]$ExitLoggingFunction = $true                    
+                    [Boolean]$ExitLoggingFunction = $true
                     Return
                 }
             }
@@ -2530,7 +2530,7 @@ https://psappdeploytoolkit.com
         $formInstallationPrompt.Name = 'InstallPromptForm'
         $formInstallationPrompt.Text = $title
         $formInstallationPrompt.StartPosition = 'CenterScreen'
-        # $formInstallationPrompt.FormBorderStyle = 'FixedDialog'
+        $formInstallationPrompt.FormBorderStyle = 'Fixed3D'
         $formInstallationPrompt.MaximizeBox = $false
         $formInstallationPrompt.MinimizeBox = $false
         $formInstallationPrompt.TopMost = $TopMost
@@ -5091,7 +5091,7 @@ Copy a file or group of files to a destination path.
 
 .PARAMETER Path
 
-Path of the file to copy. Multiple paths can be specified 
+Path of the file to copy. Multiple paths can be specified
 
 .PARAMETER Destination
 
@@ -5173,7 +5173,7 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null
-        )    
+        )
 
     Begin {
         ## Get the name of this function and write header
@@ -5245,7 +5245,7 @@ https://psappdeploytoolkit.com
                                 $CopyFileSplat.Path = Join-Path $_.FullName '*'
                                 Copy-File @CopyFileSplat
                             }
-                            # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function 
+                            # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function
                             Continue
                         }
                         ElseIf ($Recurse) {
@@ -5257,7 +5257,7 @@ https://psappdeploytoolkit.com
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
-                        }      
+                        }
                         $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
@@ -5276,7 +5276,7 @@ https://psappdeploytoolkit.com
                             7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
                             8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
                             16 {
-                                Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName} 
+                                Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
                                 If (-not $ContinueOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
@@ -5341,7 +5341,7 @@ https://psappdeploytoolkit.com
                             $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'Stop'
                         }
                     }
-    
+
                     If ($FileCopyError) {
                         Write-Log -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
                     }
@@ -5647,7 +5647,7 @@ https://psappdeploytoolkit.com
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
-    }  
+    }
 }
 #endregion
 
@@ -5848,7 +5848,7 @@ https://psappdeploytoolkit.com
             $Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
         }
 
-        If ($Wow6432Node -and $Is64BitProcess) {        
+        If ($Wow6432Node -and $Is64BitProcess) {
             If ($Key -match '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)') {
                 $Key = $Key -replace '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'
             }
@@ -5973,7 +5973,7 @@ https://psappdeploytoolkit.com
         ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
         Try {
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$Key = Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID 
+                [String]$Key = Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
             }
             Else {
                 [String]$Key = Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node
@@ -8108,7 +8108,7 @@ https://psappdeploytoolkit.com
                 }
                 $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
                 [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
-                
+
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
                 Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
@@ -10380,7 +10380,7 @@ https://psappdeploytoolkit.com
         $formWelcome.Name = 'WelcomeForm'
         $formWelcome.Text = $installTitle
         $formWelcome.StartPosition = 'CenterScreen'
-        # $formWelcome.FormBorderStyle = 'FixedDialog'
+        $formWelcome.FormBorderStyle = 'Fixed3D'
         $formWelcome.MaximizeBox = $false
         $formWelcome.MinimizeBox = $false
         $formWelcome.TopMost = $TopMost
@@ -10839,7 +10839,7 @@ https://psappdeploytoolkit.com
         $formRestart.Name = 'formRestart'
         $formRestart.Text = $installTitle
         $formRestart.StartPosition = 'CenterScreen'
-        # $formRestart.FormBorderStyle = 'FixedDialog'
+        $formRestart.FormBorderStyle = 'Fixed3D'
         $formRestart.MaximizeBox = $false
         $formRestart.MinimizeBox = $false
         $formRestart.TopMost = $TopMost
@@ -14633,7 +14633,7 @@ Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. 
 
 Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
 
-Note: 
+Note:
     - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
     - In Windows 10, Scripts and EXEs might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
 
@@ -14897,7 +14897,7 @@ https://psappdeploytoolkit.com
                 Try {
                     [Version]$VersionHKLMValidVer = [Version]$HKLMValidVer.Replace(',','.')
                     [Version]$VersionHKCUValidVer = [Version]$HKCUValidVer.Replace(',','.')
-                    
+
                     If ($VersionHKLMValidVer -gt $VersionHKCUValidVer) {
                         # HKLM is greater, run the StubPath.
                         Write-Log "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater." -Source ${CmdletName}
@@ -14930,7 +14930,7 @@ https://psappdeploytoolkit.com
                         Return ($false)
                     }
                 }
-                
+
                 # The Versions have the same number of strings. Compare them
                 Try {
                     For ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++) {
@@ -16300,21 +16300,21 @@ This function does not return any objects.
 
 #region Function Copy-ContentToCache
 Function Copy-ContentToCache {
-    <#  
+    <#
 .SYNOPSIS
     Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path
 .DESCRIPTION
     Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path
-.PARAMETER Path 
+.PARAMETER Path
     The path to the software cache folder
 .EXAMPLE
     Copy-ContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
 .NOTES
     This function is provided as a template to copy the toolkit content to a cache folder on the local machine and set the $dirFiles directory to the cache path.
     This can be used in the absence of an Endpoint Management solution that provides a managed cache for source files, e.g. Intune is lacking this functionality whereas ConfigMgr includes this functionality.
-    Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions. 
+    Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
     This can be done using [Remove-File -Path "$configToolkitCachePath\$installName" -Recurse -ContinueOnError $true]
-    
+
 .LINK
     https://psappdeploytoolkit.com
 #>
@@ -16340,7 +16340,7 @@ Function Copy-ContentToCache {
                 }
                 Catch {
                     Write-Log -Message "Failed to create cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    Throw "Failed to create cache folder [$Path]: $($_.Exception.Message)"  
+                    Throw "Failed to create cache folder [$Path]: $($_.Exception.Message)"
                 }
             }
             Else {
@@ -16367,17 +16367,17 @@ Function Copy-ContentToCache {
 
 #region Function Remove-ContentFromCache
 Function Remove-ContentFromCache {
-    <#  
+    <#
 .SYNOPSIS
     Removes the toolkit content from the cache folder on the local machine and reverts the $dirFiles and $supportFiles directory
 .DESCRIPTION
     Removes the toolkit content from the cache folder on the local machine and reverts the $dirFiles and $supportFiles directory
-.PARAMETER Path 
+.PARAMETER Path
     The path to the software cache folder
 .EXAMPLE
     Remove-ContentFromCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
 .NOTES
-    
+
 .LINK
     https://psappdeploytoolkit.com
 #>
@@ -16404,7 +16404,7 @@ Function Remove-ContentFromCache {
                 }
                 Catch {
                     Write-Log -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    Throw "Failed to remove cache folder [$Path]: $($_.Exception.Message)"  
+                    Throw "Failed to remove cache folder [$Path]: $($_.Exception.Message)"
                 }
             }
             Else {
@@ -16414,7 +16414,7 @@ Function Remove-ContentFromCache {
         Catch {
             Write-Log -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             Throw "Failed to remove cache folder [$Path]: $($_.Exception.Message)"
-        }   
+        }
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -16430,7 +16430,7 @@ Function Configure-EdgeExtension {
     Configure-EdgeExtension
     .DESCRIPTION
     This function configures an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide
-    This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. 
+    This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
     This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
     .PARAMETER ConfigureMode
     The deployment mode of the extension. Allowed values: Add, Remove
@@ -16450,7 +16450,7 @@ Function Configure-EdgeExtension {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $true)]    
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Add', 'Remove')]
         [String]$configureMode,
         [Parameter(Mandatory = $true)]
@@ -16463,21 +16463,21 @@ Function Configure-EdgeExtension {
         [Parameter(Mandatory = $false)]
         [String]$MinimumVersionRequired
         )
-    
+
     If ($configureMode -eq 'Add') {
         If ($MinimumVersionRequired) {
             Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl] with minimum version required [$MinimumVersionRequired]." -Severity 1
         }
-        Else {      
+        Else {
             Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
         }
     }
     Else {
         Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)]." -Severity 1
     }
-    
+
     $regKeyEdgeExtensions = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
-    # Check if the ExtensionSettings registry key exists if not create it        
+    # Check if the ExtensionSettings registry key exists if not create it
     If (!(Test-RegistryValue -Key $regKeyEdgeExtensions -Value ExtensionSettings)) {
         Set-RegistryKey -Key $regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
     }
@@ -16485,19 +16485,19 @@ Function Configure-EdgeExtension {
         # Get the installed extensions
         $installedExtensions = Get-RegistryKey -Key $regKeyEdgeExtensions -Value ExtensionSettings | ConvertFrom-Json -ErrorAction SilentlyContinue
         Write-Log -Message "Configured extensions: [$($installedExtensions | ConvertTo-Json -Compress -ErrorAction SilentlyContinue)]." -Severity 1
-    }            
+    }
 
     Try {
         If ($configureMode -ieq 'Remove') {
             If ($installedExtensions.$($extensionID)) {
-                # If the deploymentmode is Remove, remove the extension from the list                
+                # If the deploymentmode is Remove, remove the extension from the list
                 Write-Log -Message "Removing extension with ID [$extensionID]." -Severity 1
                 $installedExtensions.PSObject.Properties.Remove($extensionID)
                 $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
                 Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
             }
             Else { # If the extension is not configured
-                Write-Log -Message "Extension with ID [$extensionID] is not configured. Removal not required." -Severity 1  
+                Write-Log -Message "Extension with ID [$extensionID] is not configured. Removal not required." -Severity 1
             }
         }
         # Configure the extension
@@ -16511,12 +16511,12 @@ Function Configure-EdgeExtension {
             }
             $jsonExtensionSettings = $installedExtensions | ConvertTo-Json -Compress
             Set-RegistryKey -Key $regKeyEdgeExtensions -Name "ExtensionSettings" -Value $jsonExtensionSettings | Out-Null
-        }        
-    }   
+        }
+    }
     Catch {
         Write-Log -Message "Failed to configure extension with ID $extensionID. `r`n$(Resolve-Error)" -Severity 3
         Exit-Script -ExitCode 60001
-    }         
+    }
 } #End Function Deploy-EdgeExtension
 
 #endregion
@@ -16960,12 +16960,12 @@ If ($usersLoggedOn) {
 
     # Check if OOBE / ESP is running [credit Michael Niehaus]
     $TypeDef = @"
- 
+
 using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
- 
+
 namespace Api
 {
  public class Kernel32
@@ -16975,12 +16975,12 @@ namespace Api
  }
 }
 "@
- 
+
 Add-Type -TypeDefinition $TypeDef -Language CSharp
- 
+
 $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
- 
+
     If (!($IsOOBEComplete)) {
         Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
         $deployMode = 'Silent'
