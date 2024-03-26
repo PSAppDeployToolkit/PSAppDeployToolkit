@@ -16302,9 +16302,9 @@ This function does not return any objects.
 Function Copy-ContentToCache {
     <#  
 .SYNOPSIS
-    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles directory to the cache path
+    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path
 .DESCRIPTION
-    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles directory to the cache path
+    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path
 .PARAMETER Path 
     The path to the software cache folder
 .EXAMPLE
@@ -16352,6 +16352,7 @@ Function Copy-ContentToCache {
             Copy-File -Path (Join-Path $scriptParentPath '*') -Destination $Path -Recurse
             # Set the Files directory to the cache path
             Set-Variable -Name 'dirFiles' -Value "$Path\Files" -Scope 'Script'
+            Set-Variable -Name 'dirFiles' -Value "$Path\SupportFiles" -Scope 'Script'
         }
         Catch {
             Write-Log -Message "Failed to copy toolkit content to cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -16368,9 +16369,9 @@ Function Copy-ContentToCache {
 Function Remove-ContentFromCache {
     <#  
 .SYNOPSIS
-    Removes the toolkit content from the cache folder on the local machine
+    Removes the toolkit content from the cache folder on the local machine and reverts the $dirFiles and $supportFiles directory
 .DESCRIPTION
-    Removes the toolkit content from the cache folder on the local machine
+    Removes the toolkit content from the cache folder on the local machine and reverts the $dirFiles and $supportFiles directory
 .PARAMETER Path 
     The path to the software cache folder
 .EXAMPLE
@@ -16398,6 +16399,8 @@ Function Remove-ContentFromCache {
                 Try {
                     Write-Log -Message "Removing cache folder [$Path]." -Source ${CmdletName}
                     $null = Remove-Item -Path $Path -Recurse -ErrorAction 'Stop'
+                    [String]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
+                    [String]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
                 }
                 Catch {
                     Write-Log -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
