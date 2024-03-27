@@ -3,7 +3,7 @@
     PSAppDeployToolkit - This XML configuration file is used to set defaults for the PSADT core
     runtime and functions.
 
-    PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team
+    PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team
     (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU
@@ -185,29 +185,23 @@
             Please free up enough disk space in order to proceed with the installation.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>&amp;Continue</ClosePrompt_ButtonContinue>
         <!-- Text displayed on the continue button when prompting to close running programs. -->
-        <ClosePrompt_ButtonContinueTooltip>Only select "Continue" after closing the above listed
-            application(s).</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Only select "Continue" after closing the above listed application(s).</ClosePrompt_ButtonContinueTooltip>
         <!-- Tooltip text displayed on the continue button when prompting to close running programs. -->
         <ClosePrompt_ButtonClose>Close &amp;Programs</ClosePrompt_ButtonClose>
         <!-- Text displayed on the close button when prompting to close running programs. -->
         <ClosePrompt_ButtonDefer>&amp;Defer</ClosePrompt_ButtonDefer>
         <!-- Text displayed on the defer button when prompting to close running programs. -->
-        <ClosePrompt_Message>The following programs must be closed before the installation can
-            proceed.
+        <ClosePrompt_Message>The following programs must be closed before the installation can proceed.
 
-            Please save your work, close the programs, and then continue.
-            Alternatively, save your work and click "Close Programs".</ClosePrompt_Message>
+            Please save your work, close the programs, and then continue. Alternatively, save your work and click "Close Programs".</ClosePrompt_Message>
         <!-- Text displayed when prompting to close running programs. -->
         <ClosePrompt_CountdownMessage>NOTE: The program(s) will be automatically closed in:</ClosePrompt_CountdownMessage>
         <!-- Text displayed when counting down to automatically closing applications. -->
         <DeferPrompt_WelcomeMessage>The following application is about to be installed:</DeferPrompt_WelcomeMessage>
-        <!-- Text displayed when only the deferral dialog is to be displayed and there are no
-        applications to close. -->
-        <DeferPrompt_ExpiryMessage>You can choose to defer the installation until the deferral
-            expires:</DeferPrompt_ExpiryMessage>
+        <!-- Text displayed when only the deferral dialog is to be displayed and there are no applications to close. -->
+        <DeferPrompt_ExpiryMessage>You can choose to defer the installation until the deferral expires:</DeferPrompt_ExpiryMessage>
         <!-- Text displayed when a deferral option is available. -->
-        <DeferPrompt_WarningMessage>Once the deferral has expired, you will no longer have the
-            option to defer.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Once the deferral has expired, you will no longer have the option to defer.</DeferPrompt_WarningMessage>
         <!-- Text displayed after the deferral options. -->
         <DeferPrompt_RemainingDeferrals>Remaining Deferrals:</DeferPrompt_RemainingDeferrals>
         <!-- Text displayed when there are a specific number of deferrals remaining. -->
@@ -215,8 +209,7 @@
         <!-- Text displayed when there is a specific deferral deadline. -->
 
         <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
-        <!-- The countdown message displayed at the Welcome Screen to indicate when the install will
-        continue if no response from user. -->
+        <!-- The countdown message displayed at the Welcome Screen to indicate when the install will continue if no response from user. -->
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
         <!-- This is a custom message to display at the Welcome Screen window. -->
 
@@ -245,17 +238,14 @@
         <!-- Default text displayed in the progress bar for uninstallations. -->
         <Progress_MessageRepair>Repair in progress. Please wait...</Progress_MessageRepair>
         <!-- Default text displayed in the progress bar for repairs. -->
-        <BlockExecution_Message>Launching this application has been temporarily blocked so that an
-            installation operation can complete.</BlockExecution_Message>
+        <BlockExecution_Message>Launching this application has been temporarily blocked so that an installation operation can complete.</BlockExecution_Message>
         <!-- Text displayed when prompting user that an application has been blocked. -->
         <RestartPrompt_Title>Restart Required</RestartPrompt_Title>
         <!-- Text displayed in the title of the restart prompt which helps the script identify
         whether there is already a restart prompt being displayed and not to duplicate it. -->
-        <RestartPrompt_Message>In order for the installation to complete, you must restart your
-            computer.</RestartPrompt_Message>
+        <RestartPrompt_Message>In order for the installation to complete, you must restart your computer.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Please save your work and restart within the allotted time.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Your computer will be automatically restarted at the end of
-            the countdown.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>Your computer will be automatically restarted at the end of the countdown.</RestartPrompt_MessageRestart>
         <!-- Text displayed on the restart prompt. -->
         <RestartPrompt_TimeRemaining>Time remaining:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimize</RestartPrompt_ButtonRestartLater>
@@ -272,26 +262,20 @@
 
             Vær venlig at frigøre nok diskplads før du fortsætter installationen.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Fortsæt</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Vælg kun "Fortsæt" efter at du har afsluttet de
-            ovenfor nævnte programmer.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Vælg kun "Fortsæt" efter at du har afsluttet de ovenfor nævnte programmer.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Luk Programmer</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Udsæt</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Følgende programmer skal lukkes før installationen kan fortsætte.
 
-            Gem dit arbejde, luk programmerne og fortsæt.
-            Alternativt kan du gemme dit arbejde og trykke på "Luk Programmer".</ClosePrompt_Message>
-        <ClosePrompt_CountdownMessage>BEMÆRK: Programmet/Programmerne vil automatisk blive lukket
-            om:</ClosePrompt_CountdownMessage>
+            Gem dit arbejde, luk programmerne og fortsæt. Alternativt kan du gemme dit arbejde og trykke på "Luk Programmer".</ClosePrompt_Message>
+        <ClosePrompt_CountdownMessage>BEMÆRK: Programmet/Programmerne vil automatisk blive lukket om:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Følgende applikation vil nu blive installeret:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Du kan vælge at udsætte installationen indtil udsættelsesperioden
-            udløber:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Når udsættelsesperioden udløber kan du ikke længere udsætte
-            installationen.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Du kan vælge at udsætte installationen indtil udsættelsesperioden udløber:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Når udsættelsesperioden udløber kan du ikke længere udsætte installationen.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Udsættelser tilbage:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} vil automatisk fortsætte i:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Afinstallation</DeploymentType_UnInstall>
@@ -304,43 +288,34 @@
         <Progress_MessageInstall>Installation i gang. Vent venligst...</Progress_MessageInstall>
         <Progress_MessageUninstall>Afinstallation i gang. Vent venligst...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparere i gang. Vent venligst...</Progress_MessageRepair>
-        <BlockExecution_Message>Opstart af denne applikation er midlertidigt blokeret da en
-            installationsproces er under afvikling.</BlockExecution_Message>
+        <BlockExecution_Message>Opstart af denne applikation er midlertidigt blokeret da en installationsproces er under afvikling.</BlockExecution_Message>
         <RestartPrompt_Title>Genstart Nødvendig</RestartPrompt_Title>
         <RestartPrompt_Message>For at færdiggøre installationen skal du genstarte din computer.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Du bør venligst gemme dit arbejde og genstarte indenfor det givne
-            tidsrum.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Din computer vil automatisk blive genstartet når nedtællingen
-            er færdig.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageTime>Du bør venligst gemme dit arbejde og genstarte indenfor det givne tidsrum.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Din computer vil automatisk blive genstartet når nedtællingen er færdig.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tid tilbage:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimere</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Genstart Nu</RestartPrompt_ButtonRestartNow>
     </UI_Messages_DA>
     <UI_Messages_FR>
-        <DiskSpace_Message>Vous n'avez pas assez d'espace sur le disque pour compléter
-            l'installation de:
+        <DiskSpace_Message>Vous n'avez pas assez d'espace sur le disque pour compléter l'installation de:
             {0}
 
             Espace requis: {1}MB
             Espace disponible: {2}MB
 
-            Merci de vous assurez d'avoir assez d'espace libre pour pouvoir continuer
-            l'installation.</DiskSpace_Message>
+            Merci de vous assurez d'avoir assez d'espace libre pour pouvoir continuer l'installation.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Poursuivre</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Veuillez cliquer sur « Poursuivre » uniquement après
-            avoir fermé la ou les application(s) ci-dessus.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Veuillez cliquer sur « Poursuivre » uniquement après avoir fermé la ou les application(s) ci-dessus.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Fermer Programmes</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Reporter l'installation</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Les programmes suivants doivent être fermés afin que l'installation
-            s'initialise.
+        <ClosePrompt_Message>Les programmes suivants doivent être fermés afin que l'installation s'initialise.
 
-            Merci de sauvegarder votre travail, fermer tous les programmes, et continuer.
-            Vous pouvez aussi sauvegarder votre travail puis cliquez sur « Fermer Programmes ».</ClosePrompt_Message>
+            Merci de sauvegarder votre travail, fermer tous les programmes, et continuer. Vous pouvez aussi sauvegarder votre travail puis cliquez sur « Fermer Programmes ».</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>REMARQUE: Les programmes seront automatiquement fermés dans:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>L'application suivante est sur le point d'être installée:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Vous pouvez choisir de reporter l'installation:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Quand le temps aura expiré, vous n'aurez plus la possibilité de
-            reporter.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Quand le temps aura expiré, vous n'aurez plus la possibilité de reporter.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Nombre(s) de report restant(s):</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Temps limite:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>Le {0} va continuer automatiquement:</WelcomePrompt_CountdownMessage>
@@ -358,50 +333,37 @@
         <Progress_MessageInstall>Installation en cours, merci de patienter...</Progress_MessageInstall>
         <Progress_MessageUninstall>Désinstallation en cours, merci de patienter...</Progress_MessageUninstall>
         <Progress_MessageRepair>Réparation en cours, merci de patienter...</Progress_MessageRepair>
-        <BlockExecution_Message>Le lancement de cette application a été temporairement bloqué afin
-            qu'une autre installation puisse se terminer.</BlockExecution_Message>
+        <BlockExecution_Message>Le lancement de cette application a été temporairement bloqué afin qu'une autre installation puisse se terminer.</BlockExecution_Message>
         <RestartPrompt_Title>Redémarrage Requis</RestartPrompt_Title>
-        <RestartPrompt_Message>Pour que l'installation soit compléte, vous devez redémarrer votre
-            ordinateur.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Merci de sauvegarder votre travail et de redémarrer avant que le
-            temps spécifié ne soit écoulé.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Votre ordinateur sera automatiquement redémarré à la fin du
-            décompte.</RestartPrompt_MessageRestart>
+        <RestartPrompt_Message>Pour que l'installation soit compléte, vous devez redémarrer votre ordinateur.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Merci de sauvegarder votre travail et de redémarrer avant que le temps spécifié ne soit écoulé.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Votre ordinateur sera automatiquement redémarré à la fin du décompte.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Temps restant:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimiser</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Redémarrer Maintenant</RestartPrompt_ButtonRestartNow>
     </UI_Messages_FR>
     <UI_Messages_DE>
-        <DiskSpace_Message>Sie haben nicht genug freien Speicherplatz um die Installation
-            abzuschließen:
-            {0}
+        <DiskSpace_Message>Sie haben nicht genug freien Speicherplatz um die Installation abzuschließen: {0}
 
             Platzbedarf: {1}MB
             Freier Speicherplatz: {2}MB
 
             Bitte geben Sie ausreichend Speicherplatz frei, um mit der Installation fortzufahren.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>&amp;Weiter</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf "Weiter", nachdem Sie die
-            obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Klicken Sie erst auf "Weiter", nachdem Sie die obigen Anwendung(en) geschlossen haben.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Programme &amp;schließen</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>&amp;Aufschieben</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die
-            Installation fortgesetzt werden kann.
+        <ClosePrompt_Message>Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.
 
-            Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort.
-            Alternativ können Sie Ihre Arbeit speichern und dann auf "Programme Schließen"
-            klicken.</ClosePrompt_Message>
+            Bitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und dann auf "Programme Schließen" klicken.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>HINWEIS: Diese Programme werden automatisch geschlossen:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Die folgende Anwendung soll installiert werden:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Sie können die Installation verzögern, bis die Rückstellung
-            abläuft:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Sobald die Rückstellung abgelaufen ist, werden Sie keine
-            Möglichkeit mehr haben die Installation zu verschieben.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Sie können die Installation verzögern, bis die Rückstellung abläuft:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Sobald die Rückstellung abgelaufen ist, werden Sie keine Möglichkeit mehr haben die Installation zu verschieben.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Verbleibende Rückstellungen:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termin:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>Die {0} wird automatisch fortgesetzt in:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Deinstallation</DeploymentType_UnInstall>
@@ -414,21 +376,17 @@
         <Progress_MessageInstall>Installation wird durchgeführt. Bitte warten...</Progress_MessageInstall>
         <Progress_MessageUninstall>Deinstallation wird durchgeführt. Bitte warten...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparatur wird durchgeführt. Bitte warten...</Progress_MessageRepair>
-        <BlockExecution_Message>Das Starten dieser Anwendung(en) wurde vorübergehend blockiert,
-            damit der Installationsvorgang erfolgreich durchgeführt werden kann.</BlockExecution_Message>
+        <BlockExecution_Message>Das Starten dieser Anwendung(en) wurde vorübergehend blockiert, damit der Installationsvorgang erfolgreich durchgeführt werden kann.</BlockExecution_Message>
         <RestartPrompt_Title>Neustart Erforderlich</RestartPrompt_Title>
         <RestartPrompt_Message>Zum Abschluss der Installation müssen Sie Ihren Computer neu starten.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Bitte speichern Sie Ihre Arbeit und starten Sie den Computer
-            innerhalb der vorgegebenen Zeit neu.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Am Ende des Countdowns wird Ihr Computer automatisch neu
-            gestartet.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageTime>Bitte speichern Sie Ihre Arbeit und starten Sie den Computer innerhalb der vorgegebenen Zeit neu.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Am Ende des Countdowns wird Ihr Computer automatisch neu gestartet.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Verbleibende Zeit:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimieren</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Jetzt Neustarten</RestartPrompt_ButtonRestartNow>
     </UI_Messages_DE>
     <UI_Messages_IT>
-        <DiskSpace_Message>Non si dispone di spazio su disco sufficiente per completare l'
-            installazione di:
+        <DiskSpace_Message>Non si dispone di spazio su disco sufficiente per completare l'installazione di:
             {0}
 
             Spazio necessario: {1}MB
@@ -436,24 +394,19 @@
 
             Si prega di spazio libero su disco sufficiente per procedere con l'installazione.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Continua</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Seleziona "Continua" solo dopo la chiusura
-            della(e) applicazione(i) elencate sopra.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Seleziona "Continua" solo dopo la chiusura della(e) applicazione(i) elencate sopra.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Chiudi Programmi</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Rimanda</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>I seguenti programmi devono essere chiusi prima che l'installazione
-            possa procedere.
+        <ClosePrompt_Message>I seguenti programmi devono essere chiusi prima che l'installazione possa procedere.
 
-            Salvare il lavoro , chiudere i programmi, e poi continuare.
-            In alternativa, salvare il lavoro e fare clic su "Chiudi Programmi".</ClosePrompt_Message>
+            Salvare il lavoro , chiudere i programmi, e poi continuare. In alternativa, salvare il lavoro e fare clic su "Chiudi Programmi".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>NOTA: il programma(s) sarà chiuso automaticamente in:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>La seguente applicazione sta per essere installata:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Si può decidere di posticipare l'installazione fino alla prossima
-            richiesta automatica:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Una volta che le richieste rimanenti saranno scadute, non sarà
-            più possibile posticipare l'installazione.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Si può decidere di posticipare l'installazione fino alla prossima richiesta automatica:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Una volta che le richieste rimanenti saranno scadute, non sarà più possibile posticipare l'installazione.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Posticipi rimanenti:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Scadenza:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>Il {0} continuerà automaticamente in:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -468,13 +421,11 @@
         <Progress_MessageInstall>Installazione in corso. Attendere prego...</Progress_MessageInstall>
         <Progress_MessageUninstall>Disinstallazione in corso. Attendere prego...</Progress_MessageUninstall>
         <Progress_MessageRepair>Riparazione in corso. Attendere prego...</Progress_MessageRepair>
-        <BlockExecution_Message>L'esecuzione di questa applicazione è stata temporaneamente bloccata
-            in modo che l'operazione di installazione possa essere completata.</BlockExecution_Message>
+        <BlockExecution_Message>L'esecuzione di questa applicazione è stata temporaneamente bloccata in modo che l'operazione di installazione possa essere completata.</BlockExecution_Message>
         <RestartPrompt_Title>Riavvio Richiesto</RestartPrompt_Title>
         <RestartPrompt_Message>Per completare l'installazione, è necessario riavviare il computer.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Salvare il lavoro e riavviare entro il tempo assegnato.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Il computer verrà riavviato automaticamente al termine del
-            conto alla rovescia.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>Il computer verrà riavviato automaticamente al termine del conto alla rovescia.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tempo rimanente:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimizzare</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Riavvia Ora</RestartPrompt_ButtonRestartNow>
@@ -493,15 +444,14 @@
         <ClosePrompt_ButtonDefer>後で</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>インストールを実行するために、下記のプログラムを閉じる必要があります。
 
-            実行中のアプリケーションを保存し、閉じてから続行してください。
-            または、実行中のアプリケーションを保存し、プログラムを強制終了ボタンをクリックしてくだい</ClosePrompt_Message>
+            実行中のアプリケーションを保存し、閉じてから続行してください。 または、実行中のアプリケーションを保存し、プログラムを強制終了ボタンをクリックしてくだい</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>注意: これらのプログラムは自動的に閉じられます:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>このアプリケーションはこれからインストールされます。</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>再試行可能回数が0になるまでは、都合の良い時にインストール可能です。</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>再試行可能回数が0になった場合、システムで強制インストールをします。</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>再試行可能回数:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>デッドライン:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} は自動的に続きます:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -534,23 +484,19 @@
 
             Frigjør diskplass for å fortsette installasjonen.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Fortsett</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Velg kun "Fortsett" etter du har lukket
-            applikasjonen(e) oppført over.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Velg kun "Fortsett" etter du har lukket applikasjonen(e) oppført over.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Lukk Programmer</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Utsett</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Følgende programmer må lukkes før installasjonen kan fortsette.
 
-            Lagre arbeidet, lukk programmene og velg "Fortsett"
-            Eller velg "Lukk Programmer" uten å lagre.</ClosePrompt_Message>
+            Lagre arbeidet, lukk programmene og velg "Fortsett" Eller velg "Lukk Programmer" uten å lagre.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>OBS: Programmet vil automatisk lukkes om:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Følgende program vil bli installert:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Du kan velge å utsette installasjonen et begrenset antall ganger
-            inntil fristen utløper:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Når fristen har utløpt kan du ikke lenger utsette
-            installasjonen.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Du kan velge å utsette installasjonen et begrenset antall ganger inntil fristen utløper:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Når fristen har utløpt kan du ikke lenger utsette installasjonen.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Gjenstående utsettelser:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Frist:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} vil automatisk fortsette i:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -565,8 +511,7 @@
         <Progress_MessageInstall>Programvareinstallasjon pågår. Vennligst vent..</Progress_MessageInstall>
         <Progress_MessageUninstall>ProgramvareAvinstallasjon pågår. Vennligst vent..</Progress_MessageUninstall>
         <Progress_MessageRepair>ProgramvareReparasjon pågår. Vennligst vent..</Progress_MessageRepair>
-        <BlockExecution_Message>Start av dette programmet er midlertidig blokkert til
-            programvareinstallasjon er ferdig.</BlockExecution_Message>
+        <BlockExecution_Message>Start av dette programmet er midlertidig blokkert til programvareinstallasjon er ferdig.</BlockExecution_Message>
         <RestartPrompt_Title>Omstart Kreves</RestartPrompt_Title>
         <RestartPrompt_Message>En omstart av pcen er nødvendig for å fullføre installasjonen.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Lagre arbeidet ditt og gjør en omstart av pc innen fristen.</RestartPrompt_MessageTime>
@@ -584,21 +529,17 @@
 
             Gelieve voldoende schijfruimte vrij te maken om de installatie te starten.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Doorgaan</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Selecteer alleen 'Doorgaan' na het sluiten van de
-            bovenstaande toepassing(en).</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Selecteer alleen 'Doorgaan' na het sluiten van de bovenstaande toepassing(en).</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Sluit Applicaties</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Uitstel</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>De volgende applicaties moeten afgesloten worden om de installatie te
-            voltooien.
+        <ClosePrompt_Message>De volgende applicaties moeten afgesloten worden om de installatie te voltooien.
 
             Sla je werk op, sluit de applicaties, en ga verder.
             Of, sla je werk op en klik op 'Sluit Applicaties'.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>LET OP: De applicatie(s) worden afgesloten over:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>De volgende applicatie wordt zometeen geïnstalleerd:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Je kan de installatie uitstellen tot de maximale uitsteltermijn
-            is verstreken:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Na verstrijken van de uitsteltermijn is deze optie niet langer
-            beschikbaar.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Je kan de installatie uitstellen tot de maximale uitsteltermijn is verstreken:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Na verstrijken van de uitsteltermijn is deze optie niet langer beschikbaar.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Aantal keer uitstellen:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>De {0} gaat automatisch door over:</WelcomePrompt_CountdownMessage>
@@ -616,12 +557,10 @@
         <Progress_MessageInstall>Installatie bezig. Even geduld...</Progress_MessageInstall>
         <Progress_MessageUninstall>Verwijderen bezig. Even geduld...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparatie bezig. Even geduld...</Progress_MessageRepair>
-        <BlockExecution_Message>Het opstarten van deze applicatie werd tijdelijk geblokkeerd om een
-            installatie uit te voeren.</BlockExecution_Message>
+        <BlockExecution_Message>Het opstarten van deze applicatie werd tijdelijk geblokkeerd om een installatie uit te voeren.</BlockExecution_Message>
         <RestartPrompt_Title>Herstart nodig</RestartPrompt_Title>
         <RestartPrompt_Message>Om de installatie te voltooien is een herstart nodig.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Gelieve je werk op te slaan en binnen de toegestane termijn de
-            computer herstarten</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageTime>Gelieve je werk op te slaan en binnen de toegestane termijn de computer herstarten</RestartPrompt_MessageTime>
         <RestartPrompt_MessageRestart>De computer zal herstarten als de teller op nul staat</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Resterende tijd:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimaliseren</RestartPrompt_ButtonRestartLater>
@@ -636,27 +575,20 @@
 
             Proszę zwiększyć ilość miejsca usuwając zbędne pliki.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Kontynuuj</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Tylko wybrać "Kontynuuj" po zamknięciu wyżej
-            wymienione aplikacje.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Tylko wybrać "Kontynuuj" po zamknięciu wyżej wymienione aplikacje.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Zamknij Programy</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Odłóż</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Następujące programy muszą zostać zamknięte przed rozpoczęciem
-            instalacji.
+        <ClosePrompt_Message>Następujące programy muszą zostać zamknięte przed rozpoczęciem instalacji.
 
-            Proszę zapisać wszystkie dokumenty i zamknąć programy, a następnie kliknąć przycisk
-            "Kontynuuj".
-            Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk "Zamknij
-            Programy".</ClosePrompt_Message>
+            Proszę zapisać wszystkie dokumenty i zamknąć programy, a następnie kliknąć przycisk "Kontynuuj". Alternatywnie zapisz wszystkie dokumenty i kliknij przycisk "Zamknij Programy".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>UWAGA: Programy zostaną automatycznie zamknięte za:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Zostanie zainstalowana następująca aplikacja:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Instalacja może zostać przełożona na późniejszy termin.</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Jeżeli zostanie przekroczona możliwa ilość przełożeń, opcja
-            "Odłóż" będzie niedostępna.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Jeżeli zostanie przekroczona możliwa ilość przełożeń, opcja "Odłóż" będzie niedostępna.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Pozostała ilość przełożeń instalacji:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Ostateczny termin instalacji:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} będzie automatycznie kontynuować w:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Instalacja</DeploymentType_Install>
         <DeploymentType_UnInstall>Deinstalacja</DeploymentType_UnInstall>
@@ -671,12 +603,9 @@
         <Progress_MessageRepair>Trwa naprawa. Proszę czekać...</Progress_MessageRepair>
         <BlockExecution_Message>Uruchomienie tej aplikacji zostało zablokowane na okres instalacji.</BlockExecution_Message>
         <RestartPrompt_Title>Wymagany Restart</RestartPrompt_Title>
-        <RestartPrompt_Message>Aby instalacja została poprawnie ukończona wymagany jest restart
-            komputera.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Proszę zapisać wszystkie dokumenty i zrestartować komputer w
-            wyznaczonym czasie.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Komputer zostanie automatycznie zrestartowany po upływie
-            wyznaczonego czasu.</RestartPrompt_MessageRestart>
+        <RestartPrompt_Message>Aby instalacja została poprawnie ukończona wymagany jest restart komputera.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Proszę zapisać wszystkie dokumenty i zrestartować komputer w wyznaczonym czasie.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Komputer zostanie automatycznie zrestartowany po upływie wyznaczonego czasu.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Pozostały czas do restartu automatycznego:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Zminimalizować</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Restartuj Teraz</RestartPrompt_ButtonRestartNow>
@@ -690,24 +619,19 @@
 
             Por favor, espaço livre em disco suficiente, a fim de prosseguir com a instalação.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Continuar</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Selecione "Continuar" somente após fechar a(s)
-            aplicação(ões) listada(s) abaixo.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Selecione "Continuar" somente após fechar a(s) aplicação(ões) listada(s) abaixo.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Fechar Programas</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Adiar</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Programas de seguir devem ser fechados antes que a instalação possa
-            prosseguir.
+        <ClosePrompt_Message>Programas de seguir devem ser fechados antes que a instalação possa prosseguir.
 
-            Por favor, guarde o seu trabalho, feche os programas e em seguida continuar.
-            Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
+            Por favor, guarde o seu trabalho, feche os programas e em seguida continuar. Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>NOTA: O programa será fechado automaticamente em:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>O seguinte aplicativo está prestes a ser instalado:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que expire o
-            diferimento:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Uma vez que o diferimento expirou, você já não terá a opção de
-            adiar a.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que expire o diferimento:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Uma vez que o diferimento expirou, você já não terá a opção de adiar a.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Restantes diferimentos:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Prazo:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>O {0} continuará automaticamente em:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -722,14 +646,11 @@
         <Progress_MessageInstall>Instalação em andamento. Por favor aguarde...</Progress_MessageInstall>
         <Progress_MessageUninstall>Desinstalação em andamento. Por favor aguarde...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparação em andamento. Por favor aguarde...</Progress_MessageRepair>
-        <BlockExecution_Message>Lançar este aplicativo está temporariamente bloqueado para que possa
-            concluir uma operação de instalação.</BlockExecution_Message>
+        <BlockExecution_Message>Lançar este aplicativo está temporariamente bloqueado para que possa concluir uma operação de instalação.</BlockExecution_Message>
         <RestartPrompt_Title>Reinicialização Necessária</RestartPrompt_Title>
-        <RestartPrompt_Message>Em ordem para completar a instalação, você deve reiniciar seu
-            computador.</RestartPrompt_Message>
+        <RestartPrompt_Message>Em ordem para completar a instalação, você deve reiniciar seu computador.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Por favor, salve o trabalho e reiniciar no tempo alocado.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da
-            contagem regressiva.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da contagem regressiva.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tempo restante:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Reinicie Agora</RestartPrompt_ButtonRestartNow>
@@ -743,27 +664,19 @@
 
             Libere espaço em disco suficiente para prosseguir com a instalação.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Continuar</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Apenas selecione "Continuar" depois de fechar
-            aplicativo(s) acima.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Apenas selecione "Continuar" depois de fechar aplicativo(s) acima.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Fechar Programas</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Adiar</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Os seguintes programas precisam ser fechados antes que a instalação
-            possa prosseguir.
-
-            Salve seu trabalho, feche os programas e depois continue.
-            Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
-        <ClosePrompt_CountdownMessage>OBSERVAÇÃO: O(s) programa(s) será(ão) automaticamente
-            fechado(s) em:</ClosePrompt_CountdownMessage>
+        <ClosePrompt_Message>Os seguintes programas precisam ser fechados antes que a instalação possa prosseguir.
+ Salve seu trabalho, feche os programas e depois continue. Como alternativa, salve seu trabalho e clique em "Fechar Programas".</ClosePrompt_Message>
+        <ClosePrompt_CountdownMessage>OBSERVAÇÃO: O(s) programa(s) será(ão) automaticamente fechado(s) em:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>O seguinte aplicativo está prestes a ser instalado:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que o adiamento
-            expire:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Depois que o adiamento expirar, você não terá mais a opção de
-            adiar.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Você pode optar por adiar a instalação até que o adiamento expire:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Depois que o adiamento expirar, você não terá mais a opção de adiar.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Adiamentos Restantes:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Prazo:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>O {0} continuará automaticamente em:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Instalação</DeploymentType_Install>
         <DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
@@ -776,14 +689,11 @@
         <Progress_MessageInstall>Instalação em andamento. Aguarde...</Progress_MessageInstall>
         <Progress_MessageUninstall>Desinstalação em andamento. Aguarde...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparação em andamento. Aguarde...</Progress_MessageRepair>
-        <BlockExecution_Message>A execução deste aplicativo foi temporariamente bloqueada para que
-            uma operação de instalação seja concluída.</BlockExecution_Message>
+        <BlockExecution_Message>A execução deste aplicativo foi temporariamente bloqueada para que uma operação de instalação seja concluída.</BlockExecution_Message>
         <RestartPrompt_Title>Reinicialização Necessária</RestartPrompt_Title>
-        <RestartPrompt_Message>Para que a instalação seja concluída, é necessário reiniciar o
-            computador.</RestartPrompt_Message>
+        <RestartPrompt_Message>Para que a instalação seja concluída, é necessário reiniciar o computador.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Salve seu trabalho e reinicie dentro do prazo estipulado.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da
-            contagem regressiva.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>Seu computador será reiniciado automaticamente no final da contagem regressiva.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tempo restante:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Reiniciar Agora</RestartPrompt_ButtonRestartNow>
@@ -798,26 +708,20 @@
 
             Por favor, espacio en disco libre suficiente para proceder con la instalación.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Continuar</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Seleccione "Continuar" después de cerrar la(s)
-            aplicacion(es) de la lista arriba.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Seleccione "Continuar" después de cerrar la(s) aplicacion(es) de la lista arriba.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Cerrar Programas</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Aplazar</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Los siguientes programas deben cerrarse antes de la instalación puede
-            proceder.
+        <ClosePrompt_Message>Los siguientes programas deben cerrarse antes de la instalación puede proceder.
 
-            Por favor, guarde el trabajo, cerrar los programas y luego continuar.
-            Alternativamente, guarde su trabajo y haga clic en "Cerrar Programas".</ClosePrompt_Message>
+            Por favor, guarde el trabajo, cerrar los programas y luego continuar. Alternativamente, guarde su trabajo y haga clic en "Cerrar Programas".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>NOTA: El programa se cerrará automáticamente en:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>La siguiente aplicación está a punto de instalarse:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Puede decidir aplazar la instalación hasta que expire el
-            aplazamiento:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Una vez vencido el aplazamiento, ya no tendrá la opción de
-            aplazar.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Puede decidir aplazar la instalación hasta que expire el aplazamiento:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>Una vez vencido el aplazamiento, ya no tendrá la opción de aplazar.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Restante aplazamientos:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Plazo:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>El {0} continuará automáticamente en:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Instalación</DeploymentType_Install>
         <DeploymentType_UnInstall>Desinstalación</DeploymentType_UnInstall>
@@ -830,15 +734,11 @@
         <Progress_MessageInstall>Instalación en curso. Por favor, espere...</Progress_MessageInstall>
         <Progress_MessageUninstall>Desinstalación en curso. Por favor, espere...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparación en curso. Por favor, espere...</Progress_MessageRepair>
-        <BlockExecution_Message>Lanzar esta aplicación ha sido bloqueado temporalmente para que
-            pueda completar una operación de instalación.</BlockExecution_Message>
+        <BlockExecution_Message>Lanzar esta aplicación ha sido bloqueado temporalmente para que pueda completar una operación de instalación.</BlockExecution_Message>
         <RestartPrompt_Title>Reiniciar Requerido</RestartPrompt_Title>
-        <RestartPrompt_Message>En orden para completar la instalación, debe reiniciar su
-            computadora.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Por favor guarde su trabajo y reinicie dentro del tiempo
-            asignado.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>El ordenador se reiniciará automáticamente al final de la
-            cuenta regresiva de.</RestartPrompt_MessageRestart>
+        <RestartPrompt_Message>En orden para completar la instalación, debe reiniciar su computadora.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Por favor guarde su trabajo y reinicie dentro del tiempo asignado.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>El ordenador se reiniciará automáticamente al final de la cuenta regresiva de.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tiempo restante:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Reiniciar Ahora</RestartPrompt_ButtonRestartNow>
@@ -852,26 +752,20 @@
 
             Frigör utrymme på hårddisken och försök igen.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Fortsätt</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Välj "Fortsätt" endast efter att ha stängt
-            applikation(er) i ovanstående lista.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Välj "Fortsätt" endast efter att ha stängt applikation(er) i ovanstående lista.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Stäng Program</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Skjut upp</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Följande program måste stängas innan installationen kan fortsätta.
 
-            Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på
-            "Fortsätt".
-            Alternativt, spara ditt arbete och klicka på "Stäng Program".</ClosePrompt_Message>
+            Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på "Fortsätt". Alternativt, spara ditt arbete och klicka på "Stäng Program".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>OBS: Programmen kommer automatiskt att avslutas om:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Följande applikation kommer att installeras:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Du kan välja att fördröja installationen ett begränsat antal
-            gånger under en begränsad tid:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>När antalet fördröjningar är slut eller deadlinen inträffar är
-            detta alternativ inte längre tillgängligt.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Du kan välja att fördröja installationen ett begränsat antal gånger under en begränsad tid:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>När antalet fördröjningar är slut eller deadlinen inträffar är detta alternativ inte längre tillgängligt.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Antal återstående fördröjningar:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0} kommer att fortsätta automatiskt i:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
-
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Avinstallation</DeploymentType_UnInstall>
@@ -884,15 +778,11 @@
         <Progress_MessageInstall>Installation pågår. Var god vänta...</Progress_MessageInstall>
         <Progress_MessageUninstall>Avinstallation pågår. Var god vänta...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparation pågår. Var god vänta...</Progress_MessageRepair>
-        <BlockExecution_Message>Den här applikationen har temporärt blockerats så att installationen
-            kan slutföras.</BlockExecution_Message>
+        <BlockExecution_Message>Den här applikationen har temporärt blockerats så att installationen kan slutföras.</BlockExecution_Message>
         <RestartPrompt_Title>Omstart Krävs</RestartPrompt_Title>
-        <RestartPrompt_Message>För att installationen ska kunna slutföras måste din dator startas
-            om.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Se till att spara ditt arbete innan tiden går ut och en
-            automatisk omstart sker.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Din dator kommer automatiskt att starta om när nedräkningen är
-            slut.</RestartPrompt_MessageRestart>
+        <RestartPrompt_Message>För att installationen ska kunna slutföras måste din dator startas om.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Se till att spara ditt arbete innan tiden går ut och en automatisk omstart sker.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Din dator kommer automatiskt att starta om när nedräkningen är slut.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Återstående tid:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimera</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Starta Om Nu</RestartPrompt_ButtonRestartNow>
@@ -906,21 +796,19 @@
 
             يرجى تحرير مساحة قرص كافية كي تتم متابعة عملية التثبيت.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>متابعة</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>قم باختيار "متابعة" فقط بعد إغلاق
-            التطبيق/التطبيقات المدرجة أعلاه.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>قم باختيار "متابعة" فقط بعد إغلاق التطبيق/التطبيقات المدرجة أعلاه.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>إغلاق البرامج</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>تأجيل</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>يجب إغلاق البرامج التالية قبل التمكن من متابعة عملية التثبيت.
 
-            يرجى حفظ عملك، وإغلاق البرامج، ومن ثم المتابعة.
-            يمكنك بدلا من ذلك، حفظ عملك والنقر فوق "إغلاق البرامج".</ClosePrompt_Message>
+            يرجى حفظ عملك، وإغلاق البرامج، ومن ثم المتابعة. يمكنك بدلا من ذلك، حفظ عملك والنقر فوق "إغلاق البرامج".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>ملاحظة: سيتم إغلاق البرنامج/البرامج بشكل تلقائي خلال:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>التطبيق التالي على وشك التثبيت:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>بإمكانك اختيار تأجيل التثبيت إلى حين انتهاء صلاحية التأجيل:</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>بمجرد انتهاء صلاحية التأجيل، لن يكون لديك خيار التأجيل بعد الآن.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>التأجيلات المتبقية:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>الموعد النهائي:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>سيستمر {0} تلقائيا في:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -953,21 +841,19 @@
 
             אנא שחרר מספיק מקום בכונן כדי להתחיל בהתקנה.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>המשך</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>בחר "המשך" רק לאחר שסגרת את היישום(ים) הרשומים
-            לעיל.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>בחר "המשך" רק לאחר שסגרת את היישום(ים) הרשומים לעיל.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>סגור תכניות</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>דחה</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>יש לסגור את התכנות הבאות בטרם ההתקנה תוכל להתחיל.
 
-            אנא שמור על העבודה שלך, סגור את התכניות, ואז המשך.
-            לחילופין, שמור על העבודה שלך והקלק על "סגור תכניות".</ClosePrompt_Message>
+            אנא שמור על העבודה שלך, סגור את התכניות, ואז המשך. לחילופין, שמור על העבודה שלך והקלק על "סגור תכניות".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>שים לב: התכנית(ות) תסגרנה באופן אוטומטי תוך:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>היישום הבא עומד להיות מותקן:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>אתה יכול לבחור לדחות את ההתקנה עד שמשך זמן הדחיה יפוג.</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>לאחר שמשך זמן הדחיה יפוג, לא תהיה לך עוד אפשרות לדחות.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>מספר הדחיות שנותרו:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>תאריך יעד:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>ה {0} ימשיך באופן אוטומטי:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -1005,15 +891,14 @@
         <ClosePrompt_ButtonDefer>연기</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>설치를 계속하려면 다음의 프로그램을 종료해야 합니다.
 
-            사용자 작업을 저장하고 프로그램을 종료한 후 계속하세요.
-            다른 방법으로는 사용자 작업을 저장하고 "프로그램 종료"를 클릭하세요.</ClosePrompt_Message>
+            사용자 작업을 저장하고 프로그램을 종료한 후 계속하세요. 다른 방법으로는 사용자 작업을 저장하고 "프로그램 종료"를 클릭하세요.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>참고: 프로그램이 자동으로 종료되는 경우:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>다음의 응용 프로그램을 설치합니다:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>지연 기간이 만료될 때까지 설치를 연기할 수 있습니다:</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>일단 지연 기간이 만료되면 더 이상 연기할 수 있는 옵션은 없습니다.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>남은 지연 기간:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>마감:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0}는 자동으로 계속됩니다:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -1046,19 +931,15 @@
 
             Для продолжения установки, пожалуйста, освободите достаточно пространства на диске.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Продолжить</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Выберите "Продолжить" только после закрытия
-            вышеперечисленных приложений.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Выберите "Продолжить" только после закрытия вышеперечисленных приложений.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Закрыть программы</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Отложить</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Перед продолжением установки необходимо закрыть следующие программы.
-            Пожалуйста, сохраните вашу работу и закройте программы, а затем продолжите установку.
-            Также вы можете сохранить вашу работу и нажать "Закрыть программы".</ClosePrompt_Message>
+            Пожалуйста, сохраните вашу работу и закройте программы, а затем продолжите установку. Также вы можете сохранить вашу работу и нажать "Закрыть программы".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>ПРИМЕЧАНИЕ: Эти программы будут автоматически закрыты через:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Планируется установка следующего приложения:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Вы можете отложить установку приложения до тех пор, пока не
-            истечет срок действия этой отсрочки:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>После истечения срока действия отсрочки вы больше не сможете
-            отложить установку.</DeferPrompt_WarningMessage>
+        <DeferPrompt_ExpiryMessage>Вы можете отложить установку приложения до тех пор, пока не истечет срок действия этой отсрочки:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_WarningMessage>После истечения срока действия отсрочки вы больше не сможете отложить установку.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Оставшиеся отсрочки:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Дата истечения:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} автоматически продолжится через:</WelcomePrompt_CountdownMessage>
@@ -1076,14 +957,11 @@
         <Progress_MessageInstall>Идет установка. Пожалуйста, подождите...</Progress_MessageInstall>
         <Progress_MessageUninstall>Идет удаление. Пожалуйста, подождите...</Progress_MessageUninstall>
         <Progress_MessageRepair>Идет исправление. Пожалуйста, подождите...</Progress_MessageRepair>
-        <BlockExecution_Message>Запуск этого приложения временно заблокирован для завершения
-            процесса установки.</BlockExecution_Message>
+        <BlockExecution_Message>Запуск этого приложения временно заблокирован для завершения процесса установки.</BlockExecution_Message>
         <RestartPrompt_Title>Требуется перезагрузка</RestartPrompt_Title>
         <RestartPrompt_Message>Для завершения установки необходимо перезагрузить ваш компьютер.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Пожалуйста, сохраните вашу работу и выполните перезагрузку в
-            отведенное время.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Ваш компьютер будет автоматически перезагружен по завершению
-            обратного отсчета.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageTime>Пожалуйста, сохраните вашу работу и выполните перезагрузку в отведенное время.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Ваш компьютер будет автоматически перезагружен по завершению обратного отсчета.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Оставшееся время:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Минимизировать</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Перезагрузить сейчас</RestartPrompt_ButtonRestartNow>
@@ -1102,15 +980,14 @@
         <ClosePrompt_ButtonDefer>延迟</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>为继续安装，必须关闭下列程序。
 
-            请保存您的工作，关闭程序，然后继续。
-            或者保存您的工作，点击"关闭程序"。</ClosePrompt_Message>
+            请保存您的工作，关闭程序，然后继续。 或者保存您的工作，点击"关闭程序"。</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>注：下列程序将自动关闭：</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>即将安装下列应用程式：</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>在延期失效前，可选择延迟安装：</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>延期失效后，再也无法延迟安装。</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>所剩延期：</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>最后期限：</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0}会自动继续:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -1148,15 +1025,14 @@
         <ClosePrompt_ButtonDefer>延遲</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>在繼續安裝前必須關閉下列程序。
 
-            請保存您的工作，關閉程序，然後繼續。
-            或者保存您的工作，然後點擊"關閉程序"。</ClosePrompt_Message>
+            請保存您的工作，關閉程序，然後繼續。 或者保存您的工作，然後點擊"關閉程序"。</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>注：下列程序將自動關閉：</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>即將安裝下列應用程式：</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>在延期失效前，可選擇延遲安裝：</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>延期失效後，再也無法延遲安裝。</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>所剩延期：</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>最後期限：</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>The {0} will automatically continue in:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>{0}會自動繼續:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage />
 
 
@@ -1189,21 +1065,16 @@
 
             Prosím, uvoľnite dostatok miesta pre pokračovanie inštalácie.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Pokračovať</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", keď zavriete vyššie
-            uvedené aplikácie.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Kliknite na "Pokračovať", keď zavriete vyššie uvedené aplikácie.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Ukončiť programy</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Oddialiť</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než bude inštalácia
-            pokračovať.
+        <ClosePrompt_Message>Nasledujúce programy musia byť zatvorené, než bude inštalácia pokračovať.
 
-            Prosím, uložte svoju prácu, zatvorte dané programy a potom kliknite na pokračovať.
-            Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť
-            programy".</ClosePrompt_Message>
+            Prosím, uložte svoju prácu, zatvorte dané programy a potom kliknite na pokračovať. Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo "Ukončiť programy".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>Poznámka: Programy budú automaticky ukončené za:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Nasledujúca aplikácia bude nainštalovaná:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Inštaláciu môžete niekoľkokrát odložiť:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Akonáhle odklady uplynú, už nebudete mať možnosť odložiť
-            inštaláciu.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Akonáhle odklady uplynú, už nebudete mať možnosť odložiť inštaláciu.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Zostávajúce odklady:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovať za:</WelcomePrompt_CountdownMessage>
@@ -1221,14 +1092,11 @@
         <Progress_MessageInstall>Inštalácia sa vykonáva. Prosím čakajte...</Progress_MessageInstall>
         <Progress_MessageUninstall>Prebieha odinštalácia. Prosím čakajte...</Progress_MessageUninstall>
         <Progress_MessageRepair>Vykonáva sa oprava. Prosím čakajte...</Progress_MessageRepair>
-        <BlockExecution_Message>Spustenie tejto aplikácie bolo dočasne zablokované, aby mohla byť
-            inštalácia dokončená úspešne.</BlockExecution_Message>
+        <BlockExecution_Message>Spustenie tejto aplikácie bolo dočasne zablokované, aby mohla byť inštalácia dokončená úspešne.</BlockExecution_Message>
         <RestartPrompt_Title>Je nutný reštart.</RestartPrompt_Title>
         <RestartPrompt_Message>Na dokončenie inštalácie musíte váš počítač reštartovať.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Prosím, uložte si prácu a reštartujte počítač v stanovenej
-            lehote.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Na konci odpočítavania, bude váš počítač automaticky
-            reštartovaný.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageTime>Prosím, uložte si prácu a reštartujte počítač v stanovenej lehote.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Na konci odpočítavania, bude váš počítač automaticky reštartovaný.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Zostávajúci čas:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimalizovať</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Reštartovať Teraz</RestartPrompt_ButtonRestartNow>
@@ -1242,18 +1110,14 @@
 
             Uvolněte prosím dostatek místa k pokračovaní instalace.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Pokračovat</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Klikněte na "Pokračovat", až budete mít výše
-            uvedené aplikace zavřené.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Klikněte na "Pokračovat", až budete mít výše uvedené aplikace zavřené.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Ukončit programy</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Odložit</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Následující programy musí být zavřené, aby instalace mohla pokračovat.
-            Prosím, uložte svou práci, zavřete program a potom klikněte na "Pokračovat".
-            Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit programy".</ClosePrompt_Message>
+        <ClosePrompt_Message>Následující programy musí být zavřené, aby instalace mohla pokračovat. Prosím, uložte svou práci, zavřete program a potom klikněte na "Pokračovat". Případně můžete svou práci uložit a kliknout na tlačítko "Ukončit programy".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>Upozornění: Programy budou automaticky zavřené za:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Nasledující aplikace bude nainstalována:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Instalaci můžete několikrát odložit:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Jakmile vyčerpáte všechna odložení, už nebudete mít šanci
-            odložit instalaci.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Jakmile vyčerpáte všechna odložení, už nebudete mít šanci odložit instalaci.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Zbývající počet odložení:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovat za:</WelcomePrompt_CountdownMessage>
@@ -1271,13 +1135,11 @@
         <Progress_MessageInstall>Instalace právě probíhá. Prosím čekejte...</Progress_MessageInstall>
         <Progress_MessageUninstall>Probíhá odinstalace. Prosím čekejte...</Progress_MessageUninstall>
         <Progress_MessageRepair>Oprava právě probíhá. Prosím čekejte...</Progress_MessageRepair>
-        <BlockExecution_Message>Spuštění této aplikace bylo dočasně zakázáno, aby mohla proběhnout
-            instalace.</BlockExecution_Message>
+        <BlockExecution_Message>Spuštění této aplikace bylo dočasně zakázáno, aby mohla proběhnout instalace.</BlockExecution_Message>
         <RestartPrompt_Title>Je nutné restartovat počítač.</RestartPrompt_Title>
         <RestartPrompt_Message>Pro dokončení instalace musíte váš počítač restartovat.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Prosím, uložte si práci a restartujte počítač ve stanoveném čase.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Na konci odpočítávání, bude váš počítač automaticky
-            restartovaný.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>Na konci odpočítávání, bude váš počítač automaticky restartovaný.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Zbývající čas:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimalizovat</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Restartovat nyní</RestartPrompt_ButtonRestartNow>
@@ -1285,25 +1147,21 @@
     <UI_Messages_HU>
         <DiskSpace_Message> Nincs elég lemezterület a telepítés végrehajtásához:
             {0}
+
             Szükséges lemezterület: {1}MB
             Szabad lemezterület: {2}MB
             Kérem szabadítson fel elegendő lemezterületet a telepítés végrehajtásához.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Tovább</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Csak azután kattintson a "Tovább"-ra, ha a
-            fentebb látható alkalmazás(oka)t bezárta.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Csak azután kattintson a "Tovább"-ra, ha a fentebb látható alkalmazás(oka)t bezárta.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Alkalmazások bezárása</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer> Elhalaszt</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message> Az alábbi programokat szíveskedjen bezárni, mielőtt a telepítés
-            elkezdődik.
+        <ClosePrompt_Message> Az alábbi programokat szíveskedjen bezárni, mielőtt a telepítés elkezdődik.
 
-            Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat.
-            Vagy
-            Kérjük mentse munkáját és kattintson a "Programok bezárása"-ra.</ClosePrompt_Message>
+            Kérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat. Vagy Kérjük mentse munkáját és kattintson a "Programok bezárása"-ra.</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>Megjegyzés: a programok automatikusan bezárásra kerülnek,:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>A következő alkalmazások telepítésre kerülnek:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>A telepítést elhalaszthatja amíg a rendelkezésre álló idő lejár:</DeferPrompt_ExpiryMessage>
-        <DeferPrompt_WarningMessage>Amennyiben a rendelkezésre álló idő letelik, nem lesz lehetősége
-            a telepítés elhalasztására.</DeferPrompt_WarningMessage>
+        <DeferPrompt_WarningMessage>Amennyiben a rendelkezésre álló idő letelik, nem lesz lehetősége a telepítés elhalasztására.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals> Fennmaradó halasztás:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Időpont:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>A(z) {0} automatikusan folytatódik:</WelcomePrompt_CountdownMessage>
@@ -1321,8 +1179,7 @@
         <Progress_MessageInstall>Telepítés folyamatban. Kérem várjon...</Progress_MessageInstall>
         <Progress_MessageUninstall>Eltávolítás folyamatban. Kérem várjon...</Progress_MessageUninstall>
         <Progress_MessageRepair>Javítás folyamatban. Kérem várjon...</Progress_MessageRepair>
-        <BlockExecution_Message> A következő alkalmazások blokkolva lesznek, annak érdekében hogy a
-            telepítés problémamentesen végrehajtódjon.</BlockExecution_Message>
+        <BlockExecution_Message> A következő alkalmazások blokkolva lesznek, annak érdekében hogy a telepítés problémamentesen végrehajtódjon.</BlockExecution_Message>
         <RestartPrompt_Title>Újraindítás szükséges</RestartPrompt_Title>
         <RestartPrompt_Message>A telepítés befejezéséhez a számítógépet újraindítása szükséges.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Kérem mentse munkáját, és a megadott időn belül indítsa újra..</RestartPrompt_MessageTime>
@@ -1345,8 +1202,7 @@
         <ClosePrompt_ButtonDefer>Myöhemmin</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Seuraavat ohjelmat on suljettava ennen asennusta
 
-            Tallenna työsi ja jatka.
-            Vaihtoehtoisesti voit tallentaa työsi ja valita "Sulje ohjelmat".
+            Tallenna työsi ja jatka. Vaihtoehtoisesti voit tallentaa työsi ja valita "Sulje ohjelmat".
         </ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>HUOMIO: Ohjelma(t) suljetaan automaattisesti:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Ohjelma joka asennetaan seuraavaksi:</DeferPrompt_WelcomeMessage>
@@ -1367,15 +1223,11 @@
         <BalloonText_FastRetry>ei ole valmis.</BalloonText_FastRetry>
         <Progress_MessageInstall>Asentaa. Odota...</Progress_MessageInstall>
         <Progress_MessageUninstall>Ohjelmistoa poistetaan. Odota...</Progress_MessageUninstall>
-        <BlockExecution_Message>Ohjelmiston käynnistäminen on tilapäisesti estetty, jotta ohjelmisto
-            voi onnistuneesti asentua.</BlockExecution_Message>
+        <BlockExecution_Message>Ohjelmiston käynnistäminen on tilapäisesti estetty, jotta ohjelmisto voi onnistuneesti asentua.</BlockExecution_Message>
         <RestartPrompt_Title>Tietokone on käynnistettävä uudelleen</RestartPrompt_Title>
-        <RestartPrompt_Message>Tietokone on käynnistettävä uudelleen, ennen kuin ohjelmiston asennus
-            on valmis.</RestartPrompt_Message>
-        <RestartPrompt_MessageTime>Tallenna työsi ja käynnistä tietokone uudelleen aikarajan
-            sisällä.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>Tietokone käynnistyy uudelleen, kun laskuri on saavuttanut
-            nollan.</RestartPrompt_MessageRestart>
+        <RestartPrompt_Message>Tietokone on käynnistettävä uudelleen, ennen kuin ohjelmiston asennus on valmis.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Tallenna työsi ja käynnistä tietokone uudelleen aikarajan sisällä.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Tietokone käynnistyy uudelleen, kun laskuri on saavuttanut nollan.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Aikaa jäljellä:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Käynnistä uudelleen myöhemmin</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Käynnistä uudelleen heti</RestartPrompt_ButtonRestartNow>
