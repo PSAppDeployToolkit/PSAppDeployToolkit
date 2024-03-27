@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkpsadt_docs=self.webpackChunkpsadt_docs||[]).push([[6690],{8163:s=>{s.exports=JSON.parse('{"label":"patchmypc","permalink":"/blog/tags/patchmypc","allTagsPath":"/blog/tags","count":1,"unlisted":false}')}}]);
