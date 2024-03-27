@@ -107,8 +107,8 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.9.4'
-[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.9.4'
+[Version]$appDeployMainScriptVersion = [Version]'3.10.0'
+[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.10.0'
 [String]$appDeployMainScriptDate = '03/27/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
@@ -875,6 +875,10 @@ https://psappdeploytoolkit.com
 Function Execute-MSP {
     <#
 .SYNOPSIS
+
+Executes an MSP file using the same logic as Execute-MSI.
+
+.DESCRIPTION
 
 Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
 If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
@@ -1888,7 +1892,7 @@ Enumerate an error record, or a collection of error record, properties. By defau
 
 .PARAMETER ErrorRecord
 
-The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
+The error record to resolve. The default error record is the latest one: $global:Error(0). This parameter will also accept an array of error records.
 
 .PARAMETER Property
 
@@ -6613,17 +6617,14 @@ None
 This function does not generate any output.
 
 .EXAMPLE
-
+```powershell
 [ScriptBlock]$HKCURegistrySettings = {
-
-Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
-
-Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
-
+    Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
+    Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
 }
 
 Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
-
+```
 .NOTES
 
 .LINK
@@ -16042,6 +16043,11 @@ Function Set-ItemPermission {
 
     Allow you to easily change permissions on files or folders
 
+.DESCRIPTION
+
+    Allow you to easily change permissions on files or folders for a given user or group.
+    You can add, remove or replace permissions, set inheritance and propagation.
+
 .PARAMETER Path
 
     Path to the folder or file you want to modify (ex: C:\Temp)
@@ -16101,7 +16107,7 @@ This function does not return any objects.
 
     PS C:\>Set-ItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
 
-.EXAMPLE
+.EXAMPLEan
 
     Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
 
@@ -16427,7 +16433,7 @@ Function Remove-ContentFromCache {
 Function Configure-EdgeExtension {
     <#
     .SYNOPSIS
-    Configure-EdgeExtension
+    Configures an extension for Microsoft Edge using the ExtensionSettings policy
     .DESCRIPTION
     This function configures an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide
     This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
@@ -16444,6 +16450,7 @@ Function Configure-EdgeExtension {
     The minimum version of the extension required for installation.
     .EXAMPLE
     Configure-EdgeExtension -ExtensionID "extensionID" -InstallationMode "Force" -UpdateUrl "https://www.contoso.com/extension"
+
     Configure-EdgeExtension -ConfigureMode "Remove" -ExtensionID "extensionID"
     .NOTES
     This function is provided as a template to install an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
