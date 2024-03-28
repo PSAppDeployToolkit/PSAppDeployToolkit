@@ -102,6 +102,13 @@ Param (
 ##*=============================================
 #region VariableDeclaration
 
+## Variables: Globals
+[String]$installPhase = 'Initialization'
+[String]$logName = [System.String]::Empty
+[String]$defaultMsiExecutablesList = [System.String]::Empty
+[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+[Boolean]$useDefaultMsi = $false
+
 ## Variables: Toolkit Name
 [String]$appDeployToolkitName = 'PSAppDeployToolkit'
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
@@ -603,6 +610,9 @@ If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorA
 If (-not $deploymentType) {
     [String]$deploymentType = 'Install'
 }
+
+## Ensure the deployment type is always title-case for log aesthetics.
+$deploymentType = $culture.TextInfo.ToTitleCase($deploymentType)
 
 ## Variables: Executables
 [String]$exeWusa = "$envWinDir\System32\wusa.exe" # Installs Standalone Windows Updates
@@ -10062,15 +10072,15 @@ https://psappdeploytoolkit.com
                     $dynamicRunningProcesses = $null
                     $dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging
                     [String]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
-                    If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+                    If ($dynamicRunningProcessDescriptions -ne $runningProcessDescriptions) {
                         # Update the runningProcessDescriptions variable for the next time this function runs
-                        Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+                        Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 1
                         If ($dynamicRunningProcesses) {
-                            Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+                            Write-Log -Message "The running processes have changed. Updating the apps to close: [$runningProcessDescriptions]..." -Source ${CmdletName}
                         }
                         # Update the list box with the processes to close
                         $listboxCloseApps.Items.Clear()
-                        $script:runningProcessDescriptions -split ',' | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
+                        $runningProcessDescriptions -split ',' | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
                     }
                     # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
                     If ($ProcessDescriptions) {
@@ -10208,9 +10218,6 @@ https://psappdeploytoolkit.com
         If ($deferDeadline) {
             $deferralText = "$deferralText `r`n$configDeferPromptDeadline $deferDeadline"
         }
-        If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-            $deferralText = "$deferralText `r`n$configDeferPromptNoDeadline"
-        }
         $deferralText = "$deferralText `r`n`r`n$configDeferPromptWarningMessage"
         $labelDefer.Text = $deferralText
         $labelDefer.TextAlign = 'MiddleCenter'
@@ -10226,7 +10233,7 @@ https://psappdeploytoolkit.com
         $labelCountdownMessage.Margin = $paddingNone
         $labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCountdownMessage.TabStop = $false
-        If (($forceCountdown -eq $true) -or (-not $script:runningProcessDescriptions)) {
+        If (($forceCountdown -eq $true) -or (-not $runningProcessDescriptions)) {
             Switch ($deploymentType) {
                 'Uninstall' {
                     $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall); Break
@@ -11568,6 +11575,10 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $deployMode]" -Source ${CmdletName}
             Return
         }
+        If (!(Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
+            Write-Log -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
+            Return
+        }
         # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
         [Int32]$Timeout = $WaitingTime
         While ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
@@ -11607,7 +11618,7 @@ https://psappdeploytoolkit.com
             $script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
         }
 
-        If ($script:ProgressRunspace) {
+        If ((Test-Path -LiteralPath 'variable:ProgressRunspace')) {
             # If the runspace is still opening, wait
             [Int32]$Timeout = 0
             While ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
@@ -11627,7 +11638,7 @@ https://psappdeploytoolkit.com
             Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
         }
 
-        If ($script:ProgressSyncHash) {
+        If ((Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
             # Clear sync hash
             $script:ProgressSyncHash.Clear()
         }
@@ -15593,14 +15604,10 @@ https://psappdeploytoolkit.com
 
             ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
             If (($ServiceStartMode -eq 'Automatic') -and (([Version]$envOSVersion).Major -gt 5)) {
-                Try {
-                    [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
-                    [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
-                    If ($DelayedAutoStart -eq 1) {
-                        $ServiceStartMode = 'Automatic (Delayed Start)'
-                    }
-                }
-                Catch {
+                [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
+                [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction Ignore | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction Ignore
+                If ($DelayedAutoStart -eq 1) {
+                    $ServiceStartMode = 'Automatic (Delayed Start)'
                 }
             }
 
@@ -16613,6 +16620,20 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## Dot source ScriptBlock to get system DPI scale factor
 . $GetDisplayScaleFactor
 
+## Assemblies: Load
+Try {
+    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
+}
+Catch {
+    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
+    If ($deployMode -eq 'Silent') {
+        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
+    }
+    Else {
+        Exit-Script -ExitCode 60004
+    }
+}
+
 ## Dot Source script extensions
 If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
     . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
@@ -16631,17 +16652,17 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
     }
     #  Find the first MSI file in the Files folder and use that as our install
     If ([String]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
-        Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+        Write-Log -Message "Discovered $formattedOSArch Zero-Config MSI under $defaultMSIFile" -Source $appDeployToolkitName
     }
     ElseIf ([String]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1)) {
-        Write-Log -Message "Discovered Arch-Independent Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+        Write-Log -Message "Discovered Arch-Independent Zero-Config MSI under $defaultMSIFile" -Source $appDeployToolkitName
     }
     If ($defaultMsiFile) {
         Try {
             [Boolean]$useDefaultMsi = $true
             Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
             #  Discover if there is a zero-config MST file
-            [String]$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')
+            If ([System.String]::IsNullOrWhiteSpace($DefaultMstFile)) {$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')}
             If (Test-Path -LiteralPath $defaultMstFile -PathType 'Leaf') {
                 Write-Log -Message "Discovered Zero-Config MST installation file [$defaultMstFile]." -Source $appDeployToolkitName
             }
@@ -16649,7 +16670,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
                 [String]$defaultMstFile = ''
             }
             #  Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-            [String[]]$defaultMspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
+            If (!$defaultMspFiles -and ($mspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName')) {$defaultMspFiles = $mspFiles}
             If ($defaultMspFiles) {
                 Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
             }
@@ -16729,12 +16750,11 @@ If ($ReferredInstallTitle) {
     [String]$installTitle = (Remove-InvalidFileNameChars -Name ($ReferredInstallTitle.Trim()))
 }
 If (-not $installTitle) {
-    [String]$installTitle = "$appVendor $appName $appVersion"
+    [String]$installTitle = "$appVendor $appName $appVersion".Trim()
 }
 
 ## Set Powershell window title, in case the window is visible
-[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-$Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
+$Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType" -replace '\s{2,}',' '
 
 ## Build the Installation Name
 If ($ReferredInstallName) {
@@ -16773,24 +16793,9 @@ If ($configToolkitCompressLogs) {
 . $RevertScriptLogging
 
 ## Initialize Logging
-$installPhase = 'Initialization'
 $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator, $scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
-
-## Assemblies: Load
-Try {
-    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
-}
-Catch {
-    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
-    If ($deployMode -eq 'Silent') {
-        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
-    }
-    Else {
-        Exit-Script -ExitCode 60004
-    }
-}
 
 # Calculate banner height
 [Int32]$appDeployLogoBannerHeight = 0
@@ -16800,7 +16805,7 @@ Try {
     If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
         $appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
     }
-    $appDeployLogoBannerObject.Dispose($true) # Must dispose() when installing from local cache or else AppDeployToolkitBanner.png is locked and cannot be removed
+    $appDeployLogoBannerObject.Dispose() # Must dispose() when installing from local cache or else AppDeployToolkitBanner.png is locked and cannot be removed
 }
 Catch {
 }
@@ -17106,7 +17111,7 @@ If ($deployMode) {
 }
 Switch ($deployMode) {
     'Silent' {
-        $deployModeSilent = $true
+        $deployModeNonInteractive = $true; $deployModeSilent = $true
     }
     'NonInteractive' {
         $deployModeNonInteractive = $true; $deployModeSilent = $true
