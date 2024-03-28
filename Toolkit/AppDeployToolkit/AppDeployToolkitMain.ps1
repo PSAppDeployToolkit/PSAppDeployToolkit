@@ -10218,9 +10218,6 @@ https://psappdeploytoolkit.com
         If ($deferDeadline) {
             $deferralText = "$deferralText `r`n$configDeferPromptDeadline $deferDeadline"
         }
-        If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-            $deferralText = "$deferralText `r`n$configDeferPromptNoDeadline"
-        }
         $deferralText = "$deferralText `r`n`r`n$configDeferPromptWarningMessage"
         $labelDefer.Text = $deferralText
         $labelDefer.TextAlign = 'MiddleCenter'
