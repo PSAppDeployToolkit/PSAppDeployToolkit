@@ -447,6 +447,7 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [Boolean]$configToolkitUseRobocopy = [Boolean]::Parse($xmlToolkitOptions.Toolkit_UseRobocopy)
 [String]$configToolkitCachePath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_CachePath)
 [Boolean]$configToolkitOobeDetection = [Boolean]::Parse($xmlToolkitOptions.Toolkit_OobeDetection)
+[Boolean]$configToolkitSessionDetection = [Boolean]::Parse($xmlToolkitOptions.Toolkit_SessionDetection)
 #  Get MSI Options
 [Xml.XmlElement]$xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [String]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
@@ -17316,7 +17317,7 @@ If ($SessionZero) {
     If ($deployMode -eq 'NonInteractive') {
         Write-Log -Message "Session 0 detected but deployment mode was manually set to [$deployMode]." -Source $appDeployToolkitName
     }
-    Else {
+    ElseIf ($configToolkitSessionDetection) {
         ##  If the process is not able to display a UI, enable NonInteractive mode
         If (-not $IsProcessUserInteractive) {
             $deployMode = 'NonInteractive'
@@ -17331,6 +17332,9 @@ If ($SessionZero) {
                 Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $appDeployToolkitName
             }
         }
+    }
+    Else {
+        Write-Log -Message "Session 0 detected but toolkit configured to not adjust deployment mode." -Source $appDeployToolkitName
     }
 }
 Else {
