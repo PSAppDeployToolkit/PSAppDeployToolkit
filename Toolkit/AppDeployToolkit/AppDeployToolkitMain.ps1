@@ -389,6 +389,10 @@ Else {
     [String]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
 
+## Variables: Deployment System Check
+[Boolean]$IsConfigMgr = [Boolean]($scriptRoot -like "$envWinDir\ccmcache\*")
+[Boolean]$IsIntune = [Boolean]($scriptRoot -like "$envWinDir\IMECache\*")
+
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
 [String]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
@@ -460,9 +464,9 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [Boolean]$configToolkitLogPathAutoDetect = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogPathAutoDetect)
 #  Set Log Path
 If ($configToolkitLogPathAutoDetect) {
-    If ($scriptRoot -like "$envWinDir\ccmcache\*") {
+    If ($IsConfigMgr) {
         [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathConfigMgr)
-    } elseif ($scriptRoot -like "$envWinDir\IMECache\*") {
+    } elseif ($IsIntune) {
         [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathIntune)
     }
 }
