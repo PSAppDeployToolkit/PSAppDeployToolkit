@@ -68,6 +68,8 @@
         <!-- Specify the path for the cache folder -->
         <Toolkit_OobeDetection>True</Toolkit_OobeDetection>
         <!-- Automatically changes DeployMode to Silent during the OOBE -->
+        <Toolkit_SessionDetection>True</Toolkit_SessionDetection>
+        <!-- Automatically changes DeployMode for session zero (SYSTEM) operations -->
     </Toolkit_Options>
     <!--Toolkit
     Options-->
