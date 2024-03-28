@@ -16865,7 +16865,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
             [Boolean]$useDefaultMsi = $true
             Write-Log -Message "Discovered Zero-Config MSI installation file [$defaultMsiFile]." -Source $appDeployToolkitName
             #  Discover if there is a zero-config MST file
-            [String]$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')
+            If ([System.String]::IsNullOrWhiteSpace($DefaultMstFile)) {$defaultMstFile = [IO.Path]::ChangeExtension($defaultMsiFile, 'mst')}
             If (Test-Path -LiteralPath $defaultMstFile -PathType 'Leaf') {
                 Write-Log -Message "Discovered Zero-Config MST installation file [$defaultMstFile]." -Source $appDeployToolkitName
             }
@@ -16873,7 +16873,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
                 [String]$defaultMstFile = ''
             }
             #  Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-            [String[]]$defaultMspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName'
+            If (!$defaultMspFiles -and ($mspFiles = Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msp') } | Select-Object -ExpandProperty 'FullName')) {$defaultMspFiles = $mspFiles}
             If ($defaultMspFiles) {
                 Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($defaultMspFiles -join ',')]." -Source $appDeployToolkitName
             }
