@@ -17340,7 +17340,7 @@ If ($deployMode) {
 }
 Switch ($deployMode) {
     'Silent' {
-        $deployModeSilent = $true
+        $deployModeNonInteractive = $true; $deployModeSilent = $true
     }
     'NonInteractive' {
         $deployModeNonInteractive = $true; $deployModeSilent = $true
