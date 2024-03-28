@@ -15818,14 +15818,10 @@ https://psappdeploytoolkit.com
 
             ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
             If (($ServiceStartMode -eq 'Automatic') -and (([Version]$envOSVersion).Major -gt 5)) {
-                Try {
-                    [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
-                    [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction 'Stop'
-                    If ($DelayedAutoStart -eq 1) {
-                        $ServiceStartMode = 'Automatic (Delayed Start)'
-                    }
-                }
-                Catch {
+                [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
+                [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction Ignore | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction Ignore
+                If ($DelayedAutoStart -eq 1) {
+                    $ServiceStartMode = 'Automatic (Delayed Start)'
                 }
             }
 
