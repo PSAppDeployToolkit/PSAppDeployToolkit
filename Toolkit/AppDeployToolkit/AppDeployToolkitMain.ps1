@@ -1769,13 +1769,7 @@ https://psappdeploytoolkit.com
         $configInstallationDeferExitCode {
             $installSuccess = $false
         }
-        3010 {
-            $installSuccess = $true
-        }
-        1641 {
-            $installSuccess = $true
-        }
-        0 {
+        {$ValidExitCodes -contains $_} {
             $installSuccess = $true
         }
         Default {
@@ -4572,7 +4566,7 @@ https://psappdeploytoolkit.com
                 ElseIf (($returnCode -eq 17025) -and ($Path -match 'fullfile')) {
                     Write-Log -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
                 }
-                ElseIf ($returnCode -eq 0) {
+                ElseIf ($ValidExitCodes.Contains($returnCode)) {
                     Write-Log -Message "Execution completed successfully with exit code [$returnCode]." -Source ${CmdletName}
                 }
                 Else {

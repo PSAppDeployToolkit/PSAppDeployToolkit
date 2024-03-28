@@ -92,7 +92,10 @@ Param (
     [Parameter(Mandatory = $false)]
     [switch]$TerminalServerMode = $false,
     [Parameter(Mandatory = $false)]
-    [switch]$DisableLogging = $false
+    [switch]$DisableLogging = $false,
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [Int32[]]$ValidExitCodes = @(0, 1641, 3010)
 )
 
 Try {
