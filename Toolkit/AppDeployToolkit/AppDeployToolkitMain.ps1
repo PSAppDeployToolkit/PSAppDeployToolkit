@@ -10383,9 +10383,6 @@ https://psappdeploytoolkit.com
         If ($deferDeadline) {
             $labelDeferDeadline.Text = "$configDeferPromptDeadline $deferDeadline"
         }
-        If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-            $labelDeferDeadline.Text = "$configDeferPromptNoDeadline"
-        }
         $labelDeferDeadline.TextAlign = 'MiddleCenter'
         $labelDeferDeadline.AutoSize = $true
 
