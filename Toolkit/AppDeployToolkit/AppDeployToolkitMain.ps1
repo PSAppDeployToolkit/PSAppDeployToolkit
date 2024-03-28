@@ -457,6 +457,15 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [String]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
 [String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [Int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
+[Boolean]$configToolkitLogPathAutoDetect = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogPathAutoDetect)
+#  Set Log Path
+If ($configToolkitLogPathAutoDetect) {
+    If ($scriptRoot -like "$envWinDir\ccmcache\*") {
+        [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathConfigMgr)
+    } elseif ($scriptRoot -like "$envWinDir\IMECache\*") {
+        [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathIntune)
+    }
+}
 #  Change paths to user accessible ones if user isn't an admin
 If (!$IsAdmin) {
     If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {
