@@ -10222,15 +10222,15 @@ https://psappdeploytoolkit.com
                     $dynamicRunningProcesses = $null
                     $dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging
                     [String]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
-                    If ($dynamicRunningProcessDescriptions -ne $script:runningProcessDescriptions) {
+                    If ($dynamicRunningProcessDescriptions -ne $runningProcessDescriptions) {
                         # Update the runningProcessDescriptions variable for the next time this function runs
-                        Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 'Script'
+                        Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 1
                         If ($dynamicRunningProcesses) {
-                            Write-Log -Message "The running processes have changed. Updating the apps to close: [$script:runningProcessDescriptions]..." -Source ${CmdletName}
+                            Write-Log -Message "The running processes have changed. Updating the apps to close: [$runningProcessDescriptions]..." -Source ${CmdletName}
                         }
                         # Update the list box with the processes to close
                         $listboxCloseApps.Items.Clear()
-                        $script:runningProcessDescriptions -split ',' | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
+                        $runningProcessDescriptions -split ',' | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
                     }
                     # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
                     If ($ProcessDescriptions) {
@@ -10410,7 +10410,7 @@ https://psappdeploytoolkit.com
         $labelCountdownMessage.Margin = $paddingNone
         $labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCountdownMessage.TabStop = $false
-        If (($forceCountdown -eq $true) -or (-not $script:runningProcessDescriptions)) {
+        If (($forceCountdown -eq $true) -or (-not $runningProcessDescriptions)) {
             Switch ($deploymentType) {
                 'Uninstall' {
                     $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall); Break
