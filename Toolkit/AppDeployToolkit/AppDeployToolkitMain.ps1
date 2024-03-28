@@ -102,6 +102,13 @@ Param (
 ##*=============================================
 #region VariableDeclaration
 
+## Variables: Globals
+[String]$installPhase = 'Initialization'
+[String]$logName = [System.String]::Empty
+[String]$defaultMsiExecutablesList = [System.String]::Empty
+[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+[Boolean]$useDefaultMsi = $false
+
 ## Variables: Toolkit Name
 [String]$appDeployToolkitName = 'PSAppDeployToolkit'
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
@@ -11747,6 +11754,10 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $deployMode]" -Source ${CmdletName}
             Return
         }
+        If (!(Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
+            Write-Log -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
+            Return
+        }
         # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
         [Int32]$Timeout = $WaitingTime
         While ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
@@ -11786,7 +11797,7 @@ https://psappdeploytoolkit.com
             $script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
         }
 
-        If ($script:ProgressRunspace) {
+        If ((Test-Path -LiteralPath 'variable:ProgressRunspace')) {
             # If the runspace is still opening, wait
             [Int32]$Timeout = 0
             While ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
@@ -11806,7 +11817,7 @@ https://psappdeploytoolkit.com
             Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
         }
 
-        If ($script:ProgressSyncHash) {
+        If ((Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
             # Clear sync hash
             $script:ProgressSyncHash.Clear()
         }
@@ -16913,7 +16924,6 @@ If (-not $installTitle) {
 }
 
 ## Set Powershell window title, in case the window is visible
-[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
 $Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
 
 ## Build the Installation Name
@@ -16953,7 +16963,6 @@ If ($configToolkitCompressLogs) {
 . $RevertScriptLogging
 
 ## Initialize Logging
-$installPhase = 'Initialization'
 $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator, $scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
