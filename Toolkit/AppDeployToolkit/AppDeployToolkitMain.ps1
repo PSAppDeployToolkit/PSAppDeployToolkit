@@ -16960,11 +16960,11 @@ If ($ReferredInstallTitle) {
     [String]$installTitle = (Remove-InvalidFileNameChars -Name ($ReferredInstallTitle.Trim()))
 }
 If (-not $installTitle) {
-    [String]$installTitle = "$appVendor $appName $appVersion"
+    [String]$installTitle = "$appVendor $appName $appVersion".Trim()
 }
 
 ## Set Powershell window title, in case the window is visible
-$Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType"
+$Host.UI.RawUI.WindowTitle = "$installTitle - $DeploymentType" -replace '\s{2,}',' '
 
 ## Build the Installation Name
 If ($ReferredInstallName) {
