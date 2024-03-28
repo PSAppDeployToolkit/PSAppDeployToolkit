@@ -606,6 +606,9 @@ If (-not $deploymentType) {
     [String]$deploymentType = 'Install'
 }
 
+## Ensure the deployment type is always title-case for log aesthetics.
+$deploymentType = $culture.TextInfo.ToTitleCase($deploymentType)
+
 ## Variables: Executables
 [String]$exeWusa = "$envWinDir\System32\wusa.exe" # Installs Standalone Windows Updates
 [String]$exeMsiexec = "$envWinDir\System32\msiexec.exe" # Installs MSI Installers
