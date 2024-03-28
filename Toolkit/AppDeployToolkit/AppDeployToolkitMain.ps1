@@ -16620,6 +16620,20 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## Dot source ScriptBlock to get system DPI scale factor
 . $GetDisplayScaleFactor
 
+## Assemblies: Load
+Try {
+    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
+}
+Catch {
+    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
+    If ($deployMode -eq 'Silent') {
+        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
+    }
+    Else {
+        Exit-Script -ExitCode 60004
+    }
+}
+
 ## Dot Source script extensions
 If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
     . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
@@ -16782,20 +16796,6 @@ If ($configToolkitCompressLogs) {
 $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator, $scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
-
-## Assemblies: Load
-Try {
-    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
-}
-Catch {
-    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
-    If ($deployMode -eq 'Silent') {
-        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
-    }
-    Else {
-        Exit-Script -ExitCode 60004
-    }
-}
 
 # Calculate banner height
 [Int32]$appDeployLogoBannerHeight = 0
