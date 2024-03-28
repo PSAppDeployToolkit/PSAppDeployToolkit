@@ -324,13 +324,15 @@ ElseIf ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction S
 [String]$envPSVersionBuild = $envPSVersion.Build
 [String]$envPSVersionRevision = $envPSVersion.Revision
 [String]$envPSVersion = $envPSVersion.ToString()
-#  CLR (.NET) Version used by PowerShell
-[Version]$envCLRVersion = $envPSVersionTable.CLRVersion
-[String]$envCLRVersionMajor = $envCLRVersion.Major
-[String]$envCLRVersionMinor = $envCLRVersion.Minor
-[String]$envCLRVersionBuild = $envCLRVersion.Build
-[String]$envCLRVersionRevision = $envCLRVersion.Revision
-[String]$envCLRVersion = $envCLRVersion.ToString()
+#  CLR (.NET) Version used by Windows PowerShell
+If ($envPSVersionTable.ContainsKey('CLRVersion')) {
+    [Version]$envCLRVersion = $envPSVersionTable.CLRVersion
+    [String]$envCLRVersionMajor = $envCLRVersion.Major
+    [String]$envCLRVersionMinor = $envCLRVersion.Minor
+    [String]$envCLRVersionBuild = $envCLRVersion.Build
+    [String]$envCLRVersionRevision = $envCLRVersion.Revision
+    [String]$envCLRVersion = $envCLRVersion.ToString()
+}
 
 ## Variables: Permissions/Accounts
 [Security.Principal.WindowsIdentity]$CurrentProcessToken = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -17128,7 +17130,9 @@ Write-Log -Message "Current Culture is [$($culture.Name)], language is [$current
 Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
-Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+If ($envPSVersionTable.ContainsKey('CLRVersion')) {
+    Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+}
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
