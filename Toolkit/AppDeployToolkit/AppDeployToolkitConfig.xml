@@ -66,6 +66,8 @@
         <!-- Specify if Robocopy should be used with the Copy-File function. -->
         <Toolkit_CachePath>$envProgramData\SoftwareCache</Toolkit_CachePath>
         <!-- Specify the path for the cache folder -->
+        <Toolkit_OobeDetection>True</Toolkit_OobeDetection>
+        <!-- Automatically changes DeployMode to Silent during the OOBE -->
     </Toolkit_Options>
     <!--Toolkit
     Options-->

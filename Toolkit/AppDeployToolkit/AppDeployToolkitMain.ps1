@@ -449,6 +449,7 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [Int]$configToolkitLogMaxHistory = $xmlToolkitOptions.Toolkit_LogMaxHistory
 [Boolean]$configToolkitUseRobocopy = [Boolean]::Parse($xmlToolkitOptions.Toolkit_UseRobocopy)
 [String]$configToolkitCachePath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_CachePath)
+[Boolean]$configToolkitOobeDetection = [Boolean]::Parse($xmlToolkitOptions.Toolkit_OobeDetection)
 #  Get MSI Options
 [Xml.XmlElement]$xmlConfigMSIOptions = $xmlConfig.MSI_Options
 [String]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
@@ -16965,37 +16966,18 @@ If ($usersLoggedOn) {
         Write-Log -Message "Current process is running under a system account [$ProcessNTAccount]." -Source $appDeployToolkitName
     }
 
-    # Check if OOBE / ESP is running [credit Michael Niehaus]
-    $TypeDef = @"
+    # Guard Intune detection code behind a variable.
+    If ($configToolkitOobeDetection) {
+        # Check if OOBE / ESP is running [credit Michael Niehaus]
+        If (![PSADT.Utilities]::OobeCompleted()) {
+            Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
+            $deployMode = 'Silent'
+        }
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-
-namespace Api
-{
- public class Kernel32
- {
-   [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-   public static extern int OOBEComplete(ref int bIsOOBEComplete);
- }
-}
-"@
-
-Add-Type -TypeDefinition $TypeDef -Language CSharp
-
-$IsOOBEComplete = $false
-$hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
-
-    If (!($IsOOBEComplete)) {
-        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
-        $deployMode = 'Silent'
-    }
-
-    [Int]$defenderHideSysTray = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray' -Value 'HideSystray'
-    If ($defenderHideSysTray -ne "1" -and ($null -eq (Get-Process -Name SecurityHealthSystray -ErrorAction SilentlyContinue))) {
-        $deployMode = 'Silent'
+        [Int]$defenderHideSysTray = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray' -Value 'HideSystray'
+        If ($defenderHideSysTray -ne "1" -and ($null -eq (Get-Process -Name SecurityHealthSystray -ErrorAction SilentlyContinue))) {
+            $deployMode = 'Silent'
+        }
     }
 
     #  Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
