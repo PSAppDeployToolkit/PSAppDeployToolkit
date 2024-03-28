@@ -16825,10 +16825,10 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
     }
     #  Find the first MSI file in the Files folder and use that as our install
     If ([String]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') -and ($_.Name.EndsWith(".$formattedOSArch.msi")) } | Select-Object -ExpandProperty 'FullName' -First 1)) {
-        Write-Log -Message "Discovered $formattedOSArch Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+        Write-Log -Message "Discovered $formattedOSArch Zero-Config MSI under $defaultMSIFile" -Source $appDeployToolkitName
     }
     ElseIf ([String]$defaultMsiFile = (Get-ChildItem -LiteralPath $dirFiles -ErrorAction 'SilentlyContinue' | Where-Object { (-not $_.PsIsContainer) -and ([IO.Path]::GetExtension($_.Name) -eq '.msi') } | Select-Object -ExpandProperty 'FullName' -First 1)) {
-        Write-Log -Message "Discovered Arch-Independent Zerotouch MSI under $defaultMSIFile" -Source $appDeployToolkitName
+        Write-Log -Message "Discovered Arch-Independent Zero-Config MSI under $defaultMSIFile" -Source $appDeployToolkitName
     }
     If ($defaultMsiFile) {
         Try {
