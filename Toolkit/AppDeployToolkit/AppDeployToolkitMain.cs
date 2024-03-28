@@ -804,4 +804,17 @@ namespace PSADT
             return userSessions;
         }
     }
+
+    public class Utilities
+    {
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        private static extern int OOBEComplete(ref int bIsOOBEComplete);
+
+        public static bool OobeCompleted()
+        {
+            int bIsOOBEComplete = 0;
+            OOBEComplete(ref bIsOOBEComplete);
+            return Convert.ToBoolean(bIsOOBEComplete);
+        }
+    }
 }
