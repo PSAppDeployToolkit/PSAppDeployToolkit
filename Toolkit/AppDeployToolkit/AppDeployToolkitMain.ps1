@@ -324,13 +324,15 @@ ElseIf ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction S
 [String]$envPSVersionBuild = $envPSVersion.Build
 [String]$envPSVersionRevision = $envPSVersion.Revision
 [String]$envPSVersion = $envPSVersion.ToString()
-#  CLR (.NET) Version used by PowerShell
-[Version]$envCLRVersion = $envPSVersionTable.CLRVersion
-[String]$envCLRVersionMajor = $envCLRVersion.Major
-[String]$envCLRVersionMinor = $envCLRVersion.Minor
-[String]$envCLRVersionBuild = $envCLRVersion.Build
-[String]$envCLRVersionRevision = $envCLRVersion.Revision
-[String]$envCLRVersion = $envCLRVersion.ToString()
+#  CLR (.NET) Version used by Windows PowerShell
+If ($envPSVersionTable.ContainsKey('CLRVersion')) {
+    [Version]$envCLRVersion = $envPSVersionTable.CLRVersion
+    [String]$envCLRVersionMajor = $envCLRVersion.Major
+    [String]$envCLRVersionMinor = $envCLRVersion.Minor
+    [String]$envCLRVersionBuild = $envCLRVersion.Build
+    [String]$envCLRVersionRevision = $envCLRVersion.Revision
+    [String]$envCLRVersion = $envCLRVersion.ToString()
+}
 
 ## Variables: Permissions/Accounts
 [Security.Principal.WindowsIdentity]$CurrentProcessToken = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -2286,7 +2288,7 @@ https://psappdeploytoolkit.com
             [String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 
 
-            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return
         }
 
@@ -7897,13 +7899,13 @@ Returns the exit code from this function or the process launched by the schedule
 
 .EXAMPLE
 
-Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path "$PSHOME\powershell.exe" -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
+Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
 
 Execute process under a user account by specifying a username under which to execute it.
 
 .EXAMPLE
 
-Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
+Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-Command & { & `"C:\Test\Script.ps1`"; Exit `$LastExitCode }" -Wait
 
 Execute process under a user account by using the default active logged in user that was detected when the toolkit was launched.
 
@@ -8642,7 +8644,7 @@ https://psappdeploytoolkit.com
     </Settings>
     <Actions Context="Author">
         <Exec>
-            <Command>$PSHome\powershell.exe</Command>
+            <Command>$([System.Diagnostics.Process]::GetCurrentProcess().Path)</Command>
             <Arguments>$schTaskUnblockAppsCommand</Arguments>
         </Exec>
     </Actions>
@@ -8677,7 +8679,7 @@ https://psappdeploytoolkit.com
         Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+        [String[]]$debuggerBlockScript = "strCommand = `"$([System.Diagnostics.Process]::GetCurrentProcess().Path) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
@@ -10553,7 +10555,7 @@ https://psappdeploytoolkit.com
         If ($deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
                 Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-                Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+                Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -10583,7 +10585,7 @@ https://psappdeploytoolkit.com
             ## Prepare a list of parameters of this function as a string
             [String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
             ## Start another powershell instance silently with function parameters from this function
-            Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return
         }
 
@@ -11046,7 +11048,7 @@ https://psappdeploytoolkit.com
 
                 ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
                 Try {
-                    Execute-Process -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+                    Execute-Process -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
                 }
                 Catch {
                 }
@@ -11116,8 +11118,19 @@ https://psappdeploytoolkit.com
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconUri' -Value $appDeployLogoImage -PropertyType 'ExpandString' -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force
 
-                [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-                [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                # Handle PowerShell 7-specific setup.
+                If ($PSVersionTable.PSEdition.Equals('Core')) {
+                    If ($pkg = Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore) {
+                        Add-Type -AssemblyName (Get-ChildItem -Path "$([System.IO.Path]::GetDirectoryName($pkg.Source))\lib\*\*.dll").FullName
+                    }
+                    Else {
+                        exit 60003
+                    }
+                }
+                else {
+                    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                }
 
                 ## Gets the Template XML so we can manipulate the values
                 $Template = [Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01
@@ -11152,7 +11165,7 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
                     $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path "$PSHOME\powershell.exe" -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & { & `"`'$executeToastAsUserScript`' `'$BalloonTipText`' `'$BalloonTipTitle`' `'$AppDeployLogoImage`' `'$toastAppID`' `'$toastAppDisplayName`'`"; Exit `$LastExitCode }" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
+                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
                 }
                 Catch {
                 }
@@ -14802,7 +14815,7 @@ https://psappdeploytoolkit.com
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
-                    [String]$CUStubExePath = "$PSHOME\powershell.exe"
+                    [String]$CUStubExePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
                     [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
@@ -15197,10 +15210,6 @@ Stop Windows service and its dependencies.
 
 Specify the name of the service.
 
-.PARAMETER ComputerName
-
-Specify the name of the computer. Default is: the local computer.
-
 .PARAMETER SkipServiceExistsTest
 
 Choose to skip the test to check whether or not the service exists if it was already done outside of this function.
@@ -15250,9 +15259,6 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [Switch]$SkipServiceExistsTest,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -15274,14 +15280,14 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## Check to see if the service exists
-            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
+            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
                 Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
                 Throw "Service [$Name] does not exist."
             }
 
             ## Get the service object
             Write-Log -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
-            [ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+            [ServiceProcess.ServiceController]$Service = Get-Service -Name $Name -ErrorAction 'Stop'
             ## Wait up to 60 seconds if service is in a pending state
             [String[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
             If ($PendingStatus -contains $Service.Status) {
@@ -15309,12 +15315,12 @@ https://psappdeploytoolkit.com
                 #  Discover all dependent services that are running and stop them
                 If (-not $SkipDependentServices) {
                     Write-Log -Message "Discovering all dependent service(s) for service [$Name] which are not 'Stopped'." -Source ${CmdletName}
-                    [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
+                    [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
                     If ($DependentServices) {
                         ForEach ($DependentService in $DependentServices) {
                             Write-Log -Message "Stopping dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
                             Try {
-                                Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $DependentService.ServiceName -ErrorAction 'Stop') -Force -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+                                Stop-Service -InputObject (Get-Service -Name $DependentService.ServiceName -ErrorAction 'Stop') -Force -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
                             }
                             Catch {
                                 Write-Log -Message "Failed to stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
@@ -15328,7 +15334,7 @@ https://psappdeploytoolkit.com
                 }
                 #  Stop the parent service
                 Write-Log -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
-                [ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+                [ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
             }
         }
         Catch {
@@ -15365,10 +15371,6 @@ Start Windows service and its dependencies.
 .PARAMETER Name
 
 Specify the name of the service.
-
-.PARAMETER ComputerName
-
-Specify the name of the computer. Default is: the local computer.
 
 .PARAMETER SkipServiceExistsTest
 
@@ -15419,9 +15421,6 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [Switch]$SkipServiceExistsTest,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -15443,14 +15442,14 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## Check to see if the service exists
-            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -ComputerName $ComputerName -Name $Name -ContinueOnError $false))) {
+            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
                 Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
                 Throw "Service [$Name] does not exist."
             }
 
             ## Get the service object
             Write-Log -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
-            [ServiceProcess.ServiceController]$Service = Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop'
+            [ServiceProcess.ServiceController]$Service = Get-Service -Name $Name -ErrorAction 'Stop'
             ## Wait up to 60 seconds if service is in a pending state
             [String[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
             If ($PendingStatus -contains $Service.Status) {
@@ -15477,17 +15476,17 @@ https://psappdeploytoolkit.com
             If ($Service.Status -ne 'Running') {
                 #  Start the parent service
                 Write-Log -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
-                [ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+                [ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
 
                 #  Discover all dependent services that are stopped and start them
                 If (-not $SkipDependentServices) {
                     Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
-                    [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -ComputerName $ComputerName -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
+                    [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
                     If ($DependentServices) {
                         ForEach ($DependentService in $DependentServices) {
                             Write-Log -Message "Starting dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
                             Try {
-                                Start-Service -InputObject (Get-Service -ComputerName $ComputerName -Name $DependentService.ServiceName -ErrorAction 'Stop') -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
+                                Start-Service -InputObject (Get-Service -Name $DependentService.ServiceName -ErrorAction 'Stop') -WarningAction 'SilentlyContinue' -ErrorAction 'Stop'
                             }
                             Catch {
                                 Write-Log -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
@@ -15636,10 +15635,6 @@ Set the service startup mode.
 
 Specify the name of the service.
 
-.PARAMETER ComputerName
-
-Specify the name of the computer. Default is: the local computer.
-
 .PARAMETER StartMode
 
 Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
@@ -15675,9 +15670,6 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Name,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
         [String]$StartMode,
@@ -16191,7 +16183,7 @@ This function does not return any objects.
 
         If ($EnableInheritance) {
             # Get object acls
-            $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+            $Acl = Get-Acl -Path $Path -ErrorAction Stop
             # Enable inherance
             $Acl.SetAccessRuleProtection($false, $true)
             Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
@@ -16226,13 +16218,13 @@ This function does not return any objects.
         }
 
         # Get object acls
-        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+        $Acl = Get-Acl -Path $Path -ErrorAction Stop
         # Disable inherance, Preserve inherited permissions
         $Acl.SetAccessRuleProtection($true, $true)
         $null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
         # Get updated acls - without inheritance
         $Acl = $null
-        $Acl = (Get-Item -Path $Path -ErrorAction 'Stop').GetAccessControl('Access')
+        $Acl = Get-Acl -Path $Path -ErrorAction Stop
         # Apply permissions on Users
         ForEach ($U in $User) {
             # Trim whitespace and skip if empty
@@ -16546,6 +16538,9 @@ If ($invokingScript) {
 ## Add the custom types required for the toolkit
 If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
     [String[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
+    If ($PSVersionTable.PSEdition.Equals('Core')) {
+        $ReferencedAssemblies += 'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
+    }
     Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
 }
 
@@ -16877,8 +16872,21 @@ Write-Log -Message "Current Culture is [$($culture.Name)], language is [$current
 Write-Log -Message "Hardware Platform is [$(. $DisableScriptLogging; Get-HardwarePlatform; . $RevertScriptLogging)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Host is [$($envHost.Name)] with version [$($envHost.Version)]" -Source $appDeployToolkitName
 Write-Log -Message "PowerShell Version is [$envPSVersion $psArchitecture]" -Source $appDeployToolkitName
-Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+If ($envPSVersionTable.ContainsKey('CLRVersion')) {
+    Write-Log -Message "PowerShell CLR (.NET) version is [$envCLRVersion]" -Source $appDeployToolkitName
+}
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
+
+## Install required assemblies for toast notifications if conditions are right.
+If (!$configToastDisable -and $PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore)) {
+    try {
+        Write-Log -Message "Installing WinRT assemblies for PowerShell 7 toast notification support. This will take at least 5 minutes, please wait..." -Source $appDeployToolkitName
+        Install-Package -Name Microsoft.Windows.SDK.NET.Ref -ProviderName NuGet -Force -Confirm:$false | Out-Null
+    }
+    catch {
+        Write-Log -Message "An error occurred while preparing WinRT assemblies for usage. Toast notifications will not be available for this execution." -Severity 2 -Source $appDeployToolkitName
+    }
+}
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
 If ($AsyncToolkitLaunch) {
