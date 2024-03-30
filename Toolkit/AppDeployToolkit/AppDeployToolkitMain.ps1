@@ -5219,8 +5219,8 @@ https://psappdeploytoolkit.com
                         $Destination = $Destination.TrimEnd('\')
                         # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
                         $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /MT:4 /R:1 /W:1"
-                        If (Test-Path -Path $srcPath -PathType Leaf) {
-                            # If source is a file, split args to the format <SourceFolder> <DestinationFolder> <FileName>
+                        If ((Test-Path -Path $srcPath -PathType Leaf) -or (Split-Path -Path $srcPath -Leaf) -match '\*') {
+                            # If source is a file, or if leaf contains *, split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             $SourceFolderPath = (Split-Path -Path $srcPath -Parent)
                             $SourceFilePath = (Split-Path -Path $srcPath -Leaf)
                             $RobocopyArgsPath =  "`"$SourceFolderPath`" `"$Destination`" `"$SourceFilePath`""
