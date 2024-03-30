@@ -102,13 +102,6 @@ Param (
 ##*=============================================
 #region VariableDeclaration
 
-## Variables: Globals
-[String]$installPhase = 'Initialization'
-[String]$logName = [System.String]::Empty
-[String]$defaultMsiExecutablesList = [System.String]::Empty
-[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-[Boolean]$useDefaultMsi = $false
-
 ## Variables: Toolkit Name
 [String]$appDeployToolkitName = 'PSAppDeployToolkit'
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
@@ -636,6 +629,11 @@ Else {
 [__ComObject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'SilentlyContinue'
 
 ## Variables: Reset/Remove Variables
+[String]$installPhase = 'Initialization'
+[String]$logName = [System.String]::Empty
+[String]$defaultMsiExecutablesList = [System.String]::Empty
+[String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+[Boolean]$useDefaultMsi = $false
 [Boolean]$msiRebootDetected = $false
 [Boolean]$BlockExecution = $false
 [Boolean]$installationStarted = $false
