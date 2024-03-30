@@ -3340,6 +3340,10 @@ Specifies priority class for the process. Options: Idle, Normal, High, AboveNorm
 
 Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
 
+.PARAMETER ThrowOnProcessFailure
+
+Specifies whether the function should throw a terminating error when the process returns an exit code that is considered an error/failure. Default: $false
+
 .PARAMETER RepairFromSource
 
 Specifies whether we should repair from source. Also rewrites local cache. Default: $false
@@ -3452,6 +3456,9 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ExitOnProcessFailure = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$ThrowOnProcessFailure = $false,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$RepairFromSource = $false,
@@ -3690,6 +3697,7 @@ https://psappdeploytoolkit.com
                 Parameters           = $argsMSI
                 WindowStyle          = 'Normal'
                 ExitOnProcessFailure = $ExitOnProcessFailure
+                ThrowOnProcessFailure= $ThrowOnProcessFailure
                 ContinueOnError      = $ContinueOnError
             }
             If ($WorkingDirectory) {
@@ -4146,6 +4154,10 @@ Specifies priority class for the process. Options: Idle, Normal, High, AboveNorm
 
 Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
 
+.PARAMETER ThrowOnProcessFailure
+
+Specifies whether the function should throw a terminating error when the process returns an exit code that is considered an error/failure. Default: $false
+
 .PARAMETER UseShellExecute
 
 Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
@@ -4260,6 +4272,9 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ExitOnProcessFailure = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$ThrowOnProcessFailure = $false,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$UseShellExecute = $false,
@@ -4550,6 +4565,7 @@ https://psappdeploytoolkit.com
                     Write-Output -InputObject ($ExecutionResults)
                 }
 
+                [String]$failureMsg = [System.String]::Empty
                 If ($ignoreExitCodeMatch) {
                     Write-Log -Message "Execution completed and the exit code [$returncode] is being ignored." -Source ${CmdletName}
                 }
@@ -4558,13 +4574,13 @@ https://psappdeploytoolkit.com
                     Set-Variable -Name 'msiRebootDetected' -Value $true -Scope 'Script'
                 }
                 ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
-                    Write-Log -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3 -Source ${CmdletName}
+                    $failureMsg = "Execution failed with exit code [$returnCode] because the product is not currently installed."
                 }
                 ElseIf (($returnCode -eq -2145124329) -and ($Path -match 'wusa')) {
-                    Write-Log -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
+                    $failureMsg = "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system."
                 }
                 ElseIf (($returnCode -eq 17025) -and ($Path -match 'fullfile')) {
-                    Write-Log -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
+                    $failureMsg = "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system."
                 }
                 ElseIf ($ValidExitCodes.Contains($returnCode)) {
                     Write-Log -Message "Execution completed successfully with exit code [$returnCode]." -Source ${CmdletName}
@@ -4575,20 +4591,31 @@ https://psappdeploytoolkit.com
                         [String]$MsiExitCodeMessage = Get-MsiExitCodeMessage -MsiExitCode $returnCode
                     }
 
-                    If ($MsiExitCodeMessage) {
-                        Write-Log -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3 -Source ${CmdletName}
+                    $failureMsg = If ($MsiExitCodeMessage) {
+                        "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage"
                     }
                     Else {
-                        Write-Log -Message "Execution failed with exit code [$returnCode]." -Severity 3 -Source ${CmdletName}
+                        "Execution failed with exit code [$returnCode]."
                     }
+                }
 
-                    If ($ExitOnProcessFailure) {
+                If (![System.String]::IsNullOrWhiteSpace($failureMsg)) {
+                    Write-Log -Message $failureMsg -Severity 3 -Source ${CmdletName}
+                    If ($ThrowOnProcessFailure) {
+                        Throw $failureMsg
+                    }
+                    ElseIf ($ExitOnProcessFailure) {
                         Exit-Script -ExitCode $returnCode
                     }
                 }
             }
         }
         Catch {
+            ## If we've caught a failure equal to $failureMsg, throw it back out again.
+            If ($_.Exception.Message.Equals((Get-Variable -Name failureMsg -ValueOnly -ErrorAction Ignore))) {
+                Throw
+            }
+
             If ([String]::IsNullOrEmpty([String]$returnCode)) {
                 [Int32]$returnCode = 60002
                 Write-Log -Message "Function failed, setting exit code to [$returnCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
