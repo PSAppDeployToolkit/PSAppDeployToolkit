@@ -1843,24 +1843,23 @@ https://psappdeploytoolkit.com
             [Int32]$exitCode = 0
         }
 
-        Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
+        Write-Log -Message "$installName $($deploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 0
         If ($configShowBalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText -NoWait
         }
     }
-    ElseIf (-not $installSuccess) {
-        Write-Log -Message "$installName $deploymentTypeName completed with exit code [$exitcode]." -Source ${CmdletName}
-        If (($exitCode -eq $configInstallationUIExitCode) -or ($exitCode -eq $configInstallationDeferExitCode)) {
-            [String]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
-            If ($configShowBalloonNotifications) {
-                Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait
-            }
+    ElseIf (($exitCode -eq $configInstallationUIExitCode) -or ($exitCode -eq $configInstallationDeferExitCode)) {
+        Write-Log -Message "$installName $($deploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 2
+        [String]$balloonText = "$deploymentTypeName $configBalloonTextFastRetry"
+        If ($configShowBalloonNotifications) {
+            Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait
         }
-        Else {
-            [String]$balloonText = "$deploymentTypeName $configBalloonTextError"
-            If ($configShowBalloonNotifications) {
-                Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait
-            }
+    }
+    Else {
+        Write-Log -Message "$installName $($deploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 3
+        [String]$balloonText = "$deploymentTypeName $configBalloonTextError"
+        If ($configShowBalloonNotifications) {
+            Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait
         }
     }
 
