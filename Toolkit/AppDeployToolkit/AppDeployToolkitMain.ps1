@@ -5214,57 +5214,63 @@ https://psappdeploytoolkit.com
 
                     }
                     If ($UseRobocopyThis) {
-                        # Trim ending backslash from paths which can cause problems
-                        $srcPath = $srcPath.TrimEnd('\')
-                        $Destination = $Destination.TrimEnd('\')
-                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
-                        $RobocopyArgsCopy = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /MT:4 /R:1 /W:1"
+                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; XX = Exclude Extra; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
+                        $RobocopyParams = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /XX /MT:4 /R:1 /W:1"
+
                         If (Test-Path -LiteralPath $srcPath -PathType Container) {
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
-                            $DestinationFolderPath = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
-                            $RobocopyArgsPath =  "`"$srcPath`" `"$DestinationFolderPath`" *"
+                            # Trim ending backslash from paths which can cause problems
+                            $RobocopySource = $srcPath.TrimEnd('\')
+                            $RobocopyDestination = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
+                            $RobocopyFile = '*'
                         }
                         Else {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
-                            $SourceFolderPath = (Split-Path -Path $srcPath -Parent)
-                            $SourceFilePath = (Split-Path -Path $srcPath -Leaf)
-                            $RobocopyArgsPath =  "`"$SourceFolderPath`" `"$Destination`" `"$SourceFilePath`""
+                            $RobocopySource = (Split-Path -Path $srcPath -Parent)
+                            $RobocopyDestination = $Destination.TrimEnd('\')
+                            $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                             [Hashtable]$CopyFileSplat = @{
-                                Path                    = (Join-Path $srcPath '*')
-                                Destination             = $Destination
-                                Recurse                 = $false
-                                Flatten                 = $false
+                                Path                    = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
+                                Destination             = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
+                                Recurse                 = $false # Disable recursion as this will create subfolders in the destination
+                                Flatten                 = $false # Disable flattening to prevent infinite loops
                                 ContinueOnError         = $ContinueOnError
                                 ContinueFileCopyOnError = $ContinueFileCopyOnError
                                 UseRobocopy             = $UseRobocopy
                             }
                             if ($RobocopyAdditionalParams) {
-                                $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
+                                #Ensure that /E is not included in the additional parameters as it will copy recursive folders
+                                $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
                             }
+                            # Copy all files from the root source folder
                             Copy-File @CopyFileSplat
-                            Get-ChildItem -Path $srcPath -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-                                $CopyFileSplat.Path = Join-Path $_.FullName '*'
+                            # Copy all files from subfolders
+                            Get-ChildItem -Path $RobocopySource -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                                # Append file name to subfolder path and repeat Copy-File
+                                $CopyFileSplat.Path = Join-Path $_.FullName $RobocopyFile
                                 Copy-File @CopyFileSplat
                             }
-                            # Skip to next $SrcPath in $Path since we have handed off all copy tasks to a separate execution of the function
+                            # Skip to next $SrcPath in $Path since we have handed off all copy tasks to separate executions of the function
                             Continue
                         }
-                        ElseIf ($Recurse) {
-                            $RobocopyArgsCopy = $RobocopyArgsCopy + " /E"
+                        If ($Recurse) {
+                            if ($RobocopyParams -notmatch '/E(\s|$)') {
+                                $RobocopyParams = $RobocopyParams + " /E"
+                            }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
-                            $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
+                            $RobocopyParams = "$RobocopyParams $RobocopyAdditionalParams"
                         }
-                        $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
-                        Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyCommandArgs" -Source ${CmdletName}
-                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyCommandArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
+                        $RobocopyArgs = "$RobocopyParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
+                        Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
+                        $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
                         Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
