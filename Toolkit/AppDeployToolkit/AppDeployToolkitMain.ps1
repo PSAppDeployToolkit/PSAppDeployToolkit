@@ -1748,6 +1748,10 @@ Always use when exiting the script to ensure cleanup actions are performed.
 
 The exit code to be passed from the script to the parent process, e.g. SCCM
 
+.PARAMETER ValidExitCodes
+
+An optional parameter to specify what exit codes are considered valid. Default are msiexec success codes (0, 1641, and 3010).
+
 .INPUTS
 
 None
@@ -1778,7 +1782,11 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Int32]$ExitCode = 0
+        [Int32]$ExitCode = 0,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Int32[]]$ValidExitCodes = @(0, 1641, 3010)
     )
 
     ## Get the name of this function
@@ -1805,13 +1813,7 @@ https://psappdeploytoolkit.com
         $configInstallationDeferExitCode {
             $installSuccess = $false
         }
-        3010 {
-            $installSuccess = $true
-        }
-        1641 {
-            $installSuccess = $true
-        }
-        0 {
+        {$ValidExitCodes -contains $_} {
             $installSuccess = $true
         }
         Default {
