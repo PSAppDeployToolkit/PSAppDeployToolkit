@@ -418,9 +418,9 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 [Boolean]$configToastDisable = [Boolean]::Parse($xmlToastOptions.Toast_Disable)
 [String]$configToastAppName = $xmlToastOptions.Toast_AppName
 
-[String]$appDeployLogoIcon = Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName
-[String]$appDeployLogoImage = Join-Path -Path $scriptRoot -ChildPath $configBannerLogoImageFileName
-[String]$appDeployLogoBanner = Join-Path -Path $scriptRoot -ChildPath $configBannerIconBannerName
+[String]$appDeployLogoIcon = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName)).FullName
+[String]$appDeployLogoImage = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerLogoImageFileName)).FullName
+[String]$appDeployLogoBanner = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerIconBannerName)).FullName
 #  Check that dependency files are present
 If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) {
     Throw 'App Deploy logo icon file not found.'
