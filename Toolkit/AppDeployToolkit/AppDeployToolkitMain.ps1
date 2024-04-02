@@ -16114,7 +16114,7 @@ This function does not return any objects.
 
     PS C:\>Set-ItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
 
-.EXAMPLEan
+.EXAMPLE
 
     Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
 
