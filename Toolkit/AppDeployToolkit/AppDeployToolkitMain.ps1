@@ -4607,7 +4607,7 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
                 }
                 ElseIf ($returnCode -eq 0) {
-                    Write-Log -Message "Execution completed successfully with exit code [$returnCode]." -Source ${CmdletName}
+                    Write-Log -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0 -Source ${CmdletName}
                 }
                 Else {
                     [String]$MsiExitCodeMessage = ''
