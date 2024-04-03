@@ -633,6 +633,7 @@ Else {
 [String]$logName = [System.String]::Empty
 [String]$defaultMsiExecutablesList = [System.String]::Empty
 [String]$oldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+[Boolean]$instProgressRunning = $false
 [Boolean]$useDefaultMsi = $false
 [Boolean]$msiRebootDetected = $false
 [Boolean]$BlockExecution = $false
@@ -11462,7 +11463,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Check if the progress thread is running before invoking methods on it
-        If (!(Test-Path -LiteralPath 'variable:ProgressRunspace') -or !(Test-Path -LiteralPath 'variable:ProgressSyncHash') -or !$script:ProgressSyncHash.ContainsKey('Window') -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -ne 'Running')) {
+        If (!$script:instProgressRunning) {
             #  Notify user that the software installation has started
             $balloonText = "$deploymentTypeName $configBalloonTextStart"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
@@ -11624,16 +11625,16 @@ https://psappdeploytoolkit.com
             #  Invoke the progress runspace
             $null = $progressCmd.BeginInvoke()
             #  Allow the thread to be spun up safely before invoking actions against it.
-            do {
-                $running = $(try {$script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running'} catch {$false})
+            while (!($script:instProgressRunning = $script:ProgressSyncHash.ContainsKey('Window') -and ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
+            {
                 If ($script:ProgressSyncHash.ContainsKey('Error')) {
                     Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
                     break
                 }
-            } until ($running)
+            }
         }
         ## Check if the progress thread is running before invoking methods on it
-        ElseIf ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running') {
+        Else {
             Try {
                 #  Update the window title
                 $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.Window.Title = $installTitle }, $null, $null)
@@ -11755,6 +11756,7 @@ https://psappdeploytoolkit.com
         }
         If (!(Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
             Write-Log -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
+            $script:instProgressRunning = $false
             Return
         }
         # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
@@ -11769,6 +11771,7 @@ https://psappdeploytoolkit.com
         # Return if we still have no window
         If (-not $script:ProgressSyncHash.Window.IsInitialized) {
             Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
+            $script:instProgressRunning = $false
             Return
         }
         # If the thread is suspended, resume it
@@ -11820,6 +11823,9 @@ https://psappdeploytoolkit.com
             # Clear sync hash
             $script:ProgressSyncHash.Clear()
         }
+
+        # Reset the state bool.
+        $script:instProgressRunning = $false
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
