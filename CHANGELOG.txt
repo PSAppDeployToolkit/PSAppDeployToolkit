@@ -1,5 +1,6 @@
 ﻿**Version 3.10.1 [04/04/2024]**
-Resolved an issue where a new Edge Extension would not be added if no extensions were configured previously. #931
+- Resolved an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. #931
+- Added parameter sets to Configure-EdgeExtensions to ensure correct declaration of mandatory parameters
 
 **Version 3.10.0 [03/27/2024]**
 - Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.

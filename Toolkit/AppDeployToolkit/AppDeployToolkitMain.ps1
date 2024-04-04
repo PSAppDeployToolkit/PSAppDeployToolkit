@@ -16444,8 +16444,10 @@ Function Configure-EdgeExtension {
     This function configures an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide
     This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
     This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
-    .PARAMETER ConfigureMode
-    The deployment mode of the extension. Allowed values: Add, Remove
+    .PARAMETER Add
+    Adds an extension configuration
+    .PARAMETER Remove
+    Removes an extension configuration
     .PARAMETER ExtensionID
     The ID of the extension to install.
     .PARAMETER InstallationMode
@@ -16463,30 +16465,36 @@ Function Configure-EdgeExtension {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('Add', 'Remove')]
-        [String]$configureMode,
-        [Parameter(Mandatory = $true)]
-        [String]$extensionID,
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [Switch]$Add,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
+        [Switch]$Remove,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
+        [String]$ExtensionID,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
         [ValidateSet('blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')]
         [String]$InstallationMode,
-        [Parameter(Mandatory = $false)]
-        [String]$UpdateUrl,
-        [Parameter(Mandatory = $false)]
-        [String]$MinimumVersionRequired
-        )
 
-    If ($configureMode -eq 'Add') {
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [String]$UpdateUrl,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Add')]
+        [String]$MinimumVersionRequired
+    )
+    If ($Add) {
         If ($MinimumVersionRequired) {
-            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl] with minimum version required [$MinimumVersionRequired]." -Severity 1
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [Add] using installation mode [$InstallationMode] and update URL [$UpdateUrl] with minimum version required [$MinimumVersionRequired]." -Severity 1
         }
         Else {
-            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
+            Write-Log -Message "Configuring extension with ID [$extensionID] with mode [Add] using installation mode [$InstallationMode] and update URL [$UpdateUrl]." -Severity 1
         }
     }
     Else {
-        Write-Log -Message "Configuring extension with ID [$extensionID] with mode [$($configureMode)]." -Severity 1
+        Write-Log -Message "Configuring extension with ID [$extensionID] with mode [Add]." -Severity 1
     }
 
     $regKeyEdgeExtensions = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
@@ -16501,7 +16509,7 @@ Function Configure-EdgeExtension {
     }
 
     Try {
-        If ($configureMode -ieq 'Remove') {
+        If ($Remove) {
             If ($installedExtensions.$($extensionID)) {
                 # If the deploymentmode is Remove, remove the extension from the list
                 Write-Log -Message "Removing extension with ID [$extensionID]." -Severity 1
@@ -16514,7 +16522,7 @@ Function Configure-EdgeExtension {
             }
         }
         # Configure the extension
-        ElseIf ($configureMode -ieq 'Add') {
+        ElseIf ($Add) {
             Write-Log -Message "Configuring extension ID [$extensionID]." -Severity 1
             If (!$installedExtensions) {
                 $installedExtensions = @{}
