@@ -11383,6 +11383,10 @@ Specifies whether the progress window should be topmost. Default: $true.
 
 Specifies whether to not log the success of updating the progress message. Default: $false.
 
+.PARAMETER NoRelocation
+
+Specifies whether to not reposition the window upon updating the message. Default: $false.
+
 .INPUTS
 
 None
@@ -11431,7 +11435,9 @@ https://psappdeploytoolkit.com
         [ValidateNotNullorEmpty()]
         [Boolean]$TopMost = $true,
         [Parameter(Mandatory = $false)]
-        [Switch]$Quiet
+        [Switch]$Quiet,
+        [Parameter(Mandatory = $false)]
+        [Switch]$NoRelocation
     )
 
     Begin {
@@ -11641,7 +11647,8 @@ https://psappdeploytoolkit.com
                 #  Update the progress text
                 $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
                 #  Calculate the position on the screen where the progress dialog should be placed
-                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] {
+                if (!$NoRelocation) {
+                    $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] {
                         [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
                         [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
                         #  Set the start position of the Window based on the screen size
@@ -11678,7 +11685,8 @@ https://psappdeploytoolkit.com
                             $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
                             $script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 2)
                         }
-                }, $null, $null)
+                    }, $null, $null)
+                }
 
                 If (!$Quiet) {
                     Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
