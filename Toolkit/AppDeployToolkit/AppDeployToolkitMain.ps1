@@ -16457,9 +16457,9 @@ Function Configure-EdgeExtension {
     .PARAMETER MinimumVersionRequired
     The minimum version of the extension required for installation.
     .EXAMPLE
-    Configure-EdgeExtension -ConfigureMode "Add" -ExtensionID "extensionID" -InstallationMode "force_installed" -UpdateUrl "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
+    Configure-EdgeExtension -Add -ExtensionID "extensionID" -InstallationMode "force_installed" -UpdateUrl "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
     .EXAMPLE
-    Configure-EdgeExtension -ConfigureMode "Remove" -ExtensionID "extensionID"
+    Configure-EdgeExtension -Remove -ExtensionID "extensionID"
     .NOTES
     This function is provided as a template to install an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
     #>
