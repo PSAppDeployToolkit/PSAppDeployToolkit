@@ -5217,17 +5217,24 @@ https://psappdeploytoolkit.com
                         # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; XX = Exclude Extra; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
                         $RobocopyParams = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /XX /MT:4 /R:1 /W:1"
 
+                        # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
+                        If (-not (Test-Path -LiteralPath $Destination -PathType Container)) {
+                            New-Folder -Path $Destination -ContinueOnError $ContinueOnError
+                        }
                         If (Test-Path -LiteralPath $srcPath -PathType Container) {
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
-                            # Trim ending backslash from paths which can cause problems
-                            $RobocopySource = $srcPath.TrimEnd('\')
-                            $RobocopyDestination = Join-Path $Destination (Split-Path -Path $srcPath -Leaf)
+                            # Trim ending backslash from paths which can cause problems with Robocopy
+                            # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
+                            $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path
+                            $RobocopyDestination = Join-Path (Resolve-Path -LiteralPath $Destination).Path (Split-Path -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
                         Else {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
-                            $RobocopySource = (Split-Path -Path $srcPath -Parent)
-                            $RobocopyDestination = $Destination.TrimEnd('\')
+                            # Trim ending backslash from paths which can cause problems with Robocopy
+                            # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
+                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
+                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\')).Path
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
