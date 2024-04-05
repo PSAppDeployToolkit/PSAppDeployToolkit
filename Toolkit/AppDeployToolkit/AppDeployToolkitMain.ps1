@@ -1134,26 +1134,26 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, Position = 6)]
         [ValidateNotNullorEmpty()]
         [String]$LogFileName = $logName,
-        [Parameter(Mandatory=$false,Position=7)]
+        [Parameter(Mandatory = $false, Position = 7)]
         [ValidateNotNullorEmpty()]
         [Boolean]$AppendToLogFile = $configToolkitLogAppend,
-        [Parameter(Mandatory=$false,Position=8)]
+        [Parameter(Mandatory = $false, Position = 8)]
         [ValidateNotNullorEmpty()]
         [Int]$MaxLogHistory = $configToolkitLogMaxHistory,
         [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullorEmpty()]
         [Decimal]$MaxLogFileSizeMB = $configToolkitLogMaxSize,
-	    [Parameter(Mandatory=$false,Position=10)]
+	    [Parameter(Mandatory = $false, Position = 10)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true,
         [Parameter(Mandatory = $false, Position = 11)]
         [ValidateNotNullorEmpty()]
         [Boolean]$WriteHost = $configToolkitLogWriteToHost,
-        [Parameter(Mandatory=$false,Position=12)]
+        [Parameter(Mandatory = $false, Position = 12)]
         [Switch]$PassThru = $false,
-	    [Parameter(Mandatory=$false,Position=13)]
+	    [Parameter(Mandatory = $false, Position = 13)]
         [Switch]$DebugMessage = $false,
-	    [Parameter(Mandatory=$false,Position=14)]
+	    [Parameter(Mandatory = $false, Position = 14)]
         [Boolean]$LogDebugMessage = $configToolkitLogDebugMessage
     )
 
