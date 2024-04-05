@@ -225,19 +225,19 @@ ElseIf ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Mi
     [String]$envOSVersionRevision = , ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
 }
 If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
-If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [string]$envOSVersion = "$($envOSVersion.ToString())" }
+If ($envOSVersionRevision) { [String]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [String]$envOSVersion = "$($envOSVersion.ToString())" }
 #  Get the operating system type
-[int32]$envOSProductType = $envOS.ProductType
-[boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
-[boolean]$IsDomainControllerOS = [boolean]($envOSProductType -eq 2)
-[boolean]$IsWorkStationOS = [boolean]($envOSProductType -eq 1)
-[boolean]$IsMultiSessionOS = [boolean](($envOSName -match '^Microsoft Windows \d+ Enterprise for Virtual Desktops$') -or ($envOSName -match '^Microsoft Windows \d+ Enterprise Multi-Session$'))
+[Int32]$envOSProductType = $envOS.ProductType
+[Boolean]$IsServerOS = [Boolean]($envOSProductType -eq 3)
+[Boolean]$IsDomainControllerOS = [Boolean]($envOSProductType -eq 2)
+[Boolean]$IsWorkStationOS = [Boolean]($envOSProductType -eq 1)
+[Boolean]$IsMultiSessionOS = [Boolean](($envOSName -match '^Microsoft Windows \d+ Enterprise for Virtual Desktops$') -or ($envOSName -match '^Microsoft Windows \d+ Enterprise Multi-Session$'))
 
 Switch ($envOSProductType) {
-    3 { [string]$envOSProductTypeName = 'Server' }
-    2 { [string]$envOSProductTypeName = 'Domain Controller' }
-    1 { [string]$envOSProductTypeName = 'Workstation' }
-    Default { [string]$envOSProductTypeName = 'Unknown' }
+    3 { [String]$envOSProductTypeName = 'Server' }
+    2 { [String]$envOSProductTypeName = 'Domain Controller' }
+    1 { [String]$envOSProductTypeName = 'Workstation' }
+    Default { [String]$envOSProductTypeName = 'Unknown' }
 }
 #  Get the OS Architecture
 [Boolean]$Is64Bit = [Boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
@@ -360,7 +360,7 @@ $GetAccountNameUsingSid = [ScriptBlock] {
 # Test if the current Windows is a Home edition
 Try {
     If (!((Get-WmiObject -Class Win32_OperatingSystem | Select -Expand Caption) -like "*Home*")){
-        [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
+        [String]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
     }
 }
 Catch{}
@@ -997,6 +997,7 @@ https://psappdeploytoolkit.com
     }
 }
 #endregion
+
 
 #region Function Write-Log
 Function Write-Log {
@@ -5259,7 +5260,7 @@ https://psappdeploytoolkit.com
                         Else {
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
-                        If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
+                        If (![String]::IsNullOrEmpty($RobocopyAdditionalParams)) {
                             $RobocopyArgsCopy = "$RobocopyArgsCopy $RobocopyAdditionalParams"
                         }
                         $RobocopyCommandArgs = "$RobocopyArgsCopy $RobocopyArgsPath"
@@ -6995,12 +6996,12 @@ https://psappdeploytoolkit.com
                 #  On Windows Vista or higher
                 If (([Version]$envOSVersion).Major -gt 5) {
                     # Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
-                    [string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
+                    [String]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
                 }
                 #  On Windows XP or lower
                 Else {
                     #  Default User Profile Name: By default, 'Default User'
-                    [string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUserProfile'
+                    [String]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUserProfile'
 
                     #  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
                     [String]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
@@ -7393,6 +7394,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Set-Shortcut
 Function Set-Shortcut {
     <#
@@ -7660,6 +7662,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Get-Shortcut
 Function Get-Shortcut {
     <#
@@ -7827,6 +7830,7 @@ https://psappdeploytoolkit.com
     }
 }
 #endregion
+
 
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
@@ -8599,15 +8603,15 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
         ## Remove illegal characters from the scheduled task arguments string
-        [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [string]$SchInstallName = $installName
+        [Char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
+        [String]$SchInstallName = $installName
         ForEach ($invalidChar in $invalidScheduledTaskChars) {
-            [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
+            [String]$SchInstallName = $SchInstallName -replace [Regex]::Escape($invalidChar),''
         }
-        [string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-        [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+        [String]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+        [String]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
         ## Specify the scheduled task configuration in XML format
-        [string]$xmlUnblockAppsSchTask = @"
+        [String]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
     <RegistrationInfo></RegistrationInfo>
@@ -16036,6 +16040,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Set-ItemPermission
 Function Set-ItemPermission {
     <#
@@ -16304,6 +16309,7 @@ This function does not return any objects.
 }
 #endregion
 
+
 #region Function Copy-ContentToCache
 Function Copy-ContentToCache {
     <#
@@ -16371,6 +16377,7 @@ Function Copy-ContentToCache {
 }
 #endregion
 
+
 #region Function Remove-ContentFromCache
 Function Remove-ContentFromCache {
     <#
@@ -16428,8 +16435,8 @@ Function Remove-ContentFromCache {
 }
 #endregion
 
-#region Function Configure-EdgeExtension
 
+#region Function Configure-EdgeExtension
 Function Configure-EdgeExtension {
     <#
     .SYNOPSIS
@@ -16524,7 +16531,9 @@ Function Configure-EdgeExtension {
         Write-Log -Message "Failed to configure extension with ID $extensionID. `r`n$(Resolve-Error)" -Severity 3
         Exit-Script -ExitCode 60001
     }
-} #End Function Deploy-EdgeExtension
+}
+#endregion
+
 
 #endregion
 ##*=============================================
