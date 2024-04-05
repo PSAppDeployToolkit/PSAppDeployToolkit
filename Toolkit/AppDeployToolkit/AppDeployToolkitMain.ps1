@@ -5567,6 +5567,22 @@ Use Robocopy to copy files rather than native PowerShell method. Robocopy overco
 
 Additional parameters to pass to Robocopy. Default is: $null
 
+.PARAMETER ExcludeNTAccount
+
+Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+
+.PARAMETER ExcludeSystemProfiles
+
+Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+
+.PARAMETER ExcludeServiceProfiles
+
+Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+
+.PARAMETER ExcludeDefaultUser
+
+Exclude the Default User. Default is: $false.
+
 .INPUTS
 
 You can pipe in string values for $Path.
@@ -5619,16 +5635,28 @@ https://psappdeploytoolkit.com
         [Switch]$Flatten,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueFileCopyOnError = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$RobocopyAdditionalParams = $null
+        [String]$RobocopyAdditionalParams = $null,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [String[]]$ExcludeNTAccount,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ExcludeSystemProfiles = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ExcludeServiceProfiles = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Switch]$ExcludeDefaultUser = $false,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ContinueOnError = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ContinueFileCopyOnError = $false
     )
 
     Begin {
@@ -5649,7 +5677,16 @@ https://psappdeploytoolkit.com
             $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
         }
 
-        foreach ($UserProfilePath in (Get-UserProfiles).ProfilePath) {
+        [Hashtable]$GetUserProfileSplat = @{
+            ExcludeSystemProfiles = $ExcludeSystemProfiles
+            ExcludeServiceProfiles = $ExcludeServiceProfiles
+            ExcludeDefaultUser = $ExcludeDefaultUser
+        }
+        if ($ExcludeNTAccount) {
+            $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
+        }
+
+        foreach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
             $CopyFileSplat.Destination = Join-Path $UserProfilePath $Destination
             Write-Log -Message "Copying path [$Path] to $($CopyFileSplat.Destination):" -Source ${CmdletName}
             Copy-File @CopyFileSplat
@@ -5684,6 +5721,22 @@ Specifies the path to append to the root of the user profile to be resolved. The
 .PARAMETER Recurse
 
 Deletes the files in the specified location(s) and in all child items of the location(s).
+
+.PARAMETER ExcludeNTAccount
+
+Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+
+.PARAMETER ExcludeSystemProfiles
+
+Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+
+.PARAMETER ExcludeServiceProfiles
+
+Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+
+.PARAMETER ExcludeDefaultUser
+
+Exclude the Default User. Default is: $false.
 
 .PARAMETER ContinueOnError
 
@@ -5727,6 +5780,18 @@ https://psappdeploytoolkit.com
         [Switch]$Recurse = $false,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [String[]]$ExcludeNTAccount,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ExcludeSystemProfiles = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Boolean]$ExcludeServiceProfiles = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Switch]$ExcludeDefaultUser = $false,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [Boolean]$ContinueOnError = $true
     )
 
@@ -5741,7 +5806,16 @@ https://psappdeploytoolkit.com
             ContinueOnError = $ContinueOnError
         }
 
-        ForEach ($UserProfilePath in (Get-UserProfiles).ProfilePath) {
+        [Hashtable]$GetUserProfileSplat = @{
+            ExcludeSystemProfiles = $ExcludeSystemProfiles
+            ExcludeServiceProfiles = $ExcludeServiceProfiles
+            ExcludeDefaultUser = $ExcludeDefaultUser
+        }
+        if ($ExcludeNTAccount) {
+            $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
+        }
+
+        ForEach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
             If ($PSCmdlet.ParameterSetName -eq 'Path') {
                 $RemoveFileSplat.Path = $Path | ForEach-Object { Join-Path $UserProfilePath $_ }
                 Write-Log -Message "Removing path [$Path] from $UserProfilePath`:" -Source ${CmdletName}
@@ -6920,6 +6994,10 @@ Specify NT account names in Domain\Username format to exclude from the list of u
 
 Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
 
+.PARAMETER ExcludeServiceProfiles
+
+Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+
 .PARAMETER ExcludeDefaultUser
 
 Exclude the Default User. Default is: $false.
@@ -6966,6 +7044,9 @@ https://psappdeploytoolkit.com
         [Boolean]$ExcludeSystemProfiles = $true,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Boolean]$ExcludeServiceProfiles = $true,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [Switch]$ExcludeDefaultUser = $false
     )
 
@@ -6989,6 +7070,9 @@ https://psappdeploytoolkit.com
             If ($ExcludeSystemProfiles) {
                 [String[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
                 [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
+            }
+            If ($ExcludeServiceProfiles) {
+                [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $_.NTAccount -notlike 'NT SERVICE\*' }
             }
             If ($ExcludeNTAccount) {
                 [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $ExcludeNTAccount -notcontains $_.NTAccount }
