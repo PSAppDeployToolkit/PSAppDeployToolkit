@@ -88,11 +88,11 @@ Param (
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
     [String]$DeployMode = 'Interactive',
     [Parameter(Mandatory = $false)]
-    [switch]$AllowRebootPassThru = $false,
+    [Switch]$AllowRebootPassThru = $false,
     [Parameter(Mandatory = $false)]
-    [switch]$TerminalServerMode = $false,
+    [Switch]$TerminalServerMode = $false,
     [Parameter(Mandatory = $false)]
-    [switch]$DisableLogging = $false
+    [Switch]$DisableLogging = $false
 )
 
 Try {
