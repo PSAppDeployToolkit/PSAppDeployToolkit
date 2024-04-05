@@ -594,8 +594,13 @@ If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorA
     $null = New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
 }
 
+## Set the deploy mode to "Interactive" if it has not been specified
+If (!(Test-Path -LiteralPath 'variable:deployMode')) {
+    [String]$deployMode = 'Interactive'
+}
+
 ## Set the deployment type to "Install" if it has not been specified
-If (-not $deploymentType) {
+If (!(Test-Path -LiteralPath 'variable:deploymentType')) {
     [String]$deploymentType = 'Install'
 }
 
@@ -2301,7 +2306,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if in non-interactive mode
-        If ($deployModeSilent) {
+        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
             Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $deployMode]. Message:$Message" -Source ${CmdletName}
             Return
         }
@@ -10769,7 +10774,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If in non-interactive mode
-        If ($deployModeSilent) {
+        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
             If ($NoSilentRestart -eq $false) {
                 Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
                 Start-Process -FilePath "$PSHOME\powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
@@ -11479,7 +11484,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ($deployModeSilent) {
+        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
             If (!$Quiet) {
                 Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $deployMode]. Status message:$StatusMessage" -Source ${CmdletName}
             }
@@ -11791,7 +11796,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ($deployModeSilent) {
+        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
             Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $deployMode]" -Source ${CmdletName}
             Return
         }
@@ -16856,7 +16861,7 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 . $GetDisplayScaleFactor
 
 ## If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly
-If ((-not $appName) -and (-not $ReferredInstallName)) {
+If ((-not $ReferredInstallName) -and (!(Test-Path -LiteralPath 'variable:appName') -or [System.String]::IsNullOrWhiteSpace($appName))) {
     # Build properly formatted Architecture String
     Switch ($Is64Bit) {
         $false {
@@ -16907,7 +16912,7 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
             Write-Log -Message "App Vendor [$appVendor]." -Source $appDeployToolkitName
             Write-Log -Message "App Name [$appName]." -Source $appDeployToolkitName
             Write-Log -Message "App Version [$appVersion]." -Source $appDeployToolkitName
-            Write-Log -Message "MSI Executable List [$defaultMsiExecutablesList]." -Source $appDeployToolkitName
+            If ($defaultMsiExecutablesList) {Write-Log -Message "MSI Executable List [$defaultMsiExecutablesList]." -Source $appDeployToolkitName}
         }
         Catch {
             Write-Log -Message "Failed to process Zero-Config MSI Deployment. `r`n$(Resolve-Error)" -Source $appDeployToolkitName
@@ -16917,38 +16922,38 @@ If ((-not $appName) -and (-not $ReferredInstallName)) {
 }
 
 ## Set up sample variables if Dot Sourcing the script, app details have not been specified
-If (-not $appName) {
+If (!(Test-Path -LiteralPath 'variable:appName') -or [System.String]::IsNullOrWhiteSpace($appName)) {
     [String]$appName = $appDeployMainScriptFriendlyName
-    If (-not $appVendor) {
+    If (!(Test-Path -LiteralPath 'variable:appVendor') -or [System.String]::IsNullOrWhiteSpace($appVendor)) {
         [String]$appVendor = 'PS'
     }
-    If (-not $appVersion) {
+    If (!(Test-Path -LiteralPath 'variable:appVersion') -or [System.String]::IsNullOrWhiteSpace($appVersion)) {
         [String]$appVersion = $appDeployMainScriptVersion
     }
-    If (-not $appLang) {
+    If (!(Test-Path -LiteralPath 'variable:appLang') -or [System.String]::IsNullOrWhiteSpace($appLang)) {
         [String]$appLang = $currentLanguage
     }
-    If (-not $appRevision) {
+    If (!(Test-Path -LiteralPath 'variable:appRevision') -or [System.String]::IsNullOrWhiteSpace($appRevision)) {
         [String]$appRevision = '01'
     }
-    If (-not $appArch) {
+    If (!(Test-Path -LiteralPath 'variable:appArch') -or [System.String]::IsNullOrWhiteSpace($appArch)) {
         [String]$appArch = ''
     }
 }
 Else {
-    If (-not $appVendor) {
+    If (!(Test-Path -LiteralPath 'variable:appVendor') -or [System.String]::IsNullOrWhiteSpace($appVendor)) {
         [String]$appVendor = ''
     }
-    If (-not $appVersion) {
+    If (!(Test-Path -LiteralPath 'variable:appVersion') -or [System.String]::IsNullOrWhiteSpace($appVersion)) {
         [String]$appVersion = ''
     }
-    If (-not $appLang) {
+    If (!(Test-Path -LiteralPath 'variable:appLang') -or [System.String]::IsNullOrWhiteSpace($appLang)) {
         [String]$appLang = ''
     }
-    If (-not $appRevision) {
+    If (!(Test-Path -LiteralPath 'variable:appRevision') -or [System.String]::IsNullOrWhiteSpace($appRevision)) {
         [String]$appRevision = ''
     }
-    If (-not $appArch) {
+    If (!(Test-Path -LiteralPath 'variable:appArch') -or [System.String]::IsNullOrWhiteSpace($appArch)) {
         [String]$appArch = ''
     }
 }
@@ -17063,7 +17068,7 @@ If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -P
 }
 
 ## Evaluate non-default parameters passed to the scripts
-If ($deployAppScriptParameters) {
+If (Test-Path -LiteralPath 'variable:deployAppScriptParameters') {
     [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 }
 #  Save main script parameters hashtable for async execution of the toolkit
@@ -17083,19 +17088,19 @@ If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
 }
 
 ## Log system/script information
-If ($appScriptVersion) {
+If ((Test-Path -LiteralPath 'variable:appScriptVersion') -and $appScriptVersion) {
     Write-Log -Message "[$installName] script version is [$appScriptVersion]" -Source $appDeployToolkitName
 }
-If ($appScriptDate) {
+If ((Test-Path -LiteralPath 'variable:appScriptDate') -and $appScriptDate) {
     Write-Log -Message "[$installName] script date is [$appScriptDate]" -Source $appDeployToolkitName
 }
-If ($appScriptAuthor) {
+If ((Test-Path -LiteralPath 'variable:appScriptAuthor') -and $appScriptAuthor) {
     Write-Log -Message "[$installName] script author is [$appScriptAuthor]" -Source $appDeployToolkitName
 }
-If ($deployAppScriptFriendlyName) {
+If (Test-Path -LiteralPath 'variable:deployAppScriptFriendlyName') {
     Write-Log -Message "[$deployAppScriptFriendlyName] script version is [$deployAppScriptVersion]" -Source $appDeployToolkitName
 }
-If ($deployAppScriptParameters) {
+If (Test-Path -LiteralPath 'variable:deployAppScriptParameters') {
     Write-Log -Message "The following non-default parameters were passed to [$deployAppScriptFriendlyName]: [$deployAppScriptParameters]" -Source $appDeployToolkitName
 }
 If ($appDeployMainScriptFriendlyName) {
