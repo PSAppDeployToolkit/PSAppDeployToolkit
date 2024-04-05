@@ -5208,6 +5208,7 @@ https://psappdeploytoolkit.com
                         $UseRobocopyThis = $false
                         Write-Log "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                     }
+                    # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
                         $UseRobocopyThis = $false
                         Write-Log "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
@@ -5219,7 +5220,8 @@ https://psappdeploytoolkit.com
 
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                         If (-not (Test-Path -LiteralPath $Destination -PathType Container)) {
-                            New-Folder -Path $Destination -ContinueOnError $ContinueOnError
+                            Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
+                            $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                         }
                         If (Test-Path -LiteralPath $srcPath -PathType Container) {
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
