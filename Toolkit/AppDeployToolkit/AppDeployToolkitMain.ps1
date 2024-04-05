@@ -998,6 +998,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Write-Log
 Function Write-Log {
     <#
@@ -7393,6 +7394,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Set-Shortcut
 Function Set-Shortcut {
     <#
@@ -7660,6 +7662,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Get-Shortcut
 Function Get-Shortcut {
     <#
@@ -7827,6 +7830,7 @@ https://psappdeploytoolkit.com
     }
 }
 #endregion
+
 
 #region Function Execute-ProcessAsUser
 Function Execute-ProcessAsUser {
@@ -16036,6 +16040,7 @@ https://psappdeploytoolkit.com
 }
 #endregion
 
+
 #region Function Set-ItemPermission
 Function Set-ItemPermission {
     <#
@@ -16304,6 +16309,7 @@ This function does not return any objects.
 }
 #endregion
 
+
 #region Function Copy-ContentToCache
 Function Copy-ContentToCache {
     <#
@@ -16371,6 +16377,7 @@ Function Copy-ContentToCache {
 }
 #endregion
 
+
 #region Function Remove-ContentFromCache
 Function Remove-ContentFromCache {
     <#
@@ -16428,8 +16435,8 @@ Function Remove-ContentFromCache {
 }
 #endregion
 
-#region Function Configure-EdgeExtension
 
+#region Function Configure-EdgeExtension
 Function Configure-EdgeExtension {
     <#
     .SYNOPSIS
@@ -16526,6 +16533,7 @@ Function Configure-EdgeExtension {
     }
 }
 #endregion
+
 
 #endregion
 ##*=============================================
