@@ -1,60 +1,41 @@
 ﻿Function Block-AppExecution {
 	<#
-.SYNOPSIS
-
-Block the execution of an application(s)
-
-.DESCRIPTION
-
-This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
-
-1.  Makes a copy of this script in a temporary directory on the local machine.
-2.  Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
-        This is to prevent the function from overriding the backup of the original IFEO options.
-3.  Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameter -CleanupBlockedApps.
-4.  Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog.
-5.  When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
-        The text of this message can be customized in the XML configuration file.
-
-.PARAMETER ProcessName
-
-Name of the process or processes separated by commas
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Block-AppExecution -ProcessName ('winword','excel')
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
+	.SYNOPSIS
+		Block the execution of an application(s)
+	.DESCRIPTION
+		This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
+		1.  Makes a copy of this script in a temporary directory on the local machine.
+		2.  Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
+				This is to prevent the function from overriding the backup of the original IFEO options.
+		3.  Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameter -CleanupBlockedApps.
+		4.  Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog.
+		5.  When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
+				The text of this message can be customized in the XML configuration file.
+	.PARAMETER ProcessName
+		Name of the process or processes separated by commas
+	.INPUTS
+		None
+			You cannot pipe objects to this function.
+	.OUTPUTS
+		None
+			This function does not generate any output.
+	.EXAMPLE
+		Block-AppExecution -ProcessName ('winword','excel')
+	.NOTES
+		This is an internal script function and should typically not be called directly.
+		It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
+	.LINK
+		https://psappdeploytoolkit.com
+	#>
 	[CmdletBinding()]
-	Param (
+	param (
 		## Specify process names separated by commas
 		[Parameter(Mandatory = $true)]
 		[ValidateNotNullorEmpty()]
 		[String[]]$ProcessName
 	)
 
-	Begin {
+	begin {
 		## Get the name of this function and write header
 		[String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
@@ -62,7 +43,7 @@ https://psappdeploytoolkit.com
 		## Remove illegal characters from the scheduled task arguments string
 		[Char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
 		[String]$SchInstallName = $installName
-		ForEach ($invalidChar in $invalidScheduledTaskChars) {
+		foreach ($invalidChar in $invalidScheduledTaskChars) {
 			[String]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar), ''
 		}
 		[String]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
@@ -109,28 +90,27 @@ https://psappdeploytoolkit.com
     </Actions>
 </Task>
 "@
-	}
-	Process {
+	} process {
 		## Bypass if no Admin rights
-		If (!$IsAdmin) {
+		if (!$IsAdmin) {
 			Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $ProcessNTAccount] is not admin." -Source ${CmdletName}
-			Return
+			return
 		}
 
 		[String]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 
 		## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-		If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+		if (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
 			$null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
 		}
 
-		If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
+		if (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
 			Remove-Folder -Path $blockExecutionTempPath
 		}
 
-		Try {
+		try {
 			$null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
-		} Catch {
+		} catch {
 			Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
 		}
 
@@ -144,34 +124,34 @@ https://psappdeploytoolkit.com
 		[String]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
 		## Set contents to be readable for all users (BUILTIN\USERS)
-		Try {
+		try {
 			$Users = ConvertTo-NTAccountOrSID -SID 'S-1-5-32-545'
 			Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ('ObjectInherit', 'ContainerInherit')
-		} Catch {
+		} catch {
 			Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
 		}
 
 		## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
 		Write-Log -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.' -Source ${CmdletName}
-		If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
+		if (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
 			Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
-		} Else {
+		} else {
 			## Export the scheduled task XML to file
-			Try {
+			try {
 				## Specify the filename to export the XML to
 				## XML does not need to be user readable to stays in protected TEMP folder
 				[String]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
 				[String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-			} Catch {
+			} catch {
 				Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-				Return
+				return
 			}
 
 			## Import the Scheduled Task XML file to create the Scheduled Task
 			[PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
-			If ($schTaskResult.ExitCode -ne 0) {
+			if ($schTaskResult.ExitCode -ne 0) {
 				Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
-				Return
+				return
 			}
 		}
 
@@ -180,12 +160,11 @@ https://psappdeploytoolkit.com
 		[String[]]$blockProcessName = $blockProcessName | ForEach-Object { $_ + '.exe' } -ErrorAction 'SilentlyContinue'
 
 		## Enumerate each process and set the debugger value to block application execution
-		ForEach ($blockProcess in $blockProcessName) {
+		foreach ($blockProcess in $blockProcessName) {
 			Write-Log -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]." -Source ${CmdletName}
 			Set-RegistryKey -Key (Join-Path -Path $regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
 		}
-	}
-	End {
+	} end {
 		Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
 	}
 }
