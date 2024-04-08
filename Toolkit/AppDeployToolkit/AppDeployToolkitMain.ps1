@@ -4722,7 +4722,7 @@ Wait, up to a timeout (default is 1 millisecond), for the mutex to become availa
 
 The name of the system mutex.
 
-.PARAMETER MutexWaitTime
+.PARAMETER MutexWaitTimeInMilliseconds
 
 The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
 A wait timeof -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
