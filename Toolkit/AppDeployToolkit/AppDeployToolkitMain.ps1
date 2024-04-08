@@ -12124,6 +12124,7 @@ This is an internal script function and should typically not be called directly.
 
 .LINK
 
+https://psappdeploytoolkit.com
 #>
     [CmdletBinding()]
     Param (
