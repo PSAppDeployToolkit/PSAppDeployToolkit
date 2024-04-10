@@ -38,7 +38,7 @@
         <Toolkit_RegPath>HKLM:\SOFTWARE</Toolkit_RegPath>
         <!-- Registry key used to store toolkit information (with PSAppDeployToolkit as child
         registry key), e.g. deferral history. -->
-        <Toolkit_LogPath>$envWinDir\Logs\Software</Toolkit_LogPath>
+        <Toolkit_LogPath>$envProgramData\Microsoft\IntuneManagementExtension\Logs</Toolkit_LogPath>
         <!-- Log path used for Toolkit logging. -->
         <Toolkit_TempPathNoAdminRights>$envTemp</Toolkit_TempPathNoAdminRights>
         <!-- Same as TempPath but used when RequireAdmin is False. -->

@@ -1,30 +1,49 @@
-// PSAppDeployToolkit default settings to ensure consistent code formatting and file encoding
 {
-    //-------- Indentation configuration --------
-    "editor.detectIndentation": true,
-    "editor.formatOnPaste": true,
-    "editor.insertSpaces": false,
-    "editor.renderWhitespace": "boundary",
-    "editor.tabSize": 4,
-    //-------- Files configuration --------
-    "files.autoGuessEncoding": true,
-    "files.encoding": "utf8",
-    "files.insertFinalNewline": true,
-    "files.trimTrailingWhitespace": true,
-    //-------- PowerShell configuration --------
-    "powershell.codeFormatting.addWhitespaceAroundPipe": true,
-    "powershell.codeFormatting.autoCorrectAliases": true,
-    "powershell.codeFormatting.ignoreOneLineBlock": true,
-    "powershell.codeFormatting.newLineAfterCloseBrace": true,
-    "powershell.codeFormatting.preset": "OTBS",
-    "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
-    "powershell.codeFormatting.useConstantStrings": true,
-    "powershell.codeFormatting.useCorrectCasing": true,
-    "powershell.codeFormatting.whitespaceAfterSeparator": true,
-    "powershell.codeFormatting.whitespaceAroundOperator": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
-    "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
-    "powershell.scriptAnalysis.settingsPath": ".\\.vscode\\PSScriptAnalyzerSettings.psd1",
-    "dotnet.preferCSharpExtension": true
+    "files.exclude": {
+        ".exe": false,
+        ".msi": false,
+        ".editorconfig": true,
+        ".gitattributes": true,
+        ".github": true,
+        "**/Deploy-Application.exe": true,
+        "**/Deploy-Application.exe.config": true,
+        "**/Thumbs.db": true,
+        "AppDeployToolkitLogo.png": true,
+        "CHANGELOG.txt": true,
+        "COPYING.Lesser": true,
+        "LICENSE": true,
+        "mkdocs.yml": true,
+        "PSAppDeployToolkit.pdf": true,
+        "README.md": true,
+        "TODO.txt": true,
+        "wiki": true,
+        "Testing": true,
+        "Sources": true,
+        "material": true,
+        "Examples": true,
+        "docs": true,
+        ".gitignore": true
+    },
+    "terminal.integrated.profiles.windows": {
+        "PowerShell Devops": {
+            "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "source": "PowerShell",
+            "icon": "terminal-powershell",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "RemoteSigned",
+            ]
+        },
+        "Git Bash":null,
+        "Commmand Prompt": null,
+        "JavaScript Debug Terminal": null,
+        "Azure Cloud Shell (Bash)": null,
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell Devops",
+    "files.defaultLanguage": "powershell",
+    "terminal.integrated.enablePersistentSessions": false,
+    "terminal.integrated.persistentSessionReviveProcess": "never",
+    "powershell.codeFormatting.newLineAfterCloseBrace": false
 }
