@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkpsadt_docs=self.webpackChunkpsadt_docs||[]).push([[9773],{3521:(e,s,t)=>{t.r(s),t.d(s,{default:()=>l});t(9474);var a=t(1083),c=t(3274);function l(){return(0,c.jsx)(a.A,{title:"Hello",description:"Hello React Page"})}}}]);

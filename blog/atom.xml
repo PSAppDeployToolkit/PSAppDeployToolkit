@@ -2,11 +2,50 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://psappdeploytoolkit.com/blog</id>
     <title>PSAppDeployToolkit Blog</title>
-    <updated>2023-12-06T00:00:00.000Z</updated>
+    <updated>2024-03-28T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://psappdeploytoolkit.com/blog"/>
     <subtitle>PSAppDeployToolkit Blog</subtitle>
     <icon>https://psappdeploytoolkit.com/images/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[PSAppDeployToolkit 3.10.0 & PSADT 101 Webinar]]></title>
+        <id>https://psappdeploytoolkit.com/blog/2024/03/28/psadt-3.10.0-and-psadt-101-webinar</id>
+        <link href="https://psappdeploytoolkit.com/blog/2024/03/28/psadt-3.10.0-and-psadt-101-webinar"/>
+        <updated>2024-03-28T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This is our 1st post on the new PSADT website!]]></summary>
+        <content type="html"><![CDATA[<p>We have a new release of PSAppDeployToolkit, bringing us up to 3.10.0 and, we've added a slew of great new features and fixes.</p>
+<ul>
+<li><strong>Configure-EdgeExtensions</strong> - Can be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies</li>
+<li><strong>Copy-ContentToCache</strong> / <strong>Remove-ContentFromCache</strong> - Cache installation to a persistent local cache (restores functionality from SCCM not in Intune)</li>
+<li><strong>Copy-FileToUserProfiles</strong> / <strong>Remove-FileFromUserProfiles</strong> allows *making per user file changes in per machine installations</li>
+<li><strong>Copy-File</strong> now uses Robocopy by default - Overcomes 260 char limit</li>
+<li>Added Log File Rotation - logs will rotate automatically at 10mb size</li>
+<li>User Interface supports High DPI mode - Updates to icons and images to support High DPI and better brand consistency</li>
+<li>Improvements to overall codebase health, performance and compliance with Strict Mode</li>
+<li>Remediation of a number of long-standing issues (such as <strong>Execute-ProcessAsUser</strong>)</li>
+<li>Added VSCode workspace with default settings for PowerShell code formatting, default version (Windows PowerShell) and PSScriptAnalyzer linting.</li>
+<li>Added ability to position progress dialogs to 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight'</li>
+<li>Added -Wow6432Node switches for 32-bit registry support to all registry functions.</li>
+<li>Improved Get-RunningProcesses function, reducing complexity and improving performance</li>
+<li>Improved translations for Russian, German and missing strings across various languages (thanks ChatGPT)</li>
+<li>20+ other fixes and improvements detailed in the change log</li>
+</ul>
+<p><a href="https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases" target="_blank" rel="noopener noreferrer">Download PSAppDeployToolkit 3.10.0</a></p>
+<h2 class="anchor anchorWithStickyNavbar_hJVD" id="psadt-101-webinar">PSADT 101 Webinar<a href="https://psappdeploytoolkit.com/blog/2024/03/28/psadt-3.10.0-and-psadt-101-webinar#psadt-101-webinar" class="hash-link" aria-label="Direct link to PSADT 101 Webinar" title="Direct link to PSADT 101 Webinar">​</a></h2>
+<p>The new release coincides with an episode of Patch My PC's monthly webinar series, focused entirely on PSAppDeployToolkit. This webinar goes over the latest release, gives an overview, explains the benefits, and gets you set up to use PSAppDeployToolkit. We'll go over the basics of setting up your environment and creating your first custom application deployment - and we'll show you how to take it into SCCM or Intune.</p>
+<iframe width="100%" height="315" src="https://www.youtube.com/embed/wZCNqFTen90" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+<h3 class="anchor anchorWithStickyNavbar_hJVD" id="3x-entering-maintenance-mode">3.x entering maintenance mode<a href="https://psappdeploytoolkit.com/blog/2024/03/28/psadt-3.10.0-and-psadt-101-webinar#3x-entering-maintenance-mode" class="hash-link" aria-label="Direct link to 3.x entering maintenance mode" title="Direct link to 3.x entering maintenance mode">​</a></h3>
+<p>Our plan is to switch the 3.x branch into maintenance mode going forward, with the only updates going forward being substantial break / fix or security updates. We are planning a 3.10.1 release to follow the current release within the next 3 weeks.</p>
+<p>With our shift in focus to 4.0, we are aiming to have no breaking changes for existing scripts. We will have minimum supported versions for operating systems, .NET, and PowerShell versions - however, provided you meet these minimum supported version requirements, existing scripts should just work.</p>]]></content>
+        <author>
+            <name>Dan Cunningham</name>
+            <uri>https://github.com/sintaxasn/</uri>
+        </author>
+        <category label="psappdeploytoolkit" term="psappdeploytoolkit"/>
+        <category label="powershell" term="powershell"/>
+        <category label="release" term="release"/>
+        <category label="webinar" term="webinar"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[PSADT & Patch My PC Q&A Webinar]]></title>
         <id>https://psappdeploytoolkit.com/blog/2023/12/06/qna-webinar</id>
@@ -33,10 +72,10 @@
         <summary type="html"><![CDATA[This is our 1st post on the new PSADT website!]]></summary>
         <content type="html"><![CDATA[<p>Oh wow, this has been a long time coming! Oh ... I'm not talking about the long overdue v4. I'm talking about the new website!</p>
 <p>PSAppDeployToolkit is feeling revitalized, and kinda cute, so it was only fair that we apply a fresh coat of paint to the site. And it's not just a little bit of paint, we've been working on this for a while now.</p>
-<h2 class="anchor anchorWithStickyNavbar_V5uR" id="whats-new">What's New?<a href="https://psappdeploytoolkit.com/blog/2023/10/30/new-website#whats-new" class="hash-link" aria-label="Direct link to What's New?" title="Direct link to What's New?">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_hJVD" id="whats-new">What's New?<a href="https://psappdeploytoolkit.com/blog/2023/10/30/new-website#whats-new" class="hash-link" aria-label="Direct link to What's New?" title="Direct link to What's New?">​</a></h2>
 <p>We've completely re-built the site from the ground up, and we've added a bunch of new features. We've invested a lot of time in improving the flow of the documentation, so it's easier to follow and quicker to get up to speed with the toolkit.</p>
 <p>And we've created an all-important reference guide for the toolkit's Exit Codes, Variables and Functions to the top of the page, so it's easy to find.</p>
-<h2 class="anchor anchorWithStickyNavbar_V5uR" id="stay-tuned">Stay Tuned!<a href="https://psappdeploytoolkit.com/blog/2023/10/30/new-website#stay-tuned" class="hash-link" aria-label="Direct link to Stay Tuned!" title="Direct link to Stay Tuned!">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_hJVD" id="stay-tuned">Stay Tuned<a href="https://psappdeploytoolkit.com/blog/2023/10/30/new-website#stay-tuned" class="hash-link" aria-label="Direct link to Stay Tuned" title="Direct link to Stay Tuned">​</a></h2>
 <p>This isn't the only new thing on the horizon. More news very very soon.</p>
 <p>Dan, Sean &amp; Mo.</p>]]></content>
         <author>

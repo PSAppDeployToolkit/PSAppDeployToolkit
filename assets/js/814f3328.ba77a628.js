@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkpsadt_docs=self.webpackChunkpsadt_docs||[]).push([[7472],{5513:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"PSADT & Patch My PC Q&A Webinar","permalink":"/blog/2023/12/06/qna-webinar","unlisted":false},{"title":"PSADT has a new home","permalink":"/blog/2023/10/30/new-website","unlisted":false}]}')}}]);
