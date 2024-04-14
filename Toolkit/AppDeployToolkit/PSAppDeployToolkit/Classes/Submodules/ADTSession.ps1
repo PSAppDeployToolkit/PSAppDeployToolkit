@@ -9,6 +9,7 @@ class ADTSession
     # Private variables.
     hidden [System.Collections.Specialized.OrderedDictionary]$Session = [ordered]@{
         Cmdlet = $null
+        LegacyMode = $null
         RegKeyDeferHistory = $null
         BannerHeight = 0
         Initialised = $false
@@ -88,6 +89,9 @@ class ADTSession
         $this.Properties.CurrentTime = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%T'
         $this.Properties.CurrentDate = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%d-%m-%Y'
         $this.Properties.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.Properties.CurrentDateTime)
+
+        # Set whether this session is to be invoked in legacy mode.
+        $this.Session.LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
 
         # Process provided parameters.
         $this.Session.Cmdlet = $Parameters.Cmdlet
@@ -334,6 +338,7 @@ class ADTSession
             Write-Log -Message "The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]" -Source $logSrc
         }
         Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]" -Source $logSrc
+        Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.Session.LegacyMode)]" -Source $logSrc
     }
 
     hidden [System.Void] LogSystemInfo()
@@ -597,7 +602,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Session.Initialised)
+        if ($this.Session.LegacyMode -and $this.Session.Initialised)
         {
             return Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $Name -ScriptBlock {
                 Get-Variable -Name $args[0] -ValueOnly
@@ -613,7 +618,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Session.Initialised)
+        if ($this.Session.LegacyMode -and $this.Session.Initialised)
         {
             Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $Name, $Value -ScriptBlock {
                 Set-Variable -Name $args[0] -Value $args[1]
@@ -663,8 +668,11 @@ class ADTSession
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-        Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $this.Properties -ScriptBlock {
-            $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Force})
+        if ($this.Session.LegacyMode)
+        {
+            Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $this.Properties -ScriptBlock {
+                $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Force})
+            }
         }
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
