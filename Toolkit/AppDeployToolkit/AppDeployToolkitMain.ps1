@@ -16994,7 +16994,6 @@ If ($usersLoggedOn) {
 
     # Check if OOBE / ESP is running [credit Michael Niehaus]
     $TypeDef = @"
-
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -17010,18 +17009,13 @@ namespace Api
 }
 "@
 
-Add-Type -TypeDefinition $TypeDef -Language CSharp
+    Add-Type -TypeDefinition $TypeDef -Language CSharp
 
-$IsOOBEComplete = $false
-$hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
+    $IsOOBEComplete = $false
+    $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
     If (!($IsOOBEComplete)) {
         Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
-        $deployMode = 'Silent'
-    }
-
-    [Int]$defenderHideSysTray = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray' -Value 'HideSystray'
-    If ($defenderHideSysTray -ne "1" -and ($null -eq (Get-Process -Name SecurityHealthSystray -ErrorAction SilentlyContinue))) {
         $deployMode = 'Silent'
     }
 
