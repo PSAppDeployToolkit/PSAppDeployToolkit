@@ -7970,7 +7970,7 @@ https://psappdeploytoolkit.com
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-        If ((-not [String]::IsNullOrEmpty($TempPath))) {
+        If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
             If (($TempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
                 Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
@@ -8132,7 +8132,12 @@ https://psappdeploytoolkit.com
 
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-                Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
+                Try {
+                    Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
+                }
+                Catch {
+                    Write-Log -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+                }
             }
             Catch {
                 [Int32]$executeProcessAsUserExitCode = 60007
