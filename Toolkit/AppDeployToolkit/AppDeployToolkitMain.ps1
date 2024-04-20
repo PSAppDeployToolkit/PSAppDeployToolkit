@@ -3630,41 +3630,39 @@ https://psappdeploytoolkit.com
             }
         }
 
-        ## Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
-        [String]$msiFile = "`"$msiFile`""
-
         ## Start building the MsiExec command line starting with the base action and file
-        [String]$argsMSI = "$option $msiFile"
-        #  Add MST
-        If ($transform) {
-            $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
-        }
-        #  Add MSP
-        If ($patch) {
-            $argsMSI = "$argsMSI PATCH=$mspFile"
-        }
-        #  Replace default parameters if specified.
-        If ($Parameters) {
-            $argsMSI = "$argsMSI $Parameters"
-        }
-        Else {
-            $argsMSI = "$argsMSI $msiDefaultParams"
-        }
-        #  Add reinstallmode and reinstall variable for Patch
-        If ($action -eq 'Patch') {
-            $argsMSI += ' REINSTALLMODE=ecmus REINSTALL=ALL'
-        }
-        #  Append parameters to default parameters if specified.
-        If ($AddParameters) {
-            $argsMSI = "$argsMSI $AddParameters"
-        }
-        #  Add custom Logging Options if specified, otherwise, add default Logging Options from Config file
-        If ($LoggingOptions) {
-            $argsMSI = "$argsMSI $LoggingOptions $msiLogFile"
-        }
-        Else {
-            $argsMSI = "$argsMSI $configMSILoggingOptions $msiLogFile"
-        }
+        #  Enclose the MSI file in quotes to avoid issues with spaces when running msiexec
+        [String]$argsMSI = "$option `"$msiFile`"" + `
+            #  Add MST
+            $(If ($transform) {
+                " TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
+            }) + `
+            #  Add MSP
+            $(If ($patch) {
+                " PATCH=$mspFile"
+            }) + `
+            #  Replace default parameters if specified.
+            $(If ($Parameters) {
+                " $Parameters"
+            }
+            Else {
+                " $msiDefaultParams"
+            }) + `
+            #  Add reinstallmode and reinstall variable for Patch.
+            $(If ($action -eq 'Patch') {
+                ' REINSTALLMODE=ecmus REINSTALL=ALL'
+            }) + `
+            #  Append parameters to default parameters if specified.
+            $(If ($AddParameters) {
+                " $AddParameters"
+            }) + `
+            #  Add custom Logging Options if specified, otherwise, add default Logging Options from Config file.
+            $(If ($LoggingOptions) {
+                " $LoggingOptions $msiLogFile"
+            }
+            Else {
+                " $configMSILoggingOptions $msiLogFile"
+            })
 
         ## Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
         [Boolean]$IsMsiInstalled = If ($MSIProductCode -and -not $SkipMSIAlreadyInstalledCheck) {
