@@ -88,20 +88,22 @@ Function ArgvQuote(Argument, ForceQuote, CmdDetected)
     ArgvQuote = sEscapedArgument
 End Function
 
-Dim sCmd, oWShell, iReturn, arg, bCmdDetected, oArgumentList
+Dim sCmd, oWShell, iReturn, sArg, bCmdDetected, oArgumentList(), iCount
 
 iReturn = 0
 If WScript.Arguments.Count > 0 Then
     ' Check if first argument references cmd or cmd.exe
     bCmdDetected = IsCmdAtEnd(WScript.Arguments(0))
 
-    Set oArgumentList = CreateObject("System.Collections.ArrayList")
-    For Each arg In WScript.Arguments
-        oArgumentList.Add(ArgvQuote(arg, False, bCmdDetected))
+    ReDim oArgumentList(WScript.Arguments.Count - 1)
+    iCount = 0
+    For Each sArg In WScript.Arguments
+        oArgumentList(iCount) = ArgvQuote(sArg, False, bCmdDetected)
+        iCount = iCount + 1
     Next
-
-    sCmd = Join(oArgumentList.ToArray, " ")
-
+    
+    sCmd = Join(oArgumentList, " ")
+    
     Set oWShell = CreateObject("WScript.Shell")
     iReturn = oWShell.Run(sCmd, 0, True)
 End If
