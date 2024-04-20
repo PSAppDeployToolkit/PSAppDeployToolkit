@@ -366,12 +366,7 @@ Try {
 Catch{}
 [String]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
 #  Check if script is running in session zero
-If ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount) {
-    $SessionZero = $true
-}
-Else {
-    $SessionZero = $false
-}
+[Boolean]$SessionZero = ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount)
 
 ## Variables: Script Name and Script Paths
 [String]$scriptPath = $MyInvocation.MyCommand.Definition
