@@ -13631,13 +13631,7 @@ https://psappdeploytoolkit.com
 
                 ## Send the Key sequence
                 If ($Keys) {
-                    [Boolean]$IsWindowModal = If ([PSADT.UiAutomation]::IsWindowEnabled($WindowHandle)) {
-                        $false
-                    }
-                    Else {
-                        $true
-                    }
-                    If ($IsWindowModal) {
+                    If (-not [PSADT.UiAutomation]::IsWindowEnabled($WindowHandle)) {
                         Throw 'Unable to send keys to window because it may be disabled due to a modal dialog being shown.'
                     }
                     Write-Log -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
