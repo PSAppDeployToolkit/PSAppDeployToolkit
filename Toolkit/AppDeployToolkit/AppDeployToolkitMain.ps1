@@ -7814,12 +7814,7 @@ https://psappdeploytoolkit.com
                 $shortcut = $null
                 ## Run as admin
                 [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
-                If ($filebytes[21] -band 32) {
-                    $Output.RunAsAdmin = $true
-                }
-                Else {
-                    $Output.RunAsAdmin = $false
-                }
+                $Output.RunAsAdmin = [Boolean]($filebytes[21] -band 32)
             }
             Write-Output -InputObject ($Output)
         }
