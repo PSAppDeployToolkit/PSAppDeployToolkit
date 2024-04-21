@@ -8036,21 +8036,18 @@ https://psappdeploytoolkit.com
                     Write-Log -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
                 }
 
-                [String]$NewParameters = "/e:vbscript"
-                If ($executeAsUserTempPath -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
-                }
-                Else {
-                    $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
-                }
-                If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($Path)`""
-                }
-                Else {
-                    $NewParameters = "$NewParameters $Path"
-                }
-
-                $Parameters = "$NewParameters $Parameters"
+                $Parameters = '/e:vbscript' + `
+                    $(If ($executeAsUserTempPath -match ' ') {
+                        " `"$executeAsUserTempPath\RunHidden.vbs`""
+                    } Else {
+                        " $executeAsUserTempPath\RunHidden.vbs"
+                    }) + `
+                    $(If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
+                        " `"$($Path)`""
+                    } Else {
+                        " $Path"
+                    }) + `
+                    " $Parameters"
                 $Path = "$envWinDir\System32\wscript.exe"
             }
             #  Replace invalid XML characters in parameters with their valid XML equivalent
