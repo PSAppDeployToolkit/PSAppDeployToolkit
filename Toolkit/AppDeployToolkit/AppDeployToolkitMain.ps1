@@ -1169,13 +1169,13 @@ https://psappdeploytoolkit.com
         If (-not (Test-Path -LiteralPath 'variable:DisableLogging')) {
             $DisableLogging = $false
         }
-        If ([System.String]::IsNullOrWhiteSpace($LogFileName)) {
+        If ([System.String]::IsNullOrEmpty($LogFileName) -or $LogFileName.Trim().Length -eq 0) {
             $DisableLogging = $true
         }
         #  Check if the script section is defined
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
         #  Get the file name of the source script
-        $ScriptSource = If (![System.String]::IsNullOrWhiteSpace($script:MyInvocation.ScriptName)) {
+        $ScriptSource = If (![System.String]::IsNullOrEmpty($script:MyInvocation.ScriptName)) {
             Split-Path -Path $script:MyInvocation.ScriptName -Leaf -ErrorAction SilentlyContinue
         }
         Else {
@@ -9204,7 +9204,7 @@ https://psappdeploytoolkit.com
         [Diagnostics.Process[]]$runningProcesses = foreach ($process in (Get-Process -Name $processObjects.ProcessName -ErrorAction SilentlyContinue))
         {
             Add-Member -InputObject $process -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
+                if (![System.String]::IsNullOrEmpty(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
                 {
                     # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
                     $objDescription
