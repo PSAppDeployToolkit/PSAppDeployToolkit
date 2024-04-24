@@ -1216,6 +1216,7 @@
 
         <DeploymentType_Install>Asennus</DeploymentType_Install>
         <DeploymentType_UnInstall>Ohjelmiston poisto</DeploymentType_UnInstall>
+        <DeploymentType_Repair>Korjaus</DeploymentType_Repair>
         <BalloonText_Start>alkoi.</BalloonText_Start>
         <BalloonText_Complete>valmis.</BalloonText_Complete>
         <BalloonText_RestartRequired>valmis. Tietokone on käynnistettävä uudelleen.</BalloonText_RestartRequired>
@@ -1223,6 +1224,7 @@
         <BalloonText_FastRetry>ei ole valmis.</BalloonText_FastRetry>
         <Progress_MessageInstall>Asentaa. Odota...</Progress_MessageInstall>
         <Progress_MessageUninstall>Ohjelmistoa poistetaan. Odota...</Progress_MessageUninstall>
+        <Progress_MessageRepair>Korjaus käynnissä. Odota...</Progress_MessageRepair>
         <BlockExecution_Message>Ohjelmiston käynnistäminen on tilapäisesti estetty, jotta ohjelmisto voi onnistuneesti asentua.</BlockExecution_Message>
         <RestartPrompt_Title>Tietokone on käynnistettävä uudelleen</RestartPrompt_Title>
         <RestartPrompt_Message>Tietokone on käynnistettävä uudelleen, ennen kuin ohjelmiston asennus on valmis.</RestartPrompt_Message>
