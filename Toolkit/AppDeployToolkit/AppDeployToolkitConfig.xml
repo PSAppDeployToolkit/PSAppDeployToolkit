@@ -1234,4 +1234,82 @@
         <RestartPrompt_ButtonRestartLater>Käynnistä uudelleen myöhemmin</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Käynnistä uudelleen heti</RestartPrompt_ButtonRestartNow>
     </UI_Messages_FI>
+        <!-- UI Messages - Turkish -->
+    <UI_Messages_TR>
+        <!-- Close Program Prompt Text -->
+        <DiskSpace_Message>Kurulumu tamamlamak için yeterli disk alanınız yok:
+            {0}
+
+            Gerekli alan: {1}MB
+            Mevcut alan: {2}MB
+
+            Kuruluma devam etmek için lütfen yeterli disk alanı boşaltın.</DiskSpace_Message>
+        <ClosePrompt_ButtonContinue>Devam et</ClosePrompt_ButtonContinue>
+        <!-- Text displayed on the continue button when prompting to close running programs. -->
+        <ClosePrompt_ButtonContinueTooltip>Aşağıdaki listedeki uygulamaları kapatıp "Devam et"i seçiniz.</ClosePrompt_ButtonContinueTooltip>
+        <!-- Tooltip text displayed on the continue button when prompting to close running programs. -->
+        <ClosePrompt_ButtonClose>Uygulamaları kapat</ClosePrompt_ButtonClose>
+        <!-- Text displayed on the close button when prompting to close running programs. -->
+        <ClosePrompt_ButtonDefer>Ertele</ClosePrompt_ButtonDefer>
+        <!-- Text displayed on the defer button when prompting to close running programs. -->
+        <ClosePrompt_Message>Kurulumun devam edebilmesi için aşağıdaki programlar kapatılmalıdır.
+
+            Lütfen çalışmanızı kaydedin, programları kapatın ve ardından devam edin.
+            Alternatif olarak, çalışmanızı kaydedin ve "Programları Kapat "a tıklayın.</ClosePrompt_Message>
+        <!-- Text displayed when prompting to close running programs. -->
+        <ClosePrompt_CountdownMessage>NOT: Program(lar) otomatik olarak kapanacaktır:</ClosePrompt_CountdownMessage>
+        <!-- Text displayed when counting down to automatically closing applications. -->
+        <DeferPrompt_WelcomeMessage>Aşağıdaki uygulama yüklenmek üzeredir:</DeferPrompt_WelcomeMessage>
+        <!-- Text displayed when only the deferral dialog is to be displayed and there are no applications to close. -->
+        <DeferPrompt_ExpiryMessage>Erteleme süresi dolana kadar kurulumu ertelemeyi seçebilirsiniz:</DeferPrompt_ExpiryMessage>
+        <!-- Text displayed when a deferral option is available. -->
+        <DeferPrompt_WarningMessage>Erteleme süresi sona erdiğinde, artık erteleme seçeneğiniz olmayacaktır.</DeferPrompt_WarningMessage>
+        <!-- Text displayed after the deferral options. -->
+        <DeferPrompt_RemainingDeferrals>Kalan Ertelemeler:</DeferPrompt_RemainingDeferrals>
+        <!-- Text displayed when there are a specific number of deferrals remaining. -->
+        <DeferPrompt_Deadline>Son tarih:</DeferPrompt_Deadline>
+        <!-- Text displayed when there is a specific deferral deadline. -->
+
+        <WelcomePrompt_CountdownMessage>{0} otomatik olarak devam edecektir:</WelcomePrompt_CountdownMessage>
+        <!-- The countdown message displayed at the Welcome Screen to indicate when the install will        continue if no response from user. -->
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
+        <!-- This is a custom message to display at the Welcome Screen window. -->
+
+        <DeploymentType_Install>Kurulum işlemi</DeploymentType_Install>
+        <!-- Name displayed in UI for installation deployment type. -->
+        <DeploymentType_UnInstall>Kaldırma işlemi</DeploymentType_UnInstall>
+        <!-- Name displayed in UI for uninstallation deployment type. -->
+        <DeploymentType_Repair>Onarım</DeploymentType_Repair>
+        <!-- Name displayed in UI for repair deployment type. -->
+
+        <!-- Balloon Tip Text -->
+        <BalloonText_Start>başladı.</BalloonText_Start>
+        <!-- Text displayed in the balloon tip for the start of a deployment type. -->
+        <BalloonText_Complete>tamamlandı.</BalloonText_Complete>
+        <!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+        <BalloonText_RestartRequired>tamamlandı. Yeniden başlatma gereklidir.</BalloonText_RestartRequired>
+        <!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+        <BalloonText_Error>hata oluştu.</BalloonText_Error>
+        <!-- Text displayed in the balloon tip for a failed deployment type. -->
+        <BalloonText_FastRetry>tamamlanamadı.</BalloonText_FastRetry>
+        <!-- Text displayed in the balloon tip for fast retry of a deployment -->
+
+        <Progress_MessageInstall>Kurulum devam ediyor. Lütfen bekleyiniz...</Progress_MessageInstall>
+        <!-- Default text displayed in the progress bar for installations. -->
+        <Progress_MessageUninstall>Kaldırma işlemi devam ediyor. Lütfen bekleyiniz...</Progress_MessageUninstall>
+        <!-- Default text displayed in the progress bar for uninstallations. -->
+        <Progress_MessageRepair>Onarım devam ediyor. Lütfen bekleyiniz...</Progress_MessageRepair>
+        <!-- Default text displayed in the progress bar for repairs. -->
+        <BlockExecution_Message>Yükleme işleminin tamamlanabilmesi için bu uygulamanın başlatılması geçici olarak engellenmiştir.</BlockExecution_Message>
+        <!-- Text displayed when prompting user that an application has been blocked. -->
+        <RestartPrompt_Title>Yeniden başlatma gerekmektedir</RestartPrompt_Title>
+        <!-- Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it. -->
+        <RestartPrompt_Message>Yüklemenin tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Lütfen çalışmanızı kaydedin ve belirtilen süre içinde yeniden başlatın.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Geri sayımın sonunda bilgisayarınız otomatik olarak yeniden başlatılacaktır.</RestartPrompt_MessageRestart>
+        <!-- Text displayed on the restart prompt. -->
+        <RestartPrompt_TimeRemaining>Kalan süre:</RestartPrompt_TimeRemaining>
+        <RestartPrompt_ButtonRestartLater>Simge durumuna küçült</RestartPrompt_ButtonRestartLater>
+        <RestartPrompt_ButtonRestartNow>Bilgisayarı yeniden başlat</RestartPrompt_ButtonRestartNow>
+    </UI_Messages_TR>
 </AppDeployToolkit_Config>
