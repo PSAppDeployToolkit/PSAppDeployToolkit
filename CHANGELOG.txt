@@ -5,6 +5,7 @@
 - Rewrote RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems.
 - Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege".
 - Resolved an issue in Execute-ProcessAsUser where the commandline for two of the examples was incorrect.
+- Restore AppDeployToolkitExtensions.ps1 dot-sourcing to where it's always been dot-sourced from.
 
 **Version 3.10.0 [03/27/2024]**
 - Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.

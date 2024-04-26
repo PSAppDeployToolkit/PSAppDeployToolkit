@@ -16869,11 +16869,6 @@ If ($configToolkitCompressLogs) {
     }
 }
 
-## Dot Source script extensions
-If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
-    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
-}
-
 ## Revert script logging to original setting
 . $RevertScriptLogging
 
@@ -16919,6 +16914,11 @@ If ($invokingScript) {
 }
 Else {
     Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
+}
+
+## Dot Source script extensions
+If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
+    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
 }
 
 ## Evaluate non-default parameters passed to the scripts
