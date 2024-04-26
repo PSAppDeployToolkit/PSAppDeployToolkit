@@ -4201,21 +4201,6 @@ Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$con
 
 Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
-.EXAMPLE
-
-Use SCCM to create a single Package and Deployment Type that can run "whether or not a user is logged on" and also displays interaction for logged-on users including RDP session users.
-
-If no user is logged on, in Deploy-Application.ps1:
-Execute-Process -Path "Deploy-Application.exe" -Parameters $DeploymentType
-
-If a user is logged on, in Deploy-Application.ps1:
-[String]$PsExecParameters = "-accepteula -s -w `"$dirSupportFiles`" `"$dirSupportFiles\ServiceUI_x64.exe`" -process:explorer.exe ..\Deploy-Application.exe $DeploymentType"
-[PsObject]$ExecuteProcessResult = Execute-Process -Path "$dirSupportFiles\PsExec64.exe" -Parameters $PsExecParameters -PassThru
-
-Launch PsExec with parameters for ServiceUI and Deploy-Application.exe. Will work with spaces in $scriptParentPath.
-
-If ServiceUI is run directly from SCCM's command line, then execution does not work for RDP session users. Using PsExec in this context also ensures greater chance of success for unknown reasons.
-
 .NOTES
 
 .LINK
