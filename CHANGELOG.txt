@@ -1,4 +1,12 @@
-﻿**Version 3.10.0 [03/27/2024]**
+**Version 3.10.1 [04/04/2024]**
+- Resolved an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. #931
+- Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped.
+- Resolved an issue where Execute-ProcessAsUser was not able to execute with RunLevel = 'LeastPrivilege' in some cases.
+- Rewrote RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems.
+- Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege".
+- Resolved an issue in Execute-ProcessAsUser where the commandline for two of the examples was incorrect.
+
+**Version 3.10.0 [03/27/2024]**
 - Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
 - Added the ability to copy the Toolkit folder and files to a cache folder on the local machine and execute from there.
     Functions: Copy-ContentToCache and Remove-ContentFromCache. The cache path can be configured in the config.xml file, default is $envProgramData\SoftwareCache. When Copy-ContentToCache is used, $dirFiles is updated to point to the local cache path.
