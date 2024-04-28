@@ -47,7 +47,7 @@ https://psappdeploytoolkit.com
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.10.0'
+[version]$appDeployHelpScriptVersion = [version]'3.10.1'
 [string]$appDeployHelpScriptDate = '03/27/2024'
 
 ## Variables: Environment
