@@ -1,6 +1,6 @@
 # ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png)
 
-### Enterprise App Deployment, Simplified.
+## Enterprise App Deployment, Simplified.
 
 PSAppDeployToolkit is a versatile solution that streamlines and standardizes the process of software deployment, making it easier than ever to manage your IT environment. It has a comprehensive set of features, such as dynamic logging, user interaction capabilities, and customizable functionality.
 
@@ -17,7 +17,7 @@ PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or 
 - Run post-installation configuration tasks to customize for your environment
 - Prompt the user to restart their computer if required, immediately, on a timer and with a deadline
 
-### Getting Started
+## Getting Started
 
 -> [System Requirements](https://psappdeploytoolkit.com/docs/getting-started/requirements)
 -> [Downloading](https://psappdeploytoolkit.com/docs/getting-started/download)
@@ -36,7 +36,7 @@ PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or 
 -> [Discord Chat](https://discord.com/channels/618712310185197588/627204361545842688)
 -> [Reddit](https://reddit.com/r/psadt)
 
-### License
+## License
 
 The PowerShell App Deployment Tool is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
 
