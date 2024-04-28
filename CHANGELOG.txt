@@ -1,4 +1,4 @@
-﻿**Version 3.10.0 [03/27/2024]**
+﻿**Version 3.9.4 [03/27/2024]**
 - Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
 - Added the ability to copy the Toolkit folder and files to a cache folder on the local machine and execute from there.
     Functions: Copy-ContentToCache and Remove-ContentFromCache. The cache path can be configured in the config.xml file, default is $envProgramData\SoftwareCache. When Copy-ContentToCache is used, $dirFiles is updated to point to the local cache path.
