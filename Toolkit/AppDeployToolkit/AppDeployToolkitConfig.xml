@@ -275,7 +275,7 @@
         <DeferPrompt_RemainingDeferrals>Udsættelser tilbage:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} vil automatisk fortsætte i:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Afinstallation</DeploymentType_UnInstall>
@@ -319,7 +319,7 @@
         <DeferPrompt_RemainingDeferrals>Nombre(s) de report restant(s):</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Temps limite:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>Le {0} va continuer automatiquement:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
@@ -363,7 +363,7 @@
         <DeferPrompt_RemainingDeferrals>Verbleibende Rückstellungen:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termin:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>Die {0} wird automatisch fortgesetzt in:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Deinstallation</DeploymentType_UnInstall>
@@ -407,7 +407,7 @@
         <DeferPrompt_RemainingDeferrals>Posticipi rimanenti:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Scadenza:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>Il {0} continuerà automaticamente in:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Installazione</DeploymentType_Install>
@@ -452,7 +452,7 @@
         <DeferPrompt_RemainingDeferrals>再試行可能回数:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>デッドライン:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} は自動的に続きます:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>インストール</DeploymentType_Install>
@@ -497,7 +497,7 @@
         <DeferPrompt_RemainingDeferrals>Gjenstående utsettelser:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Frist:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} vil automatisk fortsette i:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Installasjon</DeploymentType_Install>
@@ -543,7 +543,7 @@
         <DeferPrompt_RemainingDeferrals>Aantal keer uitstellen:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>De {0} gaat automatisch door over:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Installatie</DeploymentType_Install>
@@ -588,7 +588,7 @@
         <DeferPrompt_RemainingDeferrals>Pozostała ilość przełożeń instalacji:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Ostateczny termin instalacji:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} będzie automatycznie kontynuować w:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Instalacja</DeploymentType_Install>
         <DeploymentType_UnInstall>Deinstalacja</DeploymentType_UnInstall>
@@ -632,7 +632,7 @@
         <DeferPrompt_RemainingDeferrals>Restantes diferimentos:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Prazo:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>O {0} continuará automaticamente em:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Instalação</DeploymentType_Install>
@@ -676,7 +676,7 @@
         <DeferPrompt_RemainingDeferrals>Adiamentos Restantes:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Prazo:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>O {0} continuará automaticamente em:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Instalação</DeploymentType_Install>
         <DeploymentType_UnInstall>Desinstalação</DeploymentType_UnInstall>
@@ -721,7 +721,7 @@
         <DeferPrompt_RemainingDeferrals>Restante aplazamientos:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Plazo:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>El {0} continuará automáticamente en:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Instalación</DeploymentType_Install>
         <DeploymentType_UnInstall>Desinstalación</DeploymentType_UnInstall>
@@ -765,7 +765,7 @@
         <DeferPrompt_RemainingDeferrals>Antal återstående fördröjningar:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Deadline:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} kommer att fortsätta automatiskt i:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Installation</DeploymentType_Install>
         <DeploymentType_UnInstall>Avinstallation</DeploymentType_UnInstall>
@@ -809,7 +809,7 @@
         <DeferPrompt_RemainingDeferrals>التأجيلات المتبقية:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>الموعد النهائي:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>سيستمر {0} تلقائيا في:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>تثبيت</DeploymentType_Install>
@@ -854,7 +854,7 @@
         <DeferPrompt_RemainingDeferrals>מספר הדחיות שנותרו:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>תאריך יעד:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>ה {0} ימשיך באופן אוטומטי:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>התקנה</DeploymentType_Install>
@@ -899,7 +899,7 @@
         <DeferPrompt_RemainingDeferrals>남은 지연 기간:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>마감:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0}는 자동으로 계속됩니다:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>설치</DeploymentType_Install>
@@ -943,7 +943,7 @@
         <DeferPrompt_RemainingDeferrals>Оставшиеся отсрочки:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Дата истечения:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} автоматически продолжится через:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Установка</DeploymentType_Install>
@@ -988,7 +988,7 @@
         <DeferPrompt_RemainingDeferrals>所剩延期：</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>最后期限：</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0}会自动继续:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>安装</DeploymentType_Install>
@@ -1033,7 +1033,7 @@
         <DeferPrompt_RemainingDeferrals>所剩延期：</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>最後期限：</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0}會自動繼續:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>安裝</DeploymentType_Install>
@@ -1078,7 +1078,7 @@
         <DeferPrompt_RemainingDeferrals>Zostávajúce odklady:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovať za:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Inštalácia</DeploymentType_Install>
@@ -1121,7 +1121,7 @@
         <DeferPrompt_RemainingDeferrals>Zbývající počet odložení:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Termín:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} bude automaticky pokračovat za:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Instalace</DeploymentType_Install>
@@ -1165,7 +1165,7 @@
         <DeferPrompt_RemainingDeferrals> Fennmaradó halasztás:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Időpont:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>A(z) {0} automatikusan folytatódik:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Telepítés</DeploymentType_Install>
@@ -1211,11 +1211,12 @@
         <DeferPrompt_RemainingDeferrals>Jäljellä olevia siirtoja myöhempään ajankohtaan:</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Määräaika:</DeferPrompt_Deadline>
         <WelcomePrompt_CountdownMessage>{0} jatkaa automaattisesti:</WelcomePrompt_CountdownMessage>
-        <WelcomePrompt_CustomMessage />
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
         <DeploymentType_Install>Asennus</DeploymentType_Install>
         <DeploymentType_UnInstall>Ohjelmiston poisto</DeploymentType_UnInstall>
+        <DeploymentType_Repair>Korjaus</DeploymentType_Repair>
         <BalloonText_Start>alkoi.</BalloonText_Start>
         <BalloonText_Complete>valmis.</BalloonText_Complete>
         <BalloonText_RestartRequired>valmis. Tietokone on käynnistettävä uudelleen.</BalloonText_RestartRequired>
@@ -1223,6 +1224,7 @@
         <BalloonText_FastRetry>ei ole valmis.</BalloonText_FastRetry>
         <Progress_MessageInstall>Asentaa. Odota...</Progress_MessageInstall>
         <Progress_MessageUninstall>Ohjelmistoa poistetaan. Odota...</Progress_MessageUninstall>
+        <Progress_MessageRepair>Korjaus käynnissä. Odota...</Progress_MessageRepair>
         <BlockExecution_Message>Ohjelmiston käynnistäminen on tilapäisesti estetty, jotta ohjelmisto voi onnistuneesti asentua.</BlockExecution_Message>
         <RestartPrompt_Title>Tietokone on käynnistettävä uudelleen</RestartPrompt_Title>
         <RestartPrompt_Message>Tietokone on käynnistettävä uudelleen, ennen kuin ohjelmiston asennus on valmis.</RestartPrompt_Message>
@@ -1232,4 +1234,82 @@
         <RestartPrompt_ButtonRestartLater>Käynnistä uudelleen myöhemmin</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Käynnistä uudelleen heti</RestartPrompt_ButtonRestartNow>
     </UI_Messages_FI>
+        <!-- UI Messages - Turkish -->
+    <UI_Messages_TR>
+        <!-- Close Program Prompt Text -->
+        <DiskSpace_Message>Kurulumu tamamlamak için yeterli disk alanınız yok:
+            {0}
+
+            Gerekli alan: {1}MB
+            Mevcut alan: {2}MB
+
+            Kuruluma devam etmek için lütfen yeterli disk alanı boşaltın.</DiskSpace_Message>
+        <ClosePrompt_ButtonContinue>Devam et</ClosePrompt_ButtonContinue>
+        <!-- Text displayed on the continue button when prompting to close running programs. -->
+        <ClosePrompt_ButtonContinueTooltip>Aşağıdaki listedeki uygulamaları kapatıp "Devam et"i seçiniz.</ClosePrompt_ButtonContinueTooltip>
+        <!-- Tooltip text displayed on the continue button when prompting to close running programs. -->
+        <ClosePrompt_ButtonClose>Uygulamaları kapat</ClosePrompt_ButtonClose>
+        <!-- Text displayed on the close button when prompting to close running programs. -->
+        <ClosePrompt_ButtonDefer>Ertele</ClosePrompt_ButtonDefer>
+        <!-- Text displayed on the defer button when prompting to close running programs. -->
+        <ClosePrompt_Message>Kurulumun devam edebilmesi için aşağıdaki programlar kapatılmalıdır.
+
+            Lütfen çalışmanızı kaydedin, programları kapatın ve ardından devam edin.
+            Alternatif olarak, çalışmanızı kaydedin ve "Programları Kapat "a tıklayın.</ClosePrompt_Message>
+        <!-- Text displayed when prompting to close running programs. -->
+        <ClosePrompt_CountdownMessage>NOT: Program(lar) otomatik olarak kapanacaktır:</ClosePrompt_CountdownMessage>
+        <!-- Text displayed when counting down to automatically closing applications. -->
+        <DeferPrompt_WelcomeMessage>Aşağıdaki uygulama yüklenmek üzeredir:</DeferPrompt_WelcomeMessage>
+        <!-- Text displayed when only the deferral dialog is to be displayed and there are no applications to close. -->
+        <DeferPrompt_ExpiryMessage>Erteleme süresi dolana kadar kurulumu ertelemeyi seçebilirsiniz:</DeferPrompt_ExpiryMessage>
+        <!-- Text displayed when a deferral option is available. -->
+        <DeferPrompt_WarningMessage>Erteleme süresi sona erdiğinde, artık erteleme seçeneğiniz olmayacaktır.</DeferPrompt_WarningMessage>
+        <!-- Text displayed after the deferral options. -->
+        <DeferPrompt_RemainingDeferrals>Kalan Ertelemeler:</DeferPrompt_RemainingDeferrals>
+        <!-- Text displayed when there are a specific number of deferrals remaining. -->
+        <DeferPrompt_Deadline>Son tarih:</DeferPrompt_Deadline>
+        <!-- Text displayed when there is a specific deferral deadline. -->
+
+        <WelcomePrompt_CountdownMessage>{0} otomatik olarak devam edecektir:</WelcomePrompt_CountdownMessage>
+        <!-- The countdown message displayed at the Welcome Screen to indicate when the install will        continue if no response from user. -->
+        <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
+        <!-- This is a custom message to display at the Welcome Screen window. -->
+
+        <DeploymentType_Install>Kurulum işlemi</DeploymentType_Install>
+        <!-- Name displayed in UI for installation deployment type. -->
+        <DeploymentType_UnInstall>Kaldırma işlemi</DeploymentType_UnInstall>
+        <!-- Name displayed in UI for uninstallation deployment type. -->
+        <DeploymentType_Repair>Onarım</DeploymentType_Repair>
+        <!-- Name displayed in UI for repair deployment type. -->
+
+        <!-- Balloon Tip Text -->
+        <BalloonText_Start>başladı.</BalloonText_Start>
+        <!-- Text displayed in the balloon tip for the start of a deployment type. -->
+        <BalloonText_Complete>tamamlandı.</BalloonText_Complete>
+        <!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+        <BalloonText_RestartRequired>tamamlandı. Yeniden başlatma gereklidir.</BalloonText_RestartRequired>
+        <!-- Text displayed in the balloon tip for successful completion of a deployment type. -->
+        <BalloonText_Error>hata oluştu.</BalloonText_Error>
+        <!-- Text displayed in the balloon tip for a failed deployment type. -->
+        <BalloonText_FastRetry>tamamlanamadı.</BalloonText_FastRetry>
+        <!-- Text displayed in the balloon tip for fast retry of a deployment -->
+
+        <Progress_MessageInstall>Kurulum devam ediyor. Lütfen bekleyiniz...</Progress_MessageInstall>
+        <!-- Default text displayed in the progress bar for installations. -->
+        <Progress_MessageUninstall>Kaldırma işlemi devam ediyor. Lütfen bekleyiniz...</Progress_MessageUninstall>
+        <!-- Default text displayed in the progress bar for uninstallations. -->
+        <Progress_MessageRepair>Onarım devam ediyor. Lütfen bekleyiniz...</Progress_MessageRepair>
+        <!-- Default text displayed in the progress bar for repairs. -->
+        <BlockExecution_Message>Yükleme işleminin tamamlanabilmesi için bu uygulamanın başlatılması geçici olarak engellenmiştir.</BlockExecution_Message>
+        <!-- Text displayed when prompting user that an application has been blocked. -->
+        <RestartPrompt_Title>Yeniden başlatma gerekmektedir</RestartPrompt_Title>
+        <!-- Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it. -->
+        <RestartPrompt_Message>Yüklemenin tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.</RestartPrompt_Message>
+        <RestartPrompt_MessageTime>Lütfen çalışmanızı kaydedin ve belirtilen süre içinde yeniden başlatın.</RestartPrompt_MessageTime>
+        <RestartPrompt_MessageRestart>Geri sayımın sonunda bilgisayarınız otomatik olarak yeniden başlatılacaktır.</RestartPrompt_MessageRestart>
+        <!-- Text displayed on the restart prompt. -->
+        <RestartPrompt_TimeRemaining>Kalan süre:</RestartPrompt_TimeRemaining>
+        <RestartPrompt_ButtonRestartLater>Simge durumuna küçült</RestartPrompt_ButtonRestartLater>
+        <RestartPrompt_ButtonRestartNow>Bilgisayarı yeniden başlat</RestartPrompt_ButtonRestartNow>
+    </UI_Messages_TR>
 </AppDeployToolkit_Config>

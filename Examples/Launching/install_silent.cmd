@@ -1,0 +1,1 @@
+"%~dp0Deploy-Application.exe" -DeploymentType Install -DeployMode Silent
