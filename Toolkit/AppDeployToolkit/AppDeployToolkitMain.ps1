@@ -17078,7 +17078,7 @@ namespace Api
     $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
     If (!($IsOOBEComplete)) {
-        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
+        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitName
         $deployMode = 'Silent'
     }
 
