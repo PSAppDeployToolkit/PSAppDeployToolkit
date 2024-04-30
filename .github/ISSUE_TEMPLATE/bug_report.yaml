@@ -1,0 +1,72 @@
+name: "🕷️ Bug report"
+description: Report errors or unexpected behavior
+labels: [ bug, needs-triage ]
+title: "[Bug] "
+
+
+body:
+- type: checkboxes
+  attributes:
+    label: Prerequisites
+    options:
+      - label: Ensure you write a short, descriptive title after [Bug] above.
+        required: true
+      - label: Make sure to [search for any existing issues](https://github.com/psappdeploytoolkit/psappdeploytoolkit/issues) before filing a new one.
+        required: true
+      - label: Verify you are able to reproduce the issue with the [latest released version](https://www.github.com/psappdeploytoolkit/psappdeploytoolkit/releases/latest)
+        required: true
+
+- type: input
+  id: psadt-version
+  attributes:
+    label: PSAppDeployToolkit version
+    placeholder: 3.10.1
+    description: The version of PSAppDeployToolkit you are using
+  validations:
+    required: true
+
+- type: textarea
+  id: description
+  attributes:
+    label: Describe the bug
+    description: Please enter a detailed description of the bug you are seeing. Include any error messages, screenshots, or other relevant information. If a PSADT log file was created, please also attach it below.
+  validations:
+    required: true
+
+- type: textarea
+  id: steps-to-reproduce
+  attributes:
+      label: Steps to reproduce
+      description: Please provide any required setup and steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+      value: |
+        1.
+        2.
+        3.
+  validations:
+    required: true
+
+- type: textarea
+  id: environment-data
+  attributes:
+    label: Environment data
+    description: |
+      The following script will gather environment details that will help with triage and investigation of the issue.
+      Please run the script in the PowerShell session where you ran into the issue, and paste the verbatim output below.
+      ```powershell
+      Get-ComputerInfo -Property @('OsName','OSDisplayVersion','OsOperatingSystemSKU','OSArchitecture','WindowsVersion','WindowsProductName','WindowsBuildLabEx','OsLanguage','OsMuiLanguages','KeyboardLayout','TimeZone','HyperVisorPresent','CsPartOfDomain','CsPCSystemType'); dotnet --info
+      ```
+    render: console
+    placeholder: |
+      OsName ...
+      OSDisplayVersion ...
+      OsOperatingSystemSKU ...
+      OsArchitecture ...
+      WindowsVersion ....
+      WindowsProductName ...
+      WindowsBuildLabEx ...
+  validations:
+    required: true
