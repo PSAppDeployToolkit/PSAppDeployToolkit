@@ -2400,7 +2400,7 @@ https://psappdeploytoolkit.com
         ## Button Left
         $buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonLeft.Name = 'buttonLeft'
-        $buttonLeft.Font = $defaultFont
+        $buttonLeft.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonLeft.ClientSize = $buttonSize
         $buttonLeft.MinimumSize = $buttonSize
         $buttonLeft.MaximumSize = $buttonSize
@@ -2416,7 +2416,7 @@ https://psappdeploytoolkit.com
         ## Button Middle
         $buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonMiddle.Name = 'buttonMiddle'
-        $buttonMiddle.Font = $defaultFont
+        $buttonMiddle.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonMiddle.ClientSize = $buttonSize
         $buttonMiddle.MinimumSize = $buttonSize
         $buttonMiddle.MaximumSize = $buttonSize
@@ -2432,7 +2432,7 @@ https://psappdeploytoolkit.com
         ## Button Right
         $buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRight.Name = 'buttonRight'
-        $buttonRight.Font = $defaultFont
+        $buttonRight.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRight.ClientSize = $buttonSize
         $buttonRight.MinimumSize = $buttonSize
         $buttonRight.MaximumSize = $buttonSize
@@ -2448,7 +2448,7 @@ https://psappdeploytoolkit.com
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = $defaultFont
+        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonAbort.ClientSize = '0,0'
         $buttonAbort.MinimumSize = '0,0'
         $buttonAbort.MaximumSize = '0,0'
@@ -2504,7 +2504,7 @@ https://psappdeploytoolkit.com
         Else {
             $panelButtons.Padding = $paddingNone
         }
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         If ($buttonLeftText) {
@@ -10031,7 +10031,9 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelCountdownMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
-        $labelDefer = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferExpiryMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferDeadline = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferWarningMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $listBoxCloseApps = New-Object -TypeName 'System.Windows.Forms.ListBox'
         $buttonContinue = New-Object -TypeName 'System.Windows.Forms.Button'
         $buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
@@ -10221,7 +10223,7 @@ https://psappdeploytoolkit.com
 
         ## Label App Name
         $labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelAppName.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Bold"
+        $labelAppName.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelAppName.Name = 'labelAppName'
         $labelAppName.ClientSize = $defaultControlSize
         $labelAppName.MinimumSize = $defaultControlSize
@@ -10277,36 +10279,60 @@ https://psappdeploytoolkit.com
         $listBoxCloseApps.TabIndex = 3
         $ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
-        ## Label Defer
-        $labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelDefer.Font = $defaultFont
-        $labelDefer.Name = 'labelDefer'
-        $labelDefer.ClientSize = $defaultControlSize
-        $labelDefer.MinimumSize = $defaultControlSize
-        $labelDefer.MaximumSize = $defaultControlSize
-        $labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
-        $labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
-        $labelDefer.TabStop = $false
-        $deferralText = "$configDeferPromptExpiryMessage`r`n"
+        ## Label Defer Expiry Message
+        $labelDeferExpiryMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferExpiryMessage.Font = $defaultFont
+        $labelDeferExpiryMessage.Name = 'labelDeferExpiryMessage'
+        $labelDeferExpiryMessage.ClientSize = $defaultControlSize
+        $labelDeferExpiryMessage.MinimumSize = $defaultControlSize
+        $labelDeferExpiryMessage.MaximumSize = $defaultControlSize
+        $labelDeferExpiryMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferExpiryMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferExpiryMessage.TabStop = $false
+        $labelDeferExpiryMessage.Text = $configDeferPromptExpiryMessage
+        $labelDeferExpiryMessage.TextAlign = 'MiddleCenter'
+        $labelDeferExpiryMessage.AutoSize = $true
 
+        ## Label Defer Deadline
+        $labelDeferDeadline.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferDeadline.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, $defaultFont.Size, [System.Drawing.FontStyle]::Bold)
+        $labelDeferDeadline.Name = 'labelDeferDeadline'
+        $labelDeferDeadline.ClientSize = $defaultControlSize
+        $labelDeferDeadline.MinimumSize = $defaultControlSize
+        $labelDeferDeadline.MaximumSize = $defaultControlSize
+        $labelDeferDeadline.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferDeadline.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferDeadline.TabStop = $false
         If ($deferTimes -ge 0) {
-            $deferralText = "$deferralText `r`n$configDeferPromptRemainingDeferrals $([Int32]$deferTimes + 1)"
+            $labelDeferDeadline.Text = "$configDeferPromptRemainingDeferrals $([Int32]$deferTimes + 1)"
         }
         If ($deferDeadline) {
-            $deferralText = "$deferralText `r`n$configDeferPromptDeadline $deferDeadline"
+            $labelDeferDeadline.Text = "$configDeferPromptDeadline $deferDeadline"
         }
         If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-            $deferralText = "$deferralText `r`n$configDeferPromptNoDeadline"
+            $labelDeferDeadline.Text = "$configDeferPromptNoDeadline"
         }
-        $deferralText = "$deferralText `r`n`r`n$configDeferPromptWarningMessage"
-        $labelDefer.Text = $deferralText
-        $labelDefer.TextAlign = 'MiddleCenter'
-        $labelDefer.AutoSize = $true
+        $labelDeferDeadline.TextAlign = 'MiddleCenter'
+        $labelDeferDeadline.AutoSize = $true
+
+        ## Label Defer Expiry Message
+        $labelDeferWarningMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferWarningMessage.Font = $defaultFont
+        $labelDeferWarningMessage.Name = 'labelDeferWarningMessage'
+        $labelDeferWarningMessage.ClientSize = $defaultControlSize
+        $labelDeferWarningMessage.MinimumSize = $defaultControlSize
+        $labelDeferWarningMessage.MaximumSize = $defaultControlSize
+        $labelDeferWarningMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferWarningMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferWarningMessage.TabStop = $false
+        $labelDeferWarningMessage.Text = $configDeferPromptWarningMessage
+        $labelDeferWarningMessage.TextAlign = 'MiddleCenter'
+        $labelDeferWarningMessage.AutoSize = $true
 
         ## Label CountdownMessage
         $labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdownMessage.Name = 'labelCountdownMessage'
-        $labelCountdownMessage.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
+        $labelCountdownMessage.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelCountdownMessage.ClientSize = $defaultControlSize
         $labelCountdownMessage.MinimumSize = $defaultControlSize
         $labelCountdownMessage.MaximumSize = $defaultControlSize
@@ -10336,7 +10362,7 @@ https://psappdeploytoolkit.com
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdown.Name = 'labelCountdown'
-        $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
         $labelCountdown.MaximumSize = $defaultControlSize
@@ -10372,7 +10398,9 @@ https://psappdeploytoolkit.com
             $flowLayoutPanel.Controls.Add($listBoxCloseApps)
         }
         If ($showDefer) {
-            $flowLayoutPanel.Controls.Add($labelDefer)
+            $flowLayoutPanel.Controls.Add($labelDeferExpiryMessage)
+            $flowLayoutPanel.Controls.Add($labelDeferDeadline)
+            $flowLayoutPanel.Controls.Add($labelDeferWarningMessage)
         }
         If ($showCountdown) {
             $flowLayoutPanel.Controls.Add($labelCountdownMessage)
@@ -10382,7 +10410,7 @@ https://psappdeploytoolkit.com
         ## Button Close For Me
         $buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
-        $buttonCloseApps.Font = $defaultFont
+        $buttonCloseApps.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonCloseApps.Name = 'buttonCloseApps'
         $buttonCloseApps.ClientSize = $buttonSize
         $buttonCloseApps.MinimumSize = $buttonSize
@@ -10404,7 +10432,7 @@ https://psappdeploytoolkit.com
             $buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (160, 4)
         }
         $buttonDefer.Name = 'buttonDefer'
-        $buttonDefer.Font = $defaultFont
+        $buttonDefer.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonDefer.ClientSize = $buttonSize
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
@@ -10420,7 +10448,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (306, 4)
         $buttonContinue.Name = 'buttonContinue'
-        $buttonContinue.Font = $defaultFont
+        $buttonContinue.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonContinue.ClientSize = $buttonSize
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
@@ -10443,7 +10471,7 @@ https://psappdeploytoolkit.com
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = $defaultFont
+        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonAbort.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
@@ -10485,7 +10513,7 @@ https://psappdeploytoolkit.com
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         If ($showCloseApps) {
             $panelButtons.Controls.Add($buttonCloseApps)
         }
@@ -10842,7 +10870,7 @@ https://psappdeploytoolkit.com
 
         ## Label Time remaining message
         $labelTimeRemaining.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelTimeRemaining.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
+        $labelTimeRemaining.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelTimeRemaining.Name = 'labelTimeRemaining'
         $labelTimeRemaining.ClientSize = $defaultControlSize
         $labelTimeRemaining.MinimumSize = $defaultControlSize
@@ -10857,7 +10885,7 @@ https://psappdeploytoolkit.com
 
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.Name = 'labelCountdown'
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
@@ -10892,7 +10920,7 @@ https://psappdeploytoolkit.com
         $buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (240, 4)
         $buttonRestartLater.Name = 'buttonRestartLater'
-        $buttonRestartLater.Font = $defaultFont
+        $buttonRestartLater.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartLater.ClientSize = $buttonSize
         $buttonRestartLater.MinimumSize = $buttonSize
         $buttonRestartLater.MaximumSize = $buttonSize
@@ -10908,7 +10936,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
         $buttonRestartNow.Name = 'buttonRestartNow'
-        $buttonRestartNow.Font = $defaultFont
+        $buttonRestartNow.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartNow.ClientSize = $buttonSize
         $buttonRestartNow.MinimumSize = $buttonSize
         $buttonRestartNow.MaximumSize = $buttonSize
@@ -10945,7 +10973,7 @@ https://psappdeploytoolkit.com
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $panelButtons.Controls.Add($buttonRestartNow)
         $panelButtons.Controls.Add($buttonRestartLater)
         ## Add the Buttons Panel to the flowPanel
