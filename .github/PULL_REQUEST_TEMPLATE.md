@@ -27,4 +27,3 @@ Fixes: <https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/12345>
 ## How Has This Been Tested?
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
-
