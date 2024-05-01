@@ -5901,6 +5901,14 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
+        ## Remove 'Microsoft.PowerShell.Core\Registry::\' from the beginning of the line for processing.
+        If ($Key -match '^Microsoft\.PowerShell\.Core\\Registry::\\') {
+            $Key = $Key -Replace '^Microsoft\.PowerShell\.Core\\Registry::\\', ''
+        }
+        ElseIf ($Key -match '^Microsoft\.PowerShell\.Core\\Registry::') {
+            $Key = $Key -Replace '^Microsoft\.PowerShell\.Core\\', ''
+        }
+
         ## Convert the registry key hive to the full path, only match if at the beginning of the line
         If ($Key -match '^HKLM') {
             $Key = $Key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
