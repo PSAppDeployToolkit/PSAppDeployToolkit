@@ -107,9 +107,9 @@ Param (
 [String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.10.0'
+[Version]$appDeployMainScriptVersion = [Version]'3.10.1'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.10.0'
-[String]$appDeployMainScriptDate = '03/27/2024'
+[String]$appDeployMainScriptDate = '04/26/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -5101,9 +5101,13 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
+.PARAMETER RobocopyParams
+
+Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+
 .PARAMETER RobocopyAdditionalParams
 
-Additional parameters to pass to Robocopy. Default is: $null
+Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
 .INPUTS
 
@@ -5156,7 +5160,8 @@ https://psappdeploytoolkit.com
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$RobocopyAdditionalParams = $null
+        [String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+        [String]$RobocopyAdditionalParams
         )
 
     Begin {
@@ -5195,8 +5200,6 @@ https://psappdeploytoolkit.com
 
                     }
                     If ($UseRobocopyThis) {
-                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; XX = Exclude Extra; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
-                        $RobocopyParams = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /XX /MT:4 /R:1 /W:1"
 
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                         If (-not (Test-Path -LiteralPath $Destination -PathType Container)) {
@@ -5222,17 +5225,15 @@ https://psappdeploytoolkit.com
                         If ($Flatten) {
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                             [Hashtable]$CopyFileSplat = @{
-                                Path                    = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
-                                Destination             = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
-                                Recurse                 = $false # Disable recursion as this will create subfolders in the destination
-                                Flatten                 = $false # Disable flattening to prevent infinite loops
-                                ContinueOnError         = $ContinueOnError
-                                ContinueFileCopyOnError = $ContinueFileCopyOnError
-                                UseRobocopy             = $UseRobocopy
-                            }
-                            if ($RobocopyAdditionalParams) {
-                                #Ensure that /E is not included in the additional parameters as it will copy recursive folders
-                                $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                                Path                     = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
+                                Destination              = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
+                                Recurse                  = $false # Disable recursion as this will create subfolders in the destination
+                                Flatten                  = $false # Disable flattening to prevent infinite loops
+                                ContinueOnError          = $ContinueOnError
+                                ContinueFileCopyOnError  = $ContinueFileCopyOnError
+                                UseRobocopy              = $UseRobocopy
+                                RobocopyParams           = $RobocopyParams
+                                RobocopyAdditionalParams = $RobocopyAdditionalParams
                             }
                             # Copy all files from the root source folder
                             Copy-File @CopyFileSplat
@@ -5246,18 +5247,20 @@ https://psappdeploytoolkit.com
                             Continue
                         }
                         If ($Recurse) {
-                            if ($RobocopyParams -notmatch '/E(\s|$)') {
+                            # Add /E to Robocopy parameters if it is not already included
+                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
+                            # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
-                        If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
-                            $RobocopyParams = "$RobocopyParams $RobocopyAdditionalParams"
-                        }
-                        $RobocopyArgs = "$RobocopyParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
+
+                        $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
@@ -17078,7 +17081,7 @@ namespace Api
     $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
     If (!($IsOOBEComplete)) {
-        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
+        Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitName
         $deployMode = 'Silent'
     }
 

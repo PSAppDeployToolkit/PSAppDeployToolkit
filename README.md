@@ -1,38 +1,43 @@
 # ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png)
 
-### What is the PowerShell App Deployment Toolkit?
+## Enterprise App Deployment, Simplified.
 
-The PowerShell App Deployment Toolkit provides a set of functions to perform common application deployment tasks and to interact with the user during a deployment. It simplifies the complex scripting challenges of deploying applications in the enterprise, provides a consistent deployment experience and improves installation success rates.
+PSAppDeployToolkit is a versatile solution that streamlines and standardizes the process of software deployment, making it easier than ever to manage your IT environment. It has a comprehensive set of features, such as dynamic logging, user interaction capabilities, and customizable functionality.
 
-The PowerShell App Deployment Toolkit can be used to replace your WiseScript, VBScript and Batch wrapper scripts with one versatile, re-usable and extensible tool.
+### Standardize and enhance every software deployment
 
-### What are the main features of the PowerShell App Deployment Toolkit?
+PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or Setup executable to provide it with enhanced capabilities.
 
-* **Easy To Use** - Any PowerShell beginner can use the template and the functions provided with the Toolkit to perform application deployments.
-* **Consistent** - Provides a consistent look and feel for all application deployments, regardless of complexity.
-* **Powerful** - Provides a set of functions to perform common deployment tasks, such as installing or uninstalling multiple applications, prompting users to close apps, setting registry keys, copying files, etc.
-* **User Interface** - Provides user interaction through customizable user interface dialogs boxes, progress dialogs and balloon tip notifications. Supports completely silent script execution as well.
-* **Localized** - The UI is localized in several languages and more can easily be added using the XML configuration file.
-* **Integration** - Integrates well with System Center Configuration Manager(SCCM); provides installation and uninstallation deployment types with options on how to handle exit codes, such as supressing reboots or returning a fast retry code. The toolkit also supports logging in CMTrace-compatible format.
-* **Updatable** - The logic engine and functions are separated from per-application scripts, so that you can update the toolkit when a new version is released and maintain backwards compatibility with your deployment scripts.
-* **Extensible** - The Toolkit can be easily extended to add custom scripts and functions.
-* **Helpful** - The Toolkit provides detailed logging of all actions performed and even includes a graphical console to browse the help documentation for the Toolkit functions.
+- Validate prerequisites such as dependencies on minimum software versions
+- Ensure that in-use applications are closed and prevent reopening during the deployment
+- Check with the user if now is a good time to start an install and allow them to defer
+- Uninstall existing applications and perform clean up operations
+- Capture any important settings that may be required for an upgrade or migration
+- Run the installation silently and capture logs in the event of an issue
+- Run post-installation configuration tasks to customize for your environment
+- Prompt the user to restart their computer if required, immediately, on a timer and with a deadline
 
-### System Requirements
+## Getting Started
 
-* Powershell 2.0+
-* .NET Framework 3.5+
+-> [System Requirements](https://psappdeploytoolkit.com/docs/getting-started/requirements)
+-> [Downloading](https://psappdeploytoolkit.com/docs/getting-started/download)
 
-### Links
+### PSAppDeployToolkit Links
 
-**-> [Homepage](https://psappdeploytoolkit.com)<br>
--> [Community Forums](https://discourse.psappdeploytoolkit.com/)<br>
--> [Releases](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)<br>
--> [Screenshots](https://psappdeploytoolkit.com/screenshots/)<br>
--> [About Us](https://psappdeploytoolkit.com/about/)**<br>
+-> [Homepage](https://psappdeploytoolkit.com)
+-> [Documentation](https://psappdeploytoolkit.com/docs)
+-> [Function & Variable References](https://psappdeploytoolkit.com/docs/reference)
+-> [Download Latest Release](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)
+-> [News](https://psappdeploytoolkit.com/blog)
 
-### License
+### Community Links
+
+-> [Discourse Forum](https://discourse.psappdeploytoolkit.com/)
+-> [Discord Chat](https://discord.com/channels/618712310185197588/627204361545842688)
+-> [Reddit](https://reddit.com/r/psadt)
+
+## License
 
 The PowerShell App Deployment Tool is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
+
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.

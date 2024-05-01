@@ -19,8 +19,8 @@
     <!--Configuration
     File Details-->
     <Config_File>
-        <Config_Version>3.10.0</Config_Version>
-        <Config_Date>03/27/2024</Config_Date>
+        <Config_Version>3.10.1</Config_Version>
+        <Config_Date>04/26/2024</Config_Date>
     </Config_File>
 
     <!--Toolkit
@@ -699,46 +699,47 @@
         <RestartPrompt_ButtonRestartNow>Reiniciar Agora</RestartPrompt_ButtonRestartNow>
     </UI_Messages_PT-BR>
     <UI_Messages_ES>
-        <DiskSpace_Message>Usted no tiene suficiente espacio en disco para completar la instalación
-            de:
+        <DiskSpace_Message>El espacio en disco es insuficiente para completar la instalación de:
             {0}
 
             Espacio requerido: {1}MB
             Espacio disponible: {2}MB
 
-            Por favor, espacio en disco libre suficiente para proceder con la instalación.</DiskSpace_Message>
+            Por favor, libere suficiente espacio en disco para continuar con la instalación.</DiskSpace_Message>
         <ClosePrompt_ButtonContinue>Continuar</ClosePrompt_ButtonContinue>
-        <ClosePrompt_ButtonContinueTooltip>Seleccione "Continuar" después de cerrar la(s) aplicacion(es) de la lista arriba.</ClosePrompt_ButtonContinueTooltip>
+        <ClosePrompt_ButtonContinueTooltip>Solo seleccione "Continuar" después de cerrar la(s) aplicacion(es) de la lista.</ClosePrompt_ButtonContinueTooltip>
         <ClosePrompt_ButtonClose>Cerrar Programas</ClosePrompt_ButtonClose>
         <ClosePrompt_ButtonDefer>Aplazar</ClosePrompt_ButtonDefer>
-        <ClosePrompt_Message>Los siguientes programas deben cerrarse antes de la instalación puede proceder.
+        <ClosePrompt_Message>Los siguientes programas deben estar cerrados antes de que la instalación pueda continuar.
 
-            Por favor, guarde el trabajo, cerrar los programas y luego continuar. Alternativamente, guarde su trabajo y haga clic en "Cerrar Programas".</ClosePrompt_Message>
-        <ClosePrompt_CountdownMessage>NOTA: El programa se cerrará automáticamente en:</ClosePrompt_CountdownMessage>
+            Guarde su trabajo, cierre los programas y luego continúe.
+            Alternativamente, guarde su trabajo y haga clic en "Cerrar programas".</ClosePrompt_Message>
+        <closePrompt_CountdownMessage>NOTA: El/los programa(s) se cerrará(n) automáticamente en:</closePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>La siguiente aplicación está a punto de instalarse:</DeferPrompt_WelcomeMessage>
-        <DeferPrompt_ExpiryMessage>Puede decidir aplazar la instalación hasta que expire el aplazamiento:</DeferPrompt_ExpiryMessage>
+        <DeferPrompt_ExpiryMessage>Puede optar por aplazar la instalación hasta que expire el aplazamiento:</DeferPrompt_ExpiryMessage>
         <DeferPrompt_WarningMessage>Una vez vencido el aplazamiento, ya no tendrá la opción de aplazar.</DeferPrompt_WarningMessage>
-        <DeferPrompt_RemainingDeferrals>Restante aplazamientos:</DeferPrompt_RemainingDeferrals>
-        <DeferPrompt_Deadline>Plazo:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>El {0} continuará automáticamente en:</WelcomePrompt_CountdownMessage>
+        <DeferPrompt_RemainingDeferrals>Aplazamientos restantes:</DeferPrompt_RemainingDeferrals>
+        <DeferPrompt_Deadline>Fecha tope:</DeferPrompt_Deadline>
+
+        <WelcomePrompt_CountdownMessage>La {0} continuará automáticamente en:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
         <DeploymentType_Install>Instalación</DeploymentType_Install>
         <DeploymentType_UnInstall>Desinstalación</DeploymentType_UnInstall>
         <DeploymentType_Repair>Reparación</DeploymentType_Repair>
-        <BalloonText_Start>comenzó a.</BalloonText_Start>
-        <BalloonText_Complete>completa.</BalloonText_Complete>
-        <BalloonText_RestartRequired>completa. Se requiere un reinicio.</BalloonText_RestartRequired>
-        <BalloonText_Error>failed.</BalloonText_Error>
-        <BalloonText_FastRetry>no.</BalloonText_FastRetry>
+        <BalloonText_Start>iniciada.</BalloonText_Start>
+        <BalloonText_Complete>completada.</BalloonText_Complete>
+        <BalloonText_RestartRequired>completada. Se requiere un reinicio.</BalloonText_RestartRequired>
+        <BalloonText_Error>fallida.</BalloonText_Error>
+        <BalloonText_FastRetry>incompleta.</BalloonText_FastRetry>
         <Progress_MessageInstall>Instalación en curso. Por favor, espere...</Progress_MessageInstall>
         <Progress_MessageUninstall>Desinstalación en curso. Por favor, espere...</Progress_MessageUninstall>
         <Progress_MessageRepair>Reparación en curso. Por favor, espere...</Progress_MessageRepair>
-        <BlockExecution_Message>Lanzar esta aplicación ha sido bloqueado temporalmente para que pueda completar una operación de instalación.</BlockExecution_Message>
-        <RestartPrompt_Title>Reiniciar Requerido</RestartPrompt_Title>
-        <RestartPrompt_Message>En orden para completar la instalación, debe reiniciar su computadora.</RestartPrompt_Message>
+        <BlockExecution_Message>La ejecución de esta aplicación se ha bloqueado temporalmente para que se pueda completar una operación de instalación.</BlockExecution_Message>
+        <RestartPrompt_Title>Reinicio Requerido</RestartPrompt_Title>
+        <RestartPrompt_Message>Para que la instalación se complete, debe reiniciar su equipo.</RestartPrompt_Message>
         <RestartPrompt_MessageTime>Por favor guarde su trabajo y reinicie dentro del tiempo asignado.</RestartPrompt_MessageTime>
-        <RestartPrompt_MessageRestart>El ordenador se reiniciará automáticamente al final de la cuenta regresiva de.</RestartPrompt_MessageRestart>
+        <RestartPrompt_MessageRestart>El equipo se reiniciará automáticamente al final de la cuenta regresiva.</RestartPrompt_MessageRestart>
         <RestartPrompt_TimeRemaining>Tiempo restante:</RestartPrompt_TimeRemaining>
         <RestartPrompt_ButtonRestartLater>Minimizar</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Reiniciar Ahora</RestartPrompt_ButtonRestartNow>
@@ -757,7 +758,8 @@
         <ClosePrompt_ButtonDefer>Skjut upp</ClosePrompt_ButtonDefer>
         <ClosePrompt_Message>Följande program måste stängas innan installationen kan fortsätta.
 
-            Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på "Fortsätt". Alternativt, spara ditt arbete och klicka på "Stäng Program".</ClosePrompt_Message>
+            Se till att spara ditt arbete, stäng de öppna programmen och klicka sen på "Fortsätt".
+            Alternativt, spara ditt arbete och klicka på "Stäng Program".</ClosePrompt_Message>
         <ClosePrompt_CountdownMessage>OBS: Programmen kommer automatiskt att avslutas om:</ClosePrompt_CountdownMessage>
         <DeferPrompt_WelcomeMessage>Följande applikation kommer att installeras:</DeferPrompt_WelcomeMessage>
         <DeferPrompt_ExpiryMessage>Du kan välja att fördröja installationen ett begränsat antal gånger under en begränsad tid:</DeferPrompt_ExpiryMessage>
@@ -1234,7 +1236,7 @@
         <RestartPrompt_ButtonRestartLater>Käynnistä uudelleen myöhemmin</RestartPrompt_ButtonRestartLater>
         <RestartPrompt_ButtonRestartNow>Käynnistä uudelleen heti</RestartPrompt_ButtonRestartNow>
     </UI_Messages_FI>
-        <!-- UI Messages - Turkish -->
+    <!-- UI Messages - Turkish -->
     <UI_Messages_TR>
         <!-- Close Program Prompt Text -->
         <DiskSpace_Message>Kurulumu tamamlamak için yeterli disk alanınız yok:
