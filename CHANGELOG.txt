@@ -3,12 +3,12 @@
 - Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped
 - Added missing elements to XML for Finnish language. Fixes #967
 - Added -ExcludeServiceProfiles to Get-UserProfiles, add passthru of Exclude-ServiceProfiles/ExcludeSystemProfiles/ExcludeDefaultUser/ExcludeNTAccount to Copy-FileToUserProfiles & Remove-FileFromUserProfiles
-- Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems	wqqqqqqqqqqqqqqq
+- Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems
 - Changed Robocopy folder creation code to match native PowerShell copy
 - Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege"
 - Resolved an issue where Execute-ProcessAsUser was not able to execute with RunLevel = 'LeastPrivilege' in some cases.
 - Resolved an issue in Execute-ProcessAsUser where the command line for two of the examples was incorrect
-- Resolved an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. #931
+- Resolved an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. #931 #984
 - Restored AppDeployToolkitExtensions.ps1 dot-sourcing to where it's always been dot-sourced from.
 - Resolved an issue where Robocopy mode of Copy-File fails to copy files or folders when path begins with .\ or ..\ - Fixes #938
 - Restored PowerShell v2 and .NET 3.5 Compatibility. Fixes #948
