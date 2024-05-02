@@ -1,8 +1,9 @@
-﻿**Version 3.10.1 [04/26/2024]**
+﻿**Version 3.10.1 [05/02/2024]**
 - Added Turkish language support. Fixes #973
 - Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped
 - Added missing elements to XML for Finnish language. Fixes #967
 - Added -ExcludeServiceProfiles to Get-UserProfiles, add passthru of Exclude-ServiceProfiles/ExcludeSystemProfiles/ExcludeDefaultUser/ExcludeNTAccount to Copy-FileToUserProfiles & Remove-FileFromUserProfiles
+- Added back the folder structure, changelog, license, and examples to the release zip file
 - Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems
 - Changed Robocopy folder creation code to match native PowerShell copy
 - Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege"
