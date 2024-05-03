@@ -1,1 +1,1 @@
-"%~dp0Deploy-Application.exe" -DeploymentType Install -DeployMode Silent
+"%~dp0Deploy-Application.exe" -DeploymentType Install -DeployMode Silent -AllowRebootPassThru
