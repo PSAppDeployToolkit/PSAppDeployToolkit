@@ -1,4 +1,4 @@
-## Invoke-ServiceUI.ps1
+# Invoke-ServiceUI.ps1
 
 ## Description
 
@@ -6,7 +6,7 @@ This will launch the toolkit silently if the chosen process (explorer.exe by def
 
 An alternate ProcessName can be specified if you only want the toolkit to be visible when a specific application is running.
 
-Download MDT here: https://www.microsoft.com/en-us/download/details.aspx?id=54259
+Download MDT here: <https://www.microsoft.com/en-us/download/details.aspx?id=54259>
 
 There are x86 and x64 builds of ServiceUI available in MDT under 'Microsoft Deployment Toolkit\Templates\Distribution\Tools'. Rename these to ServiceUI_x86.exe and ServiceUI_x64.exe and place them with this script in the root of the toolkit next to Deploy-Application.exe.
 
