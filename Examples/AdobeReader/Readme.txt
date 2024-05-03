@@ -1,1 +1,0 @@
-Instructions for using this script are included in the PSAppDeployToolkit.pdf document in the root of this project.
