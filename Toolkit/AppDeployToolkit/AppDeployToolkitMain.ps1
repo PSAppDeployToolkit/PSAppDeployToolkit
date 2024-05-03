@@ -109,7 +109,7 @@ Param (
 ## Variables: Script Info
 [Version]$appDeployMainScriptVersion = [Version]'3.10.1'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.10.0'
-[String]$appDeployMainScriptDate = '05/02/2024'
+[String]$appDeployMainScriptDate = '05/03/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -702,6 +702,39 @@ If (Test-Path -LiteralPath 'variable:deferDays') {
 }
 ## Variables: Resolve Parameters. For use in a pipeline
 filter Resolve-Parameters {
+    <#
+.SYNOPSIS
+
+Resolve the parameters of a function call to a string.
+
+.DESCRIPTION
+
+Resolve the parameters of a function call to a string.
+
+.PARAMETER Parameter
+
+The name of the function this function is invoked from.
+
+.INPUTS
+
+System.Object
+
+.OUTPUTS
+
+System.Object
+
+.EXAMPLE
+
+Resolve-Parameters -Parameter $PSBoundParameters | Out-String
+
+.NOTES
+
+This is an internal script function and should typically not be called directly.
+
+.LINK
+
+https://psappdeploytoolkit.com
+#>
     Param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]$Parameter
@@ -3303,6 +3336,12 @@ Hides all parameters passed to the MSI or MSP file from the toolkit Log file.
 
 Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 
+.PARAMETER private:LogName
+
+Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+
+For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
+
 .PARAMETER LogName
 
 Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
@@ -3785,6 +3824,11 @@ Include matches against updates and hotfixes in results.
 .PARAMETER LoggingOptions
 
 Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
+
+.PARAMETER private:LogName
+
+Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
 .PARAMETER LogName
 
@@ -4625,7 +4669,7 @@ Function Get-MsiExitCodeMessage {
 
     Get message for MSI error code by reading it from msimsg.dll
 
-.PARAMETER MsiErrorCode
+.PARAMETER MsiExitCode
 
     MSI error code
 
@@ -7492,6 +7536,10 @@ Only specify the parameters that you want to change.
 
 Path to the shortcut to be changed
 
+.PARAMETER PathHash
+
+Hashtable of parameters to be changed
+
 .PARAMETER TargetPath
 
 Changes target path or URL that the shortcut launches
@@ -8931,6 +8979,14 @@ Get the history of deferrals from the registry for the current application, if i
 
 Get the history of deferrals from the registry for the current application, if it exists.
 
+.PARAMETER DeferTimesRemaining
+
+Specify the number of deferrals remaining.
+
+.PARAMETER DeferDeadline
+
+Specify the deadline for the deferral.
+
 .INPUTS
 
 None
@@ -8985,6 +9041,14 @@ Set the history of deferrals in the registry for the current application.
 .DESCRIPTION
 
 Set the history of deferrals in the registry for the current application.
+
+.PARAMETER DeferTimesRemaining
+
+Specify the number of deferrals remaining.
+
+.PARAMETER DeferDeadline
+
+Specify the deadline for the deferral.
 
 .INPUTS
 
