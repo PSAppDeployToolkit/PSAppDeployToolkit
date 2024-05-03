@@ -1,4 +1,4 @@
-﻿**Version 3.10.1 [05/02/2024]**
+﻿**Version 3.10.1 [05/03/2024]**
 - Added Turkish language support. Fixes #973
 - Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped
 - Added missing elements to XML for Finnish language. Fixes #967
