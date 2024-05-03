@@ -4,8 +4,13 @@
 - Added missing elements to XML for Finnish language. Fixes #967
 - Added -ExcludeServiceProfiles to Get-UserProfiles, add passthru of Exclude-ServiceProfiles/ExcludeSystemProfiles/ExcludeDefaultUser/ExcludeNTAccount to Copy-FileToUserProfiles & Remove-FileFromUserProfiles
 - Added back the folder structure, changelog, license, and examples to the release zip file
+- Added VLC and WinSCP as new example deployment scripts
+- Added ServiceUI launch helper script and launch testing batch files to examples
+- Added Contributing Guide, Code of Conduct, Security Policy and Support docs
+- Added GitHub 0form-based Bug Report and Feature Request templates
+- Added RoboCopyParams to Copy-File, which allows full override of Robocopy Parameters. Added /IT /IM to default parameters.
 - Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems
-- Changed Robocopy folder creation code to match native PowerShell copy
+- Changed Robocopy folder creation code to match native PowerShell copy-
 - Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege"
 - Resolved an issue where Execute-ProcessAsUser was not able to execute with RunLevel = 'LeastPrivilege' in some cases.
 - Resolved an issue in Execute-ProcessAsUser where the command line for two of the examples was incorrect
@@ -15,6 +20,8 @@
 - Restored PowerShell v2 and .NET 3.5 Compatibility. Fixes #948
 - Removed check on SecurityHealthSystray - Fixes #941
 - Removed the PDF documentation, the website will be the primary source for this going forward
+- Updated existing example deployment scripts
+- Updated Pull Request template
 - Updated Spanish translations. Fixes #805
 
 **Version 3.10.0 [03/27/2024]**
