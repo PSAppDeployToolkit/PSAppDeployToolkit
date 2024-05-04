@@ -126,8 +126,8 @@ https://psappdeploytoolkit.com
         [String]$schTaskBlockedAppsName = $installName + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-        If (Test-Path -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-            $null = Remove-Item -LiteralPath "$configToolkitTempPath\PSAppDeployToolkit" -Force -ErrorAction 'SilentlyContinue'
+        If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit_Options.Toolkit_TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+            $null = Remove-Item -LiteralPath "$($Script:ADT.Config.Toolkit_Options.Toolkit_TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -Force -ErrorAction 'SilentlyContinue'
         }
 
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {

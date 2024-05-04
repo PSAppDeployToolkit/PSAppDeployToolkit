@@ -265,6 +265,70 @@ function Initialize-ADTVariableDatabase
     $variables.Add('LocalAdministratorsGroup', [string](Get-SidTypeAccountName -WellKnownSidType BuiltinAdministratorsSid))
     $variables.Add('SessionZero', [boolean]($variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount))
 
+    ## Variables: Priary user language
+    $variables.Add('HKUPrimaryLanguageShort', [string]$(if ($variables.RunAsActiveUser)
+    {
+        # Read language defined by Group Policy
+        if (!([string[]]$HKULanguages = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MUI\Settings' -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore))
+        {
+            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Software\Policies\Microsoft\Windows\Control Panel\Desktop" -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore
+        }
+
+        # Read language for Win Vista & higher machines
+        if (!$HKULanguages)
+        {
+            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\Desktop" -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore
+        }
+        if (!$HKULanguages)
+        {
+            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\Desktop\MuiCached" -ErrorAction Ignore | Select-Object -ExpandProperty MachinePreferredUILanguages -ErrorAction Ignore
+        }
+        if (!$HKULanguages)
+        {
+            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International" -ErrorAction Ignore | Select-Object -ExpandProperty LocaleName -ErrorAction Ignore
+        }
+
+        # Read language for Win XP machines
+        if (!$HKULanguages -and ($HKULocale = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International" -ErrorAction Ignore | Select-Object -ExpandProperty Locale -ErrorAction Ignore))
+        {
+            [string[]]$HKULanguages = ([Globalization.CultureInfo]([System.Convert]::ToInt32('0x' + $HKULocale, 16))).Name
+        }
+
+        # Determine the language if we found anything of use.
+        if ($HKULanguages)
+        {
+            [cultureinfo]$PrimaryWindowsUILanguage = $HKULanguages[0]
+            [string]$HKUPrimaryLanguageShort = $PrimaryWindowsUILanguage.TwoLetterISOLanguageName.ToUpper()
+
+            #  If the detected language is Chinese, determine if it is simplified or traditional Chinese
+            if ($HKUPrimaryLanguageShort -eq 'ZH')
+            {
+                if ($PrimaryWindowsUILanguage.EnglishName -match 'Simplified')
+                {
+                    [string]$HKUPrimaryLanguageShort = 'ZH-Hans'
+                }
+                if ($PrimaryWindowsUILanguage.EnglishName -match 'Traditional')
+                {
+                    [string]$HKUPrimaryLanguageShort = 'ZH-Hant'
+                }
+            }
+
+            #  If the detected language is Portuguese, determine if it is Brazilian Portuguese
+            if ($HKUPrimaryLanguageShort -eq 'PT')
+            {
+                if ($PrimaryWindowsUILanguage.ThreeLetterWindowsLanguageName -eq 'PTB')
+                {
+                    [string]$HKUPrimaryLanguageShort = 'PT-BR'
+                }
+            }
+
+            if (![System.String]::IsNullOrWhiteSpace($HKUPrimaryLanguageShort))
+            {
+                $HKUPrimaryLanguageShort
+            }
+        }
+    }))
+
     # Store variables within the module's scope.
     $Script:ADT.Environment = $variables
 }
@@ -303,5 +367,190 @@ function Import-PsadtVariables
     {
         # When dot-sourcing during the v4.0 transition, just pump variables into the scope above.
         $Script:ADT.Environment.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Scope 1 -Force})
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+filter Convert-PsadtConfigToObjects
+{
+    if ($null -eq $_)
+    {
+        # Just return for null objects.
+        return
+    }
+    elseif ($_ -is [System.String])
+    {
+        # Because XML sucks and everything's a string, we need to process the value.
+        # Before doing so, expand any variables. We don't know what the caller's doing here.
+        $str = $ExecutionContext.InvokeCommand.ExpandString($_.Trim())
+        $val = $null
+
+        # Process the string.
+        if ([System.String]::IsNullOrWhiteSpace($str))
+        {
+            # String was empty, just return.
+            return
+        }
+        elseif (($str -match '(\d+\.){2,}') -and [System.Version]::TryParse($str, [ref]$val))
+        {
+            # String is a version, return the parsed result.
+            return $val
+        }
+        elseif ([System.Double]::TryParse($str, [ref]$val))
+        {
+            # String is a double, return the parsed result.
+            return $val
+        }
+        elseif ([System.UInt32]::TryParse($str, [ref]$val))
+        {
+            # String is an unsigned int, return the parsed result.
+            return $val
+        }
+        elseif ([System.Int32]::TryParse($str, [ref]$val))
+        {
+            # String is an signed int, return the parsed result.
+            return $val
+        }
+        elseif ([System.Boolean]::TryParse($str, [ref]$val))
+        {
+            # String is a bool, return the parsed result.
+            return $val
+        }
+        else
+        {
+            # String is just a string. Split, trim, join, then return it.
+            return [System.String]::Join("`n", $str.Split("`n").Trim())
+        }
+    }
+    else
+    {
+        # We've got an XML element to process.
+        # Open up a hashtable for returning at the end.
+        $obj = [ordered]@{}
+
+        # Recursively process each property.
+        foreach ($property in ($_ | Get-Member -MemberType Property).Name.Where({!$_.Equals('#comment')}))
+        {
+            if ($null -ne ($_.$property))
+            {
+                $obj.Add($property, ($_.$property | & $MyInvocation.MyCommand))
+            }
+        }
+
+        # Return the object if it's not empty.
+        if ($obj.Count)
+        {
+            return [pscustomobject]$obj
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-PsadtUiLanguage
+{
+    # If an override has been configured, return it immediately.
+    if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
+    {
+        return "UI_Messages_$($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)"
+    }
+
+    # Get the logged on user's language value, otherwise fall back to PowerShell's.
+    $langId = if ($Script:ADT.Environment.HKUPrimaryLanguageShort)
+    {
+        $HKUPrimaryLanguageShort
+    }
+    else
+    {
+        $currentLanguage
+    }
+
+    # Default to English if the detected UI language is not available in the XML config file.
+    if (!$Script:ADT.Config.PSObject.Properties.Name.Contains("UI_Messages_$langId"))
+    {
+        return 'EN'
+    }
+    return $langId
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Import-PsadtConfig
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
+    )
+
+    # We need the PSADT variables within this function's scope
+    # so we can expand variables when we convert the XML data.
+    if (!$Script:DotSourced)
+    {
+        # Return early if we've already initialised and we're not re-initing.
+        if ($Script:ADT.Config -and $Script:ADT.Strings -and $Script:ADT.Sessions -and $Script:ADT.Sessions.Count -and !$Force)
+        {
+            return
+        }
+        Import-PsadtVariables -Cmdlet $PSCmdlet -Force:$Force
+    }
+
+    # Load in the XML file, doing it correctly and not with a simple cast.
+    $xml = [System.Xml.XmlDocument]::new()
+    $xml.Load([System.Xml.XmlReader]::Create("$PSScriptRoot\AppDeployToolkitConfig.xml"))
+    
+    # Store config and UI within the module's scope.
+    $Script:ADT.Config = ($xml | Convert-PsadtConfigToObjects).AppDeployToolkit_Config
+    $Script:ADT.Strings = $Script:ADT.Config."UI_Messages_$(Get-PsadtUiLanguage)"
+
+    # Process logo files.
+    $Script:ADT.Config.BannerIcon_Options.Icon_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.Icon_Filename)").Path
+    $Script:ADT.Config.BannerIcon_Options.LogoImage_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.LogoImage_Filename)").Path
+    $Script:ADT.Config.BannerIcon_Options.Banner_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.Banner_Filename)").Path
+
+    #  Check that dependency files are present
+    if (![System.IO.File]::Exists($Script:ADT.Config.BannerIcon_Options.Icon_Filename))
+    {
+        throw [System.InvalidOperationException]::new('App Deploy logo icon file not found.')
+    }
+    if (![System.IO.File]::Exists($Script:ADT.Config.BannerIcon_Options.Banner_Filename))
+    {
+        throw [System.InvalidOperationException]::new('App Deploy logo banner file not found.')
+    }
+
+    # Change paths to user accessible ones if user isn't an admin.
+    if (!$Script:ADT.Environment.IsAdmin)
+    {
+        if ($Script:ADT.Config.Toolkit_Options.Toolkit_TempPathNoAdminRights)
+        {
+            $Script:ADT.Config.Toolkit_Options.Toolkit_TempPath = $Script:ADT.Config.Toolkit_Options.Toolkit_TempPathNoAdminRights
+        }
+        if ($Script:ADT.Config.Toolkit_Options.Toolkit_RegPathNoAdminRights)
+        {
+            $Script:ADT.Config.Toolkit_Options.Toolkit_RegPath = $Script:ADT.Config.Toolkit_Options.Toolkit_RegPathNoAdminRights
+        }
+        if ($Script:ADT.Config.Toolkit_Options.Toolkit_LogPathNoAdminRights)
+        {
+            $Script:ADT.Config.Toolkit_Options.Toolkit_LogPath = $Script:ADT.Config.Toolkit_Options.Toolkit_LogPathNoAdminRights
+        }
+        if ($Script:ADT.Config.MSI_Options.MSI_LogPathNoAdminRights)
+        {
+            $Script:ADT.Config.MSI_Options.MSI_LogPath = $Script:ADT.Config.MSI_Options.MSI_LogPathNoAdminRights
+        }
     }
 }

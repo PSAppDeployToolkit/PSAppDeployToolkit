@@ -118,6 +118,7 @@ New-Variable -Name ADT -Option Constant -Value ([ordered]@{
 })
 
 Import-PsadtVariables -Cmdlet $PSCmdlet
+Import-PsadtConfig
 
 ## Variables: Script Info
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
@@ -158,199 +159,10 @@ If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf
 #  App Deploy Optional Extensions File
 [String]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 
-## Import variables from XML configuration file
-[Xml.XmlDocument]$xmlConfigFile = Get-Content -LiteralPath $AppDeployConfigFile -Encoding 'UTF8'
-[Xml.XmlElement]$xmlConfig = $xmlConfigFile.AppDeployToolkit_Config
-#  Get Config File Details
-[Xml.XmlElement]$configConfigDetails = $xmlConfig.Config_File
-[String]$configConfigVersion = [Version]$configConfigDetails.Config_Version
-[String]$configConfigDate = $configConfigDetails.Config_Date
-
-# Get Banner and Icon details
-[Xml.XmlElement]$xmlBannerIconOptions = $xmlConfig.BannerIcon_Options
-[String]$configBannerIconFileName = $xmlBannerIconOptions.Icon_Filename
-[String]$configBannerLogoImageFileName = $xmlBannerIconOptions.LogoImage_Filename
-[String]$configBannerIconBannerName = $xmlBannerIconOptions.Banner_Filename
-[Int32]$appDeployLogoBannerMaxHeight = $xmlBannerIconOptions.Banner_MaxHeight
-
-# Get Toast Notification Options
-[Xml.XmlElement]$xmlToastOptions = $xmlConfig.Toast_Options
-[Boolean]$configToastDisable = [Boolean]::Parse($xmlToastOptions.Toast_Disable)
-[String]$configToastAppName = $xmlToastOptions.Toast_AppName
-
-[String]$appDeployLogoIcon = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerIconFileName)).FullName
-[String]$appDeployLogoImage = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerLogoImageFileName)).FullName
-[String]$appDeployLogoBanner = (Get-ChildItem -LiteralPath (Join-Path -Path $scriptRoot -ChildPath $configBannerIconBannerName)).FullName
-#  Check that dependency files are present
-If (-not (Test-Path -LiteralPath $appDeployLogoIcon -PathType 'Leaf')) {
-    Throw 'App Deploy logo icon file not found.'
-}
-If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
-    Throw 'App Deploy logo banner file not found.'
-}
-
-#  Get Toolkit Options
-[Xml.XmlElement]$xmlToolkitOptions = $xmlConfig.Toolkit_Options
-[Boolean]$configToolkitRequireAdmin = [Boolean]::Parse($xmlToolkitOptions.Toolkit_RequireAdmin)
-[String]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPath)
-[String]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPath
-[String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPath)
-[Boolean]$configToolkitCompressLogs = [Boolean]::Parse($xmlToolkitOptions.Toolkit_CompressLogs)
-[String]$configToolkitLogStyle = $xmlToolkitOptions.Toolkit_LogStyle
-[Boolean]$configToolkitLogWriteToHost = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogWriteToHost)
-[Boolean]$configToolkitLogDebugMessage = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogDebugMessage)
-[Boolean]$configToolkitLogAppend = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogAppend)
-[Double]$configToolkitLogMaxSize = $xmlToolkitOptions.Toolkit_LogMaxSize
-[Int]$configToolkitLogMaxHistory = $xmlToolkitOptions.Toolkit_LogMaxHistory
-[Boolean]$configToolkitUseRobocopy = [Boolean]::Parse($xmlToolkitOptions.Toolkit_UseRobocopy)
-[String]$configToolkitCachePath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_CachePath)
-[Boolean]$configToolkitOobeDetection = [Boolean]::Parse($xmlToolkitOptions.Toolkit_OobeDetection)
-[Boolean]$configToolkitSessionDetection = [Boolean]::Parse($xmlToolkitOptions.Toolkit_SessionDetection)
-#  Get MSI Options
-[Xml.XmlElement]$xmlConfigMSIOptions = $xmlConfig.MSI_Options
-[String]$configMSILoggingOptions = $xmlConfigMSIOptions.MSI_LoggingOptions
-[String]$configMSIInstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_InstallParams)
-[String]$configMSISilentParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_SilentParams)
-[String]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
-[String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
-[Int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
-#  Change paths to user accessible ones if user isn't an admin
-If (!$IsAdmin) {
-    If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {
-        [String]$configToolkitTempPath = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_TempPathNoAdminRights)
-    }
-    If ($xmlToolkitOptions.Toolkit_RegPathNoAdminRights) {
-        [String]$configToolkitRegPath = $xmlToolkitOptions.Toolkit_RegPathNoAdminRights
-    }
-    If ($xmlToolkitOptions.Toolkit_LogPathNoAdminRights) {
-        [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathNoAdminRights)
-    }
-    If ($xmlConfigMSIOptions.MSI_LogPathNoAdminRights) {
-        [String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPathNoAdminRights)
-    }
-}
-#  Get UI Options
-[Xml.XmlElement]$xmlConfigUIOptions = $xmlConfig.UI_Options
-[String]$configInstallationUILanguageOverride = $xmlConfigUIOptions.InstallationUI_LanguageOverride
-[Boolean]$configShowBalloonNotifications = [Boolean]::Parse($xmlConfigUIOptions.ShowBalloonNotifications)
-[Int32]$configInstallationUITimeout = $xmlConfigUIOptions.InstallationUI_Timeout
-[Int32]$configInstallationUIExitCode = $xmlConfigUIOptions.InstallationUI_ExitCode
-[Int32]$configInstallationDeferExitCode = $xmlConfigUIOptions.InstallationDefer_ExitCode
-[Int32]$configInstallationPersistInterval = $xmlConfigUIOptions.InstallationPrompt_PersistInterval
-[Int32]$configInstallationRestartPersistInterval = $xmlConfigUIOptions.InstallationRestartPrompt_PersistInterval
-[Int32]$configInstallationPromptToSave = $xmlConfigUIOptions.InstallationPromptToSave_Timeout
-[Boolean]$configInstallationWelcomePromptDynamicRunningProcessEvaluation = [Boolean]::Parse($xmlConfigUIOptions.InstallationWelcomePrompt_DynamicRunningProcessEvaluation)
-[Int32]$configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval = $xmlConfigUIOptions.InstallationWelcomePrompt_DynamicRunningProcessEvaluationInterval
-#  Define ScriptBlock for Loading Message UI Language Options (default for English if no localization found)
-[ScriptBlock]$xmlLoadLocalizedUIMessages = {
-    #  If a user is logged on, then get primary UI language for logged on user (even if running in session 0)
-    If ($RunAsActiveUser) {
-        #  Read language defined by Group Policy
-        [String[]]$HKULanguages = $null
-        If (-not $HKULanguages) {
-            [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MUI\Settings' -Value 'PreferredUILanguages'
-        }
-        If (-not $HKULanguages) {
-            [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
-        }
-        #  Read language for Win Vista & higher machines
-        If (-not $HKULanguages) {
-            [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'PreferredUILanguages' -SID $RunAsActiveUser.SID
-        }
-        If (-not $HKULanguages) {
-            [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\MuiCached' -Value 'MachinePreferredUILanguages' -SID $RunAsActiveUser.SID
-        }
-        If (-not $HKULanguages) {
-            [String[]]$HKULanguages = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\International' -Value 'LocaleName' -SID $RunAsActiveUser.SID
-        }
-        #  Read language for Win XP machines
-        If (-not $HKULanguages) {
-            [String]$HKULocale = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\International' -Value 'Locale' -SID $RunAsActiveUser.SID
-            If ($HKULocale) {
-                [Int32]$HKULocale = [Convert]::ToInt32('0x' + $HKULocale, 16)
-                [String[]]$HKULanguages = ([Globalization.CultureInfo]($HKULocale)).Name
-            }
-        }
-        If ($HKULanguages) {
-            [Globalization.CultureInfo]$PrimaryWindowsUILanguage = [Globalization.CultureInfo]($HKULanguages[0])
-            [String]$HKUPrimaryLanguageShort = $PrimaryWindowsUILanguage.TwoLetterISOLanguageName.ToUpper()
-
-            #  If the detected language is Chinese, determine if it is simplified or traditional Chinese
-            If ($HKUPrimaryLanguageShort -eq 'ZH') {
-                If ($PrimaryWindowsUILanguage.EnglishName -match 'Simplified') {
-                    [String]$HKUPrimaryLanguageShort = 'ZH-Hans'
-                }
-                If ($PrimaryWindowsUILanguage.EnglishName -match 'Traditional') {
-                    [String]$HKUPrimaryLanguageShort = 'ZH-Hant'
-                }
-            }
-
-            #  If the detected language is Portuguese, determine if it is Brazilian Portuguese
-            If ($HKUPrimaryLanguageShort -eq 'PT') {
-                If ($PrimaryWindowsUILanguage.ThreeLetterWindowsLanguageName -eq 'PTB') {
-                    [String]$HKUPrimaryLanguageShort = 'PT-BR'
-                }
-            }
-        }
-    }
-
-    If ($HKUPrimaryLanguageShort) {
-        #  Use the primary UI language of the logged in user
-        [String]$xmlUIMessageLanguage = "UI_Messages_$HKUPrimaryLanguageShort"
-    }
-    Else {
-        #  Default to UI language of the account executing current process (even if it is the SYSTEM account)
-        [String]$xmlUIMessageLanguage = "UI_Messages_$currentLanguage"
-    }
-    #  Default to English if the detected UI language is not available in the XMl config file
-    If (-not ($xmlConfig.$xmlUIMessageLanguage)) {
-        [String]$xmlUIMessageLanguage = 'UI_Messages_EN'
-    }
-    #  Override the detected language if the override option was specified in the XML config file
-    If ($configInstallationUILanguageOverride) {
-        [String]$xmlUIMessageLanguage = "UI_Messages_$configInstallationUILanguageOverride"
-    }
-
-    [Xml.XmlElement]$xmlUIMessages = $xmlConfig.$xmlUIMessageLanguage
-    [String]$configDiskSpaceMessage = [String]::Join("`n", $xmlUIMessages.DiskSpace_Message.Split("`n").Trim())
-    [String]$configBalloonTextStart = [String]::Join("`n", $xmlUIMessages.BalloonText_Start.Split("`n").Trim())
-    [String]$configBalloonTextComplete = [String]::Join("`n", $xmlUIMessages.BalloonText_Complete.Split("`n").Trim())
-    [String]$configBalloonTextRestartRequired = [String]::Join("`n", $xmlUIMessages.BalloonText_RestartRequired.Split("`n").Trim())
-    [String]$configBalloonTextFastRetry = [String]::Join("`n", $xmlUIMessages.BalloonText_FastRetry.Split("`n").Trim())
-    [String]$configBalloonTextError = [String]::Join("`n", $xmlUIMessages.BalloonText_Error.Split("`n").Trim())
-    [String]$configProgressMessageInstall = [String]::Join("`n", $xmlUIMessages.Progress_MessageInstall.Split("`n").Trim())
-    [String]$configProgressMessageUninstall = [String]::Join("`n", $xmlUIMessages.Progress_MessageUninstall.Split("`n").Trim())
-    [String]$configProgressMessageRepair = [String]::Join("`n", $xmlUIMessages.Progress_MessageRepair.Split("`n").Trim())
-    [String]$configClosePromptMessage = [String]::Join("`n", $xmlUIMessages.ClosePrompt_Message.Split("`n").Trim())
-    [String]$configClosePromptButtonClose = [String]::Join("`n", $xmlUIMessages.ClosePrompt_ButtonClose.Split("`n").Trim())
-    [String]$configClosePromptButtonDefer = [String]::Join("`n", $xmlUIMessages.ClosePrompt_ButtonDefer.Split("`n").Trim())
-    [String]$configClosePromptButtonContinue = [String]::Join("`n", $xmlUIMessages.ClosePrompt_ButtonContinue.Split("`n").Trim())
-    [String]$configClosePromptButtonContinueTooltip = [String]::Join("`n", $xmlUIMessages.ClosePrompt_ButtonContinueTooltip.Split("`n").Trim())
-    [String]$configClosePromptCountdownMessage = [String]::Join("`n", $xmlUIMessages.ClosePrompt_CountdownMessage.Split("`n").Trim())
-    [String]$configDeferPromptWelcomeMessage = [String]::Join("`n", $xmlUIMessages.DeferPrompt_WelcomeMessage.Split("`n").Trim())
-    [String]$configDeferPromptExpiryMessage = [String]::Join("`n", $xmlUIMessages.DeferPrompt_ExpiryMessage.Split("`n").Trim())
-    [String]$configDeferPromptWarningMessage = [String]::Join("`n", $xmlUIMessages.DeferPrompt_WarningMessage.Split("`n").Trim())
-    [String]$configDeferPromptRemainingDeferrals = [String]::Join("`n", $xmlUIMessages.DeferPrompt_RemainingDeferrals.Split("`n").Trim())
-    [String]$configDeferPromptDeadline = [String]::Join("`n", $xmlUIMessages.DeferPrompt_Deadline.Split("`n").Trim())
-    [String]$configBlockExecutionMessage = [String]::Join("`n", $xmlUIMessages.BlockExecution_Message.Split("`n").Trim())
-    [String]$configDeploymentTypeInstall = [String]::Join("`n", $xmlUIMessages.DeploymentType_Install.Split("`n").Trim())
-    [String]$configDeploymentTypeUnInstall = [String]::Join("`n", $xmlUIMessages.DeploymentType_UnInstall.Split("`n").Trim())
-    [String]$configDeploymentTypeRepair = [String]::Join("`n", $xmlUIMessages.DeploymentType_Repair.Split("`n").Trim())
-    [String]$configRestartPromptTitle = [String]::Join("`n", $xmlUIMessages.RestartPrompt_Title.Split("`n").Trim())
-    [String]$configRestartPromptMessage = [String]::Join("`n", $xmlUIMessages.RestartPrompt_Message.Split("`n").Trim())
-    [String]$configRestartPromptMessageTime = [String]::Join("`n", $xmlUIMessages.RestartPrompt_MessageTime.Split("`n").Trim())
-    [String]$configRestartPromptMessageRestart = [String]::Join("`n", $xmlUIMessages.RestartPrompt_MessageRestart.Split("`n").Trim())
-    [String]$configRestartPromptTimeRemaining = [String]::Join("`n", $xmlUIMessages.RestartPrompt_TimeRemaining.Split("`n").Trim())
-    [String]$configRestartPromptButtonRestartLater = [String]::Join("`n", $xmlUIMessages.RestartPrompt_ButtonRestartLater.Split("`n").Trim())
-    [String]$configRestartPromptButtonRestartNow = [String]::Join("`n", $xmlUIMessages.RestartPrompt_ButtonRestartNow.Split("`n").Trim())
-    [String]$configWelcomePromptCountdownMessage = [String]::Join("`n", $xmlUIMessages.WelcomePrompt_CountdownMessage.Split("`n").Trim())
-    [String]$configWelcomePromptCustomMessage = [String]::Join("`n", $xmlUIMessages.WelcomePrompt_CustomMessage.Split("`n").Trim())
-}
-
 ## Variables: Script Directories
 [String]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
 [String]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
-[String]$dirAppDeployTemp = Join-Path -Path $configToolkitTempPath -ChildPath $appDeployToolkitName
+[String]$dirAppDeployTemp = Join-Path -Path $Script:ADT.Config.Toolkit_Options.Toolkit_TempPath -ChildPath $appDeployToolkitName
 
 If (-not (Test-Path -LiteralPath $dirAppDeployTemp -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
     $null = New-Item -Path $dirAppDeployTemp -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
@@ -608,30 +420,6 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 [ScriptBlock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
 [ScriptBlock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
 
-## Define ScriptBlock for getting details for all logged on users
-[ScriptBlock]$GetLoggedOnUserDetails = {
-    [PSObject[]]$LoggedOnUserSessions = Get-LoggedOnUser
-    [String[]]$usersLoggedOn = $LoggedOnUserSessions | ForEach-Object { $_.NTAccount }
-
-    If ($usersLoggedOn) {
-        #  Get account and session details for the logged on user session that the current process is running under. Note that the account used to execute the current process may be different than the account that is logged into the session (i.e. you can use "RunAs" to launch with different credentials when logged into an account).
-        [PSObject]$CurrentLoggedOnUserSession = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
-
-        #  Get account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-        [PSObject]$CurrentConsoleUserSession = $LoggedOnUserSessions | Where-Object { $_.IsConsoleSession }
-
-        ## Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-        #  If a console user exists, then that will be the active user session.
-        #  If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
-        If ($IsMultiSessionOS) {
-            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsCurrentSession }
-        }
-        Else {
-            [PSObject]$RunAsActiveUser = $LoggedOnUserSessions | Where-Object { $_.IsActiveUserSession }
-        }
-    }
-}
-
 [ScriptBlock]$GetLoggedOnUserTempPath = {
     # When running in system context we can derive the native "C:\Users" base path from the Public environment variable
     [String]$dirUserProfile = Split-path $envPublic -ErrorAction 'SilentlyContinue'
@@ -653,14 +441,8 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
-## Dot source ScriptBlock to get a list of all users logged on to the system (both local and RDP users), and discover session details for account executing script
-. $GetLoggedOnUserDetails
-
 ## Dot source ScriptBlock to create temporary directory of logged on user
 . $GetLoggedOnUserTempPath
-
-## Dot source ScriptBlock to load localized UI messages from config XML
-. $xmlLoadLocalizedUIMessages
 
 ## Dot source ScriptBlock to get system DPI scale factor
 . $GetDisplayScaleFactor
@@ -797,7 +579,7 @@ If (-not $installName) {
 [String]$installName = (($installName -replace ' ', '').Trim('_') -replace '[_]+', '_')
 
 ## Set the Defer History registry path
-[String]$regKeyDeferHistory = "$configToolkitRegPath\$appDeployToolkitName\DeferHistory\$installName"
+[String]$regKeyDeferHistory = "$Script:ADT.Config.Toolkit_Options.Toolkit_RegPath\$appDeployToolkitName\DeferHistory\$installName"
 
 ## Variables: Log Files
 If ($ReferredLogName) {
@@ -812,9 +594,9 @@ If (-not $logName) {
         [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '_' + (Remove-InvalidFileNameChars -Name $EnvUserName) + '.log'
     }
 }
-#  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
+#  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($Script:ADT.Config.Toolkit_Options.Toolkit_LogPath) after being zipped.
 [String]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
-If ($configToolkitCompressLogs) {
+If ($Script:ADT.Config.Toolkit_Options.Toolkit_CompressLogs) {
     #  If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues
     If (Test-Path -LiteralPath $logTempFolder -PathType 'Container' -ErrorAction 'SilentlyContinue') {
         $null = Remove-Item -LiteralPath $logTempFolder -Recurse -Force -ErrorAction 'SilentlyContinue'
@@ -848,8 +630,8 @@ Catch {
 Try {
     [System.Drawing.Bitmap]$appDeployLogoBannerObject = New-Object -TypeName 'System.Drawing.Bitmap' -ArgumentList ($appDeployLogoBanner)
     [Int32]$appDeployLogoBannerHeight = [System.Math]::Ceiling(450 * ($appDeployLogoBannerObject.Height/$appDeployLogoBannerObject.Width))
-    If ($appDeployLogoBannerHeight -gt $appDeployLogoBannerMaxHeight) {
-        $appDeployLogoBannerHeight = $appDeployLogoBannerMaxHeight
+    If ($appDeployLogoBannerHeight -gt $Script:ADT.Config.BannerIcon_Options.Banner_MaxHeight) {
+        $appDeployLogoBannerHeight = $Script:ADT.Config.BannerIcon_Options.Banner_MaxHeight
     }
     $appDeployLogoBannerObject.Dispose() # Must dispose() when installing from local cache or else AppDeployToolkitBanner.png is locked and cannot be removed
 }
@@ -886,8 +668,8 @@ If ($appDeployExtScriptParameters) {
 }
 
 ## Check the XML config file version
-If ($configConfigVersion -lt $appDeployMainScriptMinimumConfigVersion) {
-    [String]$XMLConfigVersionErr = "The XML configuration file version [$configConfigVersion] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
+If ($Script:ADT.Config.Config_File.Config_Version -lt $appDeployMainScriptMinimumConfigVersion) {
+    [String]$XMLConfigVersionErr = "The XML configuration file version [$($Script:ADT.Config.Config_File.Config_Version)] is lower than the supported version required by the Toolkit [$appDeployMainScriptMinimumConfigVersion]. Please upgrade the configuration file."
     Write-Log -Message $XMLConfigVersionErr -Severity 3 -Source $appDeployToolkitName
     Throw $XMLConfigVersionErr
 }
@@ -939,7 +721,7 @@ If ($envPSVersionTable.ContainsKey('CLRVersion')) {
 Write-Log -Message $scriptSeparator -Source $appDeployToolkitName
 
 ## Install required assemblies for toast notifications if conditions are right.
-If (!$configToastDisable -and $PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore)) {
+If (!$Script:ADT.Config.Toast_Options.Toast_Disable -and $PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore)) {
     try {
         Write-Log -Message "Installing WinRT assemblies for PowerShell 7 toast notification support. This will take at least 5 minutes, please wait..." -Source $appDeployToolkitName
         Install-Package -Name Microsoft.Windows.SDK.NET.Ref -ProviderName NuGet -Force -Confirm:$false | Out-Null
@@ -998,7 +780,7 @@ If ($showBlockedAppDialog) {
         #  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
         If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
             [Boolean]$showBlockedAppDialogMutexLocked = $true
-            Show-InstallationPrompt -Title $installTitle -Message $configBlockExecutionMessage -Icon 'Warning' -ButtonRightText 'OK'
+            Show-InstallationPrompt -Title $installTitle -Message $Script:ADT.Strings.BlockExecution_Message -Icon 'Warning' -ButtonRightText 'OK'
             Exit 0
         }
         Else {
@@ -1035,7 +817,7 @@ If ($usersLoggedOn) {
     }
 
     # Guard Intune detection code behind a variable.
-    If ($configToolkitOobeDetection -and ![PSADT.Utilities]::OobeCompleted()) {
+    If ($Script:ADT.Config.Toolkit_Options.Toolkit_OobeDetection -and ![PSADT.Utilities]::OobeCompleted()) {
         Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $appDeployToolkitExtName
         $deployMode = 'Silent'
     }
@@ -1064,8 +846,8 @@ If ($HKUPrimaryLanguageShort) {
 Else {
     Write-Log -Message "The current system account [$ProcessNTAccount] has a primary UI language of [$currentLanguage]." -Source $appDeployToolkitName
 }
-If ($configInstallationUILanguageOverride) {
-    Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language: [$configInstallationUILanguageOverride]." -Source $appDeployToolkitName
+If ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride) {
+    Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)]." -Source $appDeployToolkitName
 }
 Write-Log -Message "The following UI messages were imported from the config XML file: [$xmlUIMessageLanguage]." -Source $appDeployToolkitName
 
@@ -1121,7 +903,7 @@ If ($SessionZero) {
     If ($deployMode -eq 'NonInteractive') {
         Write-Log -Message "Session 0 detected but deployment mode was manually set to [$deployMode]." -Source $appDeployToolkitName
     }
-    ElseIf ($configToolkitSessionDetection) {
+    ElseIf ($Script:ADT.Config.Toolkit_Options.Toolkit_SessionDetection) {
         ##  If the process is not able to display a UI, enable NonInteractive mode
         If (-not $IsProcessUserInteractive) {
             $deployMode = 'NonInteractive'
@@ -1164,16 +946,16 @@ Switch ($deployMode) {
 ## Check deployment type (install/uninstall)
 Switch ($deploymentType) {
     'Install' {
-        $deploymentTypeName = $configDeploymentTypeInstall
+        $deploymentTypeName = $Script:ADT.Strings.DeploymentType_Install
     }
     'Uninstall' {
-        $deploymentTypeName = $configDeploymentTypeUnInstall
+        $deploymentTypeName = $Script:ADT.Strings.DeploymentType_UnInstall
     }
     'Repair' {
-        $deploymentTypeName = $configDeploymentTypeRepair
+        $deploymentTypeName = $Script:ADT.Strings.DeploymentType_Repair
     }
     Default {
-        $deploymentTypeName = $configDeploymentTypeInstall
+        $deploymentTypeName = $Script:ADT.Strings.DeploymentType_Install
     }
 }
 If ($deploymentTypeName) {
@@ -1185,7 +967,7 @@ If ($useDefaultMsi) {
 }
 
 ## Check current permissions and exit if not running with Administrator rights
-If ($configToolkitRequireAdmin) {
+If ($Script:ADT.Config.Toolkit_Options.Toolkit_RequireAdmin) {
     #  Check if the current process is running with elevated administrator permissions
     If ((-not $IsAdmin) -and (-not $ShowBlockedAppDialog)) {
         [String]$AdminPermissionErr = "[$appDeployToolkitName] has an XML config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the XML config file to not require Administrator rights."
