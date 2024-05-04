@@ -1,1 +1,1 @@
-"%~dp0Deploy-Application.exe" -DeploymentType Repair -DeployMode Interactive
+"%~dp0Deploy-Application.exe" -DeploymentType Repair -DeployMode Interactive -AllowRebootPassThru

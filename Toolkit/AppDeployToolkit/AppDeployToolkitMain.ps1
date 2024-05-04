@@ -109,7 +109,7 @@ Param (
 ## Variables: Script Info
 [Version]$appDeployMainScriptVersion = [Version]'3.10.1'
 [Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.10.0'
-[String]$appDeployMainScriptDate = '04/26/2024'
+[String]$appDeployMainScriptDate = '05/03/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
 ## Variables: Datetime and Culture
@@ -702,6 +702,39 @@ If (Test-Path -LiteralPath 'variable:deferDays') {
 }
 ## Variables: Resolve Parameters. For use in a pipeline
 filter Resolve-Parameters {
+    <#
+.SYNOPSIS
+
+Resolve the parameters of a function call to a string.
+
+.DESCRIPTION
+
+Resolve the parameters of a function call to a string.
+
+.PARAMETER Parameter
+
+The name of the function this function is invoked from.
+
+.INPUTS
+
+System.Object
+
+.OUTPUTS
+
+System.Object
+
+.EXAMPLE
+
+Resolve-Parameters -Parameter $PSBoundParameters | Out-String
+
+.NOTES
+
+This is an internal script function and should typically not be called directly.
+
+.LINK
+
+https://psappdeploytoolkit.com
+#>
     Param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]$Parameter
@@ -2400,7 +2433,7 @@ https://psappdeploytoolkit.com
         ## Button Left
         $buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonLeft.Name = 'buttonLeft'
-        $buttonLeft.Font = $defaultFont
+        $buttonLeft.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonLeft.ClientSize = $buttonSize
         $buttonLeft.MinimumSize = $buttonSize
         $buttonLeft.MaximumSize = $buttonSize
@@ -2416,7 +2449,7 @@ https://psappdeploytoolkit.com
         ## Button Middle
         $buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonMiddle.Name = 'buttonMiddle'
-        $buttonMiddle.Font = $defaultFont
+        $buttonMiddle.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonMiddle.ClientSize = $buttonSize
         $buttonMiddle.MinimumSize = $buttonSize
         $buttonMiddle.MaximumSize = $buttonSize
@@ -2432,7 +2465,7 @@ https://psappdeploytoolkit.com
         ## Button Right
         $buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRight.Name = 'buttonRight'
-        $buttonRight.Font = $defaultFont
+        $buttonRight.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRight.ClientSize = $buttonSize
         $buttonRight.MinimumSize = $buttonSize
         $buttonRight.MaximumSize = $buttonSize
@@ -2448,7 +2481,7 @@ https://psappdeploytoolkit.com
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = $defaultFont
+        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonAbort.ClientSize = '0,0'
         $buttonAbort.MinimumSize = '0,0'
         $buttonAbort.MaximumSize = '0,0'
@@ -2504,7 +2537,7 @@ https://psappdeploytoolkit.com
         Else {
             $panelButtons.Padding = $paddingNone
         }
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         If ($buttonLeftText) {
@@ -3303,6 +3336,12 @@ Hides all parameters passed to the MSI or MSP file from the toolkit Log file.
 
 Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 
+.PARAMETER private:LogName
+
+Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+
+For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
+
 .PARAMETER LogName
 
 Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
@@ -3785,6 +3824,11 @@ Include matches against updates and hotfixes in results.
 .PARAMETER LoggingOptions
 
 Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
+
+.PARAMETER private:LogName
+
+Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
 .PARAMETER LogName
 
@@ -4625,7 +4669,7 @@ Function Get-MsiExitCodeMessage {
 
     Get message for MSI error code by reading it from msimsg.dll
 
-.PARAMETER MsiErrorCode
+.PARAMETER MsiExitCode
 
     MSI error code
 
@@ -5101,9 +5145,13 @@ Continue copying files if an error is encountered. This will continue the deploy
 
 Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
+.PARAMETER RobocopyParams
+
+Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+
 .PARAMETER RobocopyAdditionalParams
 
-Additional parameters to pass to Robocopy. Default is: $null
+Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
 .INPUTS
 
@@ -5156,7 +5204,8 @@ https://psappdeploytoolkit.com
         [Boolean]$UseRobocopy = $configToolkitUseRobocopy,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$RobocopyAdditionalParams = $null
+        [String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+        [String]$RobocopyAdditionalParams
         )
 
     Begin {
@@ -5195,8 +5244,6 @@ https://psappdeploytoolkit.com
 
                     }
                     If ($UseRobocopyThis) {
-                        # Robocopy arguments: NJH = No Job Header; NJS = No Job Summary; NS = No Size; NC = No Class; NP = No Progress; NDL = No Directory List; FP = Full Path; IS = Include Same; XX = Exclude Extra; MT = Number of Threads; R = Number of Retries; W = Wait time between retries in sconds
-                        $RobocopyParams = "/NJH /NJS /NS /NC /NP /NDL /FP /IS /XX /MT:4 /R:1 /W:1"
 
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                         If (-not (Test-Path -LiteralPath $Destination -PathType Container)) {
@@ -5222,17 +5269,15 @@ https://psappdeploytoolkit.com
                         If ($Flatten) {
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                             [Hashtable]$CopyFileSplat = @{
-                                Path                    = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
-                                Destination             = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
-                                Recurse                 = $false # Disable recursion as this will create subfolders in the destination
-                                Flatten                 = $false # Disable flattening to prevent infinite loops
-                                ContinueOnError         = $ContinueOnError
-                                ContinueFileCopyOnError = $ContinueFileCopyOnError
-                                UseRobocopy             = $UseRobocopy
-                            }
-                            if ($RobocopyAdditionalParams) {
-                                #Ensure that /E is not included in the additional parameters as it will copy recursive folders
-                                $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                                Path                     = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
+                                Destination              = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
+                                Recurse                  = $false # Disable recursion as this will create subfolders in the destination
+                                Flatten                  = $false # Disable flattening to prevent infinite loops
+                                ContinueOnError          = $ContinueOnError
+                                ContinueFileCopyOnError  = $ContinueFileCopyOnError
+                                UseRobocopy              = $UseRobocopy
+                                RobocopyParams           = $RobocopyParams
+                                RobocopyAdditionalParams = $RobocopyAdditionalParams
                             }
                             # Copy all files from the root source folder
                             Copy-File @CopyFileSplat
@@ -5246,18 +5291,20 @@ https://psappdeploytoolkit.com
                             Continue
                         }
                         If ($Recurse) {
-                            if ($RobocopyParams -notmatch '/E(\s|$)') {
+                            # Add /E to Robocopy parameters if it is not already included
+                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
+                            # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
-                        If (![string]::IsNullOrEmpty($RobocopyAdditionalParams)) {
-                            $RobocopyParams = "$RobocopyParams $RobocopyAdditionalParams"
-                        }
-                        $RobocopyArgs = "$RobocopyParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
+
+                        $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
@@ -7497,6 +7544,10 @@ Only specify the parameters that you want to change.
 
 Path to the shortcut to be changed
 
+.PARAMETER PathHash
+
+Hashtable of parameters to be changed
+
 .PARAMETER TargetPath
 
 Changes target path or URL that the shortcut launches
@@ -8936,6 +8987,14 @@ Get the history of deferrals from the registry for the current application, if i
 
 Get the history of deferrals from the registry for the current application, if it exists.
 
+.PARAMETER DeferTimesRemaining
+
+Specify the number of deferrals remaining.
+
+.PARAMETER DeferDeadline
+
+Specify the deadline for the deferral.
+
 .INPUTS
 
 None
@@ -8990,6 +9049,14 @@ Set the history of deferrals in the registry for the current application.
 .DESCRIPTION
 
 Set the history of deferrals in the registry for the current application.
+
+.PARAMETER DeferTimesRemaining
+
+Specify the number of deferrals remaining.
+
+.PARAMETER DeferDeadline
+
+Specify the deadline for the deferral.
 
 .INPUTS
 
@@ -10036,7 +10103,9 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelCountdownMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'
-        $labelDefer = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferExpiryMessage = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferDeadline = New-Object -TypeName 'System.Windows.Forms.Label'
+        $labelDeferWarningMessage = New-Object -TypeName 'System.Windows.Forms.Label'
         $listBoxCloseApps = New-Object -TypeName 'System.Windows.Forms.ListBox'
         $buttonContinue = New-Object -TypeName 'System.Windows.Forms.Button'
         $buttonDefer = New-Object -TypeName 'System.Windows.Forms.Button'
@@ -10226,7 +10295,7 @@ https://psappdeploytoolkit.com
 
         ## Label App Name
         $labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelAppName.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Bold"
+        $labelAppName.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelAppName.Name = 'labelAppName'
         $labelAppName.ClientSize = $defaultControlSize
         $labelAppName.MinimumSize = $defaultControlSize
@@ -10282,36 +10351,60 @@ https://psappdeploytoolkit.com
         $listBoxCloseApps.TabIndex = 3
         $ProcessDescriptions | ForEach-Object { $null = $listboxCloseApps.Items.Add($_) }
 
-        ## Label Defer
-        $labelDefer.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelDefer.Font = $defaultFont
-        $labelDefer.Name = 'labelDefer'
-        $labelDefer.ClientSize = $defaultControlSize
-        $labelDefer.MinimumSize = $defaultControlSize
-        $labelDefer.MaximumSize = $defaultControlSize
-        $labelDefer.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
-        $labelDefer.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
-        $labelDefer.TabStop = $false
-        $deferralText = "$configDeferPromptExpiryMessage`r`n"
+        ## Label Defer Expiry Message
+        $labelDeferExpiryMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferExpiryMessage.Font = $defaultFont
+        $labelDeferExpiryMessage.Name = 'labelDeferExpiryMessage'
+        $labelDeferExpiryMessage.ClientSize = $defaultControlSize
+        $labelDeferExpiryMessage.MinimumSize = $defaultControlSize
+        $labelDeferExpiryMessage.MaximumSize = $defaultControlSize
+        $labelDeferExpiryMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferExpiryMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferExpiryMessage.TabStop = $false
+        $labelDeferExpiryMessage.Text = $configDeferPromptExpiryMessage
+        $labelDeferExpiryMessage.TextAlign = 'MiddleCenter'
+        $labelDeferExpiryMessage.AutoSize = $true
 
+        ## Label Defer Deadline
+        $labelDeferDeadline.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferDeadline.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, $defaultFont.Size, [System.Drawing.FontStyle]::Bold)
+        $labelDeferDeadline.Name = 'labelDeferDeadline'
+        $labelDeferDeadline.ClientSize = $defaultControlSize
+        $labelDeferDeadline.MinimumSize = $defaultControlSize
+        $labelDeferDeadline.MaximumSize = $defaultControlSize
+        $labelDeferDeadline.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferDeadline.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferDeadline.TabStop = $false
         If ($deferTimes -ge 0) {
-            $deferralText = "$deferralText `r`n$configDeferPromptRemainingDeferrals $([Int32]$deferTimes + 1)"
+            $labelDeferDeadline.Text = "$configDeferPromptRemainingDeferrals $([Int32]$deferTimes + 1)"
         }
         If ($deferDeadline) {
-            $deferralText = "$deferralText `r`n$configDeferPromptDeadline $deferDeadline"
+            $labelDeferDeadline.Text = "$configDeferPromptDeadline $deferDeadline"
         }
         If (($deferTimes -lt 0) -and (-not $DeferDeadline)) {
-            $deferralText = "$deferralText `r`n$configDeferPromptNoDeadline"
+            $labelDeferDeadline.Text = "$configDeferPromptNoDeadline"
         }
-        $deferralText = "$deferralText `r`n`r`n$configDeferPromptWarningMessage"
-        $labelDefer.Text = $deferralText
-        $labelDefer.TextAlign = 'MiddleCenter'
-        $labelDefer.AutoSize = $true
+        $labelDeferDeadline.TextAlign = 'MiddleCenter'
+        $labelDeferDeadline.AutoSize = $true
+
+        ## Label Defer Expiry Message
+        $labelDeferWarningMessage.DataBindings.DefaultDataSourceUpdateMode = 0
+        $labelDeferWarningMessage.Font = $defaultFont
+        $labelDeferWarningMessage.Name = 'labelDeferWarningMessage'
+        $labelDeferWarningMessage.ClientSize = $defaultControlSize
+        $labelDeferWarningMessage.MinimumSize = $defaultControlSize
+        $labelDeferWarningMessage.MaximumSize = $defaultControlSize
+        $labelDeferWarningMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
+        $labelDeferWarningMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
+        $labelDeferWarningMessage.TabStop = $false
+        $labelDeferWarningMessage.Text = $configDeferPromptWarningMessage
+        $labelDeferWarningMessage.TextAlign = 'MiddleCenter'
+        $labelDeferWarningMessage.AutoSize = $true
 
         ## Label CountdownMessage
         $labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdownMessage.Name = 'labelCountdownMessage'
-        $labelCountdownMessage.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
+        $labelCountdownMessage.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelCountdownMessage.ClientSize = $defaultControlSize
         $labelCountdownMessage.MinimumSize = $defaultControlSize
         $labelCountdownMessage.MaximumSize = $defaultControlSize
@@ -10341,7 +10434,7 @@ https://psappdeploytoolkit.com
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdown.Name = 'labelCountdown'
-        $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
         $labelCountdown.MaximumSize = $defaultControlSize
@@ -10377,7 +10470,9 @@ https://psappdeploytoolkit.com
             $flowLayoutPanel.Controls.Add($listBoxCloseApps)
         }
         If ($showDefer) {
-            $flowLayoutPanel.Controls.Add($labelDefer)
+            $flowLayoutPanel.Controls.Add($labelDeferExpiryMessage)
+            $flowLayoutPanel.Controls.Add($labelDeferDeadline)
+            $flowLayoutPanel.Controls.Add($labelDeferWarningMessage)
         }
         If ($showCountdown) {
             $flowLayoutPanel.Controls.Add($labelCountdownMessage)
@@ -10387,7 +10482,7 @@ https://psappdeploytoolkit.com
         ## Button Close For Me
         $buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
-        $buttonCloseApps.Font = $defaultFont
+        $buttonCloseApps.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonCloseApps.Name = 'buttonCloseApps'
         $buttonCloseApps.ClientSize = $buttonSize
         $buttonCloseApps.MinimumSize = $buttonSize
@@ -10409,7 +10504,7 @@ https://psappdeploytoolkit.com
             $buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (160, 4)
         }
         $buttonDefer.Name = 'buttonDefer'
-        $buttonDefer.Font = $defaultFont
+        $buttonDefer.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonDefer.ClientSize = $buttonSize
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
@@ -10425,7 +10520,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (306, 4)
         $buttonContinue.Name = 'buttonContinue'
-        $buttonContinue.Font = $defaultFont
+        $buttonContinue.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonContinue.ClientSize = $buttonSize
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
@@ -10448,7 +10543,7 @@ https://psappdeploytoolkit.com
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = $defaultFont
+        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonAbort.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
@@ -10490,7 +10585,7 @@ https://psappdeploytoolkit.com
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         If ($showCloseApps) {
             $panelButtons.Controls.Add($buttonCloseApps)
         }
@@ -10847,7 +10942,7 @@ https://psappdeploytoolkit.com
 
         ## Label Time remaining message
         $labelTimeRemaining.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelTimeRemaining.Font = "$($defaultFont.Name), $($defaultFont.Size + 2), style=Regular"
+        $labelTimeRemaining.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelTimeRemaining.Name = 'labelTimeRemaining'
         $labelTimeRemaining.ClientSize = $defaultControlSize
         $labelTimeRemaining.MinimumSize = $defaultControlSize
@@ -10862,7 +10957,7 @@ https://psappdeploytoolkit.com
 
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelCountdown.Font = "$($defaultFont.Name), $($defaultFont.Size + 9), style=Bold"
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.Name = 'labelCountdown'
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
@@ -10897,7 +10992,7 @@ https://psappdeploytoolkit.com
         $buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (240, 4)
         $buttonRestartLater.Name = 'buttonRestartLater'
-        $buttonRestartLater.Font = $defaultFont
+        $buttonRestartLater.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartLater.ClientSize = $buttonSize
         $buttonRestartLater.MinimumSize = $buttonSize
         $buttonRestartLater.MaximumSize = $buttonSize
@@ -10913,7 +11008,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
         $buttonRestartNow.Name = 'buttonRestartNow'
-        $buttonRestartNow.Font = $defaultFont
+        $buttonRestartNow.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartNow.ClientSize = $buttonSize
         $buttonRestartNow.MinimumSize = $buttonSize
         $buttonRestartNow.MaximumSize = $buttonSize
@@ -10950,7 +11045,7 @@ https://psappdeploytoolkit.com
         $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
-        $panelButtons.Margin = $paddingNone
+        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $panelButtons.Controls.Add($buttonRestartNow)
         $panelButtons.Controls.Add($buttonRestartLater)
         ## Add the Buttons Panel to the flowPanel

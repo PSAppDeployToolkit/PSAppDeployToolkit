@@ -1,20 +1,30 @@
-﻿**Version 3.10.1 [04/26/2024]**
-- Added Turkish language support. Fixes #973
-- Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped
-- Added missing elements to XML for Finnish language. Fixes #967
-- Added -ExcludeServiceProfiles to Get-UserProfiles, add passthru of Exclude-ServiceProfiles/ExcludeSystemProfiles/ExcludeDefaultUser/ExcludeNTAccount to Copy-FileToUserProfiles & Remove-FileFromUserProfiles
-- Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems	wqqqqqqqqqqqqqqq
-- Changed Robocopy folder creation code to match native PowerShell copy
-- Improved Execute-ProcessAsUser by adding an example for executing the function using "LeastPrivilege"
-- Resolved an issue where Execute-ProcessAsUser was not able to execute with RunLevel = 'LeastPrivilege' in some cases.
-- Resolved an issue in Execute-ProcessAsUser where the command line for two of the examples was incorrect
-- Resolved an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. #931
-- Restored AppDeployToolkitExtensions.ps1 dot-sourcing to where it's always been dot-sourced from.
-- Resolved an issue where Robocopy mode of Copy-File fails to copy files or folders when path begins with .\ or ..\ - Fixes #938
-- Restored PowerShell v2 and .NET 3.5 Compatibility. Fixes #948
-- Removed check on SecurityHealthSystray - Fixes #941
-- Removed the PDF documentation, the website will be the primary source for this going forward
-- Updated Spanish translations. Fixes #805
+﻿**Version 3.10.1 [05/03/2024]**
+- Added Turkish language support. Fixes #973.
+- Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped.
+- Added missing elements to XML for Finnish language. Fixes #967.
+- Added -ExcludeServiceProfiles to Get-UserProfiles, add passthru of Exclude-ServiceProfiles/ExcludeSystemProfiles/ExcludeDefaultUser/ExcludeNTAccount to Copy-FileToUserProfiles & Remove-FileFromUserProfiles.
+- Added back the folder structure, changelog, license, and examples to the release zip file.
+- Added VLC and WinSCP as new example deployment scripts.
+- Added ServiceUI launch helper script and launch testing batch files to examples.
+- Added Contributing Guide, Code of Conduct, Security Policy and Support docs.
+- Added GitHub form-based Bug Report and Feature Request templates.
+- Added RoboCopyParams to Copy-File, which allows full override of Robocopy Parameters. Added /IT /IM to default parameters.
+- Changed Welcome Prompt so that the Deferral Time Remaining is now bolded. App Title size was also slightly increased so as to remain more prominent.
+- Changed button font so that text wasn't cut off for some localized languages. Fixes #980.
+- Changed RunHidden.vbs to get rid of use of ArrayList as it caused problems on some systems.
+- Changed Robocopy folder creation code to match native PowerShell Copy-File.
+- Changed Execute-ProcessAsUser to include an example for executing the function using "LeastPrivilege".
+- Fixed an issue where Execute-ProcessAsUser was not able to execute with RunLevel = 'LeastPrivilege' in some cases.
+- Fixed an issue in Execute-ProcessAsUser where the command line for two of the examples was incorrect.
+- Fixed an issue with Configure-EdgeExtensions where a new extension would not be added if no extensions were configured previously. Fixes #931 and #984.
+- Fixed an issue where Robocopy mode of Copy-File fails to copy files or folders when path begis with ".\" or "..\". Fixes #938.
+- Fixed AppDeployToolkitExtensions.ps1 dot-sourcing to where it's always been dot-sourced from.
+- Fixed PowerShell v2 and .NET 3.5 Compatibility. Fixes #948.
+- Removed check on SecurityHealthSystray. Fixes #941.
+- Removed the PDF documentation, the website will be the primary source for this going forward.
+- Updated existing example deployment scripts.
+- Updated Pull Request template.
+- Updated Spanish translations. Fixes #805.
 
 **Version 3.10.0 [03/27/2024]**
 - Added the ability to configure Microsoft Edge Extensions using ExtensionSettings. Function: Configure-EdgeExtensions. This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.

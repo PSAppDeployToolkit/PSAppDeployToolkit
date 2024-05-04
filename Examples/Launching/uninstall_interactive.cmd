@@ -1,1 +1,1 @@
-"%~dp0Deploy-Application.exe" -DeploymentType Uninstall -DeployMode Interactive
+"%~dp0Deploy-Application.exe" -DeploymentType Uninstall -DeployMode Interactive -AllowRebootPassThru
