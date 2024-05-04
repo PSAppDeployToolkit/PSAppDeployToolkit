@@ -135,7 +135,7 @@ https://psappdeploytoolkit.com
         [DateTime]$countdownTime = $startTime
 
         ## Check if the countdown was specified
-        If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $configInstallationUITimeout)) {
+        If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $Script:ADT.Config.UI_Options.InstallationUI_Timeout)) {
             Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
         }
 
@@ -281,7 +281,7 @@ https://psappdeploytoolkit.com
             }
         }
         Else {
-            $script:welcomeTimer.Interval = ($configInstallationUITimeout * 1000)
+            $script:welcomeTimer.Interval = ($Script:ADT.Config.UI_Options.InstallationUI_Timeout * 1000)
             [ScriptBlock]$welcomeTimer_Tick = { $buttonAbort.PerformClick() }
         }
 
@@ -290,7 +290,7 @@ https://psappdeploytoolkit.com
         ## Persistence Timer
         If ($persistWindow) {
             $welcomeTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-            $welcomeTimerPersist.Interval = ($configInstallationPersistInterval * 1000)
+            $welcomeTimerPersist.Interval = ($Script:ADT.Config.UI_Options.InstallationPrompt_PersistInterval * 1000)
             [ScriptBlock]$welcomeTimerPersist_Tick = {
                 $formWelcome.WindowState = 'Normal'
                 $formWelcome.TopMost = $TopMost
@@ -302,9 +302,9 @@ https://psappdeploytoolkit.com
         }
 
         ## Process Re-Enumeration Timer
-        If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
+        If ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluation) {
             $timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
-            $timerRunningProcesses.Interval = ($configInstallationWelcomePromptDynamicRunningProcessEvaluationInterval * 1000)
+            $timerRunningProcesses.Interval = ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluationInterval * 1000)
             [ScriptBlock]$timerRunningProcesses_Tick = {
                 Try {
                     $dynamicRunningProcesses = $null
@@ -355,7 +355,7 @@ https://psappdeploytoolkit.com
 
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.ImageLocation = $appDeployLogoBanner
+        $pictureBanner.ImageLocation = $Script:ADT.Config.BannerIcon_Options.Banner_Filename
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
@@ -375,7 +375,7 @@ https://psappdeploytoolkit.com
         $labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelWelcomeMessage.TabStop = $false
-        $labelWelcomeMessage.Text = $configDeferPromptWelcomeMessage
+        $labelWelcomeMessage.Text = $Script:ADT.Strings.DeferPrompt_WelcomeMessage
         $labelWelcomeMessage.TextAlign = 'MiddleCenter'
         $labelWelcomeMessage.Anchor = 'Top'
         $labelWelcomeMessage.AutoSize = $true
@@ -405,7 +405,7 @@ https://psappdeploytoolkit.com
         $labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCustomMessage.TabStop = $false
-        $labelCustomMessage.Text = $configClosePromptMessage
+        $labelCustomMessage.Text = $Script:ADT.Strings.ClosePrompt_Message
         $labelCustomMessage.TextAlign = 'MiddleCenter'
         $labelCustomMessage.Anchor = 'Top'
         $labelCustomMessage.AutoSize = $true
@@ -420,7 +420,7 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCloseAppsMessage.TabStop = $false
-        $labelCloseAppsMessage.Text = $configClosePromptMessage
+        $labelCloseAppsMessage.Text = $Script:ADT.Strings.ClosePrompt_Message
         $labelCloseAppsMessage.TextAlign = 'MiddleCenter'
         $labelCloseAppsMessage.Anchor = 'Top'
         $labelCloseAppsMessage.AutoSize = $true
@@ -448,7 +448,7 @@ https://psappdeploytoolkit.com
         $labelDeferExpiryMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelDeferExpiryMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferExpiryMessage.TabStop = $false
-        $labelDeferExpiryMessage.Text = $configDeferPromptExpiryMessage
+        $labelDeferExpiryMessage.Text = $Script:ADT.Strings.DeferPrompt_ExpiryMessage
         $labelDeferExpiryMessage.TextAlign = 'MiddleCenter'
         $labelDeferExpiryMessage.AutoSize = $true
 
@@ -463,10 +463,10 @@ https://psappdeploytoolkit.com
         $labelDeferDeadline.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferDeadline.TabStop = $false
         If ($deferTimes -ge 0) {
-            $labelDeferDeadline.Text = "$configDeferPromptRemainingDeferrals $([Int32]$deferTimes + 1)"
+            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt_RemainingDeferrals) $([Int32]$deferTimes + 1)"
         }
         If ($deferDeadline) {
-            $labelDeferDeadline.Text = "$configDeferPromptDeadline $deferDeadline"
+            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt_Deadline) $deferDeadline"
         }
         $labelDeferDeadline.TextAlign = 'MiddleCenter'
         $labelDeferDeadline.AutoSize = $true
@@ -481,7 +481,7 @@ https://psappdeploytoolkit.com
         $labelDeferWarningMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelDeferWarningMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferWarningMessage.TabStop = $false
-        $labelDeferWarningMessage.Text = $configDeferPromptWarningMessage
+        $labelDeferWarningMessage.Text = $Script:ADT.Strings.DeferPrompt_WarningMessage
         $labelDeferWarningMessage.TextAlign = 'MiddleCenter'
         $labelDeferWarningMessage.AutoSize = $true
 
@@ -498,18 +498,18 @@ https://psappdeploytoolkit.com
         If (($forceCountdown -eq $true) -or (-not $runningProcessDescriptions)) {
             Switch ($deploymentType) {
                 'Uninstall' {
-                    $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeUninstall); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_UnInstall); Break
                 }
                 'Repair' {
-                    $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeRepair); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_Repair); Break
                 }
                 Default {
-                    $labelCountdownMessage.Text = ($configWelcomePromptCountdownMessage -f $configDeploymentTypeInstall); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_Install); Break
                 }
             }
         }
         Else {
-            $labelCountdownMessage.Text = $configClosePromptCountdownMessage
+            $labelCountdownMessage.Text = $Script:ADT.Strings.ClosePrompt_CountdownMessage
         }
         $labelCountdownMessage.TextAlign = 'MiddleCenter'
         $labelCountdownMessage.Anchor = 'Top'
@@ -545,8 +545,8 @@ https://psappdeploytoolkit.com
         $flowLayoutPanel.Controls.Add($labelWelcomeMessage)
         $flowLayoutPanel.Controls.Add($labelAppName)
 
-        If ($CustomText -and $configWelcomePromptCustomMessage) {
-            $labelCustomMessage.Text = $configWelcomePromptCustomMessage
+        If ($CustomText -and $Script:ADT.Strings.WelcomePrompt_CustomMessage) {
+            $labelCustomMessage.Text = $Script:ADT.Strings.WelcomePrompt_CustomMessage
             $flowLayoutPanel.Controls.Add($labelCustomMessage)
         }
         If ($showCloseApps) {
@@ -572,7 +572,7 @@ https://psappdeploytoolkit.com
         $buttonCloseApps.MinimumSize = $buttonSize
         $buttonCloseApps.MaximumSize = $buttonSize
         $buttonCloseApps.TabIndex = 1
-        $buttonCloseApps.Text = $configClosePromptButtonClose
+        $buttonCloseApps.Text = $Script:ADT.Strings.ClosePrompt_ButtonClose
         $buttonCloseApps.DialogResult = 'Yes'
         $buttonCloseApps.AutoSize = $true
         $buttonCloseApps.Margin = $paddingNone
@@ -593,7 +593,7 @@ https://psappdeploytoolkit.com
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.TabIndex = 0
-        $buttonDefer.Text = $configClosePromptButtonDefer
+        $buttonDefer.Text = $Script:ADT.Strings.ClosePrompt_ButtonDefer
         $buttonDefer.DialogResult = 'No'
         $buttonDefer.AutoSize = $true
         $buttonDefer.Margin = $paddingNone
@@ -609,7 +609,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
         $buttonContinue.TabIndex = 2
-        $buttonContinue.Text = $configClosePromptButtonContinue
+        $buttonContinue.Text = $Script:ADT.Strings.ClosePrompt_ButtonContinue
         $buttonContinue.DialogResult = 'OK'
         $buttonContinue.AutoSize = $true
         $buttonContinue.Margin = $paddingNone
@@ -621,7 +621,7 @@ https://psappdeploytoolkit.com
             $toolTip.IsBalloon = $false
             $toolTip.InitialDelay = 100
             $toolTip.ReshowDelay = 100
-            $toolTip.SetToolTip($buttonContinue, $configClosePromptButtonContinueTooltip)
+            $toolTip.SetToolTip($buttonContinue, $Script:ADT.Strings.ClosePrompt_ButtonContinueTooltip)
         }
 
         ## Button Abort (Hidden)
@@ -657,7 +657,7 @@ https://psappdeploytoolkit.com
         $formWelcome.MinimizeBox = $false
         $formWelcome.TopMost = $TopMost
         $formWelcome.TopLevel = $true
-        $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList ($AppDeployLogoIcon)
+        $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.BannerIcon_Options.Icon_Filename
         $formWelcome.AutoSize = $true
         $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
         $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
@@ -712,7 +712,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If ($configInstallationWelcomePromptDynamicRunningProcessEvaluation) {
+        If ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluation) {
             $timerRunningProcesses.Stop()
         }
 
