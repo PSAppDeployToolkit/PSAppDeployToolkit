@@ -64,7 +64,6 @@ class ADTSession
         DefaultMspFiles = [System.String]::Empty
         UseDefaultMsi = $false
         LogName = [System.String]::Empty
-        RunningTaskSequence = $false
         ScriptParentPath = [System.String]::Empty
         DirFiles = [System.String]::Empty
         DirSupportFiles = [System.String]::Empty
@@ -447,16 +446,13 @@ class ADTSession
     hidden [System.Void] PerformSCCMTests()
     {
         # Check if script is running from a SCCM Task Sequence.
-        try
+        if ($Script:ADT.Environment.RunningTaskSequence)
         {
-            [__ComObject]$SMSTSEnvironment = New-Object -ComObject Microsoft.SMS.TSEnvironment
-            Write-Log -Message 'Successfully loaded COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
-            [System.Void][Runtime.Interopservices.Marshal]::ReleaseComObject($SMSTSEnvironment)
-            $this.Properties.RunningTaskSequence = $true
+            Write-Log -Message 'Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
         }
-        catch
+        else
         {
-            Write-Log -Message 'Unable to load COM Object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
+            Write-Log -Message 'Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
         }
     }
 
