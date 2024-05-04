@@ -329,6 +329,103 @@ function Initialize-ADTVariableDatabase
         }
     }))
 
+    ## Variables: Executables
+    $variables.Add('exeWusa', [string]"$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
+    $variables.Add('exeMsiexec', [string]"$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
+    $variables.Add('exeSchTasks', [string]"$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
+
+    ## Variables: RegEx Patterns
+    $variables.Add('MSIProductCodeRegExPattern', [string]'^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
+
+    ## Variables: Invalid FileName Characters
+    $variables.Add('invalidFileNameChars', [char[]][System.IO.Path]::GetInvalidFileNameChars())
+
+    ## Variables: Registry Keys
+    # Registry keys for native and WOW64 applications
+    $variables.Add('regKeyApplications', [string[]]('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
+    $variables.Add('regKeyLotusNotes', [string]"Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64Bit) {'Wow6432Node\'})Lotus\Notes")
+    $variables.Add('regKeyAppExecution', [string]'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
+
+    ## Variables: User Temp Path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
+    $variables.Add('loggedOnUserTempPath', [string]$(if (($null -ne $variables.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists(($runasUserProfile = "$(Split-Path -LiteralPath $variables.envPublic)\$($variables.RunAsActiveUser.UserName)")))
+    {
+        [System.IO.Directory]::CreateDirectory($runasUserProfile).FullName
+    }
+    else
+    {
+        "$dirAppDeployTemp\ExecuteAsUser"
+    }))
+
+    ## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
+    [System.Drawing.Graphics]$GraphicsObject = $null
+    [System.IntPtr]$DeviceContextHandle = [IntPtr]::Zero
+    $variables.Add('UserDisplayScaleFactor', [boolean]$false)
+    $variables.Add('dpiScale', [int32]0)
+    $variables.Add('dpiPixels', [int32]0)
+
+    # If a user is logged on, then get display scale factor for logged on user (even if running in session 0).
+    try
+    {
+        # Get Graphics Object from the current Window Handle.
+        [System.Drawing.Graphics]$GraphicsObject = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero)
+
+        # Get Device Context Handle.
+        [System.IntPtr]$DeviceContextHandle = $GraphicsObject.GetHdc()
+
+        # Get Logical and Physical screen height.
+        [int32]$LogicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int32][PSADT.UiAutomation+DeviceCap]::VERTRES)
+        [int32]$PhysicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [int32][PSADT.UiAutomation+DeviceCap]::DESKTOPVERTRES)
+
+        # Calculate DPI scale and pixels.
+        $variables.dpiScale = [System.Math]::Round([double]$PhysicalScreenHeight / [double]$LogicalScreenHeight, 2) * 100
+        $variables.dpiPixels = [System.Math]::Round(($variables.dpiScale / 100) * 96, 0)
+    }
+    catch
+    {
+        $variables.dpiScale = 0
+        $variables.dpiPixels = 0
+    }
+    finally
+    {
+        # Release the device context handle and dispose of the graphics object.
+        if ($null -ne $GraphicsObject)
+        {
+            if ($DeviceContextHandle -ne [IntPtr]::Zero)
+            {
+                $GraphicsObject.ReleaseHdc($DeviceContextHandle)
+            }
+            $GraphicsObject.Dispose()
+        }
+    }
+
+    # Failed to get dpi, try to read them from registry - Might not be accurate.
+    if ($variables.RunAsActiveUser)
+    {
+        if ($variables.dpiPixels -lt 1)
+        {
+            $variables.dpiPixels = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser)\Control Panel\Desktop\WindowMetrics" -ErrorAction Ignore | Select-Object -ExpandProperty AppliedDPI -ErrorAction Ignore
+        }
+        if ($variables.dpiPixels -lt 1)
+        {
+            $variables.dpiPixels = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser)\Control Panel\Desktop" -ErrorAction Ignore | Select-Object -ExpandProperty LogPixels -ErrorAction Ignore
+        }
+        $variables.UserDisplayScaleFactor = $true
+    }
+
+    # Failed to get dpi from first two registry entries, try to read FontDPI - Usually inaccurate.
+    if ($variables.dpiPixels -lt 1)
+    {
+        #  This registry setting only exists if system scale factor has been changed at least once.
+        $variables.dpiPixels = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -ErrorAction Ignore | Select-Object -ExpandProperty LogPixels -ErrorAction Ignore
+        $variables.UserDisplayScaleFactor = $false
+    }
+
+    # Calculate DPI scale if its empty and we have DPI pixels.
+    if (($variables.dpiScale -lt 1) -and ($variables.dpiPixels -gt 0))
+    {
+        $variables.dpiScale = [System.Math]::Round(($variables.dpiPixels * 100) / 96)
+    }
+
     # Store variables within the module's scope.
     $Script:ADT.Environment = $variables
 }

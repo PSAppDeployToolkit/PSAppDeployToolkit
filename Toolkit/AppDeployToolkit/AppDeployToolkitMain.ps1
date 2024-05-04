@@ -102,6 +102,15 @@ Param (
 ##*=============================================
 #region VariableDeclaration
 
+## Add the custom types required for the toolkit
+Add-Type -LiteralPath ($appDeployCustomTypesSourceCode = "$PSScriptRoot\AppDeployToolkitMain.cs") -ErrorAction Stop -ReferencedAssemblies $(
+    'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
+    if ($PSVersionTable.PSEdition.Equals('Core'))
+    {
+        'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
+    }
+)
+
 . "$PSScriptRoot\PSAppDeployToolkit\Private\AppDeployToolkitPrivate.ps1"
 . "$PSScriptRoot\PSAppDeployToolkit\Public\AppDeployToolkitPublic.ps1"
 
@@ -146,15 +155,7 @@ Else {
 }
 
 ## Variables: App Deploy Script Dependency Files
-[String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
-[String]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
 [String]$appDeployRunHiddenVbsFile = Join-Path -Path $scriptRoot -ChildPath 'RunHidden.vbs'
-If (-not (Test-Path -LiteralPath $appDeployConfigFile -PathType 'Leaf')) {
-    Throw 'App Deploy XML configuration file not found.'
-}
-If (-not (Test-Path -LiteralPath $appDeployCustomTypesSourceCode -PathType 'Leaf')) {
-    Throw 'App Deploy custom types source code file not found.'
-}
 
 #  App Deploy Optional Extensions File
 [String]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
@@ -180,28 +181,6 @@ If (!(Test-Path -LiteralPath 'variable:deploymentType')) {
 
 ## Ensure the deployment type is always title-case for log aesthetics.
 $deploymentType = $culture.TextInfo.ToTitleCase($deploymentType)
-
-## Variables: Executables
-[String]$exeWusa = "$envWinDir\System32\wusa.exe" # Installs Standalone Windows Updates
-[String]$exeMsiexec = "$envWinDir\System32\msiexec.exe" # Installs MSI Installers
-[String]$exeSchTasks = "$envWinDir\System32\schtasks.exe" # Manages Scheduled Tasks
-
-## Variables: RegEx Patterns
-[String]$MSIProductCodeRegExPattern = '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$'
-
-## Variables: Invalid FileName Characters
-[Char[]]$invalidFileNameChars = [IO.Path]::GetinvalidFileNameChars()
-
-## Variables: Registry Keys
-#  Registry keys for native and WOW64 applications
-[String[]]$regKeyApplications = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
-If ($is64Bit) {
-    [String]$regKeyLotusNotes = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Lotus\Notes'
-}
-Else {
-    [String]$regKeyLotusNotes = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Lotus\Notes'
-}
-[String]$regKeyAppExecution = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
 
 ## COM Objects: Initialize
 [__ComObject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'SilentlyContinue'
@@ -233,61 +212,6 @@ If (Test-Path -LiteralPath 'variable:deferDays') {
     Remove-Variable -Name 'deferDays'
 }
 
-## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
-[ScriptBlock]$GetDisplayScaleFactor = {
-    #  If a user is logged on, then get display scale factor for logged on user (even if running in session 0)
-    [Boolean]$UserDisplayScaleFactor = $false
-    [System.Drawing.Graphics]$GraphicsObject = $null
-    [IntPtr]$DeviceContextHandle = [IntPtr]::Zero
-    [Int32]$dpiScale = 0
-    [Int32]$dpiPixels = 0
-
-    Try {
-        # Get Graphics Object from the current Window Handle
-        [System.Drawing.Graphics]$GraphicsObject = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero)
-        # Get Device Context Handle
-        [IntPtr]$DeviceContextHandle = $GraphicsObject.GetHdc()
-        # Get Logical and Physical screen height
-        [Int32]$LogicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [Int32][PSADT.UiAutomation+DeviceCap]::VERTRES)
-        [Int32]$PhysicalScreenHeight = [PSADT.UiAutomation]::GetDeviceCaps($DeviceContextHandle, [Int32][PSADT.UiAutomation+DeviceCap]::DESKTOPVERTRES)
-        # Calculate dpi scale and pixels
-        [Int32]$dpiScale = [Math]::Round([Double]$PhysicalScreenHeight / [Double]$LogicalScreenHeight, 2) * 100
-        [Int32]$dpiPixels = [Math]::Round(($dpiScale / 100) * 96, 0)
-    }
-    Catch {
-        [Int32]$dpiScale = 0
-        [Int32]$dpiPixels = 0
-    }
-    Finally {
-        # Release the device context handle and dispose of the graphics object
-        If ($null -ne $GraphicsObject) {
-            If ($DeviceContextHandle -ne [IntPtr]::Zero) {
-                $GraphicsObject.ReleaseHdc($DeviceContextHandle)
-            }
-            $GraphicsObject.Dispose()
-        }
-    }
-    # Failed to get dpi, try to read them from registry - Might not be accurate
-    If ($RunAsActiveUser) {
-        If ($dpiPixels -lt 1) {
-            [Int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics' -Value 'AppliedDPI' -SID $RunAsActiveUser.SID
-        }
-        If ($dpiPixels -lt 1) {
-            [Int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_CURRENT_USER\Control Panel\Desktop' -Value 'LogPixels' -SID $RunAsActiveUser.SID
-        }
-        [Boolean]$UserDisplayScaleFactor = $true
-    }
-    # Failed to get dpi from first two registry entries, try to read FontDPI - Usually inaccurate
-    If ($dpiPixels -lt 1) {
-        #  This registry setting only exists if system scale factor has been changed at least once
-        [Int32]$dpiPixels = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontDPI' -Value 'LogPixels'
-        [Boolean]$UserDisplayScaleFactor = $false
-    }
-    # Calculate dpi scale if its empty and we have dpi pixels
-    If (($dpiScale -lt 1) -and ($dpiPixels -gt 0)) {
-        [Int32]$dpiScale = [Math]::Round(($dpiPixels * 100) / 96)
-    }
-}
 ## Variables: Resolve Parameters. For use in a pipeline
 filter Resolve-Parameters {
     <#
@@ -404,15 +328,6 @@ If ($invokingScript) {
     }
 }
 
-## Add the custom types required for the toolkit
-If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
-    [String[]]$ReferencedAssemblies = 'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
-    If ($PSVersionTable.PSEdition.Equals('Core')) {
-        $ReferencedAssemblies += 'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
-    }
-    Add-Type -Path $appDeployCustomTypesSourceCode -ReferencedAssemblies $ReferencedAssemblies -IgnoreWarnings -ErrorAction 'Stop'
-}
-
 ## Set process as DPI-aware for better dialog rendering.
 [System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
 
@@ -420,32 +335,27 @@ If (-not ([Management.Automation.PSTypeName]'PSADT.UiAutomation').Type) {
 [ScriptBlock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
 [ScriptBlock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
 
-[ScriptBlock]$GetLoggedOnUserTempPath = {
-    # When running in system context we can derive the native "C:\Users" base path from the Public environment variable
-    [String]$dirUserProfile = Split-path $envPublic -ErrorAction 'SilentlyContinue'
-    If ($null -ne $RunAsActiveUser.NTAccount) {
-        [String]$userProfileName = $RunAsActiveUser.UserName
-        If (Test-Path (Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue')) {
-            [String]$runasUserProfile = Join-Path -Path $dirUserProfile -ChildPath $userProfileName -ErrorAction 'SilentlyContinue'
-            [String]$loggedOnUserTempPath = Join-Path -Path $runasUserProfile -ChildPath (Join-Path -Path $appDeployToolkitName -ChildPath 'ExecuteAsUser')
-            If (-not (Test-Path -LiteralPath $loggedOnUserTempPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-                $null = New-Item -Path $loggedOnUserTempPath -ItemType 'Directory' -Force -ErrorAction 'SilentlyContinue'
-            }
-        }
-    }
-    Else {
-        [String]$loggedOnUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
-    }
-}
-
 ## Disable logging until log file details are available
 . $DisableScriptLogging
 
-## Dot source ScriptBlock to create temporary directory of logged on user
-. $GetLoggedOnUserTempPath
+## Assemblies: Load
+Try {
+    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
+}
+Catch {
+    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
+    If ($deployMode -eq 'Silent') {
+        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
+    }
+    Else {
+        Exit-Script -ExitCode 60004
+    }
+}
 
-## Dot source ScriptBlock to get system DPI scale factor
-. $GetDisplayScaleFactor
+## Dot Source script extensions
+If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
+    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
+}
 
 ## If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly
 If ((-not $ReferredInstallName) -and (!(Test-Path -LiteralPath 'variable:appName') -or [System.String]::IsNullOrWhiteSpace($appName))) {
@@ -611,20 +521,6 @@ $scriptSeparator = '*' * 79
 Write-Log -Message ($scriptSeparator, $scriptSeparator) -Source $appDeployToolkitName
 Write-Log -Message "[$installName] setup started." -Source $appDeployToolkitName
 
-## Assemblies: Load
-Try {
-    Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase') -ErrorAction 'Stop'
-}
-Catch {
-    Write-Log -Message "Failed to load assembly. `r`n$(Resolve-Error)" -Severity 3 -Source $appDeployToolkitName
-    If ($deployMode -eq 'Silent') {
-        Write-Log -Message "Continue despite assembly load error since deployment mode is [$deployMode]." -Source $appDeployToolkitName
-    }
-    Else {
-        Exit-Script -ExitCode 60004
-    }
-}
-
 # Calculate banner height
 [Int32]$appDeployLogoBannerHeight = 0
 Try {
@@ -647,11 +543,6 @@ If ($invokingScript) {
 }
 Else {
     Write-Log -Message "Script [$scriptPath] invoked directly" -Source $appDeployToolkitName
-}
-
-## Dot Source script extensions
-If (Test-Path -LiteralPath "$scriptRoot\$appDeployToolkitDotSourceExtensions" -PathType 'Leaf') {
-    . "$scriptRoot\$appDeployToolkitDotSourceExtensions"
 }
 
 ## Evaluate non-default parameters passed to the scripts
