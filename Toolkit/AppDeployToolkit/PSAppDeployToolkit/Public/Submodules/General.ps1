@@ -115,7 +115,7 @@ https://psappdeploytoolkit.com
         [Int16]$Severity = 1,
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNull()]
-        [String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name); If ($parentFunctionName) {
+        [String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'Ignore').Value.MyCommand.Name); If ($parentFunctionName) {
                 $parentFunctionName
             }
             Else {
@@ -186,10 +186,10 @@ https://psappdeploytoolkit.com
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
         #  Get the file name of the source script
         $ScriptSource = If (![System.String]::IsNullOrEmpty($script:MyInvocation.ScriptName)) {
-            Split-Path -Path $script:MyInvocation.ScriptName -Leaf -ErrorAction SilentlyContinue
+            Split-Path -Path $script:MyInvocation.ScriptName -Leaf -ErrorAction Ignore
         }
         Else {
-            Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction SilentlyContinue
+            Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction Ignore
         }
 
         ## Create script block for generating CMTrace.exe compatible log entry

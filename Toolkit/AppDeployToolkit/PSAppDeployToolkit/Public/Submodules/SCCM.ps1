@@ -75,7 +75,7 @@ https://psappdeploytoolkit.com
             ## Make sure SCCM client is installed and running
             Write-Log -Message 'Checking to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
             If (Test-ServiceExists -Name 'ccmexec') {
-                If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
+                If ($(Get-Service -Name 'ccmexec' -ErrorAction 'Ignore').Status -ne 'Running') {
                     Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
                 }
             }
@@ -236,7 +236,7 @@ https://psappdeploytoolkit.com
             ## Make sure SCCM client is installed and running
             Write-Log -Message 'Checking to see if SCCM Client service [ccmexec] is installed and running.' -Source ${CmdletName}
             If (Test-ServiceExists -Name 'ccmexec') {
-                If ($(Get-Service -Name 'ccmexec' -ErrorAction 'SilentlyContinue').Status -ne 'Running') {
+                If ($(Get-Service -Name 'ccmexec' -ErrorAction 'Ignore').Status -ne 'Running') {
                     Throw "SCCM Client Service [ccmexec] exists but it is not in a 'Running' state."
                 }
             }

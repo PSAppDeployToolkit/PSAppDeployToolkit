@@ -163,7 +163,7 @@ https://psappdeploytoolkit.com
             [String]$installPromptParameters = $installPromptParameters | Resolve-Parameters
 
 
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 
@@ -1018,8 +1018,8 @@ https://psappdeploytoolkit.com
 
             #  Get the deferral history from the registry
             $deferHistory = Get-DeferHistory
-            $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty 'DeferTimesRemaining' -ErrorAction 'SilentlyContinue'
-            $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty 'DeferDeadline' -ErrorAction 'SilentlyContinue'
+            $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty 'DeferTimesRemaining' -ErrorAction 'Ignore'
+            $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty 'DeferDeadline' -ErrorAction 'Ignore'
 
             #  Reset Switches
             $checkDeferDays = $false
@@ -1102,7 +1102,7 @@ https://psappdeploytoolkit.com
             $promptResult = $null
 
             While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
-                [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction SilentlyContinue | Sort-Object -Unique) -join ','
+                [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction Ignore | Sort-Object -Unique) -join ','
                 #  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 If ($allowDefer) {
                     #  If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop
@@ -1186,7 +1186,7 @@ https://psappdeploytoolkit.com
                         }
                         Else {
                             Write-Log -Message "Stopping process $($runningProcess.ProcessName)..." -Source ${CmdletName}
-                            Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'SilentlyContinue'
+                            Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'Ignore'
                         }
                     }
 
@@ -1241,7 +1241,7 @@ https://psappdeploytoolkit.com
             If ($runningProcesses) {
                 [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
                 Write-Log -Message "Force closing application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
-                $runningProcesses.ProcessName | ForEach-Object -Process { Stop-Process -Name $_ -Force -ErrorAction 'SilentlyContinue' }
+                $runningProcesses.ProcessName | ForEach-Object -Process { Stop-Process -Name $_ -Force -ErrorAction 'Ignore' }
                 Start-Sleep -Seconds 2
             }
         }
@@ -1249,7 +1249,7 @@ https://psappdeploytoolkit.com
         ## Force nsd.exe to stop if Notes is one of the required applications to close
         If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
             ## Get the path where Notes is installed
-            [String]$notesPath = Get-Item -LiteralPath $Script:ADT.Environment.regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
+            [String]$notesPath = Get-Item -LiteralPath $Script:ADT.Environment.regKeyLotusNotes -ErrorAction 'Ignore' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 
             ## Ensure we aren't running as a Local System Account and Notes install directory was found
             If (!$Script:ADT.Environment.IsLocalSystemAccount -and $notesPath) {
@@ -1262,11 +1262,11 @@ https://psappdeploytoolkit.com
                         Try {
                             If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
                                 Write-Log -Message "Executing [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
-                                [Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'SilentlyContinue'
+                                [Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'Ignore'
 
                                 If (-not $notesNSDProcess.WaitForExit(10000)) {
                                     Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
-                                    Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
+                                    Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
                                 }
                             }
                         }
@@ -1277,7 +1277,7 @@ https://psappdeploytoolkit.com
                         Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
 
                         #  Force NSD process to stop in case the previous command was not successful
-                        Stop-Process -Name 'NSD' -Force -ErrorAction 'SilentlyContinue'
+                        Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
                     }
                 }
             }
@@ -1407,7 +1407,7 @@ https://psappdeploytoolkit.com
         If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
             If ($NoSilentRestart -eq $false) {
                 Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-                Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+                Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             }
             Else {
                 Write-Log -Message "Skipping restart, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -1437,7 +1437,7 @@ https://psappdeploytoolkit.com
             ## Prepare a list of parameters of this function as a string
             [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-Parameters
             ## Start another powershell instance silently with function parameters from this function
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 

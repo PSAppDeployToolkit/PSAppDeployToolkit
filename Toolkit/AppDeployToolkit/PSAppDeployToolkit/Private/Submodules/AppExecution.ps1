@@ -126,8 +126,8 @@ https://psappdeploytoolkit.com
         [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-        If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-            $null = Remove-Item -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -Force -ErrorAction 'SilentlyContinue'
+        If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'Ignore') {
+            $null = Remove-Item -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -Force -ErrorAction 'Ignore'
         }
 
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
@@ -141,13 +141,13 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
         }
 
-        Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
+        Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'Ignore'
 
         ## Build the debugger block value script
         [String[]]$debuggerBlockScript = "strCommand = `"$([System.Diagnostics.Process]::GetCurrentProcess().Path) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" & chr(34)"
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
-        $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
+        $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'Ignore'
         [String]$debuggerBlockValue = "$env:WinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
         ## Set contents to be readable for all users (BUILTIN\USERS)
@@ -187,7 +187,7 @@ https://psappdeploytoolkit.com
 
         [String[]]$blockProcessName = $processName
         ## Append .exe to match registry keys
-        [String[]]$blockProcessName = $blockProcessName | ForEach-Object { $_ + '.exe' } -ErrorAction 'SilentlyContinue'
+        [String[]]$blockProcessName = $blockProcessName | ForEach-Object { $_ + '.exe' } -ErrorAction 'Ignore'
 
         ## Enumerate each process and set the debugger value to block application execution
         ForEach ($blockProcess in $blockProcessName) {
@@ -261,10 +261,10 @@ https://psappdeploytoolkit.com
 
         ## Remove Debugger values to unblock processes
         [PSObject[]]$unblockProcesses = $null
-        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' })
+        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyAppExecution -Recurse -ErrorAction 'Ignore' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Ignore' })
         ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
             Write-Log -Message "Removing the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
-            $unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'SilentlyContinue'
+            $unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'Ignore'
         }
 
         ## If block execution variable is $true, set it to $false
@@ -288,7 +288,7 @@ https://psappdeploytoolkit.com
         ## Remove BlockAppExecution Schedule Task XML file
         [String]$xmlSchTaskFilePath = "$Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
         If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
-            $null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'SilentlyContinue'
+            $null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'Ignore'
         }
 
         ## Remove BlockAppExection Temporary directory

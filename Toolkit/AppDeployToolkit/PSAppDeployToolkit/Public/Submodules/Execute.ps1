@@ -406,10 +406,10 @@ https://psappdeploytoolkit.com
                 If ($processStartInfo.UseShellExecute -eq $false) {
                     ## Make sure the standard output and error event is unregistered
                     If ($stdOutEvent) {
-                        Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'SilentlyContinue'; $stdOutEvent = $null
+                        Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction 'Ignore'; $stdOutEvent = $null
                     }
                     If ($stdErrEvent) {
-                        Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'SilentlyContinue'; $stdErrEvent = $null
+                        Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction 'Ignore'; $stdErrEvent = $null
                     }
                 }
                 ## Free resources associated with the process, this does not cause process to exit
@@ -418,7 +418,7 @@ https://psappdeploytoolkit.com
                 }
 
                 ## Re-enable Zone checking
-                Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'SilentlyContinue'
+                Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction 'Ignore'
 
                 If ($private:previousErrorActionPreference) {
                     $ErrorActionPreference = $private:previousErrorActionPreference

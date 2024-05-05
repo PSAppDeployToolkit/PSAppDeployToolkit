@@ -439,7 +439,7 @@ https://psappdeploytoolkit.com
                             $regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null)
                         }
                         Else {
-                            $regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'SilentlyContinue'
+                            $regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'Ignore'
                         }
                     }
                     Else {
@@ -639,7 +639,7 @@ https://psappdeploytoolkit.com
 
             If ($Name) {
                 ## Set registry value if it doesn't exist
-                If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'SilentlyContinue')) {
+                If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'Ignore')) {
                     Write-Log -Message "Setting registry key value: [$key] [$name = $value]." -Source ${CmdletName}
                     $null = New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop'
                 }
