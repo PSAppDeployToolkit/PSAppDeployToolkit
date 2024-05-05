@@ -67,7 +67,7 @@ https://psappdeploytoolkit.com
             [Boolean]$kbFound = $false
 
             ## Check for update using built in PS cmdlet which uses WMI in the background to gather details
-            Get-HotFix -Id $kbNumber -ErrorAction 'SilentlyContinue' | ForEach-Object { $kbFound = $true }
+            Get-HotFix -Id $kbNumber -ErrorAction 'Ignore' | ForEach-Object { $kbFound = $true }
 
             If (-not $kbFound) {
                 Write-Log -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}

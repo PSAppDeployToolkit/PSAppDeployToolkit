@@ -369,8 +369,8 @@ https://psappdeploytoolkit.com
 
         ## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
         [PSObject[]]$regKeyApplication = ForEach ($regKey in $Script:ADT.Environment.regKeyApplications) {
-            If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
-                [PSObject[]]$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath'
+            If (Test-Path -LiteralPath $regKey -ErrorAction 'Ignore' -ErrorVariable '+ErrorUninstallKeyPath') {
+                [PSObject[]]$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'Ignore' -ErrorVariable '+ErrorUninstallKeyPath'
                 ForEach ($UninstallKeyApp in $UninstallKeyApps) {
                     Try {
                         [PSObject]$regKeyApplicationProps = Get-ItemProperty -LiteralPath $UninstallKeyApp.PSPath -ErrorAction 'Stop'
@@ -402,8 +402,8 @@ https://psappdeploytoolkit.com
 
                 ## Remove any control characters which may interfere with logging and creating file path names from these variables
                 [String]$appDisplayName = $regKeyApp.DisplayName -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
-                [String]$appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction SilentlyContinue) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
-                [String]$appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction SilentlyContinue) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
+                [String]$appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
+                [String]$appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction Ignore) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]', ''
 
 
                 ## Determine if application is a 64-bit application
@@ -1954,7 +1954,7 @@ https://psappdeploytoolkit.com
     Process {
         Write-Log -Message 'Checking if system is using a wired network connection...' -Source ${CmdletName}
 
-        [PSObject[]]$networkConnected = Get-WmiObject -Class 'Win32_NetworkAdapter' | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local' -or $_.NetConnectionID -match 'Ethernet') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'SilentlyContinue'
+        [PSObject[]]$networkConnected = Get-WmiObject -Class 'Win32_NetworkAdapter' | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local' -or $_.NetConnectionID -match 'Ethernet') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'Ignore'
         [Boolean]$onNetwork = $false
         If ($networkConnected) {
             Write-Log -Message 'Wired network connection found.' -Source ${CmdletName}
@@ -3059,8 +3059,8 @@ Function Configure-EdgeExtension {
     }
     Else {
         # Get the installed extensions
-        $installedExtensions = Get-RegistryKey -Key $regKeyEdgeExtensions -Value ExtensionSettings | ConvertFrom-Json -ErrorAction SilentlyContinue
-        Write-Log -Message "Configured extensions: [$($installedExtensions | ConvertTo-Json -Compress -ErrorAction SilentlyContinue)]." -Severity 1
+        $installedExtensions = Get-RegistryKey -Key $regKeyEdgeExtensions -Value ExtensionSettings | ConvertFrom-Json -ErrorAction Ignore
+        Write-Log -Message "Configured extensions: [$($installedExtensions | ConvertTo-Json -Compress -ErrorAction Ignore)]." -Severity 1
     }
 
     Try {

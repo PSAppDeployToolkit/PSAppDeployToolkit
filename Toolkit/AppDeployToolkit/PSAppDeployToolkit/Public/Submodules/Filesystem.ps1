@@ -158,7 +158,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'SilentlyContinue') {
+        If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'Ignore') {
             Try {
                 If ($DisableRecursion) {
                     Write-Log -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
@@ -171,10 +171,10 @@ https://psappdeploytoolkit.com
                             If (Test-Path -LiteralPath $item.FullName -PathType Container) {
                                 # Item is a folder. Check if its empty
                                 # Get list of child items in the folder
-                                [Array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                                [Array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                                 If ($ItemChildItems.Count -eq 0) {
                                     # The folder is empty, delete it
-                                    Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                                    Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                                 }
                                 Else {
                                     # Folder is not empty, skip it
@@ -184,7 +184,7 @@ https://psappdeploytoolkit.com
                             }
                             Else {
                                 # Item is a file. Delete it
-                                Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                                Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                             }
                         }
                         If ($SubfoldersSkipped -gt 0) {
@@ -192,12 +192,12 @@ https://psappdeploytoolkit.com
                         }
                     }
                     Else {
-                        Remove-Item -LiteralPath $Path -Force -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                        Remove-Item -LiteralPath $Path -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                     }
                 }
                 Else {
                     Write-Log -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
-                    Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorRemoveFolder'
+                    Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                 }
 
                 If ($ErrorRemoveFolder) {
@@ -402,7 +402,7 @@ https://psappdeploytoolkit.com
                             # Copy all files from the root source folder
                             Copy-File @CopyFileSplat
                             # Copy all files from subfolders
-                            Get-ChildItem -Path $RobocopySource -Directory -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                            Get-ChildItem -Path $RobocopySource -Directory -Recurse -Force -ErrorAction 'Ignore' | ForEach-Object {
                                 # Append file name to subfolder path and repeat Copy-File
                                 $CopyFileSplat.Path = Join-Path $_.FullName $RobocopyFile
                                 Copy-File @CopyFileSplat
@@ -479,12 +479,12 @@ https://psappdeploytoolkit.com
                     If ($Flatten) {
                         Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
-                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
-                                Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | ForEach-Object {
+                                Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                             }
                         }
                         Else {
-                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'SilentlyContinue' | ForEach-Object {
+                            $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | ForEach-Object {
                                 Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Stop'
                             }
                         }
@@ -492,7 +492,7 @@ https://psappdeploytoolkit.com
                     ElseIf ($Recurse) {
                         Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
                         Else {
                             $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
@@ -501,7 +501,7 @@ https://psappdeploytoolkit.com
                     Else {
                         Write-Log -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
-                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
+                            $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
                         Else {
                             $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'Stop'
@@ -615,7 +615,7 @@ https://psappdeploytoolkit.com
                                           'ErrorVariable'                        = '+ErrorRemoveItem'
         }
         If ($ContinueOnError) {
-            $RemoveFileSplat.Add('ErrorAction', 'SilentlyContinue')
+            $RemoveFileSplat.Add('ErrorAction', 'Ignore')
         }
         Else {
             $RemoveFileSplat.Add('ErrorAction', 'Stop')

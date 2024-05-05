@@ -237,10 +237,10 @@ https://psappdeploytoolkit.com
             Write-Log -Message 'Resolving product code to a publisher, application name, and version.' -Source ${CmdletName}
 
             If ($IncludeUpdatesAndHotfixes) {
-                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'
+                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
             }
             Else {
-                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'SilentlyContinue'
+                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
             }
 
             #  Build the log file name
@@ -277,8 +277,8 @@ https://psappdeploytoolkit.com
         }
         Else {
             ## Create the Log directory if it doesn't already exist
-            If (-not (Test-Path -LiteralPath $Script:ADT.Config.MSI.LogPath -PathType 'Container' -ErrorAction 'SilentlyContinue')) {
-                $null = New-Item -Path $Script:ADT.Config.MSI.LogPath -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+            If (-not (Test-Path -LiteralPath $Script:ADT.Config.MSI.LogPath -PathType 'Container' -ErrorAction 'Ignore')) {
+                $null = New-Item -Path $Script:ADT.Config.MSI.LogPath -ItemType 'Directory' -ErrorAction 'Ignore'
             }
             ## Build the log file path
             [String]$logPath = Join-Path -Path $Script:ADT.Config.MSI.LogPath -ChildPath $LogName
@@ -322,10 +322,10 @@ https://psappdeploytoolkit.com
         }
 
         ## If the MSI is in the Files directory, set the full path to the MSI
-        If (Test-Path -LiteralPath (Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+        If (Test-Path -LiteralPath (Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
             [String]$msiFile = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $path
         }
-        ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'SilentlyContinue') {
+        ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'Ignore') {
             [String]$msiFile = (Get-Item -LiteralPath $Path).FullName
         }
         ElseIf ($PathIsProductCode) {
@@ -562,10 +562,10 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If the MSP is in the Files directory, set the full path to the MSP
-        If (Test-Path -LiteralPath (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('dirFiles')) -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+        If (Test-Path -LiteralPath (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('dirFiles')) -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
             [String]$mspFile = Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('dirFiles')) -ChildPath $path
         }
-        ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'SilentlyContinue') {
+        ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'Ignore') {
             [String]$mspFile = (Get-Item -LiteralPath $Path).FullName
         }
         Else {
