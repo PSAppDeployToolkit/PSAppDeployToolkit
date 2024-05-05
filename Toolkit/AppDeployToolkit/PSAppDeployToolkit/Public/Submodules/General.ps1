@@ -518,11 +518,11 @@ https://psappdeploytoolkit.com
             Remove-RegistryKey -Key $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -Recurse
         }
 
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_Complete)"
+        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
         ## Handle reboot prompts on successful script completion
         If ($Script:ADT.CurrentSession.GetPropertyValue('AllowRebootPassThru') -and ((($msiRebootDetected) -or ($exitCode -eq 3010)) -or ($exitCode -eq 1641))) {
             Write-Log -Message 'A restart has been flagged as required.' -Source ${CmdletName}
-            [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_RestartRequired)"
+            [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
             If (($msiRebootDetected) -and ($exitCode -ne 1641)) {
                 [Int32]$exitCode = 3010
             }
@@ -538,14 +538,14 @@ https://psappdeploytoolkit.com
     }
     ElseIf (($exitCode -eq $Script:ADT.Config.UI_Options.InstallationUI_ExitCode) -or ($exitCode -eq $Script:ADT.Config.UI_Options.InstallationDefer_ExitCode)) {
         Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 2
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_FastRetry)"
+        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
         If ($Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait
         }
     }
     Else {
         Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 3
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_Error)"
+        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
         If ($Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait
         }

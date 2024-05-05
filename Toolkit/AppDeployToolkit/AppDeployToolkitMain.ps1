@@ -191,7 +191,7 @@ If ($showBlockedAppDialog) {
         #  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
         If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
             [Boolean]$showBlockedAppDialogMutexLocked = $true
-            Show-InstallationPrompt -Title $installTitle -Message $Script:ADT.Strings.BlockExecution_Message -Icon 'Warning' -ButtonRightText 'OK'
+            Show-InstallationPrompt -Title $installTitle -Message $Script:ADT.Strings.BlockExecution.Message -Icon 'Warning' -ButtonRightText 'OK'
             Exit 0
         }
         Else {

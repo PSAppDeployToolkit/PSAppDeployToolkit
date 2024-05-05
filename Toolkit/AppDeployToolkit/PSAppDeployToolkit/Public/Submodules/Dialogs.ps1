@@ -980,7 +980,7 @@ https://psappdeploytoolkit.com
             If ($freeDiskSpace -lt $RequiredDiskSpace) {
                 Write-Log -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3 -Source ${CmdletName}
                 If (-not $Silent) {
-                    Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace_Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
+                    Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
                 }
                 Exit-Script -ExitCode $Script:ADT.Config.UI_Options.InstallationUI_ExitCode
             }
@@ -1418,7 +1418,7 @@ https://psappdeploytoolkit.com
         [Hashtable]$installRestartPromptParameters = $PSBoundParameters
 
         ## Check if we are already displaying a restart prompt
-        If (Get-Process | Where-Object { $_.MainWindowTitle -match $Script:ADT.Strings.RestartPrompt_Title }) {
+        If (Get-Process | Where-Object { $_.MainWindowTitle -match $Script:ADT.Strings.RestartPrompt.Title }) {
             Write-Log -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2 -Source ${CmdletName}
             Return
         }
@@ -1598,9 +1598,9 @@ https://psappdeploytoolkit.com
         $labelMessage.MaximumSize = $defaultControlSize
         $labelMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
         $labelMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
-        $labelMessage.Text = "$($Script:ADT.Strings.RestartPrompt_Message) $($Script:ADT.Strings.RestartPrompt_MessageTime)`n`n$($Script:ADT.Strings.RestartPrompt_MessageRestart)"
+        $labelMessage.Text = "$($Script:ADT.Strings.RestartPrompt.Message) $($Script:ADT.Strings.RestartPrompt.MessageTime)`n`n$($Script:ADT.Strings.RestartPrompt.MessageRestart)"
         If ($NoCountdown) {
-            $labelMessage.Text = $Script:ADT.Strings.RestartPrompt_Message
+            $labelMessage.Text = $Script:ADT.Strings.RestartPrompt.Message
         }
         $labelMessage.TextAlign = 'MiddleCenter'
         $labelMessage.Anchor = 'Top'
@@ -1617,7 +1617,7 @@ https://psappdeploytoolkit.com
         $labelTimeRemaining.Margin = $paddingNone
         $labelTimeRemaining.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelTimeRemaining.TabStop = $false
-        $labelTimeRemaining.Text = $Script:ADT.Strings.RestartPrompt_TimeRemaining
+        $labelTimeRemaining.Text = $Script:ADT.Strings.RestartPrompt.TimeRemaining
         $labelTimeRemaining.TextAlign = 'MiddleCenter'
         $labelTimeRemaining.Anchor = 'Top'
         $labelTimeRemaining.AutoSize = $true
@@ -1664,7 +1664,7 @@ https://psappdeploytoolkit.com
         $buttonRestartLater.MinimumSize = $buttonSize
         $buttonRestartLater.MaximumSize = $buttonSize
         $buttonRestartLater.TabIndex = 0
-        $buttonRestartLater.Text = $Script:ADT.Strings.RestartPrompt_ButtonRestartLater
+        $buttonRestartLater.Text = $Script:ADT.Strings.RestartPrompt.ButtonRestartLater
         $buttonRestartLater.AutoSize = $true
         $buttonRestartLater.Margin = $paddingNone
         $buttonRestartLater.Padding = $paddingNone
@@ -1680,7 +1680,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.MinimumSize = $buttonSize
         $buttonRestartNow.MaximumSize = $buttonSize
         $buttonRestartNow.TabIndex = 1
-        $buttonRestartNow.Text = $Script:ADT.Strings.RestartPrompt_ButtonRestartNow
+        $buttonRestartNow.Text = $Script:ADT.Strings.RestartPrompt.ButtonRestartNow
         $buttonRestartNow.Margin = $paddingNone
         $buttonRestartNow.Padding = $paddingNone
         $buttonRestartNow.UseVisualStyleBackColor = $true
@@ -2114,7 +2114,7 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$StatusMessage = $Script:ADT.Strings.Progress_MessageInstall,
+        [String]$StatusMessage = $Script:ADT.Strings.Progress.MessageInstall,
         [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [String]$WindowLocation = 'Default',
@@ -2141,12 +2141,12 @@ https://psappdeploytoolkit.com
         }
 
         ## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
-        If ($StatusMessage -eq $Script:ADT.Strings.Progress_MessageInstall) {
+        If ($StatusMessage -eq $Script:ADT.Strings.Progress.MessageInstall) {
             If ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Uninstall') {
-                $StatusMessage = $Script:ADT.Strings.Progress_MessageUninstall
+                $StatusMessage = $Script:ADT.Strings.Progress.MessageUninstall
             }
             ElseIf ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Repair') {
-                $StatusMessage = $Script:ADT.Strings.Progress_MessageRepair
+                $StatusMessage = $Script:ADT.Strings.Progress.MessageRepair
             }
         }
 
@@ -2158,7 +2158,7 @@ https://psappdeploytoolkit.com
         ## Check if the progress thread is running before invoking methods on it
         If (!$script:instProgressRunning) {
             #  Notify user that the software installation has started
-            $balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_Start)"
+            $balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
             #  Create a synchronized hashtable to share objects between runspaces
             $script:ProgressSyncHash = [Hashtable]::Synchronized(@{ })

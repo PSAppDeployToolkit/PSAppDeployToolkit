@@ -276,70 +276,6 @@ function Initialize-ADTVariableDatabase
         }
     }))
 
-    ## Variables: Priary user language
-    $variables.Add('HKUPrimaryLanguageShort', [string]$(if ($variables.RunAsActiveUser)
-    {
-        # Read language defined by Group Policy
-        if (!([string[]]$HKULanguages = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MUI\Settings' -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore))
-        {
-            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Software\Policies\Microsoft\Windows\Control Panel\Desktop" -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore
-        }
-
-        # Read language for Win Vista & higher machines
-        if (!$HKULanguages)
-        {
-            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\Desktop" -ErrorAction Ignore | Select-Object -ExpandProperty PreferredUILanguages -ErrorAction Ignore
-        }
-        if (!$HKULanguages)
-        {
-            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\Desktop\MuiCached" -ErrorAction Ignore | Select-Object -ExpandProperty MachinePreferredUILanguages -ErrorAction Ignore
-        }
-        if (!$HKULanguages)
-        {
-            [string[]]$HKULanguages = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International" -ErrorAction Ignore | Select-Object -ExpandProperty LocaleName -ErrorAction Ignore
-        }
-
-        # Read language for Win XP machines
-        if (!$HKULanguages -and ($HKULocale = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International" -ErrorAction Ignore | Select-Object -ExpandProperty Locale -ErrorAction Ignore))
-        {
-            [string[]]$HKULanguages = ([Globalization.CultureInfo]([System.Convert]::ToInt32('0x' + $HKULocale, 16))).Name
-        }
-
-        # Determine the language if we found anything of use.
-        if ($HKULanguages)
-        {
-            [cultureinfo]$PrimaryWindowsUILanguage = $HKULanguages[0]
-            [string]$HKUPrimaryLanguageShort = $PrimaryWindowsUILanguage.TwoLetterISOLanguageName.ToUpper()
-
-            #  If the detected language is Chinese, determine if it is simplified or traditional Chinese
-            if ($HKUPrimaryLanguageShort -eq 'ZH')
-            {
-                if ($PrimaryWindowsUILanguage.EnglishName -match 'Simplified')
-                {
-                    [string]$HKUPrimaryLanguageShort = 'ZH-Hans'
-                }
-                if ($PrimaryWindowsUILanguage.EnglishName -match 'Traditional')
-                {
-                    [string]$HKUPrimaryLanguageShort = 'ZH-Hant'
-                }
-            }
-
-            #  If the detected language is Portuguese, determine if it is Brazilian Portuguese
-            if ($HKUPrimaryLanguageShort -eq 'PT')
-            {
-                if ($PrimaryWindowsUILanguage.ThreeLetterWindowsLanguageName -eq 'PTB')
-                {
-                    [string]$HKUPrimaryLanguageShort = 'PT-BR'
-                }
-            }
-
-            if (![System.String]::IsNullOrWhiteSpace($HKUPrimaryLanguageShort))
-            {
-                $HKUPrimaryLanguageShort
-            }
-        }
-    }))
-
     ## Variables: Executables
     $variables.Add('exeWusa', [string]"$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
     $variables.Add('exeMsiexec', [string]"$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
@@ -531,25 +467,14 @@ function Import-ADTLocalizedStrings
         # The caller has specified a specific language.
         $Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride
     }
-    elseif ($Script:ADT.Environment.HKUPrimaryLanguageShort)
-    {
-        # Get the logged on user's language value.
-        $Script:ADT.Environment.HKUPrimaryLanguageShort
-    }
     else
     {
         # Fall back to PowerShell's.
-        $Script:ADT.Environment.currentLanguage
-    }
-
-    # Default to English if the detected UI language is not available in the XML config file.
-    if (!$Script:ADT.Config.PSObject.Properties.Name.Contains("UI_Messages_$($Script:ADT.Language)"))
-    {
-        $Script:ADT.Language = "EN"
+        $PSUICulture
     }
 
     # Store the chosen language within this session.
-    $Script:ADT.Strings = $Script:ADT.Config."UI_Messages_$($Script:ADT.Language)"
+    $Script:ADT.Strings = Import-LocalizedData -BaseDirectory "$Script:PSScriptRoot\Strings" -FileName strings.psd1 -UICulture $Script:ADT.Language
 }
 
 

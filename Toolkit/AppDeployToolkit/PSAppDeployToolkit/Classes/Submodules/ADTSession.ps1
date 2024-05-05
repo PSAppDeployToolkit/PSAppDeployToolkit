@@ -421,14 +421,7 @@ class ADTSession
         }
 
         # Log which language's UI messages are loaded from the config XML file
-        if ($Script:ADT.Environment.HKUPrimaryLanguageShort)
-        {
-            Write-Log -Message "The active logged on user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)] has a primary UI language of [$($Script:ADT.Environment.HKUPrimaryLanguageShort)]." -Source $logSrc
-        }
-        else
-        {
-            Write-Log -Message "The current system account [$($Script:ADT.Environment.ProcessNTAccount)] has a primary UI language of [$($Script:ADT.Environment.currentLanguage)]." -Source $logSrc
-        }
+        Write-Log -Message "The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)]." -Source $logSrc
 
         # Advise whether the UI language was overridden.
         if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
@@ -552,16 +545,16 @@ class ADTSession
         $this.Session.State.DeploymentTypeName = switch ($this.Properties.DeploymentType)
         {
             'Install' {
-                $Script:ADT.Strings.DeploymentType_Install
+                $Script:ADT.Strings.DeploymentType.Install
             }
             'Uninstall' {
-                $Script:ADT.Strings.DeploymentType_UnInstall
+                $Script:ADT.Strings.DeploymentType.UnInstall
             }
             'Repair' {
-                $Script:ADT.Strings.DeploymentType_Repair
+                $Script:ADT.Strings.DeploymentType.Repair
             }
             default {
-                $Script:ADT.Strings.DeploymentType_Install
+                $Script:ADT.Strings.DeploymentType.Install
             }
         }
         Write-Log -Message "Deployment type is [$($this.Session.State.DeploymentTypeName)]." -Source $logSrc

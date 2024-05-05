@@ -376,7 +376,7 @@ https://psappdeploytoolkit.com
         $labelWelcomeMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
         $labelWelcomeMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelWelcomeMessage.TabStop = $false
-        $labelWelcomeMessage.Text = $Script:ADT.Strings.DeferPrompt_WelcomeMessage
+        $labelWelcomeMessage.Text = $Script:ADT.Strings.DeferPrompt.WelcomeMessage
         $labelWelcomeMessage.TextAlign = 'MiddleCenter'
         $labelWelcomeMessage.Anchor = 'Top'
         $labelWelcomeMessage.AutoSize = $true
@@ -406,7 +406,7 @@ https://psappdeploytoolkit.com
         $labelCustomMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelCustomMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCustomMessage.TabStop = $false
-        $labelCustomMessage.Text = $Script:ADT.Strings.ClosePrompt_Message
+        $labelCustomMessage.Text = $Script:ADT.Strings.ClosePrompt.Message
         $labelCustomMessage.TextAlign = 'MiddleCenter'
         $labelCustomMessage.Anchor = 'Top'
         $labelCustomMessage.AutoSize = $true
@@ -421,7 +421,7 @@ https://psappdeploytoolkit.com
         $labelCloseAppsMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelCloseAppsMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCloseAppsMessage.TabStop = $false
-        $labelCloseAppsMessage.Text = $Script:ADT.Strings.ClosePrompt_Message
+        $labelCloseAppsMessage.Text = $Script:ADT.Strings.ClosePrompt.Message
         $labelCloseAppsMessage.TextAlign = 'MiddleCenter'
         $labelCloseAppsMessage.Anchor = 'Top'
         $labelCloseAppsMessage.AutoSize = $true
@@ -449,7 +449,7 @@ https://psappdeploytoolkit.com
         $labelDeferExpiryMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelDeferExpiryMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferExpiryMessage.TabStop = $false
-        $labelDeferExpiryMessage.Text = $Script:ADT.Strings.DeferPrompt_ExpiryMessage
+        $labelDeferExpiryMessage.Text = $Script:ADT.Strings.DeferPrompt.ExpiryMessage
         $labelDeferExpiryMessage.TextAlign = 'MiddleCenter'
         $labelDeferExpiryMessage.AutoSize = $true
 
@@ -464,10 +464,10 @@ https://psappdeploytoolkit.com
         $labelDeferDeadline.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferDeadline.TabStop = $false
         If ($deferTimes -ge 0) {
-            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt_RemainingDeferrals) $([Int32]$deferTimes + 1)"
+            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt.RemainingDeferrals) $([Int32]$deferTimes + 1)"
         }
         If ($deferDeadline) {
-            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt_Deadline) $deferDeadline"
+            $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt.Deadline) $deferDeadline"
         }
         $labelDeferDeadline.TextAlign = 'MiddleCenter'
         $labelDeferDeadline.AutoSize = $true
@@ -482,7 +482,7 @@ https://psappdeploytoolkit.com
         $labelDeferWarningMessage.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 5)
         $labelDeferWarningMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelDeferWarningMessage.TabStop = $false
-        $labelDeferWarningMessage.Text = $Script:ADT.Strings.DeferPrompt_WarningMessage
+        $labelDeferWarningMessage.Text = $Script:ADT.Strings.DeferPrompt.WarningMessage
         $labelDeferWarningMessage.TextAlign = 'MiddleCenter'
         $labelDeferWarningMessage.AutoSize = $true
 
@@ -499,18 +499,18 @@ https://psappdeploytoolkit.com
         If (($forceCountdown -eq $true) -or (-not $runningProcessDescriptions)) {
             Switch ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType')) {
                 'Uninstall' {
-                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_UnInstall); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt.CountdownMessage -f $Script:ADT.Strings.DeploymentType.UnInstall); Break
                 }
                 'Repair' {
-                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_Repair); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt.CountdownMessage -f $Script:ADT.Strings.DeploymentType.Repair); Break
                 }
                 Default {
-                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_Install); Break
+                    $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt.CountdownMessage -f $Script:ADT.Strings.DeploymentType.Install); Break
                 }
             }
         }
         Else {
-            $labelCountdownMessage.Text = $Script:ADT.Strings.ClosePrompt_CountdownMessage
+            $labelCountdownMessage.Text = $Script:ADT.Strings.ClosePrompt.CountdownMessage
         }
         $labelCountdownMessage.TextAlign = 'MiddleCenter'
         $labelCountdownMessage.Anchor = 'Top'
@@ -546,8 +546,8 @@ https://psappdeploytoolkit.com
         $flowLayoutPanel.Controls.Add($labelWelcomeMessage)
         $flowLayoutPanel.Controls.Add($labelAppName)
 
-        If ($CustomText -and $Script:ADT.Strings.WelcomePrompt_CustomMessage) {
-            $labelCustomMessage.Text = $Script:ADT.Strings.WelcomePrompt_CustomMessage
+        If ($CustomText -and $Script:ADT.Strings.WelcomePrompt.CustomMessage) {
+            $labelCustomMessage.Text = $Script:ADT.Strings.WelcomePrompt.CustomMessage
             $flowLayoutPanel.Controls.Add($labelCustomMessage)
         }
         If ($showCloseApps) {
@@ -573,7 +573,7 @@ https://psappdeploytoolkit.com
         $buttonCloseApps.MinimumSize = $buttonSize
         $buttonCloseApps.MaximumSize = $buttonSize
         $buttonCloseApps.TabIndex = 1
-        $buttonCloseApps.Text = $Script:ADT.Strings.ClosePrompt_ButtonClose
+        $buttonCloseApps.Text = $Script:ADT.Strings.ClosePrompt.ButtonClose
         $buttonCloseApps.DialogResult = 'Yes'
         $buttonCloseApps.AutoSize = $true
         $buttonCloseApps.Margin = $paddingNone
@@ -594,7 +594,7 @@ https://psappdeploytoolkit.com
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.TabIndex = 0
-        $buttonDefer.Text = $Script:ADT.Strings.ClosePrompt_ButtonDefer
+        $buttonDefer.Text = $Script:ADT.Strings.ClosePrompt.ButtonDefer
         $buttonDefer.DialogResult = 'No'
         $buttonDefer.AutoSize = $true
         $buttonDefer.Margin = $paddingNone
@@ -610,7 +610,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
         $buttonContinue.TabIndex = 2
-        $buttonContinue.Text = $Script:ADT.Strings.ClosePrompt_ButtonContinue
+        $buttonContinue.Text = $Script:ADT.Strings.ClosePrompt.ButtonContinue
         $buttonContinue.DialogResult = 'OK'
         $buttonContinue.AutoSize = $true
         $buttonContinue.Margin = $paddingNone
@@ -622,7 +622,7 @@ https://psappdeploytoolkit.com
             $toolTip.IsBalloon = $false
             $toolTip.InitialDelay = 100
             $toolTip.ReshowDelay = 100
-            $toolTip.SetToolTip($buttonContinue, $Script:ADT.Strings.ClosePrompt_ButtonContinueTooltip)
+            $toolTip.SetToolTip($buttonContinue, $Script:ADT.Strings.ClosePrompt.ButtonContinueTooltip)
         }
 
         ## Button Abort (Hidden)
