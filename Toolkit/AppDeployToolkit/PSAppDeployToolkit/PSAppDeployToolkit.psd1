@@ -123,6 +123,7 @@ FunctionsToExport = @(
 	'Set-Shortcut'
 	'Show-BalloonTip'
 	'Show-DialogBox'
+	'Show-HelpConsole'
 	'Show-InstallationProgress'
 	'Show-InstallationPrompt'
 	'Show-InstallationRestartPrompt'
