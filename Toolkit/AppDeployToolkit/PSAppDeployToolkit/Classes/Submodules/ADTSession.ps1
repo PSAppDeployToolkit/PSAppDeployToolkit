@@ -264,17 +264,14 @@ class ADTSession
 
     hidden [System.Void] SetLogName()
     {
-        # Generate a log name from our installation properties.
+        # Generate log paths from our installation properties.
         $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
+        $this.Properties.LogTempFolder = Join-Path -Path $Script:ADT.Environment.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
 
-        # If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder ($Script:ADT.Config.Toolkit.LogPath) after being zipped.
-        if ($Script:ADT.Config.Toolkit.CompressLogs)
+        # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
+        if ($Script:ADT.Config.Toolkit.CompressLogs -and [System.IO.Directory]::Exists($this.Properties.LogTempFolder))
         {
-            # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-            if ([System.IO.Directory]::Exists(($this.Properties.LogTempFolder = "$([System.IO.Path]::GetTempPath())$($this.Properties.InstallName)_$($this.Properties.DeploymentType)")))
-            {
-                [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
-            }
+            [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
         }
     }
 
