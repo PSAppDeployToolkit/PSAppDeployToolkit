@@ -6,24 +6,21 @@
 
 class ADTSession
 {
-    # Private variables.
-    hidden [System.Collections.Specialized.OrderedDictionary]$Session = [ordered]@{
-        LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
-        RegKeyDeferHistory = $null
-        Initialised = $false
-        State = @{
-            OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-            WelcomeTimer = $null
-            LogTempFolder = $null
-            LogFileInitialized = $false
-            BlockExecution = $false
-            MsiRebootDetected = $false
-            IsTaskSchedulerHealthy = $true
-            DefaultMsiExecutablesList = [System.String]::Empty
-            DeploymentTypeName = [System.String]::Empty
-            DeployModeNonInteractive = $false
-            DeployModeSilent = $false
-        }
+    # Private variables (don't change once initialised).
+    hidden [System.Boolean]$LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
+    hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+    hidden [System.String]$LoggedOnUserTempPath = [System.String]::Empty
+    hidden [System.String]$DefaultMsiExecutablesList = [System.String]::Empty
+    hidden [System.String]$DeploymentTypeName = [System.String]::Empty
+    hidden [System.Boolean]$DeployModeNonInteractive = $false
+    hidden [System.Boolean]$DeployModeSilent = $false
+    hidden [System.Boolean]$Initialised = $false
+
+    # State values (can change mid-flight).
+    hidden [System.Collections.Hashtable]$State = @{
+        LogFileInitialized = $false
+        BlockExecution = $false
+        MsiRebootDetected = $false
     }
 
     # Variables we export publically for compatibility.
@@ -67,7 +64,9 @@ class ADTSession
         DirFiles = [System.String]::Empty
         DirSupportFiles = [System.String]::Empty
         DirAppDeployTemp = [System.String]::Empty
-        LoggedOnUserTempPath = [System.String]::Empty
+        RegKeyDeferHistory = [System.String]::Empty
+        LogTempFolder = [System.String]::Empty
+        IsTaskSchedulerHealthy = $true
     }
 
     # Constructors.
@@ -103,7 +102,7 @@ class ADTSession
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
-        $this.Properties.LoggedOnUserTempPath = if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists("$(Split-Path -LiteralPath $env:PUBLIC)\$($Script:ADT.Environment.RunAsActiveUser.UserName)"))
+        $this.LoggedOnUserTempPath = if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists("$(Split-Path -LiteralPath $env:PUBLIC)\$($Script:ADT.Environment.RunAsActiveUser.UserName)"))
         {
             "$(Split-Path -LiteralPath $env:PUBLIC)\$($Script:ADT.Environment.RunAsActiveUser.UserName)\ExecuteAsUser"
         }
@@ -185,9 +184,9 @@ class ADTSession
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
-            if ($this.Session.State.DefaultMsiExecutablesList = (Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[System.IO.Path]::GetFileNameWithoutExtension($_.Name)}) -join ',')
+            if ($this.DefaultMsiExecutablesList = (Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[System.IO.Path]::GetFileNameWithoutExtension($_.Name)}) -join ',')
             {
-                Write-Log -Message "MSI Executable List [$($this.Session.State.DefaultMsiExecutablesList)]." -Source $logSrc
+                Write-Log -Message "MSI Executable List [$($this.DefaultMsiExecutablesList)]." -Source $logSrc
             }
 
             # Change table and get properties from it.
@@ -260,7 +259,7 @@ class ADTSession
         $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
 
         # Set the Defer History registry path.
-        $this.Session.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
+        $this.Properties.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
     hidden [System.Void] SetLogName()
@@ -268,13 +267,13 @@ class ADTSession
         # Generate a log name from our installation properties.
         $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
 
-        # If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($Script:ADT.Config.Toolkit.LogPath) after being zipped.
+        # If option to compress logs is selected, then log will be created in temp log folder and then copied to actual log folder ($Script:ADT.Config.Toolkit.LogPath) after being zipped.
         if ($Script:ADT.Config.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-            if ([System.IO.Directory]::Exists(($this.Session.State.LogTempFolder = "$([System.IO.Path]::GetTempPath())$($this.Properties.InstallName)_$($this.Properties.DeploymentType)")))
+            if ([System.IO.Directory]::Exists(($this.Properties.LogTempFolder = "$([System.IO.Path]::GetTempPath())$($this.Properties.InstallName)_$($this.Properties.DeploymentType)")))
             {
-                [System.IO.Directory]::Remove($this.Session.State.LogTempFolder, $true)
+                [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
             }
         }
     }
@@ -317,7 +316,7 @@ class ADTSession
             Write-Log -Message "The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]" -Source $logSrc
         }
         Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]" -Source $logSrc
-        Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.Session.LegacyMode)]" -Source $logSrc
+        Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.LegacyMode)]" -Source $logSrc
     }
 
     hidden [System.Void] LogSystemInfo()
@@ -453,16 +452,16 @@ class ADTSession
                 }
                 else
                 {
-                    $this.Session.State.IsTaskSchedulerHealthy = $false
+                    $this.Properties.IsTaskSchedulerHealthy = $false
                 }
             }
             catch
             {
-                $this.Session.State.IsTaskSchedulerHealthy = $false
+                $this.Properties.IsTaskSchedulerHealthy = $false
             }
 
             # Log the health of the 'Task Scheduler' service.
-            Write-Log -Message "The task scheduler service is in a healthy state: $($this.Session.State.IsTaskSchedulerHealthy)." -Source $logSrc
+            Write-Log -Message "The task scheduler service is in a healthy state: $($this.Properties.IsTaskSchedulerHealthy)." -Source $logSrc
         }
         else
         {
@@ -513,15 +512,15 @@ class ADTSession
         switch ($this.Properties.DeployMode)
         {
             'Silent' {
-                $this.Session.State.DeployModeNonInteractive = $true; $this.Session.State.DeployModeSilent = $true
+                $this.DeployModeNonInteractive = $true; $this.DeployModeSilent = $true
             }
             'NonInteractive' {
-                $this.Session.State.DeployModeNonInteractive = $true; $this.Session.State.DeployModeSilent = $false
+                $this.DeployModeNonInteractive = $true; $this.DeployModeSilent = $false
             }
         }
 
         # Check deployment type (install/uninstall).
-        $this.Session.State.DeploymentTypeName = switch ($this.Properties.DeploymentType)
+        $this.DeploymentTypeName = switch ($this.Properties.DeploymentType)
         {
             'Install' {
                 $Script:ADT.Strings.DeploymentType.Install
@@ -536,7 +535,7 @@ class ADTSession
                 $Script:ADT.Strings.DeploymentType.Install
             }
         }
-        Write-Log -Message "Deployment type is [$($this.Session.State.DeploymentTypeName)]." -Source $logSrc
+        Write-Log -Message "Deployment type is [$($this.DeploymentTypeName)]." -Source $logSrc
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -574,7 +573,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Session.LegacyMode -and $this.Session.Initialised)
+        if ($this.LegacyMode -and $this.Initialised)
         {
             return Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name -ScriptBlock {
                 Get-Variable -Name $args[0] -ValueOnly
@@ -590,7 +589,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Session.LegacyMode -and $this.Session.Initialised)
+        if ($this.LegacyMode -and $this.Initialised)
         {
             Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name, $Value -ScriptBlock {
                 Set-Variable -Name $args[0] -Value $args[1]
@@ -605,7 +604,7 @@ class ADTSession
     [System.Void] SyncPropertyValues()
     {
         # This is ran ahead of an async operation for legacy mode operations to ensure the module has the current state.
-        if (!$this.Session.LegacyMode -or !$this.Session.Initialised)
+        if (!$this.LegacyMode -or !$this.Initialised)
         {
             return
         }
@@ -619,7 +618,7 @@ class ADTSession
     [System.Void] Open()
     {
         # Ensure this session isn't being opened twice.
-        if ($this.Session.Initialised)
+        if ($this.Initialised)
         {
             throw [System.InvalidOperationException]::new("The current $($Script:ADT.Environment.appDeployToolkitName) session has already been opened.")
         }
@@ -647,7 +646,7 @@ class ADTSession
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-        if ($this.Session.LegacyMode)
+        if ($this.LegacyMode)
         {
             Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $this.Properties -ScriptBlock {
                 $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Force})
@@ -655,7 +654,7 @@ class ADTSession
         }
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
-        $this.Session.Initialised = $true
+        $this.Initialised = $true
     }
 
     [System.Void] Close()

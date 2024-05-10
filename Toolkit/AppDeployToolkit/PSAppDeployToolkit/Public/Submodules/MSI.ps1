@@ -273,7 +273,7 @@ https://psappdeploytoolkit.com
 
         If ($Script:ADT.Config.Toolkit.CompressLogs) {
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $logTempFolder -ChildPath $LogName
+            [String]$logPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
         }
         Else {
             ## Create the Log directory if it doesn't already exist
@@ -285,7 +285,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Set the installation Parameters
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             $msiInstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
             $msiUninstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
         }

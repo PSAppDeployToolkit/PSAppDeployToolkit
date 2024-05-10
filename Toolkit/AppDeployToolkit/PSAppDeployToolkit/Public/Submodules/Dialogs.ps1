@@ -140,7 +140,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if in non-interactive mode
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message" -Source ${CmdletName}
             Return
         }
@@ -608,7 +608,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         #  Bypass if in silent mode
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             Write-Log -Message "Bypassing Show-DialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text" -Source ${CmdletName}
             Return
         }
@@ -947,13 +947,13 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If running in NonInteractive mode, force the processes to close silently
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeNonInteractive) {
+        If ($Script:ADT.CurrentSession.DeployModeNonInteractive) {
             $Silent = $true
         }
 
         ## If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
         If ($Script:ADT.CurrentSession.GetPropertyValue('UseDefaultMsi')) {
-            $CloseApps = "$CloseApps,$($Script:ADT.CurrentSession.Session.State.DefaultMsiExecutablesList)"
+            $CloseApps = "$CloseApps,$($Script:ADT.CurrentSession.DefaultMsiExecutablesList)"
         }
 
         ## Check disk space requirements if specified
@@ -1085,7 +1085,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Prompt the user to close running applications and optionally defer if enabled
-        If (!$Script:ADT.CurrentSession.Session.State.DeployModeSilent -and !$Silent) {
+        If (!$Script:ADT.CurrentSession.DeployModeSilent -and !$Silent) {
             If ($forceCloseAppsCountdown -gt 0) {
                 #  Keep the same variable for countdown to simplify the code:
                 $closeAppsCountdown = $forceCloseAppsCountdown
@@ -1235,7 +1235,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Force the processes to close silently, without prompting the user
-        If (($Silent -or $Script:ADT.CurrentSession.Session.State.DeployModeSilent) -and $CloseApps) {
+        If (($Silent -or $Script:ADT.CurrentSession.DeployModeSilent) -and $CloseApps) {
             [Array]$runningProcesses = $null
             [Array]$runningProcesses = Get-RunningProcesses $processObjects
             If ($runningProcesses) {
@@ -1292,7 +1292,7 @@ https://psappdeploytoolkit.com
         ## If block execution switch is true, call the function to block execution of these processes
         If ($BlockExecution) {
             #  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            $Script:ADT.CurrentSession.Session.State.BlockExecution = $BlockExecution
+            $Script:ADT.CurrentSession.State.BlockExecution = $BlockExecution
             Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
             Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty 'ProcessName')
         }
@@ -1404,7 +1404,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If in non-interactive mode
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             If ($NoSilentRestart -eq $false) {
                 Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
                 Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
@@ -1841,7 +1841,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Skip balloon if in silent mode, disabled in the config or presentation is detected
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications) {
             Write-Log -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
@@ -2019,7 +2019,7 @@ https://psappdeploytoolkit.com
                 ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
                 Try {
                     Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
-                    $executeToastAsUserScript = "$($Script:ADT.Environment.loggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
+                    $executeToastAsUserScript = "$($Script:ADT.CurrentSession.LoggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
                     Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
                 }
@@ -2133,7 +2133,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             If (!$Quiet) {
                 Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -Source ${CmdletName}
             }
@@ -2158,7 +2158,7 @@ https://psappdeploytoolkit.com
         ## Check if the progress thread is running before invoking methods on it
         If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running) {
             #  Notify user that the software installation has started
-            $balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+            $balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
             #  Create a synchronized hashtable to share objects between runspaces
             $Script:ProgressWindow.SyncHash = [hashtable]::Synchronized(@{})

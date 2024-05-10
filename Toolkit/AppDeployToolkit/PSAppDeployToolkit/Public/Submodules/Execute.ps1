@@ -467,7 +467,7 @@ https://psappdeploytoolkit.com
                 }
                 ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
                     Write-Log -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2 -Source ${CmdletName}
-                    Set-Variable -Name 'msiRebootDetected' -Value $true -Scope 'Script'
+                    $Script:ADT.CurrentSession.State.MsiRebootDetected = $true
                 }
                 ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
                     Write-Log -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3 -Source ${CmdletName}
@@ -673,7 +673,7 @@ https://psappdeploytoolkit.com
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
-            If (($TempPath -eq $Script:ADT.Environment.loggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
+            If (($TempPath -eq $Script:ADT.CurrentSession.LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
                 Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
