@@ -387,16 +387,6 @@ class ADTSession
             Write-Log -Message "The config file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI.LanguageOverride)]." -Source $logSrc
         }
         Write-Log -Message "The following UI messages were imported from the config file: [$($Script:ADT.Language)]." -Source $logSrc
-
-        # Log system DPI scale factor of active logged on user
-        if ($Script:ADT.Environment.UserDisplayScaleFactor)
-        {
-            Write-Log -Message "The active logged on user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)] has a DPI scale factor of [$($Script:ADT.Environment.dpiScale)] with DPI pixels [$($Script:ADT.Environment.dpiPixels)]." -Source $logSrc
-        }
-        else
-        {
-            Write-Log -Message "The system has a DPI scale factor of [$($Script:ADT.Environment.dpiScale)] with DPI pixels [$($Script:ADT.Environment.dpiPixels)]." -Source $logSrc
-        }
     }
 
     hidden [System.Void] PerformSCCMTests()
