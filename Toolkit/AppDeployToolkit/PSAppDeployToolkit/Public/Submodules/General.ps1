@@ -29,7 +29,7 @@ The source of the message being logged.
 
 .PARAMETER ScriptSection
 
-The heading for the portion of the script that is being executed. Default is: $script:installPhase.
+The heading for the portion of the script that is being executed. Default is: $installPhase.
 
 .PARAMETER LogType
 
@@ -170,10 +170,7 @@ https://psappdeploytoolkit.com
         [DateTime]$DateTimeNow = Get-Date
         [String]$LogTime = $DateTimeNow.ToString('HH\:mm\:ss.fff')
         [String]$LogDate = $DateTimeNow.ToString('MM-dd-yyyy')
-        If (-not (Test-Path -LiteralPath 'variable:LogTimeZoneBias')) {
-            [Int32]$script:LogTimeZoneBias = [TimeZone]::CurrentTimeZone.GetUtcOffset($DateTimeNow).TotalMinutes
-        }
-        [String]$LogTimePlusBias = $LogTime + $script:LogTimeZoneBias
+        [String]$LogTimePlusBias = $LogTime + $Script:ADT.CurrentSession.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
         #  Initialize variables
         [Boolean]$ExitLoggingFunction = $false
         If (-not (Test-Path -LiteralPath 'variable:DisableLogging')) {
@@ -185,12 +182,7 @@ https://psappdeploytoolkit.com
         #  Check if the script section is defined
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
         #  Get the file name of the source script
-        $ScriptSource = If (![System.String]::IsNullOrEmpty($script:MyInvocation.ScriptName)) {
-            Split-Path -Path $script:MyInvocation.ScriptName -Leaf -ErrorAction Ignore
-        }
-        Else {
-            Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction Ignore
-        }
+        $ScriptSource = [System.IO.Path]::GetFileName((Get-Variable -Name MyInvocation -Scope 1 -ValueOnly).PSCommandPath)
 
         ## Create script block for generating CMTrace.exe compatible log entry
         [ScriptBlock]$CMTraceLogString = {
@@ -579,7 +571,7 @@ https://psappdeploytoolkit.com
 
     If (Test-Path -LiteralPath 'variable:notifyIcon') {
         Try {
-            $script:notifyIcon.Dispose()
+            $Script:ADT.CurrentSession.State.NotifyIcon.Dispose()
         }
         Catch {
         }
