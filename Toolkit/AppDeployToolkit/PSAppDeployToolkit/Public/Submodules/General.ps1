@@ -580,12 +580,7 @@ https://psappdeploytoolkit.com
     $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
     [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
     ## Exit the script, returning the exit code to SCCM
-    If (Test-Path -LiteralPath 'variable:HostInvocation') {
-        $script:ExitCode = $exitCode; Exit
-    }
-    Else {
-        Exit $exitCode
-    }
+    exit $exitCode
 }
 
 
