@@ -8,8 +8,7 @@ class ADTSession
 {
     # Private variables.
     hidden [System.Collections.Specialized.OrderedDictionary]$Session = [ordered]@{
-        Cmdlet = $null
-        LegacyMode = $null
+        LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
         RegKeyDeferHistory = $null
         Initialised = $false
         State = @{
@@ -89,18 +88,15 @@ class ADTSession
         $this.Properties.CurrentDate = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%d-%m-%Y'
         $this.Properties.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.Properties.CurrentDateTime)
 
-        # Set whether this session is to be invoked in legacy mode.
-        $this.Session.LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
-
         # Process provided parameters.
-        $this.Session.Cmdlet = $Parameters.Cmdlet
+        $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
         $Parameters.GetEnumerator().Where({!$_.Name.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Name] = $_.Value})
 
         # Ensure the deployment type is always title-cased for log aesthetics.
-        $this.Properties.DeploymentType = $this.Session.Cmdlet.Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
+        $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
 
         # Establish script directories.
-        $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($this.Session.Cmdlet.MyInvocation.MyCommand.Path)
+        $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
         $this.Properties.DirFiles = "$($this.Properties.ScriptParentPath)\Files"
         $this.Properties.DirSupportFiles = "$($this.Properties.ScriptParentPath)\SupportFiles"
         $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Config.Toolkit.TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
@@ -261,7 +257,7 @@ class ADTSession
         $this.Properties.InstallName = ($this.Properties.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set PowerShell window title, in case the window is visible.
-        $this.Session.Cmdlet.Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
+        $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
 
         # Set the Defer History registry path.
         $this.Session.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
@@ -332,7 +328,7 @@ class ADTSession
         Write-Log -Message "OS Type is [$($Script:ADT.Environment.envOSProductTypeName)]" -Source $logSrc
         Write-Log -Message "Current Culture is [$($($Script:ADT.Environment.culture).Name)], language is [$($Script:ADT.Environment.currentLanguage)] and UI language is [$($Script:ADT.Environment.currentUILanguage)]" -Source $logSrc
         Write-Log -Message "Hardware Platform is [$(Get-HardwarePlatform)]" -Source $logSrc
-        Write-Log -Message "PowerShell Host is [$($($Script:ADT.Environment.envHost).Name)] with version [$($Script:ADT.Environment.envHost.Version)]" -Source $logSrc
+        Write-Log -Message "PowerShell Host is [$($Global:Host.Name)] with version [$($Global:Host.Version)]" -Source $logSrc
         Write-Log -Message "PowerShell Version is [$($Script:ADT.Environment.envPSVersion) $($Script:ADT.Environment.psArchitecture)]" -Source $logSrc
         if ($Script:ADT.Environment.envCLRVersion)
         {
@@ -580,7 +576,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.Session.LegacyMode -and $this.Session.Initialised)
         {
-            return Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $Name -ScriptBlock {
+            return Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name -ScriptBlock {
                 Get-Variable -Name $args[0] -ValueOnly
             }
         }
@@ -596,13 +592,27 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.Session.LegacyMode -and $this.Session.Initialised)
         {
-            Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $Name, $Value -ScriptBlock {
+            Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name, $Value -ScriptBlock {
                 Set-Variable -Name $args[0] -Value $args[1]
             }
         }
         else
         {
             $this.Properties[$Name] = $Value
+        }
+    }
+
+    [System.Void] SyncPropertyValues()
+    {
+        # This is ran ahead of an async operation for legacy mode operations to ensure the module has the current state.
+        if (!$this.Session.LegacyMode -or !$this.Session.Initialised)
+        {
+            return
+        }
+
+        # Pass through the session's property table. Because objects are passed by reference, this works fine.
+        Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $this.Properties -ScriptBlock {
+            Set-Variable -Name $($args[0].Keys) | ForEach-Object {$args[0][$_.Name] = $_.Value}
         }
     }
 
@@ -645,7 +655,7 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.Session.LegacyMode)
         {
-            Invoke-ScriptBlockInSessionState -SessionState $this.Session.Cmdlet.SessionState -Arguments $this.Properties -ScriptBlock {
+            Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $this.Properties -ScriptBlock {
                 $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Force})
             }
         }

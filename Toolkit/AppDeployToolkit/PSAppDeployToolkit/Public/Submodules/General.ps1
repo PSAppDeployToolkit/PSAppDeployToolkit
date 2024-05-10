@@ -586,7 +586,7 @@ https://psappdeploytoolkit.com
     }
     ## Reset powershell window title to its previous title
     $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.Session.State.OldPSWindowTitle
-    [System.Void]$Script:ADT.Sessions.Remove($Script:ADT.CurrentSession)
+    [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
     ## Exit the script, returning the exit code to SCCM
     If (Test-Path -LiteralPath 'variable:HostInvocation') {
         $script:ExitCode = $exitCode; Exit

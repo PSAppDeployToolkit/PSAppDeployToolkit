@@ -36,8 +36,7 @@ if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTas
 [System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
 
 # Define object for holding all PSADT variables.
-New-Variable -Name ADT -Option Constant -Value @{
-    Sessions = [System.Collections.Generic.List[ADTSession]]::new()
+New-Variable -Name ADT -Option ReadOnly -Value @{
     CurrentSession = $null
     BannerHeight = $null
     Environment = $null
@@ -53,10 +52,22 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
     Running = $false
 }
 
+# Values used for ADT module serialisation.
+New-Variable -Name Serialisation -Option Constant -Value @{
+    KeyName = "HKEY_LOCAL_MACHINE\SOFTWARE\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)"
+    ValueName = 'ModuleState'
+}
+
+# Variables to track multiple sessions and each session's caller.
+New-Variable -Name SessionBuffer -Option Constant -Value ([System.Collections.Generic.List[ADTSession]]::new())
+New-Variable -Name SessionCallers -Option Constant -Value @{}
+
 # Define exports. It should be done here and in the psd1 to cover all bases.
 Export-ModuleMember -Function @(
     'New-ADTSession'
     'Get-ADTSession'
+    'Export-ADTModuleState'
+    'Import-ADTModuleState'
     'Configure-EdgeExtension'
     'Convert-RegistryPath'
     'Copy-ContentToCache'

@@ -86,63 +86,10 @@ $sessionParams = @{
 New-ADTSession @PSBoundParameters @sessionParams
 
 <#
-## Variables: App Deploy Script Dependency Files
-[String]$appDeployRunHiddenVbsFile = Join-Path -Path $scriptRoot -ChildPath 'RunHidden.vbs'
-
-#  App Deploy Optional Extensions File
-[String]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
-
-##*=============================================
-##* END VARIABLE DECLARATION
-##*=============================================
-
 ##*=============================================
 ##* SCRIPT BODY
 ##*=============================================
 #region ScriptBody
-
-## If the script was invoked by the Help Console, exit the script now
-If ($invokingScript) {
-    If ((Split-Path -Path $invokingScript -Leaf) -eq 'AppDeployToolkitHelp.ps1') {
-        Return
-    }
-}
-
-## Define ScriptBlocks to disable/revert script logging
-[ScriptBlock]$DisableScriptLogging = { $OldDisableLoggingValue = $DisableLogging ; $DisableLogging = $true }
-[ScriptBlock]$RevertScriptLogging = { $DisableLogging = $OldDisableLoggingValue }
-
-## Disable logging until log file details are available
-. $DisableScriptLogging
-
-## Revert script logging to original setting
-. $RevertScriptLogging
-
-## Check how the script was invoked
-If ($invokingScript) {
-    Write-Log -Message "Script [$scriptPath] dot-source invoked by [$invokingScript]" -Source $Script:ADT.Environment.appDeployToolkitName
-}
-Else {
-    Write-Log -Message "Script [$scriptPath] invoked directly" -Source $Script:ADT.Environment.appDeployToolkitName
-}
-
-## Evaluate non-default parameters passed to the scripts
-If (Test-Path -LiteralPath 'variable:deployAppScriptParameters') {
-    [String]$deployAppScriptParameters = ($deployAppScriptParameters | Resolve-Parameters) -join ' '
-}
-#  Save main script parameters hashtable for async execution of the toolkit
-[Hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
-If ($appDeployMainScriptParameters) {
-    [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters | Resolve-Parameters) -join ' '
-}
-If ($appDeployExtScriptParameters) {
-    [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters | Resolve-Parameters) -join ' '
-}
-
-## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
-If ($AsyncToolkitLaunch) {
-    $installPhase = 'Asynchronous'
-}
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt) {
