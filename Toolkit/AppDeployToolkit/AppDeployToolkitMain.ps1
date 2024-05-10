@@ -102,273 +102,31 @@ Param (
 ##*=============================================
 #region VariableDeclaration
 
-## Variables: Toolkit Name
-[String]$appDeployToolkitName = 'PSAppDeployToolkit'
-[String]$appDeployMainScriptFriendlyName = 'App Deploy Toolkit Main'
+. "$PSScriptRoot\PSAppDeployToolkit\Private\AppDeployToolkitPrivate.ps1"
+. "$PSScriptRoot\PSAppDeployToolkit\Public\AppDeployToolkitPublic.ps1"
+
+New-Variable -Name ADT -Option Constant -Value ([ordered]@{
+    DotSourced = $MyInvocation.InvocationName.Equals('.') -or [System.String]::IsNullOrWhiteSpace($MyInvocation.Line)
+    Environment = $null
+    Sessions = $null
+    Config = $null
+    Strings = $null
+    Progress = [ordered]@{
+        Runspace = [runspacefactory]::CreateRunspace()
+        SyncHash = [hashtable]::Synchronized(@{})
+    }
+})
+
+Import-PsadtVariables -Cmdlet $PSCmdlet
 
 ## Variables: Script Info
-[Version]$appDeployMainScriptVersion = [Version]'3.10.2'
-[Version]$appDeployMainScriptMinimumConfigVersion = [Version]'3.10.0'
-[String]$appDeployMainScriptDate = '08/13/2024'
 [Hashtable]$appDeployMainScriptParameters = $PSBoundParameters
 
-## Variables: Datetime and Culture
+## Variables: Datetime
 [DateTime]$currentDateTime = Get-Date
 [String]$currentTime = Get-Date -Date $currentDateTime -UFormat '%T'
 [String]$currentDate = Get-Date -Date $currentDateTime -UFormat '%d-%m-%Y'
 [Timespan]$currentTimeZoneBias = [TimeZone]::CurrentTimeZone.GetUtcOffset($currentDateTime)
-[Globalization.CultureInfo]$culture = Get-Culture
-[String]$currentLanguage = $culture.TwoLetterISOLanguageName.ToUpper()
-[Globalization.CultureInfo]$uiculture = Get-UICulture
-[String]$currentUILanguage = $uiculture.TwoLetterISOLanguageName.ToUpper()
-
-## Variables: Environment Variables
-[PSObject]$envHost = $Host
-[PSObject]$envShellFolders = Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction 'SilentlyContinue'
-[String]$envAllUsersProfile = $env:ALLUSERSPROFILE
-[String]$envAppData = [Environment]::GetFolderPath('ApplicationData')
-[String]$envArchitecture = $env:PROCESSOR_ARCHITECTURE
-[String]$envCommonDesktop = $envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction 'SilentlyContinue'
-[String]$envCommonDocuments = $envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction 'SilentlyContinue'
-[String]$envCommonStartMenuPrograms = $envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction 'SilentlyContinue'
-[String]$envCommonStartMenu = $envShellFolders | Select-Object -ExpandProperty 'Common Start Menu' -ErrorAction 'SilentlyContinue'
-[String]$envCommonStartUp = $envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction 'SilentlyContinue'
-[String]$envCommonTemplates = $envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction 'SilentlyContinue'
-[String]$envComputerName = [Environment]::MachineName.ToUpper()
-[String]$envHomeDrive = $env:HOMEDRIVE
-[String]$envHomePath = $env:HOMEPATH
-[String]$envHomeShare = $env:HOMESHARE
-[String]$envLocalAppData = [Environment]::GetFolderPath('LocalApplicationData')
-[String[]]$envLogicalDrives = [Environment]::GetLogicalDrives()
-[String]$envProgramData = [Environment]::GetFolderPath('CommonApplicationData')
-[String]$envPublic = $env:PUBLIC
-[String]$envSystemDrive = $env:SYSTEMDRIVE
-[String]$envSystemRoot = $env:SYSTEMROOT
-[String]$envTemp = [IO.Path]::GetTempPath()
-[String]$envUserCookies = [Environment]::GetFolderPath('Cookies')
-[String]$envUserDesktop = [Environment]::GetFolderPath('DesktopDirectory')
-[String]$envUserFavorites = [Environment]::GetFolderPath('Favorites')
-[String]$envUserInternetCache = [Environment]::GetFolderPath('InternetCache')
-[String]$envUserInternetHistory = [Environment]::GetFolderPath('History')
-[String]$envUserMyDocuments = [Environment]::GetFolderPath('MyDocuments')
-[String]$envUserName = [Environment]::UserName
-[String]$envUserPictures = [Environment]::GetFolderPath('MyPictures')
-[String]$envUserProfile = $env:USERPROFILE
-[String]$envUserSendTo = [Environment]::GetFolderPath('SendTo')
-[String]$envUserStartMenu = [Environment]::GetFolderPath('StartMenu')
-[String]$envUserStartMenuPrograms = [Environment]::GetFolderPath('Programs')
-[String]$envUserStartUp = [Environment]::GetFolderPath('StartUp')
-[String]$envUserTemplates = [Environment]::GetFolderPath('Templates')
-[String]$envSystem32Directory = [Environment]::SystemDirectory
-[String]$envWinDir = $env:WINDIR
-
-## Variables: Domain Membership
-[Boolean]$IsMachinePartOfDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').PartOfDomain
-[String]$envMachineWorkgroup = ''
-[String]$envMachineADDomain = ''
-[String]$envLogonServer = ''
-[String]$MachineDomainController = ''
-[String]$envComputerNameFQDN = $envComputerName
-If ($IsMachinePartOfDomain) {
-    [String]$envMachineADDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-    Try {
-        $envComputerNameFQDN = ([Net.Dns]::GetHostEntry('localhost')).HostName
-    }
-    Catch {
-        # Function GetHostEntry failed, but we can construct the FQDN in another way
-        $envComputerNameFQDN = $envComputerNameFQDN + '.' + $envMachineADDomain
-    }
-
-    Try {
-        [String]$envLogonServer = $env:LOGONSERVER | Where-Object { (($_) -and (-not $_.Contains('\\MicrosoftAccount'))) } | ForEach-Object { $_.TrimStart('\') } | ForEach-Object { ([Net.Dns]::GetHostEntry($_)).HostName }
-    }
-    Catch {
-    }
-    # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
-    If (-not $envLogonServer) {
-        [String]$envLogonServer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'DCName' -ErrorAction 'SilentlyContinue'
-    }
-    ## Remove backslashes at the beginning
-    While ($envLogonServer.StartsWith('\')) {
-        $envLogonServer = $envLogonServer.Substring(1)
-    }
-
-    Try {
-        [String]$MachineDomainController = [DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
-    }
-    Catch {
-    }
-}
-Else {
-    [String]$envMachineWorkgroup = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'SilentlyContinue').Domain | Where-Object { $_ } | ForEach-Object { $_.ToUpper() }
-}
-[String]$envMachineDNSDomain = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-[String]$envUserDNSDomain = $env:USERDNSDOMAIN | Where-Object { $_ } | ForEach-Object { $_.ToLower() }
-Try {
-    [String]$envUserDomain = [Environment]::UserDomainName.ToUpper()
-}
-Catch {
-}
-
-## Variables: Operating System
-[PSObject]$envOS = Get-WmiObject -Class 'Win32_OperatingSystem' -ErrorAction 'SilentlyContinue'
-[String]$envOSName = $envOS.Caption.Trim()
-[String]$envOSServicePack = $envOS.CSDVersion
-[Version]$envOSVersion = $envOS.Version
-[String]$envOSVersionMajor = $envOSVersion.Major
-[String]$envOSVersionMinor = $envOSVersion.Minor
-[String]$envOSVersionBuild = $envOSVersion.Build
-If ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'UBR') {
-    [String]$envOSVersionRevision = (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'UBR' -ErrorAction 'SilentlyContinue').UBR
-}
-ElseIf ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction 'SilentlyContinue').PSObject.Properties.Name -contains 'BuildLabEx') {
-    [String]$envOSVersionRevision = , ((Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'BuildLabEx' -ErrorAction 'SilentlyContinue').BuildLabEx -split '\.') | ForEach-Object { $_[1] }
-}
-If ($envOSVersionRevision -notmatch '^[\d\.]+$') { $envOSVersionRevision = '' }
-If ($envOSVersionRevision) { [string]$envOSVersion = "$($envOSVersion.ToString()).$envOSVersionRevision" } Else { [string]$envOSVersion = "$($envOSVersion.ToString())" }
-#  Get the operating system type
-[int32]$envOSProductType = $envOS.ProductType
-[boolean]$IsServerOS = [boolean]($envOSProductType -eq 3)
-[boolean]$IsDomainControllerOS = [boolean]($envOSProductType -eq 2)
-[boolean]$IsWorkStationOS = [boolean]($envOSProductType -eq 1)
-[boolean]$IsMultiSessionOS = [boolean](($envOSName -match '^Microsoft Windows \d+ Enterprise for Virtual Desktops$') -or ($envOSName -match '^Microsoft Windows \d+ Enterprise Multi-Session$'))
-
-Switch ($envOSProductType) {
-    3 { [string]$envOSProductTypeName = 'Server' }
-    2 { [string]$envOSProductTypeName = 'Domain Controller' }
-    1 { [string]$envOSProductTypeName = 'Workstation' }
-    Default { [string]$envOSProductTypeName = 'Unknown' }
-}
-#  Get the OS Architecture
-[Boolean]$Is64Bit = [Boolean]((Get-WmiObject -Class 'Win32_Processor' -ErrorAction 'SilentlyContinue' | Where-Object { $_.DeviceID -eq 'CPU0' } | Select-Object -ExpandProperty 'AddressWidth') -eq 64)
-If ($Is64Bit) {
-    [String]$envOSArchitecture = '64-bit'
-}
-Else {
-    [String]$envOSArchitecture = '32-bit'
-}
-
-## Variables: Current Process Architecture
-[Boolean]$Is64BitProcess = [Boolean]([IntPtr]::Size -eq 8)
-If ($Is64BitProcess) {
-    [String]$psArchitecture = 'x64'
-}
-Else {
-    [String]$psArchitecture = 'x86'
-}
-
-## Variables: Get Normalized ProgramFiles and CommonProgramFiles Paths
-[String]$envProgramFiles = ''
-[String]$envProgramFilesX86 = ''
-[String]$envCommonProgramFiles = ''
-[String]$envCommonProgramFilesX86 = ''
-If ($Is64Bit) {
-    If ($Is64BitProcess) {
-        [String]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
-        [String]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
-    }
-    Else {
-        [String]$envProgramFiles = [Environment]::GetEnvironmentVariable('ProgramW6432')
-        [String]$envCommonProgramFiles = [Environment]::GetEnvironmentVariable('CommonProgramW6432')
-    }
-    ## Powershell 2 doesn't support X86 folders so need to use variables instead
-    Try {
-        [String]$envProgramFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
-        [String]$envCommonProgramFilesX86 = [Environment]::GetFolderPath('CommonProgramFilesX86')
-    }
-    Catch {
-        [String]$envProgramFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
-        [String]$envCommonProgramFilesX86 = [Environment]::GetEnvironmentVariable('CommonProgramFiles(x86)')
-    }
-}
-Else {
-    [String]$envProgramFiles = [Environment]::GetFolderPath('ProgramFiles')
-    [String]$envProgramFilesX86 = $envProgramFiles
-    [String]$envCommonProgramFiles = [Environment]::GetFolderPath('CommonProgramFiles')
-    [String]$envCommonProgramFilesX86 = $envCommonProgramFiles
-}
-
-## Variables: Office C2R version, bitness and channel
-[PSObject]$envOfficeVars = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction 'SilentlyContinue'
-[String]$envOfficeVersion = If ($envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction SilentlyContinue) {
-    $envOfficeVars.VersionToReport
-}
-[String]$envOfficeBitness = If ($envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction SilentlyContinue) {
-    $envOfficeVars.Platform
-}
-[String]$envOfficeChannelProperty = If ($envOfficeVars | Select-Object -ExpandProperty UpdateChannel -ErrorAction SilentlyContinue) {
-    $envOfficeVars.UpdateChannel
-}
-ElseIf ($envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction SilentlyContinue) {
-    $envOfficeVars.CDNBaseURL
-}
-[String]$envOfficeChannel = If ($envOfficeChannelProperty) {
-    Switch -regex ($envOfficeChannelProperty) {
-        "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {"monthly"}
-        "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {"semi-annual"}
-        "64256afe-f5d9-4f86-8936-8840a6a4f5be" {"monthly targeted"}
-        "b8f9b850-328d-4355-9145-c59439a0c4cf" {"semi-annual targeted"}
-        "55336b82-a18d-4dd6-b5f6-9e5095c314a6" {"monthly enterprise"}
-    }
-}
-
-## Variables: Hardware
-[Int32]$envSystemRAM = Get-WmiObject -Class 'Win32_PhysicalMemory' -ErrorAction 'SilentlyContinue' | Measure-Object -Property 'Capacity' -Sum -ErrorAction 'SilentlyContinue' | ForEach-Object { [Math]::Round(($_.Sum / 1GB), 2) }
-
-## Variables: PowerShell And CLR (.NET) Versions
-[Hashtable]$envPSVersionTable = $PSVersionTable
-#  PowerShell Version
-[Version]$envPSVersion = $envPSVersionTable.PSVersion
-[String]$envPSVersionMajor = $envPSVersion.Major
-[String]$envPSVersionMinor = $envPSVersion.Minor
-[String]$envPSVersionBuild = $envPSVersion.Build
-[String]$envPSVersionRevision = $envPSVersion.Revision
-[String]$envPSVersion = $envPSVersion.ToString()
-#  CLR (.NET) Version used by Windows PowerShell
-If ($envPSVersionTable.ContainsKey('CLRVersion')) {
-    [Version]$envCLRVersion = $envPSVersionTable.CLRVersion
-    [String]$envCLRVersionMajor = $envCLRVersion.Major
-    [String]$envCLRVersionMinor = $envCLRVersion.Minor
-    [String]$envCLRVersionBuild = $envCLRVersion.Build
-    [String]$envCLRVersionRevision = $envCLRVersion.Revision
-    [String]$envCLRVersion = $envCLRVersion.ToString()
-}
-
-## Variables: Permissions/Accounts
-[Security.Principal.WindowsIdentity]$CurrentProcessToken = [Security.Principal.WindowsIdentity]::GetCurrent()
-[Security.Principal.SecurityIdentifier]$CurrentProcessSID = $CurrentProcessToken.User
-[String]$ProcessNTAccount = $CurrentProcessToken.Name
-[String]$ProcessNTAccountSID = $CurrentProcessSID.Value
-[Boolean]$IsAdmin = [Boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-32-544')
-[Boolean]$IsLocalSystemAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'LocalSystemSid')
-[Boolean]$IsLocalServiceAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'LocalServiceSid')
-[Boolean]$IsNetworkServiceAccount = $CurrentProcessSID.IsWellKnown([Security.Principal.WellKnownSidType]'NetworkServiceSid')
-[Boolean]$IsServiceAccount = [Boolean]($CurrentProcessToken.Groups -contains [Security.Principal.SecurityIdentifier]'S-1-5-6')
-[Boolean]$IsProcessUserInteractive = [Environment]::UserInteractive
-$GetAccountNameUsingSid = [ScriptBlock] {
-    Param (
-        [String]$SecurityIdentifier = $null
-    )
-
-    Try {
-        Return (New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ([Security.Principal.WellKnownSidType]::"$SecurityIdentifier", $null)).Translate([System.Security.Principal.NTAccount]).Value
-    }
-    Catch {
-        Return ($null)
-    }
-}
-[String]$LocalSystemNTAccount = & $GetAccountNameUsingSid 'LocalSystemSid'
-[String]$LocalUsersGroup = & $GetAccountNameUsingSid 'BuiltinUsersSid'
-# Test if the current Windows is a Home edition
-Try {
-    If (!((Get-WmiObject -Class Win32_OperatingSystem | Select -Expand Caption) -like "*Home*")){
-        [string]$LocalPowerUsersGroup = & $GetAccountNameUsingSid 'BuiltinPowerUsersSid'
-    }
-}
-Catch{}
-[String]$LocalAdministratorsGroup = & $GetAccountNameUsingSid 'BuiltinAdministratorsSid'
-#  Check if script is running in session zero
-[Boolean]$SessionZero = ($IsLocalSystemAccount -or $IsLocalServiceAccount -or $IsNetworkServiceAccount -or $IsServiceAccount)
 
 ## Variables: Script Name and Script Paths
 [String]$scriptPath = $MyInvocation.MyCommand.Definition
@@ -820,19 +578,6 @@ https://psappdeploytoolkit.com
 #endregion
 ##*=============================================
 ##* END VARIABLE DECLARATION
-##*=============================================
-
-##*=============================================
-##* FUNCTION LISTINGS
-##*=============================================
-#region FunctionListings
-
-. "$PSScriptRoot\PSAppDeployToolkit\Private\AppDeployToolkitPrivate.ps1"
-. "$PSScriptRoot\PSAppDeployToolkit\Public\AppDeployToolkitPublic.ps1"
-
-#endregion
-##*=============================================
-##* END FUNCTION LISTINGS
 ##*=============================================
 
 ##*=============================================
