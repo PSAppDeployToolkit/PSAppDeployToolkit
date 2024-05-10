@@ -70,6 +70,8 @@ PowerShellVersion = '5.1'
 FunctionsToExport = @(
 	'New-ADTSession'
 	'Get-ADTSession'
+    'Export-ADTModuleState'
+    'Import-ADTModuleState'
 	'Configure-EdgeExtension'
 	'Convert-RegistryPath'
 	'Copy-ContentToCache'
