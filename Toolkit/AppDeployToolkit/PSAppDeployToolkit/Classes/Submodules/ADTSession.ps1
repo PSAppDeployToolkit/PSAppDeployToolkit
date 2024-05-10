@@ -21,6 +21,8 @@ class ADTSession
         LogFileInitialized = $false
         BlockExecution = $false
         MsiRebootDetected = $false
+        WelcomeTimer = $null
+        NotifyIcon = $null
     }
 
     # Variables we export publically for compatibility.

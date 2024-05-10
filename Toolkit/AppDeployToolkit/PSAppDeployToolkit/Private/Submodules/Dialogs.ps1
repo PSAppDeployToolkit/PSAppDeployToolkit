@@ -205,7 +205,7 @@ https://psappdeploytoolkit.com
         ## Remove all event handlers from the controls
         [ScriptBlock]$Welcome_Form_Cleanup_FormClosed = {
             Try {
-                $script:welcomeTimer.remove_Tick($welcomeTimer_Tick)
+                $Script:ADT.CurrentSession.State.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
                 $welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
                 $timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
                 $formWelcome.remove_Load($Welcome_Form_StateCorrection_Load)
@@ -238,7 +238,7 @@ https://psappdeploytoolkit.com
             ## Initialize the countdown timer
             [DateTime]$currentTime = Get-Date
             [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
-            $script:welcomeTimer.Start()
+            $Script:ADT.CurrentSession.State.WelcomeTimer.Start()
 
             ## Set up the form
             [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
@@ -247,7 +247,7 @@ https://psappdeploytoolkit.com
 
         ## Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked
         If (!(Test-Path -LiteralPath 'variable:welcomeTimer')) {
-            $script:welcomeTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
+            $Script:ADT.CurrentSession.State.WelcomeTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
         }
 
         If ($showCountdown) {
@@ -281,11 +281,11 @@ https://psappdeploytoolkit.com
             }
         }
         Else {
-            $script:welcomeTimer.Interval = ($Script:ADT.Config.UI.DefaultTimeout * 1000)
+            $Script:ADT.CurrentSession.State.WelcomeTimer.Interval = ($Script:ADT.Config.UI.DefaultTimeout * 1000)
             [ScriptBlock]$welcomeTimer_Tick = { $buttonAbort.PerformClick() }
         }
 
-        $script:welcomeTimer.add_Tick($welcomeTimer_Tick)
+        $Script:ADT.CurrentSession.State.WelcomeTimer.add_Tick($welcomeTimer_Tick)
 
         ## Persistence Timer
         If ($persistWindow) {

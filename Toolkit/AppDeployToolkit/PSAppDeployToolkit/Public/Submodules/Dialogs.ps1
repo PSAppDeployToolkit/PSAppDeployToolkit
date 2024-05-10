@@ -1205,10 +1205,10 @@ https://psappdeploytoolkit.com
                         Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
                     }
                     ## Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period
-                    If ($script:welcomeTimer) {
+                    If ($Script:ADT.CurrentSession.State.WelcomeTimer) {
                         Try {
-                            $script:welcomeTimer.Dispose()
-                            $script:welcomeTimer = $null
+                            $Script:ADT.CurrentSession.State.WelcomeTimer.Dispose()
+                            $Script:ADT.CurrentSession.State.WelcomeTimer = $null
                         }
                         Catch {
                         }
@@ -1850,9 +1850,10 @@ https://psappdeploytoolkit.com
             Return
         }
         ## Dispose of previous balloon
-        If (Test-Path -LiteralPath 'variable:notifyIcon') {
+        If ($Script:ADT.CurrentSession.State.NotifyIcon) {
             Try {
-                $script:notifyIcon.Dispose()
+                $Script:ADT.CurrentSession.State.NotifyIcon.Dispose()
+                $Script:ADT.CurrentSession.State.NotifyIcon = $null
             }
             Catch {
             }
@@ -1889,7 +1890,7 @@ https://psappdeploytoolkit.com
                         $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0, 60), '...')
                     }
                     [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-                    $script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
+                    $Script:ADT.CurrentSession.State.NotifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
                         BalloonTipIcon  = $BalloonTipIcon
                         BalloonTipText  = $BalloonTipText
                         BalloonTipTitle = $BalloonTipTitle
@@ -1898,9 +1899,9 @@ https://psappdeploytoolkit.com
                         Visible         = $true
                     }
 
-                    $script:notifyIcon.ShowBalloonTip($BalloonTipTime)
+                    $Script:ADT.CurrentSession.State.NotifyIcon.ShowBalloonTip($BalloonTipTime)
                     Start-Sleep -Milliseconds ($BalloonTipTime)
-                    $script:notifyIcon.Dispose() }
+                    $Script:ADT.CurrentSession.State.NotifyIcon.Dispose() }
 
                 ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
                 Try {
@@ -1919,7 +1920,7 @@ https://psappdeploytoolkit.com
                 }
                 ## Create the BalloonTip
                 [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-                $script:notifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
+                $Script:ADT.CurrentSession.State.NotifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
                     BalloonTipIcon  = $BalloonTipIcon
                     BalloonTipText  = $BalloonTipText
                     BalloonTipTitle = $BalloonTipTitle
@@ -1928,7 +1929,7 @@ https://psappdeploytoolkit.com
                     Visible         = $true
                 }
                 ## Display the balloon tip notification
-                $script:notifyIcon.ShowBalloonTip($BalloonTipTime)
+                $Script:ADT.CurrentSession.State.NotifyIcon.ShowBalloonTip($BalloonTipTime)
             }
         }
         # Otherwise use toast notification
@@ -2244,8 +2245,8 @@ https://psappdeploytoolkit.com
                         #  Calculate the position on the screen where the progress dialog should be placed
                         [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
                         [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-                        [Int32]$script:screenCenterWidth = $screenWidth - $progressSyncHash.Window.ActualWidth
-                        [Int32]$script:screenCenterHeight = $screenHeight - $progressSyncHash.Window.ActualHeight
+                        [Int32]$screenCenterWidth = $screenWidth - $progressSyncHash.Window.ActualWidth
+                        [Int32]$screenCenterHeight = $screenHeight - $progressSyncHash.Window.ActualHeight
                         #  Set the start position of the Window based on the screen size
                         If ($windowLocation -eq 'TopLeft') {
                             $progressSyncHash.Window.Left = [Double](0)
