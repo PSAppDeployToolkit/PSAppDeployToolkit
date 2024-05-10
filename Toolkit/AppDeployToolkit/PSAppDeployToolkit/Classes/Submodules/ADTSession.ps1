@@ -23,6 +23,10 @@ class ADTSession
         MsiRebootDetected = $false
         WelcomeTimer = $null
         NotifyIcon = $null
+        FormInstallationPromptStartPosition = $null
+        FormInstallationRestartPromptStartPosition = $null
+        FormWelcomeStartPosition = $null
+        CloseAppsCountdownGlobal = $null
     }
 
     # Variables we export publically for compatibility.

@@ -56,8 +56,8 @@ Function Copy-ContentToCache {
             Write-Log -Message "Copying toolkit content to cache folder [$Path]." -Source ${CmdletName}
             Copy-File -Path (Join-Path $Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
             # Set the Files directory to the cache path
-            Set-Variable -Name 'dirFiles' -Value "$Path\Files" -Scope 'Script'
-            Set-Variable -Name 'dirSupportFiles' -Value "$Path\SupportFiles" -Scope 'Script'
+            $Script:ADT.CurrentSession.SetPropertyValue('DirFiles', "$Path\Files")
+            $Script:ADT.CurrentSession.SetPropertyValue('DirFiles', "$Path\SupportFiles")
         }
         Catch {
             Write-Log -Message "Failed to copy toolkit content to cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
