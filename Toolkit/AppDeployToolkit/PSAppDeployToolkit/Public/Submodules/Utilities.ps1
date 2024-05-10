@@ -629,7 +629,7 @@ https://psappdeploytoolkit.com
                 [String]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
 
                 #  On Windows Vista or higher
-                If ($Script:ADT.Environment.envOSVersion.Major -gt 5) {
+                If ($Script:ADT.Environment.envOSVersionMajor -gt 5) {
                     # Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
                     [string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
                 }
@@ -1292,7 +1292,7 @@ https://psappdeploytoolkit.com
         }
         #endregion
 
-        If ($Script:ADT.Environment.envOSVersion.Major -ge 10) {
+        If ($Script:ADT.Environment.envOSVersionMajor -ge 10) {
             Write-Log -Message 'Detected Windows 10 or higher, using Windows 10 verb codes.' -Source ${CmdletName}
             [Hashtable]$Verbs = @{
                 'PinToStartMenu'     = 51201
@@ -1324,7 +1324,7 @@ https://psappdeploytoolkit.com
             }
 
             If ($Action.Contains('StartMenu')) {
-                If ($Script:ADT.Environment.envOSVersion.Major -ge 10)   {
+                If ($Script:ADT.Environment.envOSVersionMajor -ge 10)   {
                     If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
                         Throw 'Only shortcut files (.lnk) are supported on Windows 10 and higher.'
                     }
@@ -1341,7 +1341,7 @@ https://psappdeploytoolkit.com
                 Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
             }
             ElseIf ($Action.Contains('Taskbar')) {
-                If ($Script:ADT.Environment.envOSVersion.Major -ge 10) {
+                If ($Script:ADT.Environment.envOSVersionMajor -ge 10) {
                     $FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
                     $PinExists = Test-Path -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
@@ -2064,7 +2064,7 @@ https://psappdeploytoolkit.com
                     }
 
                     ## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher)
-                    If ((-not $IsPowerPointFullScreen) -and ($Script:ADT.Environment.envOSVersion.Major -gt 5)) {
+                    If ((-not $IsPowerPointFullScreen) -and ($Script:ADT.Environment.envOSVersionMajor -gt 5)) {
                         #  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
                         [String]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
                         Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
@@ -2864,7 +2864,7 @@ https://psappdeploytoolkit.com
 
         ## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
         Try {
-            If ($Script:ADT.Environment.envOSVersion.Major -ge 5) {
+            If ($Script:ADT.Environment.envOSVersionMajor -ge 5) {
                 If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
                     [Nullable[Boolean]]$IsCBServicingRebootPending = $true
                 }

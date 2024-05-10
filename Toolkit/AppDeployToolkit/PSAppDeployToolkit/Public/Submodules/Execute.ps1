@@ -901,7 +901,7 @@ https://psappdeploytoolkit.com
                 Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
                 Start-Sleep -Seconds 1
                 #If on Windows Vista or higer, Windows Task Scheduler 2.0 is supported. 'Schedule.Service' ComObject output is UI language independent
-                If ($Script:ADT.Environment.envOSVersion.Major -gt 5) {
+                If ($Script:ADT.Environment.envOSVersionMajor -gt 5) {
                     Try {
                         [__ComObject]$ScheduleService = New-Object -ComObject 'Schedule.Service' -ErrorAction 'Stop'
                         $ScheduleService.Connect()

@@ -125,9 +125,9 @@ function Initialize-ADTVariableDatabase
     $variables.Add('envOSName', [string]$variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', [string]$variables.envOS.CSDVersion)
     $variables.Add('envOSVersion', [version]$variables.envOS.Version)
-    $variables.Add('envOSVersionMajor', [string]$variables.envOSVersion.Major)
-    $variables.Add('envOSVersionMinor', [string]$variables.envOSVersion.Minor)
-    $variables.Add('envOSVersionBuild', [string]$variables.envOSVersion.Build)
+    $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
+    $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
+    $variables.Add('envOSVersionBuild', $variables.envOSVersion.Build)
     $variables.Add('envOSVersionRevision', [string]$(if ($regVer | Get-Member -Name UBR) {$regVer.UBR} elseif ($regVer | Get-Member -Name BuildLabEx) {$regVer.BuildLabEx.Split('.')[1]}))
     $variables.envOSVersion = if ($variables.envOSVersionRevision) {"$($variables.envOSVersion.ToString()).$($variables.envOSVersionRevision)"} else {$variables.envOSVersion.ToString()}
 
@@ -217,28 +217,28 @@ function Initialize-ADTVariableDatabase
     $variables.Add('envPSVersionTable', [hashtable]$PSVersionTable)
 
     # PowerShell Version
-    $variables.Add('envPSVersion', [string]$variables.envPSVersionTable.PSVersion.ToString())
-    $variables.Add('envPSVersionMajor', [string]$variables.envPSVersionTable.PSVersion.Major)
-    $variables.Add('envPSVersionMinor', [string]$variables.envPSVersionTable.PSVersion.Minor)
-    $variables.Add('envPSVersionBuild', [string]$(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Build')) {$variables.envPSVersionTable.PSVersion.Build}))
-    $variables.Add('envPSVersionRevision', [string]$(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Revision')) {$variables.envPSVersionTable.PSVersion.Revision}))
+    $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion.ToString())
+    $variables.Add('envPSVersionMajor', $variables.envPSVersionTable.PSVersion.Major)
+    $variables.Add('envPSVersionMinor', $variables.envPSVersionTable.PSVersion.Minor)
+    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Build')) {$variables.envPSVersionTable.PSVersion.Build}))
+    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Revision')) {$variables.envPSVersionTable.PSVersion.Revision}))
 
     # CLR (.NET) Version used by Windows PowerShell
     if ($variables.envPSVersionTable.ContainsKey('CLRVersion'))
     {
-        $variables.Add('envCLRVersion', [string]$variables.envPSVersionTable.CLRVersion.ToString())
-        $variables.Add('envCLRVersionMajor', [string]$variables.envPSVersionTable.CLRVersion.Major)
-        $variables.Add('envCLRVersionMinor', [string]$variables.envPSVersionTable.CLRVersion.Minor)
-        $variables.Add('envCLRVersionBuild', [string]$variables.envPSVersionTable.CLRVersion.Build)
-        $variables.Add('envCLRVersionRevision', [string]$variables.envPSVersionTable.CLRVersion.Revision)
+        $variables.Add('envCLRVersion', $variables.envPSVersionTable.CLRVersion.ToString())
+        $variables.Add('envCLRVersionMajor', $variables.envPSVersionTable.CLRVersion.Major)
+        $variables.Add('envCLRVersionMinor', $variables.envPSVersionTable.CLRVersion.Minor)
+        $variables.Add('envCLRVersionBuild', $variables.envPSVersionTable.CLRVersion.Build)
+        $variables.Add('envCLRVersionRevision', $variables.envPSVersionTable.CLRVersion.Revision)
     }
     else
     {
-        $variables.Add('envCLRVersion', [System.String]::Empty)
-        $variables.Add('envCLRVersionMajor', [System.String]::Empty)
-        $variables.Add('envCLRVersionMinor', [System.String]::Empty)
-        $variables.Add('envCLRVersionBuild', [System.String]::Empty)
-        $variables.Add('envCLRVersionRevision', [System.String]::Empty)
+        $variables.Add('envCLRVersion', $null)
+        $variables.Add('envCLRVersionMajor', $null)
+        $variables.Add('envCLRVersionMinor', $null)
+        $variables.Add('envCLRVersionBuild', $null)
+        $variables.Add('envCLRVersionRevision', $null)
     }
 
     ## Variables: Permissions/Accounts
