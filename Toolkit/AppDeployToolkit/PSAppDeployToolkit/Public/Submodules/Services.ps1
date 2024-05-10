@@ -528,7 +528,7 @@ https://psappdeploytoolkit.com
             }
 
             ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-            If (($ServiceStartMode -eq 'Automatic') -and ($Script:ADT.Environment.envOSVersion.Major -gt 5)) {
+            If (($ServiceStartMode -eq 'Automatic') -and ($Script:ADT.Environment.envOSVersionMajor -gt 5)) {
                 [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
                 [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction Ignore | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction Ignore
                 If ($DelayedAutoStart -eq 1) {
@@ -621,7 +621,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-            If (($StartMode -eq 'Automatic (Delayed Start)') -and ($Script:ADT.Environment.envOSVersion.Major -lt 6)) {
+            If (($StartMode -eq 'Automatic (Delayed Start)') -and ($Script:ADT.Environment.envOSVersionMajor -lt 6)) {
                 $StartMode = 'Automatic'
             }
 
