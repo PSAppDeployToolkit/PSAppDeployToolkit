@@ -130,7 +130,7 @@ https://psappdeploytoolkit.com
         [Parameter(Mandatory = $false, Position = 5)]
         [ValidateNotNullorEmpty()]
         [String]$LogFileDirectory = $(If ($Script:ADT.Config.Toolkit.CompressLogs) {
-                $logTempFolder
+                $Script:ADT.CurrentSession.GetPropertyValue('LogTempFolder')
             }
             Else {
                 $Script:ADT.Config.Toolkit.LogPath
@@ -274,7 +274,7 @@ https://psappdeploytoolkit.com
                 [Decimal]$LogFileSizeMB = $LogFile.Length / 1MB
 
                 # Check if log file needs to be rotated
-                if ((!$script:LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB)) {
+                if ((!$Script:ADT.CurrentSession.State.LogFileInitialized -and !$AppendToLogFile) -or ($MaxLogFileSizeMB -gt 0 -and $LogFileSizeMB -gt $MaxLogFileSizeMB)) {
 
                     # Get new log file path
                     $LogFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($LogFileName)
@@ -319,7 +319,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        $script:LogFileInitialized = $true
+        $Script:ADT.CurrentSession.State.LogFileInitialized = $true
     }
     Process {
         ## Exit function if logging is disabled
@@ -482,7 +482,7 @@ https://psappdeploytoolkit.com
     Close-InstallationProgress
 
     ## If block execution variable is true, call the function to unblock execution
-    If ($Script:ADT.CurrentSession.Session.State.BlockExecution) {
+    If ($Script:ADT.CurrentSession.State.BlockExecution) {
         Unblock-AppExecution
     }
 
@@ -508,22 +508,22 @@ https://psappdeploytoolkit.com
     }
 
     ## Determine if balloon notification should be shown
-    If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+    If ($Script:ADT.CurrentSession.DeployModeSilent) {
         [Boolean]$Script:ADT.Config.UI.BalloonNotifications = $false
     }
 
     If ($installSuccess) {
-        If (Test-Path -LiteralPath $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -ErrorAction 'Ignore') {
+        If (Test-Path -LiteralPath $Script:ADT.CurrentSession.GetPropertyValue('RegKeyDeferHistory') -ErrorAction 'Ignore') {
             Write-Log -Message 'Removing deferral history...' -Source ${CmdletName}
-            Remove-RegistryKey -Key $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -Recurse
+            Remove-RegistryKey -Key $Script:ADT.CurrentSession.GetPropertyValue('RegKeyDeferHistory') -Recurse
         }
 
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
+        [String]$balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
         ## Handle reboot prompts on successful script completion
-        If ($Script:ADT.CurrentSession.GetPropertyValue('AllowRebootPassThru') -and ((($msiRebootDetected) -or ($exitCode -eq 3010)) -or ($exitCode -eq 1641))) {
+        If ($Script:ADT.CurrentSession.GetPropertyValue('AllowRebootPassThru') -and ($Script:ADT.CurrentSession.State.MsiRebootDetected -or ($exitCode -eq 3010) -or ($exitCode -eq 1641))) {
             Write-Log -Message 'A restart has been flagged as required.' -Source ${CmdletName}
-            [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
-            If (($msiRebootDetected) -and ($exitCode -ne 1641)) {
+            [String]$balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
+            If ($Script:ADT.CurrentSession.State.MsiRebootDetected -and ($exitCode -ne 1641)) {
                 [Int32]$exitCode = 3010
             }
         }
@@ -531,21 +531,21 @@ https://psappdeploytoolkit.com
             [Int32]$exitCode = 0
         }
 
-        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 0
+        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 0
         If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText -NoWait
         }
     }
     ElseIf (($exitCode -eq $Script:ADT.Config.UI.DefaultExitCode) -or ($exitCode -eq $Script:ADT.Config.UI.DeferExitCode)) {
-        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 2
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
+        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 2
+        [String]$balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
         If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait
         }
     }
     Else {
-        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 3
-        [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
+        Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 3
+        [String]$balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
         If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait
         }
@@ -569,7 +569,7 @@ https://psappdeploytoolkit.com
             }
 
             [String]$DestinationArchiveFileName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_' + $Script:ADT.CurrentSession.GetPropertyValue('deploymentType') + '_' + (Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString() + '.zip'
-            New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit.LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+            New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit.LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $Script:ADT.CurrentSession.GetPropertyValue('LogTempFolder') -RemoveSourceAfterArchiving
         }
         Catch {
             Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to manage archive file [$DestinationArchiveFileName]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
@@ -585,7 +585,7 @@ https://psappdeploytoolkit.com
         }
     }
     ## Reset powershell window title to its previous title
-    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.Session.State.OldPSWindowTitle
+    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
     [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
     ## Exit the script, returning the exit code to SCCM
     If (Test-Path -LiteralPath 'variable:HostInvocation') {

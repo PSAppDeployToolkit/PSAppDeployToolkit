@@ -784,7 +784,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+        If ($Script:ADT.CurrentSession.DeployModeSilent) {
             Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]" -Source ${CmdletName}
             Return
         }

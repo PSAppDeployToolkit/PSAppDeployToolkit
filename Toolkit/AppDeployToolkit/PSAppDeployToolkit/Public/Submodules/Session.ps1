@@ -175,5 +175,5 @@ function Import-ADTModuleState
     Set-Variable -Name ADT -Scope Script -Option ReadOnly -Force -Value ([System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String([Microsoft.Win32.Registry]::GetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, $null)))))
     $Script:SessionCallers.Add($Script:ADT.CurrentSession, $Cmdlet)
     $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
-    $Script:ADT.CurrentSession.Session.LegacyMode = $false
+    $Script:ADT.CurrentSession.LegacyMode = $false
 }

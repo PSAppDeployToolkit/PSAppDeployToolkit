@@ -57,7 +57,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Write-Log -Message 'Getting deferral history...' -Source ${CmdletName}
-        Get-RegistryKey -Key $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -ContinueOnError $true
+        Get-RegistryKey -Key $Script:ADT.CurrentSession.GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
@@ -127,11 +127,11 @@ https://psappdeploytoolkit.com
     Process {
         If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
             Write-Log -Message "Setting deferral history: [DeferTimesRemaining = $deferTimesRemaining]." -Source ${CmdletName}
-            Set-RegistryKey -Key $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $deferTimesRemaining -ContinueOnError $true
+            Set-RegistryKey -Key $Script:ADT.CurrentSession.GetPropertyValue('RegKeyDeferHistory') -Name 'DeferTimesRemaining' -Value $deferTimesRemaining -ContinueOnError $true
         }
         If ($deferDeadline) {
             Write-Log -Message "Setting deferral history: [DeferDeadline = $deferDeadline]." -Source ${CmdletName}
-            Set-RegistryKey -Key $Script:ADT.CurrentSession.Session.RegKeyDeferHistory -Name 'DeferDeadline' -Value $deferDeadline -ContinueOnError $true
+            Set-RegistryKey -Key $Script:ADT.CurrentSession.GetPropertyValue('RegKeyDeferHistory') -Name 'DeferDeadline' -Value $deferDeadline -ContinueOnError $true
         }
     }
     End {
