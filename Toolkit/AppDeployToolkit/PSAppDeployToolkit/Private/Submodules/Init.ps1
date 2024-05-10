@@ -10,73 +10,73 @@ function Initialize-ADTVariableDatabase
     $variables = [ordered]@{}
 
     ## Variables: Toolkit Name
-    $variables.Add('appDeployToolkitName', [string]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)
+    $variables.Add('appDeployToolkitName', $Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)
 
     ## Variables: Script Info
-    $variables.Add('appDeployMainScriptVersion', [version]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
-    $variables.Add('appDeployMainScriptMinimumConfigVersion', [version]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
+    $variables.Add('appDeployMainScriptVersion', $Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
+    $variables.Add('appDeployMainScriptMinimumConfigVersion', $Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
 
     ## Variables: Culture
-    $variables.Add('culture', [cultureinfo]$Host.CurrentCulture)
-    $variables.Add('uiculture', [cultureinfo]$Host.CurrentUICulture)
-    $variables.Add('currentLanguage', [string]$variables.culture.TwoLetterISOLanguageName.ToUpper())
-    $variables.Add('currentUILanguage', [string]$variables.uiculture.TwoLetterISOLanguageName.ToUpper())
+    $variables.Add('culture', $Host.CurrentCulture)
+    $variables.Add('uiculture', $Host.CurrentUICulture)
+    $variables.Add('currentLanguage', $variables.culture.TwoLetterISOLanguageName.ToUpper())
+    $variables.Add('currentUILanguage', $variables.uiculture.TwoLetterISOLanguageName.ToUpper())
 
     ## Variables: Environment Variables
-    $variables.Add('envShellFolders', [psobject](Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction Ignore))
+    $variables.Add('envShellFolders', (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction Ignore))
     $variables.envShellFolders.PSObject.Properties.Remove('PSProvider')
-    $variables.Add('envAllUsersProfile', [string]$env:ALLUSERSPROFILE)
-    $variables.Add('envAppData', [string][System.Environment]::GetFolderPath('ApplicationData'))
-    $variables.Add('envArchitecture', [string]$env:PROCESSOR_ARCHITECTURE)
+    $variables.Add('envAllUsersProfile', $env:ALLUSERSPROFILE)
+    $variables.Add('envAppData', [System.Environment]::GetFolderPath('ApplicationData'))
+    $variables.Add('envArchitecture', $env:PROCESSOR_ARCHITECTURE)
     $variables.Add('envCommonDesktop', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction Ignore))
     $variables.Add('envCommonDocuments', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction Ignore))
     $variables.Add('envCommonStartMenuPrograms', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction Ignore))
     $variables.Add('envCommonStartMenu', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Start Menu' -ErrorAction Ignore))
     $variables.Add('envCommonStartUp', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction Ignore))
     $variables.Add('envCommonTemplates', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction Ignore))
-    $variables.Add('envComputerName', [string][System.Environment]::MachineName.ToUpper())
-    $variables.Add('envHomeDrive', [string]$env:HOMEDRIVE)
-    $variables.Add('envHomePath', [string]$env:HOMEPATH)
-    $variables.Add('envHomeShare', [string]$env:HOMESHARE)
-    $variables.Add('envLocalAppData', [string][System.Environment]::GetFolderPath('LocalApplicationData'))
-    $variables.Add('envLogicalDrives', [string[]][System.Environment]::GetLogicalDrives())
-    $variables.Add('envProgramData', [string][System.Environment]::GetFolderPath('CommonApplicationData'))
-    $variables.Add('envPublic', [string]$env:PUBLIC)
-    $variables.Add('envSystemDrive', [string]$env:SYSTEMDRIVE)
-    $variables.Add('envSystemRoot', [string]$env:SYSTEMROOT)
-    $variables.Add('envTemp', [string][System.IO.Path]::GetTempPath())
-    $variables.Add('envUserCookies', [string][System.Environment]::GetFolderPath('Cookies'))
-    $variables.Add('envUserDesktop', [string][System.Environment]::GetFolderPath('DesktopDirectory'))
-    $variables.Add('envUserFavorites', [string][System.Environment]::GetFolderPath('Favorites'))
-    $variables.Add('envUserInternetCache', [string][System.Environment]::GetFolderPath('InternetCache'))
-    $variables.Add('envUserInternetHistory', [string][System.Environment]::GetFolderPath('History'))
-    $variables.Add('envUserMyDocuments', [string][System.Environment]::GetFolderPath('MyDocuments'))
-    $variables.Add('envUserName', [string][System.Environment]::UserName)
-    $variables.Add('envUserPictures', [string][System.Environment]::GetFolderPath('MyPictures'))
-    $variables.Add('envUserProfile', [string]$env:USERPROFILE)
-    $variables.Add('envUserSendTo', [string][System.Environment]::GetFolderPath('SendTo'))
-    $variables.Add('envUserStartMenu', [string][System.Environment]::GetFolderPath('StartMenu'))
-    $variables.Add('envUserStartMenuPrograms', [string][System.Environment]::GetFolderPath('Programs'))
-    $variables.Add('envUserStartUp', [string][System.Environment]::GetFolderPath('StartUp'))
-    $variables.Add('envUserTemplates', [string][System.Environment]::GetFolderPath('Templates'))
-    $variables.Add('envSystem32Directory', [string][System.Environment]::SystemDirectory)
-    $variables.Add('envWinDir', [string]$env:WINDIR)
+    $variables.Add('envComputerName', [System.Environment]::MachineName.ToUpper())
+    $variables.Add('envHomeDrive', $env:HOMEDRIVE)
+    $variables.Add('envHomePath', $env:HOMEPATH)
+    $variables.Add('envHomeShare', $env:HOMESHARE)
+    $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath('LocalApplicationData'))
+    $variables.Add('envLogicalDrives', [System.Environment]::GetLogicalDrives())
+    $variables.Add('envProgramData', [System.Environment]::GetFolderPath('CommonApplicationData'))
+    $variables.Add('envPublic', $env:PUBLIC)
+    $variables.Add('envSystemDrive', $env:SYSTEMDRIVE)
+    $variables.Add('envSystemRoot', $env:SYSTEMROOT)
+    $variables.Add('envTemp', [System.IO.Path]::GetTempPath())
+    $variables.Add('envUserCookies', [System.Environment]::GetFolderPath('Cookies'))
+    $variables.Add('envUserDesktop', [System.Environment]::GetFolderPath('DesktopDirectory'))
+    $variables.Add('envUserFavorites', [System.Environment]::GetFolderPath('Favorites'))
+    $variables.Add('envUserInternetCache', [System.Environment]::GetFolderPath('InternetCache'))
+    $variables.Add('envUserInternetHistory', [System.Environment]::GetFolderPath('History'))
+    $variables.Add('envUserMyDocuments', [System.Environment]::GetFolderPath('MyDocuments'))
+    $variables.Add('envUserName', [System.Environment]::UserName)
+    $variables.Add('envUserPictures', [System.Environment]::GetFolderPath('MyPictures'))
+    $variables.Add('envUserProfile', $env:USERPROFILE)
+    $variables.Add('envUserSendTo', [System.Environment]::GetFolderPath('SendTo'))
+    $variables.Add('envUserStartMenu', [System.Environment]::GetFolderPath('StartMenu'))
+    $variables.Add('envUserStartMenuPrograms', [System.Environment]::GetFolderPath('Programs'))
+    $variables.Add('envUserStartUp', [System.Environment]::GetFolderPath('StartUp'))
+    $variables.Add('envUserTemplates', [System.Environment]::GetFolderPath('Templates'))
+    $variables.Add('envSystem32Directory', [System.Environment]::SystemDirectory)
+    $variables.Add('envWinDir', $env:WINDIR)
 
     ## Variables: Running in SCCM Task Sequence.
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
 
     ## Variables: Domain Membership
     $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem
-    [string]$w32csd = $w32cs.Domain | Where-Object {$_}
-    $variables.Add('IsMachinePartOfDomain', [string]$w32cs.PartOfDomain)
+    $w32csd = $w32cs.Domain | Where-Object {$_}
+    $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
     $variables.Add('envMachineADDomain', [System.String]::Empty)
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
     $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
     $variables.Add('envUserDNSDomain', [string]($env:USERDNSDOMAIN | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
-    $variables.Add('envUserDomain', [string]$(try {[System.Environment]::UserDomainName.ToUpper()} catch {$null}))
-    $variables.Add('envComputerNameFQDN', [string]$variables.envComputerName)
+    $variables.Add('envUserDomain', [string]$(try {[System.Environment]::UserDomainName.ToUpper()} catch {[System.Void]$null}))
+    $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain.Equals($true))
     {
         $variables.envMachineADDomain = $w32csd.ToLower()
@@ -121,23 +121,23 @@ function Initialize-ADTVariableDatabase
 
     ## Variables: Operating System
     $regVer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-    $variables.Add('envOS', [ciminstance](Get-CimInstance -ClassName Win32_OperatingSystem))
-    $variables.Add('envOSName', [string]$variables.envOS.Caption.Trim())
-    $variables.Add('envOSServicePack', [string]$variables.envOS.CSDVersion)
+    $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem))
+    $variables.Add('envOSName', $variables.envOS.Caption.Trim())
+    $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
     $variables.Add('envOSVersion', [version]$variables.envOS.Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
     $variables.Add('envOSVersionBuild', $variables.envOSVersion.Build)
-    $variables.Add('envOSVersionRevision', [string]$(if ($regVer | Get-Member -Name UBR) {$regVer.UBR} elseif ($regVer | Get-Member -Name BuildLabEx) {$regVer.BuildLabEx.Split('.')[1]}))
+    $variables.Add('envOSVersionRevision', $(if ($regVer | Get-Member -Name UBR) {$regVer.UBR} elseif ($regVer | Get-Member -Name BuildLabEx) {$regVer.BuildLabEx.Split('.')[1]}))
     $variables.envOSVersion = if ($variables.envOSVersionRevision) {"$($variables.envOSVersion.ToString()).$($variables.envOSVersionRevision)"} else {$variables.envOSVersion.ToString()}
 
     # Get the operating system type.
-    $variables.Add('envOSProductType', [int32]$variables.envOS.ProductType)
-    $variables.Add('IsServerOS', [boolean]($variables.envOSProductType -eq 3))
-    $variables.Add('IsDomainControllerOS', [boolean]($variables.envOSProductType -eq 2))
-    $variables.Add('IsWorkstationOS', [boolean]($variables.envOSProductType -eq 1))
-    $variables.Add('IsMultiSessionOS', [boolean]($variables.envOSName -match '^Microsoft Windows \d+ Enterprise (for Virtual Desktops|Enterprise Multi-Session)$'))
-    $variables.Add('envOSProductTypeName', [string]$(switch ($variables.envOSProductType) {
+    $variables.Add('envOSProductType', $variables.envOS.ProductType)
+    $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
+    $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
+    $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
+    $variables.Add('IsMultiSessionOS', $variables.envOSName -match '^Microsoft Windows \d+ Enterprise (for Virtual Desktops|Enterprise Multi-Session)$')
+    $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType) {
         3 { 'Server' }
         2 { 'Domain Controller' }
         1 { 'Workstation' }
@@ -145,52 +145,52 @@ function Initialize-ADTVariableDatabase
     }))
 
     # Get the OS Architecture.
-    $variables.Add('Is64Bit', [boolean]((Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64))
-    $variables.Add('envOSArchitecture', [string]$(if ($variables.Is64Bit) {'x64'} else {'x86'}))
+    $variables.Add('Is64Bit', (Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64)
+    $variables.Add('envOSArchitecture', $(if ($variables.Is64Bit) {'x64'} else {'x86'}))
 
     ## Variables: Current Process Architecture
-    $variables.Add('Is64BitProcess', [boolean]([System.IntPtr]::Size -eq 8))
-    $variables.Add('psArchitecture', [string]$(if ($variables.Is64BitProcess) {'x64'} else {'x86'}))
+    $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
+    $variables.Add('psArchitecture', $(if ($variables.Is64BitProcess) {'x64'} else {'x86'}))
 
     ## Variables: Get Normalized ProgramFiles and CommonProgramFiles Paths
     if ($variables.Is64Bit)
     {
         if ($variables.Is64BitProcess)
         {
-            $variables.Add('envProgramFiles', [string][System.Environment]::GetFolderPath('ProgramFiles'))
-            $variables.Add('envCommonProgramFiles', [string][System.Environment]::GetFolderPath('CommonProgramFiles'))
+            $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
+            $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
         }
         else
         {
-            $variables.Add('envProgramFiles', [string][System.Environment]::GetEnvironmentVariable('ProgramW6432'))
-            $variables.Add('envCommonProgramFiles', [string][System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
+            $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
+            $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
         }
 
         ## PowerShell 2 doesn't support x86 folders so need to use variables instead
         try
         {
-            $variables.Add('envProgramFilesX86', [string][System.Environment]::GetFolderPath('ProgramFilesX86'))
-            $variables.Add('envCommonProgramFilesX86', [string][System.Environment]::GetFolderPath('CommonProgramFilesX86'))
+            $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
+            $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetFolderPath('CommonProgramFilesX86'))
         }
         catch
         {
-            $variables.Add('envProgramFilesX86', [string][System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))
-            $variables.Add('envCommonProgramFilesX86', [string][System.Environment]::GetEnvironmentVariable('CommonProgramFiles(x86)'))
+            $variables.Add('envProgramFilesX86', [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))
+            $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetEnvironmentVariable('CommonProgramFiles(x86)'))
         }
     }
     else
     {
-        $variables.Add('envProgramFiles', [string][Environment]::GetFolderPath('ProgramFiles'))
+        $variables.Add('envProgramFiles', [Environment]::GetFolderPath('ProgramFiles'))
         $variables.Add('envProgramFilesX86', [System.String]::Empty)
-        $variables.Add('envCommonProgramFiles', [string][Environment]::GetFolderPath('CommonProgramFiles'))
+        $variables.Add('envCommonProgramFiles', [Environment]::GetFolderPath('CommonProgramFiles'))
         $variables.Add('envCommonProgramFilesX86', [System.String]::Empty)
     }
 
     ## Variables: Office C2R version, bitness and channel
-    $variables.Add('envOfficeVars', [psobject](Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
+    $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
     $variables.envOfficeVars.PSObject.Properties.Remove('PSProvider')
-    $variables.Add('envOfficeVersion', [string]$(if ($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore) {$variables.envOfficeVars.VersionToReport}))
-    $variables.Add('envOfficeBitness', [string]$(if ($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore) {$variables.envOfficeVars.Platform}))
+    $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
+    $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
 
     # Channel needs special handling for group policy values.
     $officeChannelProperty = if ($variables.envOfficeVars | Select-Object -ExpandProperty UpdateChannel -ErrorAction Ignore)
@@ -211,10 +211,10 @@ function Initialize-ADTVariableDatabase
     }))
 
     ## Variables: Hardware
-    $variables.Add('envSystemRAM', [int32](Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object {[System.Math]::Round(($_.Sum / 1GB), 2)}))
+    $variables.Add('envSystemRAM', (Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object {[System.Math]::Round(($_.Sum / 1GB), 2)}))
 
     ## Variables: PowerShell And CLR (.NET) Versions
-    $variables.Add('envPSVersionTable', [hashtable]$PSVersionTable)
+    $variables.Add('envPSVersionTable', $PSVersionTable)
 
     # PowerShell Version
     $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion.ToString())
@@ -243,27 +243,27 @@ function Initialize-ADTVariableDatabase
 
     ## Variables: Permissions/Accounts
     $currentProcessToken = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    $variables.Add('CurrentProcessSID', [string]$currentProcessToken.User.Value)
-    $variables.Add('ProcessNTAccount', [string]$currentProcessToken.Name)
-    $variables.Add('ProcessNTAccountSID', [string]$currentProcessToken.User.Value)
-    $variables.Add('IsAdmin', [boolean]($currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-32-544'))
-    $variables.Add('IsLocalSystemAccount', [boolean]$currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid'))
-    $variables.Add('IsLocalServiceAccount', [boolean]$currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid'))
-    $variables.Add('IsNetworkServiceAccount', [boolean]$currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid'))
-    $variables.Add('IsServiceAccount', [boolean]($currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6'))
-    $variables.Add('IsProcessUserInteractive', [boolean][System.Environment]::UserInteractive)
-    $variables.Add('LocalSystemNTAccount', [string](Get-SidTypeAccountName -WellKnownSidType LocalSystemSid))
-    $variables.Add('LocalUsersGroup', [string](Get-SidTypeAccountName -WellKnownSidType BuiltinUsersSid))
-    $variables.Add('LocalPowerUsersGroup', [string](Get-SidTypeAccountName -WellKnownSidType BuiltinPowerUsersSid -ErrorAction Ignore))
-    $variables.Add('LocalAdministratorsGroup', [string](Get-SidTypeAccountName -WellKnownSidType BuiltinAdministratorsSid))
-    $variables.Add('SessionZero', [boolean]($variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount))
+    $variables.Add('CurrentProcessSID', $currentProcessToken.User.Value)
+    $variables.Add('ProcessNTAccount', $currentProcessToken.Name)
+    $variables.Add('ProcessNTAccountSID', $currentProcessToken.User.Value)
+    $variables.Add('IsAdmin', $currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-32-544')
+    $variables.Add('IsLocalSystemAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid'))
+    $variables.Add('IsLocalServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid'))
+    $variables.Add('IsNetworkServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid'))
+    $variables.Add('IsServiceAccount', ($currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6'))
+    $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
+    $variables.Add('LocalSystemNTAccount', (Get-SidTypeAccountName -WellKnownSidType LocalSystemSid))
+    $variables.Add('LocalUsersGroup', (Get-SidTypeAccountName -WellKnownSidType BuiltinUsersSid))
+    $variables.Add('LocalPowerUsersGroup', (Get-SidTypeAccountName -WellKnownSidType BuiltinPowerUsersSid -ErrorAction Ignore))
+    $variables.Add('LocalAdministratorsGroup', (Get-SidTypeAccountName -WellKnownSidType BuiltinAdministratorsSid))
+    $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     # Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo($env:ComputerName))
-    $variables.Add('usersLoggedOn', [string[]]($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
-    $variables.Add('CurrentLoggedOnUserSession', [psobject]($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
-    $variables.Add('CurrentConsoleUserSession', [psobject]($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
-    $variables.Add('RunAsActiveUser', [psobject]$(if ($variables.usersLoggedOn)
+    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
+    $variables.Add('RunAsActiveUser', $(if ($variables.usersLoggedOn)
     {
         # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
         # If a console user exists, then that will be the active user session.
@@ -279,26 +279,26 @@ function Initialize-ADTVariableDatabase
     }))
 
     # Variables: User profile information.
-    $variables.Add('dirUserProfile', [string](Split-Path -LiteralPath $variables.envPublic))
-    $variables.Add('userProfileName', [string]$variables.RunAsActiveUser.UserName)
-    $variables.Add('runasUserProfile', [string](Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
+    $variables.Add('dirUserProfile', (Split-Path -LiteralPath $variables.envPublic))
+    $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
+    $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
 
     ## Variables: Executables
-    $variables.Add('exeWusa', [string]"$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
-    $variables.Add('exeMsiexec', [string]"$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
-    $variables.Add('exeSchTasks', [string]"$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
+    $variables.Add('exeWusa', "$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
+    $variables.Add('exeMsiexec', "$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
+    $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
 
     ## Variables: RegEx Patterns
-    $variables.Add('MSIProductCodeRegExPattern', [string]'^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
+    $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
 
     ## Variables: Invalid FileName Characters
-    $variables.Add('invalidFileNameChars', [char[]][System.IO.Path]::GetInvalidFileNameChars())
+    $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
 
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications
-    $variables.Add('regKeyApplications', [string[]]('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
-    $variables.Add('regKeyLotusNotes', [string]"Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64BitProcess) {'Wow6432Node\'})Lotus\Notes")
-    $variables.Add('regKeyAppExecution', [string]'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
+    $variables.Add('regKeyApplications', ('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
+    $variables.Add('regKeyLotusNotes', "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64BitProcess) {'Wow6432Node\'})Lotus\Notes")
+    $variables.Add('regKeyAppExecution', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
 
     ## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
     [System.Drawing.Graphics]$GraphicsObject = $null
