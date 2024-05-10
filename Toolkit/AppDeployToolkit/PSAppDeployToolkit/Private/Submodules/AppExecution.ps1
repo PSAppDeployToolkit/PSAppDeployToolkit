@@ -268,10 +268,7 @@ https://psappdeploytoolkit.com
         }
 
         ## If block execution variable is $true, set it to $false
-        If ($BlockExecution) {
-            #  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            Set-Variable -Name 'BlockExecution' -Value $false -Scope 'Script'
-        }
+        $Script:ADT.CurrentSession.State.BlockExecution = $false
 
         ## Remove the scheduled task if it exists
         [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'

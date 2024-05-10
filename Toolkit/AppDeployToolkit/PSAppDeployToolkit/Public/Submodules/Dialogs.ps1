@@ -215,7 +215,7 @@ https://psappdeploytoolkit.com
                 $formInstallationPrompt.ControlBox = $false
             }
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-            Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
+            $Script:ADT.CurrentSession.State.FormInstallationPromptStartPosition = $formInstallationPrompt.Location
         }
 
         ## Form
@@ -446,7 +446,7 @@ https://psappdeploytoolkit.com
                 $formInstallationPrompt.WindowState = 'Normal'
                 $formInstallationPrompt.TopMost = $TopMost
                 $formInstallationPrompt.BringToFront()
-                $formInstallationPrompt.Location = "$($formInstallationPromptStartPosition.X),$($formInstallationPromptStartPosition.Y)"
+                $formInstallationPrompt.Location = $Script:ADT.CurrentSession.State.FormInstallationPromptStartPosition
             }
             $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
             $installPromptTimerPersist.Start()
@@ -1098,7 +1098,7 @@ https://psappdeploytoolkit.com
                 #  Change this variable to a boolean now to switch the countdown on
                 [Boolean]$forceCountdown = $true
             }
-            Set-Variable -Name 'closeAppsCountdownGlobal' -Value $closeAppsCountdown -Scope 'Script'
+            $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal = $closeAppsCountdown
             $promptResult = $null
 
             While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
@@ -1111,12 +1111,12 @@ https://psappdeploytoolkit.com
                     }
                     #  Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral
                     ElseIf (($promptResult -ne 'Close') -or (($runningProcessDescriptions) -and ($promptResult -ne 'Continue'))) {
-                        [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -CustomText:$CustomText -TopMost $TopMost
+                        [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows $MinimizeWindows -CustomText:$CustomText -TopMost $TopMost
                     }
                 }
                 #  If there is no deferral and processes are running, prompt the user to close running processes with no deferral option
                 ElseIf (($runningProcessDescriptions) -or ($forceCountdown)) {
-                    [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $closeAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -CustomText:$CustomText -TopMost $TopMost
+                    [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal -ForceCloseAppsCountdown $forceCloseAppsCountdown -ForceCountdown $forceCountdown -PersistPrompt $PersistPrompt -MinimizeWindows $minimizeWindows -CustomText:$CustomText -TopMost $TopMost
                 }
                 #  If there is no deferral and no processes running, break the while loop
                 Else {
@@ -1490,7 +1490,7 @@ https://psappdeploytoolkit.com
                 $buttonRestartLater.Enabled = $false
             }
             ## Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-            Set-Variable -Name 'formInstallationRestartPromptStartPosition' -Value $formRestart.Location -Scope 'Script'
+            $Script:ADT.CurrentSession.State.FormInstallationRestartPromptStartPosition = $formRestart.Location
         }
 
         ## Persistence Timer
@@ -1502,7 +1502,7 @@ https://psappdeploytoolkit.com
                 $formRestart.WindowState = 'Normal'
                 $formRestart.TopMost = $TopMost
                 $formRestart.BringToFront()
-                $formRestart.Location = "$($formInstallationRestartPromptStartPosition.X),$($formInstallationRestartPromptStartPosition.Y)"
+                $formRestart.Location = $Script:ADT.CurrentSession.State.FormInstallationRestartPromptStartPosition
             }
             $restartTimerPersist.add_Tick($restartTimerPersist_Tick)
             $restartTimerPersist.Start()

@@ -233,7 +233,7 @@ https://psappdeploytoolkit.com
                 $formWelcome.ControlBox = $false
             }
             #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-            Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
+            $Script:ADT.CurrentSession.State.FormWelcomeStartPosition = $formWelcome.Location
 
             ## Initialize the countdown timer
             [DateTime]$currentTime = Get-Date
@@ -256,7 +256,7 @@ https://psappdeploytoolkit.com
                 [DateTime]$currentTime = Get-Date
                 [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
                 [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-                Set-Variable -Name 'closeAppsCountdownGlobal' -Value $remainingTime.TotalSeconds -Scope 'Script'
+                $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal = $remainingTime.TotalSeconds
 
                 ## If the countdown is complete, close the application(s) or continue
                 If ($countdownTime -le $currentTime) {
@@ -295,7 +295,7 @@ https://psappdeploytoolkit.com
                 $formWelcome.WindowState = 'Normal'
                 $formWelcome.TopMost = $TopMost
                 $formWelcome.BringToFront()
-                $formWelcome.Location = "$($formWelcomeStartPosition.X),$($formWelcomeStartPosition.Y)"
+                $formWelcome.Location = $Script:ADT.CurrentSession.State.FormWelcomeStartPosition
             }
             $welcomeTimerPersist.add_Tick($welcomeTimerPersist_Tick)
             $welcomeTimerPersist.Start()
