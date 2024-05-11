@@ -1315,7 +1315,6 @@ https://psappdeploytoolkit.com
                 Continue
             }
             [String]$CMTraceMsg = ''
-            [String]$ConsoleLogLine = ''
 
             #  Create a Console and Legacy "text" log entry
             [String]$LegacyMsg = "[$LogDate $LogTime]"
@@ -1326,7 +1325,6 @@ https://psappdeploytoolkit.com
             If ($Source) {
                 [String]$LegacyMsg += " [$Source]"
             }
-            [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
             [String]$CMTraceMsg += $Msg
 
             ## Choose which log type to write to file and create it.
@@ -1364,6 +1362,7 @@ https://psappdeploytoolkit.com
 
             ## Write the log entry to the console if $WriteHost is $true
             If ($WriteHost) {
+                [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
                 #  Only output using color options if running in a host which supports colors.
                 If ($Host.UI.RawUI.ForegroundColor) {
                     Switch ($Severity) {
