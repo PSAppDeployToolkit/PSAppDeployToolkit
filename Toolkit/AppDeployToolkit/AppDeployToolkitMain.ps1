@@ -1321,7 +1321,7 @@ https://psappdeploytoolkit.com
 
         ForEach ($Msg in $Message) {
             ## Skip message if the message is $null, empty, or white space
-            If ([String]::IsNullOrEmtpy($Msg) -or $Msg.Trim().Length -eq 0) {
+            If ([String]::IsNullOrEmpty($Msg) -or $Msg.Trim().Length -eq 0) {
                 Continue
             }
             [String]$CMTraceMsg = ''
