@@ -1215,16 +1215,6 @@ https://psappdeploytoolkit.com
             Split-Path -Path $script:MyInvocation.MyCommand.Definition -Leaf -ErrorAction SilentlyContinue
         }
 
-        ## Create script block for generating CMTrace.exe compatible log entry
-        [ScriptBlock]$CMTraceLogString = {
-            Param (
-                [String]$lMessage,
-                [String]$lSource,
-                [Int16]$lSeverity
-            )
-            "<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
-        }
-
         ## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
         If (($DebugMessage) -and (-not $LogDebugMessage)) {
             [Boolean]$ExitLoggingFunction = $true; Return
@@ -1326,7 +1316,6 @@ https://psappdeploytoolkit.com
             }
             [String]$CMTraceMsg = ''
             [String]$ConsoleLogLine = ''
-            [String]$LegacyTextLogLine = ''
 
             #  Create a Console and Legacy "text" log entry
             [String]$LegacyMsg = "[$LogDate $LogTime]"
@@ -1338,31 +1327,27 @@ https://psappdeploytoolkit.com
                 [String]$LegacyMsg += " [$Source]"
             }
             [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
-            [String]$LegacyTextLogLine = Switch ($Severity) {
-                3 {
-                    "$LegacyMsg [Error] :: $Msg"
-                }
-                2 {
-                    "$LegacyMsg [Warning] :: $Msg"
-                }
-                1 {
-                    "$LegacyMsg [Info] :: $Msg"
-                }
-                0 {
-                    "$LegacyMsg [Success] :: $Msg"
-                }
-            }
             [String]$CMTraceMsg += $Msg
 
-            ## Execute script block to create the CMTrace.exe compatible log entry
-            [String]$CMTraceLogLine = & $CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity
-
-            ## Choose which log type to write to file
-            If ($LogType -ieq 'CMTrace') {
-                [String]$LogLine = $CMTraceLogLine
+            ## Choose which log type to write to file and create it.
+            [String]$LogLine = If ($LogType -ieq 'CMTrace') {
+                "<![LOG[$CMTraceMsg]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$Source`" " + "context=`"$([Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$Severity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
             }
             Else {
-                [String]$LogLine = $LegacyTextLogLine
+                Switch ($Severity) {
+                    3 {
+                        "$LegacyMsg [Error] :: $Msg"
+                    }
+                    2 {
+                        "$LegacyMsg [Warning] :: $Msg"
+                    }
+                    1 {
+                        "$LegacyMsg [Info] :: $Msg"
+                    }
+                    0 {
+                        "$LegacyMsg [Success] :: $Msg"
+                    }
+                }
             }
 
             ## Write the log entry to the log file if logging is not currently disabled
