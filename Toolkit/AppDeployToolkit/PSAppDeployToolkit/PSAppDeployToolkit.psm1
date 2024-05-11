@@ -84,7 +84,7 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
 
 # Define exports. It should be done here and in the psd1 to cover all bases.
 Export-ModuleMember -Function @(
-    'New-ADTSession'
+    'Open-ADTSession'
     'Get-ADTSession'
     'Export-ADTModuleState'
     'Import-ADTModuleState'

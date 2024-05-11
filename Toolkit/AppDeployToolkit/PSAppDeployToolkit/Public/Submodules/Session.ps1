@@ -4,7 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
-function New-ADTSession
+function Open-ADTSession
 {
     param (
         [Parameter(Mandatory = $true)]
@@ -137,7 +137,7 @@ function Get-ADTSession
     }
     catch
     {
-        throw [System.InvalidOperationException]::new("Please ensure that [New-ADTSession] is called before using any $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) functions.")
+        throw [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) functions.")
     }
 }
 
