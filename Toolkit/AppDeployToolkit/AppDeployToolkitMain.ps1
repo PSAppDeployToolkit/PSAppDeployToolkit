@@ -1225,37 +1225,6 @@ https://psappdeploytoolkit.com
             "<![LOG[$lMessage]LOG]!>" + "<time=`"$LogTimePlusBias`" " + "date=`"$LogDate`" " + "component=`"$lSource`" " + "context=`"$([Security.Principal.WindowsIdentity]::GetCurrent().Name)`" " + "type=`"$lSeverity`" " + "thread=`"$PID`" " + "file=`"$ScriptSource`">"
         }
 
-        ## Create script block for writing log entry to the console
-        [ScriptBlock]$WriteLogLineToHost = {
-            Param (
-                [String]$lTextLogLine,
-                [Int16]$lSeverity
-            )
-            If ($WriteHost) {
-                #  Only output using color options if running in a host which supports colors.
-                If ($Host.UI.RawUI.ForegroundColor) {
-                    Switch ($lSeverity) {
-                        3 {
-                            Write-Host -Object $lTextLogLine -ForegroundColor 'Red' -BackgroundColor 'Black'
-                        }
-                        2 {
-                            Write-Host -Object $lTextLogLine -ForegroundColor 'Yellow' -BackgroundColor 'Black'
-                        }
-                        1 {
-                            Write-Host -Object $lTextLogLine
-                        }
-                        0 {
-                            Write-Host -Object $lTextLogLine -ForegroundColor 'Green' -BackgroundColor 'Black'
-                        }
-                    }
-                }
-                #  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
-                Else {
-                    Write-Output -InputObject ($lTextLogLine)
-                }
-            }
-        }
-
         ## Exit function if it is a debug message and logging debug messages is not enabled in the config XML file
         If (($DebugMessage) -and (-not $LogDebugMessage)) {
             [Boolean]$ExitLoggingFunction = $true; Return
@@ -1425,8 +1394,30 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            ## Execute script block to write the log entry to the console if $WriteHost is $true
-            & $WriteLogLineToHost -lTextLogLine $ConsoleLogLine -lSeverity $Severity
+            ## Write the log entry to the console if $WriteHost is $true
+            If ($WriteHost) {
+                #  Only output using color options if running in a host which supports colors.
+                If ($Host.UI.RawUI.ForegroundColor) {
+                    Switch ($Severity) {
+                        3 {
+                            Write-Host -Object $ConsoleLogLine -ForegroundColor 'Red' -BackgroundColor 'Black'
+                        }
+                        2 {
+                            Write-Host -Object $ConsoleLogLine -ForegroundColor 'Yellow' -BackgroundColor 'Black'
+                        }
+                        1 {
+                            Write-Host -Object $ConsoleLogLine
+                        }
+                        0 {
+                            Write-Host -Object $ConsoleLogLine -ForegroundColor 'Green' -BackgroundColor 'Black'
+                        }
+                    }
+                }
+                #  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
+                Else {
+                    Write-Output -InputObject ($ConsoleLogLine)
+                }
+            }
         }
     }
     End {
