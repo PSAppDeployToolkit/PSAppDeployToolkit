@@ -2413,7 +2413,7 @@ https://psappdeploytoolkit.com
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
-                    [String]$CUStubExePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
+                    [String]$CUStubExePath = $Script:ADT.Environment.envPSProcessPath
                     [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }

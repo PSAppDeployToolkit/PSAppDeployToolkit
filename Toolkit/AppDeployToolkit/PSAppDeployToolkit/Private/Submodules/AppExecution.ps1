@@ -109,7 +109,7 @@ https://psappdeploytoolkit.com
     </Settings>
     <Actions Context="Author">
         <Exec>
-            <Command>$([System.Diagnostics.Process]::GetCurrentProcess().Path)</Command>
+            <Command>$($Script:ADT.Environment.envPSProcessPath)</Command>
             <Arguments>$schTaskUnblockAppsCommand</Arguments>
         </Exec>
     </Actions>
@@ -144,7 +144,7 @@ https://psappdeploytoolkit.com
         Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'Ignore'
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$([System.Diagnostics.Process]::GetCurrentProcess().Path) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" & chr(34)"
+        [String[]]$debuggerBlockScript = "strCommand = `"$($Script:ADT.Environment.envPSProcessPath) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" & chr(34)"
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'Ignore'

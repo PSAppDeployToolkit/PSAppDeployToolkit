@@ -613,18 +613,18 @@ Returns the exit code from this function or the process launched by the schedule
 
 .EXAMPLE
 
-Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -Wait
+Execute-ProcessAsUser -UserName 'CONTOSO\User' -Path $envPSProcessPath -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -Wait
 
 Execute process under a user account by specifying a username under which to execute it.
 
 .EXAMPLE
 
-Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -Wait
+Execute-ProcessAsUser -Path $envPSProcessPath -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -Wait
 
 Execute process under a user account by using the default active logged in user that was detected when the toolkit was launched.
 
 .EXAMPLE
-Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -RunLevel 'LeastPrivilege'
+Execute-ProcessAsUser -Path $envPSProcessPath -Parameters "-Command `"& { & 'C:\Test\Script.ps1'; Exit `$LastExitCode }`"" -RunLevel 'LeastPrivilege'
 
 Execute process using 'LeastPrivilege' under a user account by using the default active logged in user that was detected when the toolkit was launched.
 
