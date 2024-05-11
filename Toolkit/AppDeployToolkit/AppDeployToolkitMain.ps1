@@ -1325,15 +1325,11 @@ https://psappdeploytoolkit.com
             [String]$ConsoleLogLine = ''
             [String]$LegacyTextLogLine = ''
             If ($Msg) {
-                #  Create the CMTrace log message
-                If ($ScriptSectionDefined) {
-                    [String]$CMTraceMsg = "[$ScriptSection] :: $Msg"
-                }
-
                 #  Create a Console and Legacy "text" log entry
                 [String]$LegacyMsg = "[$LogDate $LogTime]"
                 If ($ScriptSectionDefined) {
                     [String]$LegacyMsg += " [$ScriptSection]"
+                    [String]$CMTraceMsg = "[$ScriptSection] :: "
                 }
                 If ($Source) {
                     [String]$LegacyMsg += " [$Source]"
@@ -1353,6 +1349,7 @@ https://psappdeploytoolkit.com
                         "$LegacyMsg [Success] :: $Msg"
                     }
                 }
+                [String]$CMTraceMsg += $Msg
             }
 
             ## Execute script block to create the CMTrace.exe compatible log entry
