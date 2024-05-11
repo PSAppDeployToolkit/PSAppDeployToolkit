@@ -1320,37 +1320,39 @@ https://psappdeploytoolkit.com
         }
 
         ForEach ($Msg in $Message) {
-            ## If the message is not $null or empty, create the log entry for the different logging methods
+            ## If the message is not $null, empty, or white space, create the log entry for the different logging methods
+            If ([String]::IsNullOrEmtpy($Msg) -or $Msg.Trim().Length -eq 0) {
+                Continue
+            }
             [String]$CMTraceMsg = ''
             [String]$ConsoleLogLine = ''
             [String]$LegacyTextLogLine = ''
-            If ($Msg) {
-                #  Create a Console and Legacy "text" log entry
-                [String]$LegacyMsg = "[$LogDate $LogTime]"
-                If ($ScriptSectionDefined) {
-                    [String]$LegacyMsg += " [$ScriptSection]"
-                    [String]$CMTraceMsg = "[$ScriptSection] :: "
-                }
-                If ($Source) {
-                    [String]$LegacyMsg += " [$Source]"
-                }
-                [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
-                [String]$LegacyTextLogLine = Switch ($Severity) {
-                    3 {
-                        "$LegacyMsg [Error] :: $Msg"
-                    }
-                    2 {
-                        "$LegacyMsg [Warning] :: $Msg"
-                    }
-                    1 {
-                        "$LegacyMsg [Info] :: $Msg"
-                    }
-                    0 {
-                        "$LegacyMsg [Success] :: $Msg"
-                    }
-                }
-                [String]$CMTraceMsg += $Msg
+
+            #  Create a Console and Legacy "text" log entry
+            [String]$LegacyMsg = "[$LogDate $LogTime]"
+            If ($ScriptSectionDefined) {
+                [String]$LegacyMsg += " [$ScriptSection]"
+                [String]$CMTraceMsg = "[$ScriptSection] :: "
             }
+            If ($Source) {
+                [String]$LegacyMsg += " [$Source]"
+            }
+            [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
+            [String]$LegacyTextLogLine = Switch ($Severity) {
+                3 {
+                    "$LegacyMsg [Error] :: $Msg"
+                }
+                2 {
+                    "$LegacyMsg [Warning] :: $Msg"
+                }
+                1 {
+                    "$LegacyMsg [Info] :: $Msg"
+                }
+                0 {
+                    "$LegacyMsg [Success] :: $Msg"
+                }
+            }
+            [String]$CMTraceMsg += $Msg
 
             ## Execute script block to create the CMTrace.exe compatible log entry
             [String]$CMTraceLogLine = & $CMTraceLogString -lMessage $CMTraceMsg -lSource $Source -lSeverity $Severity
