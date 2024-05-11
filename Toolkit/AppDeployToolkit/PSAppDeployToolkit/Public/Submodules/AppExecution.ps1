@@ -59,9 +59,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
 
         ## Remove illegal characters from the scheduled task arguments string
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
@@ -117,7 +115,7 @@ https://psappdeploytoolkit.com
     Process {
         ## Bypass if no Admin rights
         If (!$Script:ADT.Environment.IsAdmin) {
-            Write-ADTLogEntry -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
             Return
         }
 
@@ -195,7 +193,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -245,14 +243,12 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         ## Bypass if no Admin rights
         If (!$Script:ADT.Environment.IsAdmin) {
-            Write-ADTLogEntry -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
             Return
         }
 
@@ -292,6 +288,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }

@@ -76,9 +76,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
 
         ## Get name used to invoke this function in case the 'Register-DLL' or 'Unregister-DLL' alias was used and set the correct DLL action
         [String]${InvokedCmdletName} = $MyInvocation.InvocationName
@@ -160,6 +158,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }

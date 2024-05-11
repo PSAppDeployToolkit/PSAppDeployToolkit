@@ -64,9 +64,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -154,7 +152,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -225,9 +223,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -307,6 +303,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }

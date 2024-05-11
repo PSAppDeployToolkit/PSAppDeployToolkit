@@ -134,9 +134,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         ## Bypass if in non-interactive mode
@@ -500,7 +498,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -602,9 +600,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         #  Bypass if in silent mode
@@ -694,7 +690,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -941,9 +937,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         ## If running in NonInteractive mode, force the processes to close silently
@@ -1298,7 +1292,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -1398,9 +1392,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         ## If in non-interactive mode
@@ -1419,17 +1411,17 @@ https://psappdeploytoolkit.com
 
         ## Check if we are already displaying a restart prompt
         If (Get-Process | Where-Object { $_.MainWindowTitle -match $Script:ADT.Strings.RestartPrompt.Title }) {
-            Write-ADTLogEntry -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
+            Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
             Return
         }
 
         ## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
         If (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous')) {
             If ($NoCountdown) {
-                Write-ADTLogEntry -Message "Invoking ${CmdletName} asynchronously with no countdown..."
+                Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with no countdown..."
             }
             Else {
-                Write-ADTLogEntry -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..."
+                Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$countDownSeconds] second countdown..."
             }
             ## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters.
             $installRestartPromptParameters.Remove('NoSilentRestart')
@@ -1749,7 +1741,7 @@ https://psappdeploytoolkit.com
         $formRestart.Dispose()
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -1837,9 +1829,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         ## Skip balloon if in silent mode, disabled in the config or presentation is detected
@@ -2027,7 +2017,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -2126,9 +2116,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
@@ -2383,7 +2371,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 

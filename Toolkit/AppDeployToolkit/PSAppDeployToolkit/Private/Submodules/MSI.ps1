@@ -54,9 +54,7 @@ Returns the message for the MSI error code.
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -69,7 +67,7 @@ Returns the message for the MSI error code.
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -147,9 +145,7 @@ This is an internal script function and should typically not be called directly.
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
 
         ## Initialize Variables
         [Timespan]$MutexWaitTime = [Timespan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
@@ -234,7 +230,7 @@ This is an internal script function and should typically not be called directly.
     End {
         Write-Output -InputObject ($IsMutexFree)
 
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -364,10 +360,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -484,7 +477,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -562,10 +555,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -613,6 +603,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }

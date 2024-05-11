@@ -181,9 +181,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
     }
     Process {
         Try {
@@ -534,7 +532,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
 
@@ -667,14 +665,12 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        ## Get the name of this function and write header
-        [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
+        Write-DebugHeader
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
             If (($TempPath -eq $Script:ADT.CurrentSession.LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
-                Write-ADTLogEntry -Message "WARNING: Using [${CmdletName}] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
+                Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
         Else {
@@ -689,9 +685,9 @@ https://psappdeploytoolkit.com
             ## Confirm that the username field is not empty
             If (-not $UserName) {
                 [Int32]$executeProcessAsUserExitCode = 60009
-                Write-ADTLogEntry -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3
+                Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3
                 If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
+                    Throw "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
                 }
                 Return
             }
@@ -699,9 +695,9 @@ https://psappdeploytoolkit.com
             ## Confirm if the toolkit is running with administrator privileges
             If (($RunLevel -eq 'HighestAvailable') -and (-not $Script:ADT.Environment.IsAdmin)) {
                 [Int32]$executeProcessAsUserExitCode = 60003
-                Write-ADTLogEntry -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3
+                Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3
                 If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
+                    Throw "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
                 }
                 Return
             }
@@ -965,6 +961,6 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($executeProcessAsUserExitCode)
         }
 
-        Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
+        Write-DebugFooter
     }
 }
