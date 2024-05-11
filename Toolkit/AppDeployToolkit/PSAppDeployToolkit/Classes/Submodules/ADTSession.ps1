@@ -586,7 +586,7 @@ class ADTSession
     hidden [System.Void] TestAdminRequired()
     {
         # Check current permissions and exit if not running with Administrator rights
-        if ($Script:ADT.Config.Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)# -and !$ShowBlockedAppDialog)
+        if ($Script:ADT.Config.Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)
         {
             $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
             $this.WriteLogEntry($adminErr, 3, $this.GetLogSource())
