@@ -213,9 +213,18 @@ function Export-ADTModuleState
 
 function Import-ADTModuleState
 {
-    # Restore the previously exported session and prepare it for asynchronous operation.
-    Set-Variable -Name ADT -Scope Script -Option ReadOnly -Force -Value ([System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String([Microsoft.Win32.Registry]::GetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, $null)))))
-    [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Script:Serialisation.KeyName.Replace('HKEY_LOCAL_MACHINE\', $null), $true).DeleteValue($Script:Serialisation.ValueName, $true)
+    # Restore the previously exported session and prepare it for asynchronous operation. The serialised state may be on-disk during BlockExecution operations.
+    Set-Variable -Name ADT -Scope Script -Option ReadOnly -Force -Value $(if ([System.IO.File]::Exists(($onDiskClixml = $Script:MyInvocation.MyCommand.Path.Replace('.psm1', '.xml'))))
+    {
+        Import-Clixml -LiteralPath $onDiskClixml
+    }
+    else
+    {
+        [System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String([Microsoft.Win32.Registry]::GetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, $null))))
+        [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Script:Serialisation.KeyName.Replace('HKEY_LOCAL_MACHINE\', $null), $true).DeleteValue($Script:Serialisation.ValueName, $true)
+    })
+
+    # Create new object based on serialised state and configure for async operations.
     $Script:ADT.CurrentSession = [ADTSession]::new($Script:ADT.CurrentSession)
     $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
     $Script:ADT.CurrentSession.LegacyMode = $false

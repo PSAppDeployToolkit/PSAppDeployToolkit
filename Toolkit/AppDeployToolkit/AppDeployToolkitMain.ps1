@@ -253,14 +253,6 @@ function Exit-Script
 ##*=============================================
 #region ScriptBody
 
-## If the CleanupBlockedApps Parameter is specified, only call that function.
-If ($cleanupBlockedApps) {
-    $deployModeSilent = $true
-    Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-CleanupBlockedApps]." -Source $Script:ADT.Environment.appDeployToolkitName
-    Unblock-AppExecution
-    Exit 0
-}
-
 ## If the ShowBlockedAppDialog Parameter is specified, only call that function.
 If ($showBlockedAppDialog) {
     Try {
