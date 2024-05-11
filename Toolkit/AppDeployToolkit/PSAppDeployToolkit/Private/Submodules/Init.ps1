@@ -215,6 +215,7 @@ function Initialize-ADTVariableDatabase
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
+    $variables.Add('envPSProcessPath', "$PSHOME\$(if ($PSVersionTable.PSEdition.Equals('Core')) {'pwsh.exe'} else {'powershell.exe'})")
 
     # PowerShell Version
     $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion.ToString())

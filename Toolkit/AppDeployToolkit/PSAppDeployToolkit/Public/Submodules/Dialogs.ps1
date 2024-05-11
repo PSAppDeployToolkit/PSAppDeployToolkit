@@ -163,7 +163,7 @@ https://psappdeploytoolkit.com
             [String]$installPromptParameters = $installPromptParameters | Resolve-Parameters
 
 
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
+            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 
@@ -1407,7 +1407,7 @@ https://psappdeploytoolkit.com
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
             If ($NoSilentRestart -eq $false) {
                 Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
-                Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
+                Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             }
             Else {
                 Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is enabled." -Source ${CmdletName}
@@ -1437,7 +1437,7 @@ https://psappdeploytoolkit.com
             ## Prepare a list of parameters of this function as a string
             [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-Parameters
             ## Start another powershell instance silently with function parameters from this function
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
+            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 
@@ -1905,7 +1905,7 @@ https://psappdeploytoolkit.com
 
                 ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
                 Try {
-                    Execute-Process -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
+                    Execute-Process -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
                 }
                 Catch {
                 }
@@ -2017,7 +2017,7 @@ https://psappdeploytoolkit.com
                     Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
                     $executeToastAsUserScript = "$($Script:ADT.CurrentSession.LoggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
+                    Execute-ProcessAsUser -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
                 }
                 Catch {
                 }
