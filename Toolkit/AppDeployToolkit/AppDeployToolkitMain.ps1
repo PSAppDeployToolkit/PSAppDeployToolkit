@@ -241,3 +241,20 @@ function Invoke-HKCURegistrySettingsForAllUsers
     Invoke-ADTAllUsersRegistryChange @PSBoundParameters
 }
 
+
+#---------------------------------------------------------------------------
+#
+# Replacement for Get-HardwarePlatform
+#
+#---------------------------------------------------------------------------
+
+function Get-HardwarePlatform
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [`$envHardwareType] instead." -Severity 2
+    return $envHardwareType
+}

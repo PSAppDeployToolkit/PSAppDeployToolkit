@@ -104,7 +104,6 @@ Export-ModuleMember -Function @(
     'Execute-ProcessAsUser'
     'Get-FileVersion'
     'Get-FreeDiskSpace'
-    'Get-HardwarePlatform'
     'Get-IniValue'
     'Get-InstalledApplication'
     'Get-LoggedOnUser'
