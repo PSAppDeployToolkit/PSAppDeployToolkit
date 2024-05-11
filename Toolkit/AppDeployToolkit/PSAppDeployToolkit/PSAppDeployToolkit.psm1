@@ -44,10 +44,13 @@ New-Variable -Name ADT -Option Constant -Value @{
     Language = $null
     Config = $null
     Strings = $null
-    Progress = [ordered]@{
-        Runspace = [runspacefactory]::CreateRunspace()
-        SyncHash = [hashtable]::Synchronized(@{})
-    }
+}
+
+# State data used by Show-InstallationProgress.
+New-Variable -Name ProgressWindow -Option Constant -Value @{
+    Runspace = $null
+    SyncHash = $null
+    Running = $false
 }
 
 # Define exports. It should be done here and in the psd1 to cover all bases.

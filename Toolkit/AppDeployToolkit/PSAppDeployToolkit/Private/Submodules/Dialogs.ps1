@@ -788,14 +788,14 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]" -Source ${CmdletName}
             Return
         }
-        If (!(Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
+        If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.SyncHash -or !$Script:ProgressWindow.SyncHash.Count) {
             Write-Log -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
-            $script:instProgressRunning = $false
+            $Script:ProgressWindow.Running = $false
             Return
         }
         # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
         [Int32]$Timeout = $WaitingTime
-        While ((-not $script:ProgressSyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
+        While ((-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
             If ($Timeout -eq $WaitingTime) {
                 Write-Log -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
             }
@@ -803,16 +803,16 @@ https://psappdeploytoolkit.com
             Start-Sleep -Seconds 1
         }
         # Return if we still have no window
-        If (-not $script:ProgressSyncHash.Window.IsInitialized) {
+        If (-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) {
             Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
-            $script:instProgressRunning = $false
+            $Script:ProgressWindow.Running = $false
             Return
         }
         # If the thread is suspended, resume it
-        If ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Suspended) {
+        If ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Suspended) {
             Write-Log -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
             Try {
-                $script:ProgressSyncHash.Window.Dispatcher.Thread.Resume()
+                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.Resume()
             }
             Catch {
                 Write-Log -Message 'Failed to resume the thread for the installation progress dialog.' -Source ${CmdletName} -Severity 2
@@ -820,7 +820,7 @@ https://psappdeploytoolkit.com
         }
         # If the thread is changing its state, wait
         [Int32]$Timeout = 0
-        While ((($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Aborted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::AbortRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::StopRequested) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted) -or ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
+        While ((($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Aborted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::AbortRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::StopRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
             If (-not $Timeout) {
                 Write-Log -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
             }
@@ -828,15 +828,15 @@ https://psappdeploytoolkit.com
             Start-Sleep -Seconds 1
         }
         # If the thread is running, stop it
-        If ((-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Stopped)) -and (-not ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted))) {
+        If ((-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Stopped)) -and (-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted))) {
             Write-Log -Message 'Closing the installation progress dialog.' -Source ${CmdletName}
-            $script:ProgressSyncHash.Window.Dispatcher.InvokeShutdown()
+            $Script:ProgressWindow.SyncHash.Window.Dispatcher.InvokeShutdown()
         }
 
-        If ((Test-Path -LiteralPath 'variable:ProgressRunspace')) {
+        If ($Script:ProgressWindow.Runspace) {
             # If the runspace is still opening, wait
             [Int32]$Timeout = 0
-            While ((($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
+            While ((($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
                 If (-not $Timeout) {
                     Write-Log -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
                 }
@@ -844,22 +844,24 @@ https://psappdeploytoolkit.com
                 Start-Sleep -Seconds 1
             }
             # If the runspace is opened, close it
-            If ($script:ProgressRunspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
+            If ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
                 Write-Log -Message "Closing the installation progress dialog`'s runspace." -Source ${CmdletName}
-                $script:ProgressRunspace.Close()
+                $Script:ProgressWindow.Runspace.Close()
+                $Script:ProgressWindow.Runspace = $null
             }
         }
         Else {
             Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
         }
 
-        If ((Test-Path -LiteralPath 'variable:ProgressSyncHash')) {
+        If ($Script:ProgressWindow.SyncHash.Count) {
             # Clear sync hash
-            $script:ProgressSyncHash.Clear()
+            $Script:ProgressWindow.SyncHash.Clear()
+            $Script:ProgressWindow.SyncHash = $null
         }
 
         # Reset the state bool.
-        $script:instProgressRunning = $false
+        $Script:ProgressWindow.Running = $false
     }
     End {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
