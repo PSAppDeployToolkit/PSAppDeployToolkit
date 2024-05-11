@@ -160,7 +160,7 @@ https://psappdeploytoolkit.com
             # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
             $installPromptParameters.Remove('NoWait')
             # Format the parameters as a string
-            [String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+            [String]$installPromptParameters = $installPromptParameters | Resolve-Parameters
 
 
             Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
@@ -457,7 +457,7 @@ https://psappdeploytoolkit.com
             Close-InstallationProgress
         }
 
-        [String]$installPromptLoggedParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+        [String]$installPromptLoggedParameters = $installPromptParameters | Resolve-Parameters
         Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
 
@@ -1435,7 +1435,7 @@ https://psappdeploytoolkit.com
             $installRestartPromptParameters.Remove('NoSilentRestart')
             $installRestartPromptParameters.Remove('SilentCountdownSeconds')
             ## Prepare a list of parameters of this function as a string
-            [String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+            [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-Parameters
             ## Start another powershell instance silently with function parameters from this function
             Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return

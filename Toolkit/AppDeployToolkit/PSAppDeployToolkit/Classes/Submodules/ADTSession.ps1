@@ -332,7 +332,7 @@ class ADTSession
         }
         if ($this.Properties.DeployAppScriptParameters -and $this.Properties.DeployAppScriptParameters.Count)
         {
-            Write-Log -Message "The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters)]" -Source $logSrc
+            Write-Log -Message "The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]" -Source $logSrc
         }
         Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]" -Source $logSrc
     }
