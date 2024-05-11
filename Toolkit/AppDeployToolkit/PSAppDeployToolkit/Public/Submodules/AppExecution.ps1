@@ -44,8 +44,6 @@ Block-AppExecution -ProcessName ('winword','excel')
 
 .NOTES
 
-This is an internal script function and should typically not be called directly.
-
 It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
 
 .LINK
@@ -72,7 +70,7 @@ https://psappdeploytoolkit.com
             [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
         [string]$blockExecutionTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
-        [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" -ReferredLogName `"$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`" -AsyncToolkitLaunch"
+        [string]$schTaskUnblockAppsCommand = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$blockExecutionTempPath'; Import-ADTModuleState; Unblock-AppExecution"
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -141,7 +139,8 @@ https://psappdeploytoolkit.com
             Write-ADTLogEntry -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
         }
 
-        Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'Ignore'
+        Copy-Item -LiteralPath $Script:PSScriptRoot -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse
+        Export-Clixml -LiteralPath "$blockExecutionTempPath\$($Script:MyInvocation.MyCommand.Name.Replace('.psm1', '.xml'))" -Depth ([System.Int32]::MaxValue)
 
         ## Build the debugger block value script
         [String[]]$debuggerBlockScript = "strCommand = `"$($Script:ADT.Environment.envPSProcessPath) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" & chr(34)"
@@ -234,8 +233,6 @@ This function does not generate any output.
 Unblock-AppExecution
 
 .NOTES
-
-This is an internal script function and should typically not be called directly.
 
 It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
 
