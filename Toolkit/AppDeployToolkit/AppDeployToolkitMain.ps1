@@ -1138,12 +1138,7 @@ https://psappdeploytoolkit.com
         [Int16]$Severity = 1,
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNull()]
-        [String]$Source = $([String]$parentFunctionName = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name); If ($parentFunctionName) {
-                $parentFunctionName
-            }
-            Else {
-                'Unknown'
-            }),
+        [String]$Source = [IO.Path]::GetFileNameWithoutExtension((Get-Variable -Name 'MyInvocation' -Scope 1 -ErrorAction 'SilentlyContinue').Value.MyCommand.Name),
         [Parameter(Mandatory = $false, Position = 3)]
         [ValidateNotNullorEmpty()]
         [String]$ScriptSection = $script:installPhase,
@@ -1204,6 +1199,9 @@ https://psappdeploytoolkit.com
         }
         If ([System.String]::IsNullOrEmpty($LogFileName) -or $LogFileName.Trim().Length -eq 0) {
             $DisableLogging = $true
+        }
+        If ($Source.Trim().Length -eq 0) {
+            $Source = 'Unknown'
         }
         #  Check if the script section is defined
         [Boolean]$ScriptSectionDefined = [Boolean](-not [String]::IsNullOrEmpty($ScriptSection))
