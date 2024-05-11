@@ -26,35 +26,6 @@ https://psappdeploytoolkit.com
 
 #>
 
-<#[CmdletBinding()]
-Param (
-    ## Script Parameters: These parameters are passed to the script when it is called externally from a scheduled task or because of an Image File Execution Options registry setting
-    [Switch]$ShowInstallationPrompt = $false,
-    [Switch]$ShowInstallationRestartPrompt = $false,
-    [Switch]$CleanupBlockedApps = $false,
-    [Switch]$ShowBlockedAppDialog = $false,
-    [Switch]$DisableLogging = $false,
-    [String]$ReferredInstallName = '',
-    [String]$ReferredInstallTitle = '',
-    [String]$ReferredLogName = '',
-    [String]$Title = '',
-    [String]$Message = '',
-    [String]$MessageAlignment = '',
-    [String]$ButtonRightText = '',
-    [String]$ButtonLeftText = '',
-    [String]$ButtonMiddleText = '',
-    [String]$Icon = '',
-    [String]$Timeout = '',
-    [Switch]$ExitOnTimeout = $false,
-    [Boolean]$MinimizeWindows = $false,
-    [Switch]$PersistPrompt = $false,
-    [Int32]$CountdownSeconds = 60,
-    [Int32]$CountdownNoHideSeconds = 30,
-    [Switch]$NoCountdown = $false,
-    [Switch]$AsyncToolkitLaunch = $false,
-    [Boolean]$TopMost = $true
-)#>
-
 #---------------------------------------------------------------------------
 #
 # Initialisation code.
@@ -246,50 +217,3 @@ function Exit-Script
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Close-ADTSession] instead." -Severity 2
     Close-ADTSession @PSBoundParameters
 }
-
-<#
-##*=============================================
-##* SCRIPT BODY
-##*=============================================
-#region ScriptBody
-
-## If the ShowBlockedAppDialog Parameter is specified, only call that function.
-If ($showBlockedAppDialog) {
-    Try {
-        . $DisableScriptLogging
-        Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]." -Source $Script:ADT.Environment.appDeployToolkitName
-        #  Create a mutex and specify a name without acquiring a lock on the mutex
-        [Boolean]$showBlockedAppDialogMutexLocked = $false
-        [String]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
-        [Threading.Mutex]$showBlockedAppDialogMutex = New-Object -TypeName 'System.Threading.Mutex' -ArgumentList ($false, $showBlockedAppDialogMutexName)
-        #  Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock
-        If ((Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and ($showBlockedAppDialogMutex.WaitOne(1))) {
-            [Boolean]$showBlockedAppDialogMutexLocked = $true
-            Show-InstallationPrompt -Title $installTitle -Message $Script:ADT.Strings.BlockExecution.Message -Icon 'Warning' -ButtonRightText 'OK'
-            Exit 0
-        }
-        Else {
-            #  If attempt to acquire an exclusive lock on the mutex failed, then exit script as another blocked app dialog window is already open
-            Write-ADTLogEntry -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2 -Source $Script:ADT.Environment.appDeployToolkitName
-            Exit 0
-        }
-    }
-    Catch {
-        Write-ADTLogEntry -Message "There was an error in displaying the Installation Prompt. `r`n$(Resolve-Error)" -Severity 3 -Source $Script:ADT.Environment.appDeployToolkitName
-        Exit 60005
-    }
-    Finally {
-        If ($showBlockedAppDialogMutexLocked) {
-            $null = $showBlockedAppDialogMutex.ReleaseMutex()
-        }
-        If ($showBlockedAppDialogMutex) {
-            $showBlockedAppDialogMutex.Close()
-        }
-    }
-}
-
-#endregion
-##*=============================================
-##* END SCRIPT BODY
-##*=============================================
-#>
