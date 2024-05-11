@@ -1320,13 +1320,13 @@ https://psappdeploytoolkit.com
         }
 
         ForEach ($Msg in $Message) {
-            ## If the message is not $null, empty, or white space, create the log entry for the different logging methods
+            ## Skip message if the message is $null, empty, or white space
             If ([String]::IsNullOrEmtpy($Msg) -or $Msg.Trim().Length -eq 0) {
                 Continue
             }
             [String]$CMTraceMsg = ''
 
-            #  Create a Console and Legacy "text" log entry
+            #  Create log entry
             [String]$LegacyMsg = "[$LogDate $LogTime]"
             If ($ScriptSectionDefined) {
                 [String]$LegacyMsg += " [$ScriptSection]"
@@ -1358,7 +1358,7 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            ## Write the log entry to the log file if logging is not currently disabled
+            ## Write the log entry to the log file if logging is not currently disabled.
             If (-not $DisableLogging) {
                 Try {
                     $LogLine | Out-File -FilePath $LogFilePath -Append -NoClobber -Force -Encoding 'UTF8' -ErrorAction 'Stop'
@@ -1375,7 +1375,7 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            ## Write the log entry to the console if $WriteHost is $true
+            ## Write the log entry to the console if $WriteHost is $true.
             If ($WriteHost) {
                 [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
                 #  Only output using color options if running in a host which supports colors.
