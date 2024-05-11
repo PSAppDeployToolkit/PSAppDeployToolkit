@@ -92,9 +92,6 @@ New-ADTSession @PSBoundParameters @sessionParams
 #  App Deploy Optional Extensions File
 [String]$appDeployToolkitDotSourceExtensions = 'AppDeployToolkitExtensions.ps1'
 
-## Variables: Reset/Remove Variables
-[Boolean]$instProgressRunning = $false
-
 ##*=============================================
 ##* END VARIABLE DECLARATION
 ##*=============================================

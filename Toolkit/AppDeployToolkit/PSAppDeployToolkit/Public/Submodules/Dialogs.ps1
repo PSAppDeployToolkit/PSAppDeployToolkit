@@ -2156,26 +2156,26 @@ https://psappdeploytoolkit.com
         }
 
         ## Check if the progress thread is running before invoking methods on it
-        If (!$script:instProgressRunning) {
+        If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running) {
             #  Notify user that the software installation has started
             $balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
             #  Create a synchronized hashtable to share objects between runspaces
-            $script:ProgressSyncHash = [Hashtable]::Synchronized(@{ })
+            $Script:ProgressWindow.SyncHash = [hashtable]::Synchronized(@{})
             #  Create a new runspace for the progress bar
-            $script:ProgressRunspace = [runspacefactory]::CreateRunspace()
-            $script:ProgressRunspace.ApartmentState = 'STA'
-            $script:ProgressRunspace.ThreadOptions = 'ReuseThread'
-            $script:ProgressRunspace.Open()
+            $Script:ProgressWindow.Runspace = [runspacefactory]::CreateRunspace()
+            $Script:ProgressWindow.Runspace.ApartmentState = 'STA'
+            $Script:ProgressWindow.Runspace.ThreadOptions = 'ReuseThread'
+            $Script:ProgressWindow.Runspace.Open()
             #  Add the sync hash to the runspace
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('progressSyncHash', $script:ProgressSyncHash)
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('progressSyncHash', $Script:ProgressWindow.SyncHash)
             #  Add other variables from the parent thread required in the progress runspace
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $Script:ADT.CurrentSession.GetPropertyValue('installTitle'))
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $AppDeployLogoIcon)
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('installTitle', $Script:ADT.CurrentSession.GetPropertyValue('installTitle'))
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $Script:ADT.Config.Assets.Banner)
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
+            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $Script:ADT.Config.Assets.Icon)
 
             #  Add the script block to be executed in the progress runspace
             $progressCmd = [PowerShell]::Create().AddScript({
@@ -2240,50 +2240,50 @@ https://psappdeploytoolkit.com
                 $xamlProgress.Window.Icon = $AppDeployLogoIcon
                 $xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
                 $xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
-                $xamlProgress.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle')
+                $xamlProgress.Window.Title = $installTitle
                 #  Parse the XAML
                 $progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
-                $script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
+                $progressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
                 #  Grey out the X button
-                $script:ProgressSyncHash.Window.add_Loaded({
+                $progressSyncHash.Window.add_Loaded({
                         #  Calculate the position on the screen where the progress dialog should be placed
                         [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
                         [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-                        [Int32]$script:screenCenterWidth = $screenWidth - $script:ProgressSyncHash.Window.ActualWidth
-                        [Int32]$script:screenCenterHeight = $screenHeight - $script:ProgressSyncHash.Window.ActualHeight
+                        [Int32]$script:screenCenterWidth = $screenWidth - $progressSyncHash.Window.ActualWidth
+                        [Int32]$script:screenCenterHeight = $screenHeight - $progressSyncHash.Window.ActualHeight
                         #  Set the start position of the Window based on the screen size
                         If ($windowLocation -eq 'TopLeft') {
-                            $script:ProgressSyncHash.Window.Left = [Double](0)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $progressSyncHash.Window.Left = [Double](0)
+                            $progressSyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'Top') {
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $progressSyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'TopRight') {
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                            $progressSyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'TopCenter') {
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
                         }
                         ElseIf ($windowLocation -eq 'BottomLeft') {
-                            $script:ProgressSyncHash.Window.Left = [Double](0)
-                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                            $progressSyncHash.Window.Left = [Double](0)
+                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight)
                         }
                         ElseIf ($windowLocation -eq 'Bottom') {
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight)
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight)
                         }
                         ElseIf ($windowLocation -eq 'BottomRight') {
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth)
-                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth)
+                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
                         }
                         Else {
                             #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                            $script:ProgressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
+                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
+                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
                         }
                         #  Disable the X button
                         Try {
@@ -2302,26 +2302,26 @@ https://psappdeploytoolkit.com
                         }
                     })
                 #  Prepare the ProgressText variable so we can use it to change the text in the text area
-                $script:ProgressSyncHash.ProgressText = $script:ProgressSyncHash.Window.FindName('ProgressText')
+                $progressSyncHash.ProgressText = $progressSyncHash.Window.FindName('ProgressText')
                 #  Add an action to the Window.Closing event handler to disable the close button
-                $script:ProgressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
+                $progressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
                 #  Allow the window to be dragged by clicking on it anywhere
-                $script:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $script:ProgressSyncHash.Window.DragMove() })
+                $progressSyncHash.Window.Add_MouseLeftButtonDown({ $progressSyncHash.Window.DragMove() })
                 #  Add a tooltip
-                $script:ProgressSyncHash.Window.ToolTip = $Script:ADT.CurrentSession.GetPropertyValue('installTitle')
-                $null = $script:ProgressSyncHash.Window.ShowDialog()
-                $script:ProgressSyncHash.Error = $Error
+                $progressSyncHash.Window.ToolTip = $installTitle
+                $null = $progressSyncHash.Window.ShowDialog()
+                $progressSyncHash.Error = $Error
             })
 
-            $progressCmd.Runspace = $script:ProgressRunspace
+            $progressCmd.Runspace = $Script:ProgressWindow.Runspace
             Write-Log -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
             #  Invoke the progress runspace
             $null = $progressCmd.BeginInvoke()
             #  Allow the thread to be spun up safely before invoking actions against it.
-            while (!($script:instProgressRunning = $script:ProgressSyncHash.ContainsKey('Window') -and ($script:ProgressSyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
+            while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
             {
-                If ($script:ProgressSyncHash.ContainsKey('Error')) {
-                    Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $script:ProgressSyncHash.Error)" -Severity 3 -Source ${CmdletName}
+                If ($Script:ProgressWindow.SyncHash.ContainsKey('Error')) {
+                    Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3 -Source ${CmdletName}
                     break
                 }
             }
@@ -2330,47 +2330,47 @@ https://psappdeploytoolkit.com
         Else {
             Try {
                 #  Update the window title
-                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle') }, $null, $null)
+                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $Script:ProgressWindow.SyncHash.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle') }, $null, $null)
                 #  Update the progress text
-                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
+                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $Script:ProgressWindow.SyncHash.ProgressText.Text = $statusMessage }, $null, $null)
                 #  Calculate the position on the screen where the progress dialog should be placed
                 if (!$NoRelocation) {
-                    $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] {
+                    $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] {
                         [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
                         [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
                         #  Set the start position of the Window based on the screen size
                         If ($windowLocation -eq 'TopLeft') {
-                            $script:ProgressSyncHash.Window.Left = [Double](0)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](0)
+                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'Top') {
-                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
+                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'TopRight') {
-                            $script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
-                            $script:ProgressSyncHash.Window.Top = [Double](0)
+                            $Script:ProgressWindow.SyncHash.Window.Left = ($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth)
+                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
                         }
                         ElseIf ($windowLocation -eq 'TopCenter') {
-                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 6)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
+                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight) / 6)
                         }
                         ElseIf ($windowLocation -eq 'BottomLeft') {
-                            $script:ProgressSyncHash.Window.Left = [Double](0)
-                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](0)
+                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight)
                         }
                         ElseIf ($windowLocation -eq 'Bottom') {
-                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
-                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
+                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight)
                         }
                         ElseIf ($windowLocation -eq 'BottomRight') {
-                            $script:ProgressSyncHash.Window.Left = ($screenWidth - $script:ProgressSyncHash.Window.ActualWidth)
-                            $script:ProgressSyncHash.Window.Top = ($screenHeight - $script:ProgressSyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
+                            $Script:ProgressWindow.SyncHash.Window.Left = ($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth)
+                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
                         }
                         Else {
                             #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                            $script:ProgressSyncHash.Window.Left = [Double](($screenWidth - $script:ProgressSyncHash.Window.ActualWidth) / 2)
-                            $script:ProgressSyncHash.Window.Top = [Double](($screenHeight - $script:ProgressSyncHash.Window.ActualHeight) / 2)
+                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
+                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight) / 2)
                         }
                     }, $null, $null)
                 }
