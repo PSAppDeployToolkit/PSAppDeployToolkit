@@ -1336,37 +1336,21 @@ https://psappdeploytoolkit.com
                     [String]$LegacyMsg += " [$ScriptSection]"
                 }
                 If ($Source) {
-                    [String]$ConsoleLogLine = "$LegacyMsg [$Source] :: $Msg"
-                    Switch ($Severity) {
-                        3 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Error] :: $Msg"
-                        }
-                        2 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Warning] :: $Msg"
-                        }
-                        1 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Info] :: $Msg"
-                        }
-                        0 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [$Source] [Success] :: $Msg"
-                        }
-                    }
+                    [String]$LegacyMsg += " [$Source]"
                 }
-                Else {
-                    [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
-                    Switch ($Severity) {
-                        3 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [Error] :: $Msg"
-                        }
-                        2 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [Warning] :: $Msg"
-                        }
-                        1 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [Info] :: $Msg"
-                        }
-                        0 {
-                            [String]$LegacyTextLogLine = "$LegacyMsg [Success] :: $Msg"
-                        }
+                [String]$ConsoleLogLine = "$LegacyMsg :: $Msg"
+                [String]$LegacyTextLogLine = Switch ($Severity) {
+                    3 {
+                        "$LegacyMsg [Error] :: $Msg"
+                    }
+                    2 {
+                        "$LegacyMsg [Warning] :: $Msg"
+                    }
+                    1 {
+                        "$LegacyMsg [Info] :: $Msg"
+                    }
+                    0 {
+                        "$LegacyMsg [Success] :: $Msg"
                     }
                 }
             }
