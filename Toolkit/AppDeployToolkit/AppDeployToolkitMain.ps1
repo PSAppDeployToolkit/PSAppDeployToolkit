@@ -1241,7 +1241,14 @@ https://psappdeploytoolkit.com
                 [Boolean]$ExitLoggingFunction = $true
                 #  If error creating directory, write message to console
                 If (-not $ContinueOnError) {
-                    Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to create the log directory [$LogFileDirectory]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+                    #  Only output using color options if running in a host which supports colors.
+                    If ($Host.UI.RawUI.ForegroundColor) {
+                        Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to create the log directory [$LogFileDirectory]. `r`n$(Resolve-Error)" -ForegroundColor 'Red' -BackgroundColor 'Black'
+                    }
+                    #  If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are converted to Write-Output calls so that they are included in the text log.
+                    Else {
+                        Write-Output -InputObject "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to create the log directory [$LogFileDirectory]. `r`n$(Resolve-Error)"
+                    }
                 }
                 Return
             }
@@ -1292,7 +1299,12 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+                If ($Host.UI.RawUI.ForegroundColor) {
+                    Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red' -BackgroundColor 'Black'
+                }
+                Else {
+                    Write-Output -InputObject "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to rotate the log file [$LogFilePath]. `r`n$(Resolve-Error)"
+                }
                 # Treat log rotation errors as non-terminating by default
                 If (-not $ContinueOnError) {
                     [Boolean]$ExitLoggingFunction = $true
@@ -1355,7 +1367,12 @@ https://psappdeploytoolkit.com
                 }
                 Catch {
                     If (-not $ContinueOnError) {
-                        Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
+                        If ($Host.UI.RawUI.ForegroundColor) {
+                            Write-Host -Object "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `r`n$(Resolve-Error)" -ForegroundColor 'Red' -BackgroundColor 'Black'
+                        }
+                        Else {
+                            Write-Output -InputObject "[$LogDate $LogTime] [$ScriptSection] [${CmdletName}] :: Failed to write message [$Msg] to the log file [$LogFilePath]. `r`n$(Resolve-Error)"
+                        }
                     }
                 }
             }
