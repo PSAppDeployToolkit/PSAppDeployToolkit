@@ -95,106 +95,6 @@ New-ADTSession @PSBoundParameters @sessionParams
 ## Variables: Reset/Remove Variables
 [Boolean]$instProgressRunning = $false
 
-## Variables: Resolve Parameters. For use in a pipeline
-filter Resolve-Parameters {
-    <#
-.SYNOPSIS
-
-Resolve the parameters of a function call to a string.
-
-.DESCRIPTION
-
-Resolve the parameters of a function call to a string.
-
-.PARAMETER Parameter
-
-The name of the function this function is invoked from.
-
-.INPUTS
-
-System.Object
-
-.OUTPUTS
-
-System.Object
-
-.EXAMPLE
-
-Resolve-Parameters -Parameter $PSBoundParameters | Out-String
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    Param (
-        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]$Parameter
-    )
-
-    Switch ($Parameter) {
-        {$_.Value -is [System.Management.Automation.SwitchParameter]} {
-            "-$($_.Key):`$$($_.Value.ToString().ToLower())"
-            break
-        }
-        {$_.Value -is [System.Boolean]} {
-            "-$($_.Key):`$$($_.Value.ToString().ToLower())"
-            break
-        }
-        {$_.Value -is [System.Int16]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Int32]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Int64]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.UInt16]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.UInt32]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.UInt64]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Single]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Double]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Decimal]} {
-            "-$($_.Key):$($_.Value)"
-            break
-        }
-        {$_.Value -is [System.Collections.IDictionary]} {
-            "-$($_.Key):'$(($_.Value.GetEnumerator() | Resolve-Parameters).Replace("'",'"') -join "', '")'"
-            break
-        }
-        {$_.Value -is [System.Collections.IEnumerable]} {
-            "-$($_.Key):'$($_.Value -join "', '")'"
-            break
-        }
-        default {
-            "-$($_.Key):'$($_.Value)'"
-            break
-        }
-    }
-}
-#endregion
 ##*=============================================
 ##* END VARIABLE DECLARATION
 ##*=============================================
@@ -231,15 +131,15 @@ Else {
 
 ## Evaluate non-default parameters passed to the scripts
 If (Test-Path -LiteralPath 'variable:deployAppScriptParameters') {
-    [String]$deployAppScriptParameters = ($deployAppScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+    [String]$deployAppScriptParameters = ($deployAppScriptParameters | Resolve-Parameters) -join ' '
 }
 #  Save main script parameters hashtable for async execution of the toolkit
 [Hashtable]$appDeployMainScriptAsyncParameters = $appDeployMainScriptParameters
 If ($appDeployMainScriptParameters) {
-    [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+    [String]$appDeployMainScriptParameters = ($appDeployMainScriptParameters | Resolve-Parameters) -join ' '
 }
 If ($appDeployExtScriptParameters) {
-    [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
+    [String]$appDeployExtScriptParameters = ($appDeployExtScriptParameters | Resolve-Parameters) -join ' '
 }
 
 ## Set the install phase to asynchronous if the script was not dot sourced, i.e. called with parameters
