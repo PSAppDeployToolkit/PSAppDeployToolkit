@@ -89,7 +89,7 @@ $sessionParams = @{
     DeployAppScriptDate = $(if (Test-Path -LiteralPath 'Variable:DeployAppScriptDate') {$DeployAppScriptDate})
     DeployAppScriptParameters = $(if (Test-Path -LiteralPath 'Variable:DeployAppScriptParameters') {$DeployAppScriptParameters})
 }
-New-ADTSession @PSBoundParameters @sessionParams
+Open-ADTSession @PSBoundParameters @sessionParams
 
 
 #---------------------------------------------------------------------------
