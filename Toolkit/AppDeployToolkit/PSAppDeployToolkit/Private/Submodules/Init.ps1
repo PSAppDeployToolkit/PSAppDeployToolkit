@@ -211,7 +211,48 @@ function Initialize-ADTVariableDatabase
     }))
 
     ## Variables: Hardware
-    $variables.Add('envSystemRAM', (Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object {[System.Math]::Round(($_.Sum / 1GB), 2)}))
+    $w32b = Get-CimInstance -ClassName Win32_BIOS
+    $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
+    $variables.Add('envHardwareType', $(if ($w32b.Version -match 'VRTUAL')
+    {
+        'Virtual:Hyper-V'
+    }
+    elseif ($w32b.Version -match 'A M I')
+    {
+        'Virtual:Virtual PC'
+    }
+    elseif ($w32b.Version -like '*Xen*')
+    {
+        'Virtual:Xen'
+    }
+    elseif ($w32b.SerialNumber -like '*VMware*')
+    {
+        'Virtual:VMWare'
+    }
+    elseif ($w32b.SerialNumber -like '*Parallels*')
+    {
+        'Virtual:Parallels'
+    }
+    elseif (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*'))
+    {
+        'Virtual:Hyper-V'
+    }
+    elseif ($w32cs.Manufacturer -like '*VMWare*')
+    {
+        'Virtual:VMWare'
+    }
+    elseif ($w32cs.Manufacturer -like '*Parallels*')
+    {
+        'Virtual:Parallels'
+    }
+    elseif ($w32cs.Model -like '*Virtual*')
+    {
+        'Virtual'
+    }
+    else
+    {
+        'Physical'
+    }))
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
