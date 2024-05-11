@@ -879,10 +879,10 @@ function Invoke-ADTAllUsersRegistryChange
 
     .EXAMPLE
     ```powershell
-    $HKCURegistrySettings = @(
-        @{Key = 'HKCU\Software\Microsoft\Office\14.0\Common'; Name = 'qmenable'; Value = 0; Type = 'DWord'}
-        @{Key = 'HKCU\Software\Microsoft\Office\14.0\Common'; Name = 'updatereliabilitydata'; Value = 1; Type = 'DWord'}
-    )
+    [ScriptBlock]$HKCURegistrySettings = {
+        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
+        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
+    }
 
     Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
     ```
@@ -895,7 +895,7 @@ function Invoke-ADTAllUsersRegistryChange
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [ADTRegistryObject[]]$RegistrySettings,
+        [System.Management.Automation.ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -907,8 +907,9 @@ function Invoke-ADTAllUsersRegistryChange
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-        # Convert registry settings into hashtable array for splatting.
-        $regSettings = $RegistrySettings.ToHashtable()
+        # Store the session's PSCmdlet here for use throughout process loop.
+        $callerSession = $Script:SessionCallers[$Script:ADT.CurrentSession].SessionState
+        $regScriptBlock = [System.Management.Automation.ScriptBlock]::Create(($RegistrySettings.ToString() -replace '\$UserProfile\.SID', '$args[0]'))
     }
 
     process {
@@ -950,11 +951,8 @@ function Invoke-ADTAllUsersRegistryChange
                 }
 
                 # Invoke changes against registry.
-                Write-ADTLogEntry -Message 'Executing operations to modify HKCU registry settings for all users.'
-                foreach ($regSetting in $regSettings)
-                {
-                    Set-RegistryKey @regSetting -SID $UserProfile.SID
-                }
+                Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
+                Invoke-ScriptBlockInSessionState -SessionState $callerSession -ScriptBlock $regScriptBlock -Arguments $UserProfile.SID
             }
             catch
             {
