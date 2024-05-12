@@ -102,14 +102,14 @@ class ADTSession
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
-        $this.LoggedOnUserTempPath = if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists("$(Split-Path -LiteralPath $env:PUBLIC)\$($Script:ADT.Environment.RunAsActiveUser.UserName)"))
+        $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory($(if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($Script:ADT.Environment.runasUserProfile))
         {
-            "$(Split-Path -LiteralPath $env:PUBLIC)\$($Script:ADT.Environment.RunAsActiveUser.UserName)\ExecuteAsUser"
+            "$($Script:ADT.Environment.runasUserProfile)\ExecuteAsUser"
         }
         else
         {
             "$($this.Properties.DirAppDeployTemp)\ExecuteAsUser"
-        }
+        })).FullName
     }
 
     hidden [System.String] GetLogSource()

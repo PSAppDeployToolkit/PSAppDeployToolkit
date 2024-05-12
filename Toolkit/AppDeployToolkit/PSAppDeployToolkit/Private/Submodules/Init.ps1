@@ -18,8 +18,9 @@ function Initialize-ADTVariableDatabase
 
     ## Variables: Culture
     $variables.Add('culture', [cultureinfo]$Host.CurrentCulture)
+    $variables.Add('uiculture', [cultureinfo]$Host.CurrentUICulture)
     $variables.Add('currentLanguage', [string]$variables.culture.TwoLetterISOLanguageName.ToUpper())
-    $variables.Add('currentUILanguage', [string]$Host.CurrentUICulture.TwoLetterISOLanguageName.ToUpper())
+    $variables.Add('currentUILanguage', [string]$variables.uiculture.TwoLetterISOLanguageName.ToUpper())
 
     ## Variables: Environment Variables
     $variables.Add('envShellFolders', [psobject](Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction Ignore))
@@ -134,7 +135,7 @@ function Initialize-ADTVariableDatabase
     $variables.Add('envOSProductType', [int32]$variables.envOS.ProductType)
     $variables.Add('IsServerOS', [boolean]($variables.envOSProductType -eq 3))
     $variables.Add('IsDomainControllerOS', [boolean]($variables.envOSProductType -eq 2))
-    $variables.Add('IsWorkStationOS', [boolean]($variables.envOSProductType -eq 1))
+    $variables.Add('IsWorkstationOS', [boolean]($variables.envOSProductType -eq 1))
     $variables.Add('IsMultiSessionOS', [boolean]($variables.envOSName -match '^Microsoft Windows \d+ Enterprise (for Virtual Desktops|Enterprise Multi-Session)$'))
     $variables.Add('envOSProductTypeName', [string]$(switch ($variables.envOSProductType) {
         3 { 'Server' }
@@ -276,6 +277,11 @@ function Initialize-ADTVariableDatabase
             $variables.LoggedOnUserSessions | Where-Object {$_.IsActiveUserSession}
         }
     }))
+
+    # Variables: User profile information.
+    $variables.Add('dirUserProfile', [string](Split-Path -LiteralPath $variables.envPublic))
+    $variables.Add('userProfileName', [string]$variables.RunAsActiveUser.UserName)
+    $variables.Add('runasUserProfile', [string](Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
 
     ## Variables: Executables
     $variables.Add('exeWusa', [string]"$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
