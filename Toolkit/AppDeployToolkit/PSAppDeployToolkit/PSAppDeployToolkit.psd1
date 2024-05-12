@@ -85,7 +85,7 @@ FunctionsToExport = @(
 	'Execute-MSP'
 	'Execute-Process'
 	'Execute-ProcessAsUser'
-	'Get-FileVersion'
+	'Get-ADTFileVersion'
 	'Get-ADTFreeDiskSpace'
 	'Get-IniValue'
 	'Get-ADTInstalledApplication'

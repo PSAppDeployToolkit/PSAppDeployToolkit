@@ -468,104 +468,60 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-FileVersion {
+function Get-ADTFileVersion
+{
     <#
-.SYNOPSIS
 
-Gets the version of the specified file
+    .SYNOPSIS
+    Gets the version of the specified file
 
-.DESCRIPTION
+    .DESCRIPTION
+    Gets the version of the specified file
 
-Gets the version of the specified file
+    .PARAMETER File
+    Path of the file
 
-.PARAMETER File
+    .PARAMETER ProductVersion
+    Switch that makes the command return ProductVersion instead of FileVersion
 
-Path of the file
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ProductVersion
+    .OUTPUTS
+    System.String. Returns the version of the specified file.
 
-Switch that makes the command return ProductVersion instead of FileVersion
+    .EXAMPLE
+    Get-ADTFileVersion -File "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the version of the specified file.
-
-.EXAMPLE
-
-Get-FileVersion -File "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$File,
+        [ValidateScript({if (!$_.VersionInfo) {throw "The file does not exist or does not have any version info."}; $_.VersionInfo})]
+        [System.IO.FileInfo]$File,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$ProductVersion,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.Management.Automation.SwitchParameter]$ProductVersion
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message "Getting version info for file [$file]."
 
-            If (Test-Path -LiteralPath $File -PathType 'Leaf') {
-                $fileVersionInfo = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo
-                If ($ProductVersion) {
-                    $fileVersion = $fileVersionInfo.ProductVersion
-                }
-                Else {
-                    $fileVersion = $fileVersionInfo.FileVersion
-                }
-
-                If ($fileVersion) {
-                    If ($ProductVersion) {
-                        Write-ADTLogEntry -Message "Product version is [$fileVersion]."
-                    }
-                    Else {
-                        Write-ADTLogEntry -Message "File version is [$fileVersion]."
-                    }
-
-                    Write-Output -InputObject ($fileVersion)
-                }
-                Else {
-                    Write-ADTLogEntry -Message 'No version information found.'
-                }
-            }
-            Else {
-                Throw "File path [$file] does not exist."
-            }
+    process {
+        if ($ProductVersion)
+        {
+            Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
+            return $File.VersionInfo.ProductVersion
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to get version info. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to get version info: $($_.Exception.Message)"
-            }
-        }
+        Write-ADTLogEntry -Message "File version is [$($File.VersionInfo.FileVersion)]."
+        return $File.VersionInfo.FileVersion
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
