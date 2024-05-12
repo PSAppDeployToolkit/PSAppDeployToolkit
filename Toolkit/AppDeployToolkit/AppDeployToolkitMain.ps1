@@ -290,3 +290,27 @@ function Get-FreeDiskSpace
         }
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Remove-ADTInvalidFileNameChars
+#
+#---------------------------------------------------------------------------
+
+function Remove-InvalidFileNameChars
+{
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [AllowEmptyString()]
+        [System.String]$Name
+    )
+
+    begin {
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Remove-ADTInvalidFileNameChars] instead." -Severity 2
+    }
+
+    end {
+        $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
+    }
+}

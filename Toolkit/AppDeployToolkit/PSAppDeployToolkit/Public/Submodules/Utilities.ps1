@@ -4,64 +4,52 @@
 #
 #---------------------------------------------------------------------------
 
-Function Remove-InvalidFileNameChars {
+function Remove-ADTInvalidFileNameChars
+{
     <#
-.SYNOPSIS
 
-Remove invalid characters from the supplied string.
+    .SYNOPSIS
+    Remove invalid characters from the supplied string.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Remove invalid characters from the supplied string and returns a valid filename as a string.
 
-Remove invalid characters from the supplied string and returns a valid filename as a string.
+    .PARAMETER Name
+    Text to remove invalid filename characters from.
 
-.PARAMETER Name
+    .INPUTS
+    System.String. A string containing invalid filename characters.
 
-Text to remove invalid filename characters from.
+    .OUTPUTS
+    System.String. Returns the input string with the invalid characters removed.
 
-.INPUTS
+    .EXAMPLE
+    Remove-ADTInvalidFileNameChars -Name "Filename/\1"
 
-System.String
+    .NOTES
+    This functions always returns a string however it can be empty if the name only contains invalid characters.
+    Do no use this command for an entire path as '\' is not a valid filename character.
 
-A string containing invalid filename characters.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.OUTPUTS
+    #>
 
-System.String
-
-Returns the input string with the invalid characters removed.
-
-.EXAMPLE
-
-Remove-InvalidFileNameChars -Name "Filename/\1"
-
-.NOTES
-
-This functions always returns a string however it can be empty if the name only contains invalid characters.
-Do no use this command for an entire path as '\' is not a valid filename character.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyString()]
-        [String]$Name
+        [System.String]$Name
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        Try {
-            Write-Output -InputObject (([Char[]]$Name | Where-Object { $Script:ADT.Environment.invalidFileNameChars -notcontains $_ }) -join '')
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to remove invalid characters from the supplied filename. `r`n$(Resolve-Error)" -Severity 3
-        }
+
+    process {
+        return $Name.Trim() -replace $Script:ADT.Environment.InvalidFileNameCharsRegExPattern
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }

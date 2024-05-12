@@ -237,13 +237,12 @@ class ADTSession
         }
 
         # Sanitize the application details, as they can cause issues in the script.
-        $invalidChars = "($([regex]::Escape([System.IO.Path]::GetInvalidFileNameChars() -join '|')))"
-        $this.Properties.AppVendor = $this.Properties.AppVendor.Trim() -replace $invalidChars
-        $this.Properties.AppName = $this.Properties.AppName.Trim() -replace $invalidChars
-        $this.Properties.AppVersion = $this.Properties.AppVersion.Trim() -replace $invalidChars
-        $this.Properties.AppArch = $this.Properties.AppArch.Trim() -replace $invalidChars
-        $this.Properties.AppLang = $this.Properties.AppLang.Trim() -replace $invalidChars
-        $this.Properties.AppRevision = $this.Properties.AppRevision.Trim() -replace $invalidChars
+        $this.Properties.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppVendor
+        $this.Properties.AppName = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppName
+        $this.Properties.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppVersion
+        $this.Properties.AppArch = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppArch
+        $this.Properties.AppLang = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppLang
+        $this.Properties.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppRevision
     }
 
     hidden [System.Void] SetInstallProperties()

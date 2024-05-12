@@ -330,11 +330,12 @@ function Initialize-ADTVariableDatabase
     $variables.Add('exeMsiexec', "$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
     $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
 
-    ## Variables: RegEx Patterns
-    $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
-
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
+
+    ## Variables: RegEx Patterns
+    $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
+    $variables.Add('InvalidFileNameCharsRegExPattern', "($([System.String]::Join('|', $variables.invalidFileNameChars.ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications

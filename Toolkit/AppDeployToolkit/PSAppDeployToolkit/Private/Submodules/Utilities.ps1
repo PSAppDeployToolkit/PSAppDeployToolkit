@@ -97,7 +97,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## Remove invalid characters from the supplied filename
-            $DestinationArchiveFileName = Remove-InvalidFileNameChars -Name $DestinationArchiveFileName
+            $DestinationArchiveFileName = Remove-ADTInvalidFileNameChars -Name $DestinationArchiveFileName
             If ($DestinationArchiveFileName.length -eq 0) {
                 Throw 'Invalid filename characters replacement resulted into an empty string.'
             }
