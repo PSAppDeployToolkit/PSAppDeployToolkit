@@ -245,10 +245,10 @@ https://psappdeploytoolkit.com
             If (-not $LogName) {
                 If ($productCodeNameVersion) {
                     If ($productCodeNameVersion.Publisher) {
-                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                     Else {
-                        $LogName = (Remove-InvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
+                        $LogName = (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' ', ''
                     }
                 }
                 Else {

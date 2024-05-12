@@ -128,7 +128,7 @@ Export-ModuleMember -Function @(
     'Remove-File'
     'Remove-FileFromUserProfiles'
     'Remove-Folder'
-    'Remove-InvalidFileNameChars'
+    'Remove-ADTInvalidFileNameChars'
     'Remove-MSIApplications'
     'Remove-RegistryKey'
     'Resolve-Error'
