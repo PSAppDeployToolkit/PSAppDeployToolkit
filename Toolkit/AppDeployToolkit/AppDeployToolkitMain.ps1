@@ -217,3 +217,57 @@ function Exit-Script
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Close-ADTSession] instead." -Severity 2
     Close-ADTSession @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Invoke-ADTAllUsersRegistryChange
+#
+#---------------------------------------------------------------------------
+
+function Invoke-HKCURegistrySettingsForAllUsers
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$RegistrySettings,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSObject[]]$UserProfiles
+    )
+
+    # Announce overall deprecation.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Invoke-ADTAllUsersRegistryChange] instead." -Severity 2
+
+    # Get all valid statements out of the scrptblock's AST.
+    # To be strict, we only support Set-RegistryKey statements.
+    $statements = $RegistrySettings.Ast.FindAll({($args[0] -is [System.Management.Automation.Language.CommandAst]) -and ($args[0].Parent.ToString().StartsWith('Set-RegistryKey'))}, $true)
+
+    # If we haven't found any statements, throw as there's nothing to invoke.
+    if (!$statements.Count)
+    {
+        throw [System.InvalidOperationException]::new("Unable to find any valid registry statements in the -RegistrySettings value.")
+    }
+
+    # Process the statements into valid objects for the underlying function.
+    $PSBoundParameters.RegistrySettings = foreach ($statement in $statements)
+    {
+        # Open collector object to return at the end.
+        $regSetting = @{}
+
+        # Loop through each parameter and build out its value.
+        foreach ($parameter in $statement.CommandElements.Where({($_ -is [System.Management.Automation.Language.CommandParameterAst]) -and ($_.ParameterName -ne 'SID')}))
+        {
+            $regSetting.Add($parameter.ParameterName, $statement.CommandElements[$statement.CommandElements.IndexOf($parameter)+1].Value)
+        }
+
+        # Output the built object. We don't need to cast it
+        # as PowerShell's type system will automatically do it.
+        $regSetting
+    }
+
+    # Pass through to correct function.
+    Invoke-ADTAllUsersRegistryChange @PSBoundParameters
+}
+
