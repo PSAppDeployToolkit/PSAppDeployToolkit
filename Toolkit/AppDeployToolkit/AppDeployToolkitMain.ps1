@@ -66,6 +66,19 @@ Open-ADTSession @PSBoundParameters @sessionParams
 
 #---------------------------------------------------------------------------
 #
+# Legacy aliases that need to be refactored.
+#
+#---------------------------------------------------------------------------
+
+Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
+Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
+Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop'
+Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables'
+if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'}
+
+
+#---------------------------------------------------------------------------
+#
 # Wrapper around Write-ADTLogEntry
 #
 #---------------------------------------------------------------------------
