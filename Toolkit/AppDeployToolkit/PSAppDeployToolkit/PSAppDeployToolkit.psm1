@@ -32,13 +32,6 @@ Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationF
 # Dot-source our imports.
 (Get-ChildItem -Path $PSScriptRoot\*\*.ps1).FullName.ForEach({. $_})
 
-# Define aliases for certain module functions. These need to disappear.
-Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop'
-Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables'
-if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'}
-
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
     CurrentSession = $null
