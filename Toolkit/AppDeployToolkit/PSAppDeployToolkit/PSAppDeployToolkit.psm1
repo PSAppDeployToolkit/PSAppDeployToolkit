@@ -103,7 +103,7 @@ Export-ModuleMember -Function @(
     'Execute-Process'
     'Execute-ProcessAsUser'
     'Get-FileVersion'
-    'Get-FreeDiskSpace'
+    'Get-ADTFreeDiskSpace'
     'Get-IniValue'
     'Get-InstalledApplication'
     'Get-LoggedOnUser'

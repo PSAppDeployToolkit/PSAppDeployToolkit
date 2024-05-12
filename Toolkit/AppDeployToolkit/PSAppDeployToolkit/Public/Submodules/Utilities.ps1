@@ -75,78 +75,52 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-FreeDiskSpace {
+function Get-ADTFreeDiskSpace
+{
     <#
-.SYNOPSIS
 
-Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+    .SYNOPSIS
+    Retrieves the free disk space in MB on a particular drive (defaults to system drive)
 
-.DESCRIPTION
+    .DESCRIPTION
+    Retrieves the free disk space in MB on a particular drive (defaults to system drive)
 
-Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+    .PARAMETER Drive
+    Drive to check free disk space on
 
-.PARAMETER Drive
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Drive to check free disk space on
+    .OUTPUTS
+    System.Double. Returns the free disk space in MB
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    Get-ADTFreeDiskSpace -Drive 'C:'
 
-Continue if an error is encountered. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.Double
-
-Returns the free disk space in MB
-
-.EXAMPLE
-
-Get-FreeDiskSpace -Drive 'C:'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$Drive = $env:SystemDrive,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+    param (
+        [ValidateScript({if (!$_.TotalSize) {throw "The specified drive does not exist or has no media loaded."}; $_.TotalSize})]
+        [System.IO.DriveInfo]$Drive = $env:SystemDrive
     )
 
-    Begin {
+    begin {
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
-            $disk = Get-WmiObject -Class 'Win32_LogicalDisk' -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
-            [Double]$freeDiskSpace = [Math]::Round($disk.FreeSpace / 1MB)
 
-            Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
-            Write-Output -InputObject ($freeDiskSpace)
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive]. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to retrieve free disk space for drive [$Drive]: $($_.Exception.Message)"
-            }
-        }
+    process {
+        Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
+        $freeDiskSpace = [System.Math]::Round($Drive.AvailableFreeSpace / 1MB)
+        Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
+        return $freeDiskSpace
     }
-    End {
+
+    end {
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
