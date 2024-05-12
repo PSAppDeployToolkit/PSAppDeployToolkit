@@ -102,7 +102,7 @@ FunctionsToExport = @(
 	'Get-WindowTitle'
 	'Install-MSUpdates'
 	'Install-SCCMSoftwareUpdates'
-	'Invoke-HKCURegistrySettingsForAllUsers'
+	'Invoke-ADTAllUsersRegistryChange'
 	'Invoke-RegisterOrUnregisterDLL'
 	'Invoke-SCCMTask'
 	'New-Folder'
