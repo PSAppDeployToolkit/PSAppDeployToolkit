@@ -348,6 +348,7 @@ class ADTSession
 
     hidden [System.Void] LogScriptInfo()
     {
+        # Announce provided deployment script info.
         if ($this.Properties.AppScriptVersion)
         {
             $this.WriteLogEntry("[$($this.Properties.InstallName)] script version is [$($this.Properties.AppScriptVersion)]")
@@ -369,7 +370,15 @@ class ADTSession
             $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]")
         }
         $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]")
-        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.LegacyMode)]")
+
+        # Announce session instantiation mode.
+        if ($this.LegacyMode)
+        {
+            $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session mode is [Legacy]. This mode is deprecated and will be removed in a future release.", 2)
+            $this.WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2)
+            return
+        }
+        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session mode is [Native].")
     }
 
     hidden [System.Void] LogSystemInfo()
