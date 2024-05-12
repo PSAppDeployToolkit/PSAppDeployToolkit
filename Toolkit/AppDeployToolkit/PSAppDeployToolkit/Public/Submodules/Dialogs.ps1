@@ -959,7 +959,7 @@ https://psappdeploytoolkit.com
         ## Check disk space requirements if specified
         If ($CheckDiskSpace) {
             Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
-            [Double]$freeDiskSpace = Get-FreeDiskSpace
+            [Double]$freeDiskSpace = Get-ADTFreeDiskSpace
             If ($RequiredDiskSpace -eq 0) {
                 Try {
                     #  Determine the size of the Files folder

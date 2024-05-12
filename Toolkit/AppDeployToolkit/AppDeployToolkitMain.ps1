@@ -258,3 +258,35 @@ function Get-HardwarePlatform
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [`$envHardwareType] instead." -Severity 2
     return $envHardwareType
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTFreeDiskSpace
+#
+#---------------------------------------------------------------------------
+
+function Get-FreeDiskSpace
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Drive,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTFreeDiskSpace] instead." -Severity 2
+    try
+    {
+        Get-ADTFreeDiskSpace @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
