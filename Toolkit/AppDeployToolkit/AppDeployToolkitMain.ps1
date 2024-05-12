@@ -340,3 +340,40 @@ function Get-InstalledApplication
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTInstalledApplication] instead." -Severity 2
     Get-ADTInstalledApplication @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTFileVersion
+#
+#---------------------------------------------------------------------------
+
+function Get-FileVersion
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$File,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ProductVersion,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTFileVersion] instead." -Severity 2
+    try
+    {
+        Get-ADTFileVersion @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
