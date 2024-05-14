@@ -158,6 +158,6 @@ Export-ModuleMember -Function @(
     'Unblock-AppExecution'
     'Update-ADTDesktop'
     'Update-GroupPolicy'
-    'Update-SessionEnvironmentVariables'
+    'Update-ADTSessionEnvironmentVariables'
     'Write-ADTLogEntry'
 )

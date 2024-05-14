@@ -54,7 +54,6 @@ Open-ADTSession @sessionParams
 
 Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
 Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables'
 if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'}
 
 
@@ -437,3 +436,36 @@ function Update-Desktop
 }
 
 Set-Alias -Name Refresh-Desktop -Value Update-Desktop
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Update-ADTSessionEnvironmentVariables
+#
+#---------------------------------------------------------------------------
+
+function Update-SessionEnvironmentVariables
+{
+    param (
+        [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Update-ADTSessionEnvironmentVariables] instead." -Severity 2
+    try
+    {
+        Update-ADTSessionEnvironmentVariables
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
+
+Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTSessionEnvironmentVariables
