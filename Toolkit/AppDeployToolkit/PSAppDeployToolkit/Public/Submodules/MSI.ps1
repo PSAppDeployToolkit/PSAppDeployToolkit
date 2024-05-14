@@ -475,7 +475,7 @@ https://psappdeploytoolkit.com
                 Execute-Process @ExecuteProcessSplat
             }
             #  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
-            Update-Desktop
+            Update-ADTDesktop
         }
         Else {
             Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."

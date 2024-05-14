@@ -492,65 +492,39 @@ function Get-ADTFileVersion
 #
 #---------------------------------------------------------------------------
 
-Function Update-Desktop {
+function Update-ADTDesktop
+{
     <#
-.SYNOPSIS
 
-Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
+    .SYNOPSIS
+    Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 
-Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ContinueOnError
+    .OUTPUTS
+    None. This function does not return objects.
 
-Continue if an error is encountered. Default is: $true.
+    .EXAMPLE
+    Update-ADTDesktop
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None. This function does not return objects.
-
-.EXAMPLE
-
-Update-Desktop
-
-.NOTES
-
-This function has an alias: Refresh-Desktop
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
-    )
-
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message 'Refreshing the Desktop and the Windows Explorer environment process block.'
-            [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to refresh the Desktop and the Windows Explorer environment process block: $($_.Exception.Message)"
-            }
-        }
+
+    process {
+        [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }

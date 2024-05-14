@@ -54,7 +54,6 @@ Open-ADTSession @sessionParams
 
 Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
 Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop'
 Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables'
 if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'}
 
@@ -407,3 +406,34 @@ function Get-UserProfiles
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTUserProfiles] instead." -Severity 2
     Get-ADTUserProfiles @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTDesktop
+#
+#---------------------------------------------------------------------------
+
+function Update-Desktop
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTDesktop] instead." -Severity 2
+    try
+    {
+        Get-ADTDesktop
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
+
+Set-Alias -Name Refresh-Desktop -Value Update-Desktop
