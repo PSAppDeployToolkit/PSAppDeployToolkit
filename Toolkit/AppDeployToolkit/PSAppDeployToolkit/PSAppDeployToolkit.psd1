@@ -140,7 +140,7 @@ FunctionsToExport = @(
 	'Test-RegistryValue'
 	'Test-ServiceExists'
 	'Unblock-AppExecution'
-	'Update-Desktop'
+	'Update-ADTDesktop'
 	'Update-GroupPolicy'
 	'Update-SessionEnvironmentVariables'
 	'Write-ADTLogEntry'
