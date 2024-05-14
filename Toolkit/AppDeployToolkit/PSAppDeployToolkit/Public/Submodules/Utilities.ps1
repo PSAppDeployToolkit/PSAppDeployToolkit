@@ -536,97 +536,73 @@ function Update-ADTDesktop
 #
 #---------------------------------------------------------------------------
 
-Function Update-SessionEnvironmentVariables {
+function Update-ADTSessionEnvironmentVariables
+{
     <#
-.SYNOPSIS
 
-Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
+    .SYNOPSIS
+    Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Environment variable changes that take place during script execution are not visible to the current PowerShell session.
 
-Environment variable changes that take place during script execution are not visible to the current PowerShell session.
+    Use this function to refresh the current PowerShell session with all environment variable settings.
 
-Use this function to refresh the current PowerShell session with all environment variable settings.
+    .PARAMETER LoadLoggedOnUserEnvironmentVariables
+    If script is running in SYSTEM context, this option allows loading environment variables from the active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
 
-.PARAMETER LoadLoggedOnUserEnvironmentVariables
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-If script is running in SYSTEM context, this option allows loading environment variables from the active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
+    .OUTPUTS
+    None. This function does not return objects.
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    Update-ADTSessionEnvironmentVariables
 
-Continue if an error is encountered. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None. This function does not return objects.
-
-.EXAMPLE
-
-Update-SessionEnvironmentVariables
-
-.NOTES
-
-This function has an alias: Refresh-SessionEnvironmentVariables
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Switch]$LoadLoggedOnUserEnvironmentVariables = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+    param (
+        [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables
     )
 
-    Begin {
+    begin {
+        # Store the session's PSCmdlet here for use throughout function.
         Write-DebugHeader
+        $callerSession = $Script:SessionCallers[$Script:ADT.CurrentSession].SessionState
 
-        [ScriptBlock]$GetEnvironmentVar = {
-            Param (
-                $Key,
-                $Scope
-            )
-            [Environment]::GetEnvironmentVariable($Key, $Scope)
+        # Determine the user SID to base things off of.
+        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser)
+        {
+            $Script:ADT.Environment.RunAsActiveUser.SID
+        }
+        else
+        {
+            [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
         }
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
 
-            If ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser) {
-                [String]$CurrentUserEnvironmentSID = $Script:ADT.Environment.RunAsActiveUser.SID
+    process {
+        # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
+        Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
+        Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
+            Invoke-ScriptBlockInSessionState -SessionState $callerSession -Arguments $_ -ScriptBlock {
+                $args[0].PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
+                    Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
+                })
             }
-            Else {
-                [String]$CurrentUserEnvironmentSID = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-            }
-            [String]$MachineEnvironmentVars = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
-            [String]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
-
-            ## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-            $MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $Script:ADT.Environment.envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $Script:ADT.Environment.envRegPath -Name $_).$_ } }
-
-            ## Set PATH environment variable separately because it is a combination of the user and machine environment variables
-            [String[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';').Split(';').Trim().Trim('"') } | Select-Object -Unique
-            $env:PATH = $PathFolders -join ';'
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to refresh the environment variables for this PowerShell session: $($_.Exception.Message)"
-            }
+
+        # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
+        Invoke-ScriptBlockInSessionState -SessionState $callerSession -Arguments ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique))) -ScriptBlock {
+            Set-Item -LiteralPath "Env:PATH" -Value $args[0]
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }

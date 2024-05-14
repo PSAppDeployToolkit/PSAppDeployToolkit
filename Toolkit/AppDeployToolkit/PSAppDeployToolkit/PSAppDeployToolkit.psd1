@@ -142,7 +142,7 @@ FunctionsToExport = @(
 	'Unblock-AppExecution'
 	'Update-ADTDesktop'
 	'Update-GroupPolicy'
-	'Update-SessionEnvironmentVariables'
+	'Update-ADTSessionEnvironmentVariables'
 	'Write-ADTLogEntry'
 )
 
