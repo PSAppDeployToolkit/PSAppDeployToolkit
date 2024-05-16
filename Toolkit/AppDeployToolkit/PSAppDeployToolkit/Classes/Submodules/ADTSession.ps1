@@ -99,11 +99,8 @@ class ADTSession
         $this.Properties.CurrentDate = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%d-%m-%Y'
         $this.Properties.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.Properties.CurrentDateTime)
 
-        # Process provided parameters.
-        $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
+        # Process provided parameters and amend some incoming values.
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
-
-        # Amend some incoming parameters to ensure there's no undefined behaviour.
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
         if ($null -eq $this.Properties.AppExitCodes) {$this.Properties.AppExitCodes = 0, 1641, 3010}
@@ -124,6 +121,9 @@ class ADTSession
         {
             "$($this.Properties.DirAppDeployTemp)\ExecuteAsUser"
         })).FullName
+
+        # Lastly, store the caller's $PSCmdlet in our global table. Do this last in case any of the above fails.
+        $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
     }
 
     hidden [System.Void] DetectDefaultMsi()
