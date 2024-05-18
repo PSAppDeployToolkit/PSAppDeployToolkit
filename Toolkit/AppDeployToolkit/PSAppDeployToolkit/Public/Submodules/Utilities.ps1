@@ -1996,7 +1996,7 @@ https://psappdeploytoolkit.com
                         Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID -Recurse
                     }
                 }
-                Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)
+                Invoke-ADTAllUsersRegistryChange -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)
                 Return
             }
 

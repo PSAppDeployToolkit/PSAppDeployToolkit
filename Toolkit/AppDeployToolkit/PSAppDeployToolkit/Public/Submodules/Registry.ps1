@@ -28,7 +28,7 @@ Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
 .PARAMETER DisableFunctionLogging
 
@@ -175,7 +175,7 @@ Specify the registry key value to check the existence of.
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
 .PARAMETER Wow6432Node
 
@@ -295,7 +295,7 @@ Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
 .PARAMETER ReturnEmptyKeyIfExists
 
@@ -520,7 +520,7 @@ Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit syst
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
 .PARAMETER ContinueOnError
 
@@ -702,7 +702,7 @@ Delete registry key recursively.
 
 The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Specify this parameter from the Invoke-HKCURegistrySettingsForAllUsers function to read/edit HKCU registry settings for all users on the system.
+Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
 .PARAMETER ContinueOnError
 
@@ -870,11 +870,11 @@ function Invoke-ADTAllUsersRegistryChange
     .EXAMPLE
     ```powershell
     [ScriptBlock]$HKCURegistrySettings = {
-        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
-        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $UserProfile.SID
+        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
+        Set-RegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
     }
 
-    Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
+    Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
     ```
 
     .LINK
@@ -895,8 +895,6 @@ function Invoke-ADTAllUsersRegistryChange
     begin {
         # Store the session's PSCmdlet here for use throughout process loop.
         Write-DebugHeader
-        $callerSession = $Script:SessionCallers[$Script:ADT.CurrentSession].SessionState
-        $regScriptBlock = [System.Management.Automation.ScriptBlock]::Create(($RegistrySettings.ToString() -replace '\$UserProfile\.SID', '$args[0]'))
     }
 
     process {
@@ -939,11 +937,11 @@ function Invoke-ADTAllUsersRegistryChange
 
                 # Invoke changes against registry.
                 Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                Invoke-ScriptBlockInSessionState -SessionState $callerSession -ScriptBlock $regScriptBlock -Arguments $UserProfile.SID
+                ForEach-Object -InputObject $UserProfile -Process $RegistrySettings
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(Resolve-Error)" -Severity 3
             }
             finally
             {
