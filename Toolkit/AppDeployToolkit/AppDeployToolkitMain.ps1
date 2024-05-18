@@ -222,7 +222,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 {
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({if ($_ -match '\$UserProfile\.SID') {throw "The function [Invoke-HKCURegistrySettingsForAllUsers] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead."}; ![System.String]::IsNullOrWhiteSpace($_)})]
         [System.Management.Automation.ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
