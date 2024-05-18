@@ -227,7 +227,7 @@ function Initialize-ADTVariableDatabase
     }
     elseif ($w32b.SerialNumber -like '*VMware*')
     {
-        'Virtual:VMWare'
+        'Virtual:VMware'
     }
     elseif ($w32b.SerialNumber -like '*Parallels*')
     {
@@ -239,7 +239,7 @@ function Initialize-ADTVariableDatabase
     }
     elseif ($w32cs.Manufacturer -like '*VMWare*')
     {
-        'Virtual:VMWare'
+        'Virtual:VMware'
     }
     elseif ($w32cs.Manufacturer -like '*Parallels*')
     {
