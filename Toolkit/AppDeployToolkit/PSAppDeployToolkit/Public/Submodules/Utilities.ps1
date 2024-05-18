@@ -376,13 +376,13 @@ function Get-ADTUserProfiles
     begin {
         Write-DebugHeader
         $userProfileListRegKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
-        $excludedSids = if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}
+        $excludedSids = "^($([System.String]::Join('|', $(if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}; 'S-1-5-82'))))"
     }
 
     process {
         # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
         Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
-        Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$excludedSids -notcontains $_.PSChildName} | ForEach-Object {
+        Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
             # Return early for accounts that have a null NTAccount.
             if (!($ntAccount = ConvertTo-NTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
             {
