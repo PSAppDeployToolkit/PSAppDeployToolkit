@@ -119,17 +119,53 @@ function Initialize-ADTVariableDatabase
         $variables.envMachineWorkgroup = $w32csd.ToUpper()
     }
 
+    # Get the OS Architecture.
+    $variables.Add('Is64Bit', (Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64)
+    $variables.Add('envOSArchitecture', $(if ($variables.Is64Bit) {'x64'} else {'x86'}))
+
+    ## Variables: Current Process Architecture
+    $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
+    $variables.Add('psArchitecture', $(if ($variables.Is64BitProcess) {'x64'} else {'x86'}))
+
+    ## Variables: Get normalised paths that vary depending on process bitness.
+    if ($variables.Is64Bit)
+    {
+        if ($variables.Is64BitProcess)
+        {
+            $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
+            $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
+            $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
+            $variables.Add('envSYSWOW64Directory', [System.IO.Path]::Combine($Env:windir, 'SysWOW64'))
+        }
+        else
+        {
+            $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
+            $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
+            $variables.Add('envSysNativeDirectory', [System.IO.Path]::Combine($Env:windir, 'sysnative'))
+            $variables.Add('envSYSWOW64Directory', [System.Environment]::SystemDirectory)
+        }
+        $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
+        $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetFolderPath('CommonProgramFilesX86'))
+    }
+    else
+    {
+        $variables.Add('envProgramFiles', [Environment]::GetFolderPath('ProgramFiles'))
+        $variables.Add('envProgramFilesX86', [System.String]::Empty)
+        $variables.Add('envCommonProgramFiles', [Environment]::GetFolderPath('CommonProgramFiles'))
+        $variables.Add('envCommonProgramFilesX86', [System.String]::Empty)
+        $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
+        $variables.Add('envSYSWOW64Directory', [System.String]::Empty)
+    }
+
     ## Variables: Operating System
-    $regVer = Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
     $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
-    $variables.Add('envOSVersion', [version]$variables.envOS.Version)
+    $variables.Add('envOSVersion', [version][System.Diagnostics.FileVersionInfo]::GetVersionInfo([System.IO.Path]::Combine($variables.envSysNativeDirectory, 'ntoskrnl.exe')).ProductVersion)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
     $variables.Add('envOSVersionBuild', $variables.envOSVersion.Build)
-    $variables.Add('envOSVersionRevision', $(if ($regVer | Get-Member -Name UBR) {$regVer.UBR} elseif ($regVer | Get-Member -Name BuildLabEx) {$regVer.BuildLabEx.Split('.')[1]}))
-    $variables.envOSVersion = if ($variables.envOSVersionRevision) {"$($variables.envOSVersion.ToString()).$($variables.envOSVersionRevision)"} else {$variables.envOSVersion.ToString()}
+    $variables.Add('envOSVersionRevision', $variables.envOSVersion.Revision)
 
     # Get the operating system type.
     $variables.Add('envOSProductType', $variables.envOS.ProductType)
@@ -143,48 +179,6 @@ function Initialize-ADTVariableDatabase
         1 { 'Workstation' }
         default { 'Unknown' }
     }))
-
-    # Get the OS Architecture.
-    $variables.Add('Is64Bit', (Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64)
-    $variables.Add('envOSArchitecture', $(if ($variables.Is64Bit) {'x64'} else {'x86'}))
-
-    ## Variables: Current Process Architecture
-    $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', $(if ($variables.Is64BitProcess) {'x64'} else {'x86'}))
-
-    ## Variables: Get Normalized ProgramFiles and CommonProgramFiles Paths
-    if ($variables.Is64Bit)
-    {
-        if ($variables.Is64BitProcess)
-        {
-            $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
-            $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
-        }
-        else
-        {
-            $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
-            $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
-        }
-
-        ## PowerShell 2 doesn't support x86 folders so need to use variables instead
-        try
-        {
-            $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
-            $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetFolderPath('CommonProgramFilesX86'))
-        }
-        catch
-        {
-            $variables.Add('envProgramFilesX86', [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))
-            $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetEnvironmentVariable('CommonProgramFiles(x86)'))
-        }
-    }
-    else
-    {
-        $variables.Add('envProgramFiles', [Environment]::GetFolderPath('ProgramFiles'))
-        $variables.Add('envProgramFilesX86', [System.String]::Empty)
-        $variables.Add('envCommonProgramFiles', [Environment]::GetFolderPath('CommonProgramFiles'))
-        $variables.Add('envCommonProgramFilesX86', [System.String]::Empty)
-    }
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
@@ -259,20 +253,20 @@ function Initialize-ADTVariableDatabase
     $variables.Add('envPSProcessPath', "$PSHOME\$(if ($PSVersionTable.PSEdition.Equals('Core')) {'pwsh.exe'} else {'powershell.exe'})")
 
     # PowerShell Version
-    $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion.ToString())
-    $variables.Add('envPSVersionMajor', $variables.envPSVersionTable.PSVersion.Major)
-    $variables.Add('envPSVersionMinor', $variables.envPSVersionTable.PSVersion.Minor)
-    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Build')) {$variables.envPSVersionTable.PSVersion.Build}))
-    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersionTable.PSVersion.PSObject.Properties.Name.Contains('Revision')) {$variables.envPSVersionTable.PSVersion.Revision}))
+    $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion)
+    $variables.Add('envPSVersionMajor', $variables.envPSVersion.Major)
+    $variables.Add('envPSVersionMinor', $variables.envPSVersion.Minor)
+    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Build')) {$variables.envPSVersionTable.PSVersion.Build}))
+    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Revision')) {$variables.envPSVersionTable.PSVersion.Revision}))
 
     # CLR (.NET) Version used by Windows PowerShell
     if ($variables.envPSVersionTable.ContainsKey('CLRVersion'))
     {
-        $variables.Add('envCLRVersion', $variables.envPSVersionTable.CLRVersion.ToString())
-        $variables.Add('envCLRVersionMajor', $variables.envPSVersionTable.CLRVersion.Major)
-        $variables.Add('envCLRVersionMinor', $variables.envPSVersionTable.CLRVersion.Minor)
-        $variables.Add('envCLRVersionBuild', $variables.envPSVersionTable.CLRVersion.Build)
-        $variables.Add('envCLRVersionRevision', $variables.envPSVersionTable.CLRVersion.Revision)
+        $variables.Add('envCLRVersion', $variables.envPSVersionTable.CLRVersion)
+        $variables.Add('envCLRVersionMajor', $variables.envCLRVersion.Major)
+        $variables.Add('envCLRVersionMinor', $variables.envCLRVersion.Minor)
+        $variables.Add('envCLRVersionBuild', $variables.envCLRVersion.Build)
+        $variables.Add('envCLRVersionRevision', $variables.envCLRVersion.Revision)
     }
     else
     {
