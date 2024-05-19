@@ -456,30 +456,3 @@ function Import-ADTConfig
     # Finally, store the config globally for usage within module.
     $Script:ADT.Config = $config
 }
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Invoke-ScriptBlockInSessionState
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SessionState]$SessionState,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$ScriptBlock,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Object[]]$Arguments
-    )
-
-    # Get unbound scriptblock from the provided scriptblock's AST, then invoke it within the provided session.
-    return $ExecutionContext.InvokeCommand.InvokeScript($SessionState, $ScriptBlock.Ast.GetScriptBlock(), $Arguments).Where({$null -ne $_})
-}

@@ -570,11 +570,8 @@ function Update-ADTSessionEnvironmentVariables
     )
 
     begin {
-        # Store the session's PSCmdlet here for use throughout function.
-        Write-DebugHeader
-        $callerSession = $Script:SessionCallers[$Script:ADT.CurrentSession].SessionState
-
         # Determine the user SID to base things off of.
+        Write-DebugHeader
         $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser)
         {
             $Script:ADT.Environment.RunAsActiveUser.SID
@@ -589,17 +586,13 @@ function Update-ADTSessionEnvironmentVariables
         # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
         Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
         Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
-            Invoke-ScriptBlockInSessionState -SessionState $callerSession -Arguments $_ -ScriptBlock {
-                $args[0].PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
-                    Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
-                })
-            }
+            $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
+                Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
+            })
         }
 
         # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-        Invoke-ScriptBlockInSessionState -SessionState $callerSession -Arguments ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique))) -ScriptBlock {
-            Set-Item -LiteralPath "Env:PATH" -Value $args[0]
-        }
+        Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique)))
     }
 
     end {
