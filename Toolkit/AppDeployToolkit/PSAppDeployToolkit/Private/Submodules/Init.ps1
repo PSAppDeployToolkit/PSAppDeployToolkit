@@ -182,7 +182,7 @@ function Initialize-ADTVariableDatabase
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
-    $variables.envOfficeVars.PSObject.Properties.Remove('PSProvider')
+    if ($variables.envOfficeVars) {$variables.envOfficeVars.PSObject.Properties.Remove('PSProvider')}
     $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
     $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
 
