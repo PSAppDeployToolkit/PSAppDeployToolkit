@@ -947,7 +947,7 @@ https://psappdeploytoolkit.com
 
             ## Remove the XML scheduled task file
             If (Test-Path -LiteralPath $xmlSchTaskFilePath -PathType 'Leaf') {
-                Remove-File -Path $xmlSchTaskFilePath
+                Remove-ADTFile -Path $xmlSchTaskFilePath
             }
 
             ##  Remove the temporary folder

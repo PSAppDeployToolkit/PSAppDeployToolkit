@@ -530,146 +530,133 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Remove-File {
+function Remove-ADTFile
+{
     <#
-.SYNOPSIS
 
-Removes one or more items from a given path on the filesystem.
+    .SYNOPSIS
+    Removes one or more items from a given path on the filesystem.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Removes one or more items from a given path on the filesystem.
 
-Removes one or more items from a given path on the filesystem.
+    .PARAMETER Path
+    Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
 
-.PARAMETER Path
+    .PARAMETER LiteralPath
+    Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
-Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+    .PARAMETER Recurse
+    Deletes the files in the specified location(s) and in all child items of the location(s).
 
-.PARAMETER LiteralPath
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER Recurse
+    .EXAMPLE
+    Remove-ADTFile -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
 
-Deletes the files in the specified location(s) and in all child items of the location(s).
+    .EXAMPLE
+    Remove-ADTFile -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
 
-.PARAMETER ContinueOnError
+    .NOTES
+    This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
-Continue if an error is encountered. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Remove-File -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
-
-.EXAMPLE
-
-Remove-File -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
-        [ValidateNotNullorEmpty()]
-        [String[]]$Path,
-        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullorEmpty()]
-        [String[]]$LiteralPath,
-        [Parameter(Mandatory = $false)]
-        [Switch]$Recurse = $false,
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$LiteralPath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+        }
         Write-DebugHeader
     }
-    Process {
-        ## Build hashtable of parameters/value pairs to be passed to Remove-Item cmdlet
-        [Hashtable]$RemoveFileSplat = @{ 'Recurse' = $Recurse
-                                          'Force'                                = $true
-                                          'ErrorVariable'                        = '+ErrorRemoveItem'
-        }
-        If ($ContinueOnError) {
-            $RemoveFileSplat.Add('ErrorAction', 'Ignore')
-        }
-        Else {
-            $RemoveFileSplat.Add('ErrorAction', 'Stop')
-        }
 
-        ## Resolve the specified path, if the path does not exist, display a warning instead of an error
-        If ($PSCmdlet.ParameterSetName -eq 'Path') {
-            [String[]]$SpecifiedPath = $Path
-        }
-        Else {
-            [String[]]$SpecifiedPath = $LiteralPath
-        }
-        ForEach ($Item in $SpecifiedPath) {
-            Try {
-                If ($PSCmdlet.ParameterSetName -eq 'Path') {
-                    [String[]]$ResolvedPath += Resolve-Path -Path $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
+    process {
+        foreach ($Item in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
+        {
+            # Resolve the specified path, if the path does not exist, display a warning instead of an error
+            try
+            {
+                $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
+                {
+                    (Resolve-Path -Path $Item).Path
                 }
-                Else {
-                    [String[]]$ResolvedPath += Resolve-Path -LiteralPath $Item -ErrorAction 'Stop' | Where-Object { $_.Path } | Select-Object -ExpandProperty 'Path' -ErrorAction 'Stop'
-                }
-            }
-            Catch [System.Management.Automation.ItemNotFoundException] {
-                Write-ADTLogEntry -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2
-            }
-            Catch {
-                Write-ADTLogEntry -Message "Failed to resolve file(s) for deletion in path [$Item]. `r`n$(Resolve-Error)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to resolve file(s) for deletion in path [$Item]: $($_.Exception.Message)"
+                else
+                {
+                    (Resolve-Path -LiteralPath $Item).Path
                 }
             }
-        }
+            catch [System.Management.Automation.ItemNotFoundException]
+            {
+                Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
+                continue
+            }
+            catch [System.Management.Automation.DriveNotFoundException]
+            {
+                Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
+                continue
+            }
+            catch
+            {
+                Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-Error)" -Severity 3
+                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                {
+                    throw
+                }
+                continue
+            }
 
-        ## Delete specified path if it was successfully resolved
-        If ($ResolvedPath) {
-            ForEach ($Item in $ResolvedPath) {
-                Try {
-                    If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
-                    }
-                    ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
+            # Delete specified path if it was successfully resolved.
+            try
+            {
+                if (Test-Path -LiteralPath $Item -PathType Container)
+                {
+                    if (!$Recurse)
+                    {
                         Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
-                        Continue
+                        continue
                     }
-                    Else {
-                        Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
-                    }
-                    $null = Remove-Item @RemoveFileSplat -LiteralPath $Item
+                    Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
                 }
-                Catch {
-                    Write-ADTLogEntry -Message "Failed to delete file(s) in path [$Item]. `r`n$(Resolve-Error)" -Severity 3
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
-                    }
+                else
+                {
+                    Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                }
+                [System.Void](Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force)
+            }
+            catch
+            {
+                Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-Error)" -Severity 3
+                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                {
+                    throw
                 }
             }
-        }
-
-        If ($ErrorRemoveItem) {
-            Write-ADTLogEntry -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
@@ -980,7 +967,7 @@ https://psappdeploytoolkit.com
                 $RemoveFileSplat.LiteralPath = $LiteralPath | ForEach-Object { Join-Path $UserProfilePath $_ }
                 Write-ADTLogEntry -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:"
             }
-            Remove-File @RemoveFileSplat
+            Remove-ADTFile @RemoveFileSplat
         }
     }
     End {

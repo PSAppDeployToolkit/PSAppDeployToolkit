@@ -469,3 +469,42 @@ function Update-SessionEnvironmentVariables
 }
 
 Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTSessionEnvironmentVariables
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Remove-ADTFile
+#
+#---------------------------------------------------------------------------
+
+function Remove-File
+{
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$LiteralPath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Remove-ADTFile] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Remove-ADTFile @PSBoundParameters
+}
