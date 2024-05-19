@@ -18,7 +18,7 @@ Function Copy-ContentToCache {
     This function is provided as a template to copy the toolkit content to a cache folder on the local machine and set the $dirFiles directory to the cache path.
     This can be used in the absence of an Endpoint Management solution that provides a managed cache for source files, e.g. Intune is lacking this functionality whereas ConfigMgr includes this functionality.
     Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
-    This can be done using [Remove-File -Path "$Script:ADT.Config.Toolkit.CachePath\$installName" -Recurse -ContinueOnError $true]
+    This can be done using [Remove-ADTFile -Path "$Script:ADT.Config.Toolkit.CachePath\$installName" -Recurse -ContinueOnError $true]
 
 .LINK
     https://psappdeploytoolkit.com

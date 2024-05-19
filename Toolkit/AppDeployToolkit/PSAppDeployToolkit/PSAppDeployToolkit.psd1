@@ -109,7 +109,7 @@ FunctionsToExport = @(
 	'New-MsiTransform'
 	'New-Shortcut'
 	'Remove-ContentFromCache'
-	'Remove-File'
+	'Remove-ADTFile'
 	'Remove-FileFromUserProfiles'
 	'Remove-Folder'
 	'Remove-ADTInvalidFileNameChars'

@@ -168,7 +168,7 @@ https://psappdeploytoolkit.com
 
             If (Test-Path -Path $FullPath -PathType 'Leaf') {
                 Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
-                Remove-File -Path $FullPath
+                Remove-ADTFile -Path $FullPath
             }
 
             Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
