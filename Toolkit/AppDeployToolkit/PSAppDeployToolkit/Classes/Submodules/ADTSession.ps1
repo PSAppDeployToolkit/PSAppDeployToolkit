@@ -368,7 +368,7 @@ class ADTSession
         }
         if ($this.Properties.DeployAppScriptParameters.Count)
         {
-            $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]")
+            $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-ADTBoundParameters)]")
         }
         $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]")
 
