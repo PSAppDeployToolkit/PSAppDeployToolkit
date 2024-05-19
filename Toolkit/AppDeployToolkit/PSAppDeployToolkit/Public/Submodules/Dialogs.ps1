@@ -158,7 +158,7 @@ https://psappdeploytoolkit.com
             # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
             $installPromptParameters.Remove('NoWait')
             # Format the parameters as a string
-            [String]$installPromptParameters = $installPromptParameters | Resolve-Parameters
+            [String]$installPromptParameters = $installPromptParameters | Resolve-ADTBoundParameters
             Export-ADTModuleState
             Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $installPromptParameters)" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
@@ -454,7 +454,7 @@ https://psappdeploytoolkit.com
             Close-InstallationProgress
         }
 
-        [String]$installPromptLoggedParameters = $installPromptParameters | Resolve-Parameters
+        [String]$installPromptLoggedParameters = $installPromptParameters | Resolve-ADTBoundParameters
         Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]."
 
 
@@ -1424,7 +1424,7 @@ https://psappdeploytoolkit.com
             $installRestartPromptParameters.Remove('NoSilentRestart')
             $installRestartPromptParameters.Remove('SilentCountdownSeconds')
             ## Prepare a list of parameters of this function as a string
-            [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-Parameters
+            [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-ADTBoundParameters
             ## Start another powershell instance silently with function parameters from this function
             Export-ADTModuleState
             Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $installRestartPromptParameters)" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
