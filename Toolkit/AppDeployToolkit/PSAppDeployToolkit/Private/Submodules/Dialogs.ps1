@@ -77,7 +77,7 @@ Returns the user's selection.
 
 .EXAMPLE
 
-Show-WelcomePrompt -ProcessDescriptions 'Lotus Notes, Microsoft Word' -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
+Show-WelcomePrompt -ProcessDescriptions 'Microsoft Word' -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
 
 .NOTES
 

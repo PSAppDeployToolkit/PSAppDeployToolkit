@@ -1176,49 +1176,6 @@ https://psappdeploytoolkit.com
             }
         }
 
-        ## Force nsd.exe to stop if Notes is one of the required applications to close
-        If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
-            ## Get the path where Notes is installed
-            [String]$notesPath = Get-Item -LiteralPath $Script:ADT.Environment.regKeyLotusNotes -ErrorAction 'Ignore' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
-
-            ## Ensure we aren't running as a Local System Account and Notes install directory was found
-            If (!$Script:ADT.Environment.IsLocalSystemAccount -and $notesPath) {
-                #  Get a list of all the executables in the Notes folder
-                [string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
-                ## Check for running Notes executables and run NSD if any are found
-                $notesPathExes | ForEach-Object {
-                    If ((Get-Process | Select-Object -ExpandProperty 'Name') -contains $_) {
-                        [String]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
-                        Try {
-                            If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
-                                Write-ADTLogEntry -Message "Executing [$notesNSDExecutable] with the -kill argument..."
-                                [Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'Ignore'
-
-                                If (-not $notesNSDProcess.WaitForExit(10000)) {
-                                    Write-ADTLogEntry -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process."
-                                    Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
-                                }
-                            }
-                        }
-                        Catch {
-                            Write-ADTLogEntry -Message "Failed to launch [$notesNSDExecutable]. `r`n$(Resolve-Error)"
-                        }
-
-                        Write-ADTLogEntry -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]."
-
-                        #  Force NSD process to stop in case the previous command was not successful
-                        Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
-                    }
-                }
-            }
-
-            #  Strip all Notes processes from the process list except notes.exe, because the other notes processes (e.g. notes2.exe) may be invoked by the Notes installation, so we don't want to block their execution.
-            If ($notesPathExes) {
-                [Array]$processesIgnoringNotesExceptions = Compare-Object -ReferenceObject ($processObjects | Select-Object -ExpandProperty 'ProcessName' | Sort-Object) -DifferenceObject $notesPathExes -IncludeEqual | Where-Object { ($_.SideIndicator -eq '<=') -or ($_.InputObject -eq 'notes') } | Select-Object -ExpandProperty 'InputObject'
-                [Array]$processObjects = $processObjects | Where-Object { $processesIgnoringNotesExceptions -contains $_.ProcessName }
-            }
-        }
-
         ## If block execution switch is true, call the function to block execution of these processes
         If ($BlockExecution) {
             #  Make this variable globally available so we can check whether we need to call Unblock-AppExecution

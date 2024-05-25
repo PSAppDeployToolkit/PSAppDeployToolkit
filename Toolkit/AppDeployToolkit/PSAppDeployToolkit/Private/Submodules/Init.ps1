@@ -334,7 +334,6 @@ function Initialize-ADTVariableDatabase
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications
     $variables.Add('regKeyApplications', ('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
-    $variables.Add('regKeyLotusNotes', "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64BitProcess) {'Wow6432Node\'})Lotus\Notes")
     $variables.Add('regKeyAppExecution', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
 
     # Add in WScript shell variables.
