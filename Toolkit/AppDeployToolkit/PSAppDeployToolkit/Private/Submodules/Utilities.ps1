@@ -453,7 +453,7 @@ function Get-ADTRunningProcesses
             Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -DebugMessage:$DisableLogging
             $runningProcesses = Get-Process -Name $processObjects.ProcessName -ErrorAction Ignore | ForEach-Object {
                 $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object -Property ProcessName -EQ -Value $_.ProcessName).ProcessDescription)))
+                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | Where-Object -Property ProcessName -EQ -Value $_.ProcessName | Select-Object -ExpandProperty ProcessDescription -ErrorAction Ignore)))
                     {
                         # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
                         $objDescription
