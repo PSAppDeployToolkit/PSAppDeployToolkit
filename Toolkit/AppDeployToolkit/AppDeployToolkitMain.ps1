@@ -628,3 +628,52 @@ function Show-InstallationProgress
     }
     Show-ADTInstallationProgress @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTDialogBox
+#
+#---------------------------------------------------------------------------
+
+function Show-DialogBox
+{
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Text,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
+        [System.String]$Buttons,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('First', 'Second', 'Third')]
+        [System.String]$DefaultButton,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Exclamation', 'Information', 'None', 'Stop', 'Question')]
+        [System.String]$Icon,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Timeout,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$TopMost
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTDialogBox] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('TopMost'))
+    {
+        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        [System.Void]$PSBoundParameters.Remove('TopMost')
+    }
+    Show-ADTDialogBox @PSBoundParameters
+}

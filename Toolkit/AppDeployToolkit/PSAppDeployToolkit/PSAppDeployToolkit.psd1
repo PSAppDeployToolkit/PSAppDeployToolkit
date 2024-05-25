@@ -132,7 +132,7 @@ FunctionsToExport = @(
     'Set-ServiceStartMode'
     'Set-Shortcut'
     'Show-BalloonTip'
-    'Show-DialogBox'
+    'Show-ADTDialogBox'
     'Show-HelpConsole'
     'Show-ADTInstallationProgress'
     'Show-ADTInstallationPrompt'

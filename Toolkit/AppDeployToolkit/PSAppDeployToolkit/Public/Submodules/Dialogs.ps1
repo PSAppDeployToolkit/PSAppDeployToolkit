@@ -447,187 +447,140 @@ function Show-ADTInstallationPrompt
 #
 #---------------------------------------------------------------------------
 
-Function Show-DialogBox {
+function Show-ADTDialogBox
+{
     <#
-.SYNOPSIS
 
-Display a custom dialog box with optional title, buttons, icon and timeout.
+    .SYNOPSIS
+    Display a custom dialog box with optional title, buttons, icon and timeout.
 
-Show-ADTInstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
+    Show-ADTInstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Display a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None
 
-Display a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None
+    .PARAMETER Text
+    Text in the message dialog box
 
-.PARAMETER Text
+    .PARAMETER Title
+    Title of the message dialog box
 
-Text in the message dialog box
+    .PARAMETER Buttons
+    Buttons to be included on the dialog box. Options: OK, OKCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel, CancelTryAgainContinue. Default: OK.
 
-.PARAMETER Title
+    .PARAMETER DefaultButton
+    The Default button that is selected. Options: First, Second, Third. Default: First.
 
-Title of the message dialog box
+    .PARAMETER Icon
+    Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information. Default: None
 
-.PARAMETER Buttons
+    .PARAMETER Timeout
+    Timeout period in seconds before automatically closing the dialog box with the return message "Timeout". Default: UI timeout value set in the config XML file.
 
-Buttons to be included on the dialog box. Options: OK, OKCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel, CancelTryAgainContinue. Default: OK.
+    .PARAMETER TopMost
+    Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
 
-.PARAMETER DefaultButton
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-The Default button that is selected. Options: First, Second, Third. Default: First.
+    .OUTPUTS
+    System.String. Returns the text of the button that was clicked.
 
-.PARAMETER Icon
+    .EXAMPLE
+    Show-ADTDialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
 
-Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information. Default: None
+    .EXAMPLE
+    Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
 
-.PARAMETER Timeout
+    .LINK
+    https://psappdeploytoolkit.com
 
-Timeout period in seconds before automatically closing the dialog box with the return message "Timeout". Default: UI timeout value set in the config XML file.
+    #>
 
-.PARAMETER TopMost
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Text,
 
-Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the text of the button that was clicked.
-
-.EXAMPLE
-
-Show-DialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
-
-.EXAMPLE
-
-Show-DialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box')]
-        [ValidateNotNullorEmpty()]
-        [String]$Text,
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
-        [String]$Buttons = 'OK',
+        [System.String]$Buttons = 'OK',
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('First', 'Second', 'Third')]
-        [String]$DefaultButton = 'First',
+        [System.String]$DefaultButton = 'First',
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('Exclamation', 'Information', 'None', 'Stop', 'Question')]
-        [String]$Icon = 'None',
+        [System.String]$Icon = 'None',
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+
         [Parameter(Mandatory = $false)]
-        [Boolean]$TopMost = $true
+        [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Begin {
+    begin {
+        $dialogButtons = @{
+            OK = 0
+            OKCancel = 1
+            AbortRetryIgnore = 2
+            YesNoCancel = 3
+            YesNo = 4
+            RetryCancel = 5
+            CancelTryAgainContinue = 6
+        }
+        $dialogIcons = @{
+            None = 0
+            Stop = 16
+            Question = 32
+            Exclamation = 48
+            Information = 64
+        }
+        $dialogDefaultButton = @{
+            First = 0
+            Second = 256
+            Third = 512
+        }
+
         Write-DebugHeader
     }
-    Process {
-        #  Bypass if in silent mode
-        If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-ADTLogEntry -Message "Bypassing Show-DialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text"
-            Return
+
+    process {
+        # Bypass if in silent mode.
+        if ($Script:ADT.CurrentSession.DeployModeSilent)
+        {
+            Write-ADTLogEntry -Message "Bypassing Show-ADTDialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text"
+            return
         }
 
         Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
-
-        [Hashtable]$dialogButtons = @{
-            'OK'                     = 0
-            'OKCancel'               = 1
-            'AbortRetryIgnore'       = 2
-            'YesNoCancel'            = 3
-            'YesNo'                  = 4
-            'RetryCancel'            = 5
-            'CancelTryAgainContinue' = 6
+        $result = switch ($Script:ADT.Environment.Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + (4096 * !$NotTopMost))))
+        {
+            1 {'OK'; break}
+            2 {'Cancel'; break}
+            3 {'Abort'; break}
+            4 {'Retry'; break}
+            5 {'Ignore'; break}
+            6 {'Yes'; break}
+            7 {'No'; break}
+            10 {'Try Again'; break}
+            11 {'Continue'; break}
+            -1 {'Timeout'; break}
+            default {'Unknown'; break}
         }
 
-        [Hashtable]$dialogIcons = @{
-            'None'        = 0
-            'Stop'        = 16
-            'Question'    = 32
-            'Exclamation' = 48
-            'Information' = 64
-        }
-
-        [Hashtable]$dialogDefaultButton = @{
-            'First'  = 0
-            'Second' = 256
-            'Third'  = 512
-        }
-
-        Switch ($TopMost) {
-            $true {
-                $dialogTopMost = 4096
-            }
-            $false {
-                $dialogTopMost = 0
-            }
-        }
-
-        $response = $Script:ADT.Environment.Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + $dialogTopMost))
-
-        Switch ($response) {
-            1 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: OK'
-                Write-Output -InputObject ('OK')
-            }
-            2 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Cancel'
-                Write-Output -InputObject ('Cancel')
-            }
-            3 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Abort'
-                Write-Output -InputObject ('Abort')
-            }
-            4 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Retry'
-                Write-Output -InputObject ('Retry')
-            }
-            5 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Ignore'
-                Write-Output -InputObject ('Ignore')
-            }
-            6 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Yes'
-                Write-Output -InputObject ('Yes')
-            }
-            7 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: No'
-                Write-Output -InputObject ('No')
-            }
-            10 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Try Again'
-                Write-Output -InputObject ('Try Again')
-            }
-            11 {
-                Write-ADTLogEntry -Message 'Dialog Box Response: Continue'
-                Write-Output -InputObject ('Continue')
-            }
-            -1 {
-                Write-ADTLogEntry -Message 'Dialog Box Timed Out...'
-                Write-Output -InputObject ('Timeout')
-            }
-        }
+        Write-ADTLogEntry -Message "Dialog Box Response: $result"
+        return $result
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
