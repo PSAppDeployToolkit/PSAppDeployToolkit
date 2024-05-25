@@ -943,6 +943,16 @@ function Show-ADTInstallationWelcome
                 # Get all unique running process descriptions.
                 $runningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
 
+                # Define parameters for welcome prompt.
+                $promptParams = @{
+                    ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
+                    ForceCountdown = $ForceCountdown
+                    PersistPrompt = $PersistPrompt
+                    NoMinimizeWindows =$NoMinimizeWindows
+                    CustomText = $CustomText
+                    NotTopMost = $NotTopMost
+                }
+
                 # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 if ($AllowDefer)
                 {
@@ -954,13 +964,15 @@ function Show-ADTInstallationWelcome
                     elseif (($promptResult -ne 'Close') -or ($runningProcessDescriptions -and ($promptResult -ne 'Continue')))
                     {
                         # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
-                        [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal -ForceCloseAppsCountdown (!!$ForceCloseAppsCountdown) -ForceCountdown $ForceCountdown -PersistPrompt $PersistPrompt -AllowDefer -DeferTimes $deferTimes -DeferDeadline $deferDeadlineUniversal -MinimizeWindows (!$NoMinimizeWindows) -CustomText:$CustomText -TopMost (!$NotTopMost)
+                        $deferParams = @{AllowDefer = $true; DeferTimes = $deferTimes}
+                        if ($deferDeadlineUniversal) {$deferParams.Add('DeferDeadline', $deferDeadlineUniversal)}
+                        [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
                     }
                 }
                 elseif (($runningProcessDescriptions) -or !!$forceCountdown)
                 {
                     # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
-                    [String]$promptResult = Show-WelcomePrompt -ProcessDescriptions $runningProcessDescriptions -CloseAppsCountdown $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal -ForceCloseAppsCountdown (!!$ForceCloseAppsCountdown) -ForceCountdown $ForceCountdown -PersistPrompt $PersistPrompt -MinimizeWindows (!$NoMinimizeWindows) -CustomText:$CustomText -TopMost (!$NotTopMost)
+                    [String]$promptResult = Show-ADTWelcomePrompt @promptParams
                 }
                 else
                 {
@@ -1067,7 +1079,7 @@ function Show-ADTInstallationWelcome
                         Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
                     }
 
-                    # Dispose the welcome prompt timer here because if we dispose it within the Show-WelcomePrompt function we risk resetting the timer and missing the specified timeout period.
+                    # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
                     if ($Script:ADT.CurrentSession.State.WelcomeTimer)
                     {
                         try
