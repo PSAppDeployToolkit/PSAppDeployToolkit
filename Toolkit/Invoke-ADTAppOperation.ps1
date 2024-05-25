@@ -298,7 +298,7 @@ catch
     $mainExitCode = 60001
     $mainErrorMessage = "$(Resolve-Error)"
     Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
-    Show-DialogBox -Text $mainErrorMessage -Icon Stop
+    [System.Void](Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop)
 }
 finally
 {

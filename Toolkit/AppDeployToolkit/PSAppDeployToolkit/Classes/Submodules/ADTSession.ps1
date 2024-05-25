@@ -588,7 +588,7 @@ class ADTSession
         {
             $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
             $this.WriteLogEntry($adminErr, 3)
-            Show-DialogBox -Text $adminErr -Icon Stop
+            Show-ADTDialogBox -Text $adminErr -Icon Stop
             throw [System.UnauthorizedAccessException]::new($adminErr)
         }
     }
