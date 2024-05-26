@@ -76,7 +76,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -113,7 +113,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -202,7 +202,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -278,7 +278,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -367,7 +367,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -444,7 +444,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -512,7 +512,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -543,7 +543,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -611,7 +611,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -653,6 +653,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

@@ -117,7 +117,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -246,7 +246,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -381,7 +381,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -516,7 +516,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -589,7 +589,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -678,6 +678,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

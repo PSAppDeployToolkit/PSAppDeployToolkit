@@ -219,7 +219,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         ## Initialize variable indicating whether $Path variable is a Product Code or not
@@ -485,7 +485,7 @@ https://psappdeploytoolkit.com
         If ($PassThru) {
             Write-Output -InputObject ($ExecuteResults)
         }
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -554,7 +554,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         ## If the MSP is in the Files directory, set the full path to the MSP
@@ -616,6 +616,9 @@ https://psappdeploytoolkit.com
                 Execute-MSI -Action 'Patch' -Path $Path
             }
         }
+    }
+    End {
+        Write-ADTDebugFooter
     }
 }
 
@@ -801,7 +804,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
@@ -963,7 +966,7 @@ https://psappdeploytoolkit.com
         If ($PassThru) {
             Write-Output -InputObject ($ExecuteResults)
         }
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1057,7 +1060,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         ## Define properties for how the MSI database is opened
         [Int32]$msiOpenDatabaseModeReadOnly = 0
@@ -1175,7 +1178,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1305,7 +1308,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -1422,7 +1425,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1500,7 +1503,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -1548,6 +1551,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

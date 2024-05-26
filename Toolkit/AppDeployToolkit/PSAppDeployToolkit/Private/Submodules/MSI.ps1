@@ -44,7 +44,7 @@ function Get-ADTMsiExitCodeMessage
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -55,7 +55,7 @@ function Get-ADTMsiExitCodeMessage
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -138,7 +138,7 @@ function Test-ADTIsMutexAvailable
         $IsUnhandledException = $false
         $IsMutexFree = $false
         [System.Threading.Mutex]$OpenExistingMutex = $null
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process
@@ -207,6 +207,6 @@ function Test-ADTIsMutexAvailable
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

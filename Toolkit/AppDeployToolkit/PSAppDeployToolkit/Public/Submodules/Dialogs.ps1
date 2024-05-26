@@ -123,7 +123,7 @@ function Show-ADTInstallationPrompt
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -436,7 +436,7 @@ function Show-ADTInstallationPrompt
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -549,7 +549,7 @@ function Show-ADTDialogBox
             Third = 512
         }
 
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -581,7 +581,7 @@ function Show-ADTDialogBox
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -783,7 +783,7 @@ function Show-ADTInstallationWelcome
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -1130,7 +1130,7 @@ function Show-ADTInstallationWelcome
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1210,7 +1210,7 @@ function Show-ADTInstallationRestartPrompt
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -1534,7 +1534,7 @@ function Show-ADTInstallationRestartPrompt
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1612,7 +1612,7 @@ function Show-ADTBalloonTip
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -1696,7 +1696,7 @@ function Show-ADTBalloonTip
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1837,7 +1837,7 @@ function Show-ADTInstallationProgress
             }
         }
 
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -1922,7 +1922,7 @@ function Show-ADTInstallationProgress
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 

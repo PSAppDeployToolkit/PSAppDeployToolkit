@@ -4,7 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
-function Write-DebugHeader
+function Write-ADTDebugHeader
 {
     Write-ADTLogEntry -Message 'Function Start' -Source ($caller = Get-Variable -Name MyInvocation -Scope 1 -ValueOnly).MyCommand.Name -DebugMessage
     if ($CmdletBoundParameters = $caller.BoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String)
@@ -24,7 +24,7 @@ function Write-DebugHeader
 #
 #---------------------------------------------------------------------------
 
-function Write-DebugFooter
+function Write-ADTDebugFooter
 {
     Write-ADTLogEntry -Message 'Function End' -Source (Get-Variable -Name MyInvocation -Scope 1 -ValueOnly).MyCommand.Name -DebugMessage
 }

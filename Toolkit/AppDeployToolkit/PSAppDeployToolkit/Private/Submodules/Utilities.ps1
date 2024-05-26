@@ -84,7 +84,7 @@ function ConvertTo-ADTNTAccountOrSID
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -157,7 +157,7 @@ function ConvertTo-ADTNTAccountOrSID
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -211,7 +211,7 @@ function Get-ADTRunningProcesses
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     end {
@@ -251,7 +251,7 @@ function Get-ADTRunningProcesses
                 Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
             }
         }
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -304,7 +304,7 @@ function Get-ADTPEFileArchitecture
         [System.Int32]$MACHINE_OFFSET = 4
         [System.Int32]$PE_POINTER_OFFSET = 60
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -347,7 +347,7 @@ function Get-ADTPEFileArchitecture
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 

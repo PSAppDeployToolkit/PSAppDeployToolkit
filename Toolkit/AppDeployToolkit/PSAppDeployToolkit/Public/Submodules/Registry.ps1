@@ -76,7 +76,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         ## Convert the registry key hive to the full path, only match if at the beginning of the line
@@ -142,7 +142,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -220,7 +220,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
@@ -256,7 +256,7 @@ https://psappdeploytoolkit.com
         Write-Output -InputObject ($IsRegistryValueExists)
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -374,7 +374,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -473,7 +473,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -588,7 +588,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -665,7 +665,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -757,7 +757,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -826,7 +826,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -894,7 +894,7 @@ function Invoke-ADTAllUsersRegistryChange
 
     begin {
         # Store the session's PSCmdlet here for use throughout process loop.
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -977,6 +977,6 @@ function Invoke-ADTAllUsersRegistryChange
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
