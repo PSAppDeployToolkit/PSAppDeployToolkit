@@ -118,7 +118,7 @@ function New-ADTSession
     }
 
     # Export environment variables to the user's scope.
-    $Script:ADT.Environment.GetEnumerator().ForEach({$Cmdlet.SessionState.PSVariable.Set([psvariable]::new($_.Name, $_.Value, 'ReadOnly'))})
+    $Script:ADT.Environment.GetEnumerator().ForEach({$Cmdlet.SessionState.PSVariable.Set([psvariable]::new($_.Name, $_.Value, 'Constant'))})
 }
 
 
