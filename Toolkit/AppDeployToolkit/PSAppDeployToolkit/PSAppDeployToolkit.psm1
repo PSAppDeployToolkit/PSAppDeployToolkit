@@ -163,7 +163,7 @@ Export-ModuleMember -Function @(
     'Set-Shortcut'
     'Show-ADTBalloonTip'
     'Show-ADTDialogBox'
-    'Show-HelpConsole'
+    'Show-ADTHelpConsole'
     'Show-ADTInstallationProgress'
     'Show-ADTInstallationPrompt'
     'Show-ADTInstallationRestartPrompt'
