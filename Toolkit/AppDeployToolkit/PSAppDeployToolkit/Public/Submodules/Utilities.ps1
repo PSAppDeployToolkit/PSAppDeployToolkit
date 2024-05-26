@@ -984,7 +984,7 @@ https://psappdeploytoolkit.com
                     $PinExists = Test-Path -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
                     If (($Action -eq 'PinToTaskbar') -and ($PinExists)) {
-                        If ($(Invoke-ObjectMethod -InputObject $Script:ADT.Environment.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
+                        If ($(Invoke-ADTObjectMethod -InputObject $Script:ADT.Environment.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
                             Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] already exists."
                             Return
                         }
@@ -1000,8 +1000,8 @@ https://psappdeploytoolkit.com
                     $specialKey = $shellKey.CreateSubKey('{:}', $true)
                     $specialKey.SetValue('ExplorerCommandHandler', $ExplorerCommandHandler)
 
-                    $Folder = Invoke-ObjectMethod -InputObject $Script:ADT.Environment.ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
-                    $Item = Invoke-ObjectMethod -InputObject $Folder -MethodName 'ParseName' -ArgumentList $(Split-Path -Path $FilePath -Leaf)
+                    $Folder = Invoke-ADTObjectMethod -InputObject $Script:ADT.Environment.ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
+                    $Item = Invoke-ADTObjectMethod -InputObject $Folder -MethodName 'ParseName' -ArgumentList $(Split-Path -Path $FilePath -Leaf)
 
                     $Item.InvokeVerb('{:}')
 
