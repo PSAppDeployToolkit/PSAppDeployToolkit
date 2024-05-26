@@ -2124,7 +2124,7 @@ function Show-ADTInstallationProgress
 
                 # Bring up the window and capture any errors thereafter.
                 [System.Void]$SyncHash.Window.ShowDialog()
-                $SyncHash.Error = $Error
+                if ($Error.Count) {$SyncHash.Add('Error', $Error)}
             })
 
             # Commence invocation.
@@ -2143,7 +2143,7 @@ function Show-ADTInstallationProgress
             # Allow the thread to be spun up safely before invoking actions against it.
             while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
             {
-                if ($Script:ProgressWindow.SyncHash.ContainsKey('Error'))
+                if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
                 {
                     Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
                     Close-ADTInstallationProgress
