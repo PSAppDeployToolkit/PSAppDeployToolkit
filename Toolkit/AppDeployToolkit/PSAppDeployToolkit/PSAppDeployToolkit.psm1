@@ -99,7 +99,6 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
 Export-ModuleMember -Function @(
     'Open-ADTSession'
     'Close-ADTSession'
-    'Get-ADTSession'
     'Update-ADTSessionInstallPhase'
     'Get-ADTSessionProperties'
     'Export-ADTModuleState'

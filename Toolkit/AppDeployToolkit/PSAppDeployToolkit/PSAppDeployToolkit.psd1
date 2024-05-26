@@ -70,7 +70,6 @@ PowerShellVersion = '5.1'
 FunctionsToExport = @(
     'Open-ADTSession'
     'Close-ADTSession'
-    'Get-ADTSession'
     'Update-ADTSessionInstallPhase'
     'Get-ADTSessionProperties'
     'Export-ADTModuleState'
