@@ -1950,7 +1950,7 @@ function Show-BlockedAppDialog
         $showBlockedAppDialogMutex = [System.Threading.Mutex]::new($false, $showBlockedAppDialogMutexName)
 
         # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
-        if ($showBlockedAppDialogMutexLocked = (Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and $showBlockedAppDialogMutex.WaitOne(1))
+        if ($showBlockedAppDialogMutexLocked = (Test-ADTIsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and $showBlockedAppDialogMutex.WaitOne(1))
         {
             Show-ADTInstallationPrompt -Title (Get-ADTSession).GetPropertyValue('InstallTitle') -Message $Script:ADT.Strings.BlockExecution.Message -Icon Warning -ButtonRightText OK
         }

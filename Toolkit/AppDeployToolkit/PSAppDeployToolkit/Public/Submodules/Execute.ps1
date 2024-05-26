@@ -241,7 +241,7 @@ https://psappdeploytoolkit.com
             ##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
             If (($Path -match 'msiexec') -or ($WaitForMsiExec)) {
                 [Timespan]$MsiExecWaitTimeSpan = New-TimeSpan -Seconds $MsiExecWaitTime
-                [Boolean]$MsiExecAvailable = Test-IsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTimeSpan.TotalMilliseconds
+                [Boolean]$MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTimeSpan.TotalMilliseconds
                 Start-Sleep -Seconds 1
                 If (-not $MsiExecAvailable) {
                     #  Default MSI exit code for install already in progress
@@ -482,7 +482,7 @@ https://psappdeploytoolkit.com
                 Else {
                     [String]$MsiExitCodeMessage = ''
                     If ($Path -match 'msiexec') {
-                        [String]$MsiExitCodeMessage = Get-MsiExitCodeMessage -MsiExitCode $returnCode
+                        [String]$MsiExitCodeMessage = Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode
                     }
 
                     If ($MsiExitCodeMessage) {
