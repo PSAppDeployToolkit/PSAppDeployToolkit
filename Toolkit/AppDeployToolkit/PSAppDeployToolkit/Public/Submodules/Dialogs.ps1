@@ -751,7 +751,7 @@ function Show-ADTInstallationWelcome
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [ValidateNotNullorEmpty()]
-        [System.UInt32]$DeferTimes,
+        [System.Int32]$DeferTimes,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [ValidateNotNullorEmpty()]
@@ -847,7 +847,7 @@ function Show-ADTInstallationWelcome
             $AllowDefer = $true
 
             # Get the deferral history from the registry.
-            $deferHistory = Get-DeferHistory
+            $deferHistory = Get-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
             $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
             $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
 
@@ -1076,7 +1076,7 @@ function Show-ADTInstallationWelcome
                     $BlockExecution = $false
                     if (($deferTimes -ge 0) -or $deferDeadlineUniversal)
                     {
-                        Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+                        Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
                     }
 
                     # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
@@ -1102,7 +1102,7 @@ function Show-ADTInstallationWelcome
                     #  Stop the script (user chose to defer)
                     Write-ADTLogEntry -Message 'Installation deferred by the user.'
                     $BlockExecution = $false
-                    Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+                    Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                     # Restore minimized windows.
                     [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()

@@ -4,60 +4,49 @@
 #
 #---------------------------------------------------------------------------
 
-Function Get-DeferHistory {
+function Get-ADTDeferHistory
+{
     <#
-.SYNOPSIS
 
-Get the history of deferrals from the registry for the current application, if it exists.
+    .SYNOPSIS
+    Get the history of deferrals from the registry for the current application, if it exists.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get the history of deferrals from the registry for the current application, if it exists.
 
-Get the history of deferrals from the registry for the current application, if it exists.
+    .PARAMETER DeferTimesRemaining
+    Specify the number of deferrals remaining.
 
-.PARAMETER DeferTimesRemaining
+    .PARAMETER DeferDeadline
+    Specify the deadline for the deferral.
 
-Specify the number of deferrals remaining.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER DeferDeadline
+    .OUTPUTS
+    System.String. Returns the history of deferrals from the registry for the current application, if it exists.
 
-Specify the deadline for the deferral.
+    .EXAMPLE
+    Get-ADTDeferHistory
 
-.INPUTS
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-None
+    .LINK
+    https://psappdeploytoolkit.com
 
-You cannot pipe objects to this function.
+    #>
 
-.OUTPUTS
-
-System.String
-
-Returns the history of deferrals from the registry for the current application, if it exists.
-
-.EXAMPLE
-
-Get-DeferHistory
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-    )
-
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
+
+    process {
         Write-ADTLogEntry -Message 'Getting deferral history...'
-        Get-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
+        return Get-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
@@ -69,68 +58,66 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Set-DeferHistory {
+function Set-ADTDeferHistory
+{
     <#
-.SYNOPSIS
 
-Set the history of deferrals in the registry for the current application.
+    .SYNOPSIS
+    Set the history of deferrals in the registry for the current application.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Set the history of deferrals in the registry for the current application.
 
-Set the history of deferrals in the registry for the current application.
+    .PARAMETER DeferTimesRemaining
+    Specify the number of deferrals remaining.
 
-.PARAMETER DeferTimesRemaining
+    .PARAMETER DeferDeadline
+    Specify the deadline for the deferral.
 
-Specify the number of deferrals remaining.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER DeferDeadline
+    .OUTPUTS
+    None. This function does not return any objects.
 
-Specify the deadline for the deferral.
+    .EXAMPLE
+    Set-ADTDeferHistory
 
-.INPUTS
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-None
+    .LINK
+    https://psappdeploytoolkit.com
 
-You cannot pipe objects to this function.
+    #>
 
-.OUTPUTS
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Nullable[System.Int32]]$DeferTimesRemaining,
 
-None. This function does not return any objects.
-
-.EXAMPLE
-
-Set-DeferHistory
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
-        [String]$deferTimesRemaining,
-        [Parameter(Mandatory = $false)]
-        [String]$deferDeadline
+        [AllowEmptyString()]
+        [System.String]$DeferDeadline
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
+        $regKeyDeferHistory = (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory')
     }
-    Process {
-        If ($deferTimesRemaining -and ($deferTimesRemaining -ge 0)) {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $deferTimesRemaining]."
-            Set-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -Name 'DeferTimesRemaining' -Value $deferTimesRemaining -ContinueOnError $true
+
+    process {
+        if ($DeferTimesRemaining -and ($DeferTimesRemaining -ge 0))
+        {
+            Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
+            Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ContinueOnError $true
         }
-        If ($deferDeadline) {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $deferDeadline]."
-            Set-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -Name 'DeferDeadline' -Value $deferDeadline -ContinueOnError $true
+        if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
+        {
+            Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
+            Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ContinueOnError $true
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
