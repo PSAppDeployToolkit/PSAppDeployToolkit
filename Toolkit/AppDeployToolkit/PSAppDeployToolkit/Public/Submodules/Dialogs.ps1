@@ -123,14 +123,15 @@ function Show-ADTInstallationPrompt
     )
 
     begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Bypass if in non-interactive mode
-        if ((Get-ADTSession).DeployModeSilent)
+        if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationPrompt [Mode: $((Get-ADTSession).GetPropertyValue('deployMode'))]. Message:$Message"
+            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationPrompt [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Message:$Message"
             return
         }
 
@@ -385,7 +386,7 @@ function Show-ADTInstallationPrompt
         $formInstallationPrompt.ResumeLayout()
 
         # Close the Installation Progress Dialog if running
-        if (!(Get-ADTSession).GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+        if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
             Close-ADTInstallationProgress
         }
@@ -549,14 +550,15 @@ function Show-ADTDialogBox
             Third = 512
         }
 
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Bypass if in silent mode.
-        if ((Get-ADTSession).DeployModeSilent)
+        if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTDialogBox [Mode: $((Get-ADTSession).GetPropertyValue('deployMode'))]. Text:$Text"
+            Write-ADTLogEntry -Message "Bypassing Show-ADTDialogBox [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text:$Text"
             return
         }
 
@@ -783,20 +785,21 @@ function Show-ADTInstallationWelcome
     )
 
     begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # If running in NonInteractive mode, force the processes to close silently.
-        if ((Get-ADTSession).DeployModeNonInteractive)
+        if ($adtSession.DeployModeNonInteractive)
         {
             $Silent = $true
         }
 
         # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
-        if ((Get-ADTSession).GetPropertyValue('UseDefaultMsi'))
+        if ($adtSession.GetPropertyValue('UseDefaultMsi'))
         {
-            $ProcessObjects = $($ProcessObjects; (Get-ADTSession).DefaultMsiExecutablesList)
+            $ProcessObjects = $($ProcessObjects; $adtSession.DefaultMsiExecutablesList)
         }
 
         # Check disk space requirements if specified
@@ -809,7 +812,7 @@ function Show-ADTInstallationWelcome
                 {
                     # Determine the size of the Files folder
                     $fso = New-Object -ComObject Scripting.FileSystemObject
-                    $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder((Get-ADTSession).GetPropertyValue('ScriptParentPath')).Size / 1MB)
+                    $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptParentPath')).Size / 1MB)
                 }
                 catch
                 {
@@ -832,7 +835,7 @@ function Show-ADTInstallationWelcome
                 Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                 if (!$Silent)
                 {
-                    Show-ADTInstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f (Get-ADTSession).GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                    Show-ADTInstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
                 }
                 Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
             }
@@ -847,7 +850,7 @@ function Show-ADTInstallationWelcome
             $AllowDefer = $true
 
             # Get the deferral history from the registry.
-            $deferHistory = Get-RegistryKey -Key (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
+            $deferHistory = Get-RegistryKey -Key $adtSession.GetPropertyValue('RegKeyDeferHistory') -ContinueOnError $true
             $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
             $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
 
@@ -924,7 +927,7 @@ function Show-ADTInstallationWelcome
         }
 
         # Prompt the user to close running applications and optionally defer if enabled.
-        if (!(Get-ADTSession).DeployModeSilent -and !$Silent)
+        if (!$adtSession.DeployModeSilent -and !$Silent)
         {
             # Keep the same variable for countdown to simplify the code.
             if ($ForceCloseAppsCountdown -gt 0)
@@ -935,7 +938,7 @@ function Show-ADTInstallationWelcome
             {
                 $CloseAppsCountdown = $ForceCountdown
             }
-            (Get-ADTSession).State.CloseAppsCountdownGlobal = $CloseAppsCountdown
+            $adtSession.State.CloseAppsCountdownGlobal = $CloseAppsCountdown
             $promptResult = $null
 
             while (($runningProcesses = $processObjects | Get-ADTRunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
@@ -1080,12 +1083,12 @@ function Show-ADTInstallationWelcome
                     }
 
                     # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
-                    if ((Get-ADTSession).State.WelcomeTimer)
+                    if ($adtSession.State.WelcomeTimer)
                     {
                         try
                         {
-                            (Get-ADTSession).State.WelcomeTimer.Dispose()
-                            (Get-ADTSession).State.WelcomeTimer = $null
+                            $adtSession.State.WelcomeTimer.Dispose()
+                            $adtSession.State.WelcomeTimer = $null
                         }
                         catch
                         {
@@ -1112,7 +1115,7 @@ function Show-ADTInstallationWelcome
         }
 
         # Force the processes to close silently, without prompting the user.
-        if (($Silent -or (Get-ADTSession).DeployModeSilent) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+        if (($Silent -or $adtSession.DeployModeSilent) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
         {
             Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
             $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
@@ -1123,7 +1126,7 @@ function Show-ADTInstallationWelcome
         if ($BlockExecution)
         {
             # Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            (Get-ADTSession).State.BlockExecution = $BlockExecution
+            $adtSession.State.BlockExecution = $BlockExecution
             Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
             Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty ProcessName)
         }
@@ -1210,21 +1213,22 @@ function Show-ADTInstallationRestartPrompt
     )
 
     begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # If in non-interactive mode.
-        if ((Get-ADTSession).DeployModeSilent)
+        if ($adtSession.DeployModeSilent)
         {
             if ($SilentRestart)
             {
-                Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$((Get-ADTSession).GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
+                Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
                 Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
             }
             else
             {
-                Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$((Get-ADTSession).GetPropertyValue('deployMode'))] and [SilentRestart] is false."
+                Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.GetPropertyValue('deployMode'))] and [SilentRestart] is false."
             }
             return
         }
@@ -1237,7 +1241,7 @@ function Show-ADTInstallationRestartPrompt
         }
 
         # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
-        if (!(Get-ADTSession).GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+        if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
             if ($NoCountdown)
             {
@@ -1496,7 +1500,7 @@ function Show-ADTInstallationRestartPrompt
         $formRestart.Margin = $formRestart.Padding = $paddingNone
         $formRestart.Font = $Script:FormData.Font
         $formRestart.Name = 'FormRestart'
-        $formRestart.Text = (Get-ADTSession).GetPropertyValue('installTitle')
+        $formRestart.Text = $adtSession.GetPropertyValue('installTitle')
         $formRestart.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
         $formRestart.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
         $formRestart.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
@@ -1612,19 +1616,20 @@ function Show-ADTBalloonTip
     )
 
     begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-        if ((Get-ADTSession).DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications)
+        if ($adtSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$((Get-ADTSession).GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
+            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
             return
         }
         if (Test-PowerPoint)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$((Get-ADTSession).GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
+            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
             return
         }
 
@@ -1837,14 +1842,15 @@ function Show-ADTInstallationProgress
             }
         }
 
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Return early in silent mode.
-        if ((Get-ADTSession).DeployModeSilent)
+        if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationProgress [Mode: $((Get-ADTSession).GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
+            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationProgress [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
             return
         }
 
@@ -1852,7 +1858,7 @@ function Show-ADTInstallationProgress
         if (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$((Get-ADTSession).DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
 
             # Set up the PowerShell instance and add the initial scriptblock.
             $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
@@ -1936,13 +1942,13 @@ function Show-ADTInstallationProgress
 function Show-BlockedAppDialog
 {
     # Return early if someone happens to call this in a non-async mode.
-    if (!(Get-ADTSession).GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+    if (!($adtSession = Get-ADTSession).GetPropertyValue('InstallPhase').Equals('Asynchronous'))
     {
         return
     }
 
     # If we're here, we're not to log anything.
-    (Get-ADTSession).SetPropertyValue('DisableLogging', $true)
+    $adtSession.SetPropertyValue('DisableLogging', $true)
 
     try {
         # Create a mutex and specify a name without acquiring a lock on the mutex.
@@ -1952,7 +1958,7 @@ function Show-BlockedAppDialog
         # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
         if ($showBlockedAppDialogMutexLocked = (Test-ADTIsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and $showBlockedAppDialogMutex.WaitOne(1))
         {
-            Show-ADTInstallationPrompt -Title (Get-ADTSession).GetPropertyValue('InstallTitle') -Message $Script:ADT.Strings.BlockExecution.Message -Icon Warning -ButtonRightText OK
+            Show-ADTInstallationPrompt -Title $adtSession.GetPropertyValue('InstallTitle') -Message $Script:ADT.Strings.BlockExecution.Message -Icon Warning -ButtonRightText OK
         }
         else
         {
