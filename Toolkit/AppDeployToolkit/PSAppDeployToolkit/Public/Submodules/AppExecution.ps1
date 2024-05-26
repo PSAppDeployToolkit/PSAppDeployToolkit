@@ -149,7 +149,7 @@ https://psappdeploytoolkit.com
 
         ## Set contents to be readable for all users (BUILTIN\USERS)
         Try {
-            $Users = ConvertTo-NTAccountOrSID -SID 'S-1-5-32-545'
+            $Users = ConvertTo-ADTNTAccountOrSID -SID 'S-1-5-32-545'
             Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ('ObjectInherit', 'ContainerInherit')
         }
         Catch {

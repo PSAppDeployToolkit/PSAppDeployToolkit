@@ -4,171 +4,159 @@
 #
 #---------------------------------------------------------------------------
 
-Function ConvertTo-NTAccountOrSID {
+function ConvertTo-ADTNTAccountOrSID
+{
     <#
-.SYNOPSIS
 
-Convert between NT Account names and their security identifiers (SIDs).
+    .SYNOPSIS
+    Convert between NT Account names and their security identifiers (SIDs).
 
-.DESCRIPTION
+    .DESCRIPTION
+    Specify either the NT Account name or the SID and get the other. Can also convert well known sid types.
 
-Specify either the NT Account name or the SID and get the other. Can also convert well known sid types.
+    .PARAMETER AccountName
+    The Windows NT Account name specified in <domain>\<username> format.
 
-.PARAMETER AccountName
+    Use fully qualified account names (e.g., <domain>\<username>) instead of isolated names (e.g, <username>) because they are unambiguous and provide better performance.
 
-The Windows NT Account name specified in <domain>\<username> format.
-Use fully qualified account names (e.g., <domain>\<username>) instead of isolated names (e.g, <username>) because they are unambiguous and provide better performance.
+    .PARAMETER SID
+    The Windows NT Account SID.
 
-.PARAMETER SID
+    .PARAMETER WellKnownSIDName
+    Specify the Well Known SID name translate to the actual SID (e.g., LocalServiceSid).
 
-The Windows NT Account SID.
+    To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
 
-.PARAMETER WellKnownSIDName
+    .PARAMETER WellKnownToNTAccount
+    Convert the Well Known SID to an NTAccount name
 
-Specify the Well Known SID name translate to the actual SID (e.g., LocalServiceSid).
+    .INPUTS
+    System.String. Accepts a string containing the NT Account name or SID.
 
-To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
+    .OUTPUTS
+    System.String. Returns the NT Account name or SID.
 
-.PARAMETER WellKnownToNTAccount
+    .EXAMPLE
+    ConvertTo-ADTNTAccountOrSID -AccountName 'CONTOSO\User1'
 
-Convert the Well Known SID to an NTAccount name
+    Converts a Windows NT Account name to the corresponding SID.
 
-.INPUTS
+    .EXAMPLE
+    ConvertTo-ADTNTAccountOrSID -SID 'S-1-5-21-1220945662-2111687655-725345543-14012660'
 
-System.String
+    Converts a Windows NT Account SID to the corresponding NT Account Name.
 
-Accepts a string containing the NT Account name or SID.
+    .EXAMPLE
+    ConvertTo-ADTNTAccountOrSID -WellKnownSIDName 'NetworkServiceSid'
 
-.OUTPUTS
+    Converts a Well Known SID name to a SID.
 
-System.String
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-Returns the NT Account name or SID.
+    The conversion can return an empty result if the user account does not exist anymore or if translation fails.
 
-.EXAMPLE
+    http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
 
-ConvertTo-NTAccountOrSID -AccountName 'CONTOSO\User1'
+    .LINK
+    https://psappdeploytoolkit.com
 
-Converts a Windows NT Account name to the corresponding SID
+    .LINK
+    http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
 
-.EXAMPLE
+    #>
 
-ConvertTo-NTAccountOrSID -SID 'S-1-5-21-1220945662-2111687655-725345543-14012660'
-
-Converts a Windows NT Account SID to the corresponding NT Account Name
-
-.EXAMPLE
-
-ConvertTo-NTAccountOrSID -WellKnownSIDName 'NetworkServiceSid'
-
-Converts a Well Known SID name to a SID
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-The conversion can return an empty result if the user account does not exist anymore or if translation fails.
-
-http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
-
-.LINK
-
-https://psappdeploytoolkit.com
-
-.LINK
-
-http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
-
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]$AccountName,
+        [System.String]$AccountName,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'SIDToNTAccount', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]$SID,
+        [System.String]$SID,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]$WellKnownSIDName,
+        [System.String]$WellKnownSIDName,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
-        [ValidateNotNullOrEmpty()]
-        [Switch]$WellKnownToNTAccount
+        [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        Try {
-            Switch ($PSCmdlet.ParameterSetName) {
-                'SIDToNTAccount' {
-                    [String]$msg = "the SID [$SID] to an NT Account name"
-                    Write-ADTLogEntry -Message "Converting $msg."
 
-                    Try {
-                        $NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($SID)
-                        $NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
-                        Write-Output -InputObject ($NTAccount)
-                    }
-                    Catch {
-                        Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
-                    }
+    process {
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            'SIDToNTAccount' {
+                $msg = "the SID [$SID] to an NT Account name"
+                Write-ADTLogEntry -Message "Converting $msg."
+
+                try
+                {
+                    return [System.Security.Principal.SecurityIdentifier]::new($SID).Translate([System.Security.Principal.NTAccount])
                 }
-                'NTAccountToSID' {
-                    [String]$msg = "the NT Account [$AccountName] to a SID"
-                    Write-ADTLogEntry -Message "Converting $msg."
-
-                    Try {
-                        $NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($AccountName)
-                        $NTAccountSID = $NTAccount.Translate([Security.Principal.SecurityIdentifier])
-                        Write-Output -InputObject ($NTAccountSID)
-                    }
-                    Catch {
-                        Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
-                    }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
                 }
-                'WellKnownName' {
-                    If ($WellKnownToNTAccount) {
-                        [String]$ConversionType = 'NTAccount'
-                    }
-                    Else {
-                        [String]$ConversionType = 'SID'
-                    }
-                    [String]$msg = "the Well Known SID Name [$WellKnownSIDName] to a $ConversionType"
-                    Write-ADTLogEntry -Message "Converting $msg."
+            }
+            'NTAccountToSID' {
+                $msg = "the NT Account [$AccountName] to a SID"
+                Write-ADTLogEntry -Message "Converting $msg."
 
-                    #  Get the SID for the root domain
-                    Try {
-                        $MachineRootDomain = (Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop').Domain.ToLower()
-                        $ADDomainObj = New-Object -TypeName 'System.DirectoryServices.DirectoryEntry' -ArgumentList ("LDAP://$MachineRootDomain")
-                        $DomainSidInBinary = $ADDomainObj.ObjectSid
-                        $DomainSid = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($DomainSidInBinary[0], 0)
-                    }
-                    Catch {
-                        Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
-                        $DomainSid = $null
-                    }
+                try
+                {
+                    return [System.Security.Principal.NTAccount]::new($AccountName).Translate([System.Security.Principal.SecurityIdentifier])
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
+                }
+            }
+            'WellKnownName' {
+                [String]$ConversionType = if ($WellKnownToNTAccount)
+                {
+                    'NTAccount'
+                }
+                else
+                {
+                    'SID'
+                }
+                [String]$msg = "the Well Known SID Name [$WellKnownSIDName] to a $ConversionType"
+                Write-ADTLogEntry -Message "Converting $msg."
 
-                    #  Get the SID for the well known SID name
-                    $WellKnownSidType = [Security.Principal.WellKnownSidType]::$WellKnownSIDName
-                    $NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($WellKnownSidType, $DomainSid)
+                # Get the SID for the root domain.
+                $DomainSid = try
+                {
+                    [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+                }
 
-                    If ($WellKnownToNTAccount) {
-                        $NTAccount = $NTAccountSID.Translate([Security.Principal.NTAccount])
-                        Write-Output -InputObject ($NTAccount)
+                # Get the SID for the well known SID name.
+                try
+                {
+                    $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::$WellKnownSIDName, $DomainSid)
+                    if ($WellKnownToNTAccount)
+                    {
+                        return $NTAccountSID.Translate([System.Security.Principal.NTAccount])
                     }
-                    Else {
-                        Write-Output -InputObject ($NTAccountSID)
-                    }
+                    return $NTAccountSID
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-Error)" -Severity 3
                 }
             }
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 3
-        }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
