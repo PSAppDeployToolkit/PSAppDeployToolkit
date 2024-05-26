@@ -38,7 +38,7 @@ function Get-ADTDeferHistory
     #>
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -47,7 +47,7 @@ function Get-ADTDeferHistory
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -100,7 +100,7 @@ function Set-ADTDeferHistory
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
         $regKeyDeferHistory = (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory')
     }
 
@@ -118,6 +118,6 @@ function Set-ADTDeferHistory
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

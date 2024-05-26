@@ -42,7 +42,7 @@ function Remove-ADTInvalidFileNameChars
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -50,7 +50,7 @@ function Remove-ADTInvalidFileNameChars
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -94,7 +94,7 @@ function Get-ADTFreeDiskSpace
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -105,7 +105,7 @@ function Get-ADTFreeDiskSpace
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -187,7 +187,7 @@ function Get-ADTInstalledApplication
 
     begin {
         # Announce start.
-        Write-DebugHeader
+        Write-ADTDebugHeader
         if ($Name)
         {
             Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
@@ -306,7 +306,7 @@ function Get-ADTInstalledApplication
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -374,7 +374,7 @@ function Get-ADTUserProfiles
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
         $userProfileListRegKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
         $excludedSids = "^($([System.String]::Join('|', $(if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}; 'S-1-5-82'))))"
     }
@@ -416,7 +416,7 @@ function Get-ADTUserProfiles
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -467,7 +467,7 @@ function Get-ADTFileVersion
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -481,7 +481,7 @@ function Get-ADTFileVersion
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -517,7 +517,7 @@ function Update-ADTDesktop
     #>
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -525,7 +525,7 @@ function Update-ADTDesktop
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -571,7 +571,7 @@ function Update-ADTSessionEnvironmentVariables
 
     begin {
         # Determine the user SID to base things off of.
-        Write-DebugHeader
+        Write-ADTDebugHeader
         $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser)
         {
             $Script:ADT.Environment.RunAsActiveUser.SID
@@ -596,7 +596,7 @@ function Update-ADTSessionEnvironmentVariables
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -672,7 +672,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         [PSObject[]]$ScheduledTasks = @()
     }
@@ -715,7 +715,7 @@ https://psappdeploytoolkit.com
     }
     End {
         Write-Output -InputObject ($ScheduledTasks)
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -786,7 +786,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -809,7 +809,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -879,7 +879,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         #region Function Get-PinVerb
         Function Get-PinVerb {
@@ -1041,7 +1041,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1113,7 +1113,7 @@ function Get-ADTWindowTitle
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -1160,7 +1160,7 @@ function Get-ADTWindowTitle
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1262,7 +1262,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         [ScriptBlock]$SendKeys = {
             Param (
@@ -1329,7 +1329,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1399,7 +1399,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         ## Initialize a hashtable to store information about system type and power status
         [Hashtable]$SystemTypePowerStatus = @{ }
@@ -1499,7 +1499,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1547,7 +1547,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
@@ -1565,7 +1565,7 @@ https://psappdeploytoolkit.com
         Write-Output -InputObject ($onNetwork)
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1617,7 +1617,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -1692,7 +1692,7 @@ https://psappdeploytoolkit.com
     End {
         Write-ADTLogEntry -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]."
         Write-Output -InputObject ($IsPowerPointFullScreen)
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1747,7 +1747,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         [String[]]$GPUpdateCmds = '/C echo N | gpupdate.exe /Target:Computer /Force', '/C echo N | gpupdate.exe /Target:User /Force'
@@ -1783,7 +1783,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1933,7 +1933,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -2262,7 +2262,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -2338,7 +2338,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -2350,7 +2350,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -2431,7 +2431,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         ## Initialize variables
         [String]$private:ComputerName = $Script:ADT.Environment.envComputerNameFQDN
@@ -2568,7 +2568,7 @@ https://psappdeploytoolkit.com
     End {
         Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName', 'LastBootUpTime', 'IsSystemRebootPending', 'IsCBServicingRebootPending', 'IsWindowsUpdateRebootPending', 'IsSCCMClientRebootPending', 'IsAppVRebootPending', 'IsFileRenameRebootPending', 'PendingFileRenameOperations', 'ErrorMsg')
 
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 

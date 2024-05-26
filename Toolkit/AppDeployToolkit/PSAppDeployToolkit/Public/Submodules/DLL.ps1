@@ -76,7 +76,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         ## Get name used to invoke this function in case the 'Register-DLL' or 'Unregister-DLL' alias was used and set the correct DLL action
         [String]${InvokedCmdletName} = $MyInvocation.InvocationName
@@ -158,6 +158,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

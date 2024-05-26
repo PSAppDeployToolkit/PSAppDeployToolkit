@@ -90,7 +90,7 @@ function Show-ADTWelcomePrompt
     )
 
     begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
         $countdownTime = $startTime = [System.DateTime]::Now
         $showCountdown = $false
         $showCloseApps = $false
@@ -621,7 +621,7 @@ function Show-ADTWelcomePrompt
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -685,7 +685,7 @@ function Close-ADTInstallationProgress
             }
         }
 
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -783,7 +783,7 @@ function Close-ADTInstallationProgress
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 

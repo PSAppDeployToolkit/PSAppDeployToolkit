@@ -31,7 +31,7 @@ Function Copy-ContentToCache {
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -63,7 +63,7 @@ Function Copy-ContentToCache {
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -97,7 +97,7 @@ Function Remove-ContentFromCache {
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -123,6 +123,6 @@ Function Remove-ContentFromCache {
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }

@@ -55,7 +55,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         Try {
@@ -75,7 +75,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -151,7 +151,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'Ignore') {
@@ -212,7 +212,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -325,7 +325,7 @@ https://psappdeploytoolkit.com
         )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
 
         # Check if Robocopy is on the system
         If ($UseRobocopy) {
@@ -519,7 +519,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -589,7 +589,7 @@ function Remove-ADTFile
         {
             $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
         }
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     process {
@@ -657,7 +657,7 @@ function Remove-ADTFile
     }
 
     end {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -803,7 +803,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         [Hashtable]$CopyFileSplat = @{
@@ -834,7 +834,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -941,7 +941,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
     Process {
         [Hashtable]$RemoveFileSplat = @{
@@ -971,7 +971,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
 
@@ -1116,7 +1116,7 @@ This function does not return any objects.
     )
 
     Begin {
-        Write-DebugHeader
+        Write-ADTDebugHeader
     }
 
     Process {
@@ -1242,6 +1242,6 @@ This function does not return any objects.
     }
 
     End {
-        Write-DebugFooter
+        Write-ADTDebugFooter
     }
 }
