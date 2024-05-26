@@ -582,11 +582,11 @@ https://psappdeploytoolkit.com
         [Int32]$msiOpenDatabaseModePatchFile = 32
         [Int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile
         ## Open database in read only mode
-        [__ComObject]$Database = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($mspFile, $msiOpenDatabaseMode)
+        [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($mspFile, $msiOpenDatabaseMode)
         ## Get the SummaryInformation from the windows installer database
-        [__ComObject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
+        [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
         [Hashtable]$SummaryInfoProperty = @{}
-        $AllTargetedProductCodes = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(';')
+        $AllTargetedProductCodes = (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(';')
         ForEach ($FormattedProductCode in $AllTargetedProductCodes) {
             [PSObject]$MSIInstalled = Get-ADTInstalledApplication -ProductCode $FormattedProductCode
             If ($MSIInstalled) {
@@ -1089,15 +1089,15 @@ https://psappdeploytoolkit.com
             ## Open both copies of the MSI database
             #  Open the original MSI database in read only mode
             Write-ADTLogEntry -Message "Opening the MSI database [$MsiPath] in read only mode."
-            [__ComObject]$MsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($MsiPath, $msiOpenDatabaseModeReadOnly)
+            [__ComObject]$MsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($MsiPath, $msiOpenDatabaseModeReadOnly)
             #  Open the temporary copy of the MSI database in view/modify/update mode
             Write-ADTLogEntry -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode."
-            [__ComObject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiViewModifyUpdate)
+            [__ComObject]$TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiViewModifyUpdate)
 
             ## If a MSI transform file was specified, then apply it to the temporary copy of the MSI database
             If ($ApplyTransformPath) {
                 Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
-                $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors)
+                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors)
             }
 
             ## Determine the path for the new transform file that will be generated
@@ -1115,14 +1115,14 @@ https://psappdeploytoolkit.com
             $TransformProperties.GetEnumerator() | ForEach-Object { Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName $_.Key -PropertyValue $_.Value }
 
             ## Commit the new properties to the temporary copy of the MSI database
-            $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit'
+            $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'Commit'
 
             ## Reopen the temporary copy of the MSI database in read only mode
             #  Release the database object for the temporary copy of the MSI database
             $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
             #  Open the temporary copy of the MSI database in read only mode
             Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
-            [__ComObject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
+            [__ComObject]$TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
 
             ## Delete the new transform file path if it already exists
             If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
@@ -1132,8 +1132,8 @@ https://psappdeploytoolkit.com
 
             ## Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database
             Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]."
-            $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath)
-            $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone)
+            $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath)
+            $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone)
 
             If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
                 Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
@@ -1329,56 +1329,56 @@ https://psappdeploytoolkit.com
                 [Int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile
             }
             ## Open database in read only mode
-            [__ComObject]$Database = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseMode)
+            [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($Path, $msiOpenDatabaseMode)
             ## Apply a list of transform(s) to the database
             If (($TransformPath) -and (-not $IsMspFile)) {
                 ForEach ($Transform in $TransformPath) {
-                    $null = Invoke-ObjectMethod -InputObject $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
+                    $null = Invoke-ADTObjectMethod -InputObject $Database -MethodName 'ApplyTransform' -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
                 }
             }
 
             ## Get either the requested windows database table information or summary information
             If ($PSCmdlet.ParameterSetName -eq 'TableInfo') {
                 ## Open the requested table view from the database
-                [__ComObject]$View = Invoke-ObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
-                $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
+                [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $Database -MethodName 'OpenView' -ArgumentList @("SELECT * FROM $Table")
+                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Execute'
 
                 ## Create an empty object to store properties in
                 [PSObject]$TableProperties = New-Object -TypeName 'PSObject'
 
                 ## Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
                 #  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                [__ComObject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+                [__ComObject]$Record = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Fetch'
                 While ($Record) {
                     #  Read string data from record and add property/value pair to custom object
-                    $TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
+                    $TableProperties | Add-Member -MemberType 'NoteProperty' -Name (Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyNameColumnNum)) -Value (Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)) -Force
                     #  Retrieve the next row in the table
-                    [__ComObject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+                    [__ComObject]$Record = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Fetch'
                 }
                 Write-Output -InputObject ($TableProperties)
             }
             Else {
                 ## Get the SummaryInformation from the windows installer database
-                [__ComObject]$SummaryInformation = Get-ObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
+                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
                 [Hashtable]$SummaryInfoProperty = @{}
                 ## Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
-                $SummaryInfoProperty.Add('CodePage', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(1)))
-                $SummaryInfoProperty.Add('Title', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(2)))
-                $SummaryInfoProperty.Add('Subject', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(3)))
-                $SummaryInfoProperty.Add('Author', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(4)))
-                $SummaryInfoProperty.Add('Keywords', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(5)))
-                $SummaryInfoProperty.Add('Comments', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(6)))
-                $SummaryInfoProperty.Add('Template', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)))
-                $SummaryInfoProperty.Add('LastSavedBy', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(8)))
-                $SummaryInfoProperty.Add('RevisionNumber', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(9)))
-                $SummaryInfoProperty.Add('LastPrinted', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(11)))
-                $SummaryInfoProperty.Add('CreateTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(12)))
-                $SummaryInfoProperty.Add('LastSaveTimeDate', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(13)))
-                $SummaryInfoProperty.Add('PageCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(14)))
-                $SummaryInfoProperty.Add('WordCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(15)))
-                $SummaryInfoProperty.Add('CharacterCount', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(16)))
-                $SummaryInfoProperty.Add('CreatingApplication', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(18)))
-                $SummaryInfoProperty.Add('Security', (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(19)))
+                $SummaryInfoProperty.Add('CodePage', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(1)))
+                $SummaryInfoProperty.Add('Title', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(2)))
+                $SummaryInfoProperty.Add('Subject', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(3)))
+                $SummaryInfoProperty.Add('Author', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(4)))
+                $SummaryInfoProperty.Add('Keywords', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(5)))
+                $SummaryInfoProperty.Add('Comments', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(6)))
+                $SummaryInfoProperty.Add('Template', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)))
+                $SummaryInfoProperty.Add('LastSavedBy', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(8)))
+                $SummaryInfoProperty.Add('RevisionNumber', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(9)))
+                $SummaryInfoProperty.Add('LastPrinted', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(11)))
+                $SummaryInfoProperty.Add('CreateTimeDate', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(12)))
+                $SummaryInfoProperty.Add('LastSaveTimeDate', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(13)))
+                $SummaryInfoProperty.Add('PageCount', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(14)))
+                $SummaryInfoProperty.Add('WordCount', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(15)))
+                $SummaryInfoProperty.Add('CharacterCount', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(16)))
+                $SummaryInfoProperty.Add('CreatingApplication', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(18)))
+                $SummaryInfoProperty.Add('Security', (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(19)))
                 [PSObject]$SummaryInfoProperties = New-Object -TypeName 'PSObject' -Property $SummaryInfoProperty
                 Write-Output -InputObject ($SummaryInfoProperties)
             }
@@ -1392,7 +1392,7 @@ https://psappdeploytoolkit.com
         Finally {
             Try {
                 If ($View) {
-                    $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
                     Try {
                         $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
                     }
@@ -1507,28 +1507,28 @@ https://psappdeploytoolkit.com
             Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
 
             ## Open the requested table view from the database
-            [__ComObject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
-            $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
+            [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Execute'
 
             ## Retrieve the requested property from the requested table.
             #  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-            [__ComObject]$Record = Invoke-ObjectMethod -InputObject $View -MethodName 'Fetch'
+            [__ComObject]$Record = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Fetch'
 
             ## Close the previous view on the MSI database
-            $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
             $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 
             ## Set the MSI property
             If ($Record) {
                 #  If the property already exists, then create the view for updating the property
-                [__ComObject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
             }
             Else {
                 #  If property does not exist, then create view for inserting the property
-                [__ComObject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
             }
             #  Execute the view to set the MSI property
-            $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
+            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Execute'
         }
         Catch {
             Write-ADTLogEntry -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `r`n$(Resolve-Error)" -Severity 3
@@ -1539,7 +1539,7 @@ https://psappdeploytoolkit.com
         Finally {
             Try {
                 If ($View) {
-                    $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
                     $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
                 }
             }

@@ -4,95 +4,84 @@
 #
 #---------------------------------------------------------------------------
 
-Function Invoke-ObjectMethod {
+function Invoke-ADTObjectMethod
+{
     <#
-.SYNOPSIS
 
-Invoke method on any object.
+    .SYNOPSIS
+    Invoke method on any object.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Invoke method on any object with or without using named parameters.
 
-Invoke method on any object with or without using named parameters.
+    .PARAMETER InputObject
+    Specifies an object which has methods that can be invoked.
 
-.PARAMETER InputObject
+    .PARAMETER MethodName
+    Specifies the name of a method to invoke.
 
-Specifies an object which has methods that can be invoked.
+    .PARAMETER ArgumentList
+    Argument to pass to the method being executed. Allows execution of method without specifying named parameters.
 
-.PARAMETER MethodName
+    .PARAMETER Parameter
+    Argument to pass to the method being executed. Allows execution of method by using named parameters.
 
-Specifies the name of a method to invoke.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ArgumentList
+    .OUTPUTS
+    System.Object. The object returned by the method being invoked.
 
-Argument to pass to the method being executed. Allows execution of method without specifying named parameters.
+    .EXAMPLE
+    $ShellApp = New-Object -ComObject 'Shell.Application'
+    $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
 
-.PARAMETER Parameter
+    Minimizes all windows.
 
-Argument to pass to the method being executed. Allows execution of method by using named parameters.
+    .EXAMPLE
+    $ShellApp = New-Object -ComObject 'Shell.Application'
+    $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
 
-.INPUTS
+    Opens the C:\Windows folder in a Windows Explorer window.
 
-None
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-You cannot pipe objects to this function.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.OUTPUTS
+    #>
 
-System.Object.
-
-The object returned by the method being invoked.
-
-.EXAMPLE
-
-$ShellApp = New-Object -ComObject 'Shell.Application'
-$null = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
-
-Minimizes all windows.
-
-.EXAMPLE
-
-$ShellApp = New-Object -ComObject 'Shell.Application'
-
-$null = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
-
-Opens the C:\Windows folder in a Windows Explorer window.
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding(DefaultParameterSetName = 'Positional')]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNull()]
-        [Object]$InputObject,
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$InputObject,
+
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullorEmpty()]
-        [String]$MethodName,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$MethodName,
+
         [Parameter(Mandatory = $false, Position = 2, ParameterSetName = 'Positional')]
-        [Object[]]$ArgumentList,
+        [ValidateNotNullOrEmpty()]
+        [System.Object[]]$ArgumentList,
+
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'Named')]
-        [ValidateNotNull()]
-        [Hashtable]$Parameter
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$Parameter
     )
 
-    Begin {
-    }
-    Process {
-        If ($PSCmdlet.ParameterSetName -eq 'Named') {
-            ## Invoke method by using parameter names
-            Write-Output -InputObject ($InputObject.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([Object[]]($Parameter.Values)), $null, $null, ([String[]]($Parameter.Keys))))
+    # Switch on the parameter set name.
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        Named {
+            # Invoke method by using parameter names.
+            return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
         }
-        Else {
-            ## Invoke method without using parameter names
-            Write-Output -InputObject ($InputObject.GetType().InvokeMember($MethodName, [Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null))
+        Positional {
+            # Invoke method without using parameter names.
+            return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
         }
-    }
-    End {
     }
 }
 
@@ -103,70 +92,56 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-ObjectProperty {
+function Get-ADTObjectProperty
+{
     <#
-.SYNOPSIS
 
-Get a property from any object.
+    .SYNOPSIS
+    Get a property from any object.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get a property from any object.
 
-Get a property from any object.
+    .PARAMETER InputObject
+    Specifies an object which has properties that can be retrieved.
 
-.PARAMETER InputObject
+    .PARAMETER PropertyName
+    Specifies the name of a property to retrieve.
 
-Specifies an object which has properties that can be retrieved.
+    .PARAMETER ArgumentList
+    Argument to pass to the property being retrieved.
 
-.PARAMETER PropertyName
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Specifies the name of a property to retrieve.
+    .OUTPUTS
+    System.Object. Returns the value of the property being retrieved.
 
-.PARAMETER ArgumentList
+    .EXAMPLE
+    Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @(1)
 
-Argument to pass to the property being retrieved.
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.Object.
-
-Returns the value of the property being retrieved.
-
-.EXAMPLE
-
-Get-ObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @(1)
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNull()]
-        [Object]$InputObject,
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$InputObject,
+
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullorEmpty()]
-        [String]$PropertyName,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$PropertyName,
+
         [Parameter(Mandatory = $false, Position = 2)]
-        [Object[]]$ArgumentList
+        [ValidateNotNullOrEmpty()]
+        [System.Object[]]$ArgumentList
     )
 
-    Begin {
-    }
-    Process {
-        ## Retrieve property
-        Write-Output -InputObject ($InputObject.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $InputObject, $ArgumentList, $null, $null, $null))
-    }
-    End {
-    }
+    # Retrieve property.
+    return $InputObject.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $InputObject, $ArgumentList, $null, $null, $null)
 }
