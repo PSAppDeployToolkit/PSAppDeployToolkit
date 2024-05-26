@@ -1189,7 +1189,7 @@ This function does not return any objects.
                 $U = $U.remove(0, 1)
                 Try {
                     # Translate the SID
-                    $UsersAccountName = ConvertTo-NTAccountOrSID -SID $U
+                    $UsersAccountName = ConvertTo-ADTNTAccountOrSID -SID $U
                 }
                 Catch {
                     Write-ADTLogEntry "Failed to translate SID [$U]. Skipping..." -Severity 2
