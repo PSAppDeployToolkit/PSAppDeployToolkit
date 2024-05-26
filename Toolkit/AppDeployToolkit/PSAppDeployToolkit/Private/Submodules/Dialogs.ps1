@@ -91,6 +91,7 @@ function Show-ADTWelcomePrompt
 
     begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
         $countdownTime = $startTime = [System.DateTime]::Now
         $showCountdown = $false
         $showCloseApps = $false
@@ -153,14 +154,14 @@ function Show-ADTWelcomePrompt
         $buttonSize = [System.Drawing.Size]::new(130, 24)
 
         # Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked.
-        if (!(Get-ADTSession).State.WelcomeTimer)
+        if (!$adtSession.State.WelcomeTimer)
         {
-            (Get-ADTSession).State.WelcomeTimer = [System.Windows.Forms.Timer]::new()
+            $adtSession.State.WelcomeTimer = [System.Windows.Forms.Timer]::new()
         }
 
         # Define all form events.
         $formWelcome_FormClosed = {
-            (Get-ADTSession).State.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
+            $adtSession.State.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
             $welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
             $timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
             $formWelcome.remove_Load($formWelcome_Load)
@@ -180,12 +181,12 @@ function Show-ADTWelcomePrompt
             }
 
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
-            (Get-ADTSession).State.FormWelcomeStartPosition = $formWelcome.Location
+            $adtSession.State.FormWelcomeStartPosition = $formWelcome.Location
 
             # Initialize the countdown timer.
             $currentTime = [System.DateTime]::Now
             $countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
-            (Get-ADTSession).State.WelcomeTimer.Start()
+            $adtSession.State.WelcomeTimer.Start()
 
             # Set up the form.
             $remainingTime = $countdownTime.Subtract($currentTime)
@@ -198,7 +199,7 @@ function Show-ADTWelcomePrompt
                 [DateTime]$currentTime = [System.DateTime]::Now
                 [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
                 [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-                (Get-ADTSession).State.CloseAppsCountdownGlobal = $remainingTime.TotalSeconds
+                $adtSession.State.CloseAppsCountdownGlobal = $remainingTime.TotalSeconds
 
                 # If the countdown is complete, close the application(s) or continue.
                 if ($countdownTime -le $currentTime)
@@ -230,7 +231,7 @@ function Show-ADTWelcomePrompt
         }
         else
         {
-            (Get-ADTSession).State.WelcomeTimer.Interval = $Script:ADT.Config.UI.DefaultTimeout * 1000
+            $adtSession.State.WelcomeTimer.Interval = $Script:ADT.Config.UI.DefaultTimeout * 1000
             {
                 $buttonAbort.PerformClick()
             }
@@ -238,7 +239,7 @@ function Show-ADTWelcomePrompt
         $welcomeTimerPersist_Tick = {
             $formWelcome.WindowState = [System.Windows.Forms.FormWindowState]::Normal
             $formWelcome.TopMost = !$NotTopMost
-            $formWelcome.Location = (Get-ADTSession).State.FormWelcomeStartPosition
+            $formWelcome.Location = $adtSession.State.FormWelcomeStartPosition
             $formWelcome.BringToFront()
         }
         $timerRunningProcesses_Tick = {
@@ -277,7 +278,7 @@ function Show-ADTWelcomePrompt
         }
 
         # Welcome Timer.
-        (Get-ADTSession).State.WelcomeTimer.add_Tick($welcomeTimer_Tick)
+        $adtSession.State.WelcomeTimer.add_Tick($welcomeTimer_Tick)
 
         # Persistence Timer.
         $welcomeTimerPersist = [System.Windows.Forms.Timer]::new()
@@ -328,7 +329,7 @@ function Show-ADTWelcomePrompt
         $labelAppName.Anchor = [System.Windows.Forms.AnchorStyles]::Top
         $labelAppName.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelAppName.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelAppName.Text = (Get-ADTSession).GetPropertyValue('InstallTitle')
+        $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle')
         $labelAppName.Name = 'LabelAppName'
         $labelAppName.TabStop = $false
         $labelAppName.AutoSize = $true
@@ -471,7 +472,7 @@ function Show-ADTWelcomePrompt
             $labelCountdownMessage.AutoSize = $true
             $labelCountdownMessage.Text = if ($forceCountdown -or !$runningProcessDescriptions)
             {
-                [System.String]::Format($Script:ADT.Strings.WelcomePrompt.CountdownMessage, $Script:ADT.Strings.DeploymentType.((Get-ADTSession).GetPropertyValue('DeploymentType')))
+                [System.String]::Format($Script:ADT.Strings.WelcomePrompt.CountdownMessage, $Script:ADT.Strings.DeploymentType.($adtSession.GetPropertyValue('DeploymentType')))
             }
             else
             {
@@ -576,7 +577,7 @@ function Show-ADTWelcomePrompt
         $formWelcome.Margin = $formWelcome.Padding = $paddingNone
         $formWelcome.Font = $Script:FormData.Font
         $formWelcome.Name = 'WelcomeForm'
-        $formWelcome.Text = (Get-ADTSession).GetPropertyValue('InstallTitle')
+        $formWelcome.Text = $adtSession.GetPropertyValue('InstallTitle')
         $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
         $formWelcome.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
         $formWelcome.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
@@ -685,14 +686,15 @@ function Close-ADTInstallationProgress
             }
         }
 
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Return early if we're silent, a window wouldn't have ever opened.
-        if ((Get-ADTSession).DeployModeSilent)
+        if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Close-ADTInstallationProgress [Mode: $((Get-ADTSession).GetPropertyValue('deployMode'))]"
+            Write-ADTLogEntry -Message "Bypassing Close-ADTInstallationProgress [Mode: $($adtSession.GetPropertyValue('deployMode'))]"
             return
         }
 
