@@ -760,7 +760,8 @@ class ADTSession
                 {
                     $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item
                 }
-                New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit.LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $this.GetPropertyValue('LogTempFolder') -RemoveSourceAfterArchiving
+                Compress-Archive -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($Script:ADT.Config.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+                [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
             }
             catch
             {
