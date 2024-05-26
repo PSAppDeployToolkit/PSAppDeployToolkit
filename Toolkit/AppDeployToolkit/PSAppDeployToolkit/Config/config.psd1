@@ -46,7 +46,7 @@
         AppName = 'PSAppDeployToolkit'
 
         # Whether to use toast notifications, or fall back to balloon tips.
-        Disable = $false
+        Disable = $true
     }
 
     Toolkit = @{
