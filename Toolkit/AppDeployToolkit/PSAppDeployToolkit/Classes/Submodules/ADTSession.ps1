@@ -29,7 +29,7 @@ class ADTSession
     }
 
     # Variables we export publically for compatibility.
-    hidden [System.Collections.Specialized.OrderedDictionary]$Properties = [ordered]@{
+    hidden [System.Collections.Hashtable]$Properties = @{
         # Deploy-Application.ps1 variables.
         DeploymentType = 'Install'
         DeployMode = 'Interactive'
@@ -82,13 +82,17 @@ class ADTSession
     {
         $this.Init(@{Cmdlet = $Cmdlet})
     }
-    ADTSession([System.Collections.Hashtable]$Parameters)
+    ADTSession([System.Collections.Generic.Dictionary[System.String, System.Object]]$Parameters)
     {
         $this.Init($Parameters)
     }
+    hidden ADTSession([System.Management.Automation.PSObject]$DeserialisedSession)
+    {
+        $DeserialisedSession.PSObject.Properties.ForEach({$this.($_.Name) = $_.Value})
+    }
 
     # Private methods.
-    hidden [System.Void] Init([System.Collections.Hashtable]$Parameters)
+    hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
     {
         # Establish start date/time first so we can accurately mark the start of execution.
         $this.Properties.CurrentTime = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%T'
@@ -97,7 +101,7 @@ class ADTSession
 
         # Process provided parameters.
         $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
-        $Parameters.GetEnumerator().Where({!$_.Name.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Name] = $_.Value})
+        $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
 
         # Amend some incoming parameters to ensure there's no undefined behaviour.
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)

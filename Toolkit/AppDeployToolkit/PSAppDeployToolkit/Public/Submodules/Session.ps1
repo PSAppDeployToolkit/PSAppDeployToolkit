@@ -213,15 +213,10 @@ function Export-ADTModuleState
 
 function Import-ADTModuleState
 {
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSCmdlet]$Cmdlet
-    )
-
     # Restore the previously exported session and prepare it for asynchronous operation.
     Set-Variable -Name ADT -Scope Script -Option ReadOnly -Force -Value ([System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String([Microsoft.Win32.Registry]::GetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, $null)))))
-    $Script:SessionCallers.Add($Script:ADT.CurrentSession, $Cmdlet)
+    [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Script:Serialisation.KeyName.Replace('HKEY_LOCAL_MACHINE\', $null), $true).DeleteValue($Script:Serialisation.ValueName, $true)
+    $Script:ADT.CurrentSession = [ADTSession]::new($Script:ADT.CurrentSession)
     $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
     $Script:ADT.CurrentSession.LegacyMode = $false
 }
