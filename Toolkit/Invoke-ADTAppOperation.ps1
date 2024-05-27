@@ -293,14 +293,11 @@ catch
 try
 {
     & "$($DeploymentType)-ADTApplication"
+    Close-ADTSession -ExitCode $mainExitCode
 }
 catch
 {
     Write-ADTLogEntry -Message ($mainErrorMessage = "$(Resolve-Error)") -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
-    $mainExitCode = 60001
-}
-finally
-{
-    Close-ADTSession -ExitCode $mainExitCode
+    Close-ADTSession -ExitCode ($mainExitCode = 60001)
 }
