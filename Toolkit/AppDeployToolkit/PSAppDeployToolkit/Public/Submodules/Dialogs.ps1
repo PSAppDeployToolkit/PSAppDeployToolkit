@@ -161,9 +161,8 @@ https://psappdeploytoolkit.com
             $installPromptParameters.Remove('NoWait')
             # Format the parameters as a string
             [String]$installPromptParameters = $installPromptParameters | Resolve-Parameters
-
-
-            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
+            Export-ADTModuleState
+            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $installPromptParameters)" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 
@@ -255,6 +254,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Label Text
+        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
         $labelText.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelText.Font = $defaultFont
         $labelText.Name = 'labelText'
@@ -375,7 +375,7 @@ https://psappdeploytoolkit.com
             $flowLayoutPanel.Controls.Add($pictureIcon)
         }
         $flowLayoutPanel.Controls.Add($labelText)
-        $flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
+        $flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
 
         ## ButtonsPanel
         $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
@@ -452,7 +452,7 @@ https://psappdeploytoolkit.com
             $installPromptTimerPersist.Start()
         }
 
-        If (-not $AsyncToolkitLaunch) {
+        If (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous')) {
             ## Close the Installation Progress Dialog if running
             Close-InstallationProgress
         }

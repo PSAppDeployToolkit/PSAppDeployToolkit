@@ -253,18 +253,6 @@ function Exit-Script
 ##*=============================================
 #region ScriptBody
 
-## If the ShowInstallationPrompt Parameter is specified, only call that function.
-If ($showInstallationPrompt) {
-    Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
-    $appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
-    $appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
-    $appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
-    $appDeployMainScriptAsyncParameters.Remove('ReferredInstallTitle')
-    $appDeployMainScriptAsyncParameters.Remove('ReferredLogName')
-    Show-InstallationPrompt @appDeployMainScriptAsyncParameters
-    Exit 0
-}
-
 ## If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt) {
     Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
