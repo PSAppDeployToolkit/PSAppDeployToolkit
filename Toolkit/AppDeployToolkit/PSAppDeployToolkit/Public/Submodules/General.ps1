@@ -339,19 +339,16 @@ https://psappdeploytoolkit.com
 
 function Show-ADTHelpConsole
 {
-    # Run this via a job so it doesn't stall the main thread.
-    [System.Void](Start-Job -ScriptBlock {
+    # Run this via a new PowerShell window so it doesn't stall the main thread.
+    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes([System.String]::Join("`n", {
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
         Set-PSDebug -Strict
         Set-StrictMode -Version Latest
 
-        # Perform initial setup.
-        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-        [System.Windows.Forms.Application]::EnableVisualStyles()
-        [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
-        Import-Module -Name $Using:Script:PSScriptRoot
+        # Import the module and store its passthru data so we can access it later.
+        $module = Import-Module -Name '<<PSScriptRoot>>' -DisableNameChecking -PassThru
 
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
@@ -359,7 +356,7 @@ function Show-ADTHelpConsole
         $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
         $helpListBox.Location = [System.Drawing.Point]::new(3,0)
         $helpListBox.add_SelectedIndexChanged({$helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim()})
-        [System.Void]$helpListBox.Items.AddRange((Get-Command -Module $Using:Script:MyInvocation.MyCommand.ScriptBlock.Module.Name).Name)
+        [System.Void]$helpListBox.Items.AddRange($module.ExportedCommands.Keys)
 
         # Build out the form's textbox.
         $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
@@ -372,7 +369,7 @@ function Show-ADTHelpConsole
         # Build out the form. The suspend/resume is crucial for HiDPI support!
         $helpForm = [System.Windows.Forms.Form]::new()
         $helpForm.SuspendLayout()
-        $helpForm.Text = "$($Using:Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) Help Console"
+        $helpForm.Text = "$($module.Name) Help Console"
         $helpForm.Font = [System.Drawing.SystemFonts]::MessageBoxFont
         $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7,15)
         $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
@@ -385,5 +382,5 @@ function Show-ADTHelpConsole
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    })
+    }.ToString().Trim().Replace('<<PSScriptRoot>>', $Script:PSScriptRoot).Split("`n").Trim()))))"
 }
