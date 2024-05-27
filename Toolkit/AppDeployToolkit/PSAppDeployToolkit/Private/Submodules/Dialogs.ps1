@@ -514,7 +514,7 @@ function Show-ADTWelcomePrompt
             $buttonDefer.MinimumSize = $buttonDefer.ClientSize = $buttonDefer.MaximumSize = $buttonSize
             $buttonDefer.Margin = $buttonDefer.Padding = $paddingNone
             $buttonDefer.Location = [System.Drawing.Point]::new($(if (!$showCloseApps) {14} else {160}), 4)
-            $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::Yes
+            $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
             $buttonDefer.Font = $Script:FormData.Font
             $buttonDefer.Name = 'ButtonDefer'
             $buttonDefer.Text = $Script:ADT.Strings.ClosePrompt.ButtonDefer
