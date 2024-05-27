@@ -202,7 +202,7 @@ function Export-ADTModuleState
 {
     # Sync all property values and export to registry.
     $Script:ADT.CurrentSession.SyncPropertyValues()
-    [Microsoft.Win32.Registry]::SetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([System.Management.Automation.PSSerializer]::Serialize($Script:ADT, [System.Int32]::MaxValue))), [Microsoft.Win32.RegistryValueKind]::String)
+    $Script:Serialisation.Hive.CreateSubKey($Script:Serialisation.Key).SetValue($Script:Serialisation.Name, [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([System.Management.Automation.PSSerializer]::Serialize($Script:ADT, [System.Int32]::MaxValue))), $Script:Serialisation.Type)
 }
 
 #---------------------------------------------------------------------------
@@ -220,8 +220,8 @@ function Import-ADTModuleState
     }
     else
     {
-        [System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String([Microsoft.Win32.Registry]::GetValue($Script:Serialisation.KeyName, $Script:Serialisation.ValueName, $null))))
-        [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Script:Serialisation.KeyName.Replace('HKEY_LOCAL_MACHINE\', $null), $true).DeleteValue($Script:Serialisation.ValueName, $true)
+        [System.Management.Automation.PSSerializer]::Deserialize([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(($regPath = $Script:Serialisation.Hive.OpenSubKey($Script:Serialisation.Key, $true)).GetValue($Script:Serialisation.Name))))
+        $regPath.DeleteValue($Script:Serialisation.Name, $true)
     })
 
     # Create new object based on serialised state and configure for async operations.
