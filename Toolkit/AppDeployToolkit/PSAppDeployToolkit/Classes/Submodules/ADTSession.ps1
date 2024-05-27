@@ -545,9 +545,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.LegacyMode -and $this.Initialised)
         {
-            return Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name -ScriptBlock {
-                Get-Variable -Name $args[0] -ValueOnly
-            }
+            return $Script:SessionCallers[$this].SessionState.PSVariable.Get($Name).Value
         }
         else
         {
@@ -561,9 +559,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.LegacyMode -and $this.Initialised)
         {
-            Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $Name, $Value -ScriptBlock {
-                Set-Variable -Name $args[0] -Value $args[1]
-            }
+            $Script:SessionCallers[$this].SessionState.PSVariable.Set($Name, $Value)
         }
         else
         {
@@ -580,9 +576,7 @@ class ADTSession
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $this.Properties -ScriptBlock {
-            Set-Variable -Name $($args[0].Keys) | ForEach-Object {$args[0][$_.Name] = $_.Value}
-        }
+        $($this.Properties.Keys).ForEach({$this.Properties.$_ = $this.GetPropertyValue($_)})
     }
 
     [System.Void] Open()
@@ -617,9 +611,8 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.LegacyMode)
         {
-            Invoke-ScriptBlockInSessionState -SessionState $Script:SessionCallers[$this].SessionState -Arguments $this.Properties -ScriptBlock {
-                $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Force})
-            }
+            $callerSession = $Script:SessionCallers[$this].SessionState
+            $this.Properties.GetEnumerator().ForEach({$callerSession.PSVariable.Set($_.Name, $_.Value)})
         }
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.

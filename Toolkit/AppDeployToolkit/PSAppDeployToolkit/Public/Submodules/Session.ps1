@@ -118,9 +118,7 @@ function New-ADTSession
     }
 
     # Export environment variables to the user's scope.
-    Invoke-ScriptBlockInSessionState -SessionState $Cmdlet.SessionState -Arguments $Script:ADT.Environment -ScriptBlock {
-        $args[0].GetEnumerator().ForEach({Set-Variable -Name $_.Name -Value $_.Value -Option ReadOnly -Force})
-    }
+    $Script:ADT.Environment.GetEnumerator().ForEach({$Cmdlet.SessionState.PSVariable.Set([psvariable]::new($_.Name, $_.Value, 'ReadOnly'))})
 }
 
 
