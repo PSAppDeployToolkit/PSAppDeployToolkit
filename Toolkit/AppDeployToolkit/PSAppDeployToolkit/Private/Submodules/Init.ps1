@@ -378,94 +378,13 @@ function Initialize-ADTVariableDatabase
 #
 #---------------------------------------------------------------------------
 
-filter Convert-ADTConfigToObjects
-{
-    if ($null -eq $_)
-    {
-        # Just return for null objects.
-        return
-    }
-    elseif ($_ -is [System.String])
-    {
-        # Because XML sucks and everything's a string, we need to process the value.
-        # Before doing so, expand any variables. We don't know what the caller's doing here.
-        $str = $ExecutionContext.InvokeCommand.ExpandString($_.Trim())
-        $val = $null
-
-        # Process the string.
-        if ([System.String]::IsNullOrWhiteSpace($str))
-        {
-            # String was empty, just return.
-            return
-        }
-        elseif (($str -match '(\d+\.){2,}') -and [System.Version]::TryParse($str, [ref]$val))
-        {
-            # String is a version, return the parsed result.
-            return $val
-        }
-        elseif ([System.Double]::TryParse($str, [ref]$val))
-        {
-            # String is a double, return the parsed result.
-            return $val
-        }
-        elseif ([System.UInt32]::TryParse($str, [ref]$val))
-        {
-            # String is an unsigned int, return the parsed result.
-            return $val
-        }
-        elseif ([System.Int32]::TryParse($str, [ref]$val))
-        {
-            # String is an signed int, return the parsed result.
-            return $val
-        }
-        elseif ([System.Boolean]::TryParse($str, [ref]$val))
-        {
-            # String is a bool, return the parsed result.
-            return $val
-        }
-        else
-        {
-            # String is just a string. Split, trim, join, then return it.
-            return [System.String]::Join("`n", $str.Split("`n").Trim())
-        }
-    }
-    else
-    {
-        # We've got an XML element to process.
-        # Open up a hashtable for returning at the end.
-        $obj = [ordered]@{}
-
-        # Recursively process each property.
-        foreach ($property in ($_ | Get-Member -MemberType Property).Name.Where({!$_.Equals('#comment')}))
-        {
-            if ($null -ne ($_.$property))
-            {
-                $obj.Add($property, ($_.$property | & $MyInvocation.MyCommand))
-            }
-        }
-
-        # Return the object if it's not empty.
-        if ($obj.Count)
-        {
-            return [pscustomobject]$obj
-        }
-    }
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
 function Import-ADTLocalizedStrings
 {
     # Get the best language identifier.
-    $Script:ADT.Language = if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
+    $Script:ADT.Language = if (![System.String]::IsNullOrWhiteSpace($Script:ADT.Config.UI.LanguageOverride))
     {
         # The caller has specified a specific language.
-        $Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride
+        $Script:ADT.Config.UI.LanguageOverride
     }
     else
     {
@@ -489,51 +408,71 @@ function Import-ADTConfig
     # Create variables within this scope from the database, it's needed during the config import.
     $Script:ADT.Environment.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
 
-    # Read XML file and confirm the version meets our minimum requirements.
-    $xml = [System.Xml.XmlDocument]::new(); $xml.Load([System.Xml.XmlReader]::Create("$($Script:PSScriptRoot)\AppDeployToolkitConfig.xml"))
-    if (([System.Version]$xml.AppDeployToolkit_Config.Config_File.Config_Version) -lt $Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)
+    # Read config file and cast the version into an object.
+    $config = Import-LocalizedData -BaseDirectory "$Script:PSScriptRoot\Config" -FileName config.psd1
+    $config.File.Version = [version]$config.File.Version
+
+    # Confirm the config version meets our minimum requirements.
+    if ($config.File.Version -lt $Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)
     {
-        throw [System.InvalidOperationException]::new("The XML configuration file version [$($xml.AppDeployToolkit_Config.Config_File.Config_Version)] is lower than the supported version required by the Toolkit [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+        throw [System.InvalidOperationException]::new("The configuration file version [$($config.File.Version)] is lower than the supported version required by the Toolkit [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
     }
 
-    # Process the XML file into something sane for PowerShell.
-    $Script:ADT.Config = ($xml | Convert-ADTConfigToObjects).AppDeployToolkit_Config
-
-    # Process logo files.
-    $Script:ADT.Config.BannerIcon_Options.Icon_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.Icon_Filename)").Path
-    $Script:ADT.Config.BannerIcon_Options.LogoImage_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.LogoImage_Filename)").Path
-    $Script:ADT.Config.BannerIcon_Options.Banner_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.Banner_Filename)").Path
-
-    #  Check that dependency files are present
-    if (![System.IO.File]::Exists($Script:ADT.Config.BannerIcon_Options.Icon_Filename))
+    # Process the config and expand out variables.
+    foreach ($section in $($config.Keys))
     {
-        throw [System.InvalidOperationException]::new('App Deploy logo icon file not found.')
+        foreach ($subsection in $($config[$section].Keys))
+        {
+            if ($config[$section][$subsection] -is [System.String])
+            {
+                $config[$section][$subsection] = $ExecutionContext.InvokeCommand.ExpandString($config[$section][$subsection])
+            }
+        }
     }
-    if (![System.IO.File]::Exists($Script:ADT.Config.BannerIcon_Options.Banner_Filename))
+
+    # Expand out asset file paths and test that the files are present.
+    if (![System.IO.File]::Exists(($config.Assets.Icon = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Icon)").Path)))
     {
-        throw [System.InvalidOperationException]::new('App Deploy logo banner file not found.')
+        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) icon file not found.")
+    }
+    if (![System.IO.File]::Exists(($config.Assets.Logo = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Logo)").Path)))
+    {
+        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) logo file not found.")
+    }
+    if (![System.IO.File]::Exists(($config.Assets.Banner = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Banner)").Path)))
+    {
+        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) banner file not found.")
     }
 
     # Change paths to user accessible ones if user isn't an admin.
     if (!$Script:ADT.Environment.IsAdmin)
     {
-        if ($Script:ADT.Config.Toolkit_Options.Toolkit_TempPathNoAdminRights)
+        if ($config.Toolkit.TempPathNoAdminRights)
         {
-            $Script:ADT.Config.Toolkit_Options.Toolkit_TempPath = $Script:ADT.Config.Toolkit_Options.Toolkit_TempPathNoAdminRights
+            $config.Toolkit.TempPath = $config.Toolkit.TempPathNoAdminRights
         }
-        if ($Script:ADT.Config.Toolkit_Options.Toolkit_RegPathNoAdminRights)
+        if ($config.Toolkit.RegPathNoAdminRights)
         {
-            $Script:ADT.Config.Toolkit_Options.Toolkit_RegPath = $Script:ADT.Config.Toolkit_Options.Toolkit_RegPathNoAdminRights
+            $config.Toolkit.RegPath = $config.Toolkit.RegPathNoAdminRights
         }
-        if ($Script:ADT.Config.Toolkit_Options.Toolkit_LogPathNoAdminRights)
+        if ($config.Toolkit.LogPathNoAdminRights)
         {
-            $Script:ADT.Config.Toolkit_Options.Toolkit_LogPath = $Script:ADT.Config.Toolkit_Options.Toolkit_LogPathNoAdminRights
+            $config.Toolkit.LogPath = $config.Toolkit.LogPathNoAdminRights
         }
-        if ($Script:ADT.Config.MSI_Options.MSI_LogPathNoAdminRights)
+        if ($config.MSI.LogPathNoAdminRights)
         {
-            $Script:ADT.Config.MSI_Options.MSI_LogPath = $Script:ADT.Config.MSI_Options.MSI_LogPathNoAdminRights
+            $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights
         }
     }
+
+    # Calculate banner height.
+    $banner = [System.Drawing.Bitmap]::new($config.Assets.Banner)
+    $height = [System.Math]::Ceiling(450 * ($banner.Height / $banner.Width))
+    $banner.Dispose()
+    $Script:ADT.BannerHeight = $height
+
+    # Finally, store the config globally for usage within module.
+    $Script:ADT.Config = $config
 }
 
 

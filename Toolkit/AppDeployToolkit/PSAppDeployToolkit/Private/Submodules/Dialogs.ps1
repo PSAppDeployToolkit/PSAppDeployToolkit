@@ -135,7 +135,7 @@ https://psappdeploytoolkit.com
         [DateTime]$countdownTime = $startTime
 
         ## Check if the countdown was specified
-        If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $Script:ADT.Config.UI_Options.InstallationUI_Timeout)) {
+        If ($CloseAppsCountdown -and ($CloseAppsCountdown -gt $Script:ADT.Config.UI.DefaultTimeout)) {
             Throw 'The close applications countdown time cannot be longer than the timeout specified in the XML configuration for installation UI dialogs to timeout.'
         }
 
@@ -281,7 +281,7 @@ https://psappdeploytoolkit.com
             }
         }
         Else {
-            $script:welcomeTimer.Interval = ($Script:ADT.Config.UI_Options.InstallationUI_Timeout * 1000)
+            $script:welcomeTimer.Interval = ($Script:ADT.Config.UI.DefaultTimeout * 1000)
             [ScriptBlock]$welcomeTimer_Tick = { $buttonAbort.PerformClick() }
         }
 
@@ -290,7 +290,7 @@ https://psappdeploytoolkit.com
         ## Persistence Timer
         If ($persistWindow) {
             $welcomeTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-            $welcomeTimerPersist.Interval = ($Script:ADT.Config.UI_Options.InstallationPrompt_PersistInterval * 1000)
+            $welcomeTimerPersist.Interval = ($Script:ADT.Config.UI.DefaultPromptPersistInterval * 1000)
             [ScriptBlock]$welcomeTimerPersist_Tick = {
                 $formWelcome.WindowState = 'Normal'
                 $formWelcome.TopMost = $TopMost
@@ -302,9 +302,9 @@ https://psappdeploytoolkit.com
         }
 
         ## Process Re-Enumeration Timer
-        If ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluation) {
+        If ($Script:ADT.Config.UI.DynamicProcessEvaluation) {
             $timerRunningProcesses = New-Object -TypeName 'System.Windows.Forms.Timer'
-            $timerRunningProcesses.Interval = ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluationInterval * 1000)
+            $timerRunningProcesses.Interval = ($Script:ADT.Config.UI.DynamicProcessEvaluationInterval * 1000)
             [ScriptBlock]$timerRunningProcesses_Tick = {
                 Try {
                     $dynamicRunningProcesses = $null
@@ -355,11 +355,11 @@ https://psappdeploytoolkit.com
 
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.ImageLocation = $Script:ADT.Config.BannerIcon_Options.Banner_Filename
+        $pictureBanner.ImageLocation = $Script:ADT.Config.Assets.Banner
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.CurrentSession.Session.BannerHeight)
+        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.BannerHeight)
         $pictureBanner.ClientSize = $System_Drawing_Size
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -531,7 +531,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.AutoSize = $true
 
         ## Panel Flow Layout
-        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.CurrentSession.Session.BannerHeight)
+        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -658,7 +658,7 @@ https://psappdeploytoolkit.com
         $formWelcome.MinimizeBox = $false
         $formWelcome.TopMost = $TopMost
         $formWelcome.TopLevel = $true
-        $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.BannerIcon_Options.Icon_Filename
+        $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
         $formWelcome.AutoSize = $true
         $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
         $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
@@ -713,7 +713,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If ($Script:ADT.Config.UI_Options.InstallationWelcomePrompt_DynamicRunningProcessEvaluation) {
+        If ($Script:ADT.Config.UI.DynamicProcessEvaluation) {
             $timerRunningProcesses.Stop()
         }
 

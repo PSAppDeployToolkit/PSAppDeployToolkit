@@ -11,7 +11,6 @@ class ADTSession
         Cmdlet = $null
         LegacyMode = $null
         RegKeyDeferHistory = $null
-        BannerHeight = 0
         Initialised = $false
         State = @{
             OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
@@ -104,7 +103,7 @@ class ADTSession
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($this.Session.Cmdlet.MyInvocation.MyCommand.Path)
         $this.Properties.DirFiles = "$($this.Properties.ScriptParentPath)\Files"
         $this.Properties.DirSupportFiles = "$($this.Properties.ScriptParentPath)\SupportFiles"
-        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Config.Toolkit_Options.Toolkit_TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
+        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Config.Toolkit.TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
@@ -265,7 +264,7 @@ class ADTSession
         $this.Session.Cmdlet.Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
 
         # Set the Defer History registry path.
-        $this.Session.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit_Options.Toolkit_RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
+        $this.Session.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
     hidden [System.Void] SetLogName()
@@ -273,30 +272,14 @@ class ADTSession
         # Generate a log name from our installation properties.
         $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
 
-        # If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($Script:ADT.Config.Toolkit_Options.Toolkit_LogPath) after being zipped.
-        if ($Script:ADT.Config.Toolkit_Options.Toolkit_CompressLogs)
+        # If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($Script:ADT.Config.Toolkit.LogPath) after being zipped.
+        if ($Script:ADT.Config.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
             if ([System.IO.Directory]::Exists(($this.Session.State.LogTempFolder = "$([System.IO.Path]::GetTempPath())$($this.Properties.InstallName)_$($this.Properties.DeploymentType)")))
             {
                 [System.IO.Directory]::Remove($this.Session.State.LogTempFolder, $true)
             }
-        }
-    }
-
-    hidden [System.Void] CalcBannerHeight()
-    {
-        try
-        {
-            # Calculate banner height.
-            $banner = [System.Drawing.Bitmap]::new($Script:ADT.Config.BannerIcon_Options.Banner_Filename)
-            $this.Session.BannerHeight = [System.Math]::Min([System.Math]::Ceiling(450 * ($banner.Height / $banner.Width)), $Script:ADT.Config.BannerIcon_Options.Banner_MaxHeight)
-            $banner.Dispose()
-        }
-        catch
-        {
-            # Catch blocks will warn in PSScriptAnalyzer if they're empty.
-            [System.Void]$null
         }
     }
 
@@ -360,7 +343,7 @@ class ADTSession
     hidden [System.Void] InstallToastDependencies()
     {
         # Install required assemblies for toast notifications if conditions are right.
-        if (!$Script:ADT.Config.Toast_Options.Toast_Disable -and $Script:PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore))
+        if (!$Script:ADT.Config.Toast.Disable -and $Script:PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore))
         {
             try
             {
@@ -393,7 +376,7 @@ class ADTSession
             }
 
             # Guard Intune detection code behind a variable.
-            if ($Script:ADT.Config.Toolkit_Options.Toolkit_OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
+            if ($Script:ADT.Config.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
             {
                 Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $logSrc
                 $this.Properties.DeployMode = 'Silent'
@@ -420,15 +403,15 @@ class ADTSession
             Write-Log -Message 'No users are logged on to the system.' -Source $logSrc
         }
 
-        # Log which language's UI messages are loaded from the config XML file
+        # Log which language's UI messages are loaded from the config file
         Write-Log -Message "The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)]." -Source $logSrc
 
         # Advise whether the UI language was overridden.
-        if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
+        if ($Script:ADT.Config.UI.LanguageOverride)
         {
-            Write-Log -Message "The config XML file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)]." -Source $logSrc
+            Write-Log -Message "The config file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI.LanguageOverride)]." -Source $logSrc
         }
-        Write-Log -Message "The following UI messages were imported from the config XML file: [$($Script:ADT.Language)]." -Source $logSrc
+        Write-Log -Message "The following UI messages were imported from the config file: [$($Script:ADT.Language)]." -Source $logSrc
 
         # Log system DPI scale factor of active logged on user
         if ($Script:ADT.Environment.UserDisplayScaleFactor)
@@ -498,7 +481,7 @@ class ADTSession
             {
                 Write-Log -Message "Session 0 detected but deployment mode was manually set to [$($this.Properties.DeployMode)]." -Source $logSrc
             }
-            elseif ($Script:ADT.Config.Toolkit_Options.Toolkit_SessionDetection)
+            elseif ($Script:ADT.Config.Toolkit.SessionDetection)
             {
                 # If the process is not able to display a UI, enable NonInteractive mode
                 if (!$Script:ADT.Environment.IsProcessUserInteractive)
@@ -572,9 +555,9 @@ class ADTSession
     hidden [System.Void] TestAdminRequired()
     {
         # Check current permissions and exit if not running with Administrator rights
-        if ($Script:ADT.Config.Toolkit_Options.Toolkit_RequireAdmin -and !$Script:ADT.Environment.IsAdmin)# -and !$ShowBlockedAppDialog)
+        if ($Script:ADT.Config.Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)# -and !$ShowBlockedAppDialog)
         {
-            $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has an XML config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the XML config file to not require Administrator rights."
+            $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
             Write-Log -Message $adminErr -Severity 3 -Source $this.GetLogSource()
             Show-DialogBox -Text $adminErr -Icon Stop
             throw [System.InvalidOperationException]::new($adminErr)
@@ -642,7 +625,6 @@ class ADTSession
         $this.SetAppProperties()
         $this.SetInstallProperties()
         $this.SetLogName()
-        $this.CalcBannerHeight()
         $this.OpenLogFile()
         $this.LogScriptInfo()
         $this.LogSystemInfo()

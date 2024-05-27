@@ -126,39 +126,39 @@ https://psappdeploytoolkit.com
         [String]$ScriptSection = $Script:ADT.CurrentSession.GetPropertyValue('InstallPhase'),
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateSet('CMTrace', 'Legacy')]
-        [String]$LogType = $Script:ADT.Config.Toolkit_Options.Toolkit_LogStyle,
+        [String]$LogType = $Script:ADT.Config.Toolkit.LogStyle,
         [Parameter(Mandatory = $false, Position = 5)]
         [ValidateNotNullorEmpty()]
-        [String]$LogFileDirectory = $(If ($Script:ADT.Config.Toolkit_Options.Toolkit_CompressLogs) {
+        [String]$LogFileDirectory = $(If ($Script:ADT.Config.Toolkit.CompressLogs) {
                 $logTempFolder
             }
             Else {
-                $Script:ADT.Config.Toolkit_Options.Toolkit_LogPath
+                $Script:ADT.Config.Toolkit.LogPath
             }),
         [Parameter(Mandatory = $false, Position = 6)]
         [ValidateNotNullorEmpty()]
         [String]$LogFileName = $Script:ADT.CurrentSession.GetPropertyValue('LogName'),
         [Parameter(Mandatory=$false,Position=7)]
         [ValidateNotNullorEmpty()]
-        [Boolean]$AppendToLogFile = $Script:ADT.Config.Toolkit_Options.Toolkit_LogAppend,
+        [Boolean]$AppendToLogFile = $Script:ADT.Config.Toolkit.LogAppend,
         [Parameter(Mandatory=$false,Position=8)]
         [ValidateNotNullorEmpty()]
-        [Int]$MaxLogHistory = $Script:ADT.Config.Toolkit_Options.Toolkit_LogMaxHistory,
+        [Int]$MaxLogHistory = $Script:ADT.Config.Toolkit.LogMaxHistory,
         [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullorEmpty()]
-        [Decimal]$MaxLogFileSizeMB = $Script:ADT.Config.Toolkit_Options.Toolkit_LogMaxSize,
+        [Decimal]$MaxLogFileSizeMB = $Script:ADT.Config.Toolkit.LogMaxSize,
         [Parameter(Mandatory=$false,Position=10)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true,
         [Parameter(Mandatory = $false, Position = 11)]
         [ValidateNotNullorEmpty()]
-        [Boolean]$WriteHost = $Script:ADT.Config.Toolkit_Options.Toolkit_LogWriteToHost,
+        [Boolean]$WriteHost = $Script:ADT.Config.Toolkit.LogWriteToHost,
         [Parameter(Mandatory=$false,Position=12)]
         [Switch]$PassThru = $false,
         [Parameter(Mandatory=$false,Position=13)]
         [Switch]$DebugMessage = $false,
         [Parameter(Mandatory=$false,Position=14)]
-        [Boolean]$LogDebugMessage = $Script:ADT.Config.Toolkit_Options.Toolkit_LogDebugMessage
+        [Boolean]$LogDebugMessage = $Script:ADT.Config.Toolkit.LogDebugMessage
     )
 
     Begin {
@@ -493,10 +493,10 @@ https://psappdeploytoolkit.com
 
     ## Determine action based on exit code
     Switch ($exitCode) {
-        $Script:ADT.Config.UI_Options.InstallationUI_ExitCode {
+        $Script:ADT.Config.UI.DefaultExitCode {
             $installSuccess = $false
         }
-        $Script:ADT.Config.UI_Options.InstallationDefer_ExitCode {
+        $Script:ADT.Config.UI.DeferExitCode {
             $installSuccess = $false
         }
         {$ValidExitCodes -contains $_} {
@@ -509,7 +509,7 @@ https://psappdeploytoolkit.com
 
     ## Determine if balloon notification should be shown
     If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
-        [Boolean]$Script:ADT.Config.UI_Options.ShowBalloonNotifications = $false
+        [Boolean]$Script:ADT.Config.UI.BalloonNotifications = $false
     }
 
     If ($installSuccess) {
@@ -532,21 +532,21 @@ https://psappdeploytoolkit.com
         }
 
         Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 0
-        If ($Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
+        If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText -NoWait
         }
     }
-    ElseIf (($exitCode -eq $Script:ADT.Config.UI_Options.InstallationUI_ExitCode) -or ($exitCode -eq $Script:ADT.Config.UI_Options.InstallationDefer_ExitCode)) {
+    ElseIf (($exitCode -eq $Script:ADT.Config.UI.DefaultExitCode) -or ($exitCode -eq $Script:ADT.Config.UI.DeferExitCode)) {
         Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 2
         [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
-        If ($Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
+        If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Warning' -BalloonTipText $balloonText -NoWait
         }
     }
     Else {
         Write-Log -Message "$($Script:ADT.CurrentSession.GetPropertyValue('installName')) $($Script:ADT.CurrentSession.Session.State.DeploymentTypeName.ToLower()) completed with exit code [$exitcode]." -Source ${CmdletName} -Severity 3
         [String]$balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
-        If ($Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
+        If ($Script:ADT.Config.UI.BalloonNotifications) {
             Show-BalloonTip -BalloonTipIcon 'Error' -BalloonTipText $balloonText -NoWait
         }
     }
@@ -555,21 +555,21 @@ https://psappdeploytoolkit.com
     Write-Log -Message $LogDash -Source ${CmdletName}
 
     ## Archive the log files to zip format and then delete the temporary logs folder
-    If ($Script:ADT.Config.Toolkit_Options.Toolkit_CompressLogs) {
+    If ($Script:ADT.Config.Toolkit.CompressLogs) {
         ## Disable logging to file so that we can archive the log files
         . $DisableScriptLogging
 
         Try {
             # Get all archive files sorted by last write time
-            $ArchiveFiles = Get-ChildItem -LiteralPath $Script:ADT.Config.Toolkit_Options.Toolkit_LogPath -Filter ($Script:ADT.CurrentSession.GetPropertyValue('installName') + '_' + $Script:ADT.CurrentSession.GetPropertyValue('deploymentType') + '_*.zip') | Sort-Object LastWriteTime
+            $ArchiveFiles = Get-ChildItem -LiteralPath $Script:ADT.Config.Toolkit.LogPath -Filter ($Script:ADT.CurrentSession.GetPropertyValue('installName') + '_' + $Script:ADT.CurrentSession.GetPropertyValue('deploymentType') + '_*.zip') | Sort-Object LastWriteTime
 
             # Keep only the max number of archive files
-            if ($ArchiveFiles.Count -gt $Script:ADT.Config.Toolkit_Options.Toolkit_LogMaxHistory) {
-                $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $Script:ADT.Config.Toolkit_Options.Toolkit_LogMaxHistory) | Remove-Item -ErrorAction 'Stop'
+            if ($ArchiveFiles.Count -gt $Script:ADT.Config.Toolkit.LogMaxHistory) {
+                $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item -ErrorAction 'Stop'
             }
 
             [String]$DestinationArchiveFileName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_' + $Script:ADT.CurrentSession.GetPropertyValue('deploymentType') + '_' + (Get-Date -Format 'yyyy-MM-dd-HH-mm-ss').ToString() + '.zip'
-            New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit_Options.Toolkit_LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
+            New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit.LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $logTempFolder -RemoveSourceAfterArchiving
         }
         Catch {
             Write-Host -Object "[$LogDate $LogTime] [${CmdletName}] $ScriptSection :: Failed to manage archive file [$DestinationArchiveFileName]. `r`n$(Resolve-Error)" -ForegroundColor 'Red'
