@@ -177,7 +177,6 @@ https://psappdeploytoolkit.com
         }
 
         [String[]]$processDescriptions = $processDescriptions -split ','
-        [Windows.Forms.Application]::EnableVisualStyles()
 
         $formWelcome = New-Object -TypeName 'System.Windows.Forms.Form'
         $formWelcome.SuspendLayout()
