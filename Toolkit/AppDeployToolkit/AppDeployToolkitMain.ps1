@@ -806,3 +806,46 @@ function Get-WindowTitle
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTWindowTitle] instead." -Severity 2
     Get-ADTWindowTitle @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTInstallationRestartPrompt
+#
+#---------------------------------------------------------------------------
+
+function Show-InstallationRestartPrompt
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$CountdownSeconds,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$CountdownNoHideSeconds,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$NoSilentRestart = $true,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$SilentCountdownSeconds,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$TopMost = $true,
+
+        [System.Management.Automation.SwitchParameter]$NoCountdown
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationRestartPrompt] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
+    {
+        $PSBoundParameters.SilentRestart = !$PSBoundParameters.NoSilentRestart
+        [System.Void]$PSBoundParameters.Remove('NoSilentRestart')
+    }
+    if ($PSBoundParameters.ContainsKey('TopMost'))
+    {
+        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        [System.Void]$PSBoundParameters.Remove('TopMost')
+    }
+    Show-ADTInstallationRestartPrompt @PSBoundParameters
+}
