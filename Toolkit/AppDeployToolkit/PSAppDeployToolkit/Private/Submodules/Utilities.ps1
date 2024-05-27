@@ -262,125 +262,91 @@ function Get-ADTRunningProcesses
 #
 #---------------------------------------------------------------------------
 
-Function Get-PEFileArchitecture {
+function Get-ADTPEFileArchitecture
+{
     <#
-.SYNOPSIS
 
-Determine if a PE file is a 32-bit or a 64-bit file.
+    .SYNOPSIS
+    Determine if a PE file is a 32-bit or a 64-bit file.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Determine if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
 
-Determine if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
+    PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
 
-PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
+    .PARAMETER FilePath
+    Path to the PE file to examine.
 
-.PARAMETER FilePath
+    .INPUTS
+    System.IO.FileInfo. Accepts a FileInfo object from the pipeline.
 
-Path to the PE file to examine.
+    .OUTPUTS
+    System.String. Returns a string indicating the file binary type.
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
 
-Continue if an error is encountered. Default is: $true.
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-.PARAMETER PassThru
+    .LINK
+    https://psappdeploytoolkit.com
 
-Get the file object, attach a property indicating the file binary type, and write to pipeline
+    #>
 
-.INPUTS
-
-System.IO.FileInfo.
-
-Accepts a FileInfo object from the pipeline.
-
-.OUTPUTS
-
-System.String
-
-Returns a string indicating the file binary type.
-
-.EXAMPLE
-
-Get-PEFileArchitecture -FilePath "$env:windir\notepad.exe"
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Leaf' })]
-        [IO.FileInfo[]]$FilePath,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true,
-        [Parameter(Mandatory = $false)]
-        [Switch]$PassThru
+        [ValidateScript({if ($_.Where({![System.IO.File]::Exists($_) -or (('.exe', '.dll', '.ocx', '.drv', '.sys', '.scr', '.efi', '.cpl', '.fon') -notcontains [System.IO.Path]::GetExtension($_))})) {throw "One or more files either does not exist or has an invalid extension."}; $true})]
+        [System.IO.FileInfo[]]$FilePath
     )
 
-    Begin {
+    begin {
+        [System.Int32]$MACHINE_OFFSET = 4
+        [System.Int32]$PE_POINTER_OFFSET = 60
+        [System.Byte[]]$data = [System.Byte[]]::new(4096)
         Write-DebugHeader
-
-        [String[]]$PEFileExtensions = '.exe', '.dll', '.ocx', '.drv', '.sys', '.scr', '.efi', '.cpl', '.fon'
-        [Int32]$MACHINE_OFFSET = 4
-        [Int32]$PE_POINTER_OFFSET = 60
     }
-    Process {
-        ForEach ($Path in $filePath) {
-            Try {
-                If ($PEFileExtensions -notcontains $Path.Extension) {
-                    Throw "Invalid file type. Please specify one of the following PE file types: $($PEFileExtensions -join ', ')"
-                }
 
-                [Byte[]]$data = New-Object -TypeName 'System.Byte[]' -ArgumentList (4096)
-                $stream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($Path.FullName, 'Open', 'Read')
-                $null = $stream.Read($data, 0, 4096)
-                $stream.Flush()
-                $stream.Close()
+    process {
+        foreach ($Path in $filePath)
+        {
+            # Read the first 4096 bytes of the file.
+            $stream = [System.IO.FileStream]::new($Path.FullName, 'Open', 'Read')
+            [System.Void]$stream.Read($data, 0, $data.Count)
+            $stream.Flush()
+            $stream.Close()
 
-                [Int32]$PE_HEADER_ADDR = [BitConverter]::ToInt32($data, $PE_POINTER_OFFSET)
-                [UInt16]$PE_IMAGE_FILE_HEADER = [BitConverter]::ToUInt16($data, $PE_HEADER_ADDR + $MACHINE_OFFSET)
-                Switch ($PE_IMAGE_FILE_HEADER) {
-                    0 {
-                        $PEArchitecture = 'Native'
-                    } # The contents of this file are assumed to be applicable to any machine type
-                    0x014c {
-                        $PEArchitecture = '32BIT'
-                    } # File for Windows 32-bit systems
-                    0x0200 {
-                        $PEArchitecture = 'Itanium-x64'
-                    } # File for Intel Itanium x64 processor family
-                    0x8664 {
-                        $PEArchitecture = '64BIT'
-                    } # File for Windows 64-bit systems
-                    Default {
-                        $PEArchitecture = 'Unknown'
-                    }
+            # Get the file header from the header's address, factoring in any offsets.
+            $PEArchitecture = switch ($PE_IMAGE_FILE_HEADER = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
+            {
+                0 {
+                    # The contents of this file are assumed to be applicable to any machine type
+                    'Native'
                 }
-                Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
-
-                If ($PassThru) {
-                    #  Get the file object, attach a property indicating the type, and write to pipeline
-                    Get-Item -LiteralPath $Path.FullName -Force | Add-Member -MemberType 'NoteProperty' -Name 'BinaryType' -Value $PEArchitecture -Force -PassThru | Write-Output
+                0x014c {
+                    # File for Windows 32-bit systems
+                    '32BIT'
                 }
-                Else {
-                    Write-Output -InputObject ($PEArchitecture)
+                0x0200 {
+                    # File for Intel Itanium x64 processor family
+                    'Itanium-x64'
+                }
+                0x8664 {
+                    # File for Windows 64-bit systems
+                    '64BIT'
+                }
+                default {
+                    'Unknown'
                 }
             }
-            Catch {
-                Write-ADTLogEntry -Message "Failed to get the PE file architecture. `r`n$(Resolve-Error)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to get the PE file architecture: $($_.Exception.Message)"
-                }
-                Continue
-            }
+            Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
+
+            # Output the string to the pipeline.
+            $PEArchitecture
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }

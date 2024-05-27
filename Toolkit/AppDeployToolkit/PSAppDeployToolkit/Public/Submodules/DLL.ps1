@@ -112,7 +112,7 @@ https://psappdeploytoolkit.com
                 Throw "File [$filePath] could not be found."
             }
 
-            [String]$DLLFileBitness = Get-PEFileArchitecture -FilePath $filePath -ContinueOnError $false -ErrorAction 'Stop'
+            [String]$DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $filePath
             If (($DLLFileBitness -ne '64BIT') -and ($DLLFileBitness -ne '32BIT')) {
                 Throw "File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($DLLAction.ToLower() + 'ed')."
             }
