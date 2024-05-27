@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -101,7 +101,7 @@ https://psappdeploytoolkit.com
             $Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
         }
 
-        If ($Wow6432Node -and $Is64BitProcess) {
+        If ($Wow6432Node -and $Script:ADT.Environment.Is64BitProcess) {
             If ($Key -match '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)') {
                 $Key = $Key -replace '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'
             }
@@ -620,13 +620,13 @@ https://psappdeploytoolkit.com
                     }
                     # Forward slash was found in Key. Use REG.exe ADD to create registry key
                     Else {
-                        If ($Is64BitProcess -and -not $Wow6432Node) {
+                        If ($Script:ADT.Environment.Is64BitProcess -and -not $Wow6432Node) {
                             $RegMode = '/reg:64'
                         }
                         Else {
                             $RegMode = '/reg:32'
                         }
-                        [String]$CreateRegkeyResult = & "$envWinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode
+                        [String]$CreateRegkeyResult = & "$env:WinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode
                         If ($global:LastExitCode -ne 0) {
                             Throw "Failed to create registry key [$Key]"
                         }
@@ -930,7 +930,7 @@ https://psappdeploytoolkit.com
                     #  Load the User registry hive if the registry hive file exists
                     If (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf') {
                         Write-Log -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-                        [String]$HiveLoadResult = & "$envWinDir\System32\reg.exe" load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
+                        [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 
                         If ($global:LastExitCode -ne 0) {
                             Throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
@@ -959,7 +959,7 @@ https://psappdeploytoolkit.com
                 If ($ManuallyLoadedRegHive) {
                     Try {
                         Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-                        [String]$HiveLoadResult = & "$envWinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
+                        [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
 
                         If ($global:LastExitCode -ne 0) {
                             Write-Log -Message "REG.exe failed to unload the registry hive and exited with exit code [$($global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2 -Source ${CmdletName}
@@ -968,7 +968,7 @@ https://psappdeploytoolkit.com
                             Start-Sleep -Seconds 5
 
                             Write-Log -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
-                            [String]$HiveLoadResult = & "$envWinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
+                            [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
                             If ($global:LastExitCode -ne 0) {
                                 Throw "REG.exe failed with exit code [$($global:LastExitCode)] and result [$HiveLoadResult]."
                             }

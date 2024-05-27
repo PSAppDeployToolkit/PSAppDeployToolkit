@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -163,7 +163,7 @@ https://psappdeploytoolkit.com
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [String]$Action = 'Install',
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({ ($_ -match $MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [IO.Path]::GetExtension($_)) })]
+        [ValidateScript({ ($_ -match $Script:ADT.Environment.MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [IO.Path]::GetExtension($_)) })]
         [Alias('FilePath')]
         [String]$Path,
         [Parameter(Mandatory = $false)]
@@ -229,7 +229,7 @@ https://psappdeploytoolkit.com
         [String[]]$transforms = $null
 
         ## If the path matches a product code
-        If ($Path -match $MSIProductCodeRegExPattern) {
+        If ($Path -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {
             #  Set variable indicating that $Path variable is a Product Code
             [Boolean]$PathIsProductCode = $true
 
@@ -285,7 +285,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Set the installation Parameters
-        If ($deployModeSilent) {
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
             $msiInstallDefaultParams = $Script:ADT.Config.MSI_Options.MSI_SilentParams
             $msiUninstallDefaultParams = $Script:ADT.Config.MSI_Options.MSI_SilentParams
         }
@@ -322,8 +322,8 @@ https://psappdeploytoolkit.com
         }
 
         ## If the MSI is in the Files directory, set the full path to the MSI
-        If (Test-Path -LiteralPath (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-            [String]$msiFile = Join-Path -Path $dirFiles -ChildPath $path
+        If (Test-Path -LiteralPath (Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+            [String]$msiFile = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $path
         }
         ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'SilentlyContinue') {
             [String]$msiFile = (Get-Item -LiteralPath $Path).FullName
@@ -444,7 +444,7 @@ https://psappdeploytoolkit.com
             Write-Log -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
             #  Build the hashtable with the options that will be passed to Execute-Process using splatting
             [Hashtable]$ExecuteProcessSplat = @{
-                Path                 = $exeMsiexec
+                Path                 = $Script:ADT.Environment.exeMsiexec
                 Parameters           = $argsMSI
                 WindowStyle          = 'Normal'
                 ExitOnProcessFailure = $ExitOnProcessFailure
@@ -562,8 +562,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If the MSP is in the Files directory, set the full path to the MSP
-        If (Test-Path -LiteralPath (Join-Path -Path $dirFiles -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
-            [String]$mspFile = Join-Path -Path $dirFiles -ChildPath $path
+        If (Test-Path -LiteralPath (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('dirFiles')) -ChildPath $path -ErrorAction 'SilentlyContinue') -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
+            [String]$mspFile = Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('dirFiles')) -ChildPath $path
         }
         ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'SilentlyContinue') {
             [String]$mspFile = (Get-Item -LiteralPath $Path).FullName

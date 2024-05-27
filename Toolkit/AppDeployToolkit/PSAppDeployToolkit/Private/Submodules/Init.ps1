@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -6,27 +6,15 @@
 
 function Initialize-ADTVariableDatabase
 {
-    param (
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force
-    )
-
-    # Return early if we've already initialised and we're not re-initing.
-    if (!$Script:DotSourced -and $Script:ADT.Environment -and $Script:ADT.Environment.Count -and $Script:ADT.Sessions -and $Script:ADT.Sessions.Count -and !$Force)
-    {
-        return
-    }
-
     ## Open new dictionary for storage.
     $variables = [ordered]@{}
 
     ## Variables: Toolkit Name
-    $variables.Add('appDeployToolkitName', [string]'PSAppDeployToolkit')
-    $variables.Add('appDeployMainScriptFriendlyName', [string]'App Deploy Toolkit Main')
+    $variables.Add('appDeployToolkitName', [string]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)
 
     ## Variables: Script Info
-    $variables.Add('appDeployMainScriptVersion', [version]'3.10.1')
-    $variables.Add('appDeployMainScriptMinimumConfigVersion', [version]'3.10.1')
+    $variables.Add('appDeployMainScriptVersion', [version]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
+    $variables.Add('appDeployMainScriptMinimumConfigVersion', [version]$Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)
 
     ## Variables: Culture
     $variables.Add('culture', [cultureinfo]$Host.CurrentCulture)
@@ -153,8 +141,8 @@ function Initialize-ADTVariableDatabase
     }))
 
     # Get the OS Architecture.
-    $variables.Add('Is64Bit', [boolean]((Get-CimInstance -Class Win32_Processor | Where-Object {$_.DeviceID -eq 'CPU0'}).AddressWidth -eq 64))
-    $variables.Add('envOSArchitecture', [string]$(if ($variables.Is64Bit) {'64-bit'} else {'32-bit'}))
+    $variables.Add('Is64Bit', [boolean]((Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64))
+    $variables.Add('envOSArchitecture', [string]$(if ($variables.Is64Bit) {'x64'} else {'x86'}))
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [boolean]([System.IntPtr]::Size -eq 8))
@@ -265,6 +253,26 @@ function Initialize-ADTVariableDatabase
     $variables.Add('LocalAdministratorsGroup', [string](Get-SidTypeAccountName -WellKnownSidType BuiltinAdministratorsSid))
     $variables.Add('SessionZero', [boolean]($variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount))
 
+    # Variables: Logged on user information
+    $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo($env:ComputerName))
+    $variables.Add('usersLoggedOn', [string[]]($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
+    $variables.Add('CurrentLoggedOnUserSession', [psobject]($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
+    $variables.Add('CurrentConsoleUserSession', [psobject]($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
+    $variables.Add('RunAsActiveUser', [psobject]$(if ($variables.usersLoggedOn)
+    {
+        # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+        # If a console user exists, then that will be the active user session.
+        # If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
+        if ($variables.IsMultiSessionOS)
+        {
+            $variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}
+        }
+        else
+        {
+            $variables.LoggedOnUserSessions | Where-Object {$_.IsActiveUserSession}
+        }
+    }))
+
     ## Variables: Priary user language
     $variables.Add('HKUPrimaryLanguageShort', [string]$(if ($variables.RunAsActiveUser)
     {
@@ -343,18 +351,8 @@ function Initialize-ADTVariableDatabase
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications
     $variables.Add('regKeyApplications', [string[]]('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
-    $variables.Add('regKeyLotusNotes', [string]"Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64Bit) {'Wow6432Node\'})Lotus\Notes")
+    $variables.Add('regKeyLotusNotes', [string]"Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$(if ($variables.Is64BitProcess) {'Wow6432Node\'})Lotus\Notes")
     $variables.Add('regKeyAppExecution', [string]'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
-
-    ## Variables: User Temp Path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
-    $variables.Add('loggedOnUserTempPath', [string]$(if (($null -ne $variables.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists(($runasUserProfile = "$(Split-Path -LiteralPath $variables.envPublic)\$($variables.RunAsActiveUser.UserName)")))
-    {
-        [System.IO.Directory]::CreateDirectory($runasUserProfile).FullName
-    }
-    else
-    {
-        "$dirAppDeployTemp\ExecuteAsUser"
-    }))
 
     ## Variables: System DPI Scale Factor (Requires PSADT.UiAutomation loaded)
     [System.Drawing.Graphics]$GraphicsObject = $null
@@ -426,8 +424,12 @@ function Initialize-ADTVariableDatabase
         $variables.dpiScale = [System.Math]::Round(($variables.dpiPixels * 100) / 96)
     }
 
+    # Add in WScript shell variables.
+    $variables.Add('Shell', (New-Object -ComObject 'WScript.Shell'))
+    $variables.Add('ShellApp', (New-Object -ComObject 'Shell.Application'))
+
     # Store variables within the module's scope.
-    $Script:ADT.Environment = $variables
+    $Script:ADT.Environment = $variables.AsReadOnly()
 }
 
 
@@ -437,44 +439,7 @@ function Initialize-ADTVariableDatabase
 #
 #---------------------------------------------------------------------------
 
-function Import-PsadtVariables
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSCmdlet]$Cmdlet,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force
-    )
-
-    # Initialise variables.
-    Initialize-ADTVariableDatabase -Force:$Force
-
-    # Create variables within the provided session.
-    if (!$Script:ADT.DotSourced)
-    {
-        $ExecutionContext.InvokeCommand.InvokeScript(
-            $Cmdlet.SessionState,
-            {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Force})}.Ast.GetScriptBlock(),
-            $Script:ADT.Environment
-        )
-    }
-    else
-    {
-        # When dot-sourcing during the v4.0 transition, just pump variables into the scope above.
-        $Script:ADT.Environment.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Scope 1 -Force})
-    }
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-filter Convert-PsadtConfigToObjects
+filter Convert-ADTConfigToObjects
 {
     if ($null -eq $_)
     {
@@ -555,30 +520,33 @@ filter Convert-PsadtConfigToObjects
 #
 #---------------------------------------------------------------------------
 
-function Get-PsadtUiLanguage
+function Import-ADTLocalizedStrings
 {
-    # If an override has been configured, return it immediately.
-    if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
+    # Get the best language identifier.
+    $Script:ADT.Language = if ($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)
     {
-        return "UI_Messages_$($Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride)"
+        # The caller has specified a specific language.
+        $Script:ADT.Config.UI_Options.InstallationUI_LanguageOverride
     }
-
-    # Get the logged on user's language value, otherwise fall back to PowerShell's.
-    $langId = if ($Script:ADT.Environment.HKUPrimaryLanguageShort)
+    elseif ($Script:ADT.Environment.HKUPrimaryLanguageShort)
     {
-        $HKUPrimaryLanguageShort
+        # Get the logged on user's language value.
+        $Script:ADT.Environment.HKUPrimaryLanguageShort
     }
     else
     {
-        $currentLanguage
+        # Fall back to PowerShell's.
+        $Script:ADT.Environment.currentLanguage
     }
 
     # Default to English if the detected UI language is not available in the XML config file.
-    if (!$Script:ADT.Config.PSObject.Properties.Name.Contains("UI_Messages_$langId"))
+    if (!$Script:ADT.Config.PSObject.Properties.Name.Contains("UI_Messages_$($Script:ADT.Language)"))
     {
-        return 'EN'
+        $Script:ADT.Language = "EN"
     }
-    return $langId
+
+    # Store the chosen language within this session.
+    $Script:ADT.Strings = $Script:ADT.Config."UI_Messages_$($Script:ADT.Language)"
 }
 
 
@@ -588,32 +556,20 @@ function Get-PsadtUiLanguage
 #
 #---------------------------------------------------------------------------
 
-function Import-PsadtConfig
+function Import-ADTConfig
 {
-    param (
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force
-    )
+    # Create variables within this scope from the database, it's needed during the config import.
+    $Script:ADT.Environment.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
 
-    # We need the PSADT variables within this function's scope
-    # so we can expand variables when we convert the XML data.
-    if (!$Script:DotSourced)
+    # Read XML file and confirm the version meets our minimum requirements.
+    $xml = [System.Xml.XmlDocument]::new(); $xml.Load([System.Xml.XmlReader]::Create("$($Script:PSScriptRoot)\AppDeployToolkitConfig.xml"))
+    if (([System.Version]$xml.AppDeployToolkit_Config.Config_File.Config_Version) -lt $Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)
     {
-        # Return early if we've already initialised and we're not re-initing.
-        if ($Script:ADT.Config -and $Script:ADT.Strings -and $Script:ADT.Sessions -and $Script:ADT.Sessions.Count -and !$Force)
-        {
-            return
-        }
-        Import-PsadtVariables -Cmdlet $PSCmdlet -Force:$Force
+        throw [System.InvalidOperationException]::new("The XML configuration file version [$($xml.AppDeployToolkit_Config.Config_File.Config_Version)] is lower than the supported version required by the Toolkit [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
     }
 
-    # Load in the XML file, doing it correctly and not with a simple cast.
-    $xml = [System.Xml.XmlDocument]::new()
-    $xml.Load([System.Xml.XmlReader]::Create("$PSScriptRoot\AppDeployToolkitConfig.xml"))
-    
-    # Store config and UI within the module's scope.
-    $Script:ADT.Config = ($xml | Convert-PsadtConfigToObjects).AppDeployToolkit_Config
-    $Script:ADT.Strings = $Script:ADT.Config."UI_Messages_$(Get-PsadtUiLanguage)"
+    # Process the XML file into something sane for PowerShell.
+    $Script:ADT.Config = ($xml | Convert-ADTConfigToObjects).AppDeployToolkit_Config
 
     # Process logo files.
     $Script:ADT.Config.BannerIcon_Options.Icon_Filename = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($Script:ADT.Config.BannerIcon_Options.Icon_Filename)").Path
@@ -650,4 +606,31 @@ function Import-PsadtConfig
             $Script:ADT.Config.MSI_Options.MSI_LogPath = $Script:ADT.Config.MSI_Options.MSI_LogPathNoAdminRights
         }
     }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Invoke-ScriptBlockInSessionState
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SessionState]$SessionState,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$ScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object[]]$Arguments
+    )
+
+    # Get unbound scriptblock from the provided scriptblock's AST, then invoke it within the provided session.
+    return $ExecutionContext.InvokeCommand.InvokeScript($SessionState, $ScriptBlock.Ast.GetScriptBlock(), $Arguments).Where({$null -ne $_})
 }

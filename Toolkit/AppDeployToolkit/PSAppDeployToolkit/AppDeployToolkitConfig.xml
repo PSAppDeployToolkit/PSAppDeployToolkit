@@ -141,7 +141,7 @@
              HU                 Hungarian       |       CZ                  Czech
              FI                 Finnish         |
         -->
-        <ShowBalloonNotifications>True</ShowBalloonNotifications>
+        <ShowBalloonNotifications>False</ShowBalloonNotifications>
         <!-- [True/False] - Used to turn automatic balloon notifications on or off. -->
         <InstallationUI_Timeout>6900</InstallationUI_Timeout>
         <!-- Time in seconds to automatically timeout installation dialogs. Default is 1 hour and 55

@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -130,10 +130,8 @@ https://psappdeploytoolkit.com
                 $FileStream.Close()
             }
 
-            ## Create a Shell object
-            [__ComObject]$ShellApp = New-Object -ComObject 'Shell.Application' -ErrorAction 'Stop'
             ## Create an object representing the archive file
-            [__ComObject]$Archive = $ShellApp.NameSpace($DestinationPath)
+            [__ComObject]$Archive = $Script:ADT.Environment.ShellApp.NameSpace($DestinationPath)
 
             ## Create the archive file
             If ($PSCmdlet.ParameterSetName -eq 'CreateFromDirectory') {
@@ -141,7 +139,7 @@ https://psappdeploytoolkit.com
                 ForEach ($Directory in $SourceDirectoryPath) {
                     Try {
                         #  Create an object representing the source directory
-                        [__ComObject]$CreateFromDirectory = $ShellApp.NameSpace($Directory)
+                        [__ComObject]$CreateFromDirectory = $Script:ADT.Environment.ShellApp.NameSpace($Directory)
                         #  Copy all of the files and folders from the source directory to the archive
                         $null = $Archive.CopyHere($CreateFromDirectory.Items())
                         #  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.

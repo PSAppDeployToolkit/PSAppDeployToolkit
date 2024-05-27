@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -528,7 +528,7 @@ https://psappdeploytoolkit.com
             }
 
             ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-            If (($ServiceStartMode -eq 'Automatic') -and (([Version]$envOSVersion).Major -gt 5)) {
+            If (($ServiceStartMode -eq 'Automatic') -and ($Script:ADT.Environment.envOSVersion.Major -gt 5)) {
                 [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
                 [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction Ignore | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction Ignore
                 If ($DelayedAutoStart -eq 1) {
@@ -621,7 +621,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-            If (($StartMode -eq 'Automatic (Delayed Start)') -and (([Version]$envOSVersion).Major -lt 6)) {
+            If (($StartMode -eq 'Automatic (Delayed Start)') -and ($Script:ADT.Environment.envOSVersion.Major -lt 6)) {
                 $StartMode = 'Automatic'
             }
 
@@ -642,7 +642,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-            $ChangeStartMode = & "$envWinDir\System32\sc.exe" config $Name start= $ScExeStartMode
+            $ChangeStartMode = & "$env:WinDir\System32\sc.exe" config $Name start= $ScExeStartMode
 
             If ($global:LastExitCode -ne 0) {
                 Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."

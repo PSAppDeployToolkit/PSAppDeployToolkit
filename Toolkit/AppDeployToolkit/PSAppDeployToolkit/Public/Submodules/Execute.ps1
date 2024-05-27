@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -203,7 +203,7 @@ https://psappdeploytoolkit.com
             }
             Else {
                 #  The first directory to search will be the 'Files' subdirectory of the script directory
-                [String]$PathFolders = $dirFiles
+                [String]$PathFolders = $Script:ADT.CurrentSession.GetPropertyValue('dirFiles')
                 #  Add the current location of the console (Windows always searches this location first)
                 [String]$PathFolders = $PathFolders + ';' + (Get-Location -PSProvider 'FileSystem').Path
                 #  Add the new path locations to the PATH environment variable
@@ -638,7 +638,7 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$UserName = $RunAsActiveUser.NTAccount,
+        [String]$UserName = $Script:ADT.Environment.RunAsActiveUser.NTAccount,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [String]$Path,
@@ -673,12 +673,12 @@ https://psappdeploytoolkit.com
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
-            If (($TempPath -eq $loggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
+            If (($TempPath -eq $Script:ADT.Environment.loggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
                 Write-Log -Message "WARNING: Using [${CmdletName}] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
         Else {
-            [String]$executeAsUserTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'ExecuteAsUser'
+            [String]$executeAsUserTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'ExecuteAsUser'
         }
     }
     Process {
@@ -697,7 +697,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Confirm if the toolkit is running with administrator privileges
-            If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
+            If (($RunLevel -eq 'HighestAvailable') -and (-not $Script:ADT.Environment.IsAdmin)) {
                 [Int32]$executeProcessAsUserExitCode = 60003
                 Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
@@ -764,7 +764,7 @@ https://psappdeploytoolkit.com
                 }
 
                 $Parameters = "$NewParameters $Parameters"
-                $Path = "$envWinDir\System32\wscript.exe"
+                $Path = "$env:WinDir\System32\wscript.exe"
             }
             #  Replace invalid XML characters in parameters with their valid XML equivalent
             [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
@@ -821,15 +821,15 @@ https://psappdeploytoolkit.com
             Try {
                 ## Build the scheduled task XML name
                 [String]$schTaskNameCount = '001'
-                [String]$schTaskName = "$($("$($appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
+                [String]$schTaskName = "$($("$($Script:ADT.Environment.appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
                 #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = Get-ChildItem -Path "$($dirAppDeployTemp)\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
+                [String]$previousXmlFileName = Get-ChildItem -Path "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
                 If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
                     [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
                     [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
                 }
                 $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
+                [String]$xmlSchTaskFilePath = "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\$($schTaskName).xml"
 
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
@@ -861,7 +861,7 @@ https://psappdeploytoolkit.com
             Else {
                 Write-Log -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
-            [PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-Log -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
@@ -883,13 +883,13 @@ https://psappdeploytoolkit.com
             Else {
                 Write-Log -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
-            [PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle 'Hidden' -CreateNoWindow -Passthru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle 'Hidden' -CreateNoWindow -Passthru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-Log -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
                 #  Delete Scheduled Task
                 Write-Log -Message 'Deleting the scheduled task which did not trigger.' -Source ${CmdletName}
-                Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
+                Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
                 If (-not $ContinueOnError) {
                     Throw "Failed to trigger scheduled task [$schTaskName]."
                 }
@@ -901,7 +901,7 @@ https://psappdeploytoolkit.com
                 Write-Log -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
                 Start-Sleep -Seconds 1
                 #If on Windows Vista or higer, Windows Task Scheduler 2.0 is supported. 'Schedule.Service' ComObject output is UI language independent
-                If (([Version]$envOSVersion).Major -gt 5) {
+                If ($Script:ADT.Environment.envOSVersion.Major -gt 5) {
                     Try {
                         [__ComObject]$ScheduleService = New-Object -ComObject 'Schedule.Service' -ErrorAction 'Stop'
                         $ScheduleService.Connect()
@@ -927,11 +927,11 @@ https://psappdeploytoolkit.com
                 }
                 #Windows Task Scheduler 1.0
                 Else {
-                    While ((($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' -First 1) -eq 'Running') {
+                    While ((($exeSchTasksResult = & $Script:ADT.Environment.exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-Csv | Select-Object -ExpandProperty 'Status' -First 1) -eq 'Running') {
                         Start-Sleep -Seconds 5
                     }
                     #  Get the exit code from the process launched by the scheduled task
-                    [Int32]$executeProcessAsUserExitCode = ($exeSchTasksResult = & $exeSchTasks /query /TN $schTaskName /V /FO CSV) | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' -First 1
+                    [Int32]$executeProcessAsUserExitCode = ($exeSchTasksResultResult = & $($Script:ADT.Environment.exeSchTasks) /query /TN $schTaskName /V /FO CSV) | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' -First 1
                 }
                 Write-Log -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
             }
@@ -943,7 +943,7 @@ https://psappdeploytoolkit.com
             ## Delete scheduled task
             Try {
                 Write-Log -Message "Deleting scheduled task [$schTaskName]." -Source ${CmdletName}
-                Execute-Process -Path $exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
+                Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
             }
             Catch {
                 Write-Log -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
