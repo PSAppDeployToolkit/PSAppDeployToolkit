@@ -99,6 +99,7 @@ function Open-ADTSession
     Initialize-ADTVariableDatabase
     Import-ADTConfig
     Import-ADTLocalizedStrings
+    Read-ADTAssetsIntoMemory
     $Script:ADT.LastExitCode = 0
 
     # Instantiate a new ADT session and initialise it.
@@ -224,6 +225,9 @@ function Import-ADTModuleState
     $Script:ADT.CurrentSession = [ADTSession]::new($Script:ADT.CurrentSession)
     $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
     $Script:ADT.CurrentSession.LegacyMode = $false
+
+    # Read all graphics assets into memory.
+    Read-ADTAssetsIntoMemory
 }
 
 

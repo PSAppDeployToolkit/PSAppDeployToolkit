@@ -221,15 +221,15 @@ https://psappdeploytoolkit.com
         $paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
 
         ## Default control size
-        $DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
+        $DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 0)
 
         ## Generic Button properties
         $buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (130, 24)
 
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.ImageLocation = $Script:ADT.Config.Assets.Banner
-        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.BannerHeight)
+        $pictureBanner.Image = $Script:FormData.Assets.Banner
+        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, $Script:FormData.BannerHeight)
         $pictureBanner.MinimumSize = $DefaultControlSize
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -372,11 +372,11 @@ https://psappdeploytoolkit.com
             $flowLayoutPanel.Controls.Add($pictureIcon)
         }
         $flowLayoutPanel.Controls.Add($labelText)
-        $flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
+        $flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:FormData.BannerHeight)
 
         ## ButtonsPanel
-        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
         If ($Icon -ne 'None') {
             $panelButtons.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
         }
@@ -384,7 +384,7 @@ https://psappdeploytoolkit.com
             $panelButtons.Padding = $paddingNone
         }
         $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
-        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
         $panelButtons.AutoSize = $true
         If ($buttonLeftText) {
             $panelButtons.Controls.Add($buttonLeft)
@@ -416,7 +416,7 @@ https://psappdeploytoolkit.com
         $formInstallationPrompt.AutoSize = $true
         $formInstallationPrompt.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
         $formInstallationPrompt.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
-        $formInstallationPrompt.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
+        $formInstallationPrompt.Icon = $Script:FormData.Assets.Icon
         $formInstallationPrompt.Controls.Add($pictureBanner)
         $formInstallationPrompt.Controls.Add($buttonAbort)
         $formInstallationPrompt.Controls.Add($flowLayoutPanel)
@@ -1561,18 +1561,18 @@ https://psappdeploytoolkit.com
         ## Create zero px padding object
         $paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
         ## Create basic control size
-        $defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
+        $defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 0)
 
         ## Generic Button properties
         $buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (195, 24)
 
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.ImageLocation = $Script:ADT.Config.Assets.Banner
+        $pictureBanner.Image = $Script:FormData.Assets.Banner
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.BannerHeight)
+        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, $Script:FormData.BannerHeight)
         $pictureBanner.ClientSize = $System_Drawing_Size
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -1627,7 +1627,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.AutoSize = $true
 
         ## Panel Flow Layout
-        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
+        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:FormData.BannerHeight)
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -1689,7 +1689,7 @@ https://psappdeploytoolkit.com
         $formRestart.MinimizeBox = $false
         $formRestart.TopMost = $TopMost
         $formRestart.TopLevel = $true
-        $formRestart.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
+        $formRestart.Icon = $Script:FormData.Assets.Icon
         $formRestart.AutoSize = $true
         $formRestart.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
         $formRestart.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
@@ -1697,9 +1697,9 @@ https://psappdeploytoolkit.com
         $formRestart.Controls.Add($pictureBanner)
 
         ## Button Panel
-        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
+        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
         $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
@@ -1882,7 +1882,7 @@ https://psappdeploytoolkit.com
                         BalloonTipIcon  = $BalloonTipIcon
                         BalloonTipText  = $BalloonTipText
                         BalloonTipTitle = $BalloonTipTitle
-                        Icon            = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
+                        Icon            = $Script:FormData.Assets.Icon
                         Text            = $BalloonTipIconText
                         Visible         = $true
                     }
@@ -1912,7 +1912,7 @@ https://psappdeploytoolkit.com
                     BalloonTipIcon  = $BalloonTipIcon
                     BalloonTipText  = $BalloonTipText
                     BalloonTipTitle = $BalloonTipTitle
-                    Icon            = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
+                    Icon            = $Script:FormData.Assets.Icon
                     Text            = $BalloonTipIconText
                     Visible         = $true
                 }
