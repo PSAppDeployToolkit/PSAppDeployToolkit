@@ -395,7 +395,7 @@ function Import-ADTConfig
     # Confirm the config version meets our minimum requirements.
     if ($config.File.Version -lt $Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)
     {
-        throw [System.InvalidOperationException]::new("The configuration file version [$($config.File.Version)] is lower than the supported version required by the Toolkit [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+        throw [System.Activities.VersionMismatchException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
     }
 
     # Process the config and expand out variables.
@@ -413,15 +413,15 @@ function Import-ADTConfig
     # Expand out asset file paths and test that the files are present.
     if (![System.IO.File]::Exists(($config.Assets.Icon = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Icon)").Path)))
     {
-        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) icon file not found.")
+        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) icon file not found.")
     }
     if (![System.IO.File]::Exists(($config.Assets.Logo = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Logo)").Path)))
     {
-        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) logo file not found.")
+        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) logo file not found.")
     }
     if (![System.IO.File]::Exists(($config.Assets.Banner = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Banner)").Path)))
     {
-        throw [System.InvalidOperationException]::new("$($Script:ADT.Environment.appDeployToolkitName) banner file not found.")
+        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) banner file not found.")
     }
 
     # Change paths to user accessible ones if user isn't an admin.

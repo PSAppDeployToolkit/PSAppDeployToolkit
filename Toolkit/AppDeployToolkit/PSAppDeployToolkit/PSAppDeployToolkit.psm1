@@ -20,7 +20,7 @@ Add-Type -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblie
 )
 
 # Add system types required for the toolkit.
-Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase')
+Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase', 'System.Activities')
 
 # Set process as DPI-aware for better dialog rendering.
 [System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
