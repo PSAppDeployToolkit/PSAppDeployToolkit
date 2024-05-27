@@ -89,6 +89,7 @@ Export-ModuleMember -Function @(
     'Get-ADTSession'
     'Export-ADTModuleState'
     'Import-ADTModuleState'
+    'Get-ADTDeployApplicationParameters'
     'Block-AppExecution'
     'Configure-EdgeExtension'
     'Convert-RegistryPath'

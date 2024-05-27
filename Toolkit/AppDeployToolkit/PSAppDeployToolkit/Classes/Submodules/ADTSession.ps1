@@ -48,7 +48,7 @@ class ADTSession
         DeployAppScriptFriendlyName = [System.String]::Empty
         DeployAppScriptVersion = [System.String]::Empty
         DeployAppScriptDate = [System.String]::Empty
-        DeployAppScriptParameters = @{}
+        DeployAppScriptParameters = $null
         InstallPhase = 'Initialization'
 
         # Deploy-Application.ps1 parameters.
@@ -105,6 +105,7 @@ class ADTSession
 
         # Amend some incoming parameters to ensure there's no undefined behaviour.
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
+        $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
         if ($null -eq $this.Properties.AppExitCodes) {$this.Properties.AppExitCodes = 0, 1641, 3010}
 
         # Establish script directories.
@@ -365,7 +366,7 @@ class ADTSession
         {
             $this.WriteLogEntry("[$($this.Properties.DeployAppScriptFriendlyName)] script version is [$($this.Properties.DeployAppScriptVersion)]")
         }
-        if ($this.Properties.DeployAppScriptParameters -and $this.Properties.DeployAppScriptParameters.Count)
+        if ($this.Properties.DeployAppScriptParameters.Count)
         {
             $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]")
         }

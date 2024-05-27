@@ -7,90 +7,86 @@
 function Open-ADTSession
 {
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = "Caller's CmdletBinding Object")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCmdlet]$Cmdlet,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [ValidateSet('Install', 'Uninstall', 'Repair')]
         [System.String]$DeploymentType,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [ValidateSet('Interactive', 'NonInteractive', 'Silent')]
         [System.String]$DeployMode,
 
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppVendor,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppName,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppVersion,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppArch,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppLang,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppRevision,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.Int32[]]$AppExitCodes,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppScriptVersion,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppScriptDate,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$AppScriptAuthor,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$InstallName,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$InstallTitle,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$DeployAppScriptFriendlyName,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.Version]$DeployAppScriptVersion,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.String]$DeployAppScriptDate,
-
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [System.Collections.Hashtable]$DeployAppScriptParameters,
-
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [System.Management.Automation.SwitchParameter]$TerminalServerMode,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$DisableLogging
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [System.Management.Automation.SwitchParameter]$DisableLogging,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppVendor,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppName,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppVersion,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppArch,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppLang,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppRevision,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppExitCodes,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppScriptVersion,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppScriptDate,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AppScriptAuthor,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$InstallName,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$InstallTitle,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeployAppScriptFriendlyName,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.Version]$DeployAppScriptVersion,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeployAppScriptDate
     )
 
     # Clamp the session count at one, for now.
@@ -228,4 +224,51 @@ function Import-ADTModuleState
     $Script:ADT.CurrentSession = [ADTSession]::new($Script:ADT.CurrentSession)
     $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
     $Script:ADT.CurrentSession.LegacyMode = $false
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTDeployApplicationParameters
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]$Cmdlet
+    )
+
+    # Throw if called outside of AppDeployToolkitMain.ps1.
+    if (!(Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1'))
+    {
+        throw [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] is only supported for legacy Deploy-Application.ps1 scripts.")
+    }
+
+    # Open hashtable for returning at the end. We return it even if it's empty.
+    $daParams = @{Cmdlet = $Cmdlet}
+
+    # Get all relevant parameters from the targeted function, then check whether they're defined and not empty.
+    foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+    {
+        # Return early if the parameter doesn't exist.
+        if (!($value = $Cmdlet.SessionState.PSVariable.GetValue($param, $null)))
+        {
+            continue
+        }
+
+        # Return early if the parameter is null or empty.
+        if ([System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
+        {
+            continue
+        }
+
+        # Add the parameter to the collector.
+        $daParams.Add($param, $value)
+    }
+
+    # Return the hashtable to the caller, they'll splat it onto Open-ADTSession.
+    return $daParams
 }
