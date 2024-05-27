@@ -51,6 +51,7 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
 
 # Asset data used by all forms.
 New-Variable -Name FormData -Option Constant -Value @{
+    Font = [System.Drawing.SystemFonts]::MessageBoxFont
     Width = 450
     BannerHeight = 0
     Assets = @{
@@ -154,7 +155,7 @@ Export-ModuleMember -Function @(
     'Show-DialogBox'
     'Show-HelpConsole'
     'Show-InstallationProgress'
-    'Show-InstallationPrompt'
+    'Show-ADTInstallationPrompt'
     'Show-InstallationRestartPrompt'
     'Show-InstallationWelcome'
     'Start-ServiceAndDependencies'

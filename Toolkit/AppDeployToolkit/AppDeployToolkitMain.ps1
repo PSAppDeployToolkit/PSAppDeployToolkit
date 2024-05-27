@@ -508,3 +508,90 @@ function Remove-File
     }
     Remove-ADTFile @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTInstallationPrompt
+#
+#---------------------------------------------------------------------------
+
+function Show-InstallationPrompt
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Left', 'Center', 'Right')]
+        [System.String]$MessageAlignment,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonRightText,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonLeftText,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonMiddleText,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'None', 'Question', 'Shield', 'Warning', 'WinLogo')]
+        [System.String]$Icon,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$Timeout,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExitOnTimeout,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$TopMost
+    )
+
+    # Announce overall deprecation.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationPrompt] instead." -Severity 2
+
+    # Tune up parameters. A lot has changed.
+    if ($PSBoundParameters.ContainsKey('MessageAlignment'))
+    {
+        $PSBoundParameters.MessageAlignment = [System.Drawing.ContentAlignment]"Middle$($PSBoundParameters.MessageAlignment)"
+    }
+    if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
+    {
+        [System.Void]$PSBoundParameters.Remove('Icon')
+    }
+    if ($PSBoundParameters.ContainsKey('ExitOnTimeout'))
+    {
+        $PSBoundParameters.NoExitOnTimeout = !$PSBoundParameters.ExitOnTimeout
+        [System.Void]$PSBoundParameters.Remove('ExitOnTimeout')
+    }
+    if ($PSBoundParameters.ContainsKey('TopMost'))
+    {
+        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        [System.Void]$PSBoundParameters.Remove('TopMost')
+    }
+
+    # Invoke function with amended parameters.
+    Show-ADTInstallationPrompt @PSBoundParameters
+}

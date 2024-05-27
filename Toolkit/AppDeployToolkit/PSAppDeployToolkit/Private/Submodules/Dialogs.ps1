@@ -362,9 +362,8 @@ https://psappdeploytoolkit.com
         $pictureBanner.TabStop = $false
 
         ## Label Welcome Message
-        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
         $labelWelcomeMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelWelcomeMessage.Font = $defaultFont
+        $labelWelcomeMessage.Font = $Script:FormData.Font
         $labelWelcomeMessage.Name = 'labelWelcomeMessage'
         $labelWelcomeMessage.ClientSize = $defaultControlSize
         $labelWelcomeMessage.MinimumSize = $defaultControlSize
@@ -379,7 +378,7 @@ https://psappdeploytoolkit.com
 
         ## Label App Name
         $labelAppName.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelAppName.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
+        $labelAppName.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelAppName.Name = 'labelAppName'
         $labelAppName.ClientSize = $defaultControlSize
         $labelAppName.MinimumSize = $defaultControlSize
@@ -394,7 +393,7 @@ https://psappdeploytoolkit.com
 
         ## Label CustomMessage
         $labelCustomMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelCustomMessage.Font = $defaultFont
+        $labelCustomMessage.Font = $Script:FormData.Font
         $labelCustomMessage.Name = 'labelCustomMessage'
         $labelCustomMessage.ClientSize = $defaultControlSize
         $labelCustomMessage.MinimumSize = $defaultControlSize
@@ -409,7 +408,7 @@ https://psappdeploytoolkit.com
 
         ## Label CloseAppsMessage
         $labelCloseAppsMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelCloseAppsMessage.Font = $defaultFont
+        $labelCloseAppsMessage.Font = $Script:FormData.Font
         $labelCloseAppsMessage.Name = 'labelCloseAppsMessage'
         $labelCloseAppsMessage.ClientSize = $defaultControlSize
         $labelCloseAppsMessage.MinimumSize = $defaultControlSize
@@ -424,7 +423,7 @@ https://psappdeploytoolkit.com
 
         ## Listbox Close Applications
         $listBoxCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
-        $listboxCloseApps.Font = $defaultFont
+        $listboxCloseApps.Font = $Script:FormData.Font
         $listBoxCloseApps.FormattingEnabled = $true
         $listBoxCloseApps.HorizontalScrollbar = $true
         $listBoxCloseApps.Name = 'listBoxCloseApps'
@@ -437,7 +436,7 @@ https://psappdeploytoolkit.com
 
         ## Label Defer Expiry Message
         $labelDeferExpiryMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelDeferExpiryMessage.Font = $defaultFont
+        $labelDeferExpiryMessage.Font = $Script:FormData.Font
         $labelDeferExpiryMessage.Name = 'labelDeferExpiryMessage'
         $labelDeferExpiryMessage.ClientSize = $defaultControlSize
         $labelDeferExpiryMessage.MinimumSize = $defaultControlSize
@@ -451,7 +450,7 @@ https://psappdeploytoolkit.com
 
         ## Label Defer Deadline
         $labelDeferDeadline.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelDeferDeadline.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, $defaultFont.Size, [System.Drawing.FontStyle]::Bold)
+        $labelDeferDeadline.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, $Script:FormData.Font.Size, [System.Drawing.FontStyle]::Bold)
         $labelDeferDeadline.Name = 'labelDeferDeadline'
         $labelDeferDeadline.ClientSize = $defaultControlSize
         $labelDeferDeadline.MinimumSize = $defaultControlSize
@@ -470,7 +469,7 @@ https://psappdeploytoolkit.com
 
         ## Label Defer Expiry Message
         $labelDeferWarningMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelDeferWarningMessage.Font = $defaultFont
+        $labelDeferWarningMessage.Font = $Script:FormData.Font
         $labelDeferWarningMessage.Name = 'labelDeferWarningMessage'
         $labelDeferWarningMessage.ClientSize = $defaultControlSize
         $labelDeferWarningMessage.MinimumSize = $defaultControlSize
@@ -485,7 +484,7 @@ https://psappdeploytoolkit.com
         ## Label CountdownMessage
         $labelCountdownMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdownMessage.Name = 'labelCountdownMessage'
-        $labelCountdownMessage.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
+        $labelCountdownMessage.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelCountdownMessage.ClientSize = $defaultControlSize
         $labelCountdownMessage.MinimumSize = $defaultControlSize
         $labelCountdownMessage.MaximumSize = $defaultControlSize
@@ -515,7 +514,7 @@ https://psappdeploytoolkit.com
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelCountdown.Name = 'labelCountdown'
-        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
         $labelCountdown.MaximumSize = $defaultControlSize
@@ -563,7 +562,7 @@ https://psappdeploytoolkit.com
         ## Button Close For Me
         $buttonCloseApps.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonCloseApps.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
-        $buttonCloseApps.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonCloseApps.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonCloseApps.Name = 'buttonCloseApps'
         $buttonCloseApps.ClientSize = $buttonSize
         $buttonCloseApps.MinimumSize = $buttonSize
@@ -585,7 +584,7 @@ https://psappdeploytoolkit.com
             $buttonDefer.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (160, 4)
         }
         $buttonDefer.Name = 'buttonDefer'
-        $buttonDefer.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonDefer.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonDefer.ClientSize = $buttonSize
         $buttonDefer.MinimumSize = $buttonSize
         $buttonDefer.MaximumSize = $buttonSize
@@ -601,7 +600,7 @@ https://psappdeploytoolkit.com
         $buttonContinue.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonContinue.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (306, 4)
         $buttonContinue.Name = 'buttonContinue'
-        $buttonContinue.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonContinue.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonContinue.ClientSize = $buttonSize
         $buttonContinue.MinimumSize = $buttonSize
         $buttonContinue.MaximumSize = $buttonSize
@@ -624,7 +623,7 @@ https://psappdeploytoolkit.com
         ## Button Abort (Hidden)
         $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonAbort.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
         $buttonAbort.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (0, 0)
