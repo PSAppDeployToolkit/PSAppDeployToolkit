@@ -176,14 +176,7 @@ function Show-ADTInstallationPrompt
             # Disable the X button.
             try
             {
-                if (($windowHandle = $formInstallationPrompt.Handle) -and ($windowHandle -ne [IntPtr]::Zero))
-                {
-                    if (($menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)) -and ($menuHandle -ne [IntPtr]::Zero))
-                    {
-                        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-                        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
-                    }
-                }
+                Disable-ADTWindowCloseButton -WindowHandle $formInstallationPrompt.Handle
             }
             catch
             {
@@ -394,7 +387,7 @@ function Show-ADTInstallationPrompt
         # Close the Installation Progress Dialog if running
         if (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
-            Close-InstallationProgress
+            Close-ADTInstallationProgress
         }
         Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters)]."
 
@@ -1400,14 +1393,7 @@ https://psappdeploytoolkit.com
         [ScriptBlock]$Restart_Form_StateCorrection_Load = {
             # Disable the X button
             Try {
-                $windowHandle = $formRestart.Handle
-                If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
-                    $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-                    If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
-                        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-                        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
-                    }
-                }
+                Disable-ADTWindowCloseButton -WindowHandle $formRestart.Handle
             }
             Catch {
                 # Not a terminating error if we can't disable the button. Just disable the Control Box instead
@@ -1969,349 +1955,221 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Show-InstallationProgress {
+function Show-ADTInstallationProgress
+{
     <#
-.SYNOPSIS
 
-Displays a progress dialog in a separate thread with an updateable custom message.
+    .SYNOPSIS
+    Displays a progress dialog in a separate thread with an updateable custom message.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
 
-Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated.
+    The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
 
-The status message supports line breaks.
+    .PARAMETER WindowTitle
+    The titke of the window to be displayed. The default is the derived value from $InstallTitle.
 
-The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
+    .PARAMETER StatusMessage
+    The status message to be displayed. The default status message is taken from the XML configuration file.
 
-.PARAMETER StatusMessage
+    .PARAMETER WindowLocation
+    The location of the progress window. Default: center of the screen.
 
-The status message to be displayed. The default status message is taken from the XML configuration file.
+    .PARAMETER NotTopMost
+    Specifies whether the progress window shouldn't be topmost. Default: $false.
 
-.PARAMETER WindowLocation
+    .PARAMETER Quiet
+    Specifies whether to not log the success of updating the progress message. Default: $false.
 
-The location of the progress window. Default: center of the screen.
+    .PARAMETER NoRelocation
+    Specifies whether to not reposition the window upon updating the message. Default: $false.
 
-.PARAMETER TopMost
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Specifies whether the progress window should be topmost. Default: $true.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER Quiet
+    .EXAMPLE
+    # Use the default status message from the XML configuration file.
+    Show-ADTInstallationProgress
 
-Specifies whether to not log the success of updating the progress message. Default: $false.
+    .EXAMPLE
+    Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
 
-.PARAMETER NoRelocation
+    .EXAMPLE
+    Show-ADTInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
 
-Specifies whether to not reposition the window upon updating the message. Default: $false.
+    .EXAMPLE
+    Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WindowTitle = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
 
-.OUTPUTS
+        [ValidateNotNullOrEmpty()]
+        [System.String]$StatusMessage = $Script:ADT.Strings.Progress."Message$($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType'))",
 
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Show-InstallationProgress
-
-Uses the default status message from the XML configuration file.
-
-.EXAMPLE
-
-Show-InstallationProgress -StatusMessage 'Installation in Progress...'
-
-.EXAMPLE
-
-Show-InstallationProgress -StatusMessage "Installation in Progress...`r`nThe installation may take 20 minutes to complete."
-
-.EXAMPLE
-
-Show-InstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$StatusMessage = $Script:ADT.Strings.Progress.MessageInstall,
-        [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [String]$WindowLocation = 'Default',
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$TopMost = $true,
-        [Parameter(Mandatory = $false)]
-        [Switch]$Quiet,
-        [Parameter(Mandatory = $false)]
-        [Switch]$NoRelocation
+        [System.String]$WindowLocation = 'Default',
+
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+        [System.Management.Automation.SwitchParameter]$Quiet,
+        [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
-    Begin {
-        Write-DebugHeader
-    }
-    Process {
-        If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            If (!$Quiet) {
-                Write-ADTLogEntry -Message "Bypassing Show-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage"
-            }
-            Return
-        }
+    begin {
+        function Update-WindowLocation
+        {
+            param (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.Windows.Window]$Window
+            )
 
-        ## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
-        If ($StatusMessage -eq $Script:ADT.Strings.Progress.MessageInstall) {
-            If ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Uninstall') {
-                $StatusMessage = $Script:ADT.Strings.Progress.MessageUninstall
-            }
-            ElseIf ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Repair') {
-                $StatusMessage = $Script:ADT.Strings.Progress.MessageRepair
-            }
-        }
+            # Calculate the position on the screen where the progress dialog should be placed.
+            [System.Double]$screenCenterWidth = [System.Windows.SystemParameters]::WorkArea.Width - $Window.ActualWidth
+            [System.Double]$screenCenterHeight = [System.Windows.SystemParameters]::WorkArea.Height - $Window.ActualHeight
 
-        If ($Host.Name -match 'PowerGUI') {
-            Write-ADTLogEntry -Message "$($Host.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2
-            Return
-        }
-
-        ## Check if the progress thread is running before invoking methods on it
-        If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running) {
-            #  Notify user that the software installation has started
-            $balloonText = "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
-            Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
-            #  Create a synchronized hashtable to share objects between runspaces
-            $Script:ProgressWindow.SyncHash = [hashtable]::Synchronized(@{})
-            #  Create a new runspace for the progress bar
-            $Script:ProgressWindow.Runspace = [runspacefactory]::CreateRunspace()
-            $Script:ProgressWindow.Runspace.ApartmentState = 'STA'
-            $Script:ProgressWindow.Runspace.ThreadOptions = 'ReuseThread'
-            $Script:ProgressWindow.Runspace.Open()
-            #  Add the sync hash to the runspace
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('progressSyncHash', $Script:ProgressWindow.SyncHash)
-            #  Add other variables from the parent thread required in the progress runspace
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('installTitle', $Script:ADT.CurrentSession.GetPropertyValue('installTitle'))
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $Script:ADT.Config.Assets.Banner)
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('ProgressStatusMessage', $statusMessage)
-            $Script:ProgressWindow.Runspace.SessionStateProxy.SetVariable('AppDeployLogoIcon', $Script:ADT.Config.Assets.Icon)
-
-            #  Add the script block to be executed in the progress runspace
-            $progressCmd = [PowerShell]::Create().AddScript({
-                    [String]$xamlProgressString = @'
-                <Window
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                x:Name="Window" Title="PSAppDeployToolkit"
-                Padding="0,0,0,0" Margin="0,0,0,0"
-                WindowStartupLocation = "Manual"
-                Icon=""
-                Top="0"
-                Left="0"
-                Topmost="True"
-                ResizeMode="NoResize"
-                ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight">
-                    <Window.Resources>
-                    <Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
-                    <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)">
-                        <SplineDoubleKeyFrame KeyTime="00:00:02" Value="360"/>
-                    </DoubleAnimationUsingKeyFrames>
-                    </Storyboard>
-                    </Window.Resources>
-                    <Window.Triggers>
-                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                    <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
-                    </EventTrigger>
-                    </Window.Triggers>
-                    <Grid Background="#F0F0F0" MinWidth="450" MaxWidth="450" Width="450">
-                    <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition MinWidth="100" MaxWidth="100" Width="100"></ColumnDefinition>
-                        <ColumnDefinition MinWidth="350" MaxWidth="350" Width="350"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Image x:Name = "ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Source="" Grid.Row="0"/>
-                    <TextBlock x:Name = "ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,64,30" Text="Installation in progress" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap"></TextBlock>
-                    <Ellipse x:Name = "ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="32" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Ellipse.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                        </TransformGroup>
-                    </Ellipse.RenderTransform>
-                    <Ellipse.Stroke>
-                        <LinearGradientBrush EndPoint="0.445,0.997" StartPoint="0.555,0.003">
-                            <GradientStop Color="White" Offset="0"/>
-                            <GradientStop Color="#0078d4" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Ellipse.Stroke>
-                    </Ellipse>
-                    </Grid>
-                </Window>
-'@
-                [Xml.XmlDocument]$xamlProgress = New-Object -TypeName 'System.Xml.XmlDocument'
-                $xamlProgress.LoadXml($xamlProgressString)
-                ## Set the configurable values using variables added to the runspace from the parent thread
-                $xamlProgress.Window.TopMost = $topMost
-                $xamlProgress.Window.Icon = $AppDeployLogoIcon
-                $xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
-                $xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
-                $xamlProgress.Window.Title = $installTitle
-                #  Parse the XAML
-                $progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
-                $progressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
-                #  Grey out the X button
-                $progressSyncHash.Window.add_Loaded({
-                        #  Calculate the position on the screen where the progress dialog should be placed
-                        [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-                        [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-                        [Int32]$screenCenterWidth = $screenWidth - $progressSyncHash.Window.ActualWidth
-                        [Int32]$screenCenterHeight = $screenHeight - $progressSyncHash.Window.ActualHeight
-                        #  Set the start position of the Window based on the screen size
-                        If ($windowLocation -eq 'TopLeft') {
-                            $progressSyncHash.Window.Left = [Double](0)
-                            $progressSyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'Top') {
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $progressSyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'TopRight') {
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth)
-                            $progressSyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'TopCenter') {
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight / 6)
-                        }
-                        ElseIf ($windowLocation -eq 'BottomLeft') {
-                            $progressSyncHash.Window.Left = [Double](0)
-                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight)
-                        }
-                        ElseIf ($windowLocation -eq 'Bottom') {
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight)
-                        }
-                        ElseIf ($windowLocation -eq 'BottomRight') {
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth)
-                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight - 100) #-100 Needed to not overlap system tray Toasts
-                        }
-                        Else {
-                            #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                            $progressSyncHash.Window.Left = [Double]($screenCenterWidth / 2)
-                            $progressSyncHash.Window.Top = [Double]($screenCenterHeight / 2)
-                        }
-                        #  Disable the X button
-                        Try {
-                            $windowHandle = (New-Object -TypeName System.Windows.Interop.WindowInteropHelper -ArgumentList ($this)).Handle
-                            If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
-                                $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-                                If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
-                                    [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-                                    [PSADT.UiAutomation]::DestroyMenu($menuHandle)
-                                }
-                            }
-                        }
-                        Catch {
-                            # Not a terminating error if we can't disable the close button
-                            Write-ADTLogEntry 'Failed to disable the Close button.' -Severity 2
-                        }
-                    })
-                #  Prepare the ProgressText variable so we can use it to change the text in the text area
-                $progressSyncHash.ProgressText = $progressSyncHash.Window.FindName('ProgressText')
-                #  Add an action to the Window.Closing event handler to disable the close button
-                $progressSyncHash.Window.Add_Closing({ $_.Cancel = $true })
-                #  Allow the window to be dragged by clicking on it anywhere
-                $progressSyncHash.Window.Add_MouseLeftButtonDown({ $progressSyncHash.Window.DragMove() })
-                #  Add a tooltip
-                $progressSyncHash.Window.ToolTip = $installTitle
-                $null = $progressSyncHash.Window.ShowDialog()
-                $progressSyncHash.Error = $Error
-            })
-
-            $progressCmd.Runspace = $Script:ProgressWindow.Runspace
-            Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]."
-            #  Invoke the progress runspace
-            $null = $progressCmd.BeginInvoke()
-            #  Allow the thread to be spun up safely before invoking actions against it.
-            while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
+            # Set the start position of the Window based on the screen size.
+            switch ($WindowLocation)
             {
-                If ($Script:ProgressWindow.SyncHash.ContainsKey('Error')) {
-                    Write-ADTLogEntry -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
+                'TopLeft' {
+                    $Window.Left = 0.
+                    $Window.Top = 0.
+                    break
+                }
+                'Top' {
+                    $Window.Left = $screenCenterWidth * 0.5
+                    $Window.Top = 0.
+                    break
+                }
+                'TopRight' {
+                    $Window.Left = $screenCenterWidth
+                    $Window.Top = 0.
+                    break
+                }
+                'TopCenter' {
+                    $Window.Left = $screenCenterWidth * 0.5
+                    $Window.Top = $screenCenterHeight * (1. / 6.)
+                    break
+                }
+                'BottomLeft' {
+                    $Window.Left = 0.
+                    $Window.Top = $screenCenterHeight
+                    break
+                }
+                'Bottom' {
+                    $Window.Left = $screenCenterWidth * 0.5
+                    $Window.Top = $screenCenterHeight
+                    break
+                }
+                'BottomRight' {
+                    # The -100 offset is needed to not overlap system tray toast notifications.
+                    $Window.Left = $screenCenterWidth
+                    $Window.Top = $screenCenterHeight - 100
+                    break
+                }
+                default {
+                    # Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+                    $Window.Left = $screenCenterWidth * 0.5
+                    $Window.Top = $screenCenterHeight * 0.5
                     break
                 }
             }
         }
-        ## Check if the progress thread is running before invoking methods on it
-        Else {
-            Try {
-                #  Update the window title
-                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $Script:ProgressWindow.SyncHash.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle') }, $null, $null)
-                #  Update the progress text
-                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $Script:ProgressWindow.SyncHash.ProgressText.Text = $statusMessage }, $null, $null)
-                #  Calculate the position on the screen where the progress dialog should be placed
-                if (!$NoRelocation) {
-                    $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] {
-                        [Int32]$screenWidth = [System.Windows.SystemParameters]::WorkArea.Width
-                        [Int32]$screenHeight = [System.Windows.SystemParameters]::WorkArea.Height
-                        #  Set the start position of the Window based on the screen size
-                        If ($windowLocation -eq 'TopLeft') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](0)
-                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'Top') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
-                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'TopRight') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = ($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth)
-                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](0)
-                        }
-                        ElseIf ($windowLocation -eq 'TopCenter') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
-                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight) / 6)
-                        }
-                        ElseIf ($windowLocation -eq 'BottomLeft') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](0)
-                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight)
-                        }
-                        ElseIf ($windowLocation -eq 'Bottom') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
-                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight)
-                        }
-                        ElseIf ($windowLocation -eq 'BottomRight') {
-                            $Script:ProgressWindow.SyncHash.Window.Left = ($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth)
-                            $Script:ProgressWindow.SyncHash.Window.Top = ($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight - 100) #-100 Needed to not overlap system tray Toasts
-                        }
-                        Else {
-                            #  Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                            $Script:ProgressWindow.SyncHash.Window.Left = [Double](($screenWidth - $Script:ProgressWindow.SyncHash.Window.ActualWidth) / 2)
-                            $Script:ProgressWindow.SyncHash.Window.Top = [Double](($screenHeight - $Script:ProgressWindow.SyncHash.Window.ActualHeight) / 2)
-                        }
-                    }, $null, $null)
-                }
 
-                If (!$Quiet) {
-                    Write-ADTLogEntry -Message "Updated the progress message: [$statusMessage]."
+        Write-DebugHeader
+    }
+
+    process {
+        # Return early in silent mode.
+        if ($Script:ADT.CurrentSession.DeployModeSilent)
+        {
+            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
+            return
+        }
+
+        # Check if the progress thread is running before invoking methods on it.
+        if (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running)
+        {
+            # Notify user that the software installation has started.
+            Show-BalloonTip -BalloonTipIcon Info -BalloonTipText "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+
+            # Set up the PowerShell instance and add the initial scriptblock.
+            $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
+                # Set required variables to ensure script functionality.
+                $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+                $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                Set-PSDebug -Strict
+                Set-StrictMode -Version Latest
+
+                # Create XAML window.
+                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Parse($XamlConfig))
+                $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
+                $SyncHash.Message.Text = $StatusMessage
+                $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
+                $SyncHash.Window.add_Closing({$this.Cancel = $true})
+                $SyncHash.Window.add_Loaded({
+                    # Relocate the window and disable the X button.
+                    & $UpdateWindowLocation.GetNewClosure() -Window $this
+                    & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
+                })
+
+                # Bring up the window and capture any errors thereafter.
+                [System.Void]$SyncHash.Window.ShowDialog()
+                $SyncHash.Error = $Error
+            })
+
+            # Commence invocation.
+            Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
+            $Script:ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
+            $Script:ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
+            $Script:ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
+            $Script:ProgressWindow.PowerShell.Runspace.Open()
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:ProgressWindow.SyncHash)
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('XamlConfig', [System.String]::Format($Script:ProgressWindow.Xaml, $WindowTitle, (!$NotTopMost).ToString(), $Script:ADT.Config.Assets.Banner, $Script:ADT.Config.Assets.Icon))
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('StatusMessage', $StatusMessage)
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('UpdateWindowLocation', ${Function:Update-WindowLocation})
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('DisableWindowCloseButton', ${Function:Disable-ADTWindowCloseButton})
+            $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
+
+            # Allow the thread to be spun up safely before invoking actions against it.
+            while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
+            {
+                if ($Script:ProgressWindow.SyncHash.ContainsKey('Error'))
+                {
+                    Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
+                    Close-ADTInstallationProgress
+                    break
                 }
-            }
-            Catch {
-                Write-ADTLogEntry -Message "Unable to update the progress message. `r`n$(Resolve-Error)" -Severity 2
             }
         }
+        else
+        {
+            # Invoke update events against an established window.
+            $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke(
+                {
+                    $Script:ProgressWindow.SyncHash.Window.Title = $WindowTitle
+                    $Script:ProgressWindow.SyncHash.Message.Text = $StatusMessage
+                    if (!$NoRelocation)
+                    {
+                        Update-WindowLocation -Window $Script:ProgressWindow.SyncHash.Window
+                    }
+                },
+                [System.Windows.Threading.DispatcherPriority]::Send
+            )
+            Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Quiet
+        }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }

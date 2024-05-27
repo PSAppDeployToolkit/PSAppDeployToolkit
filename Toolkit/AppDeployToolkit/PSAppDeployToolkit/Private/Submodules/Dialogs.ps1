@@ -215,14 +215,7 @@ https://psappdeploytoolkit.com
         [ScriptBlock]$Welcome_Form_StateCorrection_Load = {
             # Disable the X button
             Try {
-                $windowHandle = $formWelcome.Handle
-                If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
-                    $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-                    If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
-                        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-                        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
-                    }
-                }
+                Disable-ADTWindowCloseButton -WindowHandle $formWelcome.Handle
             }
             Catch {
                 # Not a terminating error if we can't disable the button. Just disable the Control Box instead
@@ -726,137 +719,179 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Close-InstallationProgress {
+function Close-ADTInstallationProgress
+{
     <#
-.SYNOPSIS
 
-Closes the dialog created by Show-InstallationProgress.
+    .SYNOPSIS
+    Closes the dialog created by Show-ADTInstallationProgress.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Closes the dialog created by Show-ADTInstallationProgress.
 
-Closes the dialog created by Show-InstallationProgress.
+    This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
-This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
+    .PARAMETER WaitingTime
+    How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. Range: 1 - 60  Default: 5
 
-.PARAMETER WaitingTime
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. Range: 1 - 60  Default: 5
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.INPUTS
+    .EXAMPLE
+    Close-ADTInstallationProgress
 
-None
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-You cannot pipe objects to this function.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.OUTPUTS
+    #>
 
-System.String
-
-Returns the version of the specified file.
-
-.EXAMPLE
-
-Close-InstallationProgress
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
+    param (
         [ValidateRange(1, 60)]
-        [Int32]$WaitingTime = 5
+        [System.Int32]$WaitingTime = 5
     )
 
-    Begin {
+    begin {
+        function Invoke-CloseInstProgressSleep
+        {
+            param (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.String]$Message
+            )
+
+            Write-ADTLogEntry @PSBoundParameters -Severity 2
+            for ($timeout = $WaitingTime; $timeout -gt 0; $timeout--)
+            {
+                [System.Threading.Thread]::Sleep(1000)
+            }
+        }
+
         Write-DebugHeader
     }
-    Process {
-        If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-ADTLogEntry -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]"
-            Return
-        }
-        If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.SyncHash -or !$Script:ProgressWindow.SyncHash.Count) {
-            Write-ADTLogEntry -Message "Bypassing Close-InstallationProgress as a progress window has never opened."
-            $Script:ProgressWindow.Running = $false
-            Return
-        }
-        # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not
-        [Int32]$Timeout = $WaitingTime
-        While ((-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
-            If ($Timeout -eq $WaitingTime) {
-                Write-ADTLogEntry -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..."
-            }
-            $Timeout -= 1
-            Start-Sleep -Seconds 1
-        }
-        # Return if we still have no window
-        If (-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) {
-            Write-ADTLogEntry -Message "The installation progress dialog was not created within $WaitingTime seconds." -Severity 2
-            $Script:ProgressWindow.Running = $false
-            Return
-        }
-        # If the thread is suspended, resume it
-        If ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Suspended) {
-            Write-ADTLogEntry -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.'
-            Try {
-                $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.Resume()
-            }
-            Catch {
-                Write-ADTLogEntry -Message 'Failed to resume the thread for the installation progress dialog.' -Severity 2
-            }
-        }
-        # If the thread is changing its state, wait
-        [Int32]$Timeout = 0
-        While ((($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Aborted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::AbortRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::StopRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
-            If (-not $Timeout) {
-                Write-ADTLogEntry -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Severity 2
-            }
-            $Timeout += 1
-            Start-Sleep -Seconds 1
-        }
-        # If the thread is running, stop it
-        If ((-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Stopped)) -and (-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted))) {
-            Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-            $Script:ProgressWindow.SyncHash.Window.Dispatcher.InvokeShutdown()
+
+    process {
+        # Return early if we're silent, a window wouldn't have ever opened.
+        if ($Script:ADT.CurrentSession.DeployModeSilent)
+        {
+            Write-ADTLogEntry -Message "Bypassing Close-ADTInstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]"
+            return
         }
 
-        If ($Script:ProgressWindow.Runspace) {
-            # If the runspace is still opening, wait
-            [Int32]$Timeout = 0
-            While ((($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
-                If (-not $Timeout) {
-                    Write-ADTLogEntry -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Severity 2
+        # Process the WPF window if it exists.
+        if ($Script:ProgressWindow.SyncHash -and $Script:ProgressWindow.SyncHash.ContainsKey('Window'))
+        {
+            # Check whether the window has been created and wait for up to $WaitingTime seconds if it does not.
+            if (!$Script:ProgressWindow.SyncHash.Window.IsInitialized)
+            {
+                Invoke-CloseInstProgressSleep -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..."
+                if (!$Script:ProgressWindow.SyncHash.Window.IsInitialized)
+                {
+                    Write-ADTLogEntry -Message "The installation progress dialog was not created within $WaitingTime seconds." -Severity 2
+                    $Script:ProgressWindow.Running = $false
                 }
-                $Timeout += 1
-                Start-Sleep -Seconds 1
             }
-            # If the runspace is opened, close it
-            If ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
-                Write-ADTLogEntry -Message "Closing the installation progress dialog`'s runspace."
-                $Script:ProgressWindow.Runspace.Close()
-                $Script:ProgressWindow.Runspace = $null
+            else
+            {
+                # If the thread is suspended, resume it.
+                if ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Suspended)
+                {
+                    Write-ADTLogEntry -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.'
+                    try
+                    {
+                        $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.Resume()
+                    }
+                    catch
+                    {
+                        Write-ADTLogEntry -Message 'Failed to resume the thread for the installation progress dialog.' -Severity 2
+                    }
+                }
+
+                # If the thread is changing its state, wait.
+                if ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band ([System.Threading.ThreadState]::Aborted -bor [System.Threading.ThreadState]::AbortRequested -bor [System.Threading.ThreadState]::StopRequested -bor [System.Threading.ThreadState]::Unstarted -bor [System.Threading.ThreadState]::WaitSleepJoin))
+                {
+                    Invoke-CloseInstProgressSleep -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..."
+                }
+
+                # If the thread is running, stop it.
+                if (!($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band ([System.Threading.ThreadState]::Stopped -bor [System.Threading.ThreadState]::Unstarted)))
+                {
+                    Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+                    $Script:ProgressWindow.SyncHash.Remove('Message')
+                    $Script:ProgressWindow.SyncHash.Window.Dispatcher.InvokeShutdown()
+                    while (!$Script:ProgressWindow.SyncHash.Window.Dispatcher.HasShutdownFinished) {}
+                    $Script:ProgressWindow.SyncHash.Clear()
+                }
             }
-        }
-        Else {
-            Write-ADTLogEntry -Message 'The runspace for the installation progress dialog is already closed.' -Severity 2
         }
 
-        If ($Script:ProgressWindow.SyncHash.Count) {
-            # Clear sync hash
-            $Script:ProgressWindow.SyncHash.Clear()
-            $Script:ProgressWindow.SyncHash = $null
+        # Process the PowerShell window.
+        if ($Script:ProgressWindow.PowerShell)
+        {
+            # End the PowerShell instance if it's invoked.
+            if ($Script:ProgressWindow.Invocation)
+            {
+                Write-ADTLogEntry -Message "Closing the installation progress dialog's invocation."
+                [System.Void]$Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
+                $Script:ProgressWindow.Invocation = $null
+            }
+
+            # Close down the runspace.
+            if ($Script:ProgressWindow.PowerShell.Runspace)
+            {
+                # If the runspace is still opening, wait.
+                if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opening) -or $Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen))
+                {
+                    Invoke-CloseInstProgressSleep -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..."
+                }
+
+                # If the runspace is opened, close it.
+                if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opened))
+                {
+                    Write-ADTLogEntry -Message "Closing the installation progress dialog's runspace."
+                    $Script:ProgressWindow.PowerShell.Runspace.Close()
+                    $Script:ProgressWindow.PowerShell.Runspace.Dispose()
+                    $Script:ProgressWindow.PowerShell.Runspace = $null
+                }
+            }
+
+            # Dispose of remaining PowerShell variables.
+            $Script:ProgressWindow.PowerShell.Dispose()
+            $Script:ProgressWindow.PowerShell = $null
         }
 
         # Reset the state bool.
         $Script:ProgressWindow.Running = $false
     }
-    End {
+
+    end {
         Write-DebugFooter
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Disable-ADTWindowCloseButton
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({if (!$_ -or $_.Equals([System.IntPtr]::Zero)) {throw "The provided window handle is invalid."}; $_})]
+        [System.IntPtr]$WindowHandle
+    )
+
+    if (($menuHandle = [PSADT.UiAutomation]::GetSystemMenu($WindowHandle, $false)) -and ($menuHandle -ne [System.IntPtr]::Zero))
+    {
+        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
     }
 }
