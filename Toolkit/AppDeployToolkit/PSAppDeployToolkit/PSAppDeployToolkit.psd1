@@ -128,7 +128,7 @@ FunctionsToExport = @(
 	'Show-DialogBox'
 	'Show-HelpConsole'
 	'Show-InstallationProgress'
-	'Show-InstallationPrompt'
+	'Show-ADTInstallationPrompt'
 	'Show-InstallationRestartPrompt'
 	'Show-InstallationWelcome'
 	'Start-ServiceAndDependencies'

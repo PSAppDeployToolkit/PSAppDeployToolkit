@@ -4,499 +4,445 @@
 #
 #---------------------------------------------------------------------------
 
-Function Show-InstallationPrompt {
+function Show-ADTInstallationPrompt
+{
     <#
-.SYNOPSIS
 
-Displays a custom installation prompt with the toolkit branding and optional buttons.
+    .SYNOPSIS
+    Displays a custom installation prompt with the toolkit branding and optional buttons.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Any combination of Left, Middle or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified.
 
-Any combination of Left, Middle or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified.
+    .PARAMETER Title
+    Title of the prompt. Default: the application installation name.
 
-.PARAMETER Title
+    .PARAMETER Message
+    Message text to be included in the prompt
 
-Title of the prompt. Default: the application installation name.
+    .PARAMETER MessageAlignment
+    Alignment of the message text. Options: Left, Center, Right. Default: Center.
 
-.PARAMETER Message
+    .PARAMETER ButtonLeftText
+    Show a button on the left of the prompt with the specified text
 
-Message text to be included in the prompt
+    .PARAMETER ButtonRightText
+    Show a button on the right of the prompt with the specified text
 
-.PARAMETER MessageAlignment
+    .PARAMETER ButtonMiddleText
+    Show a button in the middle of the prompt with the specified text
 
-Alignment of the message text. Options: Left, Center, Right. Default: Center.
+    .PARAMETER Icon
+    Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None
 
-.PARAMETER ButtonLeftText
+    .PARAMETER NoWait
+    Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
 
-Show a button on the left of the prompt with the specified text
+    .PARAMETER PersistPrompt
+    Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
 
-.PARAMETER ButtonRightText
+    .PARAMETER MinimizeWindows
+    Specifies whether to minimize other windows when displaying prompt. Default: $false.
 
-Show a button on the right of the prompt with the specified text
+    .PARAMETER Timeout
+    Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
 
-.PARAMETER ButtonMiddleText
+    .PARAMETER NoExitOnTimeout
+    Specifies whether to not exit the script if the UI times out. Default: $false.
 
-Show a button in the middle of the prompt with the specified text
+    .PARAMETER NotTopMost
+    Specifies whether the progress window shouldn't be topmost. Default: $false.
 
-.PARAMETER Icon
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER NoWait
+    .EXAMPLE
+    Show-ADTInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
 
-Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
+    .EXAMPLE
+    Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 
-.PARAMETER PersistPrompt
+    .EXAMPLE
+    Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
 
-Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
+    .LINK
+    https://psappdeploytoolkit.com
 
-.PARAMETER MinimizeWindows
+    #>
 
-Specifies whether to minimize other windows when displaying prompt. Default: $false.
-
-.PARAMETER Timeout
-
-Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
-
-.PARAMETER ExitOnTimeout
-
-Specifies whether to exit the script if the UI times out. Default: $true.
-
-.PARAMETER TopMost
-
-Specifies whether the progress window should be topmost. Default: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Show-InstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
-
-.EXAMPLE
-
-Show-InstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
-
-.EXAMPLE
-
-Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Message,
+
         [Parameter(Mandatory = $false)]
-        [String]$Message = '',
+        [ValidateSet('MiddleLeft', 'MiddleCenter', 'MiddleRight')]
+        [System.Drawing.ContentAlignment]$MessageAlignment = 'MiddleCenter',
+
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Left', 'Center', 'Right')]
-        [String]$MessageAlignment = 'Center',
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonRightText,
+
         [Parameter(Mandatory = $false)]
-        [String]$ButtonRightText = '',
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonLeftText,
+
         [Parameter(Mandatory = $false)]
-        [String]$ButtonLeftText = '',
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ButtonMiddleText,
+
         [Parameter(Mandatory = $false)]
-        [String]$ButtonMiddleText = '',
+        [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'Question', 'Shield', 'Warning', 'WinLogo')]
+        [System.String]$Icon,
+
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'None', 'Question', 'Shield', 'Warning', 'WinLogo')]
-        [String]$Icon = 'None',
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$NoWait = $false,
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$PersistPrompt = $false,
+        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$MinimizeWindows = $false,
+        [ValidateScript({if ($_ -gt $Script:ADT.Config.UI.DefaultTimeout) {throw [System.ArgumentException]::new("The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.")}; !!$_})]
+        [System.UInt32]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Int32]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+        [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ExitOnTimeout = $true,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$TopMost = $true
+        [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        ## Bypass if in non-interactive mode
-        If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-ADTLogEntry -Message "Bypassing Show-InstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message"
-            Return
+
+    process {
+        # Bypass if in non-interactive mode
+        if ($Script:ADT.CurrentSession.DeployModeSilent)
+        {
+            Write-ADTLogEntry -Message "Bypassing Show-ADTInstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message"
+            return
         }
 
-        ## Get parameters for calling function asynchronously
-        [Hashtable]$installPromptParameters = $PSBoundParameters
-
-        ## Check if the countdown was specified
-        If ($timeout -gt $Script:ADT.Config.UI.DefaultTimeout) {
-            [String]$CountdownTimeoutErr = 'The installation UI dialog timeout cannot be longer than the timeout specified in the XML configuration file.'
-            Write-ADTLogEntry -Message $CountdownTimeoutErr -Severity 3
-            Throw $CountdownTimeoutErr
-        }
-
-        ## If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously
-        If ($NoWait) {
+        # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
+        if ($NoWait)
+        {
             # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
-            $installPromptParameters.Remove('NoWait')
-            # Format the parameters as a string
-            [String]$installPromptParameters = $installPromptParameters | Resolve-ADTBoundParameters
             Export-ADTModuleState
-            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $installPromptParameters)" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
-            Return
+            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+            return
         }
 
-        $formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
-        $formInstallationPrompt.SuspendLayout()
-        $pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
-        If ($Icon -ne 'None') {
-            $pictureIcon = New-Object -TypeName 'System.Windows.Forms.PictureBox'
-        }
-        $labelText = New-Object -TypeName 'System.Windows.Forms.Label'
-        $buttonRight = New-Object -TypeName 'System.Windows.Forms.Button'
-        $buttonMiddle = New-Object -TypeName 'System.Windows.Forms.Button'
-        $buttonLeft = New-Object -TypeName 'System.Windows.Forms.Button'
-        $buttonAbort = New-Object -TypeName 'System.Windows.Forms.Button'
-        $flowLayoutPanel = New-Object -TypeName 'System.Windows.Forms.FlowLayoutPanel'
-        $panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
+        # Set up some default values.
+        $controlSize = [System.Drawing.Size]::new($Script:FormData.Width, 0)
+        $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
+        $buttonSize = [System.Drawing.Size]::new(130, 24)
 
-        [ScriptBlock]$Install_Prompt_Form_Cleanup_FormClosed = {
-            ## Remove all event handlers from the controls
-            Try {
-                $installPromptTimer.Dispose()
-                $installPromptTimer = $null
-                $installPromptTimerPersist.remove_Tick($installPromptTimerPersist_Tick)
-                $installPromptTimerPersist.Dispose()
-                $installPromptTimerPersist = $null
-                $formInstallationPrompt.remove_Load($Install_Prompt_Form_StateCorrection_Load)
-                $formInstallationPrompt.remove_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
-            }
-            Catch {
-            }
+        # Define events for form windows.
+        $installPromptTimer_Tick = {
+            Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
+            $buttonAbort.PerformClick()
         }
-
-        [ScriptBlock]$Install_Prompt_Form_StateCorrection_Load = {
-            # Disable the X button
-            Try {
-                $windowHandle = $formInstallationPrompt.Handle
-                If ($windowHandle -and ($windowHandle -ne [IntPtr]::Zero)) {
-                    $menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)
-                    If ($menuHandle -and ($menuHandle -ne [IntPtr]::Zero)) {
+        $installPromptTimerPersist_Tick = {
+            $formInstallationPrompt.WindowState = [System.Windows.Forms.FormWindowState]::Normal
+            $formInstallationPrompt.TopMost = !$NotTopMost
+            $formInstallationPrompt.Location = $formInstallationPromptStartLocation
+            $formInstallationPrompt.BringToFront()
+        }
+        $formInstallationPrompt_FormClosed = {
+            # Remove all event handlers from the controls.
+            $installPromptTimer.remove_Tick($installPromptTimer_Tick)
+            $installPromptTimer.Dispose()
+            $installPromptTimer = $null
+            $installPromptTimerPersist.remove_Tick($installPromptTimerPersist_Tick)
+            $installPromptTimerPersist.Dispose()
+            $installPromptTimerPersist = $null
+            $formInstallationPrompt.remove_Load($formInstallationPrompt_Load)
+            $formInstallationPrompt.remove_FormClosed($formInstallationPrompt_FormClosed)
+            $formInstallationPrompt.Dispose()
+            $formInstallationPrompt = $null
+        }
+        $formInstallationPrompt_Load = {
+            # Disable the X button.
+            try
+            {
+                if (($windowHandle = $formInstallationPrompt.Handle) -and ($windowHandle -ne [IntPtr]::Zero))
+                {
+                    if (($menuHandle = [PSADT.UiAutomation]::GetSystemMenu($windowHandle, $false)) -and ($menuHandle -ne [IntPtr]::Zero))
+                    {
                         [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
                         [PSADT.UiAutomation]::DestroyMenu($menuHandle)
                     }
                 }
             }
-            Catch {
-                # Not a terminating error if we can't disable the button. Just disable the Control Box instead
+            catch
+            {
+                # Not a terminating error if we can't disable the button. Just disable the Control Box instead.
                 Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
                 $formInstallationPrompt.ControlBox = $false
             }
-            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
-            $Script:ADT.CurrentSession.State.FormInstallationPromptStartPosition = $formInstallationPrompt.Location
+
+            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
+            $formInstallationPromptStartLocation = $formInstallationPrompt.Location
         }
 
-        ## Form
+        # Built out timer
+        $installPromptTimer = [System.Windows.Forms.Timer]::new()
+        $installPromptTimer.Interval = $Timeout * 1000
+        $installPromptTimer.add_Tick($installPromptTimer_Tick)
 
-        ##----------------------------------------------
-        ## Create padding object
-        $paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
+        # Built out timer for Persist Prompt mode.
+        $installPromptTimerPersist = [System.Windows.Forms.Timer]::new()
+        $installPromptTimerPersist.Interval = $Script:ADT.Config.UI.DefaultPromptPersistInterval * 1000
+        $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
 
-        ## Default control size
-        $DefaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 0)
-
-        ## Generic Button properties
-        $buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (130, 24)
-
-        ## Picture Banner
-        $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.Image = $Script:FormData.Assets.Banner
-        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, $Script:FormData.BannerHeight)
-        $pictureBanner.MinimumSize = $DefaultControlSize
+        # Picture Banner.
+        $pictureBanner = [System.Windows.Forms.PictureBox]::new()
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+        $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, $Script:FormData.BannerHeight)
+        $pictureBanner.Location = [System.Drawing.Point]::new(0, 0)
+        $pictureBanner.Name = 'PictureBanner'
+        $pictureBanner.Image = $Script:FormData.Assets.Banner
         $pictureBanner.Margin = $paddingNone
         $pictureBanner.TabStop = $false
-        $pictureBanner.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
 
-        ## Picture Icon
-        If ($Icon -ne 'None') {
-            $pictureIcon.DataBindings.DefaultDataSourceUpdateMode = 0
-            $pictureIcon.Image = ([Drawing.SystemIcons]::$Icon).ToBitmap()
-            $pictureIcon.Name = 'pictureIcon'
-            $pictureIcon.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
-            $pictureIcon.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (64, 32)
-            $pictureIcon.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (24, 0, 8, 0)
-            $pictureIcon.SizeMode = 'CenterImage'
+        # Label Text.
+        $labelMessage = [System.Windows.Forms.Label]::new()
+        $labelMessage.MinimumSize = $labelMessage.ClientSize = $labelMessage.MaximumSize = [System.Drawing.Size]::new(381, 0)
+        $labelMessage.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 5)
+        $labelMessage.Padding = [System.Windows.Forms.Padding]::new(20, 0, 20, 0)
+        $labelMessage.Anchor = [System.Windows.Forms.AnchorStyles]::None
+        $labelMessage.Font = $Script:FormData.Font
+        $labelMessage.Name = 'LabelMessage'
+        $labelMessage.Text = $Message
+        $labelMessage.TextAlign = $MessageAlignment
+        $labelMessage.TabStop = $false
+        $labelMessage.AutoSize = $true
+
+        # Picture Icon.
+        if ($Icon)
+        {
+            $pictureIcon = [System.Windows.Forms.PictureBox]::new()
+            $pictureIcon.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::CenterImage
+            $pictureIcon.MinimumSize = $pictureIcon.ClientSize = $pictureIcon.MaximumSize = [System.Drawing.Size]::new(64, 32)
+            $pictureIcon.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 5)
+            $pictureIcon.Padding = [System.Windows.Forms.Padding]::new(24, 0, 8, 0)
+            $pictureIcon.Anchor = [System.Windows.Forms.AnchorStyles]::None
+            $pictureIcon.Name = 'PictureIcon'
+            $pictureIcon.Image = ([System.Drawing.SystemIcons]::$Icon).ToBitmap()
             $pictureIcon.TabStop = $false
-            $pictureIcon.Anchor = 'None'
-            $pictureIcon.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
+            $pictureIcon.Height = $labelMessage.Height
         }
 
-        ## Label Text
-        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
-        $labelText.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelText.Font = $defaultFont
-        $labelText.Name = 'labelText'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, 0)
-        $labelText.ClientSize = $System_Drawing_Size
-        If ($Icon -ne 'None') {
-            $labelText.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (386, $pictureIcon.Height)
-        }
-        Else {
-            $labelText.MinimumSize = $System_Drawing_Size
-        }
-        $labelText.MaximumSize = $System_Drawing_Size
-        $labelText.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 5)
-        $labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (20, 0, 20, 0)
-        $labelText.TabStop = $false
-        $labelText.Text = $message
-        $labelText.TextAlign = "Middle$($MessageAlignment)"
-        $labelText.Anchor = 'None'
-        $labelText.AutoSize = $true
-
-        If ($Icon -ne 'None') {
-            # Add margin for the icon based on labelText Height so its centered
-            $pictureIcon.Height = $labelText.Height
-        }
-        ## Button Left
-        $buttonLeft.DataBindings.DefaultDataSourceUpdateMode = 0
-        $buttonLeft.Name = 'buttonLeft'
-        $buttonLeft.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
-        $buttonLeft.ClientSize = $buttonSize
-        $buttonLeft.MinimumSize = $buttonSize
-        $buttonLeft.MaximumSize = $buttonSize
-        $buttonLeft.TabIndex = 0
-        $buttonLeft.Text = $buttonLeftText
-        $buttonLeft.DialogResult = 'No'
-        $buttonLeft.AutoSize = $false
-        $buttonLeft.Margin = $paddingNone
-        $buttonLeft.Padding = $paddingNone
-        $buttonLeft.UseVisualStyleBackColor = $true
-        $buttonLeft.Location = '14,4'
-
-        ## Button Middle
-        $buttonMiddle.DataBindings.DefaultDataSourceUpdateMode = 0
-        $buttonMiddle.Name = 'buttonMiddle'
-        $buttonMiddle.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
-        $buttonMiddle.ClientSize = $buttonSize
-        $buttonMiddle.MinimumSize = $buttonSize
-        $buttonMiddle.MaximumSize = $buttonSize
-        $buttonMiddle.TabIndex = 1
-        $buttonMiddle.Text = $buttonMiddleText
-        $buttonMiddle.DialogResult = 'Ignore'
-        $buttonMiddle.AutoSize = $true
-        $buttonMiddle.Margin = $paddingNone
-        $buttonMiddle.Padding = $paddingNone
-        $buttonMiddle.UseVisualStyleBackColor = $true
-        $buttonMiddle.Location = '160,4'
-
-        ## Button Right
-        $buttonRight.DataBindings.DefaultDataSourceUpdateMode = 0
-        $buttonRight.Name = 'buttonRight'
-        $buttonRight.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
-        $buttonRight.ClientSize = $buttonSize
-        $buttonRight.MinimumSize = $buttonSize
-        $buttonRight.MaximumSize = $buttonSize
-        $buttonRight.TabIndex = 2
-        $buttonRight.Text = $ButtonRightText
-        $buttonRight.DialogResult = 'Yes'
-        $buttonRight.AutoSize = $true
-        $buttonRight.Margin = $paddingNone
-        $buttonRight.Padding = $paddingNone
-        $buttonRight.UseVisualStyleBackColor = $true
-        $buttonRight.Location = '306,4'
-
-        ## Button Abort (Hidden)
-        $buttonAbort.DataBindings.DefaultDataSourceUpdateMode = 0
-        $buttonAbort.Name = 'buttonAbort'
-        $buttonAbort.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
-        $buttonAbort.ClientSize = '0,0'
-        $buttonAbort.MinimumSize = '0,0'
-        $buttonAbort.MaximumSize = '0,0'
+        # Button Abort (Hidden).
+        $buttonAbort = [System.Windows.Forms.Button]::new()
+        $buttonAbort.MinimumSize = $buttonAbort.ClientSize = $buttonAbort.MaximumSize = [System.Drawing.Size]::new(0, 0)
+        $buttonAbort.Margin = $buttonAbort.Padding = $paddingNone
+        $buttonAbort.DialogResult = [System.Windows.Forms.DialogResult]::Abort
+        $buttonAbort.Name = 'ButtonAbort'
+        $buttonAbort.Font = $Script:FormData.Font
         $buttonAbort.BackColor = [System.Drawing.Color]::Transparent
         $buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
         $buttonAbort.FlatAppearance.BorderSize = 0
         $buttonAbort.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
         $buttonAbort.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
         $buttonAbort.FlatStyle = [System.Windows.Forms.FlatStyle]::System
-        $buttonAbort.DialogResult = 'Abort'
         $buttonAbort.TabStop = $false
-        $buttonAbort.Visible = $true # Has to be set visible so we can call Click on it
-        $buttonAbort.Margin = $paddingNone
-        $buttonAbort.Padding = $paddingNone
+        $buttonAbort.Visible = $true  # Has to be set visible so we can call Click on it
         $buttonAbort.UseVisualStyleBackColor = $true
 
-        ## FlowLayoutPanel
-        $flowLayoutPanel.MinimumSize = $DefaultControlSize
-        $flowLayoutPanel.MaximumSize = $DefaultControlSize
-        $flowLayoutPanel.ClientSize = $DefaultControlSize
+        # FlowLayoutPanel.
+        $flowLayoutPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
+        $flowLayoutPanel.SuspendLayout()
+        $flowLayoutPanel.MinimumSize = $flowLayoutPanel.ClientSize = $flowLayoutPanel.MaximumSize = $controlSize
+        $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:FormData.BannerHeight)
         $flowLayoutPanel.AutoSize = $true
-        $flowLayoutPanel.AutoSizeMode = 'GrowAndShrink'
-        $flowLayoutPanel.Anchor = 'Top,Left'
-        $flowLayoutPanel.FlowDirection = 'LeftToRight'
+        $flowLayoutPanel.AutoSizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink
+        $flowLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
         $flowLayoutPanel.WrapContents = $true
-        $flowLayoutPanel.Margin = $paddingNone
-        $flowLayoutPanel.Padding = $paddingNone
-        ## Make sure label text is positioned correctly
-        If ($Icon -ne 'None') {
-            $labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 10, 0)
-            $pictureIcon.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
-            $labelText.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
-        }
-        Else {
-            $labelText.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
-            $labelText.MinimumSize = $DefaultControlSize
-            $labelText.MaximumSize = $DefaultControlSize
-            $labelText.ClientSize = $DefaultControlSize
-            $labelText.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
-        }
-        If ($Icon -ne 'None') {
+        $flowLayoutPanel.Margin = $flowLayoutPanel.Padding = $paddingNone
+
+        # Make sure label text is positioned correctly before adding it.
+        if ($Icon)
+        {
+            $labelMessage.Padding = [System.Windows.Forms.Padding]::new(0, 0, 10, 0)
+            $labelMessage.Location = [System.Drawing.Point]::new(64, 0)
+            $pictureIcon.Location = [System.Drawing.Point]::new(0, 0)
             $flowLayoutPanel.Controls.Add($pictureIcon)
         }
-        $flowLayoutPanel.Controls.Add($labelText)
-        $flowLayoutPanel.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:FormData.BannerHeight)
+        else
+        {
+            $labelMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
+            $labelMessage.Location = [System.Drawing.Point]::new(0, 0)
+            $labelMessage.MinimumSize = $labelMessage.ClientSize = $labelMessage.MaximumSize = $controlSize
+        }
+        $flowLayoutPanel.Controls.Add($labelMessage)
 
-        ## ButtonsPanel
-        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
-        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
-        If ($Icon -ne 'None') {
-            $panelButtons.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (64, 0)
+        # Add in remaining controls and resume object.
+        if ($ButtonLeftText -or $ButtonMiddleText -or $ButtonRightText)
+        {
+            # ButtonsPanel.
+            $panelButtons = [System.Windows.Forms.Panel]::new()
+            $panelButtons.SuspendLayout()
+            $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, 39)
+            $panelButtons.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
+            $panelButtons.AutoSize = $true
+            if ($Icon)
+            {
+                $panelButtons.Location = [System.Drawing.Point]::new(64, 0)
+            }
+            else
+            {
+                $panelButtons.Padding = $paddingNone
+            }
+
+            # Build out and add the buttons if we have any.
+            if ($ButtonLeftText)
+            {
+                # Button Left.
+                $buttonLeft = [System.Windows.Forms.Button]::new()
+                $buttonLeft.MinimumSize = $buttonLeft.ClientSize = $buttonLeft.MaximumSize = $buttonSize
+                $buttonLeft.Margin = $buttonLeft.Padding = $paddingNone
+                $buttonLeft.Location = [System.Drawing.Point]::new(14, 4)
+                $buttonLeft.DialogResult = [System.Windows.Forms.DialogResult]::No
+                $buttonLeft.Font = $Script:FormData.Font
+                $buttonLeft.Name = 'ButtonLeft'
+                $buttonLeft.Text = $ButtonLeftText
+                $buttonLeft.TabIndex = 0
+                $buttonLeft.AutoSize = $false
+                $buttonLeft.UseVisualStyleBackColor = $true
+                $panelButtons.Controls.Add($buttonLeft)
+            }
+            if ($ButtonMiddleText)
+            {
+                # Button Middle.
+                $buttonMiddle = [System.Windows.Forms.Button]::new()
+                $buttonMiddle.MinimumSize = $buttonMiddle.ClientSize = $buttonMiddle.MaximumSize = $buttonSize
+                $buttonMiddle.Margin = $buttonMiddle.Padding = $paddingNone
+                $buttonMiddle.Location = [System.Drawing.Point]::new(160, 4)
+                $buttonMiddle.DialogResult = [System.Windows.Forms.DialogResult]::Ignore
+                $buttonMiddle.Font = $Script:FormData.Font
+                $buttonMiddle.Name = 'ButtonMiddle'
+                $buttonMiddle.Text = $ButtonMiddleText
+                $buttonMiddle.TabIndex = 1
+                $buttonMiddle.AutoSize = $false
+                $buttonMiddle.UseVisualStyleBackColor = $true
+                $panelButtons.Controls.Add($buttonMiddle)
+            }
+            if ($ButtonRightText)
+            {
+                # Button Right.
+                $buttonRight = [System.Windows.Forms.Button]::new()
+                $buttonRight.MinimumSize = $buttonRight.ClientSize = $buttonRight.MaximumSize = $buttonSize
+                $buttonRight.Margin = $buttonRight.Padding = $paddingNone
+                $buttonRight.Location = [System.Drawing.Point]::new(306, 4)
+                $buttonRight.DialogResult = [System.Windows.Forms.DialogResult]::Yes
+                $buttonRight.Font = $Script:FormData.Font
+                $buttonRight.Name = 'ButtonRight'
+                $buttonRight.Text = $ButtonRightText
+                $buttonRight.TabIndex = 2
+                $buttonRight.AutoSize = $false
+                $buttonRight.UseVisualStyleBackColor = $true
+                $panelButtons.Controls.Add($buttonRight)
+            }
+
+            # Add the button panel in if we have buttons.
+            if ($panelButtons.Controls.Count)
+            {
+                $panelButtons.ResumeLayout()
+                $flowLayoutPanel.Controls.Add($panelButtons)
+            }
         }
-        Else {
-            $panelButtons.Padding = $paddingNone
-        }
-        $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)
-        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
-        $panelButtons.AutoSize = $true
-        If ($buttonLeftText) {
-            $panelButtons.Controls.Add($buttonLeft)
-        }
-        If ($buttonMiddleText) {
-            $panelButtons.Controls.Add($buttonMiddle)
-        }
-        If ($buttonRightText) {
-            $panelButtons.Controls.Add($buttonRight)
-        }
-        ## Add the ButtonsPanel to the flowLayoutPanel if any buttons are present
-        If ($buttonLeftText -or $buttonMiddleText -or $buttonRightText) {
-            $flowLayoutPanel.Controls.Add($panelButtons)
-        }
+        $flowLayoutPanel.ResumeLayout()
 
         ## Form Installation Prompt
-        $formInstallationPrompt.ClientSize = $DefaultControlSize
-        $formInstallationPrompt.Padding = $paddingNone
-        $formInstallationPrompt.Margin = $paddingNone
-        $formInstallationPrompt.DataBindings.DefaultDataSourceUpdateMode = 0
+        $formInstallationPromptStartLocation = $null
+        $formInstallationPrompt = [System.Windows.Forms.Form]::new()
+        $formInstallationPrompt.SuspendLayout()
+        $formInstallationPrompt.ClientSize = $controlSize
+        $formInstallationPrompt.Margin = $formInstallationPrompt.Padding = $paddingNone
+        $formInstallationPrompt.Font = $Script:FormData.Font
         $formInstallationPrompt.Name = 'InstallPromptForm'
-        $formInstallationPrompt.Text = $title
-        $formInstallationPrompt.StartPosition = 'CenterScreen'
-        $formInstallationPrompt.FormBorderStyle = 'Fixed3D'
+        $formInstallationPrompt.Text = $Title
+        $formInstallationPrompt.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
+        $formInstallationPrompt.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
+        $formInstallationPrompt.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
+        $formInstallationPrompt.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Fixed3D
         $formInstallationPrompt.MaximizeBox = $false
         $formInstallationPrompt.MinimizeBox = $false
-        $formInstallationPrompt.TopMost = $TopMost
+        $formInstallationPrompt.TopMost = !$NotTopMost
         $formInstallationPrompt.TopLevel = $true
         $formInstallationPrompt.AutoSize = $true
-        $formInstallationPrompt.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
-        $formInstallationPrompt.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
         $formInstallationPrompt.Icon = $Script:FormData.Assets.Icon
         $formInstallationPrompt.Controls.Add($pictureBanner)
         $formInstallationPrompt.Controls.Add($buttonAbort)
         $formInstallationPrompt.Controls.Add($flowLayoutPanel)
-        ## Timer
-        $installPromptTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
-        $installPromptTimer.Interval = ($timeout * 1000)
-        $installPromptTimer.Add_Tick({
-                Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
-                $buttonAbort.PerformClick()
-            })
-        ## Init the OnLoad event to correct the initial state of the form
-        $formInstallationPrompt.add_Load($Install_Prompt_Form_StateCorrection_Load)
-        ## Clean up the control events
-        $formInstallationPrompt.add_FormClosed($Install_Prompt_Form_Cleanup_FormClosed)
+        $formInstallationPrompt.add_Load($formInstallationPrompt_Load)
+        $formInstallationPrompt.add_FormClosed($formInstallationPrompt_FormClosed)
+        $formInstallationPrompt.ResumeLayout()
 
-        ## Start the timer
-        $installPromptTimer.Start()
-
-        ## Persistence Timer
-        If ($persistPrompt) {
-            $installPromptTimerPersist = New-Object -TypeName 'System.Windows.Forms.Timer'
-            $installPromptTimerPersist.Interval = ($Script:ADT.Config.UI.DefaultPromptPersistInterval * 1000)
-            [ScriptBlock]$installPromptTimerPersist_Tick = {
-                $formInstallationPrompt.WindowState = 'Normal'
-                $formInstallationPrompt.TopMost = $TopMost
-                $formInstallationPrompt.BringToFront()
-                $formInstallationPrompt.Location = $Script:ADT.CurrentSession.State.FormInstallationPromptStartPosition
-            }
-            $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
-            $installPromptTimerPersist.Start()
-        }
-
-        If (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous')) {
-            ## Close the Installation Progress Dialog if running
+        # Close the Installation Progress Dialog if running
+        if (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+        {
             Close-InstallationProgress
         }
+        Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters)]."
 
-        [String]$installPromptLoggedParameters = $installPromptParameters | Resolve-ADTBoundParameters
-        Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]."
+        # Start the timer.
+        $installPromptTimer.Start()
+        if ($PersistPrompt) {$installPromptTimerPersist.Start()}
 
-
-        ## Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
-        $showDialog = $true
-        While ($showDialog) {
+        # Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
+        do
+        {
             # Minimize all other windows
-            If ($minimizeWindows) {
-                $null = $Script:ADT.Environment.ShellApp.MinimizeAll()
+            if ($MinimizeWindows)
+            {
+                [System.Void]$Script:ADT.Environment.ShellApp.MinimizeAll()
             }
-            # Show the Form
-            $formInstallationPrompt.ResumeLayout()
-            $result = $formInstallationPrompt.ShowDialog()
-            If (($result -eq 'Yes') -or ($result -eq 'No') -or ($result -eq 'Ignore') -or ($result -eq 'Abort')) {
-                $showDialog = $false
-            }
-        }
-        $formInstallationPrompt.Dispose()
 
-        Switch ($result) {
+            # Show the Form
+            $formResult = $formInstallationPrompt.ShowDialog()
+        }
+        until ($formResult -match '^(Yes|No|Ignore|Abort)$')
+
+        # Return the button text to the caller.
+        switch ($formResult) {
             'Yes' {
-                Write-Output -InputObject ($buttonRightText)
+                return $ButtonRightText
             }
             'No' {
-                Write-Output -InputObject ($buttonLeftText)
+                return $ButtonLeftText
             }
             'Ignore' {
-                Write-Output -InputObject ($buttonMiddleText)
+                return $ButtonMiddleText
             }
             'Abort' {
-                # Restore minimized windows
-                $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
-                If ($ExitOnTimeout) {
+                # Restore minimized windows.
+                [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
+                if (!$NoExitOnTimeout)
+                {
                     Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
                 }
-                Else {
-                    Write-ADTLogEntry -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...'
+                else
+                {
+                    Write-ADTLogEntry -Message 'UI timed out but $NoExitOnTimeout specified. Continue...'
                 }
             }
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
@@ -514,7 +460,7 @@ Function Show-DialogBox {
 
 Display a custom dialog box with optional title, buttons, icon and timeout.
 
-Show-InstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
+Show-ADTInstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 
 .DESCRIPTION
 
@@ -973,7 +919,7 @@ https://psappdeploytoolkit.com
             If ($freeDiskSpace -lt $RequiredDiskSpace) {
                 Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                 If (-not $Silent) {
-                    Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
+                    Show-ADTInstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
                 }
                 Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
             }
@@ -1579,9 +1525,8 @@ https://psappdeploytoolkit.com
         $pictureBanner.TabStop = $false
 
         ## Label Message
-        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
         $labelMessage.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelMessage.Font = $defaultFont
+        $labelMessage.Font = $Script:FormData.Font
         $labelMessage.Name = 'labelMessage'
         $labelMessage.ClientSize = $defaultControlSize
         $labelMessage.MinimumSize = $defaultControlSize
@@ -1599,7 +1544,7 @@ https://psappdeploytoolkit.com
 
         ## Label Time remaining message
         $labelTimeRemaining.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelTimeRemaining.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 3), [System.Drawing.FontStyle]::Bold)
+        $labelTimeRemaining.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelTimeRemaining.Name = 'labelTimeRemaining'
         $labelTimeRemaining.ClientSize = $defaultControlSize
         $labelTimeRemaining.MinimumSize = $defaultControlSize
@@ -1614,7 +1559,7 @@ https://psappdeploytoolkit.com
 
         ## Label Countdown
         $labelCountdown.DataBindings.DefaultDataSourceUpdateMode = 0
-        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size + 9), [System.Drawing.FontStyle]::Bold)
+        $labelCountdown.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
         $labelCountdown.Name = 'labelCountdown'
         $labelCountdown.ClientSize = $defaultControlSize
         $labelCountdown.MinimumSize = $defaultControlSize
@@ -1649,7 +1594,7 @@ https://psappdeploytoolkit.com
         $buttonRestartLater.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartLater.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (240, 4)
         $buttonRestartLater.Name = 'buttonRestartLater'
-        $buttonRestartLater.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonRestartLater.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartLater.ClientSize = $buttonSize
         $buttonRestartLater.MinimumSize = $buttonSize
         $buttonRestartLater.MaximumSize = $buttonSize
@@ -1665,7 +1610,7 @@ https://psappdeploytoolkit.com
         $buttonRestartNow.DataBindings.DefaultDataSourceUpdateMode = 0
         $buttonRestartNow.Location = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (14, 4)
         $buttonRestartNow.Name = 'buttonRestartNow'
-        $buttonRestartNow.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($defaultFont.Name, ($defaultFont.Size - 0.5), [System.Drawing.FontStyle]::Regular)
+        $buttonRestartNow.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ($Script:FormData.Font.Name, ($Script:FormData.Font.Size - 0.5), [System.Drawing.FontStyle]::Regular)
         $buttonRestartNow.ClientSize = $buttonSize
         $buttonRestartNow.MinimumSize = $buttonSize
         $buttonRestartNow.MaximumSize = $buttonSize
@@ -2397,7 +2342,7 @@ function Show-BlockedAppDialog
         # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
         if ($showBlockedAppDialogMutexLocked = (Test-IsMutexAvailable -MutexName $showBlockedAppDialogMutexName -MutexWaitTimeInMilliseconds 1) -and $showBlockedAppDialogMutex.WaitOne(1))
         {
-            Show-InstallationPrompt -Title $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle') -Message $Script:ADT.Strings.BlockExecution.Message -Icon Warning -ButtonRightText OK
+            Show-ADTInstallationPrompt -Title $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle') -Message $Script:ADT.Strings.BlockExecution.Message -Icon Warning -ButtonRightText OK
         }
         else
         {

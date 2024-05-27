@@ -653,11 +653,16 @@ filter Resolve-ADTBoundParameters
 
     #>
 
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Exclude
+    )
+
     # Save off the invocation's command.
     $thisFunc = $MyInvocation.MyCommand
 
     # Process the piped hashtable.
-    $_.GetEnumerator().ForEach({
+    $_.GetEnumerator().Where({$Exclude -notcontains $_.Key}).ForEach({
         begin {
             # Establish array to hold return string.
             if (!(Test-Path -LiteralPath 'Variable:paramsArr'))
