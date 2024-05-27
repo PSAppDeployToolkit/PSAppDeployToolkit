@@ -29,27 +29,27 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppVendor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppArch,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppLang,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$AppRevision,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
@@ -69,11 +69,11 @@ function Open-ADTSession
         [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$InstallName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [System.String]$InstallTitle,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
@@ -101,6 +101,9 @@ function Open-ADTSession
     Import-ADTLocalizedStrings
     Read-ADTAssetsIntoMemory
     $Script:ADT.LastExitCode = 0
+
+    # Sanitise string inputs before instantiating a new session.
+    [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
 
     # Instantiate a new ADT session and initialise it.
     $Script:SessionBuffer.Add(($Script:ADT.CurrentSession = [ADTSession]::new($PSBoundParameters)))
@@ -156,25 +159,6 @@ function Close-ADTSession
 #
 #---------------------------------------------------------------------------
 
-function Restore-ADTPreviousSession
-{
-    # Destruct the active session and restore the previous one if available.
-    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
-    [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
-    $Script:SessionCallers.Remove($Script:ADT.CurrentSession)
-    $Script:ADT.CurrentSession = if ($Script:SessionBuffer.Count)
-    {
-        $Script:SessionBuffer[-1]
-    }
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
 function Get-ADTSession
 {
     # Return the most recent session in the database.
@@ -185,6 +169,91 @@ function Get-ADTSession
     catch
     {
         throw [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) functions.")
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Update-ADTSessionInstallPhase
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Value
+    )
+
+    $Script:ADT.CurrentSession.SetPropertyValue('InstallPhase', $Value)
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Test-ADTSessionZeroConfigMSI
+{
+    return $Script:ADT.CurrentSession.GetPropertyValue('UseDefaultMsi')
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTSessionZeroConfigMsiFile
+{
+    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMsiFile')
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTSessionZeroConfigMstFile
+{
+    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMstFile')
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTSessionZeroConfigMspFiles
+{
+    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMspFiles')
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Restore-ADTPreviousSession
+{
+    # Destruct the active session and restore the previous one if available.
+    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
+    [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
+    $Script:SessionCallers.Remove($Script:ADT.CurrentSession)
+    $Script:ADT.CurrentSession = if ($Script:SessionBuffer.Count)
+    {
+        $Script:SessionBuffer[-1]
     }
 }
 
