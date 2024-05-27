@@ -63,11 +63,11 @@ https://psappdeploytoolkit.com
 
         ## Remove illegal characters from the scheduled task arguments string
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [string]$SchInstallName = $Script:ADT.CurrentSession.GetPropertyValue('installName')
+        [string]$SchInstallName = (Get-ADTSession).GetPropertyValue('installName')
         ForEach ($invalidChar in $invalidScheduledTaskChars) {
             [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
-        [string]$blockExecutionTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
+        [string]$blockExecutionTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
         [string]$schTaskUnblockAppsCommand = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$blockExecutionTempPath'; Import-ADTModuleState; Unblock-AppExecution"
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
@@ -119,7 +119,7 @@ https://psappdeploytoolkit.com
             Return
         }
 
-        [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = (Get-ADTSession).GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
         If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'Ignore') {
@@ -166,7 +166,7 @@ https://psappdeploytoolkit.com
             Try {
                 ## Specify the filename to export the XML to
                 ## XML does not need to be user readable to stays in protected TEMP folder
-                [String]$xmlSchTaskFilePath = "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\SchTaskUnBlockApps.xml"
+                [String]$xmlSchTaskFilePath = "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\SchTaskUnBlockApps.xml"
                 [String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             }
             Catch {
@@ -261,10 +261,10 @@ https://psappdeploytoolkit.com
         }
 
         ## If block execution variable is $true, set it to $false
-        $Script:ADT.CurrentSession.State.BlockExecution = $false
+        (Get-ADTSession).State.BlockExecution = $false
 
         ## Remove the scheduled task if it exists
-        [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = (Get-ADTSession).GetPropertyValue('installName') + '_BlockedApps'
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
                 Write-ADTLogEntry -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]."
@@ -276,13 +276,13 @@ https://psappdeploytoolkit.com
         }
 
         ## Remove BlockAppExecution Schedule Task XML file
-        [String]$xmlSchTaskFilePath = "$Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
+        [String]$xmlSchTaskFilePath = "(Get-ADTSession).GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
         If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
             $null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'Ignore'
         }
 
         ## Remove BlockAppExection Temporary directory
-        [String]$blockExecutionTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
+        [String]$blockExecutionTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
             Remove-Folder -Path $blockExecutionTempPath
         }

@@ -34,7 +34,7 @@ Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationF
 
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
-    CurrentSession = $null
+    Sessions = [System.Collections.Generic.List[ADTSession]]::new()
     Environment = $null
     Language = $null
     Config = $null
@@ -65,7 +65,6 @@ New-Variable -Name FormData -Option Constant -Value @{
 }
 
 # Variables to track multiple sessions and each session's caller.
-New-Variable -Name SessionBuffer -Option Constant -Value ([System.Collections.Generic.List[ADTSession]]::new())
 New-Variable -Name SessionCallers -Option Constant -Value @{}
 
 # Values used for ADT module serialisation.

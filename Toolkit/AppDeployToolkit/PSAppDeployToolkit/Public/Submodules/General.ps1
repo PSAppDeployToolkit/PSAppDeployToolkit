@@ -75,7 +75,7 @@ filter Write-ADTLogEntry
     )
 
     # The internals of this are within the session's class object.
-    $Script:ADT.CurrentSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage)
+    (Get-ADTSession).WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage)
     if ($PassThru) {return $Message}
 }
 

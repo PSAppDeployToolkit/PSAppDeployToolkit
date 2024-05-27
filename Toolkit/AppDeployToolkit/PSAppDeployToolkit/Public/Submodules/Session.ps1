@@ -90,7 +90,7 @@ function Open-ADTSession
     )
 
     # Clamp the session count at one, for now.
-    if ($Script:SessionBuffer.Count)
+    if ($Script:ADT.Sessions.Count)
     {
         throw [System.InvalidOperationException]::new("Only one $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) session is permitted at this time.")
     }
@@ -106,10 +106,10 @@ function Open-ADTSession
     [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
 
     # Instantiate a new ADT session and initialise it.
-    $Script:SessionBuffer.Add(($Script:ADT.CurrentSession = [ADTSession]::new($PSBoundParameters)))
+    $Script:ADT.Sessions.Add([ADTSession]::new($PSBoundParameters))
     try
     {
-        $Script:ADT.CurrentSession.Open()
+        $Script:ADT.Sessions[-1].Open()
     }
     catch
     {
@@ -136,17 +136,17 @@ function Close-ADTSession
     )
 
     # Close the Installation Progress Dialog if running.
-    if ($Script:SessionBuffer.Count.Equals(1))
+    if ($Script:ADT.Sessions.Count.Equals(1))
     {
         Close-ADTInstallationProgress
     }
 
     # Close out the active session and clean up session state.
-    $Script:ADT.CurrentSession.Close($ExitCode)
+    (Get-ADTSession).Close($ExitCode)
     Restore-ADTPreviousSession
 
     # If this was the last session, exit out with our code.
-    if (!$Script:SessionBuffer.Count)
+    if (!$Script:ADT.Sessions.Count)
     {
         Reset-ADTNotifyIcon
         exit $Script:ADT.LastExitCode
@@ -163,14 +163,11 @@ function Close-ADTSession
 function Get-ADTSession
 {
     # Return the most recent session in the database.
-    try
-    {
-        return $Script:SessionBuffer[-1]
-    }
-    catch
+    if (!$Script:ADT.Sessions.Count)
     {
         throw [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) functions.")
     }
+    return $Script:ADT.Sessions[-1]
 }
 
 
@@ -183,7 +180,7 @@ function Get-ADTSession
 function Get-ADTSessionProperties
 {
     # Return the session's properties as a read-only dictionary.
-    return $Script:ADT.CurrentSession.Properties.AsReadOnly()
+    return (Get-ADTSession).Properties.AsReadOnly()
 }
 
 
@@ -201,7 +198,7 @@ function Update-ADTSessionInstallPhase
         [System.String]$Value
     )
 
-    $Script:ADT.CurrentSession.SetPropertyValue('InstallPhase', $Value)
+    (Get-ADTSession).SetPropertyValue('InstallPhase', $Value)
 }
 
 
@@ -214,13 +211,9 @@ function Update-ADTSessionInstallPhase
 function Restore-ADTPreviousSession
 {
     # Destruct the active session and restore the previous one if available.
-    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
-    [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
-    $Script:SessionCallers.Remove($Script:ADT.CurrentSession)
-    $Script:ADT.CurrentSession = if ($Script:SessionBuffer.Count)
-    {
-        $Script:SessionBuffer[-1]
-    }
+    $Host.UI.RawUI.WindowTitle = (Get-ADTSession).OldPSWindowTitle
+    $Script:SessionCallers.Remove((Get-ADTSession))
+    [System.Void]$Script:ADT.Sessions.Remove((Get-ADTSession))
 }
 
 
@@ -233,7 +226,7 @@ function Restore-ADTPreviousSession
 function Export-ADTModuleState
 {
     # Sync all property values and export to registry.
-    $Script:ADT.CurrentSession.SyncPropertyValues()
+    (Get-ADTSession).SyncPropertyValues()
     $Script:Serialisation.Hive.CreateSubKey($Script:Serialisation.Key).SetValue($Script:Serialisation.Name, [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([System.Management.Automation.PSSerializer]::Serialize($Script:ADT, [System.Int32]::MaxValue))), $Script:Serialisation.Type)
 }
 
@@ -258,9 +251,12 @@ function Import-ADTModuleState
     })
 
     # Create new object based on serialised state and configure for async operations.
-    $Script:ADT.CurrentSession = [ADTSession]::new($Script:ADT.CurrentSession)
-    $Script:ADT.CurrentSession.Properties.InstallPhase = 'Asynchronous'
-    $Script:ADT.CurrentSession.LegacyMode = $false
+    for ($i = 0; $i -lt $Script:ADT.Sessions.Count; $i++)
+    {
+        $Script:ADT.Sessions[$i] = [ADTSession]::new($Script:ADT.Sessions[$i])
+        $Script:ADT.Sessions[$i].Properties.InstallPhase = 'Asynchronous'
+        $Script:ADT.Sessions[$i].LegacyMode = $false
+    }
 
     # Read all graphics assets into memory.
     Read-ADTAssetsIntoMemory
