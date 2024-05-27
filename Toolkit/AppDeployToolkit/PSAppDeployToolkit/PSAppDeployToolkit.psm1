@@ -165,7 +165,7 @@ Export-ModuleMember -Function @(
     'Show-HelpConsole'
     'Show-ADTInstallationProgress'
     'Show-ADTInstallationPrompt'
-    'Show-InstallationRestartPrompt'
+    'Show-ADTInstallationRestartPrompt'
     'Show-ADTInstallationWelcome'
     'Start-ServiceAndDependencies'
     'Stop-ServiceAndDependencies'
