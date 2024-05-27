@@ -399,111 +399,89 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
 #
 #---------------------------------------------------------------------------
 
-Function Get-RunningProcesses {
+function Get-ADTRunningProcesses
+{
     <#
-.SYNOPSIS
 
-Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
+    .SYNOPSIS
+    Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 
-Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
+    .PARAMETER InputObject
+    Custom object containing the process objects to search for.
 
-.PARAMETER ProcessObjects
+    .PARAMETER DisableLogging
+    Disables function logging.
 
-Custom object containing the process objects to search for. If not supplied, the function just returns $null
+    .INPUTS
+    System.Management.Automation.PSObject. One or more process objects as established in the Winforms code.
 
-.PARAMETER DisableLogging
+    .OUTPUTS
+    System.Diagnostics.Process. Returns one or more process objects representing each running process found.
 
-Disables function logging
+    .EXAMPLE
+    $processObjects | Get-ADTRunningProcesses
 
-.INPUTS
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-None
+    .LINK
+    https://psappdeploytoolkit.com
 
-You cannot pipe objects to this function.
+    #>
 
-.OUTPUTS
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSObject]$InputObject,
 
-Syste.Boolean.
-
-Rettuns $true if the process is running, otherwise $false.
-
-.EXAMPLE
-
-Get-RunningProcesses -ProcessObjects $ProcessObjects
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false, Position = 0)]
-        [PSObject[]]$ProcessObjects,
-        [Parameter(Mandatory = $false, Position = 1)]
-        [Switch]$DisableLogging
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DisableLogging
     )
 
     begin {
         Write-DebugHeader
     }
 
-    process {
-        ## Confirm input isn't null before proceeding.
-        if (!$processObjects -or !$processObjects[0].ProcessName)
-        {
-            return
-        }
-        if (!$DisableLogging)
-        {
-            Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]"
-        }
-
-        ## Get all running processes and append properties.
-        [Diagnostics.Process[]]$runningProcesses = foreach ($process in (Get-Process -Name $processObjects.ProcessName -ErrorAction Ignore))
-        {
-            Add-Member -InputObject $process -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                if (![System.String]::IsNullOrEmpty(($objDescription = ($processObjects | Where-Object {$_.ProcessName -eq $process.ProcessName}).ProcessDescription)))
-                {
-                    # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
-                    $objDescription
-                }
-                elseif ($process.Description)
-                {
-                    # If the process already has a description field specified, then use it
-                    $process.Description
-                }
-                else
-                {
-                    # Fall back on the process name if no description is provided by the process or as a parameter to the function
-                    $process.ProcessName
-                }
-            )
-        }
-
-        ## Return output if there's any.
-        if (!$runningProcesses)
-        {
-            if (!$DisableLogging)
-            {
-                Write-ADTLogEntry -Message 'Specified applications are not running.'
-            }
-            return
-        }
-        if (!$DisableLogging)
-        {
-            Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]."
-        }
-        return ($runningProcesses | Sort-Object)
-    }
-
     end {
-        ## Write out the footer
+        # Confirm input isn't null before proceeding.
+        if ($processObjects = $input.Where({$null -ne $_}))
+        {
+            # Get all running processes and append properties.
+            Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -DebugMessage:$DisableLogging
+            $runningProcesses = Get-Process -Name $processObjects.ProcessName -ErrorAction Ignore | ForEach-Object {
+                $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = ($processObjects | Where-Object -Property ProcessName -EQ -Value $_.ProcessName).ProcessDescription)))
+                    {
+                        # The description of the process provided as a Parameter to the function, e.g. -ProcessName "winword=Microsoft Office Word".
+                        $objDescription
+                    }
+                    elseif ($_.Description)
+                    {
+                        # If the process already has a description field specified, then use it.
+                        $_.Description
+                    }
+                    else
+                    {
+                        # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                        $_.ProcessName
+                    }
+                )
+            }
+
+            # Return output if there's any.
+            if ($runningProcesses)
+            {
+                Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -DebugMessage:$DisableLogging
+                $runningProcesses | Sort-Object -Property ProcessDescription
+            }
+            else
+            {
+                Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
+            }
+        }
         Write-DebugFooter
     }
 }

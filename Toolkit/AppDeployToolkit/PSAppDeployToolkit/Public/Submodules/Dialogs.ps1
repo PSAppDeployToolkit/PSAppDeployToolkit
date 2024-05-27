@@ -1095,7 +1095,7 @@ https://psappdeploytoolkit.com
             $Script:ADT.CurrentSession.State.CloseAppsCountdownGlobal = $closeAppsCountdown
             $promptResult = $null
 
-            While ((Get-RunningProcesses -ProcessObjects $processObjects -OutVariable 'runningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
+            While (($runningProcesses = $processObjects | Get-ADTRunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close'))) {
                 [String]$runningProcessDescriptions = ($runningProcesses | Select-Object -ExpandProperty 'ProcessDescription' -ErrorAction Ignore | Sort-Object -Unique) -join ','
                 #  Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                 If ($allowDefer) {
@@ -1134,7 +1134,7 @@ https://psappdeploytoolkit.com
                         Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
                     }
                     # Update the process list right before closing, in case it changed
-                    $runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects
+                    $runningProcesses = $processObjects | Get-ADTRunningProcesses -ProcessObjects
                     # Close running processes
                     ForEach ($runningProcess in $runningProcesses) {
                         [PSObject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
@@ -1184,7 +1184,7 @@ https://psappdeploytoolkit.com
                         }
                     }
 
-                    If ($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging) {
+                    If ($runningProcesses = $processObjects | Get-ADTRunningProcesses -DisableLogging) {
                         # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again
                         Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
                         Start-Sleep -Seconds 2
@@ -1230,9 +1230,7 @@ https://psappdeploytoolkit.com
 
         ## Force the processes to close silently, without prompting the user
         If (($Silent -or $Script:ADT.CurrentSession.DeployModeSilent) -and $CloseApps) {
-            [Array]$runningProcesses = $null
-            [Array]$runningProcesses = Get-RunningProcesses $processObjects
-            If ($runningProcesses) {
+            If ([Array]$runningProcesses = $processObjects | Get-ADTRunningProcesses) {
                 [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
                 Write-ADTLogEntry -Message "Force closing application(s) [$($runningProcessDescriptions)] without prompting user."
                 $runningProcesses.ProcessName | ForEach-Object -Process { Stop-Process -Name $_ -Force -ErrorAction 'Ignore' }
