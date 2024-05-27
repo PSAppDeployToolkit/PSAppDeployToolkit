@@ -55,6 +55,12 @@ Param (
     [Boolean]$TopMost = $true
 )#>
 
+#---------------------------------------------------------------------------
+#
+# Initialisation code.
+#
+#---------------------------------------------------------------------------
+
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
@@ -85,6 +91,143 @@ $sessionParams = @{
 }
 New-ADTSession @PSBoundParameters @sessionParams
 
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Write-ADTLogEntry
+#
+#---------------------------------------------------------------------------
+
+function Write-Log
+{
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [AllowEmptyCollection()]
+        [Alias('Text')]
+        [System.String[]]$Message,
+
+        [Parameter(Mandatory = $false, Position = 1)]
+        [ValidateRange(0, 3)]
+        [System.Int16]$Severity,
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Source,
+
+        [Parameter(Mandatory = $false, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ScriptSection,
+
+        [Parameter(Mandatory = $false, Position = 4)]
+        [ValidateSet('CMTrace', 'Legacy')]
+        [System.String]$LogType,
+
+        [Parameter(Mandatory = $false, Position = 5)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LogFileDirectory,
+
+        [Parameter(Mandatory = $false, Position = 6)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LogFileName,
+
+        [Parameter(Mandatory = $false, Position = 7)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$AppendToLogFile,
+
+        [Parameter(Mandatory = $false, Position = 8)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$MaxLogHistory,
+
+        [Parameter(Mandatory = $false, Position = 9)]
+        [ValidateNotNullOrEmpty()]
+        [System.Decimal]$MaxLogFileSizeMB,
+
+        [Parameter(Mandatory = $false, Position = 10)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true,
+
+        [Parameter(Mandatory = $false, Position = 11)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$WriteHost,
+
+        [Parameter(Mandatory = $false, Position = 12)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false, Position = 13)]
+        [System.Management.Automation.SwitchParameter]$DebugMessage,
+
+        [Parameter(Mandatory = $false, Position = 14)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$LogDebugMessage
+    )
+
+    begin {
+        # Announce overall deprecation.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Write-ADTLogEntry] instead." -Severity 2 -Source $MyInvocation.MyCommand.Name
+
+        # Announce dead parameters.
+        if ($LogType)
+        {
+            Write-ADTLogEntry -Message "The parameter '-LogType' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('LogType')
+        }
+        if ($LogFileDirectory)
+        {
+            Write-ADTLogEntry -Message "The parameter '-LogFileDirectory' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('LogFileDirectory')
+        }
+        if ($LogFileName)
+        {
+            Write-ADTLogEntry -Message "The parameter '-LogFileName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('LogFileName')
+        }
+        if ($AppendToLogFile)
+        {
+            Write-ADTLogEntry -Message "The parameter '-AppendToLogFile' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('AppendToLogFile')
+        }
+        if ($MaxLogHistory)
+        {
+            Write-ADTLogEntry -Message "The parameter '-MaxLogHistory' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('MaxLogHistory')
+        }
+        if ($MaxLogFileSizeMB)
+        {
+            Write-ADTLogEntry -Message "The parameter '-MaxLogFileSizeMB' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('MaxLogFileSizeMB')
+        }
+        if ($WriteHost)
+        {
+            Write-ADTLogEntry -Message "The parameter '-WriteHost' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('WriteHost')
+        }
+        if ($LogDebugMessage)
+        {
+            Write-ADTLogEntry -Message "The parameter '-LogDebugMessage' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+            [System.Void]$PSBoundParameters.Remove('LogDebugMessage')
+        }
+        if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+        {
+            [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        }
+    }
+
+    process {
+        try
+        {
+            Write-ADTLogEntry @PSBoundParameters
+        }
+        catch
+        {
+            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-Error)" -ForegroundColor Red
+            if (!$ContinueOnError)
+            {
+                throw
+            }
+        }
+    }
+}
+
 <#
 ##*=============================================
 ##* SCRIPT BODY
@@ -93,7 +236,7 @@ New-ADTSession @PSBoundParameters @sessionParams
 
 ## If the ShowInstallationPrompt Parameter is specified, only call that function.
 If ($showInstallationPrompt) {
-    Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
+    Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
     $appDeployMainScriptAsyncParameters.Remove('ShowInstallationPrompt')
     $appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
     $appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
@@ -105,7 +248,7 @@ If ($showInstallationPrompt) {
 
 ## If the ShowInstallationRestartPrompt Parameter is specified, only call that function.
 If ($showInstallationRestartPrompt) {
-    Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
+    Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowInstallationRestartPrompt]." -Source $Script:ADT.Environment.appDeployToolkitName
     $appDeployMainScriptAsyncParameters.Remove('ShowInstallationRestartPrompt')
     $appDeployMainScriptAsyncParameters.Remove('AsyncToolkitLaunch')
     $appDeployMainScriptAsyncParameters.Remove('ReferredInstallName')
@@ -118,7 +261,7 @@ If ($showInstallationRestartPrompt) {
 ## If the CleanupBlockedApps Parameter is specified, only call that function.
 If ($cleanupBlockedApps) {
     $deployModeSilent = $true
-    Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-CleanupBlockedApps]." -Source $Script:ADT.Environment.appDeployToolkitName
+    Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-CleanupBlockedApps]." -Source $Script:ADT.Environment.appDeployToolkitName
     Unblock-AppExecution
     Exit 0
 }
@@ -127,7 +270,7 @@ If ($cleanupBlockedApps) {
 If ($showBlockedAppDialog) {
     Try {
         . $DisableScriptLogging
-        Write-Log -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]." -Source $Script:ADT.Environment.appDeployToolkitName
+        Write-ADTLogEntry -Message "[$appDeployMainScriptFriendlyName] called with switch [-ShowBlockedAppDialog]." -Source $Script:ADT.Environment.appDeployToolkitName
         #  Create a mutex and specify a name without acquiring a lock on the mutex
         [Boolean]$showBlockedAppDialogMutexLocked = $false
         [String]$showBlockedAppDialogMutexName = 'Global\PSADT_ShowBlockedAppDialog_Message'
@@ -140,12 +283,12 @@ If ($showBlockedAppDialog) {
         }
         Else {
             #  If attempt to acquire an exclusive lock on the mutex failed, then exit script as another blocked app dialog window is already open
-            Write-Log -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2 -Source $Script:ADT.Environment.appDeployToolkitName
+            Write-ADTLogEntry -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2 -Source $Script:ADT.Environment.appDeployToolkitName
             Exit 0
         }
     }
     Catch {
-        Write-Log -Message "There was an error in displaying the Installation Prompt. `r`n$(Resolve-Error)" -Severity 3 -Source $Script:ADT.Environment.appDeployToolkitName
+        Write-ADTLogEntry -Message "There was an error in displaying the Installation Prompt. `r`n$(Resolve-Error)" -Severity 3 -Source $Script:ADT.Environment.appDeployToolkitName
         Exit 60005
     }
     Finally {

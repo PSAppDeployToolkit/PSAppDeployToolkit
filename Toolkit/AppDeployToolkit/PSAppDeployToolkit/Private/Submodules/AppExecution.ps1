@@ -119,7 +119,7 @@ https://psappdeploytoolkit.com
     Process {
         ## Bypass if no Admin rights
         If (!$Script:ADT.Environment.IsAdmin) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
             Return
         }
 
@@ -138,7 +138,7 @@ https://psappdeploytoolkit.com
             $null = New-Item -Path $blockExecutionTempPath -ItemType 'Directory' -ErrorAction 'Stop'
         }
         Catch {
-            Write-Log -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Unable to create [$blockExecutionTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName}
         }
 
         Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'Ignore'
@@ -156,13 +156,13 @@ https://psappdeploytoolkit.com
             Set-ItemPermission -Path $blockExecutionTempPath -User $Users -Permission 'Read' -Inheritance ('ObjectInherit', 'ContainerInherit')
         }
         Catch {
-            Write-Log -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+            Write-ADTLogEntry -Message "Failed to set read permissions on path [$blockExecutionTempPath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
         }
 
         ## Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-        Write-Log -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.' -Source ${CmdletName}
+        Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.' -Source ${CmdletName}
         If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
-            Write-Log -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Scheduled task [$schTaskBlockedAppsName] already exists." -Source ${CmdletName}
         }
         Else {
             ## Export the scheduled task XML to file
@@ -173,14 +173,14 @@ https://psappdeploytoolkit.com
                 [String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             }
             Catch {
-                Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 Return
             }
 
             ## Import the Scheduled Task XML file to create the Scheduled Task
             [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
-                Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
                 Return
             }
         }
@@ -191,7 +191,7 @@ https://psappdeploytoolkit.com
 
         ## Enumerate each process and set the debugger value to block application execution
         ForEach ($blockProcess in $blockProcessName) {
-            Write-Log -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]." -Source ${CmdletName}
             Set-RegistryKey -Key (Join-Path -Path $Script:ADT.Environment.regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
         }
     }
@@ -255,7 +255,7 @@ https://psappdeploytoolkit.com
     Process {
         ## Bypass if no Admin rights
         If (!$Script:ADT.Environment.IsAdmin) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
             Return
         }
 
@@ -263,7 +263,7 @@ https://psappdeploytoolkit.com
         [PSObject[]]$unblockProcesses = $null
         [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyAppExecution -Recurse -ErrorAction 'Ignore' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Ignore' })
         ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
-            Write-Log -Message "Removing the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
             $unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'Ignore'
         }
 
@@ -274,12 +274,12 @@ https://psappdeploytoolkit.com
         [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
-                Write-Log -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
                 Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
             }
         }
         Catch {
-            Write-Log -Message "Error retrieving/deleting Scheduled Task.`r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Error retrieving/deleting Scheduled Task.`r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
         }
 
         ## Remove BlockAppExecution Schedule Task XML file

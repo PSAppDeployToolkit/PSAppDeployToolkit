@@ -62,15 +62,15 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
-                Write-Log -Message "Creating folder [$Path]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Creating folder [$Path]." -Source ${CmdletName}
                 $null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop' -Force
             }
             Else {
-                Write-Log -Message "Folder [$Path] already exists." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Folder [$Path] already exists." -Source ${CmdletName}
             }
         }
         Catch {
-            Write-Log -Message "Failed to create folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to create folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed to create folder [$Path]: $($_.Exception.Message)"
             }
@@ -161,7 +161,7 @@ https://psappdeploytoolkit.com
         If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'Ignore') {
             Try {
                 If ($DisableRecursion) {
-                    Write-Log -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Deleting folder [$path] without recursion..." -Source ${CmdletName}
                     # Without recursion we have to go through the subfolder ourselves because Remove-Item asks for confirmation if we are trying to delete a non-empty folder without -Recurse
                     [Array]$ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force
                     If ($ListOfChildItems) {
@@ -196,7 +196,7 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Else {
-                    Write-Log -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Deleting folder [$path] recursively..." -Source ${CmdletName}
                     Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
                 }
 
@@ -205,14 +205,14 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-Log -Message "Failed to delete folder(s) and file(s) from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete folder(s) and file(s) from path [$path]: $($_.Exception.Message)"
                 }
             }
         }
         Else {
-            Write-Log -Message "Folder [$Path] does not exist." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Folder [$Path] does not exist." -Source ${CmdletName}
         }
     }
     End {
@@ -340,7 +340,7 @@ https://psappdeploytoolkit.com
             }
             Else {
                 $UseRobocopy = $false
-                Write-Log "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry "Robocopy is not available on this system. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
             }
         }
         Else {
@@ -355,19 +355,19 @@ https://psappdeploytoolkit.com
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     If ($srcPath -match '\*.*\\') {
                         $UseRobocopyThis = $false
-                        Write-Log "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Write-ADTLogEntry "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
                     }
                     # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
                         $UseRobocopyThis = $false
-                        Write-Log "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
+                        Write-ADTLogEntry "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
 
                     }
                     If ($UseRobocopyThis) {
 
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                         If (-not (Test-Path -LiteralPath $Destination -PathType Container)) {
-                            Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
                             $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                         }
                         If (Test-Path -LiteralPath $srcPath -PathType Container) {
@@ -387,7 +387,7 @@ https://psappdeploytoolkit.com
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
-                            Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                             [Hashtable]$CopyFileSplat = @{
                                 Path                     = (Join-Path $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
                                 Destination              = $Destination # Use the original destination path, not $RobocopyDestination which could have had a subfolder appended to it
@@ -415,40 +415,40 @@ https://psappdeploytoolkit.com
                             if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
-                            Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
                             $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
                             $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
-                            Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
-                        Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
-                        Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
 
                         Switch ($RobocopyResult.ExitCode) {
-                            0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
-                            1 { Write-Log -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
-                            2 { Write-Log -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
-                            3 { Write-Log -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
-                            4 { Write-Log -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
-                            5 { Write-Log -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
-                            6 { Write-Log -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
-                            7 { Write-Log -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
-                            8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
+                            0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
+                            1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully." -Source ${CmdletName} }
+                            2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." -Source ${CmdletName} }
+                            3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." -Source ${CmdletName} }
+                            4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 -Source ${CmdletName} }
+                            5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." -Source ${CmdletName} }
+                            6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 -Source ${CmdletName} }
+                            7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 -Source ${CmdletName} }
+                            8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
                             16 {
-                                Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
                                 If (-not $ContinueOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default {
-                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                                 If (-not $ContinueOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
@@ -457,7 +457,7 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                     If (-not $ContinueOnError) {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
@@ -467,17 +467,17 @@ https://psappdeploytoolkit.com
                 Try {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
-                        Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
                         $null = New-Item -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                     }
                     # If destination appears to be a file name but parent folder does not exist, create it
                     $DestinationParent = Split-Path $Destination -Parent
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $DestinationParent -PathType 'Container')) {
-                        Write-Log -Message "Destination assumed to be a file whose parent folder does not exist, creating destination folder [$DestinationParent]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Destination assumed to be a file whose parent folder does not exist, creating destination folder [$DestinationParent]." -Source ${CmdletName}
                         $null = New-Item -Path $DestinationParent -Type 'Directory' -Force -ErrorAction 'Stop'
                     }
                     If ($Flatten) {
-                        Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
                             $null = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | ForEach-Object {
                                 Copy-Item -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
@@ -490,7 +490,7 @@ https://psappdeploytoolkit.com
                         }
                     }
                     ElseIf ($Recurse) {
-                        Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
                             $null = Copy-Item -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
@@ -499,7 +499,7 @@ https://psappdeploytoolkit.com
                         }
                     }
                     Else {
-                        Write-Log -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         If ($ContinueFileCopyOnError) {
                             $null = Copy-Item -Path $srcPath -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
@@ -509,14 +509,14 @@ https://psappdeploytoolkit.com
                     }
 
                     If ($FileCopyError) {
-                        Write-Log -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination]. `r`n$FileCopyError" -Severity 2 -Source ${CmdletName}
                     }
                     Else {
-                        Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'File copy completed successfully.' -Source ${CmdletName}
                     }
                 }
                 Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                     If (-not $ContinueOnError) {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
@@ -638,10 +638,10 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch [System.Management.Automation.ItemNotFoundException] {
-                Write-Log -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Unable to resolve file(s) for deletion in path [$Item] because path does not exist." -Severity 2 -Source ${CmdletName}
             }
             Catch {
-                Write-Log -Message "Failed to resolve file(s) for deletion in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to resolve file(s) for deletion in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
                     Throw "Failed to resolve file(s) for deletion in path [$Item]: $($_.Exception.Message)"
                 }
@@ -653,19 +653,19 @@ https://psappdeploytoolkit.com
             ForEach ($Item in $ResolvedPath) {
                 Try {
                     If (($Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-                        Write-Log -Message "Deleting file(s) recursively in path [$Item]..." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..." -Source ${CmdletName}
                     }
                     ElseIf ((-not $Recurse) -and (Test-Path -LiteralPath $Item -PathType 'Container')) {
-                        Write-Log -Message "Skipping folder [$Item] because the Recurse switch was not specified." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified." -Source ${CmdletName}
                         Continue
                     }
                     Else {
-                        Write-Log -Message "Deleting file in path [$Item]..." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Deleting file in path [$Item]..." -Source ${CmdletName}
                     }
                     $null = Remove-Item @RemoveFileSplat -LiteralPath $Item
                 }
                 Catch {
-                    Write-Log -Message "Failed to delete file(s) in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to delete file(s) in path [$Item]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                     If (-not $ContinueOnError) {
                         Throw "Failed to delete file(s) in path [$Item]: $($_.Exception.Message)"
                     }
@@ -674,7 +674,7 @@ https://psappdeploytoolkit.com
         }
 
         If ($ErrorRemoveItem) {
-            Write-Log -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The following error(s) took place while removing file(s) in path [$SpecifiedPath]. `r`n$(Resolve-Error -ErrorRecord $ErrorRemoveItem)" -Severity 2 -Source ${CmdletName}
         }
     }
     End {
@@ -852,7 +852,7 @@ https://psappdeploytoolkit.com
 
         foreach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
             $CopyFileSplat.Destination = Join-Path $UserProfilePath $Destination
-            Write-Log -Message "Copying path [$Path] to $($CopyFileSplat.Destination):" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):" -Source ${CmdletName}
             Copy-File @CopyFileSplat
         }
     }
@@ -986,11 +986,11 @@ https://psappdeploytoolkit.com
         ForEach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
             If ($PSCmdlet.ParameterSetName -eq 'Path') {
                 $RemoveFileSplat.Path = $Path | ForEach-Object { Join-Path $UserProfilePath $_ }
-                Write-Log -Message "Removing path [$Path] from $UserProfilePath`:" -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Removing path [$Path] from $UserProfilePath`:" -Source ${CmdletName}
             }
             ElseIf ($PSCmdlet.ParameterSetName -eq 'LiteralPath') {
                 $RemoveFileSplat.LiteralPath = $LiteralPath | ForEach-Object { Join-Path $UserProfilePath $_ }
-                Write-Log -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:" -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:" -Source ${CmdletName}
             }
             Remove-File @RemoveFileSplat
         }
@@ -1149,13 +1149,13 @@ This function does not return any objects.
     Process {
         # Test elevated perms
         If (-not $Script:ADT.Environment.IsAdmin) {
-            Write-Log -Message 'Unable to use the function [Set-ItemPermission] without elevated permissions.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Unable to use the function [Set-ItemPermission] without elevated permissions.' -Source ${CmdletName}
             Throw 'Unable to use the function [Set-ItemPermission] without elevated permissions.'
         }
 
         # Check path existence
         If (-not (Test-Path -Path $Path -ErrorAction 'Stop')) {
-            Write-Log -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Specified path does not exist [$Path]." -Source ${CmdletName}
             Throw "Specified path does not exist [$Path]."
         }
 
@@ -1164,7 +1164,7 @@ This function does not return any objects.
             $Acl = Get-Acl -Path $Path -ErrorAction Stop
             # Enable inherance
             $Acl.SetAccessRuleProtection($false, $true)
-            Write-Log -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]." -Source ${CmdletName}
             $null = Set-Acl -Path $Path -AclObject $Acl -ErrorAction 'Stop'
             Return
         }
@@ -1219,7 +1219,7 @@ This function does not return any objects.
                     $UsersAccountName = ConvertTo-NTAccountOrSID -SID $U
                 }
                 Catch {
-                    Write-Log "Failed to translate SID [$U]. Skipping..." -Source ${CmdletName} -Severity 2
+                    Write-ADTLogEntry "Failed to translate SID [$U]. Skipping..." -Source ${CmdletName} -Severity 2
                     Continue
                 }
 
@@ -1233,32 +1233,32 @@ This function does not return any objects.
             $Rule = New-Object -TypeName 'System.Security.AccessControl.FileSystemAccessRule' -ArgumentList ($Username, $FileSystemRights, $InheritanceFlag, $PropagationFlag, $Allow)
             Switch ($Method) {
                 'Add' {
-                    Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.AddAccessRule($Rule)
                     Break
                 }
                 'Set' {
-                    Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.SetAccessRule($Rule)
                     Break
                 }
                 'Reset' {
-                    Write-Log -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Setting permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.ResetAccessRule($Rule)
                     Break
                 }
                 'Remove' {
-                    Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.RemoveAccessRule($Rule)
                     Break
                 }
                 'RemoveSpecific' {
-                    Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.RemoveAccessRuleSpecific($Rule)
                     Break
                 }
                 'RemoveAll' {
-                    Write-Log -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Removing permissions [Permissions:$FileSystemRights, InheritanceFlags:$InheritanceFlag, PropagationFlags:$PropagationFlag, AccessControlType:$Allow, Method:$Method] on path [$Path] for user [$Username]." -Source ${CmdletName}
                     $Acl.RemoveAccessRuleAll($Rule)
                     Break
                 }

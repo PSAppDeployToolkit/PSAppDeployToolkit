@@ -106,25 +106,25 @@ https://psappdeploytoolkit.com
             }
             ## Get the full destination path where the archive will be stored
             [String]$DestinationPath = Join-Path -Path $DestinationArchiveDirectoryPath -ChildPath $DestinationArchiveFileName -ErrorAction 'Stop'
-            Write-Log -Message "Creating a zip archive with the requested content at destination path [$DestinationPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Creating a zip archive with the requested content at destination path [$DestinationPath]." -Source ${CmdletName}
 
             ## If the destination archive already exists, delete it if the -OverWriteArchive option was selected
             If (($OverWriteArchive) -and (Test-Path -LiteralPath $DestinationPath)) {
-                Write-Log -Message "An archive at the destination path already exists, deleting file [$DestinationPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "An archive at the destination path already exists, deleting file [$DestinationPath]." -Source ${CmdletName}
                 $null = Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction 'Stop'
             }
 
             ## If archive file does not exist, then create a zero-byte zip archive
             If (-not (Test-Path -LiteralPath $DestinationPath)) {
                 ## Create a zero-byte file
-                Write-Log -Message "Creating a zero-byte file [$DestinationPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Creating a zero-byte file [$DestinationPath]." -Source ${CmdletName}
                 $null = New-Item -Path $DestinationArchiveDirectoryPath -Name $DestinationArchiveFileName -ItemType 'File' -Force -ErrorAction 'Stop'
 
                 ## Write the file header for a zip file to the zero-byte file
                 [Byte[]]$ZipArchiveByteHeader = 80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                 [IO.FileStream]$FileStream = New-Object -TypeName 'System.IO.FileStream' -ArgumentList ($DestinationPath, ([IO.FileMode]::Create))
                 [IO.BinaryWriter]$BinaryWriter = New-Object -TypeName 'System.IO.BinaryWriter' -ArgumentList ($FileStream)
-                Write-Log -Message "Write the file header for a zip archive to the zero-byte file [$DestinationPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Write the file header for a zip archive to the zero-byte file [$DestinationPath]." -Source ${CmdletName}
                 $null = $BinaryWriter.Write($ZipArchiveByteHeader)
                 $BinaryWriter.Close()
                 $FileStream.Close()
@@ -143,7 +143,7 @@ https://psappdeploytoolkit.com
                         #  Copy all of the files and folders from the source directory to the archive
                         $null = $Archive.CopyHere($CreateFromDirectory.Items())
                         #  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
-                        Write-Log -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Compressing [$($CreateFromDirectory.Count)] file(s) in source directory [$Directory] to destination path [$DestinationPath]..." -Source ${CmdletName}
                         Do {
                             Start-Sleep -Milliseconds 250
                         } While ($Archive.Items().Count -eq 0)
@@ -156,11 +156,11 @@ https://psappdeploytoolkit.com
                     #  If option was selected, recursively delete the source directory after successfully archiving the contents
                     If ($RemoveSourceAfterArchiving) {
                         Try {
-                            Write-Log -Message "Recursively deleting the source directory [$Directory] as contents have been successfully archived." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Recursively deleting the source directory [$Directory] as contents have been successfully archived." -Source ${CmdletName}
                             $null = Remove-Item -LiteralPath $Directory -Recurse -Force -ErrorAction 'Stop'
                         }
                         Catch {
-                            Write-Log -Message "Failed to recursively delete the source directory [$Directory]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Failed to recursively delete the source directory [$Directory]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
                         }
                     }
                 }
@@ -172,7 +172,7 @@ https://psappdeploytoolkit.com
                     #  Copy the files and folders from the source directory to the archive
                     $null = $Archive.CopyHere($File.FullName)
                     #  Wait for archive operation to complete. Archive file count property returns 0 if archive operation is in progress.
-                    Write-Log -Message "Compressing file [$($File.FullName)] to destination path [$DestinationPath]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Compressing file [$($File.FullName)] to destination path [$DestinationPath]..." -Source ${CmdletName}
                     Do {
                         Start-Sleep -Milliseconds 250
                     } While ($Archive.Items().Count -eq 0)
@@ -180,11 +180,11 @@ https://psappdeploytoolkit.com
                     #  If option was selected, delete the source file after successfully archiving the content
                     If ($RemoveSourceAfterArchiving) {
                         Try {
-                            Write-Log -Message "Deleting the source file [$($File.FullName)] as it has been successfully archived." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Deleting the source file [$($File.FullName)] as it has been successfully archived." -Source ${CmdletName}
                             $null = Remove-Item -LiteralPath $File.FullName -Force -ErrorAction 'Stop'
                         }
                         Catch {
-                            Write-Log -Message "Failed to delete the source file [$($File.FullName)]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Failed to delete the source file [$($File.FullName)]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
                         }
                     }
                 }
@@ -192,17 +192,17 @@ https://psappdeploytoolkit.com
 
             ## If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users.
             #  Apply the parent folder's permissions to the archive file to fix the problem.
-            Write-Log -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$DestinationArchiveDirectoryPath] to file [$DestinationPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$DestinationArchiveDirectoryPath] to file [$DestinationPath]." -Source ${CmdletName}
             Try {
                 [Security.AccessControl.DirectorySecurity]$DestinationArchiveDirectoryPathAcl = Get-Acl -Path $DestinationArchiveDirectoryPath -ErrorAction 'Stop'
                 Set-Acl -Path $DestinationPath -AclObject $DestinationArchiveDirectoryPathAcl -ErrorAction 'Stop'
             }
             Catch {
-                Write-Log -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to apply parent folder's [$DestinationArchiveDirectoryPath] permissions to file [$DestinationPath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
             }
         }
         Catch {
-            Write-Log -Message "Failed to archive the requested file(s). `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to archive the requested file(s). `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed to archive the requested file(s): $($_.Exception.Message)"
             }
@@ -328,7 +328,7 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
             Switch ($PSCmdlet.ParameterSetName) {
                 'SIDToNTAccount' {
                     [String]$msg = "the SID [$SID] to an NT Account name"
-                    Write-Log -Message "Converting $msg." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Converting $msg." -Source ${CmdletName}
 
                     Try {
                         $NTAccountSID = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($SID)
@@ -336,12 +336,12 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
                         Write-Output -InputObject ($NTAccount)
                     }
                     Catch {
-                        Write-Log -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
                     }
                 }
                 'NTAccountToSID' {
                     [String]$msg = "the NT Account [$AccountName] to a SID"
-                    Write-Log -Message "Converting $msg." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Converting $msg." -Source ${CmdletName}
 
                     Try {
                         $NTAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList ($AccountName)
@@ -349,7 +349,7 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
                         Write-Output -InputObject ($NTAccountSID)
                     }
                     Catch {
-                        Write-Log -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
                     }
                 }
                 'WellKnownName' {
@@ -360,7 +360,7 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
                         [String]$ConversionType = 'SID'
                     }
                     [String]$msg = "the Well Known SID Name [$WellKnownSIDName] to a $ConversionType"
-                    Write-Log -Message "Converting $msg." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Converting $msg." -Source ${CmdletName}
 
                     #  Get the SID for the root domain
                     Try {
@@ -370,7 +370,7 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
                         $DomainSid = New-Object -TypeName 'System.Security.Principal.SecurityIdentifier' -ArgumentList ($DomainSidInBinary[0], 0)
                     }
                     Catch {
-                        Write-Log -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2 -Source ${CmdletName}
                         $DomainSid = $null
                     }
 
@@ -389,7 +389,7 @@ http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidty
             }
         }
         Catch {
-            Write-Log -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
         }
     }
     End {
@@ -468,7 +468,7 @@ https://psappdeploytoolkit.com
         }
         if (!$DisableLogging)
         {
-            Write-Log -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.ProcessName -join ',')]" -Source ${CmdletName}
         }
 
         ## Get all running processes and append properties.
@@ -498,13 +498,13 @@ https://psappdeploytoolkit.com
         {
             if (!$DisableLogging)
             {
-                Write-Log -Message 'Specified applications are not running.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Specified applications are not running.' -Source ${CmdletName}
             }
             return
         }
         if (!$DisableLogging)
         {
-            Write-Log -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -Source ${CmdletName}
         }
         return ($runningProcesses | Sort-Object)
     }
@@ -623,7 +623,7 @@ https://psappdeploytoolkit.com
                         $PEArchitecture = 'Unknown'
                     }
                 }
-                Write-Log -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]." -Source ${CmdletName}
 
                 If ($PassThru) {
                     #  Get the file object, attach a property indicating the type, and write to pipeline
@@ -634,7 +634,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-Log -Message "Failed to get the PE file architecture. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to get the PE file architecture. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 If (-not $ContinueOnError) {
                     Throw "Failed to get the PE file architecture: $($_.Exception.Message)"
                 }

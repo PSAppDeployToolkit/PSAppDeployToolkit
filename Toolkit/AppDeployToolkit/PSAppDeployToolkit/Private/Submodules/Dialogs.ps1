@@ -141,11 +141,11 @@ https://psappdeploytoolkit.com
 
         ## Initial form layout: Close Applications / Allow Deferral
         If ($processDescriptions) {
-            Write-Log -Message "Prompting the user to close application(s) [$processDescriptions]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Prompting the user to close application(s) [$processDescriptions]..." -Source ${CmdletName}
             $showCloseApps = $true
         }
         If (($allowDefer) -and (($deferTimes -ge 0) -or ($deferDeadline))) {
-            Write-Log -Message 'The user has the option to defer.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'The user has the option to defer.' -Source ${CmdletName}
             $showDefer = $true
             If ($deferDeadline) {
                 #  Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone
@@ -158,7 +158,7 @@ https://psappdeploytoolkit.com
         ## If deferral is being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
         If (-not $showDefer) {
             If ($closeAppsCountdown -gt 0) {
-                Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
                 $showCountdown = $true
             }
         }
@@ -169,12 +169,12 @@ https://psappdeploytoolkit.com
         }
         ## If 'force close apps countdown' was specified, enable that feature.
         If ($forceCloseAppsCountdown -eq $true) {
-            Write-Log -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
             $showCountdown = $true
         }
         ## If 'force countdown' was specified, enable that feature.
         If ($forceCountdown -eq $true) {
-            Write-Log -Message "Countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Countdown has [$closeAppsCountdown] seconds remaining." -Source ${CmdletName}
             $showCountdown = $true
         }
 
@@ -229,7 +229,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-                Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formWelcome.ControlBox = $false
             }
             #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
@@ -261,11 +261,11 @@ https://psappdeploytoolkit.com
                 ## If the countdown is complete, close the application(s) or continue
                 If ($countdownTime -le $currentTime) {
                     If ($forceCountdown -eq $true) {
-                        Write-Log -Message 'Countdown timer has elapsed. Force continue.' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Countdown timer has elapsed. Force continue.' -Source ${CmdletName}
                         $buttonContinue.PerformClick()
                     }
                     Else {
-                        Write-Log -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).' -Source ${CmdletName}
                         If ($buttonCloseApps.CanFocus) {
                             $buttonCloseApps.PerformClick()
                         }
@@ -314,7 +314,7 @@ https://psappdeploytoolkit.com
                         # Update the runningProcessDescriptions variable for the next time this function runs
                         Set-Variable -Name 'runningProcessDescriptions' -Value $dynamicRunningProcessDescriptions -Force -Scope 1
                         If ($dynamicRunningProcesses) {
-                            Write-Log -Message "The running processes have changed. Updating the apps to close: [$runningProcessDescriptions]..." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$runningProcessDescriptions]..." -Source ${CmdletName}
                         }
                         # Update the list box with the processes to close
                         $listboxCloseApps.Items.Clear()
@@ -323,14 +323,14 @@ https://psappdeploytoolkit.com
                     # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
                     If ($ProcessDescriptions) {
                         If (-not $dynamicRunningProcesses) {
-                            Write-Log -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
+                            Write-ADTLogEntry -Message 'Previously detected running processes are no longer running.' -Source ${CmdletName}
                             $formWelcome.Dispose()
                         }
                     }
                     # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
                     Else {
                         If ($dynamicRunningProcesses) {
-                            Write-Log -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
+                            Write-ADTLogEntry -Message 'New running processes detected. Updating the form to prompt to close the running applications.' -Source ${CmdletName}
                             $formWelcome.Dispose()
                         }
                     }
@@ -785,11 +785,11 @@ https://psappdeploytoolkit.com
     }
     Process {
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]" -Source ${CmdletName}
             Return
         }
         If (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.SyncHash -or !$Script:ProgressWindow.SyncHash.Count) {
-            Write-Log -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Close-InstallationProgress as a progress window has never opened." -Source ${CmdletName}
             $Script:ProgressWindow.Running = $false
             Return
         }
@@ -797,39 +797,39 @@ https://psappdeploytoolkit.com
         [Int32]$Timeout = $WaitingTime
         While ((-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) -and ($Timeout -gt 0)) {
             If ($Timeout -eq $WaitingTime) {
-                Write-Log -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The installation progress dialog does not exist. Waiting up to $WaitingTime seconds..." -Source ${CmdletName}
             }
             $Timeout -= 1
             Start-Sleep -Seconds 1
         }
         # Return if we still have no window
         If (-not $Script:ProgressWindow.SyncHash.Window.IsInitialized) {
-            Write-Log -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
+            Write-ADTLogEntry -Message "The installation progress dialog was not created within $WaitingTime seconds." -Source ${CmdletName} -Severity 2
             $Script:ProgressWindow.Running = $false
             Return
         }
         # If the thread is suspended, resume it
         If ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Suspended) {
-            Write-Log -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'The thread for the installation progress dialog is suspended. Resuming the thread.' -Source ${CmdletName}
             Try {
                 $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.Resume()
             }
             Catch {
-                Write-Log -Message 'Failed to resume the thread for the installation progress dialog.' -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message 'Failed to resume the thread for the installation progress dialog.' -Source ${CmdletName} -Severity 2
             }
         }
         # If the thread is changing its state, wait
         [Int32]$Timeout = 0
         While ((($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Aborted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::AbortRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::StopRequested) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted) -or ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::WaitSleepJoin)) -and ($Timeout -le $WaitingTime)) {
             If (-not $Timeout) {
-                Write-Log -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "The thread for the installation progress dialog is changing its state. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
             }
             $Timeout += 1
             Start-Sleep -Seconds 1
         }
         # If the thread is running, stop it
         If ((-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Stopped)) -and (-not ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band [System.Threading.ThreadState]::Unstarted))) {
-            Write-Log -Message 'Closing the installation progress dialog.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Closing the installation progress dialog.' -Source ${CmdletName}
             $Script:ProgressWindow.SyncHash.Window.Dispatcher.InvokeShutdown()
         }
 
@@ -838,20 +838,20 @@ https://psappdeploytoolkit.com
             [Int32]$Timeout = 0
             While ((($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opening) -or ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen)) -and ($Timeout -le $WaitingTime)) {
                 If (-not $Timeout) {
-                    Write-Log -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
+                    Write-ADTLogEntry -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..." -Source ${CmdletName} -Severity 2
                 }
                 $Timeout += 1
                 Start-Sleep -Seconds 1
             }
             # If the runspace is opened, close it
             If ($Script:ProgressWindow.Runspace.RunspaceStateInfo.State -eq [System.Management.Automation.Runspaces.RunspaceState]::Opened) {
-                Write-Log -Message "Closing the installation progress dialog`'s runspace." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Closing the installation progress dialog`'s runspace." -Source ${CmdletName}
                 $Script:ProgressWindow.Runspace.Close()
                 $Script:ProgressWindow.Runspace = $null
             }
         }
         Else {
-            Write-Log -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
+            Write-ADTLogEntry -Message 'The runspace for the installation progress dialog is already closed.' -Source ${CmdletName} -Severity 2
         }
 
         If ($Script:ProgressWindow.SyncHash.Count) {

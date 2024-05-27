@@ -18,7 +18,6 @@ class ADTSession
 
     # State values (can change mid-flight).
     hidden [System.Collections.Hashtable]$State = @{
-        LogFileInitialized = $false
         BlockExecution = $false
         MsiRebootDetected = $false
         WelcomeTimer = $null
@@ -65,7 +64,9 @@ class ADTSession
         DefaultMstFile = [System.String]::Empty
         DefaultMspFiles = [System.String]::Empty
         UseDefaultMsi = $false
+        LogPath = [System.String]::Empty
         LogName = [System.String]::Empty
+        LogFile = [System.String]::Empty
         ScriptParentPath = [System.String]::Empty
         DirFiles = [System.String]::Empty
         DirSupportFiles = [System.String]::Empty
@@ -141,11 +142,11 @@ class ADTSession
 
             if ($this.Properties.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($Script:ADT.Environment.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
             {
-                Write-Log -Message "Discovered $($Script:ADT.Environment.envOSArchitecture) Zero-Config MSI under $($this.Properties.DefaultMsiFile)" -Source $logSrc
+                $this.WriteLogEntry("Discovered $($Script:ADT.Environment.envOSArchitecture) Zero-Config MSI under $($this.Properties.DefaultMsiFile)", $logSrc)
             }
             elseif ($this.Properties.DefaultMsiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1)
             {
-                Write-Log -Message "Discovered Arch-Independent Zero-Config MSI under $($this.Properties.DefaultMsiFile)" -Source $logSrc
+                $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.Properties.DefaultMsiFile)", $logSrc)
             }
             else
             {
@@ -155,7 +156,7 @@ class ADTSession
         }
         else
         {
-            Write-Log -Message "Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)]." -Source $logSrc
+            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)].", $logSrc)
         }
 
         try
@@ -167,7 +168,7 @@ class ADTSession
             }
             if ([System.IO.File]::Exists($this.Properties.DefaultMstFile))
             {
-                Write-Log -Message "Discovered Zero-Config MST installation file [$($this.Properties.DefaultMstFile)]." -Source $logSrc
+                $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.Properties.DefaultMstFile)].", $logSrc)
             }
             else
             {
@@ -181,7 +182,7 @@ class ADTSession
             }
             if ($this.Properties.DefaultMspFiles)
             {
-                Write-Log -Message "Discovered Zero-Config MSP installation file(s) [$($this.Properties.DefaultMspFiles -join ',')]." -Source $logSrc
+                $this.WriteLogEntry("Discovered Zero-Config MSP installation file(s) [$($this.Properties.DefaultMspFiles -join ',')].", $logSrc)
             }
 
             # Read the MSI and get the installation details.
@@ -192,7 +193,7 @@ class ADTSession
             # Generate list of MSI executables for testing later on.
             if ($this.DefaultMsiExecutablesList = (Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[System.IO.Path]::GetFileNameWithoutExtension($_.Name)}) -join ',')
             {
-                Write-Log -Message "MSI Executable List [$($this.DefaultMsiExecutablesList)]." -Source $logSrc
+                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList)].", $logSrc)
             }
 
             # Change table and get properties from it.
@@ -200,14 +201,14 @@ class ADTSession
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Update our app variables with new values.
-            Write-Log -Message "App Vendor [$(($this.Properties.AppVendor = $msiProps.Manufacturer))]." -Source $logSrc
-            Write-Log -Message "App Name [$(($this.Properties.AppName = $msiProps.ProductName))]." -Source $logSrc
-            Write-Log -Message "App Version [$(($this.Properties.AppVersion = $msiProps.ProductVersion))]." -Source $logSrc
+            $this.WriteLogEntry("App Vendor [$(($this.Properties.AppVendor = $msiProps.Manufacturer))].", $logSrc)
+            $this.WriteLogEntry("App Name [$(($this.Properties.AppName = $msiProps.ProductName))].", $logSrc)
+            $this.WriteLogEntry("App Version [$(($this.Properties.AppVersion = $msiProps.ProductVersion))].", $logSrc)
             $this.Properties.UseDefaultMsi = $true
         }
         catch
         {
-            Write-Log -Message "Failed to process Zero-Config MSI Deployment.`n$(Resolve-Error)" -Source $logSrc
+            $this.WriteLogEntry("Failed to process Zero-Config MSI Deployment.`n$(Resolve-Error)", $logSrc)
         }
     }
 
@@ -268,31 +269,84 @@ class ADTSession
         $this.Properties.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
-    hidden [System.Void] SetLogName()
-    {
-        # Generate log paths from our installation properties.
-        $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
-        $this.Properties.LogTempFolder = Join-Path -Path $Script:ADT.Environment.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
-
-        # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-        if ($Script:ADT.Config.Toolkit.CompressLogs -and [System.IO.Directory]::Exists($this.Properties.LogTempFolder))
-        {
-            [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
-        }
-    }
-
     hidden [System.Void] WriteLogDivider()
     {
         # Write divider as requested.
-        Write-Log -Message ('*' * 79) -Source $this.GetLogSource()
+        $this.WriteLogEntry('*' * 79, $this.GetLogSource())
     }
 
-    hidden [System.Void] OpenLogFile()
+    hidden [System.Void] InitLogging()
     {
-        # Initialize logging.
+        # Generate log paths from our installation properties.
+        $this.Properties.LogTempFolder = Join-Path -Path $Script:ADT.Environment.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
+
+        # Generate the log directory to use.
+        $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($(if ($Script:ADT.Config.Toolkit.CompressLogs)
+        {
+            # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
+            if ([System.IO.Directory]::Exists($this.Properties.LogTempFolder))
+            {
+                [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
+            }
+            $this.Properties.LogTempFolder
+        }
+        else
+        {
+            $Script:ADT.Config.Toolkit.LogPath
+        })).FullName
+
+        # Generate the log filename to use.
+        $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
+        $this.Properties.LogFile = Join-Path -Path $this.Properties.LogPath -ChildPath $this.Properties.LogName
+
+        # Check if log file needs to be rotated.
+        if ([System.IO.File]::Exists($this.Properties.LogFile) -and !$Script:ADT.Config.Toolkit.LogAppend)
+        {
+            $logSrc = $this.GetLogSource()
+            $logFile = [System.IO.FileInfo]$this.Properties.LogFile
+            $logFileSizeMB = $logFile.Length / 1MB
+
+            # Rotate if we've exceeded the size already.
+            if (($Script:ADT.Config.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $Script:ADT.Config.Toolkit.LogMaxSize))
+            {
+                try
+                {
+                    # Get new log file path.
+                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($this.Properties.LogFile)
+                    $logFileExtension = [IO.Path]::GetExtension($this.Properties.LogFile)
+                    $Timestamp = $logFile.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                    $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
+                    [String]$ArchiveLogFilePath = Join-Path -Path $this.Properties.LogPath -ChildPath $ArchiveLogFileName
+
+                    # Log message about archiving the log file.
+                    $this.WriteLogEntry("Maximum log file size [$($Script:ADT.Config.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2, $logSrc)
+
+                    # Rename the file
+                    Move-Item -LiteralPath $logFile -Destination $ArchiveLogFilePath -Force
+
+                    # Start new log file and log message about archiving the old log file.
+                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($Script:ADT.Config.Toolkit.LogMaxSize) MB] was reached.", 2, $logSrc)
+
+                    # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
+                    $logFiles = $(Get-ChildItem -LiteralPath $this.Properties.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.Properties.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
+
+                    # Keep only the max number of log files
+                    if ($logFiles.Count -gt $Script:ADT.Config.Toolkit.LogMaxHistory)
+                    {
+                        $logFiles | Select-Object -First ($logFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item
+                    }
+                }
+                catch
+                {
+                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$logSrc] $($this.Properties.InstallPhase) :: Failed to rotate the log file [$($this.Properties.LogFile)].`n$(Resolve-Error)" -ForegroundColor Red
+                }
+            }
+        }
+
+        # Open log file with commencement message.
         $this.WriteLogDivider()
         $this.WriteLogDivider()
-        Write-Log -Message "[$($this.Properties.InstallName)] setup started." -Source $this.GetLogSource()
+        $this.WriteLogEntry("[$($this.Properties.InstallName)] setup started.", $this.GetLogSource())
     }
 
     hidden [System.Void] LogScriptInfo()
@@ -300,99 +354,99 @@ class ADTSession
         $logSrc = $this.GetLogSource()
         if ($this.Properties.AppScriptVersion)
         {
-            Write-Log -Message "[$($this.Properties.InstallName)] script version is [$($this.Properties.AppScriptVersion)]" -Source $logSrc
+            $this.WriteLogEntry("[$($this.Properties.InstallName)] script version is [$($this.Properties.AppScriptVersion)]", $logSrc)
         }
         if ($this.Properties.AppScriptDate)
         {
-            Write-Log -Message "[$($this.Properties.InstallName)] script date is [$($this.Properties.AppScriptDate)]" -Source $logSrc
+            $this.WriteLogEntry("[$($this.Properties.InstallName)] script date is [$($this.Properties.AppScriptDate)]", $logSrc)
         }
         if ($this.Properties.AppScriptAuthor)
         {
-            Write-Log -Message "[$($this.Properties.InstallName)] script author is [$($this.Properties.AppScriptAuthor)]" -Source $logSrc
+            $this.WriteLogEntry("[$($this.Properties.InstallName)] script author is [$($this.Properties.AppScriptAuthor)]", $logSrc)
         }
         if ($this.Properties.DeployAppScriptFriendlyName)
         {
-            Write-Log -Message "[$($this.Properties.DeployAppScriptFriendlyName)] script version is [$($this.Properties.DeployAppScriptVersion)]" -Source $logSrc
+            $this.WriteLogEntry("[$($this.Properties.DeployAppScriptFriendlyName)] script version is [$($this.Properties.DeployAppScriptVersion)]", $logSrc)
         }
         if ($this.Properties.DeployAppScriptParameters -and $this.Properties.DeployAppScriptParameters.Count)
         {
-            Write-Log -Message "The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]" -Source $logSrc
+            $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-Parameters)]", $logSrc)
         }
-        Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]" -Source $logSrc
-        Write-Log -Message "[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.LegacyMode)]" -Source $logSrc
+        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]", $logSrc)
+        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session in compatibility mode is [$($this.LegacyMode)]", $logSrc)
     }
 
     hidden [System.Void] LogSystemInfo()
     {
-        Write-Log -Message "Computer Name is [$($Script:ADT.Environment.envComputerNameFQDN)]" -Source ($logSrc = $this.GetLogSource())
-        Write-Log -Message "Current User is [$($Script:ADT.Environment.ProcessNTAccount)]" -Source $logSrc
-        Write-Log -Message "OS Version is [$($Script:ADT.Environment.envOSName)$(if ($Script:ADT.Environment.envOSServicePack) {" $($Script:ADT.Environment.envOSServicePack)"}) $($Script:ADT.Environment.envOSArchitecture) $($Script:ADT.Environment.envOSVersion)]" -Source $logSrc
-        Write-Log -Message "OS Type is [$($Script:ADT.Environment.envOSProductTypeName)]" -Source $logSrc
-        Write-Log -Message "Current Culture is [$($($Script:ADT.Environment.culture).Name)], language is [$($Script:ADT.Environment.currentLanguage)] and UI language is [$($Script:ADT.Environment.currentUILanguage)]" -Source $logSrc
-        Write-Log -Message "Hardware Platform is [$(Get-HardwarePlatform)]" -Source $logSrc
-        Write-Log -Message "PowerShell Host is [$($Global:Host.Name)] with version [$($Global:Host.Version)]" -Source $logSrc
-        Write-Log -Message "PowerShell Version is [$($Script:ADT.Environment.envPSVersion) $($Script:ADT.Environment.psArchitecture)]" -Source $logSrc
+        $this.WriteLogEntry("Computer Name is [$($Script:ADT.Environment.envComputerNameFQDN)]", ($logSrc = $this.GetLogSource()))
+        $this.WriteLogEntry("Current User is [$($Script:ADT.Environment.ProcessNTAccount)]", $logSrc)
+        $this.WriteLogEntry("OS Version is [$($Script:ADT.Environment.envOSName)$(if ($Script:ADT.Environment.envOSServicePack) {" $($Script:ADT.Environment.envOSServicePack)"}) $($Script:ADT.Environment.envOSArchitecture) $($Script:ADT.Environment.envOSVersion)]", $logSrc)
+        $this.WriteLogEntry("OS Type is [$($Script:ADT.Environment.envOSProductTypeName)]", $logSrc)
+        $this.WriteLogEntry("Current Culture is [$($($Script:ADT.Environment.culture).Name)], language is [$($Script:ADT.Environment.currentLanguage)] and UI language is [$($Script:ADT.Environment.currentUILanguage)]", $logSrc)
+        $this.WriteLogEntry("Hardware Platform is [$(Get-HardwarePlatform)]", $logSrc)
+        $this.WriteLogEntry("PowerShell Host is [$($Global:Host.Name)] with version [$($Global:Host.Version)]", $logSrc)
+        $this.WriteLogEntry("PowerShell Version is [$($Script:ADT.Environment.envPSVersion) $($Script:ADT.Environment.psArchitecture)]", $logSrc)
         if ($Script:ADT.Environment.envCLRVersion)
         {
-            Write-Log -Message "PowerShell CLR (.NET) version is [$($Script:ADT.Environment.envCLRVersion)]" -Source $logSrc
+            $this.WriteLogEntry("PowerShell CLR (.NET) version is [$($Script:ADT.Environment.envCLRVersion)]", $logSrc)
         }
     }
 
     hidden [System.Void] LogUserInfo()
     {
         # Log details for all currently logged in users.
-        Write-Log -Message "Display session information for all logged on users:`n$($Script:ADT.Environment.LoggedOnUserSessions | Format-List | Out-String)" -Source ($logSrc = $this.GetLogSource()) -DebugMessage
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($Script:ADT.Environment.LoggedOnUserSessions | Format-List | Out-String)", ($logSrc = $this.GetLogSource()), $true)
         if ($Script:ADT.Environment.usersLoggedOn)
         {
-            Write-Log -Message "The following users are logged on to the system: [$($Script:ADT.Environment.usersLoggedOn -join ', ')]." -Source $logSrc
+            $this.WriteLogEntry("The following users are logged on to the system: [$($Script:ADT.Environment.usersLoggedOn -join ', ')].", $logSrc)
 
             # Check if the current process is running in the context of one of the logged in users
             if ($Script:ADT.Environment.CurrentLoggedOnUserSession)
             {
-                Write-Log -Message "Current process is running with user account [$($Script:ADT.Environment.ProcessNTAccount)] under logged in user session for [$($Script:ADT.Environment.CurrentLoggedOnUserSession.NTAccount)]." -Source $logSrc
+                $this.WriteLogEntry("Current process is running with user account [$($Script:ADT.Environment.ProcessNTAccount)] under logged in user session for [$($Script:ADT.Environment.CurrentLoggedOnUserSession.NTAccount)].", $logSrc)
             }
             else
             {
-                Write-Log -Message "Current process is running under a system account [$($Script:ADT.Environment.ProcessNTAccount)]." -Source $logSrc
+                $this.WriteLogEntry("Current process is running under a system account [$($Script:ADT.Environment.ProcessNTAccount)].", $logSrc)
             }
 
             # Guard Intune detection code behind a variable.
             if ($Script:ADT.Config.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
             {
-                Write-Log -Message "Detected OOBE in progress, changing deployment mode to silent." -Source $logSrc
+                $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.", $logSrc)
                 $this.Properties.DeployMode = 'Silent'
             }
 
             # Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
             if ($Script:ADT.Environment.CurrentConsoleUserSession)
             {
-                Write-Log -Message "The following user is the console user [$($Script:ADT.Environment.CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse)." -Source $logSrc
+                $this.WriteLogEntry("The following user is the console user [$($Script:ADT.Environment.CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse).", $logSrc)
             }
             else
             {
-                Write-Log -Message 'There is no console user logged in (user with control of physical monitor, keyboard, and mouse).' -Source $logSrc
+                $this.WriteLogEntry('There is no console user logged in (user with control of physical monitor, keyboard, and mouse).', $logSrc)
             }
 
             # Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
             if ($Script:ADT.Environment.RunAsActiveUser)
             {
-                Write-Log -Message "The active logged on user is [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Source $logSrc
+                $this.WriteLogEntry("The active logged on user is [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)].", $logSrc)
             }
         }
         else
         {
-            Write-Log -Message 'No users are logged on to the system.' -Source $logSrc
+            $this.WriteLogEntry('No users are logged on to the system.', $logSrc)
         }
 
         # Log which language's UI messages are loaded from the config file
-        Write-Log -Message "The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)]." -Source $logSrc
+        $this.WriteLogEntry("The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)].", $logSrc)
 
         # Advise whether the UI language was overridden.
         if ($Script:ADT.Config.UI.LanguageOverride)
         {
-            Write-Log -Message "The config file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI.LanguageOverride)]." -Source $logSrc
+            $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI.LanguageOverride)].", $logSrc)
         }
-        Write-Log -Message "The following UI messages were imported from the config file: [$($Script:ADT.Language)]." -Source $logSrc
+        $this.WriteLogEntry("The following UI messages were imported from the config file: [$($Script:ADT.Language)].", $logSrc)
     }
 
     hidden [System.Void] PerformSCCMTests()
@@ -400,11 +454,11 @@ class ADTSession
         # Check if script is running from a SCCM Task Sequence.
         if ($Script:ADT.Environment.RunningTaskSequence)
         {
-            Write-Log -Message 'Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
+            $this.WriteLogEntry('Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.', $this.GetLogSource())
         }
         else
         {
-            Write-Log -Message 'Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.' -Source $this.GetLogSource()
+            $this.WriteLogEntry('Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.', $this.GetLogSource())
         }
     }
 
@@ -437,11 +491,11 @@ class ADTSession
             }
 
             # Log the health of the 'Task Scheduler' service.
-            Write-Log -Message "The task scheduler service is in a healthy state: $($this.Properties.IsTaskSchedulerHealthy)." -Source $logSrc
+            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($this.Properties.IsTaskSchedulerHealthy).", $logSrc)
         }
         else
         {
-            Write-Log -Message "Skipping attempt to check for and make the task scheduler services healthy, because $($Script:ADT.Environment.appDeployToolkitName) is not running under the [$($Script:ADT.Environment.LocalSystemNTAccount)] account." -Source $logSrc
+            $this.WriteLogEntry("Skipping attempt to check for and make the task scheduler services healthy, because $($Script:ADT.Environment.appDeployToolkitName) is not running under the [$($Script:ADT.Environment.LocalSystemNTAccount)] account.", $logSrc)
         }
 
         # If script is running in session zero.
@@ -450,7 +504,7 @@ class ADTSession
             # If the script was launched with deployment mode set to NonInteractive, then continue
             if ($this.Properties.DeployMode -eq 'NonInteractive')
             {
-                Write-Log -Message "Session 0 detected but deployment mode was manually set to [$($this.Properties.DeployMode)]." -Source $logSrc
+                $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.Properties.DeployMode)].", $logSrc)
             }
             elseif ($Script:ADT.Config.Toolkit.SessionDetection)
             {
@@ -458,33 +512,33 @@ class ADTSession
                 if (!$Script:ADT.Environment.IsProcessUserInteractive)
                 {
                     $this.Properties.DeployMode = 'NonInteractive'
-                    Write-Log -Message "Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.Properties.DeployMode)]." -Source $logSrc
+                    $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.Properties.DeployMode)].", $logSrc)
                 }
                 elseif (!$Script:ADT.Environment.usersLoggedOn)
                 {
                     $this.Properties.DeployMode = 'NonInteractive'
-                    Write-Log -Message "Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.Properties.DeployMode)]." -Source $logSrc
+                    $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.Properties.DeployMode)].", $logSrc)
                 }
                 else
                 {
-                    Write-Log -Message 'Session 0 detected, process running in user interactive mode, user(s) logged in.' -Source $logSrc
+                    $this.WriteLogEntry('Session 0 detected, process running in user interactive mode, user(s) logged in.', $logSrc)
                 }
             }
             else
             {
-                Write-Log -Message "Session 0 detected but toolkit configured to not adjust deployment mode." -Source $logSrc
+                $this.WriteLogEntry("Session 0 detected but toolkit configured to not adjust deployment mode.", $logSrc)
             }
         }
         else
         {
-            Write-Log -Message 'Session 0 not detected.' -Source $logSrc
+            $this.WriteLogEntry('Session 0 not detected.', $logSrc)
         }
     }
 
     hidden [System.Void] SetDeploymentProperties()
     {
         # Set Deploy Mode switches.
-        Write-Log -Message "Installation is running in [$($this.Properties.DeployMode)] mode." -Source ($logSrc = $this.GetLogSource())
+        $this.WriteLogEntry("Installation is running in [$($this.Properties.DeployMode)] mode.", ($logSrc = $this.GetLogSource()))
         switch ($this.Properties.DeployMode)
         {
             'Silent' {
@@ -511,7 +565,7 @@ class ADTSession
                 $Script:ADT.Strings.DeploymentType.Install
             }
         }
-        Write-Log -Message "Deployment type is [$($this.DeploymentTypeName)]." -Source $logSrc
+        $this.WriteLogEntry("Deployment type is [$($this.DeploymentTypeName)].", $logSrc)
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -519,7 +573,7 @@ class ADTSession
         # Advise the caller if a zero-config MSI was found.
         if ($this.Properties.UseDefaultMsi)
         {
-            Write-Log -Message "Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)]." -Source $this.GetLogSource()
+            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)].", $this.GetLogSource())
         }
     }
 
@@ -529,7 +583,7 @@ class ADTSession
         if ($Script:ADT.Config.Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)# -and !$ShowBlockedAppDialog)
         {
             $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a config file option [Toolkit_RequireAdmin] set to [True] so as to require Administrator rights for the toolkit to function. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
-            Write-Log -Message $adminErr -Severity 3 -Source $this.GetLogSource()
+            $this.WriteLogEntry($adminErr, 3, $this.GetLogSource())
             Show-DialogBox -Text $adminErr -Icon Stop
             throw [System.InvalidOperationException]::new($adminErr)
         }
@@ -597,8 +651,7 @@ class ADTSession
         $this.DetectDefaultMsi()
         $this.SetAppProperties()
         $this.SetInstallProperties()
-        $this.SetLogName()
-        $this.OpenLogFile()
+        $this.InitLogging()
         $this.LogScriptInfo()
         $this.LogSystemInfo()
         $this.WriteLogDivider()
@@ -628,5 +681,107 @@ class ADTSession
     [System.Void] Close()
     {
         # Migrate `Exit-Script` into here.
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
+    {
+        # Perform early return checks before wasting time.
+        if (($this.GetPropertyValue('DisableLogging') -and !$Script:ADT.Config.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$Script:ADT.Config.Toolkit.LogDebugMessage))
+        {
+            return
+        }
+
+        # Establish logging date/time vars.
+        $dateTimeNow = [System.DateTime]::Now
+        $logTime = $dateTimeNow.ToString('HH\:mm\:ss.fff')
+        $logDate = $dateTimeNow.ToString('MM-dd-yyyy')
+        $logTimePlusBias = $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
+        $writeLogRegex = '^Write-(Log|ADTLogEntry)$'
+
+        # Get caller's invocation info, we'll need it for some variables.
+        $i = 1; while (!($invoker = Get-Variable -Name MyInvocation -Scope $i -ValueOnly).MyCommand -or ($invoker.MyCommand.Name -match $writeLogRegex))
+        {
+            $i++
+        }
+
+        # Set up default values if not specified.
+        if ($null -eq $Severity)
+        {
+            $Severity = 1
+        }
+        if ([System.String]::IsNullOrWhiteSpace($Source))
+        {
+            $Source = if ($invoker.MyCommand.Name.Equals($Script:MyInvocation.MyCommand.Name))
+            {
+                (Get-PSCallStack).Command.Where({![System.String]::IsNullOrWhiteSpace($_) -and ($_ -notmatch $writeLogRegex)})[0]
+            }
+            else
+            {
+                $invoker.MyCommand.Name
+            }
+        }
+        if ([System.String]::IsNullOrWhiteSpace($ScriptSection))
+        {
+            $ScriptSection = $this.GetPropertyValue('InstallPhase')
+        }
+
+        # Store log string to format with message.
+        $logFormats = @(
+            [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $logDate, $logTime, $ScriptSection, $Source, $Script:Logging.SeverityNames[$Severity])
+            [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTimePlusBias, $logDate, $Source, $Severity, $invoker.PSCommandPath)
+        )
+
+        # Store the colours we'll use against Write-Host.
+        $whParams = $Script:Logging.SeverityColours[$Severity]
+        $logLine = $logFormats[$Script:ADT.Config.Toolkit.LogStyle -ieq 'CMTrace']
+        $conLine = $logFormats[0]
+        $logFile = $this.GetPropertyValue('LogFile')
+        $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($logFile)
+
+        # If the message is not $null or empty, create the log entry for the different logging methods.
+        $Message.Where({![System.String]::IsNullOrWhiteSpace($_)}).ForEach({
+            # Write the log entry to the log file if logging is not currently disabled.
+            if ($canLog)
+            {
+                [System.String]::Format($logLine, $_) | Out-File -LiteralPath $logFile -Append -NoClobber -Force -Encoding UTF8
+            }
+
+            # Return early if we're not configured to write to the host.
+            if (!$Script:ADT.Config.Toolkit.LogWriteToHost)
+            {
+                return
+            }
+
+            # Only output using color options if running in a host which supports colors.
+            if ($Global:Host.UI.RawUI.ForegroundColor)
+            {
+                [System.String]::Format($conLine, $_) | Write-Host @whParams
+            }
+            else
+            {
+                # If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are sent to stdout so that they are included in the text log.
+                [System.Console]::WriteLine([System.String]::Format($conLine, $_))
+            }
+        })
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.String]$Source)
+    {
+        $this.WriteLogEntry($Message, $null, $Source, $null, $false)
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.String]$Source)
+    {
+        $this.WriteLogEntry($Message, $Severity, $Source, $null, $false)
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.String]$Source, [System.Boolean]$DebugMessage)
+    {
+        $this.WriteLogEntry($Message, $null, $Source, $null, $DebugMessage)
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.String]$Source, [System.Boolean]$DebugMessage)
+    {
+        $this.WriteLogEntry($Message, $Severity, $Source, $null, $DebugMessage)
     }
 }
