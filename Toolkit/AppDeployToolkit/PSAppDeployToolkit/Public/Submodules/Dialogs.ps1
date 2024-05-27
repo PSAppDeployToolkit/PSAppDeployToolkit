@@ -1646,93 +1646,51 @@ function Show-ADTBalloonTip
         }
         else
         {
-            $toastAppID = $Script:ADT.Environment.appDeployToolkitName
-            $toastAppDisplayName = $Script:ADT.Config.Toast.AppName
+            # Define script block for toast notifications, pre-injecting variables and values.
+            $toastScriptBlock = [System.Management.Automation.ScriptBlock]::Create($ExecutionContext.InvokeCommand.ExpandString({
+                # Ensure script runs in strict mode since its in a new scope.
+                (Get-Variable -Name ErrorActionPreference).Value = [System.Management.Automation.ActionPreference]::Stop
+                (Get-Variable -Name ProgressPreference).Value = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                Set-PSDebug -Strict
+                Set-StrictMode -Version Latest
 
-            [scriptblock]$toastScriptBlock  = {
-                Param(
-                    [Parameter(Mandatory = $true, Position = 0)]
-                    [ValidateNotNullOrEmpty()]
-                    [String]$BalloonTipText,
-                    [Parameter(Mandatory = $false, Position = 1)]
-                    [ValidateNotNullorEmpty()]
-                    [String]$BalloonTipTitle,
-                    [Parameter(Mandatory = $false, Position = 2)]
-                    [ValidateNotNullorEmpty()]
-                    [String]$AppDeployLogoImage,
-                    [Parameter(Mandatory = $false, Position = 3)]
-                    [ValidateNotNullorEmpty()]
-                    [String]$toastAppID,
-                    [Parameter(Mandatory = $false, Position = 4)]
-                    [ValidateNotNullorEmpty()]
-                    [String]$toastAppDisplayName
-                )
-
-                # Check for required entries in registry for when using Powershell as application for the toast
-                # Register the AppID in the registry for use with the Action Center, if required
-                $regPathToastNotificationSettings = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings'
-                $regPathToastApp = 'Registry::HKEY_CURRENT_USER\Software\Classes\AppUserModelId'
-
-                # Create the registry entries
-                $null = New-Item -Path "$regPathToastNotificationSettings\$toastAppId" -Force
-                # Make sure the app used with the action center is enabled
-                $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' -Force
-                $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'Enabled' -Value 1 -PropertyType 'DWORD' -Force
-                $null = New-ItemProperty -Path "$regPathToastNotificationSettings\$toastAppId" -Name 'SoundFile' -PropertyType 'STRING' -Force
-
-                # Create the registry entries
-                $null = New-Item -Path "$regPathToastApp\$toastAppId" -Force
-                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'DisplayName' -Value "$($toastAppDisplayName)" -PropertyType 'STRING' -Force
-                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'ShowInSettings' -Value 0 -PropertyType 'DWORD' -Force
-                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconUri' -Value $appDeployLogoImage -PropertyType 'ExpandString' -Force
-                $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force
-
-                # Handle PowerShell 7-specific setup. ## FIXME
-                If ($PSVersionTable.PSEdition.Equals('Core')) {
-                    Add-Type -AssemblyName (Get-ChildItem -Path "$Script:PSScriptRoot\lib\*\*.dll").FullName
+                # Add in required assemblies.
+                if ((Get-Variable -Name PSVersionTable -ValueOnly).PSEdition.Equals('Core'))
+                {
+                    Add-Type -AssemblyName (Get-ChildItem -Path '$($Script:PSScriptRoot)\lib\*\*.dll').FullName
                 }
-                else {
-                    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-                    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                else
+                {
+                    [System.Void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+                    [System.Void][Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
                 }
 
-                ## Gets the Template XML so we can manipulate the values
-                $Template = [Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01
-                [xml] $ToastTemplate = ([Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($Template).GetXml())
-                [xml] $ToastTemplate = @"
-<toast launch="app-defined-string">
-    <visual>
-        <binding template="ToastImageAndText02">
-            <text id="1">$BalloonTipTitle</text>
-            <text id="2">$BalloonTipText</text>
-            <image id="1" src="file://$appDeployLogoImage" />
-        </binding>
-    </visual>
-</toast>
-"@
+                # Configure the notification centre.
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\$($Script:ADT.Environment.appDeployToolkitName)', 'ShowInActionCenter', 1, 'DWord')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\$($Script:ADT.Environment.appDeployToolkitName)', 'Enabled', 1, 'DWord')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\$($Script:ADT.Environment.appDeployToolkitName)', 'SoundFile', '', 'String')
 
-                $ToastXml = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
-                $ToastXml.LoadXml($ToastTemplate.OuterXml)
+                # Configure the toast notification.
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'DisplayName', '$($Script:ADT.Config.Toast.AppName)', 'String')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'ShowInSettings', 0, 'DWord')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'IconUri', '$($Script:ADT.Config.Assets.Logo)', 'ExpandString')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'IconBackgroundColor', '', 'ExpandString')
 
-                $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastAppId)
-                $notifier.Show($toastXml)
+                # Build out toast XML and display it.
+                (New-Variable -Name toastXml -Value ([Windows.Data.Xml.Dom.XmlDocument]::new()) -PassThru).Value.LoadXml('<toast launch="app-defined-string"><visual><binding template="ToastImageAndText02"><text id="1">$BalloonTipTitle</text><text id="2">$BalloonTipText</text><image id="1" src="file://$($Script:ADT.Config.Assets.Logo)" /></binding></visual></toast>')
+                [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('$($Script:ADT.Environment.appDeployToolkitName)').Show((Get-Variable -Name toastXml -ValueOnly))
+            }))
 
-            }
-
-            If ($Script:ADT.Environment.ProcessNTAccount -eq $Script:ADT.Environment.runAsActiveUser.NTAccount) {
+            # If we're running as the active user, display directly; otherwise, run via Execute-ProcessAsUser.
+            if ($Script:ADT.Environment.ProcessNTAccount -eq $Script:ADT.Environment.runAsActiveUser.NTAccount)
+            {
                 Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText]."
-                Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage, $toastAppID, $toastAppDisplayName
+                & $toastScriptBlock
             }
-            Else {
-                ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
-                Try {
-                    Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser."
-                    $executeToastAsUserScript = "$($Script:ADT.CurrentSession.LoggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
-                    Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
-                }
-                Catch {
-                }
+            else
+            {
+                Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser."
+                Execute-ProcessAsUser -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes([System.String]::Join("`n", $toastScriptBlock.ToString().Trim().Split("`n").Trim()))))" -Wait -RunLevel LeastPrivilege
             }
         }
     }
