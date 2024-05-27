@@ -120,7 +120,7 @@ function Initialize-ADTVariableDatabase
     }
 
     # Get the OS Architecture.
-    $variables.Add('Is64Bit', (Get-CimInstance -ClassName Win32_Processor -Filter 'DeviceID = "CPU0"').AddressWidth -eq 64)
+    $variables.Add('Is64Bit', [System.Environment]::Is64BitOperatingSystem)
     $variables.Add('envOSArchitecture', $(if ($variables.Is64Bit) {'x64'} else {'x86'}))
 
     ## Variables: Current Process Architecture
