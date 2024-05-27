@@ -54,7 +54,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Changing terminal server into user install mode...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Changing terminal server into user install mode...'
             $terminalServerResult = & "$env:WinDir\System32\change.exe" User /Install
 
             If ($global:LastExitCode -ne 1) {
@@ -62,7 +62,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to change terminal server into user install mode. `r`n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to change terminal server into user install mode. `r`n$(Resolve-Error) " -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to change terminal server into user install mode: $($_.Exception.Message)"
             }
@@ -130,7 +130,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Changing terminal server into user execute mode...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Changing terminal server into user execute mode...'
             $terminalServerResult = & "$env:WinDir\System32\change.exe" User /Execute
 
             If ($global:LastExitCode -ne 1) {
@@ -138,7 +138,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to change terminal server into user execute mode. `r`n$(Resolve-Error) " -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to change terminal server into user execute mode. `r`n$(Resolve-Error) " -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to change terminal server into user execute mode: $($_.Exception.Message)"
             }

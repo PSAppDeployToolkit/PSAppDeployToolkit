@@ -40,27 +40,27 @@ Function Copy-ContentToCache {
             ## Create the cache folder if it does not exist
             If (-not (Test-Path -LiteralPath $Path -PathType 'Container')) {
                 Try {
-                    Write-ADTLogEntry -Message "Creating cache folder [$Path]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Creating cache folder [$Path]."
                     $null = New-Item -Path $Path -ItemType 'Directory' -ErrorAction 'Stop'
                 }
                 Catch {
-                    Write-ADTLogEntry -Message "Failed to create cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to create cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3
                     Throw "Failed to create cache folder [$Path]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Cache folder [$Path] already exists." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Cache folder [$Path] already exists."
             }
 
             ## Copy the toolkit content to the cache folder
-            Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
             Copy-File -Path (Join-Path $Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
             # Set the Files directory to the cache path
             $Script:ADT.CurrentSession.SetPropertyValue('DirFiles', "$Path\Files")
             $Script:ADT.CurrentSession.SetPropertyValue('DirFiles', "$Path\SupportFiles")
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3
             Throw "Failed to copy toolkit content to cache folder [$Path]: $($_.Exception.Message)"
         }
     }
@@ -107,22 +107,22 @@ Function Remove-ContentFromCache {
         Try {
             If (Test-Path -LiteralPath $Path -PathType 'Container') {
                 Try {
-                    Write-ADTLogEntry -Message "Removing cache folder [$Path]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Removing cache folder [$Path]."
                     $null = Remove-Item -Path $Path -Recurse -ErrorAction 'Stop'
                     $Script:ADT.CurrentSession.SetPropertyValue('dirFiles', (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath')) -ChildPath 'Files'))
                     $Script:ADT.CurrentSession.SetPropertyValue('dirSupportFiles', (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath')) -ChildPath 'SupportFiles'))
                 }
                 Catch {
-                    Write-ADTLogEntry -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3
                     Throw "Failed to remove cache folder [$Path]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Cache folder [$Path] does not exist." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Cache folder [$Path] does not exist."
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3
             Throw "Failed to remove cache folder [$Path]: $($_.Exception.Message)"
         }
     }

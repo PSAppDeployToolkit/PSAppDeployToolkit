@@ -234,7 +234,7 @@ https://psappdeploytoolkit.com
             [Boolean]$PathIsProductCode = $true
 
             #  Resolve the product code to a publisher, application name, and version
-            Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
 
             If ($IncludeUpdatesAndHotfixes) {
                 [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
@@ -332,7 +332,7 @@ https://psappdeploytoolkit.com
             [String]$msiFile = $Path
         }
         Else {
-            Write-ADTLogEntry -Message "Failed to find MSI file [$path]." -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to find MSI file [$path]." -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to find MSI file [$path]."
             }
@@ -383,7 +383,7 @@ https://psappdeploytoolkit.com
                 Get-MsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty 'ProductCode' -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
             }
         }
 
@@ -437,11 +437,11 @@ https://psappdeploytoolkit.com
         }
 
         If (($IsMsiInstalled) -and ($Action -eq 'Install')) {
-            Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
             [PSObject]$ExecuteResults = @{ ExitCode = 1638; StdOut = 0; StdErr = '' }
         }
         ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
-            Write-ADTLogEntry -Message "Executing MSI action [$Action]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
             #  Build the hashtable with the options that will be passed to Execute-Process using splatting
             [Hashtable]$ExecuteProcessSplat = @{
                 Path                 = $Script:ADT.Environment.exeMsiexec
@@ -480,7 +480,7 @@ https://psappdeploytoolkit.com
             Update-Desktop
         }
         Else {
-            Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
         }
     }
     End {
@@ -569,13 +569,13 @@ https://psappdeploytoolkit.com
             [String]$mspFile = (Get-Item -LiteralPath $Path).FullName
         }
         Else {
-            Write-ADTLogEntry -Message "Failed to find MSP file [$path]." -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to find MSP file [$path]." -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to find MSP file [$path]."
             }
             Continue
         }
-        Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.' -Source ${CmdletName}
+        Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
 
         [Boolean]$IsMSPNeeded = $false
 
@@ -824,26 +824,26 @@ https://psappdeploytoolkit.com
 
         [PSObject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
 
-        Write-ADTLogEntry -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]."
 
         ## Filter the results from Get-InstalledApplication
         [Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
         If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
             ForEach ($installedApplication in $installedApplications) {
                 If ([String]::IsNullOrEmpty($installedApplication.ProductCode)) {
-                    Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2
                     Continue
                 }
 
                 #  Filter the results from Get-InstalledApplication to only those that should be uninstalled
                 [Boolean]$addAppToRemoveList = $true
                 If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
-                    Write-ADTLogEntry -Message 'Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication].' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication].'
                     ForEach ($Filter in $FilterApplication) {
                         If ($Filter[2] -eq 'RegEx') {
                             If ($installedApplication.($Filter[0]) -match $Filter[1]) {
                                 [Boolean]$addAppToRemoveList = $true
-                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria."
                             }
                             Else {
                                 [Boolean]$addAppToRemoveList = $false
@@ -853,7 +853,7 @@ https://psappdeploytoolkit.com
                         ElseIf ($Filter[2] -eq 'Contains') {
                             If ($installedApplication.($Filter[0]) -match [RegEx]::Escape($Filter[1])) {
                                 [Boolean]$addAppToRemoveList = $true
-                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria."
                             }
                             Else {
                                 [Boolean]$addAppToRemoveList = $false
@@ -863,7 +863,7 @@ https://psappdeploytoolkit.com
                         ElseIf ($Filter[2] -eq 'WildCard') {
                             If ($installedApplication.($Filter[0]) -like $Filter[1]) {
                                 [Boolean]$addAppToRemoveList = $true
-                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria."
                             }
                             Else {
                                 [Boolean]$addAppToRemoveList = $false
@@ -873,7 +873,7 @@ https://psappdeploytoolkit.com
                         ElseIf ($Filter[2] -eq 'Exact') {
                             If ($installedApplication.($Filter[0]) -eq $Filter[1]) {
                                 [Boolean]$addAppToRemoveList = $true
-                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria."
                             }
                             Else {
                                 [Boolean]$addAppToRemoveList = $false
@@ -889,28 +889,28 @@ https://psappdeploytoolkit.com
                         If ($Exclude[2] -eq 'RegEx') {
                             If ($installedApplication.($Exclude[0]) -match $Exclude[1]) {
                                 [Boolean]$addAppToRemoveList = $false
-                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
                         ElseIf ($Exclude[2] -eq 'Contains') {
                             If ($installedApplication.($Exclude[0]) -match [RegEx]::Escape($Exclude[1])) {
                                 [Boolean]$addAppToRemoveList = $false
-                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
                         ElseIf ($Exclude[2] -eq 'WildCard') {
                             If ($installedApplication.($Exclude[0]) -like $Exclude[1]) {
                                 [Boolean]$addAppToRemoveList = $false
-                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
                         ElseIf ($Exclude[2] -eq 'Exact') {
                             If ($installedApplication.($Exclude[0]) -eq $Exclude[1]) {
                                 [Boolean]$addAppToRemoveList = $false
-                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
@@ -918,7 +918,7 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($addAppToRemoveList) {
-                    Write-ADTLogEntry -Message "Adding application to list for removal: [$($installedApplication.DisplayName) $($installedApplication.Version)]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Adding application to list for removal: [$($installedApplication.DisplayName) $($installedApplication.Version)]."
                     $removeMSIApplications.Add($installedApplication)
                 }
             }
@@ -951,7 +951,7 @@ https://psappdeploytoolkit.com
 
         If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
             ForEach ($removeMSIApplication in $removeMSIApplications) {
-                Write-ADTLogEntry -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]."
                 $ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
                 If ($PassThru) {
                     [PSObject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
@@ -962,7 +962,7 @@ https://psappdeploytoolkit.com
             }
         }
         Else {
-            Write-ADTLogEntry -Message 'No applications found for removal. Continue...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'No applications found for removal. Continue...'
         }
     }
     End {
@@ -1080,7 +1080,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message "Creating a transform file for MSI [$MsiPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Creating a transform file for MSI [$MsiPath]."
 
             ## Discover the parent folder that the MSI file resides in
             [String]$MsiParentFolder = Split-Path -Path $MsiPath -Parent -ErrorAction 'Stop'
@@ -1089,7 +1089,7 @@ https://psappdeploytoolkit.com
             [String]$TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([IO.Path]::GetFileName(([IO.Path]::GetTempFileName()))) -ErrorAction 'Stop'
 
             ## Create a second copy of the MSI database
-            Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
             $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force -ErrorAction 'Stop'
 
             ## Create a Windows Installer object
@@ -1097,15 +1097,15 @@ https://psappdeploytoolkit.com
 
             ## Open both copies of the MSI database
             #  Open the original MSI database in read only mode
-            Write-ADTLogEntry -Message "Opening the MSI database [$MsiPath] in read only mode." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Opening the MSI database [$MsiPath] in read only mode."
             [__ComObject]$MsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($MsiPath, $msiOpenDatabaseModeReadOnly)
             #  Open the temporary copy of the MSI database in view/modify/update mode
-            Write-ADTLogEntry -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode."
             [__ComObject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiViewModifyUpdate)
 
             ## If a MSI transform file was specified, then apply it to the temporary copy of the MSI database
             If ($ApplyTransformPath) {
-                Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
                 $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'ApplyTransform' -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors)
             }
 
@@ -1130,29 +1130,29 @@ https://psappdeploytoolkit.com
             #  Release the database object for the temporary copy of the MSI database
             $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
             #  Open the temporary copy of the MSI database in read only mode
-            Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
             [__ComObject]$TempMsiPathDatabase = Invoke-ObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
 
             ## Delete the new transform file path if it already exists
             If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
-                Write-ADTLogEntry -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]."
                 $null = Remove-Item -LiteralPath $NewTransformPath -Force -ErrorAction 'Stop'
             }
 
             ## Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database
-            Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]."
             $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'GenerateTransform' -ArgumentList @($MsiPathDatabase, $NewTransformPath)
             $null = Invoke-ObjectMethod -InputObject $TempMsiPathDatabase -MethodName 'CreateTransformSummaryInfo' -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone)
 
             If (Test-Path -LiteralPath $NewTransformPath -PathType 'Leaf' -ErrorAction 'Stop') {
-                Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
             }
             Else {
                 Throw "Failed to generate transform file in path [$NewTransformPath]."
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to create new transform file in path [$NewTransformPath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to create new transform file in path [$NewTransformPath]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to create new transform file in path [$NewTransformPath]: $($_.Exception.Message)"
             }

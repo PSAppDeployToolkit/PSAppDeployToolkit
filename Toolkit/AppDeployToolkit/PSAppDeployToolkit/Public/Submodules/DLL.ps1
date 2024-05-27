@@ -109,7 +109,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message "$DLLAction DLL file [$filePath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "$DLLAction DLL file [$filePath]."
             If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) {
                 Throw "File [$filePath] could not be found."
             }
@@ -153,7 +153,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to $($DLLAction.ToLower()) DLL file: $($_.Exception.Message)"
             }
