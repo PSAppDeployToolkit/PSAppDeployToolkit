@@ -344,18 +344,18 @@ https://psappdeploytoolkit.com
         ## Create zero px padding object
         $paddingNone = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 0, 0, 0)
         ## Create basic control size
-        $defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 0)
+        $defaultControlSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 0)
 
         ## Generic Button properties
         $buttonSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (130, 24)
 
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
-        $pictureBanner.ImageLocation = $Script:ADT.Config.Assets.Banner
+        $pictureBanner.Image = $Script:FormData.Assets.Banner
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.BannerHeight)
+        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, $Script:FormData.BannerHeight)
         $pictureBanner.ClientSize = $System_Drawing_Size
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -527,7 +527,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.AutoSize = $true
 
         ## Panel Flow Layout
-        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
+        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:FormData.BannerHeight)
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -654,16 +654,16 @@ https://psappdeploytoolkit.com
         $formWelcome.MinimizeBox = $false
         $formWelcome.TopMost = $TopMost
         $formWelcome.TopLevel = $true
-        $formWelcome.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $Script:ADT.Config.Assets.Icon
+        $formWelcome.Icon = $Script:FormData.Assets.Icon
         $formWelcome.AutoSize = $true
         $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
         $formWelcome.AutoScaleDimensions = New-Object System.Drawing.SizeF(96,96)
         $formWelcome.Controls.Add($pictureBanner)
         $formWelcome.Controls.Add($buttonAbort)
         ## Panel Button
-        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
-        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, 39)
+        $panelButtons.MinimumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
+        $panelButtons.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
+        $panelButtons.MaximumSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList ($Script:FormData.Width, 39)
         $panelButtons.AutoSize = $true
         $panelButtons.Padding = $paddingNone
         $panelButtons.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 10, 0, 0)

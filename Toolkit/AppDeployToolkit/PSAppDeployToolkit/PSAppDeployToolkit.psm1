@@ -35,7 +35,6 @@ Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationF
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
     CurrentSession = $null
-    BannerHeight = $null
     Environment = $null
     Language = $null
     Config = $null
@@ -48,6 +47,17 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
     Runspace = $null
     SyncHash = $null
     Running = $false
+}
+
+# Asset data used by all forms.
+New-Variable -Name FormData -Option Constant -Value @{
+    Width = 450
+    BannerHeight = 0
+    Assets = @{
+        Icon = $null
+        Logo = $null
+        Banner = $null
+    }
 }
 
 # Variables to track multiple sessions and each session's caller.

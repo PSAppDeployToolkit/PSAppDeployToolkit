@@ -383,6 +383,22 @@ function Import-ADTLocalizedStrings
 #
 #---------------------------------------------------------------------------
 
+function Read-ADTAssetsIntoMemory
+{
+    # Grab the bytes of each image asset, store them into a memory stream, then as an image for the form to use.
+    $Script:FormData.Assets.Icon = [System.Drawing.Icon]::new([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Script:ADT.Config.Assets.Icon)))
+    $Script:FormData.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Script:ADT.Config.Assets.Logo)))
+    $Script:FormData.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Script:ADT.Config.Assets.Banner)))
+    $Script:FormData.BannerHeight = [System.Math]::Ceiling($Script:FormData.Width * ($Script:FormData.Assets.Banner.Height / $Script:FormData.Assets.Banner.Width))
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
 function Import-ADTConfig
 {
     # Create variables within this scope from the database, it's needed during the config import.
@@ -411,17 +427,9 @@ function Import-ADTConfig
     }
 
     # Expand out asset file paths and test that the files are present.
-    if (![System.IO.File]::Exists(($config.Assets.Icon = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Icon)").Path)))
+    foreach ($asset in ('Icon', 'Logo', 'Banner'))
     {
-        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) icon file not found.")
-    }
-    if (![System.IO.File]::Exists(($config.Assets.Logo = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Logo)").Path)))
-    {
-        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) logo file not found.")
-    }
-    if (![System.IO.File]::Exists(($config.Assets.Banner = (Resolve-Path -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.Banner)").Path)))
-    {
-        throw [System.IO.FileNotFoundException]::new("$($Script:ADT.Environment.appDeployToolkitName) banner file not found.")
+        $config.Assets.$asset = (Get-Item -LiteralPath "$($Script:PSScriptRoot)\$($config.Assets.$asset)").FullName
     }
 
     # Change paths to user accessible ones if user isn't an admin.
@@ -444,12 +452,6 @@ function Import-ADTConfig
             $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights
         }
     }
-
-    # Calculate banner height.
-    $banner = [System.Drawing.Bitmap]::new($config.Assets.Banner)
-    $height = [System.Math]::Ceiling(450 * ($banner.Height / $banner.Width))
-    $banner.Dispose()
-    $Script:ADT.BannerHeight = $height
 
     # Finally, store the config globally for usage within module.
     $Script:ADT.Config = $config
