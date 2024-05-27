@@ -1907,10 +1907,10 @@ https://psappdeploytoolkit.com
         [String]$Arguments,
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullorEmpty()]
-        [String]$Description = $Script:ADT.CurrentSession.GetPropertyValue('installName'),
+        [String]$Description = (Get-ADTSession).GetPropertyValue('installName'),
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$Key = $Script:ADT.CurrentSession.GetPropertyValue('installName'),
+        [String]$Key = (Get-ADTSession).GetPropertyValue('installName'),
         [Parameter(Mandatory = $false)]
         [Switch]$Wow6432Node = $false,
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -1971,7 +1971,7 @@ https://psappdeploytoolkit.com
             ## Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there)
             [String]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
             [String]$ActiveSetupFileName = [IO.Path]::GetFileName($StubExePath)
-            [String]$StubExeFile = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $ActiveSetupFileName
+            [String]$StubExeFile = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirFiles') -ChildPath $ActiveSetupFileName
             If (Test-Path -LiteralPath $StubExeFile -PathType 'Leaf') {
                 #  This will overwrite the StubPath file if $StubExePath already exists on target
                 Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false

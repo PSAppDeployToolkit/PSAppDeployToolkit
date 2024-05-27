@@ -201,7 +201,7 @@ https://psappdeploytoolkit.com
             }
             Else {
                 #  The first directory to search will be the 'Files' subdirectory of the script directory
-                [String]$PathFolders = $Script:ADT.CurrentSession.GetPropertyValue('dirFiles')
+                [String]$PathFolders = (Get-ADTSession).GetPropertyValue('dirFiles')
                 #  Add the current location of the console (Windows always searches this location first)
                 [String]$PathFolders = $PathFolders + ';' + (Get-Location -PSProvider 'FileSystem').Path
                 #  Add the new path locations to the PATH environment variable
@@ -465,7 +465,7 @@ https://psappdeploytoolkit.com
                 }
                 ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
                     Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
-                    $Script:ADT.CurrentSession.State.MsiRebootDetected = $true
+                    (Get-ADTSession).State.MsiRebootDetected = $true
                 }
                 ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
                     Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
@@ -669,12 +669,12 @@ https://psappdeploytoolkit.com
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
-            If (($TempPath -eq $Script:ADT.CurrentSession.LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
+            If (($TempPath -eq (Get-ADTSession).LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
                 Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
         Else {
-            [String]$executeAsUserTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'ExecuteAsUser'
+            [String]$executeAsUserTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'ExecuteAsUser'
         }
     }
     Process {
@@ -819,13 +819,13 @@ https://psappdeploytoolkit.com
                 [String]$schTaskNameCount = '001'
                 [String]$schTaskName = "$($("$($Script:ADT.Environment.appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
                 #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = Get-ChildItem -Path "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
+                [String]$previousXmlFileName = Get-ChildItem -Path "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
                 If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
                     [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
                     [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
                 }
                 $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\$($schTaskName).xml"
+                [String]$xmlSchTaskFilePath = "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\$($schTaskName).xml"
 
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
