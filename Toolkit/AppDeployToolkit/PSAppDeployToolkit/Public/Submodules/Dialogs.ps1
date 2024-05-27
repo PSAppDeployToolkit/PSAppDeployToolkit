@@ -141,7 +141,7 @@ https://psappdeploytoolkit.com
     Process {
         ## Bypass if in non-interactive mode
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Show-InstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message" -Source ${CmdletName}
             Return
         }
 
@@ -151,7 +151,7 @@ https://psappdeploytoolkit.com
         ## Check if the countdown was specified
         If ($timeout -gt $Script:ADT.Config.UI.DefaultTimeout) {
             [String]$CountdownTimeoutErr = 'The installation UI dialog timeout cannot be longer than the timeout specified in the XML configuration file.'
-            Write-Log -Message $CountdownTimeoutErr -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message $CountdownTimeoutErr -Severity 3 -Source ${CmdletName}
             Throw $CountdownTimeoutErr
         }
 
@@ -211,7 +211,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-                Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formInstallationPrompt.ControlBox = $false
             }
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
@@ -427,7 +427,7 @@ https://psappdeploytoolkit.com
         $installPromptTimer = New-Object -TypeName 'System.Windows.Forms.Timer'
         $installPromptTimer.Interval = ($timeout * 1000)
         $installPromptTimer.Add_Tick({
-                Write-Log -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.' -Source ${CmdletName}
                 $buttonAbort.PerformClick()
             })
         ## Init the OnLoad event to correct the initial state of the form
@@ -458,7 +458,7 @@ https://psappdeploytoolkit.com
         }
 
         [String]$installPromptLoggedParameters = $installPromptParameters | Resolve-Parameters
-        Write-Log -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$installPromptLoggedParameters]." -Source ${CmdletName}
 
 
         ## Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
@@ -494,7 +494,7 @@ https://psappdeploytoolkit.com
                     Exit-Script -ExitCode $Script:ADT.Config.UI.DefaultExitCode
                 }
                 Else {
-                    Write-Log -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
                 }
             }
         }
@@ -609,11 +609,11 @@ https://psappdeploytoolkit.com
     Process {
         #  Bypass if in silent mode
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
-            Write-Log -Message "Bypassing Show-DialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Show-DialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text" -Source ${CmdletName}
             Return
         }
 
-        Write-Log -Message "Displaying Dialog Box with message: $Text..." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..." -Source ${CmdletName}
 
         [Hashtable]$dialogButtons = @{
             'OK'                     = 0
@@ -652,43 +652,43 @@ https://psappdeploytoolkit.com
 
         Switch ($response) {
             1 {
-                Write-Log -Message 'Dialog Box Response: OK' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: OK' -Source ${CmdletName}
                 Write-Output -InputObject ('OK')
             }
             2 {
-                Write-Log -Message 'Dialog Box Response: Cancel' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Cancel' -Source ${CmdletName}
                 Write-Output -InputObject ('Cancel')
             }
             3 {
-                Write-Log -Message 'Dialog Box Response: Abort' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Abort' -Source ${CmdletName}
                 Write-Output -InputObject ('Abort')
             }
             4 {
-                Write-Log -Message 'Dialog Box Response: Retry' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Retry' -Source ${CmdletName}
                 Write-Output -InputObject ('Retry')
             }
             5 {
-                Write-Log -Message 'Dialog Box Response: Ignore' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Ignore' -Source ${CmdletName}
                 Write-Output -InputObject ('Ignore')
             }
             6 {
-                Write-Log -Message 'Dialog Box Response: Yes' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Yes' -Source ${CmdletName}
                 Write-Output -InputObject ('Yes')
             }
             7 {
-                Write-Log -Message 'Dialog Box Response: No' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: No' -Source ${CmdletName}
                 Write-Output -InputObject ('No')
             }
             10 {
-                Write-Log -Message 'Dialog Box Response: Try Again' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Try Again' -Source ${CmdletName}
                 Write-Output -InputObject ('Try Again')
             }
             11 {
-                Write-Log -Message 'Dialog Box Response: Continue' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Response: Continue' -Source ${CmdletName}
                 Write-Output -InputObject ('Continue')
             }
             -1 {
-                Write-Log -Message 'Dialog Box Timed Out...' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Dialog Box Timed Out...' -Source ${CmdletName}
                 Write-Output -InputObject ('Timeout')
             }
         }
@@ -958,7 +958,7 @@ https://psappdeploytoolkit.com
 
         ## Check disk space requirements if specified
         If ($CheckDiskSpace) {
-            Write-Log -Message 'Evaluating disk space requirements.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Evaluating disk space requirements.' -Source ${CmdletName}
             [Double]$freeDiskSpace = Get-FreeDiskSpace
             If ($RequiredDiskSpace -eq 0) {
                 Try {
@@ -967,7 +967,7 @@ https://psappdeploytoolkit.com
                     $RequiredDiskSpace = [Math]::Round((($fso.GetFolder($Script:ADT.CurrentSession.GetPropertyValue('ScriptParentPath')).Size) / 1MB))
                 }
                 Catch {
-                    Write-Log -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                 }
                 Finally {
                     Try {
@@ -978,14 +978,14 @@ https://psappdeploytoolkit.com
                 }
             }
             If ($freeDiskSpace -lt $RequiredDiskSpace) {
-                Write-Log -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3 -Source ${CmdletName}
                 If (-not $Silent) {
                     Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
                 }
                 Exit-Script -ExitCode $Script:ADT.Config.UI.DefaultExitCode
             }
             Else {
-                Write-Log -Message 'Successfully passed minimum disk space requirement check.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.' -Source ${CmdletName}
             }
         }
 
@@ -1032,15 +1032,15 @@ https://psappdeploytoolkit.com
             }
             If ($DeferTimes -ne 0) {
                 If ($deferHistoryTimes -ge 0) {
-                    Write-Log -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining." -Source ${CmdletName}
                     $DeferTimes = $deferHistory.DeferTimesRemaining - 1
                 }
                 Else {
                     $DeferTimes = $DeferTimes - 1
                 }
-                Write-Log -Message "The user has [$deferTimes] deferrals remaining." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The user has [$deferTimes] deferrals remaining." -Source ${CmdletName}
                 If ($DeferTimes -lt 0) {
-                    Write-Log -Message 'Deferral has expired.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Deferral has expired.' -Source ${CmdletName}
                     $AllowDefer = $false
                 }
             }
@@ -1052,15 +1052,15 @@ https://psappdeploytoolkit.com
             }
             If ($checkDeferDays -and $allowDefer) {
                 If ($deferHistoryDeadline) {
-                    Write-Log -Message "Defer history shows a deadline date of [$deferHistoryDeadline]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]." -Source ${CmdletName}
                     [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferHistoryDeadline
                 }
                 Else {
                     [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date -Date ((Get-Date).AddDays($deferDays)) -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
                 }
-                Write-Log -Message "The user has until [$deferDeadlineUniversal] before deferral expires." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires." -Source ${CmdletName}
                 If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
-                    Write-Log -Message 'Deferral has expired.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Deferral has expired.' -Source ${CmdletName}
                     $AllowDefer = $false
                 }
             }
@@ -1070,12 +1070,12 @@ https://psappdeploytoolkit.com
                     [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferDeadline -ErrorAction 'Stop'
                 }
                 Catch {
-                    Write-Log -Message "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                     Throw "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z': $($_.Exception.Message)"
                 }
-                Write-Log -Message "The user has until [$deferDeadlineUniversal] remaining." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining." -Source ${CmdletName}
                 If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
-                    Write-Log -Message 'Deferral has expired.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Deferral has expired.' -Source ${CmdletName}
                     $AllowDefer = $false
                 }
             }
@@ -1125,7 +1125,7 @@ https://psappdeploytoolkit.com
 
                 #  If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again
                 If ($promptResult -eq 'Continue') {
-                    Write-Log -Message 'The user selected to continue...' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'The user selected to continue...' -Source ${CmdletName}
                     Start-Sleep -Seconds 2
 
                     #  Break the while loop if there are no processes to close and the user has clicked OK to continue
@@ -1135,9 +1135,9 @@ https://psappdeploytoolkit.com
                 }
                 #  Force the applications to close
                 ElseIf ($promptResult -eq 'Close') {
-                    Write-Log -Message 'The user selected to force the application(s) to close...' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...' -Source ${CmdletName}
                     If ($PromptToSave -and $Script:ADT.Environment.SessionZero -and !$Script:ADT.Environment.IsProcessUserInteractive) {
-                        Write-Log -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2 -Source ${CmdletName}
                     }
                     # Update the process list right before closing, in case it changed
                     $runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects
@@ -1151,11 +1151,11 @@ https://psappdeploytoolkit.com
                             $PromptToSaveStopWatch.Reset()
                             ForEach ($OpenWindow in $AllOpenWindowsForRunningProcess) {
                                 Try {
-                                    Write-Log -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds)..." -Source ${CmdletName}
+                                    Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds)..." -Source ${CmdletName}
                                     [Boolean]$IsBringWindowToFrontSuccess = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
                                     [Boolean]$IsCloseWindowCallSuccess = $runningProcess.CloseMainWindow()
                                     If (-not $IsCloseWindowCallSuccess) {
-                                        Write-Log -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
+                                        Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3 -Source ${CmdletName}
                                     }
                                     Else {
                                         $PromptToSaveStopWatch.Start()
@@ -1168,15 +1168,15 @@ https://psappdeploytoolkit.com
                                         } While (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
                                         $PromptToSaveStopWatch.Reset()
                                         If ($IsWindowOpen) {
-                                            Write-Log -Message "Exceeded the [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
+                                            Write-ADTLogEntry -Message "Exceeded the [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2 -Source ${CmdletName}
                                         }
                                         Else {
-                                            Write-Log -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed." -Source ${CmdletName}
+                                            Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed." -Source ${CmdletName}
                                         }
                                     }
                                 }
                                 Catch {
-                                    Write-Log -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
                                     Continue
                                 }
                                 Finally {
@@ -1185,20 +1185,20 @@ https://psappdeploytoolkit.com
                             }
                         }
                         Else {
-                            Write-Log -Message "Stopping process $($runningProcess.ProcessName)..." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..." -Source ${CmdletName}
                             Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction 'Ignore'
                         }
                     }
 
                     If ($runningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging) {
                         # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again
-                        Write-Log -Message 'Sleeping for 2 seconds because the processes are still not closed...' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...' -Source ${CmdletName}
                         Start-Sleep -Seconds 2
                     }
                 }
                 #  Stop the script (if not actioned before the timeout value)
                 ElseIf ($promptResult -eq 'Timeout') {
-                    Write-Log -Message 'Installation not actioned before the timeout value.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.' -Source ${CmdletName}
                     $BlockExecution = $false
 
                     If (($deferTimes -ge 0) -or ($deferDeadlineUniversal)) {
@@ -1221,7 +1221,7 @@ https://psappdeploytoolkit.com
                 }
                 #  Stop the script (user chose to defer)
                 ElseIf ($promptResult -eq 'Defer') {
-                    Write-Log -Message 'Installation deferred by the user.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Installation deferred by the user.' -Source ${CmdletName}
                     $BlockExecution = $false
 
                     Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
@@ -1240,7 +1240,7 @@ https://psappdeploytoolkit.com
             [Array]$runningProcesses = Get-RunningProcesses $processObjects
             If ($runningProcesses) {
                 [String]$runningProcessDescriptions = ($runningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
-                Write-Log -Message "Force closing application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Force closing application(s) [$($runningProcessDescriptions)] without prompting user." -Source ${CmdletName}
                 $runningProcesses.ProcessName | ForEach-Object -Process { Stop-Process -Name $_ -Force -ErrorAction 'Ignore' }
                 Start-Sleep -Seconds 2
             }
@@ -1261,20 +1261,20 @@ https://psappdeploytoolkit.com
                         [String]$notesNSDExecutable = Join-Path -Path $notesPath -ChildPath 'NSD.exe'
                         Try {
                             If (Test-Path -LiteralPath $notesNSDExecutable -PathType 'Leaf' -ErrorAction 'Stop') {
-                                Write-Log -Message "Executing [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Executing [$notesNSDExecutable] with the -kill argument..." -Source ${CmdletName}
                                 [Diagnostics.Process]$notesNSDProcess = Start-Process -FilePath $notesNSDExecutable -ArgumentList '-kill' -WindowStyle 'Hidden' -PassThru -ErrorAction 'Ignore'
 
                                 If (-not $notesNSDProcess.WaitForExit(10000)) {
-                                    Write-Log -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
+                                    Write-ADTLogEntry -Message "[$notesNSDExecutable] did not end in a timely manner. Force terminate process." -Source ${CmdletName}
                                     Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
                                 }
                             }
                         }
                         Catch {
-                            Write-Log -Message "Failed to launch [$notesNSDExecutable]. `r`n$(Resolve-Error)" -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Failed to launch [$notesNSDExecutable]. `r`n$(Resolve-Error)" -Source ${CmdletName}
                         }
 
-                        Write-Log -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "[$notesNSDExecutable] returned exit code [$($notesNSDProcess.ExitCode)]." -Source ${CmdletName}
 
                         #  Force NSD process to stop in case the previous command was not successful
                         Stop-Process -Name 'NSD' -Force -ErrorAction 'Ignore'
@@ -1293,7 +1293,7 @@ https://psappdeploytoolkit.com
         If ($BlockExecution) {
             #  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
             $Script:ADT.CurrentSession.State.BlockExecution = $BlockExecution
-            Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
             Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty 'ProcessName')
         }
     }
@@ -1406,11 +1406,11 @@ https://psappdeploytoolkit.com
         ## If in non-interactive mode
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
             If ($NoSilentRestart -eq $false) {
-                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
                 Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             }
             Else {
-                Write-Log -Message "Skipping restart, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is enabled." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is enabled." -Source ${CmdletName}
             }
             Return
         }
@@ -1419,17 +1419,17 @@ https://psappdeploytoolkit.com
 
         ## Check if we are already displaying a restart prompt
         If (Get-Process | Where-Object { $_.MainWindowTitle -match $Script:ADT.Strings.RestartPrompt.Title }) {
-            Write-Log -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "${CmdletName} was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2 -Source ${CmdletName}
             Return
         }
 
         ## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
         If ($Script:ADT.CurrentSession.GetPropertyValue('deployAppScriptFriendlyName')) {
             If ($NoCountdown) {
-                Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
             }
             Else {
-                Write-Log -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Invoking ${CmdletName} asynchronously with a [$countDownSeconds] second countdown..." -Source ${CmdletName}
             }
             ## Remove Silent reboot parameters from the list that is being forwarded to the main script for asynchronous function execution. This is only for Interactive mode so we dont need silent mode reboot parameters.
             $installRestartPromptParameters.Remove('NoSilentRestart')
@@ -1458,7 +1458,7 @@ https://psappdeploytoolkit.com
         $panelButtons = New-Object -TypeName 'System.Windows.Forms.Panel'
 
         [ScriptBlock]$RestartComputer = {
-            Write-Log -Message 'Forcefully restarting the computer...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Forcefully restarting the computer...' -Source ${CmdletName}
             Restart-Computer -Force
         }
 
@@ -1476,7 +1476,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-                Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formRestart.ControlBox = $false
             }
             ## Initialize the countdown timer
@@ -1735,10 +1735,10 @@ https://psappdeploytoolkit.com
         $formRestart.add_FormClosing($formRestartClosing)
 
         If ($NoCountdown) {
-            Write-Log -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Displaying restart prompt with no countdown.' -Source ${CmdletName}
         }
         Else {
-            Write-Log -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown." -Source ${CmdletName}
         }
 
         #  Show the Form
@@ -1842,11 +1842,11 @@ https://psappdeploytoolkit.com
     Process {
         ## Skip balloon if in silent mode, disabled in the config or presentation is detected
         If ($Script:ADT.CurrentSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications) {
-            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
         If (Test-PowerPoint) {
-            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
         ## Dispose of previous balloon
@@ -1862,7 +1862,7 @@ https://psappdeploytoolkit.com
         If (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or ($Script:ADT.Config.Toast.Disable -eq $true)) {
             ## NoWait - Create the balloontip icon asynchronously
             If ($NoWait) {
-                Write-Log -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
                 ## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait
                 ## Scriptblock text has to be as short as possible because it is passed as a parameter to powershell
                 ## Don't strongly type parameter BalloonTipIcon as System.Drawing assembly not loaded yet in asynchronous scriptblock so will throw error
@@ -1912,7 +1912,7 @@ https://psappdeploytoolkit.com
             }
             ## Otherwise create the balloontip icon synchronously
             Else {
-                Write-Log -Message "Displaying balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]." -Source ${CmdletName}
                 ## Prepare Text - Cut it if longer than 63 chars
                 $BalloonTipIconText = [String]::Concat($BalloonTipTitle, ' - ', $BalloonTipText)
                 If ($BalloonTipIconText.Length -gt 63) {
@@ -2008,13 +2008,13 @@ https://psappdeploytoolkit.com
             }
 
             If ($Script:ADT.Environment.ProcessNTAccount -eq $Script:ADT.Environment.runAsActiveUser.NTAccount) {
-                Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
                 Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage, $toastAppID, $toastAppDisplayName
             }
             Else {
                 ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
                 Try {
-                    Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
                     $executeToastAsUserScript = "$($Script:ADT.CurrentSession.LoggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
                     Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
@@ -2131,7 +2131,7 @@ https://psappdeploytoolkit.com
     Process {
         If ($Script:ADT.CurrentSession.DeployModeSilent) {
             If (!$Quiet) {
-                Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Bypassing Show-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -Source ${CmdletName}
             }
             Return
         }
@@ -2147,7 +2147,7 @@ https://psappdeploytoolkit.com
         }
 
         If ($Host.Name -match 'PowerGUI') {
-            Write-Log -Message "$($Host.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "$($Host.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
             Return
         }
 
@@ -2294,7 +2294,7 @@ https://psappdeploytoolkit.com
                         }
                         Catch {
                             # Not a terminating error if we can't disable the close button
-                            Write-Log 'Failed to disable the Close button.' -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry 'Failed to disable the Close button.' -Severity 2 -Source ${CmdletName}
                         }
                     })
                 #  Prepare the ProgressText variable so we can use it to change the text in the text area
@@ -2310,14 +2310,14 @@ https://psappdeploytoolkit.com
             })
 
             $progressCmd.Runspace = $Script:ProgressWindow.Runspace
-            Write-Log -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$statusMessage]." -Source ${CmdletName}
             #  Invoke the progress runspace
             $null = $progressCmd.BeginInvoke()
             #  Allow the thread to be spun up safely before invoking actions against it.
             while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
             {
                 If ($Script:ProgressWindow.SyncHash.ContainsKey('Error')) {
-                    Write-Log -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Failure while displaying progress dialog. `r`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3 -Source ${CmdletName}
                     break
                 }
             }
@@ -2372,11 +2372,11 @@ https://psappdeploytoolkit.com
                 }
 
                 If (!$Quiet) {
-                    Write-Log -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Updated the progress message: [$statusMessage]." -Source ${CmdletName}
                 }
             }
             Catch {
-                Write-Log -Message "Unable to update the progress message. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Unable to update the progress message. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
             }
         }
     }

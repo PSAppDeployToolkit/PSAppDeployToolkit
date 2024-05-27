@@ -60,12 +60,12 @@ Returns the message for the MSI error code.
     }
     Process {
         Try {
-            Write-Log -Message "Getting message for exit code [$MsiExitCode]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting message for exit code [$MsiExitCode]." -Source ${CmdletName}
             [String]$MsiExitCodeMsg = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode)
             Write-Output -InputObject ($MsiExitCodeMsg)
         }
         Catch {
-            Write-Log -Message "Failed to get message for exit code [$MsiExitCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get message for exit code [$MsiExitCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
         }
     }
     End {
@@ -167,7 +167,7 @@ This is an internal script function and should typically not be called directly.
         [Threading.Mutex]$OpenExistingMutex = $null
     }
     Process {
-        Write-Log -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available." -Source ${CmdletName}
         Try {
             ## Using this variable allows capture of exceptions from .NET methods. Private scope only changes value for current function.
             $private:previousErrorActionPreference = $ErrorActionPreference
@@ -197,13 +197,13 @@ This is an internal script function and should typically not be called directly.
         Catch {
             $IsUnhandledException = $true
             ## Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-            Write-Log -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             $IsMutexFree = $true
         }
         Finally {
             If ($IsMutexFree) {
                 If (-not $IsUnhandledException) {
-                    Write-Log -Message "Mutex [$MutexName] is available for an exclusive lock." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Mutex [$MutexName] is available for an exclusive lock." -Source ${CmdletName}
                 }
             }
             Else {
@@ -214,10 +214,10 @@ This is an internal script function and should typically not be called directly.
                     }
                     Catch {
                     }
-                    Write-Log -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2 -Source ${CmdletName}
                 }
                 Else {
-                    Write-Log -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it." -Source ${CmdletName}
                 }
             }
 
@@ -372,10 +372,10 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             If ($PSCmdlet.ParameterSetName -eq 'TableInfo') {
-                Write-Log -Message "Reading data from Windows Installer database file [$Path] in table [$Table]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$Path] in table [$Table]." -Source ${CmdletName}
             }
             Else {
-                Write-Log -Message "Reading the Summary Information from the Windows Installer database file [$Path]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$Path]." -Source ${CmdletName}
             }
 
             ## Create a Windows Installer object
@@ -446,7 +446,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-Log -Message "Failed to get the MSI table [$Table]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get the MSI table [$Table]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
             }
@@ -569,7 +569,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-Log -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]." -Source ${CmdletName}
 
             ## Open the requested table view from the database
             [__ComObject]$View = Invoke-ObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
@@ -596,7 +596,7 @@ https://psappdeploytoolkit.com
             $null = Invoke-ObjectMethod -InputObject $View -MethodName 'Execute'
         }
         Catch {
-            Write-Log -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]: $($_.Exception.Message)"
             }

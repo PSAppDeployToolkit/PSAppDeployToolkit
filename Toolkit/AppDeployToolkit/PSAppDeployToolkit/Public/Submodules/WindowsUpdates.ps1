@@ -61,7 +61,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-Log -Message "Checking if Microsoft Update [$kbNumber] is installed." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Checking if Microsoft Update [$kbNumber] is installed." -Source ${CmdletName}
 
             ## Default is not found
             [Boolean]$kbFound = $false
@@ -70,7 +70,7 @@ https://psappdeploytoolkit.com
             Get-HotFix -Id $kbNumber -ErrorAction 'Ignore' | ForEach-Object { $kbFound = $true }
 
             If (-not $kbFound) {
-                Write-Log -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.' -Source ${CmdletName}
 
                 ## Check for update using ComObject method (to catch Office updates)
                 [__ComObject]$UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
@@ -118,29 +118,29 @@ https://psappdeploytoolkit.com
                         }
                     }
                     If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-                        Write-Log -Message "Discovered the following Microsoft Update: `r`n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Discovered the following Microsoft Update: `r`n$($LatestUpdateHistory | Format-List | Out-String)" -Source ${CmdletName}
                         $kbFound = $true
                     }
                     $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
                     $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
                 }
                 Else {
-                    Write-Log -Message 'Unable to detect Windows update history via COM object.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via COM object.' -Source ${CmdletName}
                 }
             }
 
             ## Return Result
             If (-not $kbFound) {
-                Write-Log -Message "Microsoft Update [$kbNumber] is not installed." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Microsoft Update [$kbNumber] is not installed." -Source ${CmdletName}
                 Write-Output -InputObject ($false)
             }
             Else {
-                Write-Log -Message "Microsoft Update [$kbNumber] is installed." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Microsoft Update [$kbNumber] is installed." -Source ${CmdletName}
                 Write-Output -InputObject ($true)
             }
         }
         Catch {
-            Write-Log -Message "Failed discovering Microsoft Update [$kbNumber]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed discovering Microsoft Update [$kbNumber]: $($_.Exception.Message)"
             }
@@ -207,7 +207,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        Write-Log -Message "Recursively installing all Microsoft Updates in directory [$Directory]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$Directory]." -Source ${CmdletName}
 
         ## KB Number pattern match
         $kbPattern = '(?i)kb\d{6,8}'
@@ -219,7 +219,7 @@ https://psappdeploytoolkit.com
                 [Version]$redistVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($file.FullName).ProductVersion
                 [String]$redistDescription = [Diagnostics.FileVersionInfo]::GetVersionInfo($file.FullName).FileDescription
 
-                Write-Log -Message "Installing [$redistDescription $redistVersion]..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Installing [$redistDescription $redistVersion]..." -Source ${CmdletName}
                 #  Handle older redistributables (ie, VC++ 2005)
                 If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
                     Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
@@ -237,7 +237,7 @@ https://psappdeploytoolkit.com
 
                 #  Check to see whether the KB is already installed
                 If (-not (Test-MSUpdates -KBNumber $kbNumber)) {
-                    Write-Log -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed." -Source ${CmdletName}
                     Switch ($file.Extension) {
                         #  Installation type for executables (i.e., Microsoft Office Updates)
                         '.exe' {
@@ -254,7 +254,7 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Else {
-                    Write-Log -Message "KB Number [$kbNumber] is already installed. Continue..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "KB Number [$kbNumber] is already installed. Continue..." -Source ${CmdletName}
                 }
             }
         }

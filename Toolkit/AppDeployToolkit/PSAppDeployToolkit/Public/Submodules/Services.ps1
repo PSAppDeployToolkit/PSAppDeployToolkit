@@ -88,7 +88,7 @@ https://psappdeploytoolkit.com
             }
 
             If ($ServiceObject) {
-                Write-Log -Message "Service [$Name] exists." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Service [$Name] exists." -Source ${CmdletName}
                 If ($PassThru) {
                     Write-Output -InputObject ($ServiceObject)
                 }
@@ -97,7 +97,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Else {
-                Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Service [$Name] does not exist." -Source ${CmdletName}
                 If ($PassThru) {
                     Write-Output -InputObject ($ServiceObject)
                 }
@@ -107,7 +107,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-Log -Message "Failed check to see if service [$Name] exists." -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed check to see if service [$Name] exists." -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "Failed check to see if service [$Name] exists: $($_.Exception.Message)"
             }
@@ -210,12 +210,12 @@ https://psappdeploytoolkit.com
         Try {
             ## Check to see if the service exists
             If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
-                Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
                 Throw "Service [$Name] does not exist."
             }
 
             ## Get the service object
-            Write-Log -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
             [ServiceProcess.ServiceController]$Service = Get-Service -Name $Name -ErrorAction 'Stop'
             ## Wait up to 60 seconds if service is in a pending state
             [String[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
@@ -234,40 +234,40 @@ https://psappdeploytoolkit.com
                         $DesiredStatus = 'Stopped'
                     }
                 }
-                Write-Log -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
                 $Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $PendingStatusWait)
                 $Service.Refresh()
             }
             ## Discover if the service is currently running
-            Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
             If ($Service.Status -ne 'Stopped') {
                 #  Discover all dependent services that are running and stop them
                 If (-not $SkipDependentServices) {
-                    Write-Log -Message "Discovering all dependent service(s) for service [$Name] which are not 'Stopped'." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not 'Stopped'." -Source ${CmdletName}
                     [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Stopped' }
                     If ($DependentServices) {
                         ForEach ($DependentService in $DependentServices) {
-                            Write-Log -Message "Stopping dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Stopping dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
                             Try {
                                 Stop-Service -InputObject (Get-Service -Name $DependentService.ServiceName -ErrorAction 'Stop') -Force -WarningAction 'Ignore' -ErrorAction 'Stop'
                             }
                             Catch {
-                                Write-Log -Message "Failed to stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Failed to stop dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
                                 Continue
                             }
                         }
                     }
                     Else {
-                        Write-Log -Message "Dependent service(s) were not discovered for service [$Name]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]." -Source ${CmdletName}
                     }
                 }
                 #  Stop the parent service
-                Write-Log -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
                 [ServiceProcess.ServiceController]$Service = Stop-Service -InputObject (Get-Service -Name $Service.ServiceName -ErrorAction 'Stop') -Force -PassThru -WarningAction 'Ignore' -ErrorAction 'Stop'
             }
         }
         Catch {
-            Write-Log -Message "Failed to stop the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+            Write-ADTLogEntry -Message "Failed to stop the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to stop the service [$Name]: $($_.Exception.Message)"
             }
@@ -376,12 +376,12 @@ https://psappdeploytoolkit.com
         Try {
             ## Check to see if the service exists
             If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
-                Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "Service [$Name] does not exist." -Source ${CmdletName} -Severity 2
                 Throw "Service [$Name] does not exist."
             }
 
             ## Get the service object
-            Write-Log -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting the service object for service [$Name]." -Source ${CmdletName}
             [ServiceProcess.ServiceController]$Service = Get-Service -Name $Name -ErrorAction 'Stop'
             ## Wait up to 60 seconds if service is in a pending state
             [String[]]$PendingStatus = 'ContinuePending', 'PausePending', 'StartPending', 'StopPending'
@@ -400,41 +400,41 @@ https://psappdeploytoolkit.com
                         $DesiredStatus = 'Stopped'
                     }
                 }
-                Write-Log -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]." -Source ${CmdletName}
                 $Service.WaitForStatus([ServiceProcess.ServiceControllerStatus]$DesiredStatus, $PendingStatusWait)
                 $Service.Refresh()
             }
             ## Discover if the service is currently stopped
-            Write-Log -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]." -Source ${CmdletName}
             If ($Service.Status -ne 'Running') {
                 #  Start the parent service
-                Write-Log -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]." -Source ${CmdletName}
                 [ServiceProcess.ServiceController]$Service = Start-Service -InputObject (Get-Service -Name $Service.ServiceName -ErrorAction 'Stop') -PassThru -WarningAction 'Ignore' -ErrorAction 'Stop'
 
                 #  Discover all dependent services that are stopped and start them
                 If (-not $SkipDependentServices) {
-                    Write-Log -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Discover all dependent service(s) for service [$Name] which are not 'Running'." -Source ${CmdletName}
                     [ServiceProcess.ServiceController[]]$DependentServices = Get-Service -Name $Service.ServiceName -DependentServices -ErrorAction 'Stop' | Where-Object { $_.Status -ne 'Running' }
                     If ($DependentServices) {
                         ForEach ($DependentService in $DependentServices) {
-                            Write-Log -Message "Starting dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Starting dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]." -Source ${CmdletName}
                             Try {
                                 Start-Service -InputObject (Get-Service -Name $DependentService.ServiceName -ErrorAction 'Stop') -WarningAction 'Ignore' -ErrorAction 'Stop'
                             }
                             Catch {
-                                Write-Log -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Failed to start dependent service [$($DependentService.ServiceName)] with display name [$($DependentService.DisplayName)] and a status of [$($DependentService.Status)]. Continue..." -Severity 2 -Source ${CmdletName}
                                 Continue
                             }
                         }
                     }
                     Else {
-                        Write-Log -Message "Dependent service(s) were not discovered for service [$Name]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]." -Source ${CmdletName}
                     }
                 }
             }
         }
         Catch {
-            Write-Log -Message "Failed to start the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+            Write-ADTLogEntry -Message "Failed to start the service [$Name]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to start the service [$Name]: $($_.Exception.Message)"
             }
@@ -520,7 +520,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-Log -Message "Getting the service [$Name] startup mode." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting the service [$Name] startup mode." -Source ${CmdletName}
             [String]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
             ## If service start mode is set to 'Auto', change value to 'Automatic' to be consistent with 'Set-ServiceStartMode' function
             If ($ServiceStartMode -eq 'Auto') {
@@ -536,11 +536,11 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            Write-Log -Message "Service [$Name] startup mode is set to [$ServiceStartMode]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Service [$Name] startup mode is set to [$ServiceStartMode]." -Source ${CmdletName}
             Write-Output -InputObject ($ServiceStartMode)
         }
         Catch {
-            Write-Log -Message "Failed to get the service [$Name] startup mode. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+            Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to get the service [$Name] startup mode: $($_.Exception.Message)"
             }
@@ -625,7 +625,7 @@ https://psappdeploytoolkit.com
                 $StartMode = 'Automatic'
             }
 
-            Write-Log -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
 
             ## Set the name of the start up mode that will be passed to sc.exe
             [String]$ScExeStartMode = $StartMode
@@ -648,10 +648,10 @@ https://psappdeploytoolkit.com
                 Throw "sc.exe failed with exit code [$($global:LastExitCode)] and message [$ChangeStartMode]."
             }
 
-            Write-Log -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Successfully set service [$Name] startup mode to [$StartMode]." -Source ${CmdletName}
         }
         Catch {
-            Write-Log -Message "Failed to set service [$Name] startup mode to [$StartMode]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
+            Write-ADTLogEntry -Message "Failed to set service [$Name] startup mode to [$StartMode]. `r`n$(Resolve-Error)" -Source ${CmdletName} -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to set service [$Name] startup mode to [$StartMode]: $($_.Exception.Message)"
             }

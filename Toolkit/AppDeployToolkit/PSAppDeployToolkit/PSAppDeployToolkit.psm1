@@ -52,15 +52,35 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
     Running = $false
 }
 
-# Values used for ADT module serialisation.
-New-Variable -Name Serialisation -Option Constant -Value @{
-    KeyName = "HKEY_LOCAL_MACHINE\SOFTWARE\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)"
-    ValueName = 'ModuleState'
-}
-
 # Variables to track multiple sessions and each session's caller.
 New-Variable -Name SessionBuffer -Option Constant -Value ([System.Collections.Generic.List[ADTSession]]::new())
 New-Variable -Name SessionCallers -Option Constant -Value @{}
+
+# Values used for ADT module serialisation.
+New-Variable -Name Serialisation -Option Constant -Value ([ordered]@{
+    KeyName = "HKEY_LOCAL_MACHINE\SOFTWARE\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)"
+    ValueName = 'ModuleState'
+}).AsReadOnly()
+
+# Logging constants used within an [ADTSession] object.
+New-Variable -Name Logging -Option Constant -Value ([ordered]@{
+    Formats = ([ordered]@{
+        CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
+        Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
+    }).AsReadOnly()
+    SeverityNames = [System.Array]::AsReadOnly(@(
+        'Success'
+        'Info'
+        'Warning'
+        'Error'
+    ))
+    SeverityColours = [System.Array]::AsReadOnly(@(
+        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Green; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
+        ([ordered]@{}).AsReadOnly()
+        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Yellow; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
+        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Red; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
+    ))
+}).AsReadOnly()
 
 # Define exports. It should be done here and in the psd1 to cover all bases.
 Export-ModuleMember -Function @(
@@ -137,5 +157,5 @@ Export-ModuleMember -Function @(
     'Update-Desktop'
     'Update-GroupPolicy'
     'Update-SessionEnvironmentVariables'
-    'Write-Log'
+    'Write-ADTLogEntry'
 )
