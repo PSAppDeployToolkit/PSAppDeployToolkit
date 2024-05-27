@@ -95,7 +95,8 @@ $sessionProps = @{
     AppArch = ''
     AppLang = 'EN'
     AppRevision = '01'
-    AppExitCodes = @(0, 1641, 3010)
+    AppExitCodes = @(0)
+    AppRebootCodes = @(1641, 3010)
     AppScriptVersion = '1.0.0'
     AppScriptDate = 'XX/XX/20XX'
     AppScriptAuthor = '<author name>'
@@ -146,7 +147,7 @@ function Install-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        Execute-MSI @ExecuteDefaultMSISplat
+        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
         if ($defaultMspFiles = $sessionProps.DefaultMspFiles)
         {
             $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ }
@@ -199,7 +200,7 @@ function Uninstall-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        Execute-MSI @ExecuteDefaultMSISplat
+        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
     }
 
     ## <Perform Uninstallation tasks here>
@@ -242,7 +243,7 @@ function Repair-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        Execute-MSI @ExecuteDefaultMSISplat
+        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
     }
 
     ## <Perform Repair tasks here>
@@ -263,15 +264,15 @@ function Repair-ADTApplication
 #
 #---------------------------------------------------------------------------
 
+# Set strict error handling across entire operation.
+$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+$ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+Set-PSDebug -Strict
+Set-StrictMode -Version Latest
+$mainExitCode = 0
+
 try
 {
-    # Set strict error handling.
-    $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-    $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-    Set-PSDebug -Strict
-    Set-StrictMode -Version Latest
-
-    # Import the module and instantiate a new session.
     Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit"
     Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionProps
     New-Variable -Name sessionProps -Value (Get-ADTSessionProperties) -Option Constant -Force
@@ -279,7 +280,7 @@ try
 catch
 {
     Write-Error -Message "Module [PSAppDeployToolkit] failed to load:`n$($_.Exception.Message.Replace('The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: ', $null))" -ErrorAction Continue
-    exit 60008
+    exit ($mainExitCode = 60008)
 }
 
 
@@ -292,11 +293,14 @@ catch
 try
 {
     & "$($DeploymentType)-ADTApplication"
-    Close-ADTSession
 }
 catch
 {
     Write-ADTLogEntry -Message ($mainErrorMessage = "$(Resolve-Error)") -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
-    Close-ADTSession -ExitCode 60001
+    $mainExitCode = 60001
+}
+finally
+{
+    Close-ADTSession -ExitCode $mainExitCode
 }
