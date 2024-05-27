@@ -8,7 +8,7 @@ Function Show-WelcomePrompt {
     <#
 .SYNOPSIS
 
-Called by Show-InstallationWelcome to prompt the user to optionally do the following:
+Called by Show-ADTInstallationWelcome to prompt the user to optionally do the following:
     1) Close the specified running applications.
     2) Provide an option to defer the installation.
     3) Show a countdown before applications are automatically closed.
@@ -81,7 +81,7 @@ Show-WelcomePrompt -ProcessDescriptions 'Microsoft Word' -CloseAppsCountdown 600
 
 .NOTES
 
-This is an internal script function and should typically not be called directly. It is used by the Show-InstallationWelcome prompt to display a custom prompt.
+This is an internal script function and should typically not be called directly. It is used by the Show-ADTInstallationWelcome prompt to display a custom prompt.
 
 .LINK
 

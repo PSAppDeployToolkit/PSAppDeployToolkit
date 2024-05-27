@@ -10,7 +10,7 @@ class ADTSession
     hidden [System.Boolean]$LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
     hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
     hidden [System.String]$LoggedOnUserTempPath = [System.String]::Empty
-    hidden [System.String]$DefaultMsiExecutablesList = [System.String]::Empty
+    hidden [System.String]$DefaultMsiExecutablesList = $null
     hidden [System.String]$DeploymentTypeName = [System.String]::Empty
     hidden [System.Boolean]$DeployModeNonInteractive = $false
     hidden [System.Boolean]$DeployModeSilent = $false
@@ -190,9 +190,9 @@ class ADTSession
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
-            if ($this.DefaultMsiExecutablesList = (Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[System.IO.Path]::GetFileNameWithoutExtension($_.Name)}) -join ',')
+            if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
             {
-                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList)].")
+                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.ProcessName)].")
             }
 
             # Change table and get properties from it.
