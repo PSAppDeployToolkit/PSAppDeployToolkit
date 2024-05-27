@@ -56,8 +56,10 @@ New-Variable -Name SessionCallers -Option Constant -Value @{}
 
 # Values used for ADT module serialisation.
 New-Variable -Name Serialisation -Option Constant -Value ([ordered]@{
-    KeyName = "HKEY_LOCAL_MACHINE\SOFTWARE\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)"
-    ValueName = 'ModuleState'
+    Hive = [Microsoft.Win32.Registry]::CurrentUser
+    Key = "SOFTWARE\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)"
+    Name = 'ModuleState'
+    Type = [Microsoft.Win32.RegistryValueKind]::String
 }).AsReadOnly()
 
 # Logging constants used within an [ADTSession] object.
