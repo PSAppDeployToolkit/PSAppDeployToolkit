@@ -127,14 +127,14 @@ https://psappdeploytoolkit.com
                 $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
             }
             ElseIf (-not $DisableFunctionLogging) {
-                Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
             }
         }
 
         If ($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
             ## Check for expected key string format
             If (-not $DisableFunctionLogging) {
-                Write-ADTLogEntry -Message "Return fully qualified registry key path [$key]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Return fully qualified registry key path [$key]."
             }
             Write-Output -InputObject ($key)
         }
@@ -252,10 +252,10 @@ https://psappdeploytoolkit.com
         }
 
         If ($IsRegistryValueExists) {
-            Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does exist." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does exist."
         }
         Else {
-            Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist."
         }
         Write-Output -InputObject ($IsRegistryValueExists)
     }
@@ -394,15 +394,15 @@ https://psappdeploytoolkit.com
 
             ## Check if the registry key exists
             If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-                Write-ADTLogEntry -Message "Registry key [$key] does not exist. Return `$null." -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Registry key [$key] does not exist. Return `$null." -Severity 2
                 $regKeyValue = $null
             }
             Else {
                 If ($PSBoundParameters.ContainsKey('Value')) {
-                    Write-ADTLogEntry -Message "Getting registry key [$key] value [$value]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Getting registry key [$key] value [$value]."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Getting registry key [$key] and all property values." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Getting registry key [$key] and all property values."
                 }
 
                 ## Get all property values for registry key
@@ -443,7 +443,7 @@ https://psappdeploytoolkit.com
                         }
                     }
                     Else {
-                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
                         $regKeyValue = $null
                     }
                 }
@@ -451,11 +451,11 @@ https://psappdeploytoolkit.com
                 Else {
                     If ($regKeyValuePropertyCount -eq 0) {
                         If ($ReturnEmptyKeyIfExists) {
-                            Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$key]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$key]."
                             $regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
                         }
                         Else {
-                            Write-ADTLogEntry -Message "No property values found for registry key. Return `$null." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
                             $regKeyValue = $null
                         }
                     }
@@ -465,13 +465,13 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If (-not $Value) {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to read registry key [$key]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to read registry key [$key]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key] value [$value]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to read registry key [$key] value [$value]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to read registry key [$key] value [$value]: $($_.Exception.Message)"
                 }
@@ -613,7 +613,7 @@ https://psappdeploytoolkit.com
             ## Create registry key if it doesn't exist
             If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
                 Try {
-                    Write-ADTLogEntry -Message "Creating registry key [$key]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Creating registry key [$key]."
                     # No forward slash found in Key. Use New-Item cmdlet to create registry key
                     If ((($Key -split '/').Count - 1) -eq 0) {
                         $null = New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop'
@@ -640,7 +640,7 @@ https://psappdeploytoolkit.com
             If ($Name) {
                 ## Set registry value if it doesn't exist
                 If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'Ignore')) {
-                    Write-ADTLogEntry -Message "Setting registry key value: [$key] [$name = $value]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Setting registry key value: [$key] [$name = $value]."
                     $null = New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop'
                 }
                 ## Update registry value if it does exist
@@ -651,7 +651,7 @@ https://psappdeploytoolkit.com
                         $null = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $value)
                     }
                     Else {
-                        Write-ADTLogEntry -Message "Updating registry key value: [$key] [$name = $value]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Updating registry key value: [$key] [$name = $value]."
                         $null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
                     }
                 }
@@ -659,13 +659,13 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If ($Name) {
-                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to set registry key [$key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to set registry key [$key]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to set registry key [$key]: $($_.Exception.Message)"
                 }
@@ -782,13 +782,13 @@ https://psappdeploytoolkit.com
             If (-not $Name) {
                 If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
                     If ($Recurse) {
-                        Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
                         $null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
                     }
                     Else {
                         If ($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')) {
                             ## Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
-                            Write-ADTLogEntry -Message "Deleting registry key [$Key]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Deleting registry key [$Key]."
                             $null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
                         }
                         Else {
@@ -797,12 +797,12 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
                 }
             }
             Else {
                 If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
-                    Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]."
 
                     If ($Name -eq '(Default)') {
                         ## Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value
@@ -813,22 +813,22 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
                 }
             }
         }
         Catch [System.Management.Automation.PSArgumentException] {
-            Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2
         }
         Catch {
             If (-not $Name) {
-                Write-ADTLogEntry -Message "Failed to delete registry key [$Key]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to delete registry key [$Key]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete registry value [$Key] [$Name]: $($_.Exception.Message)"
                 }
@@ -929,7 +929,7 @@ function Invoke-ADTAllUsersRegistryChange
                     # Load the User registry hive if the registry hive file exists
                     if (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf')
                     {
-                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
 
                         if ($Global:LastExitCode -ne 0)
@@ -946,11 +946,11 @@ function Invoke-ADTAllUsersRegistryChange
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
                 }
 
                 # Invoke changes against registry.
-                Write-ADTLogEntry -Message 'Executing operations to modify HKCU registry settings for all users.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Executing operations to modify HKCU registry settings for all users.'
                 foreach ($regSetting in $regSettings)
                 {
                     Set-RegistryKey @regSetting -SID $UserProfile.SID
@@ -958,7 +958,7 @@ function Invoke-ADTAllUsersRegistryChange
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)] `r`n$(Resolve-Error)" -Severity 3
             }
             finally
             {
@@ -966,17 +966,17 @@ function Invoke-ADTAllUsersRegistryChange
                 {
                     try
                     {
-                        Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
 
                         if ($Global:LastExitCode -ne 0)
                         {
-                            Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
                             [GC]::Collect()
                             [GC]::WaitForPendingFinalizers()
                             Start-Sleep -Seconds 5
 
-                            Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                             [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
                             if ($Global:LastExitCode -ne 0)
                             {
@@ -986,7 +986,7 @@ function Invoke-ADTAllUsersRegistryChange
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. `r`n$(Resolve-Error)" -Severity 3
                     }
                 }
             }

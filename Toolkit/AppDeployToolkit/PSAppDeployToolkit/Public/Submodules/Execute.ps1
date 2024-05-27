@@ -192,9 +192,9 @@ https://psappdeploytoolkit.com
 
             ## Validate and find the fully qualified path for the $Path variable.
             If (([IO.Path]::IsPathRooted($Path)) -and ([IO.Path]::HasExtension($Path))) {
-                Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
                 If (-not (Test-Path -LiteralPath $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
-                    Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
                     If (-not $ContinueOnError) {
                         Throw "File [$Path] not found."
                     }
@@ -216,11 +216,11 @@ https://psappdeploytoolkit.com
                 $env:PATH = $env:PATH -replace [RegEx]::Escape($PathFolders + ';'), ''
 
                 If ($FullyQualifiedPath) {
-                    Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$FullyQualifiedPath]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$FullyQualifiedPath]."
                     $Path = $FullyQualifiedPath
                 }
                 Else {
-                    Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                     If (-not $ContinueOnError) {
                         Throw "[$Path] contains an invalid path or file name."
                     }
@@ -248,7 +248,7 @@ https://psappdeploytoolkit.com
                 If (-not $MsiExecAvailable) {
                     #  Default MSI exit code for install already in progress
                     [Int32]$returnCode = 1618
-                    Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
                     If (-not $ContinueOnError) {
                         Throw 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.'
                     }
@@ -278,7 +278,7 @@ https://psappdeploytoolkit.com
                 }
                 $processStartInfo.WindowStyle = $WindowStyle
                 If ($processStartInfo.UseShellExecute -eq $true) {
-                    Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
                     $processStartInfo.RedirectStandardOutput = $false
                     $processStartInfo.RedirectStandardError = $false
                 }
@@ -297,22 +297,22 @@ https://psappdeploytoolkit.com
                 }
 
                 ## Start Process
-                Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
                 If ($Parameters) {
                     If ($Parameters -match '-Command \&') {
-                        Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
                     }
                     Else {
                         If ($SecureParameters) {
-                            Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
                         }
                         Else {
-                            Write-ADTLogEntry -Message "Executing [$Path $Parameters]..." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Executing [$Path $Parameters]..."
                         }
                     }
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Executing [$Path]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Executing [$Path]..."
                 }
 
                 $null = $process.Start()
@@ -320,25 +320,25 @@ https://psappdeploytoolkit.com
                 If ($PriorityClass -ne 'Normal') {
                     Try {
                         If ($process.HasExited -eq $false) {
-                            Write-ADTLogEntry -Message "Changing the priority class for the process to [$PriorityClass]" -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Changing the priority class for the process to [$PriorityClass]"
                             $process.PriorityClass = $PriorityClass
                         }
                         Else {
-                            Write-ADTLogEntry -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2
                         }
 
                     }
                     Catch {
-                        Write-ADTLogEntry -Message 'Failed to change the priority class for the process.' -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Failed to change the priority class for the process.' -Severity 2
                     }
                 }
                 ## NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams
                 If ($NoWait) {
-                    Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
 
                     If ($PassThru) {
                         If ($process.HasExited -eq $false) {
-                            Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.' -Source ${CmdletName}
+                            Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
                             [PSObject]$ProcessDetails = New-Object -TypeName 'PSObject' -Property @{ Id = If ($process.Id) {
                                     $process.Id
                                 }
@@ -359,7 +359,7 @@ https://psappdeploytoolkit.com
                             Write-Output -InputObject ($ProcessDetails)
                         }
                         Else {
-                            Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.' -Source ${CmdletName}
+                            Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
                         }
                     }
                 }
@@ -397,7 +397,7 @@ https://psappdeploytoolkit.com
                         $stdErr = $stdErrBuilder.ToString() -replace $null, ''
 
                         If ($stdErr.Length -gt 0) {
-                            Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
                         }
                     }
                 }
@@ -446,7 +446,7 @@ https://psappdeploytoolkit.com
 
                 ## If the passthru switch is specified, return the exit code and any output from process
                 If ($PassThru) {
-                    Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
                     [PSObject]$ExecutionResults = New-Object -TypeName 'PSObject' -Property @{ ExitCode = $returnCode; StdOut = If ($stdOut) {
                             $stdOut
                         }
@@ -463,23 +463,23 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($ignoreExitCodeMatch) {
-                    Write-ADTLogEntry -Message "Execution completed and the exit code [$returncode] is being ignored." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution completed and the exit code [$returncode] is being ignored."
                 }
                 ElseIf (($returnCode -eq 3010) -or ($returnCode -eq 1641)) {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     $Script:ADT.CurrentSession.State.MsiRebootDetected = $true
                 }
                 ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
                 }
                 ElseIf (($returnCode -eq -2145124329) -and ($Path -match 'wusa')) {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
                 }
                 ElseIf (($returnCode -eq 17025) -and ($Path -match 'fullfile')) {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                 }
                 ElseIf ($returnCode -eq 0) {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                 }
                 Else {
                     [String]$MsiExitCodeMessage = ''
@@ -488,10 +488,10 @@ https://psappdeploytoolkit.com
                     }
 
                     If ($MsiExitCodeMessage) {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                     }
                     Else {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
                     }
 
                     If ($ExitOnProcessFailure) {
@@ -503,13 +503,13 @@ https://psappdeploytoolkit.com
         Catch {
             If ([String]::IsNullOrEmpty([String]$returnCode)) {
                 [Int32]$returnCode = 60002
-                Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Function failed, setting exit code to [$returnCode]. $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed. `r`n$(Resolve-Error)" -Severity 3
             }
 
             If ($PassThru) {
@@ -689,7 +689,7 @@ https://psappdeploytoolkit.com
             ## Confirm that the username field is not empty
             If (-not $UserName) {
                 [Int32]$executeProcessAsUserExitCode = 60009
-                Write-ADTLogEntry -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
                 }
@@ -699,7 +699,7 @@ https://psappdeploytoolkit.com
             ## Confirm if the toolkit is running with administrator privileges
             If (($RunLevel -eq 'HighestAvailable') -and (-not $Script:ADT.Environment.IsAdmin)) {
                 [Int32]$executeProcessAsUserExitCode = 60003
-                Write-ADTLogEntry -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
                 }
@@ -708,45 +708,45 @@ https://psappdeploytoolkit.com
 
             ## Check whether the specified Working Directory exists
             If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
-                Write-ADTLogEntry -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2
             }
 
             ##  Remove the temporary folder
             If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-                Write-ADTLogEntry -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Previous [$executeAsUserTempPath] found. Attempting removal."
                 Remove-Folder -Path $executeAsUserTempPath
             }
             #  Recreate the temporary folder
             Try {
-                Write-ADTLogEntry -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Creating [$executeAsUserTempPath]."
                 $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Severity 2
             }
             #  Copy RunHidden.vbs to temp path
             Try {
-                Write-ADTLogEntry -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]."
                 Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Severity 2
             }
             #  Set user permissions on RunHidden.vbs
             Try {
                 Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+                Write-ADTLogEntry -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Severity 2
             }
 
             ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
             If (((Split-Path -Path $Path -Leaf) -ilike 'powershell*') -or ((Split-Path -Path $Path -Leaf) -ilike 'cmd*')) {
                 If ($SecureParameters) {
-                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..."
                 }
 
                 [String]$NewParameters = "/e:vbscript"
@@ -837,12 +837,12 @@ https://psappdeploytoolkit.com
                     Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
                 }
                 Catch {
-                    Write-ADTLogEntry -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+                    Write-ADTLogEntry -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Severity 2
                 }
             }
             Catch {
                 [Int32]$executeProcessAsUserExitCode = 60007
-                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
                 }
@@ -852,19 +852,19 @@ https://psappdeploytoolkit.com
             ## Create Scheduled Task to run the process with a logged-on user account
             If ($Parameters) {
                 If ($SecureParameters) {
-                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..."
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..."
             }
             [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
-                Write-ADTLogEntry -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]."
                 }
@@ -874,21 +874,21 @@ https://psappdeploytoolkit.com
             ## Trigger the Scheduled Task
             If ($Parameters) {
                 If ($SecureParameters) {
-                    Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] (Parameters Hidden) as the logged-on user [$userName]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] (Parameters Hidden) as the logged-on user [$userName]..."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path $Parameters] as the logged-on user [$userName]..."
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..."
             }
             [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle 'Hidden' -CreateNoWindow -Passthru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
-                Write-ADTLogEntry -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3
                 #  Delete Scheduled Task
-                Write-ADTLogEntry -Message 'Deleting the scheduled task which did not trigger.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Deleting the scheduled task which did not trigger.'
                 Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
                 If (-not $ContinueOnError) {
                     Throw "Failed to trigger scheduled task [$schTaskName]."
@@ -898,7 +898,7 @@ https://psappdeploytoolkit.com
 
             ## Wait for the process launched by the scheduled task to complete execution
             If ($Wait) {
-                Write-ADTLogEntry -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Waiting for the process launched by the scheduled task [$schTaskName] to complete execution (this may take some time)..."
                 Start-Sleep -Seconds 1
                 #If on Windows Vista or higer, Windows Task Scheduler 2.0 is supported. 'Schedule.Service' ComObject output is UI language independent
                 If ($Script:ADT.Environment.envOSVersionMajor -gt 5) {
@@ -915,7 +915,7 @@ https://psappdeploytoolkit.com
                         [Int32]$executeProcessAsUserExitCode = $Task.LastTaskResult
                     }
                     Catch {
-                        Write-ADTLogEntry -Message "Failed to retrieve information from Task Scheduler. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Failed to retrieve information from Task Scheduler. `r`n$(Resolve-Error)" -Severity 3
                     }
                     Finally {
                         Try {
@@ -933,7 +933,7 @@ https://psappdeploytoolkit.com
                     #  Get the exit code from the process launched by the scheduled task
                     [Int32]$executeProcessAsUserExitCode = ($exeSchTasksResultResult = & $($Script:ADT.Environment.exeSchTasks) /query /TN $schTaskName /V /FO CSV) | ConvertFrom-Csv | Select-Object -ExpandProperty 'Last Result' -First 1
                 }
-                Write-ADTLogEntry -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]."
             }
             Else {
                 Start-Sleep -Seconds 1
@@ -942,11 +942,11 @@ https://psappdeploytoolkit.com
         Finally {
             ## Delete scheduled task
             Try {
-                Write-ADTLogEntry -Message "Deleting scheduled task [$schTaskName]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Deleting scheduled task [$schTaskName]."
                 Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3
             }
 
             ## Remove the XML scheduled task file

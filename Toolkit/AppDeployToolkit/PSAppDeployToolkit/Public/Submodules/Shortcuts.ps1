@@ -125,7 +125,7 @@ https://psappdeploytoolkit.com
         Try {
             $extension = [IO.Path]::GetExtension($Path).ToLower()
             If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
-                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -138,7 +138,7 @@ https://psappdeploytoolkit.com
                 [String]$FullPath = [IO.Path]::GetFullPath($Path)
             }
             Catch {
-                Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -159,21 +159,21 @@ https://psappdeploytoolkit.com
                     # Continue without creating a folder because the path is root
                 }
                 ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
-                    Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
                     $null = New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop'
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory]. `r`n$(Resolve-Error)" -Severity 3
                 Throw
             }
 
             If (Test-Path -Path $FullPath -PathType 'Leaf') {
-                Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
                 Remove-File -Path $FullPath
             }
 
-            Write-ADTLogEntry -Message "Creating shortcut [$FullPath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
             If ($extension -eq '.url') {
                 [String[]]$URLFile = '[InternetShortcut]'
                 $URLFile += "URL=$targetPath"
@@ -233,7 +233,7 @@ https://psappdeploytoolkit.com
 
                 ## Set shortcut to run program as administrator
                 If ($RunAsAdmin) {
-                    Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
                     [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
                     $filebytes[21] = $filebytes[21] -bor 32
                     [IO.FIle]::WriteAllBytes($FullPath, $filebytes)
@@ -241,7 +241,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to create shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to create shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to create shortcut [$Path]: $($_.Exception.Message)"
             }
@@ -394,7 +394,7 @@ https://psappdeploytoolkit.com
             }
 
             If (-not (Test-Path -LiteralPath $Path -PathType 'Leaf' -ErrorAction 'Stop')) {
-                Write-ADTLogEntry -Message "Failed to find the file [$Path]." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to find the file [$Path]." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -402,7 +402,7 @@ https://psappdeploytoolkit.com
             }
             $extension = [IO.Path]::GetExtension($Path).ToLower()
             If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
-                Write-ADTLogEntry -Message "Specified file [$Path] is not a valid shortcut." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Specified file [$Path] is not a valid shortcut." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -410,7 +410,7 @@ https://psappdeploytoolkit.com
             }
             # Make sure Net framework current dir is synced with powershell cwd
             [IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
-            Write-ADTLogEntry -Message "Changing shortcut [$Path]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Changing shortcut [$Path]."
             If ($extension -eq '.url') {
                 [String[]]$URLFile = [IO.File]::ReadAllLines($Path)
                 For ($i = 0; $i -lt $URLFile.Length; $i++) {
@@ -499,21 +499,21 @@ https://psappdeploytoolkit.com
 
                 ## Set shortcut to run program as administrator
                 If ($RunAsAdmin -eq $true) {
-                    Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
                     [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
                     $filebytes[21] = $filebytes[21] -bor 32
                     [IO.FIle]::WriteAllBytes($Path, $filebytes)
                 }
                 ElseIf ($RunAsAdmin -eq $false) {
                     [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($Path)
-                    Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.'
                     $filebytes[21] = $filebytes[21] -band (-bnot 32)
                     [IO.FIle]::WriteAllBytes($Path, $filebytes)
                 }
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to change the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to change the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to change the shortcut [$Path]: $($_.Exception.Message)"
             }
@@ -601,7 +601,7 @@ https://psappdeploytoolkit.com
         Try {
             $extension = [IO.Path]::GetExtension($Path).ToLower()
             If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
-                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -614,7 +614,7 @@ https://psappdeploytoolkit.com
                 [String]$FullPath = [IO.Path]::GetFullPath($Path)
             }
             Catch {
-                Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3
                 If (-not $ContinueOnError) {
                     Throw
                 }
@@ -677,7 +677,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($Output)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to read the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to read the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to read the shortcut [$Path]: $($_.Exception.Message)"
             }

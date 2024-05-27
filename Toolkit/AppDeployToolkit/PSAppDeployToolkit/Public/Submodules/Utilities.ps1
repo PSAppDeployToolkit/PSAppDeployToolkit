@@ -60,7 +60,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject (([Char[]]$Name | Where-Object { $Script:ADT.Environment.invalidFileNameChars -notcontains $_ }) -join '')
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to remove invalid characters from the supplied filename. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to remove invalid characters from the supplied filename. `r`n$(Resolve-Error)" -Severity 3
         }
     }
     End {
@@ -125,7 +125,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Retrieving hardware platform information.' -Source ${CmdletName} -DebugMessage
+            Write-ADTLogEntry -Message 'Retrieving hardware platform information.' -DebugMessage
             $hwBios = Get-WmiObject -Class 'Win32_BIOS' -ErrorAction 'Stop' | Select-Object -Property 'Version', 'SerialNumber'
             $hwMakeModel = Get-WmiObject -Class 'Win32_ComputerSystem' -ErrorAction 'Stop' | Select-Object -Property 'Model', 'Manufacturer'
 
@@ -163,7 +163,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($hwType)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to retrieve hardware platform information. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to retrieve hardware platform information. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to retrieve hardware platform information: $($_.Exception.Message)"
             }
@@ -238,15 +238,15 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
             $disk = Get-WmiObject -Class 'Win32_LogicalDisk' -Filter "DeviceID='$Drive'" -ErrorAction 'Stop'
             [Double]$freeDiskSpace = [Math]::Round($disk.FreeSpace / 1MB)
 
-            Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
             Write-Output -InputObject ($freeDiskSpace)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to retrieve free disk space for drive [$Drive]: $($_.Exception.Message)"
             }
@@ -361,10 +361,10 @@ https://psappdeploytoolkit.com
     }
     Process {
         If ($name) {
-            Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($name -join ', ')]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($name -join ', ')]..."
         }
         If ($productCode) {
-            Write-ADTLogEntry -Message "Getting information for installed Product Code [$ProductCode]..." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting information for installed Product Code [$ProductCode]..."
         }
 
         ## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
@@ -379,14 +379,14 @@ https://psappdeploytoolkit.com
                         }
                     }
                     Catch {
-                        Write-ADTLogEntry -Message "Unable to enumerate properties from registry key path [$($UninstallKeyApp.PSPath)]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Unable to enumerate properties from registry key path [$($UninstallKeyApp.PSPath)]. `r`n$(Resolve-Error)" -Severity 2
                         Continue
                     }
                 }
             }
         }
         If ($ErrorUninstallKeyPath) {
-            Write-ADTLogEntry -Message "The following error(s) took place while enumerating installed applications from the registry. `r`n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The following error(s) took place while enumerating installed applications from the registry. `r`n$(Resolve-Error -ErrorRecord $ErrorUninstallKeyPath)" -Severity 2
         }
 
         $UpdatesSkippedCounter = 0
@@ -412,7 +412,7 @@ https://psappdeploytoolkit.com
                 If ($ProductCode) {
                     ## Verify if there is a match with the product code passed to the script
                     If ($regKeyApp.PSChildName -match [RegEx]::Escape($productCode)) {
-                        Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]."
                         $installedApplication += New-Object -TypeName 'PSObject' -Property @{
                             UninstallSubkey    = $regKeyApp.PSChildName
                             ProductCode        = If ($regKeyApp.PSChildName -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {
@@ -441,27 +441,27 @@ https://psappdeploytoolkit.com
                             #  Check for an exact application name match
                             If ($regKeyApp.DisplayName -eq $application) {
                                 $applicationMatched = $true
-                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
                             }
                         }
                         ElseIf ($WildCard) {
                             #  Check for wildcard application name match
                             If ($regKeyApp.DisplayName -like $application) {
                                 $applicationMatched = $true
-                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
                             }
                         }
                         ElseIf ($RegEx) {
                             #  Check for a regex application name match
                             If ($regKeyApp.DisplayName -match $application) {
                                 $applicationMatched = $true
-                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -Source ${CmdletName}
+                                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
                             }
                         }
                         #  Check for a contains application name match
                         ElseIf ($regKeyApp.DisplayName -match [RegEx]::Escape($application)) {
                             $applicationMatched = $true
-                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
                         }
 
                         If ($applicationMatched) {
@@ -487,7 +487,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to resolve application details from registry for [$appDisplayName]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to resolve application details from registry for [$appDisplayName]. `r`n$(Resolve-Error)" -Severity 3
                 Continue
             }
         }
@@ -495,15 +495,15 @@ https://psappdeploytoolkit.com
         If (-not $IncludeUpdatesAndHotfixes) {
             ## Write to log the number of entries skipped due to them being considered updates
             If ($UpdatesSkippedCounter -eq 1) {
-                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
             }
             Else {
-                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
             }
         }
 
         If (-not $installedApplication) {
-            Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.'
         }
 
         Write-Output -InputObject ($installedApplication)
@@ -603,7 +603,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
 
             ## Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine
             [String]$UserProfileListRegKey = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
@@ -658,7 +658,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($UserProfiles)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to create a custom object representing all user profiles on the machine. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to create a custom object representing all user profiles on the machine. `r`n$(Resolve-Error)" -Severity 3
         }
     }
     End {
@@ -736,7 +736,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message "Getting version info for file [$file]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Getting version info for file [$file]."
 
             If (Test-Path -LiteralPath $File -PathType 'Leaf') {
                 $fileVersionInfo = (Get-Command -Name $file -ErrorAction 'Stop').FileVersionInfo
@@ -749,16 +749,16 @@ https://psappdeploytoolkit.com
 
                 If ($fileVersion) {
                     If ($ProductVersion) {
-                        Write-ADTLogEntry -Message "Product version is [$fileVersion]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Product version is [$fileVersion]."
                     }
                     Else {
-                        Write-ADTLogEntry -Message "File version is [$fileVersion]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "File version is [$fileVersion]."
                     }
 
                     Write-Output -InputObject ($fileVersion)
                 }
                 Else {
-                    Write-ADTLogEntry -Message 'No version information found.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'No version information found.'
                 }
             }
             Else {
@@ -766,7 +766,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to get version info. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get version info. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to get version info: $($_.Exception.Message)"
             }
@@ -834,11 +834,11 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Refreshing the Desktop and the Windows Explorer environment process block.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Refreshing the Desktop and the Windows Explorer environment process block.'
             [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to refresh the Desktop and the Windows Explorer environment process block: $($_.Exception.Message)"
             }
@@ -923,7 +923,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
 
             If ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser) {
                 [String]$CurrentUserEnvironmentSID = $Script:ADT.Environment.RunAsActiveUser.SID
@@ -942,7 +942,7 @@ https://psappdeploytoolkit.com
             $env:PATH = $PathFolders -join ';'
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to refresh the environment variables for this PowerShell session: $($_.Exception.Message)"
             }
@@ -1033,7 +1033,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
             [String[]]$exeSchtasksResults = & $Script:ADT.Environment.exeSchTasks /Query /V /FO CSV
             If ($global:LastExitCode -ne 0) {
                 Throw "Failed to retrieve scheduled tasks using [$($Script:ADT.Environment.exeSchTasks)]."
@@ -1062,7 +1062,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to retrieve scheduled tasks: $($_.Exception.Message)"
             }
@@ -1154,12 +1154,12 @@ https://psappdeploytoolkit.com
             [DateTime]$DateTime = [DateTime]::Parse($DateTime, $Script:ADT.Environment.culture)
 
             ## Convert the date to a universal sortable date time pattern based on the current culture
-            Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]."
             [String]$universalDateTime = (Get-Date -Date $DateTime -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
             Write-Output -InputObject ($universalDateTime)
         }
         Catch {
-            Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)]. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "The specified date/time [$DateTime] is not in a format recognized by the current culture: $($_.Exception.Message)"
             }
@@ -1251,9 +1251,9 @@ https://psappdeploytoolkit.com
 
             [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
 
-            Write-ADTLogEntry -Message "Get localized pin verb for verb id [$VerbID]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Get localized pin verb for verb id [$VerbID]."
             [String]$PinVerb = [PSADT.FileVerb]::GetPinVerb($VerbId)
-            Write-ADTLogEntry -Message "Verb ID [$VerbID] has a localized pin verb of [$PinVerb]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Verb ID [$VerbID] has a localized pin verb of [$PinVerb]."
             Write-Output -InputObject ($PinVerb)
         }
         #endregion
@@ -1279,21 +1279,21 @@ https://psappdeploytoolkit.com
                 $itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&', '') -eq $Verb } -ErrorAction 'Stop'
 
                 If ($null -eq $itemVerb) {
-                    Write-ADTLogEntry -Message "Performing action [$Verb] is not programmatically supported for this file [$FilePath]." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Performing action [$Verb] is not programmatically supported for this file [$FilePath]." -Severity 2
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Performing action [$Verb] on [$FilePath]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Performing action [$Verb] on [$FilePath]."
                     $itemVerb.DoIt()
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to perform action [$Verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to perform action [$Verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2
             }
         }
         #endregion
 
         If ($Script:ADT.Environment.envOSVersionMajor -ge 10) {
-            Write-ADTLogEntry -Message 'Detected Windows 10 or higher, using Windows 10 verb codes.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Detected Windows 10 or higher, using Windows 10 verb codes.'
             [Hashtable]$Verbs = @{
                 'PinToStartMenu'     = 51201
                 'UnpinFromStartMenu' = 51394
@@ -1313,7 +1313,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message "Execute action [$Action] for file [$FilePath]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Execute action [$Action] for file [$FilePath]."
 
             If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf' -ErrorAction 'Stop')) {
                 Throw "Path [$filePath] does not exist."
@@ -1347,12 +1347,12 @@ https://psappdeploytoolkit.com
 
                     If (($Action -eq 'PinToTaskbar') -and ($PinExists)) {
                         If ($(Invoke-ObjectMethod -InputObject $Script:ADT.Environment.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
-                            Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] already exists."
                             Return
                         }
                     }
                     ElseIf (($Action -eq 'UnpinFromTaskbar') -and ($PinExists -eq $false)) {
-                        Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] does not exist." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] does not exist."
                         Return
                     }
 
@@ -1383,7 +1383,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to execute action [$Action]. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to execute action [$Action]. `r`n$(Resolve-Error)" -Severity 2
         }
         Finally {
             Try {
@@ -1498,12 +1498,12 @@ https://psappdeploytoolkit.com
         Try {
             If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
                 If (-not $DisableFunctionLogging) {
-                    Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching."
                 }
             }
             ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
                 If (-not $DisableFunctionLogging) {
-                    Write-ADTLogEntry -Message 'Finding all open window title(s).' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Finding all open window title(s).'
                 }
             }
 
@@ -1546,7 +1546,7 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If (-not $DisableFunctionLogging) {
-                Write-ADTLogEntry -Message "Failed to get requested window title(s). `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to get requested window title(s). `r`n$(Resolve-Error)" -Severity 3
             }
         }
     }
@@ -1680,16 +1680,16 @@ https://psappdeploytoolkit.com
                     If (-not [PSADT.UiAutomation]::IsWindowEnabled($WindowHandle)) {
                         Throw 'Unable to send keys to window because it may be disabled due to a modal dialog being shown.'
                     }
-                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
                     [Windows.Forms.SendKeys]::SendWait($Keys)
                     If ($WaitSeconds) {
-                        Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
                         Start-Sleep -Seconds $WaitSeconds
                     }
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]. `r`n$(Resolve-Error)" -Severity 3
             }
         }
     }
@@ -1698,7 +1698,7 @@ https://psappdeploytoolkit.com
             If ($WindowHandle) {
                 [PSObject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
                 If (-not $Window) {
-                    Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                     Return
                 }
                 & $SendKeys -WindowHandle $Window.WindowHandle
@@ -1713,7 +1713,7 @@ https://psappdeploytoolkit.com
                 }
                 [PSObject[]]$AllWindows = Get-WindowTitle @GetWindowTitleSplat
                 If (-not $AllWindows) {
-                    Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                     Return
                 }
 
@@ -1723,7 +1723,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to send keys to specified window. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to send keys to specified window. `r`n$(Resolve-Error)" -Severity 3
         }
     }
     End {
@@ -1805,7 +1805,7 @@ https://psappdeploytoolkit.com
         [Hashtable]$SystemTypePowerStatus = @{ }
     }
     Process {
-        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...' -Source ${CmdletName}
+        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'
 
         [Windows.Forms.PowerStatus]$PowerStatus = [Windows.Forms.SystemInformation]::PowerStatus
 
@@ -1843,19 +1843,19 @@ https://psappdeploytoolkit.com
         [Boolean]$OnACPower = $false
         Switch ($PowerLineStatus) {
             'Online' {
-                Write-ADTLogEntry -Message 'System is using AC power.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'System is using AC power.'
                 $OnACPower = $true
             }
             'Offline' {
-                Write-ADTLogEntry -Message 'System is using battery power.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'System is using battery power.'
             }
             'Unknown' {
                 If (($BatteryChargeStatus -eq 'NoSystemBattery') -or ($BatteryChargeStatus -eq 'Unknown')) {
-                    Write-ADTLogEntry -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. This is most likely due to a damaged battery so we will report system is using AC power." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. This is most likely due to a damaged battery so we will report system is using AC power."
                     $OnACPower = $true
                 }
                 Else {
-                    Write-ADTLogEntry -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. Therefore, we will report system is using battery power." -Source ${CmdletName}
+                    Write-ADTLogEntry -Message "System power status is [$PowerLineStatus] and battery charge status is [$BatteryChargeStatus]. Therefore, we will report system is using battery power."
                 }
             }
         }
@@ -1871,7 +1871,7 @@ https://psappdeploytoolkit.com
         }
         #  Chassis Types
         [Int32[]]$ChassisTypes = Get-WmiObject -Class 'Win32_SystemEnclosure' | Where-Object { $_.ChassisTypes } | Select-Object -ExpandProperty 'ChassisTypes'
-        Write-ADTLogEntry -Message "The following system chassis types were detected [$($ChassisTypes -join ',')]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "The following system chassis types were detected [$($ChassisTypes -join ',')]."
         ForEach ($ChassisType in $ChassisTypes) {
             Switch ($ChassisType) {
                 9 {
@@ -1952,16 +1952,16 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...' -Source ${CmdletName}
+        Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
 
         [PSObject[]]$networkConnected = Get-WmiObject -Class 'Win32_NetworkAdapter' | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local' -or $_.NetConnectionID -match 'Ethernet') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'Ignore'
         [Boolean]$onNetwork = $false
         If ($networkConnected) {
-            Write-ADTLogEntry -Message 'Wired network connection found.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Wired network connection found.'
             [Boolean]$onNetwork = $true
         }
         Else {
-            Write-ADTLogEntry -Message 'Wired network connection not found.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Wired network connection not found.'
         }
 
         Write-Output -InputObject ($onNetwork)
@@ -2025,16 +2025,16 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Checking if PowerPoint is in either fullscreen slideshow mode or presentation mode...' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Checking if PowerPoint is in either fullscreen slideshow mode or presentation mode...'
             Try {
                 [Diagnostics.Process[]]$PowerPointProcess = Get-Process -ErrorAction 'Stop' | Where-Object { $_.ProcessName -eq 'POWERPNT' }
                 If ($PowerPointProcess) {
                     [Boolean]$IsPowerPointRunning = $true
-                    Write-ADTLogEntry -Message 'PowerPoint application is running.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'PowerPoint application is running.'
                 }
                 Else {
                     [Boolean]$IsPowerPointRunning = $false
-                    Write-ADTLogEntry -Message 'PowerPoint application is not running.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'PowerPoint application is not running.'
                 }
             }
             Catch {
@@ -2050,16 +2050,16 @@ https://psappdeploytoolkit.com
                     [PSObject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT' } | Select-Object -First 1
                     If ($PowerPointWindow) {
                         [Nullable[Boolean]]$IsPowerPointFullScreen = $true
-                        Write-ADTLogEntry -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].'
                     }
                     Else {
-                        Write-ADTLogEntry -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Detected that PowerPoint process [POWERPNT] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].'
                         Try {
                             [Int32[]]$PowerPointProcessIDs = $PowerPointProcess | Select-Object -ExpandProperty 'Id' -ErrorAction 'Stop'
-                            Write-ADTLogEntry -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "PowerPoint process [POWERPNT] has process id(s) [$($PowerPointProcessIDs -join ', ')]."
                         }
                         Catch {
-                            Write-ADTLogEntry -Message "Unable to retrieve process id(s) for [POWERPNT] process. `r`n$(Resolve-Error)" -Severity 2 -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Unable to retrieve process id(s) for [POWERPNT] process. `r`n$(Resolve-Error)" -Severity 2
                         }
                     }
 
@@ -2067,15 +2067,15 @@ https://psappdeploytoolkit.com
                     If ((-not $IsPowerPointFullScreen) -and ($Script:ADT.Environment.envOSVersionMajor -gt 5)) {
                         #  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
                         [String]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
-                        Write-ADTLogEntry -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Detected user notification state [$UserNotificationState]."
                         Switch ($UserNotificationState) {
                             'PresentationMode' {
-                                Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].' -Source ${CmdletName}
+                                Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                                 [Nullable[Boolean]]$IsPowerPointFullScreen = $true
                             }
                             'FullScreenOrPresentationModeOrLoginScreen' {
                                 If (([String]$PowerPointProcessIDs) -and ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))) {
-                                    Write-ADTLogEntry -Message 'Detected that fullscreen foreground window matches PowerPoint process id.' -Source ${CmdletName}
+                                    Write-ADTLogEntry -Message 'Detected that fullscreen foreground window matches PowerPoint process id.'
                                     [Nullable[Boolean]]$IsPowerPointFullScreen = $true
                                 }
                             }
@@ -2084,17 +2084,17 @@ https://psappdeploytoolkit.com
                 }
                 Else {
                     [Nullable[Boolean]]$IsPowerPointFullScreen = $null
-                    Write-ADTLogEntry -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2
                 }
             }
         }
         Catch {
             [Nullable[Boolean]]$IsPowerPointFullScreen = $null
-            Write-ADTLogEntry -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode. `r`n$(Resolve-Error)" -Severity 3
         }
     }
     End {
-        Write-ADTLogEntry -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "PowerPoint is running in fullscreen mode [$IsPowerPointFullScreen]."
         Write-Output -InputObject ($IsPowerPointFullScreen)
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
@@ -2166,7 +2166,7 @@ https://psappdeploytoolkit.com
                 Else {
                     [String]$InstallMsg = 'Updating Group Policies for the User'
                 }
-                Write-ADTLogEntry -Message "$($InstallMsg)..." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "$($InstallMsg)..."
                 [PSObject]$ExecuteResult = Execute-Process -Path "$env:WinDir\System32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
 
                 If ($ExecuteResult.ExitCode -ne 0) {
@@ -2180,7 +2180,7 @@ https://psappdeploytoolkit.com
                 $InstallCount++
             }
             Catch {
-                Write-ADTLogEntry -Message "$($InstallMsg) failed. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "$($InstallMsg) failed. `r`n$(Resolve-Error)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "$($InstallMsg) failed: $($_.Exception.Message)"
                 }
@@ -2356,10 +2356,10 @@ https://psappdeploytoolkit.com
 
             ## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
             If ($PurgeActiveSetupKey) {
-                Write-ADTLogEntry -Message "Removing Active Setup entry [$ActiveSetupKey]." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Removing Active Setup entry [$ActiveSetupKey]."
                 Remove-RegistryKey -Key $ActiveSetupKey -Recurse
 
-                Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system."
                 [ScriptBlock]$RemoveHKCUActiveSetupKey = {
                     If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID) {
                         Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID -Recurse
@@ -2451,27 +2451,27 @@ https://psappdeploytoolkit.com
 
                 # HKLM entry not present. Nothing to run.
                 If (-not $HKLMProps) {
-                    Write-ADTLogEntry 'HKLM active setup entry is not present.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM active setup entry is not present.'
                     Return ($false)
                 }
                 # HKLM entry present, but disabled. Nothing to run.
                 If ($HKLMInst -eq 0) {
-                    Write-ADTLogEntry 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).'
                     Return ($false)
                 }
                 # HKLM entry present and HKCU entry is not. Run the StubPath.
                 If (-not $HKCUProps) {
-                    Write-ADTLogEntry 'HKLM active setup entry is present. HKCU active setup entry is not present.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM active setup entry is present. HKCU active setup entry is not present.'
                     Return ($true)
                 }
                 # Both entries present. HKLM entry does not have Version property. Nothing to run.
                 If (-not $HKLMVer) {
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.'
                     Return ($false)
                 }
                 # Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath.
                 If (-not $HKCUVer) {
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.'
                     Return ($true)
                 }
 
@@ -2492,13 +2492,13 @@ https://psappdeploytoolkit.com
 
                 # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
                 If (-not $HKLMValidVer) {
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                     Return ($false)
                 }
 
                 # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
                 If (-not $HKCUValidVer) {
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                     Return ($true)
                 }
 
@@ -2512,12 +2512,12 @@ https://psappdeploytoolkit.com
 
                     If ($VersionHKLMValidVer -gt $VersionHKCUValidVer) {
                         # HKLM is greater, run the StubPath.
-                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater." -Source ${CmdletName}
+                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
                         Return ($true)
                     }
                     Else {
                         # The HKCU version is equal or higher than HKLM version, Nothing to run
-                        Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.' -Source ${CmdletName}
+                        Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
                         Return ($false)
                     }
                 }
@@ -2533,12 +2533,12 @@ https://psappdeploytoolkit.com
                     # The versions are different length - more commas
                     If ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count) {
                         # HKLM is longer, Run the StubPath
-                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields." -Source ${CmdletName}
+                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields."
                         Return ($true)
                     }
                     Else {
                         # HKCU is longer, Nothing to run
-                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields." -Source ${CmdletName}
+                        Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields."
                         Return ($false)
                     }
                 }
@@ -2551,17 +2551,17 @@ https://psappdeploytoolkit.com
                         [UInt64]$ParsedHKCUVer = [UInt64]::Parse($SplitHKCUValidVer[$i])
                         # The HKCU ver is lower, Run the StubPath
                         If ($ParsedHKCUVer -lt $ParsedHKLMVer) {
-                            Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.' -Source ${CmdletName}
+                            Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.'
                             Return ($true)
                         }
                     }
                     # The HKCU version is equal or higher than HKLM version, Nothing to run
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.' -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.'
                     Return ($false)
                 }
                 Catch {
                     # Failed to parse strings as UInt64, Run the StubPath
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2 -Source ${CmdletName}
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2
                     Return ($true)
                 }
             }
@@ -2612,7 +2612,7 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$ActiveSetupKey]." -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$ActiveSetupKey]."
             & $SetActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
 
             ## Execute the StubPath file for the current user as long as not in Session 0
@@ -2622,7 +2622,7 @@ https://psappdeploytoolkit.com
                         # Skip if Active Setup reg key is present and Version is equal or higher
                         [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $Script:ADT.Environment.RunAsActiveUser.SID)
                         If ($InstallNeeded) {
-                            Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]."
                             If ($CUArguments) {
                                 Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
                             }
@@ -2630,22 +2630,22 @@ https://psappdeploytoolkit.com
                                 Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
                             }
 
-                            Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+                            Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
                             & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID
                         }
                         Else {
-                            Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Source ${CmdletName} -Severity 2
+                            Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Severity 2
                         }
                     }
                     Else {
-                        Write-ADTLogEntry -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.'
                     }
                 }
                 Else {
                     # Skip if Active Setup reg key is present and Version is equal or higher
                     [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey)
                     If ($InstallNeeded) {
-                        Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.' -Source ${CmdletName}
+                        Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                         If ($CUArguments) {
                             Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
                         }
@@ -2653,17 +2653,17 @@ https://psappdeploytoolkit.com
                             Execute-Process -FilePath $CUStubExePath -ExitOnProcessFailure $false
                         }
 
-                        Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
+                        Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
                         & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
                     }
                     Else {
-                        Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Source ${CmdletName} -Severity 2
+                        Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity 2
                     }
                 }
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to set Active Setup registry entry. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to set Active Setup registry entry. `r`n$(Resolve-Error)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)"
             }
@@ -2752,11 +2752,11 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-ADTLogEntry -Message 'Getting session information for all logged on users.' -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
             Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3
         }
     }
     End {
@@ -2850,7 +2850,7 @@ https://psappdeploytoolkit.com
         $PendRebootErrorMsg = $null
     }
     Process {
-        Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$ComputerName]." -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$ComputerName]."
 
         ## Get the date/time that the system last booted up
         Try {
@@ -2859,7 +2859,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[DateTime]]$LastBootUpTime = $null
             [String[]]$PendRebootErrorMsg += "Failed to get LastBootUpTime: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get LastBootUpTime. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get LastBootUpTime. `r`n$(Resolve-Error)" -Severity 3
         }
 
         ## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
@@ -2876,7 +2876,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsCBServicingRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsCBServicingRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsCBServicingRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get IsCBServicingRebootPending. `r`n$(Resolve-Error)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from a Windows Update
@@ -2891,7 +2891,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsWindowsUpdateRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsWindowsUpdateRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsWindowsUpdateRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get IsWindowsUpdateRebootPending. `r`n$(Resolve-Error)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from a pending file rename operation
@@ -2906,7 +2906,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 [String[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
-                Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations. `r`n$(Resolve-Error)" -Severity 3
             }
         }
 
@@ -2919,26 +2919,26 @@ https://psappdeploytoolkit.com
                 Throw "'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)]"
             }
             Else {
-                Write-ADTLogEntry -Message 'Successfully queried SCCM client for reboot status.' -Source ${CmdletName}
+                Write-ADTLogEntry -Message 'Successfully queried SCCM client for reboot status.'
                 [Nullable[Boolean]]$IsSCCMClientRebootPending = $false
                 If ($SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending) {
                     [Nullable[Boolean]]$IsSCCMClientRebootPending = $true
-                    Write-ADTLogEntry -Message 'Pending SCCM reboot detected.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Pending SCCM reboot detected.'
                 }
                 Else {
-                    Write-ADTLogEntry -Message 'Pending SCCM reboot not detected.' -Source ${CmdletName}
+                    Write-ADTLogEntry -Message 'Pending SCCM reboot not detected.'
                 }
             }
         }
         Catch [System.Management.ManagementException] {
             [Nullable[Boolean]]$IsSCCMClientRebootPending = $null
             [Boolean]$IsSccmClientNamespaceExists = $false
-            Write-ADTLogEntry -Message 'Failed to get IsSCCMClientRebootPending. Failed to detect the SCCM client WMI class.' -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message 'Failed to get IsSCCMClientRebootPending. Failed to detect the SCCM client WMI class.' -Severity 3
         }
         Catch {
             [Nullable[Boolean]]$IsSCCMClientRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending. `r`n$(Resolve-Error)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
@@ -2953,7 +2953,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsAppVRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsAppVRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsAppVRebootPending. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-ADTLogEntry -Message "Failed to get IsAppVRebootPending. `r`n$(Resolve-Error)" -Severity 3
         }
 
         ## Determine if there is a pending reboot for the system
@@ -2975,7 +2975,7 @@ https://psappdeploytoolkit.com
             PendingFileRenameOperations  = $PendingFileRenameOperations
             ErrorMsg                     = $PendRebootErrorMsg
         }
-        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$ComputerName]: `r`n$($PendingRebootInfo | Format-List | Out-String)" -Source ${CmdletName}
+        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$ComputerName]: `r`n$($PendingRebootInfo | Format-List | Out-String)"
     }
     End {
         Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName', 'LastBootUpTime', 'IsSystemRebootPending', 'IsCBServicingRebootPending', 'IsWindowsUpdateRebootPending', 'IsSCCMClientRebootPending', 'IsAppVRebootPending', 'IsFileRenameRebootPending', 'PendingFileRenameOperations', 'ErrorMsg')

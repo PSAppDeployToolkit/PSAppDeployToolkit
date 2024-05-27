@@ -75,18 +75,18 @@ https://psappdeploytoolkit.com
     )
 
     If ($Header) {
-        Write-ADTLogEntry -Message 'Function Start' -Source ${CmdletName} -DebugMessage
+        Write-ADTLogEntry -Message 'Function Start' -DebugMessage
 
         ## Get the parameters that the calling function was invoked with
         [String]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String
         If ($CmdletBoundParameters) {
-            Write-ADTLogEntry -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
+            Write-ADTLogEntry -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -DebugMessage
         }
         Else {
-            Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -Source ${CmdletName} -DebugMessage
+            Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -DebugMessage
         }
     }
     ElseIf ($Footer) {
-        Write-ADTLogEntry -Message 'Function End' -Source ${CmdletName} -DebugMessage
+        Write-ADTLogEntry -Message 'Function End' -DebugMessage
     }
 }
