@@ -87,7 +87,7 @@ param (
 #
 #---------------------------------------------------------------------------
 
-$sessionParams = @{
+$sessionProps = @{
     # App variables.
     AppVendor = ''
     AppName = ''
@@ -139,15 +139,15 @@ function Install-ADTApplication
     Update-ADTSessionInstallPhase -Value $DeploymentType
 
     ## Handle Zero-Config MSI installations.
-    if ($useDefaultMsi = Test-ADTSessionZeroConfigMSI)
+    if ($sessionProps.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = Get-ADTSessionZeroConfigMsiFile }
-        if ($defaultMstFile = Get-ADTSessionZeroConfigMstFile)
+        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $sessionProps.DefaultMsiFile }
+        if ($defaultMstFile = $sessionProps.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
         Execute-MSI @ExecuteDefaultMSISplat
-        if ($defaultMspFiles = Get-ADTSessionZeroConfigMspFiles)
+        if ($defaultMspFiles = $sessionProps.DefaultMspFiles)
         {
             $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ }
         }
@@ -164,7 +164,7 @@ function Install-ADTApplication
     ## <Perform Post-Installation tasks here>
 
     ## Display a message at the end of the install.
-    if (!$useDefaultMsi)
+    if (!$sessionProps.UseDefaultMsi)
     {
         Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
     }
@@ -192,10 +192,10 @@ function Uninstall-ADTApplication
     Update-ADTSessionInstallPhase -Value $DeploymentType
 
     ## Handle Zero-Config MSI uninstallations.
-    if (Test-ADTSessionZeroConfigMSI)
+    if ($sessionProps.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = Get-ADTSessionZeroConfigMsiFile }
-        if ($defaultMstFile = Get-ADTSessionZeroConfigMstFile)
+        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $sessionProps.DefaultMsiFile }
+        if ($defaultMstFile = $sessionProps.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
@@ -235,10 +235,10 @@ function Repair-ADTApplication
     Update-ADTSessionInstallPhase -Value $DeploymentType
 
     ## Handle Zero-Config MSI repairs.
-    if (Test-ADTSessionZeroConfigMSI)
+    if ($sessionProps.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Repair'; Path = Get-ADTSessionZeroConfigMsiFile }
-        if ($defaultMstFile = Get-ADTSessionZeroConfigMstFile)
+        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Repair'; Path = $sessionProps.DefaultMsiFile }
+        if ($defaultMstFile = $sessionProps.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
@@ -265,21 +265,21 @@ function Repair-ADTApplication
 
 try
 {
-    $mainExitCode = 0
+    # Set strict error handling.
+    $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+    $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+    Set-PSDebug -Strict
+    Set-StrictMode -Version Latest
+
+    # Import the module and instantiate a new session.
     Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit"
-    Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionParams
+    Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionProps
+    New-Variable -Name sessionProps -Value (Get-ADTSessionProperties) -Option Constant -Force
 }
 catch
 {
-    $mainExitCode = 60008
-    throw
-}
-finally
-{
-    if ($mainExitCode)
-    {
-        exit $mainExitCode
-    }
+    Write-Error -Message "Module [PSAppDeployToolkit] failed to load:`n$($_.Exception.Message.Replace('The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: ', $null))" -ErrorAction Continue
+    exit 60008
 }
 
 
@@ -292,15 +292,11 @@ finally
 try
 {
     & "$($DeploymentType)-ADTApplication"
+    Close-ADTSession
 }
 catch
 {
-    $mainExitCode = 60001
-    $mainErrorMessage = "$(Resolve-Error)"
-    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
-    [System.Void](Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop)
-}
-finally
-{
-    Close-ADTSession -ExitCode $mainExitCode
+    Write-ADTLogEntry -Message ($mainErrorMessage = "$(Resolve-Error)") -Severity 3
+    Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
+    Close-ADTSession -ExitCode 60001
 }

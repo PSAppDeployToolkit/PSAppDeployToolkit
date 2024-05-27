@@ -180,6 +180,19 @@ function Get-ADTSession
 #
 #---------------------------------------------------------------------------
 
+function Get-ADTSessionProperties
+{
+    # Return the session's properties as a read-only dictionary.
+    return $Script:ADT.CurrentSession.Properties.AsReadOnly()
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
 function Update-ADTSessionInstallPhase
 {
     param (
@@ -189,54 +202,6 @@ function Update-ADTSessionInstallPhase
     )
 
     $Script:ADT.CurrentSession.SetPropertyValue('InstallPhase', $Value)
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Test-ADTSessionZeroConfigMSI
-{
-    return $Script:ADT.CurrentSession.GetPropertyValue('UseDefaultMsi')
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Get-ADTSessionZeroConfigMsiFile
-{
-    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMsiFile')
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Get-ADTSessionZeroConfigMstFile
-{
-    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMstFile')
-}
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Get-ADTSessionZeroConfigMspFiles
-{
-    return $Script:ADT.CurrentSession.GetPropertyValue('DefaultMspFiles')
 }
 
 
@@ -271,6 +236,7 @@ function Export-ADTModuleState
     $Script:ADT.CurrentSession.SyncPropertyValues()
     $Script:Serialisation.Hive.CreateSubKey($Script:Serialisation.Key).SetValue($Script:Serialisation.Name, [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([System.Management.Automation.PSSerializer]::Serialize($Script:ADT, [System.Int32]::MaxValue))), $Script:Serialisation.Type)
 }
+
 
 #---------------------------------------------------------------------------
 #
