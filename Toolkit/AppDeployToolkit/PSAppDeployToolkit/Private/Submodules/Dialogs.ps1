@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -359,13 +359,14 @@ https://psappdeploytoolkit.com
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
+        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.CurrentSession.Session.BannerHeight)
         $pictureBanner.ClientSize = $System_Drawing_Size
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
         $pictureBanner.TabStop = $false
 
         ## Label Welcome Message
+        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
         $labelWelcomeMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelWelcomeMessage.Font = $defaultFont
         $labelWelcomeMessage.Name = 'labelWelcomeMessage'
@@ -390,7 +391,7 @@ https://psappdeploytoolkit.com
         $labelAppName.Margin = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (0, 5, 0, 5)
         $labelAppName.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelAppName.TabStop = $false
-        $labelAppName.Text = $installTitle
+        $labelAppName.Text = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle')
         $labelAppName.TextAlign = 'MiddleCenter'
         $labelAppName.Anchor = 'Top'
         $labelAppName.AutoSize = $true
@@ -496,7 +497,7 @@ https://psappdeploytoolkit.com
         $labelCountdownMessage.Padding = New-Object -TypeName 'System.Windows.Forms.Padding' -ArgumentList (10, 0, 10, 0)
         $labelCountdownMessage.TabStop = $false
         If (($forceCountdown -eq $true) -or (-not $runningProcessDescriptions)) {
-            Switch ($deploymentType) {
+            Switch ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType')) {
                 'Uninstall' {
                     $labelCountdownMessage.Text = ($Script:ADT.Strings.WelcomePrompt_CountdownMessage -f $Script:ADT.Strings.DeploymentType_UnInstall); Break
                 }
@@ -530,7 +531,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.AutoSize = $true
 
         ## Panel Flow Layout
-        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
+        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.CurrentSession.Session.BannerHeight)
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
@@ -650,7 +651,7 @@ https://psappdeploytoolkit.com
         $formWelcome.Margin = $paddingNone
         $formWelcome.DataBindings.DefaultDataSourceUpdateMode = 0
         $formWelcome.Name = 'WelcomeForm'
-        $formWelcome.Text = $installTitle
+        $formWelcome.Text = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle')
         $formWelcome.StartPosition = 'CenterScreen'
         $formWelcome.FormBorderStyle = 'Fixed3D'
         $formWelcome.MaximizeBox = $false
@@ -689,7 +690,7 @@ https://psappdeploytoolkit.com
 
         ## Minimize all other windows
         If ($minimizeWindows) {
-            $null = $shellApp.MinimizeAll()
+            $null = $Script:ADT.Environment.ShellApp.MinimizeAll()
         }
 
         ## Show the form
@@ -783,8 +784,8 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
-            Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $deployMode]" -Source ${CmdletName}
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+            Write-Log -Message "Bypassing Close-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]" -Source ${CmdletName}
             Return
         }
         If (!(Test-Path -LiteralPath 'variable:ProgressSyncHash')) {

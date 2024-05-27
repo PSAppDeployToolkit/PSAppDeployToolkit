@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -97,7 +97,7 @@ https://psappdeploytoolkit.com
         If (-not $DLLAction) {
             Throw 'Parameter validation failed. Please specify the [-DLLAction] parameter to determine whether to register or unregister the DLL.'
         }
-        [String]$DLLAction = $culture.TextInfo.ToTitleCase($DLLAction.ToLower())
+        [String]$DLLAction = $Script:ADT.Environment.culture.TextInfo.ToTitleCase($DLLAction.ToLower())
         Switch ($DLLAction) {
             'Register' {
                 [String]$DLLActionParameters = "/s `"$FilePath`""
@@ -119,17 +119,17 @@ https://psappdeploytoolkit.com
                 Throw "File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($DLLAction.ToLower() + 'ed')."
             }
 
-            If ($Is64Bit) {
+            If ($Script:ADT.Environment.Is64Bit) {
                 If ($DLLFileBitness -eq '64BIT') {
-                    If ($Is64BitProcess) {
-                        [String]$RegSvr32Path = "$envWinDir\System32\regsvr32.exe"
+                    If ($Script:ADT.Environment.Is64BitProcess) {
+                        [String]$RegSvr32Path = "$env:WinDir\System32\regsvr32.exe"
                     }
                     Else {
-                        [String]$RegSvr32Path = "$envWinDir\Sysnative\regsvr32.exe"
+                        [String]$RegSvr32Path = "$env:WinDir\Sysnative\regsvr32.exe"
                     }
                 }
                 ElseIf ($DLLFileBitness -eq '32BIT') {
-                    [String]$RegSvr32Path = "$envWinDir\SysWOW64\regsvr32.exe"
+                    [String]$RegSvr32Path = "$env:WinDir\SysWOW64\regsvr32.exe"
                 }
             }
             Else {
@@ -137,7 +137,7 @@ https://psappdeploytoolkit.com
                     Throw "File [$filePath] cannot be $($DLLAction.ToLower()) because it is a 64-bit file on a 32-bit operating system."
                 }
                 ElseIf ($DLLFileBitness -eq '32BIT') {
-                    [String]$RegSvr32Path = "$envWinDir\System32\regsvr32.exe"
+                    [String]$RegSvr32Path = "$env:WinDir\System32\regsvr32.exe"
                 }
             }
 
@@ -163,5 +163,3 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
-Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
-Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'

@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -55,7 +55,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message 'Changing terminal server into user install mode...' -Source ${CmdletName}
-            $terminalServerResult = & "$envWinDir\System32\change.exe" User /Install
+            $terminalServerResult = & "$env:WinDir\System32\change.exe" User /Install
 
             If ($global:LastExitCode -ne 1) {
                 Throw $terminalServerResult
@@ -131,7 +131,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message 'Changing terminal server into user execute mode...' -Source ${CmdletName}
-            $terminalServerResult = & "$envWinDir\System32\change.exe" User /Execute
+            $terminalServerResult = & "$env:WinDir\System32\change.exe" User /Execute
 
             If ($global:LastExitCode -ne 1) {
                 Throw $terminalServerResult

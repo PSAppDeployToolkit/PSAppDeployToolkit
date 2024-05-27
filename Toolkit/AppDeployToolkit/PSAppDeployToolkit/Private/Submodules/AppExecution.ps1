@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -67,12 +67,12 @@ https://psappdeploytoolkit.com
 
         ## Remove illegal characters from the scheduled task arguments string
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [string]$SchInstallName = $installName
+        [string]$SchInstallName = $Script:ADT.CurrentSession.GetPropertyValue('installName')
         ForEach ($invalidChar in $invalidScheduledTaskChars) {
             [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
-        [string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-        [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+        [string]$blockExecutionTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
+        [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" -ReferredLogName `"$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`" -AsyncToolkitLaunch"
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -118,12 +118,12 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if no Admin rights
-        If (!$IsAdmin) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $ProcessNTAccount] is not admin." -Source ${CmdletName}
+        If (!$Script:ADT.Environment.IsAdmin) {
+            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
             Return
         }
 
-        [String]$schTaskBlockedAppsName = $installName + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
         If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit_Options.Toolkit_TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'SilentlyContinue') {
@@ -144,11 +144,11 @@ https://psappdeploytoolkit.com
         Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$([System.Diagnostics.Process]::GetCurrentProcess().Path) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+        [String[]]$debuggerBlockScript = "strCommand = `"$([System.Diagnostics.Process]::GetCurrentProcess().Path) -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`" & chr(34)"
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
-        [String]$debuggerBlockValue = "$envWinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
+        [String]$debuggerBlockValue = "$env:WinDir\System32\wscript.exe `"$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs`""
 
         ## Set contents to be readable for all users (BUILTIN\USERS)
         Try {
@@ -169,7 +169,7 @@ https://psappdeploytoolkit.com
             Try {
                 ## Specify the filename to export the XML to
                 ## XML does not need to be user readable to stays in protected TEMP folder
-                [String]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+                [String]$xmlSchTaskFilePath = "$($Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp'))\SchTaskUnBlockApps.xml"
                 [String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             }
             Catch {
@@ -178,7 +178,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Import the Scheduled Task XML file to create the Scheduled Task
-            [PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 Write-Log -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3 -Source ${CmdletName}
                 Return
@@ -192,7 +192,7 @@ https://psappdeploytoolkit.com
         ## Enumerate each process and set the debugger value to block application execution
         ForEach ($blockProcess in $blockProcessName) {
             Write-Log -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]." -Source ${CmdletName}
-            Set-RegistryKey -Key (Join-Path -Path $regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
+            Set-RegistryKey -Key (Join-Path -Path $Script:ADT.Environment.regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
         }
     }
     End {
@@ -254,14 +254,14 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if no Admin rights
-        If (!$IsAdmin) {
-            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $ProcessNTAccount] is not admin." -Source ${CmdletName}
+        If (!$Script:ADT.Environment.IsAdmin) {
+            Write-Log -Message "Bypassing Function [${CmdletName}], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin." -Source ${CmdletName}
             Return
         }
 
         ## Remove Debugger values to unblock processes
         [PSObject[]]$unblockProcesses = $null
-        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' })
+        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyAppExecution -Recurse -ErrorAction 'SilentlyContinue' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'SilentlyContinue' })
         ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
             Write-Log -Message "Removing the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]." -Source ${CmdletName}
             $unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'SilentlyContinue'
@@ -274,11 +274,11 @@ https://psappdeploytoolkit.com
         }
 
         ## Remove the scheduled task if it exists
-        [String]$schTaskBlockedAppsName = $installName + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = $Script:ADT.CurrentSession.GetPropertyValue('installName') + '_BlockedApps'
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
                 Write-Log -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]." -Source ${CmdletName}
-                Execute-Process -Path $exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+                Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
             }
         }
         Catch {
@@ -286,13 +286,13 @@ https://psappdeploytoolkit.com
         }
 
         ## Remove BlockAppExecution Schedule Task XML file
-        [String]$xmlSchTaskFilePath = "$dirAppDeployTemp\SchTaskUnBlockApps.xml"
+        [String]$xmlSchTaskFilePath = "$Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
         If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
             $null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'SilentlyContinue'
         }
 
         ## Remove BlockAppExection Temporary directory
-        [String]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
+        [String]$blockExecutionTempPath = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
             Remove-Folder -Path $blockExecutionTempPath
         }

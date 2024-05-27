@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -57,7 +57,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            Write-Output -InputObject (([Char[]]$Name | Where-Object { $invalidFileNameChars -notcontains $_ }) -join '')
+            Write-Output -InputObject (([Char[]]$Name | Where-Object { $Script:ADT.Environment.invalidFileNameChars -notcontains $_ }) -join '')
         }
         Catch {
             Write-Log -Message "Failed to remove invalid characters from the supplied filename. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -225,7 +225,7 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$Drive = $envSystemDrive,
+        [String]$Drive = $env:SystemDrive,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $true
@@ -368,7 +368,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Enumerate the installed applications from the registry for applications that have the "DisplayName" property
-        [PSObject[]]$regKeyApplication = ForEach ($regKey in $regKeyApplications) {
+        [PSObject[]]$regKeyApplication = ForEach ($regKey in $Script:ADT.Environment.regKeyApplications) {
             If (Test-Path -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath') {
                 [PSObject[]]$UninstallKeyApps = Get-ChildItem -LiteralPath $regKey -ErrorAction 'SilentlyContinue' -ErrorVariable '+ErrorUninstallKeyPath'
                 ForEach ($UninstallKeyApp in $UninstallKeyApps) {
@@ -407,12 +407,7 @@ https://psappdeploytoolkit.com
 
 
                 ## Determine if application is a 64-bit application
-                [Boolean]$Is64BitApp = If (($is64Bit) -and ($regKeyApp.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')) {
-                    $true
-                }
-                Else {
-                    $false
-                }
+                [Boolean]$Is64BitApp = $Script:ADT.Environment.is64Bit -and ($regKeyApp.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
 
                 If ($ProductCode) {
                     ## Verify if there is a match with the product code passed to the script
@@ -420,7 +415,7 @@ https://psappdeploytoolkit.com
                         Write-Log -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$productCode]." -Source ${CmdletName}
                         $installedApplication += New-Object -TypeName 'PSObject' -Property @{
                             UninstallSubkey    = $regKeyApp.PSChildName
-                            ProductCode        = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) {
+                            ProductCode        = If ($regKeyApp.PSChildName -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {
                                 $regKeyApp.PSChildName
                             }
                             Else {
@@ -472,7 +467,7 @@ https://psappdeploytoolkit.com
                         If ($applicationMatched) {
                             $installedApplication += New-Object -TypeName 'PSObject' -Property @{
                                 UninstallSubkey    = $regKeyApp.PSChildName
-                                ProductCode        = If ($regKeyApp.PSChildName -match $MSIProductCodeRegExPattern) {
+                                ProductCode        = If ($regKeyApp.PSChildName -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {
                                     $regKeyApp.PSChildName
                                 }
                                 Else {
@@ -634,7 +629,7 @@ https://psappdeploytoolkit.com
                 [String]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
 
                 #  On Windows Vista or higher
-                If (([Version]$envOSVersion).Major -gt 5) {
+                If ($Script:ADT.Environment.envOSVersion.Major -gt 5) {
                     # Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
                     [string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
                 }
@@ -853,7 +848,6 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
-Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
 
 
 #---------------------------------------------------------------------------
@@ -931,8 +925,8 @@ https://psappdeploytoolkit.com
         Try {
             Write-Log -Message 'Refreshing the environment variables for this PowerShell session.' -Source ${CmdletName}
 
-            If ($LoadLoggedOnUserEnvironmentVariables -and $RunAsActiveUser) {
-                [String]$CurrentUserEnvironmentSID = $RunAsActiveUser.SID
+            If ($LoadLoggedOnUserEnvironmentVariables -and $Script:ADT.Environment.RunAsActiveUser) {
+                [String]$CurrentUserEnvironmentSID = $Script:ADT.Environment.RunAsActiveUser.SID
             }
             Else {
                 [String]$CurrentUserEnvironmentSID = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
@@ -941,7 +935,7 @@ https://psappdeploytoolkit.com
             [String]$UserEnvironmentVars = "Registry::HKEY_USERS\$CurrentUserEnvironmentSID\Environment"
 
             ## Update all session environment variables. Ordering is important here: $UserEnvironmentVars comes second so that we can override $MachineEnvironmentVars.
-            $MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $envRegPath -Name $_).$_ } }
+            $MachineEnvironmentVars, $UserEnvironmentVars | Get-Item | Where-Object { $_ } | ForEach-Object { $Script:ADT.Environment.envRegPath = $_.PSPath; $_ | Select-Object -ExpandProperty 'Property' | ForEach-Object { Set-Item -LiteralPath "env:$($_)" -Value (Get-ItemProperty -LiteralPath $Script:ADT.Environment.envRegPath -Name $_).$_ } }
 
             ## Set PATH environment variable separately because it is a combination of the user and machine environment variables
             [String[]]$PathFolders = 'Machine', 'User' | ForEach-Object { (& $GetEnvironmentVar -Key 'PATH' -Scope $_) } | Where-Object { $_ } | ForEach-Object { $_.Trim(';').Split(';').Trim().Trim('"') } | Select-Object -Unique
@@ -958,7 +952,6 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
 }
-Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables' -Scope 'Script' -Force -ErrorAction 'SilentlyContinue'
 
 
 #---------------------------------------------------------------------------
@@ -1041,9 +1034,9 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message 'Retrieving Scheduled Tasks...' -Source ${CmdletName}
-            [String[]]$exeSchtasksResults = & $exeSchTasks /Query /V /FO CSV
+            [String[]]$exeSchtasksResults = & $Script:ADT.Environment.exeSchTasks /Query /V /FO CSV
             If ($global:LastExitCode -ne 0) {
-                Throw "Failed to retrieve scheduled tasks using [$exeSchTasks]."
+                Throw "Failed to retrieve scheduled tasks using [$($Script:ADT.Environment.exeSchTasks)]."
             }
             [PSObject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-Csv -Header 'HostName', 'TaskName', 'Next Run Time', 'Status', 'Logon Mode', 'Last Run Time', 'Last Result', 'Author', 'Task To Run', 'Start In', 'Comment', 'Scheduled Task State', 'Idle Time', 'Power Management', 'Run As User', 'Delete Task If Not Rescheduled', 'Stop Task If Runs X Hours and X Mins', 'Schedule', 'Schedule Type', 'Start Time', 'Start Date', 'End Date', 'Days', 'Months', 'Repeat: Every', 'Repeat: Until: Time', 'Repeat: Until: Duration', 'Repeat: Stop If Still Running' -ErrorAction 'Stop'
 
@@ -1079,10 +1072,6 @@ https://psappdeploytoolkit.com
         Write-Output -InputObject ($ScheduledTasks)
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -Footer
     }
-}
-# If Get-ScheduledTask doesn't exist, add alias Get-ScheduledTask
-If (-not (Get-Command -Name 'Get-ScheduledTask' -ErrorAction 'SilentlyContinue')) {
-    New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'
 }
 
 
@@ -1145,7 +1134,7 @@ https://psappdeploytoolkit.com
         #  Get the current date
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$DateTime = ((Get-Date -Format ($culture).DateTimeFormat.UniversalDateTimePattern).ToString()),
+        [String]$DateTime = (Get-Date -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString(),
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Boolean]$ContinueOnError = $false
@@ -1162,15 +1151,15 @@ https://psappdeploytoolkit.com
             If ($DateTime -match 'Z$') {
                 $DateTime = $DateTime -replace 'Z$', ''
             }
-            [DateTime]$DateTime = [DateTime]::Parse($DateTime, $culture)
+            [DateTime]$DateTime = [DateTime]::Parse($DateTime, $Script:ADT.Environment.culture)
 
             ## Convert the date to a universal sortable date time pattern based on the current culture
-            Write-Log -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($culture.Name)]." -Source ${CmdletName}
-            [String]$universalDateTime = (Get-Date -Date $DateTime -Format ($culture).DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
+            Write-Log -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]." -Source ${CmdletName}
+            [String]$universalDateTime = (Get-Date -Date $DateTime -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
             Write-Output -InputObject ($universalDateTime)
         }
         Catch {
-            Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            Write-Log -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
             If (-not $ContinueOnError) {
                 Throw "The specified date/time [$DateTime] is not in a format recognized by the current culture: $($_.Exception.Message)"
             }
@@ -1285,7 +1274,7 @@ https://psappdeploytoolkit.com
                 [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
                 $Verb = $Verb.Replace('&', '')
                 $path = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop'
-                $folder = $shellApp.Namespace($path)
+                $folder = $Script:ADT.Environment.ShellApp.Namespace($path)
                 $item = $folder.ParseName((Split-Path -Path $FilePath -Leaf -ErrorAction 'Stop'))
                 $itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&', '') -eq $Verb } -ErrorAction 'Stop'
 
@@ -1303,7 +1292,7 @@ https://psappdeploytoolkit.com
         }
         #endregion
 
-        If (([Version]$envOSVersion).Major -ge 10) {
+        If ($Script:ADT.Environment.envOSVersion.Major -ge 10) {
             Write-Log -Message 'Detected Windows 10 or higher, using Windows 10 verb codes.' -Source ${CmdletName}
             [Hashtable]$Verbs = @{
                 'PinToStartMenu'     = 51201
@@ -1335,12 +1324,12 @@ https://psappdeploytoolkit.com
             }
 
             If ($Action.Contains('StartMenu')) {
-                If ([Int32]$envOSVersionMajor -ge 10)   {
+                If ($Script:ADT.Environment.envOSVersion.Major -ge 10)   {
                     If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
                         Throw 'Only shortcut files (.lnk) are supported on Windows 10 and higher.'
                     }
-                    ElseIf (-not ($FilePath.StartsWith($envUserStartMenu, 'OrdinalIgnoreCase') -or $FilePath.StartsWith($envCommonStartMenu, 'OrdinalIgnoreCase'))) {
-                        Throw "Only shortcut files (.lnk) in [$envUserStartMenu] and [$envCommonStartMenu] are supported on Windows 10 and higher."
+                    ElseIf (-not ($FilePath.StartsWith($($Script:ADT.Environment.envUserStartMenu), 'OrdinalIgnoreCase') -or $FilePath.StartsWith($($Script:ADT.Environment.envCommonStartMenu), 'OrdinalIgnoreCase'))) {
+                        Throw "Only shortcut files (.lnk) in [$($Script:ADT.Environment.envUserStartMenu)] and [$($Script:ADT.Environment.envCommonStartMenu)] are supported on Windows 10 and higher."
                     }
                 }
 
@@ -1352,12 +1341,12 @@ https://psappdeploytoolkit.com
                 Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
             }
             ElseIf ($Action.Contains('Taskbar')) {
-                If ([Int32]$envOSVersionMajor -ge 10) {
+                If ($Script:ADT.Environment.envOSVersion.Major -ge 10) {
                     $FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
-                    $PinExists = Test-Path -Path "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
+                    $PinExists = Test-Path -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
                     If (($Action -eq 'PinToTaskbar') -and ($PinExists)) {
-                        If ($(Invoke-ObjectMethod -InputObject $Shell -MethodName 'CreateShortcut' -ArgumentList "$envAppData\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
+                        If ($(Invoke-ObjectMethod -InputObject $Script:ADT.Environment.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
                             Write-Log -Message "Pin [$FileNameWithoutExtension] already exists." -Source ${CmdletName}
                             Return
                         }
@@ -1368,12 +1357,12 @@ https://psappdeploytoolkit.com
                     }
 
                     $ExplorerCommandHandler = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
-                    $classesStarKey = (Get-Item "Registry::HKEY_USERS\$($RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey('*', $true)
+                    $classesStarKey = (Get-Item "Registry::HKEY_USERS\$($Script:ADT.Environment.RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey('*', $true)
                     $shellKey = $classesStarKey.CreateSubKey('shell', $true)
                     $specialKey = $shellKey.CreateSubKey('{:}', $true)
                     $specialKey.SetValue('ExplorerCommandHandler', $ExplorerCommandHandler)
 
-                    $Folder = Invoke-ObjectMethod -InputObject $ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
+                    $Folder = Invoke-ObjectMethod -InputObject $Script:ADT.Environment.ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
                     $Item = Invoke-ObjectMethod -InputObject $Folder -MethodName 'ParseName' -ArgumentList $(Split-Path -Path $FilePath -Leaf)
 
                     $Item.InvokeVerb('{:}')
@@ -2075,7 +2064,7 @@ https://psappdeploytoolkit.com
                     }
 
                     ## If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher)
-                    If ((-not $IsPowerPointFullScreen) -and (([Version]$envOSVersion).Major -gt 5)) {
+                    If ((-not $IsPowerPointFullScreen) -and ($Script:ADT.Environment.envOSVersion.Major -gt 5)) {
                         #  Note: below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control
                         [String]$UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()
                         Write-Log -Message "Detected user notification state [$UserNotificationState]." -Source ${CmdletName}
@@ -2178,7 +2167,7 @@ https://psappdeploytoolkit.com
                     [String]$InstallMsg = 'Updating Group Policies for the User'
                 }
                 Write-Log -Message "$($InstallMsg)..." -Source ${CmdletName}
-                [PSObject]$ExecuteResult = Execute-Process -Path "$envWinDir\System32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
+                [PSObject]$ExecuteResult = Execute-Process -Path "$env:WinDir\System32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
 
                 If ($ExecuteResult.ExitCode -ne 0) {
                     If ($ExecuteResult.ExitCode -eq 60002) {
@@ -2324,10 +2313,10 @@ https://psappdeploytoolkit.com
         [String]$Arguments,
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullorEmpty()]
-        [String]$Description = $installName,
+        [String]$Description = $Script:ADT.CurrentSession.GetPropertyValue('installName'),
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$Key = $installName,
+        [String]$Key = $Script:ADT.CurrentSession.GetPropertyValue('installName'),
         [Parameter(Mandatory = $false)]
         [Switch]$Wow6432Node = $false,
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -2356,7 +2345,7 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            if ($Wow6432Node -and $Is64Bit) {
+            if ($Wow6432Node -and $Script:ADT.Environment.Is64Bit) {
                 [String]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                 [String]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
             }
@@ -2372,8 +2361,8 @@ https://psappdeploytoolkit.com
 
                 Write-Log -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system." -Source ${CmdletName}
                 [ScriptBlock]$RemoveHKCUActiveSetupKey = {
-                    If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $RunAsActiveUser.SID) {
-                        Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $RunAsActiveUser.SID -Recurse
+                    If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID) {
+                        Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID -Recurse
                     }
                 }
                 Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)
@@ -2390,7 +2379,7 @@ https://psappdeploytoolkit.com
             ## Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there)
             [String]$StubExePath = [Environment]::ExpandEnvironmentVariables($StubExePath)
             [String]$ActiveSetupFileName = [IO.Path]::GetFileName($StubExePath)
-            [String]$StubExeFile = Join-Path -Path $dirFiles -ChildPath $ActiveSetupFileName
+            [String]$StubExeFile = Join-Path -Path $Script:ADT.CurrentSession.GetPropertyValue('dirFiles') -ChildPath $ActiveSetupFileName
             If (Test-Path -LiteralPath $StubExeFile -PathType 'Leaf') {
                 #  This will overwrite the StubPath file if $StubExePath already exists on target
                 Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
@@ -2409,17 +2398,17 @@ https://psappdeploytoolkit.com
                     [String]$StubPath = "`"$CUStubExePath`""
                 }
                 '.js' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$env:WinDir\System32\cscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.vbs' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$env:WinDir\System32\cscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.cmd' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
+                    [String]$CUStubExePath = "$env:WinDir\System32\cmd.exe"
                     [String]$CUArguments = "/C `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
@@ -2628,12 +2617,12 @@ https://psappdeploytoolkit.com
 
             ## Execute the StubPath file for the current user as long as not in Session 0
             If ($ExecuteForCurrentUser) {
-                If ($SessionZero) {
-                    If ($RunAsActiveUser) {
+                If ($Script:ADT.Environment.SessionZero) {
+                    If ($Script:ADT.Environment.RunAsActiveUser) {
                         # Skip if Active Setup reg key is present and Version is equal or higher
-                        [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $RunAsActiveUser.SID)
+                        [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $Script:ADT.Environment.RunAsActiveUser.SID)
                         If ($InstallNeeded) {
-                            Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
+                            Write-Log -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Source ${CmdletName}
                             If ($CUArguments) {
                                 Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
                             }
@@ -2642,10 +2631,10 @@ https://psappdeploytoolkit.com
                             }
 
                             Write-Log -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]." -Source ${CmdletName}
-                            & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $RunAsActiveUser.SID
+                            & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID
                         }
                         Else {
-                            Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($RunAsActiveUser.NTAccount)]." -Source ${CmdletName} -Severity 2
+                            Write-Log -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Source ${CmdletName} -Severity 2
                         }
                     }
                     Else {
@@ -2857,7 +2846,7 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
         ## Initialize variables
-        [String]$private:ComputerName = $envComputerNameFQDN
+        [String]$private:ComputerName = $Script:ADT.Environment.envComputerNameFQDN
         $PendRebootErrorMsg = $null
     }
     Process {
@@ -2875,7 +2864,7 @@ https://psappdeploytoolkit.com
 
         ## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
         Try {
-            If (([Version]$envOSVersion).Major -ge 5) {
+            If ($Script:ADT.Environment.envOSVersion.Major -ge 5) {
                 If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
                     [Nullable[Boolean]]$IsCBServicingRebootPending = $true
                 }

@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -27,7 +27,7 @@ Function Copy-ContentToCache {
     Param (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullorEmpty()]
-        [String]$Path = "$($Script:ADT.Config.Toolkit_Options.Toolkit_CachePath)\$installName"
+        [String]$Path = "$($Script:ADT.Config.Toolkit_Options.Toolkit_CachePath)\$($Script:ADT.CurrentSession.GetPropertyValue('installName'))"
     )
 
     Begin {
@@ -54,7 +54,7 @@ Function Copy-ContentToCache {
 
             ## Copy the toolkit content to the cache folder
             Write-Log -Message "Copying toolkit content to cache folder [$Path]." -Source ${CmdletName}
-            Copy-File -Path (Join-Path $scriptParentPath '*') -Destination $Path -Recurse
+            Copy-File -Path (Join-Path $Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
             # Set the Files directory to the cache path
             Set-Variable -Name 'dirFiles' -Value "$Path\Files" -Scope 'Script'
             Set-Variable -Name 'dirSupportFiles' -Value "$Path\SupportFiles" -Scope 'Script'
@@ -95,7 +95,7 @@ Function Remove-ContentFromCache {
     Param (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullorEmpty()]
-        [String]$Path = "$($Script:ADT.Config.Toolkit_Options.Toolkit_CachePath)\$installName"
+        [String]$Path = "$($Script:ADT.Config.Toolkit_Options.Toolkit_CachePath)\$($Script:ADT.CurrentSession.GetPropertyValue('installName'))"
     )
 
     Begin {
@@ -109,8 +109,8 @@ Function Remove-ContentFromCache {
                 Try {
                     Write-Log -Message "Removing cache folder [$Path]." -Source ${CmdletName}
                     $null = Remove-Item -Path $Path -Recurse -ErrorAction 'Stop'
-                    [String]$dirFiles = Join-Path -Path $scriptParentPath -ChildPath 'Files'
-                    [String]$dirSupportFiles = Join-Path -Path $scriptParentPath -ChildPath 'SupportFiles'
+                    $Script:ADT.CurrentSession.SetPropertyValue('dirFiles', (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath')) -ChildPath 'Files'))
+                    $Script:ADT.CurrentSession.SetPropertyValue('dirSupportFiles', (Join-Path -Path $($Script:ADT.CurrentSession.GetPropertyValue('scriptParentPath')) -ChildPath 'SupportFiles'))
                 }
                 Catch {
                     Write-Log -Message "Failed to remove cache folder [$Path]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}

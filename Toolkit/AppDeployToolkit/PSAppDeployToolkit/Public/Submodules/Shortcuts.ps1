@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -120,10 +120,6 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-        If (-not $Shell) {
-            [__ComObject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop'
-        }
     }
     Process {
         Try {
@@ -190,7 +186,7 @@ https://psappdeploytoolkit.com
                 [IO.File]::WriteAllLines($FullPath, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
             }
             Else {
-                $shortcut = $shell.CreateShortcut($FullPath)
+                $shortcut = $Script:ADT.Environment.Shell.CreateShortcut($FullPath)
                 ## TargetPath
                 $shortcut.TargetPath = $targetPath
                 ## Arguments
@@ -390,10 +386,6 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-        If (-not $Shell) {
-            [__ComObject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop'
-        }
     }
     Process {
         Try {
@@ -436,7 +428,7 @@ https://psappdeploytoolkit.com
                 [IO.File]::WriteAllLines($Path, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
             }
             Else {
-                $shortcut = $shell.CreateShortcut($Path)
+                $shortcut = $Script:ADT.Environment.Shell.CreateShortcut($Path)
                 ## TargetPath
                 If ($targetPath) {
                     $shortcut.TargetPath = $targetPath
@@ -604,10 +596,6 @@ https://psappdeploytoolkit.com
         ## Get the name of this function and write header
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
-
-        If (-not $Shell) {
-            [__ComObject]$Shell = New-Object -ComObject 'WScript.Shell' -ErrorAction 'Stop'
-        }
     }
     Process {
         Try {
@@ -650,7 +638,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Else {
-                $shortcut = $shell.CreateShortcut($FullPath)
+                $shortcut = $Script:ADT.Environment.Shell.CreateShortcut($FullPath)
                 ## TargetPath
                 $Output.TargetPath = $shortcut.TargetPath
                 ## Arguments

@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------
+﻿#---------------------------------------------------------------------------
 #
 # 
 #
@@ -100,7 +100,7 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$Title = $installTitle,
+        [String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
         [Parameter(Mandatory = $false)]
         [String]$Message = '',
         [Parameter(Mandatory = $false)]
@@ -140,8 +140,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if in non-interactive mode
-        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
-            Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $deployMode]. Message:$Message" -Source ${CmdletName}
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+            Write-Log -Message "Bypassing Show-InstallationPrompt [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Message:$Message" -Source ${CmdletName}
             Return
         }
 
@@ -163,7 +163,7 @@ https://psappdeploytoolkit.com
             [String]$installPromptParameters = ($installPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
 
 
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$Title`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationPrompt $installPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return
         }
 
@@ -233,7 +233,7 @@ https://psappdeploytoolkit.com
         ## Picture Banner
         $pictureBanner.DataBindings.DefaultDataSourceUpdateMode = 0
         $pictureBanner.ImageLocation = $Script:ADT.Config.BannerIcon_Options.Banner_Filename
-        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
+        $pictureBanner.ClientSize = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.CurrentSession.Session.BannerHeight)
         $pictureBanner.MinimumSize = $DefaultControlSize
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -466,7 +466,7 @@ https://psappdeploytoolkit.com
         While ($showDialog) {
             # Minimize all other windows
             If ($minimizeWindows) {
-                $null = $shellApp.MinimizeAll()
+                $null = $Script:ADT.Environment.ShellApp.MinimizeAll()
             }
             # Show the Form
             $formInstallationPrompt.ResumeLayout()
@@ -489,7 +489,7 @@ https://psappdeploytoolkit.com
             }
             'Abort' {
                 # Restore minimized windows
-                $null = $shellApp.UndoMinimizeAll()
+                $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
                 If ($ExitOnTimeout) {
                     Exit-Script -ExitCode $Script:ADT.Config.UI_Options.InstallationUI_ExitCode
                 }
@@ -584,7 +584,7 @@ https://psappdeploytoolkit.com
         [String]$Text,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$Title = $installTitle,
+        [String]$Title = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
         [Parameter(Mandatory = $false)]
         [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
         [String]$Buttons = 'OK',
@@ -608,8 +608,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         #  Bypass if in silent mode
-        If ($deployModeSilent) {
-            Write-Log -Message "Bypassing Show-DialogBox [Mode: $deployMode]. Text:$Text" -Source ${CmdletName}
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
+            Write-Log -Message "Bypassing Show-DialogBox [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Text:$Text" -Source ${CmdletName}
             Return
         }
 
@@ -648,7 +648,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        $response = $Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + $dialogTopMost))
+        $response = $Script:ADT.Environment.Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + $dialogTopMost))
 
         Switch ($response) {
             1 {
@@ -947,13 +947,13 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If running in NonInteractive mode, force the processes to close silently
-        If ($deployModeNonInteractive) {
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeNonInteractive) {
             $Silent = $true
         }
 
         ## If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
-        If ($useDefaultMsi) {
-            $CloseApps = "$CloseApps,$defaultMsiExecutablesList"
+        If ($Script:ADT.CurrentSession.GetPropertyValue('UseDefaultMsi')) {
+            $CloseApps = "$CloseApps,$($Script:ADT.CurrentSession.Session.State.DefaultMsiExecutablesList)"
         }
 
         ## Check disk space requirements if specified
@@ -964,7 +964,7 @@ https://psappdeploytoolkit.com
                 Try {
                     #  Determine the size of the Files folder
                     $fso = New-Object -ComObject 'Scripting.FileSystemObject' -ErrorAction 'Stop'
-                    $RequiredDiskSpace = [Math]::Round((($fso.GetFolder($scriptParentPath).Size) / 1MB))
+                    $RequiredDiskSpace = [Math]::Round((($fso.GetFolder($Script:ADT.CurrentSession.GetPropertyValue('ScriptParentPath')).Size) / 1MB))
                 }
                 Catch {
                     Write-Log -Message "Failed to calculate disk space requirement from source files. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -980,7 +980,7 @@ https://psappdeploytoolkit.com
             If ($freeDiskSpace -lt $RequiredDiskSpace) {
                 Write-Log -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3 -Source ${CmdletName}
                 If (-not $Silent) {
-                    Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace_Message -f $installTitle, $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
+                    Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace_Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
                 }
                 Exit-Script -ExitCode $Script:ADT.Config.UI_Options.InstallationUI_ExitCode
             }
@@ -1056,7 +1056,7 @@ https://psappdeploytoolkit.com
                     [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime $deferHistoryDeadline
                 }
                 Else {
-                    [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date -Date ((Get-Date).AddDays($deferDays)) -Format ($culture).DateTimeFormat.UniversalDateTimePattern).ToString()
+                    [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime (Get-Date -Date ((Get-Date).AddDays($deferDays)) -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
                 }
                 Write-Log -Message "The user has until [$deferDeadlineUniversal] before deferral expires." -Source ${CmdletName}
                 If ((Get-UniversalDate) -gt $deferDeadlineUniversal) {
@@ -1085,7 +1085,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Prompt the user to close running applications and optionally defer if enabled
-        If ((-not $deployModeSilent) -and (-not $silent)) {
+        If (!$Script:ADT.CurrentSession.Session.State.DeployModeSilent -and !$Silent) {
             If ($forceCloseAppsCountdown -gt 0) {
                 #  Keep the same variable for countdown to simplify the code:
                 $closeAppsCountdown = $forceCloseAppsCountdown
@@ -1136,7 +1136,7 @@ https://psappdeploytoolkit.com
                 #  Force the applications to close
                 ElseIf ($promptResult -eq 'Close') {
                     Write-Log -Message 'The user selected to force the application(s) to close...' -Source ${CmdletName}
-                    If (($PromptToSave) -and ($SessionZero -and (-not $IsProcessUserInteractive))) {
+                    If ($PromptToSave -and $Script:ADT.Environment.SessionZero -and !$Script:ADT.Environment.IsProcessUserInteractive) {
                         Write-Log -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2 -Source ${CmdletName}
                     }
                     # Update the process list right before closing, in case it changed
@@ -1145,7 +1145,7 @@ https://psappdeploytoolkit.com
                     ForEach ($runningProcess in $runningProcesses) {
                         [PSObject[]]$AllOpenWindowsForRunningProcess = Get-WindowTitle -GetAllWindowTitles -DisableFunctionLogging | Where-Object { $_.ParentProcess -eq $runningProcess.ProcessName }
                         #  If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window
-                        If (($PromptToSave) -and (-not ($SessionZero -and (-not $IsProcessUserInteractive))) -and ($AllOpenWindowsForRunningProcess) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
+                        If ($PromptToSave -and !($Script:ADT.Environment.SessionZero -and !$Script:ADT.Environment.IsProcessUserInteractive) -and $AllOpenWindowsForRunningProcess -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero)) {
                             [Timespan]$PromptToSaveTimeout = New-TimeSpan -Seconds $Script:ADT.Config.UI_Options.InstallationPromptToSave_Timeout
                             [Diagnostics.StopWatch]$PromptToSaveStopWatch = [Diagnostics.StopWatch]::StartNew()
                             $PromptToSaveStopWatch.Reset()
@@ -1215,7 +1215,7 @@ https://psappdeploytoolkit.com
                     }
 
                     #  Restore minimized windows
-                    $null = $shellApp.UndoMinimizeAll()
+                    $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
 
                     Exit-Script -ExitCode $Script:ADT.Config.UI_Options.InstallationUI_ExitCode
                 }
@@ -1227,7 +1227,7 @@ https://psappdeploytoolkit.com
                     Set-DeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                     #  Restore minimized windows
-                    $null = $shellApp.UndoMinimizeAll()
+                    $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
 
                     Exit-Script -ExitCode $Script:ADT.Config.UI_Options.InstallationDefer_ExitCode
                 }
@@ -1235,7 +1235,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Force the processes to close silently, without prompting the user
-        If (($Silent -or $deployModeSilent) -and $CloseApps) {
+        If (($Silent -or $Script:ADT.CurrentSession.Session.State.DeployModeSilent) -and $CloseApps) {
             [Array]$runningProcesses = $null
             [Array]$runningProcesses = Get-RunningProcesses $processObjects
             If ($runningProcesses) {
@@ -1249,10 +1249,10 @@ https://psappdeploytoolkit.com
         ## Force nsd.exe to stop if Notes is one of the required applications to close
         If (($processObjects | Select-Object -ExpandProperty 'ProcessName') -contains 'notes') {
             ## Get the path where Notes is installed
-            [String]$notesPath = Get-Item -LiteralPath $regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
+            [String]$notesPath = Get-Item -LiteralPath $Script:ADT.Environment.regKeyLotusNotes -ErrorAction 'SilentlyContinue' | Get-ItemProperty | Select-Object -ExpandProperty 'Path'
 
             ## Ensure we aren't running as a Local System Account and Notes install directory was found
-            If ((-not $IsLocalSystemAccount) -and ($notesPath)) {
+            If (!$Script:ADT.Environment.IsLocalSystemAccount -and $notesPath) {
                 #  Get a list of all the executables in the Notes folder
                 [string[]]$notesPathExes = Get-ChildItem -LiteralPath $notesPath -Filter '*.exe' -Recurse | Select-Object -ExpandProperty 'BaseName' | Sort-Object
                 ## Check for running Notes executables and run NSD if any are found
@@ -1292,7 +1292,7 @@ https://psappdeploytoolkit.com
         ## If block execution switch is true, call the function to block execution of these processes
         If ($BlockExecution) {
             #  Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            Set-Variable -Name 'BlockExecution' -Value $BlockExecution -Scope 'Script'
+            $Script:ADT.CurrentSession.Session.State.BlockExecution = $BlockExecution
             Write-Log -Message '[-BlockExecution] parameter specified.' -Source ${CmdletName}
             Block-AppExecution -ProcessName ($processObjects | Select-Object -ExpandProperty 'ProcessName')
         }
@@ -1404,13 +1404,13 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## If in non-interactive mode
-        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
             If ($NoSilentRestart -eq $false) {
-                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
+                Write-Log -Message "Triggering restart silently, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds." -Source ${CmdletName}
                 Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& { Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force; }`"" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             }
             Else {
-                Write-Log -Message "Skipping restart, because the deploy mode is set to [$deployMode] and [NoSilentRestart] is enabled." -Source ${CmdletName}
+                Write-Log -Message "Skipping restart, because the deploy mode is set to [$($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is enabled." -Source ${CmdletName}
             }
             Return
         }
@@ -1424,7 +1424,7 @@ https://psappdeploytoolkit.com
         }
 
         ## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
-        If ($deployAppScriptFriendlyName) {
+        If ($Script:ADT.CurrentSession.GetPropertyValue('deployAppScriptFriendlyName')) {
             If ($NoCountdown) {
                 Write-Log -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
             }
@@ -1437,7 +1437,7 @@ https://psappdeploytoolkit.com
             ## Prepare a list of parameters of this function as a string
             [String]$installRestartPromptParameters = ($installRestartPromptParameters.GetEnumerator() | Resolve-Parameters) -join ' '
             ## Start another powershell instance silently with function parameters from this function
-            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$installTitle`' -ReferredInstallName `'$installName`' -ReferredLogName `'$logName`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
+            Start-Process -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'SilentlyContinue'
             Return
         }
 
@@ -1583,7 +1583,7 @@ https://psappdeploytoolkit.com
         $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, 0)
         $pictureBanner.Location = $System_Drawing_Point
         $pictureBanner.Name = 'pictureBanner'
-        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $appDeployLogoBannerHeight)
+        $System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size' -ArgumentList (450, $Script:ADT.CurrentSession.Session.BannerHeight)
         $pictureBanner.ClientSize = $System_Drawing_Size
         $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
         $pictureBanner.Margin = $paddingNone
@@ -1692,7 +1692,7 @@ https://psappdeploytoolkit.com
         $formRestart.Margin = $paddingNone
         $formRestart.DataBindings.DefaultDataSourceUpdateMode = 0
         $formRestart.Name = 'formRestart'
-        $formRestart.Text = $installTitle
+        $formRestart.Text = $Script:ADT.CurrentSession.GetPropertyValue('installTitle')
         $formRestart.StartPosition = 'CenterScreen'
         $formRestart.FormBorderStyle = 'Fixed3D'
         $formRestart.MaximizeBox = $false
@@ -1823,7 +1823,7 @@ https://psappdeploytoolkit.com
         [String]$BalloonTipText,
         [Parameter(Mandatory = $false, Position = 1)]
         [ValidateNotNullorEmpty()]
-        [String]$BalloonTipTitle = $installTitle,
+        [String]$BalloonTipTitle = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
         [Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
@@ -1841,12 +1841,12 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Skip balloon if in silent mode, disabled in the config or presentation is detected
-        If (($deployModeSilent) -or (-not $Script:ADT.Config.UI_Options.ShowBalloonNotifications)) {
-            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Config Show Balloon Notifications:$Script:ADT.Config.UI_Options.ShowBalloonNotifications]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent -or !$Script:ADT.Config.UI_Options.ShowBalloonNotifications) {
+            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI_Options.ShowBalloonNotifications)]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
         If (Test-PowerPoint) {
-            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$deployMode, Presentation Detected:$true]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
+            Write-Log -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText" -Source ${CmdletName}
             Return
         }
         ## Dispose of previous balloon
@@ -1858,7 +1858,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If (($envOSVersionMajor -lt 10) -or ($Script:ADT.Config.Toast_Options.Toast_Disable -eq $true)) {
+        If (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or ($Script:ADT.Config.Toast_Options.Toast_Disable -eq $true)) {
             ## NoWait - Create the balloontip icon asynchronously
             If ($NoWait) {
                 Write-Log -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]." -Source ${CmdletName}
@@ -1933,7 +1933,7 @@ https://psappdeploytoolkit.com
         }
         # Otherwise use toast notification
         Else {
-            $toastAppID = $appDeployToolkitName
+            $toastAppID = $Script:ADT.Environment.appDeployToolkitName
             $toastAppDisplayName = $Script:ADT.Config.Toast_Options.Toast_AppName
 
             [scriptblock]$toastScriptBlock  = {
@@ -2011,7 +2011,7 @@ https://psappdeploytoolkit.com
 
             }
 
-            If ($ProcessNTAccount -eq $runAsActiveUser.NTAccount) {
+            If ($Script:ADT.Environment.ProcessNTAccount -eq $Script:ADT.Environment.runAsActiveUser.NTAccount) {
                 Write-Log -Message "Displaying toast notification with message [$BalloonTipText]." -Source ${CmdletName}
                 Invoke-Command -ScriptBlock $toastScriptBlock -ArgumentList $BalloonTipText, $BalloonTipTitle, $AppDeployLogoImage, $toastAppID, $toastAppDisplayName
             }
@@ -2019,9 +2019,9 @@ https://psappdeploytoolkit.com
                 ## Invoke a separate PowerShell process as the current user passing the script block as a command and associated parameters to display the toast notification in the user context
                 Try {
                     Write-Log -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser." -Source ${CmdletName}
-                    $executeToastAsUserScript = "$loggedOnUserTempPath" + "$($appDeployToolkitName)-ToastNotification.ps1"
+                    $executeToastAsUserScript = "$($Script:ADT.Environment.loggedOnUserTempPath)" + "$($Script:ADT.Environment.appDeployToolkitName)-ToastNotification.ps1"
                     Set-Content -Path $executeToastAsUserScript -Value $toastScriptBlock -Force
-                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $loggedOnUserTempPath -Wait -RunLevel 'LeastPrivilege'
+                    Execute-ProcessAsUser -Path ([System.Diagnostics.Process]::GetCurrentProcess().Path) -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$executeToastAsUserScript`" `"$BalloonTipText`" `"$BalloonTipTitle`" `"$AppDeployLogoImage`" `"$toastAppID`" `"$toastAppDisplayName`"" -TempPath $($Script:ADT.Environment.loggedOnUserTempPath) -Wait -RunLevel 'LeastPrivilege'
                 }
                 Catch {
                 }
@@ -2133,32 +2133,32 @@ https://psappdeploytoolkit.com
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
     }
     Process {
-        If ((Test-Path -LiteralPath 'variable:deployModeSilent') -and $deployModeSilent) {
+        If ($Script:ADT.CurrentSession.Session.State.DeployModeSilent) {
             If (!$Quiet) {
-                Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $deployMode]. Status message:$StatusMessage" -Source ${CmdletName}
+                Write-Log -Message "Bypassing Show-InstallationProgress [Mode: $($Script:ADT.CurrentSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -Source ${CmdletName}
             }
             Return
         }
 
         ## If the default progress message hasn't been overridden and the deployment type is uninstall, use the default uninstallation message
         If ($StatusMessage -eq $Script:ADT.Strings.Progress_MessageInstall) {
-            If ($deploymentType -eq 'Uninstall') {
+            If ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Uninstall') {
                 $StatusMessage = $Script:ADT.Strings.Progress_MessageUninstall
             }
-            ElseIf ($deploymentType -eq 'Repair') {
+            ElseIf ($Script:ADT.CurrentSession.GetPropertyValue('DeploymentType') -eq 'Repair') {
                 $StatusMessage = $Script:ADT.Strings.Progress_MessageRepair
             }
         }
 
-        If ($envHost.Name -match 'PowerGUI') {
-            Write-Log -Message "$($envHost.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
+        If ($Host.Name -match 'PowerGUI') {
+            Write-Log -Message "$($Host.Name) is not a supported host for WPF multi-threading. Progress dialog with message [$statusMessage] will not be displayed." -Severity 2 -Source ${CmdletName}
             Return
         }
 
         ## Check if the progress thread is running before invoking methods on it
         If (!$script:instProgressRunning) {
             #  Notify user that the software installation has started
-            $balloonText = "$deploymentTypeName $($Script:ADT.Strings.BalloonText_Start)"
+            $balloonText = "$($Script:ADT.CurrentSession.Session.State.DeploymentTypeName) $($Script:ADT.Strings.BalloonText_Start)"
             Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText $balloonText
             #  Create a synchronized hashtable to share objects between runspaces
             $script:ProgressSyncHash = [Hashtable]::Synchronized(@{ })
@@ -2170,7 +2170,7 @@ https://psappdeploytoolkit.com
             #  Add the sync hash to the runspace
             $script:ProgressRunspace.SessionStateProxy.SetVariable('progressSyncHash', $script:ProgressSyncHash)
             #  Add other variables from the parent thread required in the progress runspace
-            $script:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $installTitle)
+            $script:ProgressRunspace.SessionStateProxy.SetVariable('installTitle', $Script:ADT.CurrentSession.GetPropertyValue('installTitle'))
             $script:ProgressRunspace.SessionStateProxy.SetVariable('windowLocation', $windowLocation)
             $script:ProgressRunspace.SessionStateProxy.SetVariable('topMost', $topMost.ToString())
             $script:ProgressRunspace.SessionStateProxy.SetVariable('appDeployLogoBanner', $appDeployLogoBanner)
@@ -2240,7 +2240,7 @@ https://psappdeploytoolkit.com
                 $xamlProgress.Window.Icon = $AppDeployLogoIcon
                 $xamlProgress.Window.Grid.Image.Source = $appDeployLogoBanner
                 $xamlProgress.Window.Grid.TextBlock.Text = $ProgressStatusMessage
-                $xamlProgress.Window.Title = $installTitle
+                $xamlProgress.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle')
                 #  Parse the XAML
                 $progressReader = New-Object -TypeName 'System.Xml.XmlNodeReader' -ArgumentList ($xamlProgress)
                 $script:ProgressSyncHash.Window = [Windows.Markup.XamlReader]::Load($progressReader)
@@ -2308,7 +2308,7 @@ https://psappdeploytoolkit.com
                 #  Allow the window to be dragged by clicking on it anywhere
                 $script:ProgressSyncHash.Window.Add_MouseLeftButtonDown({ $script:ProgressSyncHash.Window.DragMove() })
                 #  Add a tooltip
-                $script:ProgressSyncHash.Window.ToolTip = $installTitle
+                $script:ProgressSyncHash.Window.ToolTip = $Script:ADT.CurrentSession.GetPropertyValue('installTitle')
                 $null = $script:ProgressSyncHash.Window.ShowDialog()
                 $script:ProgressSyncHash.Error = $Error
             })
@@ -2330,7 +2330,7 @@ https://psappdeploytoolkit.com
         Else {
             Try {
                 #  Update the window title
-                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.Window.Title = $installTitle }, $null, $null)
+                $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.Window.Title = $Script:ADT.CurrentSession.GetPropertyValue('installTitle') }, $null, $null)
                 #  Update the progress text
                 $script:ProgressSyncHash.Window.Dispatcher.Invoke([Windows.Threading.DispatcherPriority]::Send, [Windows.Input.InputEventHandler] { $script:ProgressSyncHash.ProgressText.Text = $statusMessage }, $null, $null)
                 #  Calculate the position on the screen where the progress dialog should be placed
