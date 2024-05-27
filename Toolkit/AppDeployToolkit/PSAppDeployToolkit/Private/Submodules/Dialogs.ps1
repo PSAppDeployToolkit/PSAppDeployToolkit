@@ -305,8 +305,7 @@ https://psappdeploytoolkit.com
             $timerRunningProcesses.Interval = ($Script:ADT.Config.UI.DynamicProcessEvaluationInterval * 1000)
             [ScriptBlock]$timerRunningProcesses_Tick = {
                 Try {
-                    $dynamicRunningProcesses = $null
-                    $dynamicRunningProcesses = Get-RunningProcesses -ProcessObjects $processObjects -DisableLogging
+                    $dynamicRunningProcesses = $processObjects | Get-ADTRunningProcesses -DisableLogging
                     [String]$dynamicRunningProcessDescriptions = ($dynamicRunningProcesses | Where-Object { $_.ProcessDescription } | Select-Object -ExpandProperty 'ProcessDescription' | Sort-Object -Unique) -join ','
                     If ($dynamicRunningProcessDescriptions -ne $runningProcessDescriptions) {
                         # Update the runningProcessDescriptions variable for the next time this function runs

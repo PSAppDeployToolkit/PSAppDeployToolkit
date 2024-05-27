@@ -198,7 +198,7 @@ function Get-ADTInstalledApplication
         }
 
         # Enumerate the installed applications from the registry for applications that have the "DisplayName" property.
-        $regKeyApplication = Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyApplications -ErrorAction Ignore | Get-ItemProperty |
+        $regKeyApplication = Get-ItemProperty -Path ($Script:ADT.Environment.regKeyApplications -replace '$','\*') |
             Where-Object {$_.PSObject.Properties.Name.Contains('DisplayName') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayName)}
 
         # Set up variables needed in main loop.
