@@ -25,11 +25,16 @@ class ADTSession
         CloseAppsCountdownGlobal = $null
     }
 
-    # Variables we export publically for compatibility.
-    hidden [System.Collections.Hashtable]$Properties = @{
-        # Deploy-Application.ps1 variables.
+    # Variables we export publicly for compatibility.
+    hidden $Properties = [ordered]@{
+        # Deploy-Application.ps1 parameters.
         DeploymentType = 'Install'
         DeployMode = 'Interactive'
+        AllowRebootPassThru = $false
+        TerminalServerMode = $false
+        DisableLogging = $false
+
+        # Deploy-Application.ps1 variables.
         AppVendor = [System.String]::Empty
         AppName = [System.String]::Empty
         AppVersion = [System.String]::Empty
@@ -47,11 +52,6 @@ class ADTSession
         DeployAppScriptDate = [System.String]::Empty
         DeployAppScriptParameters = $null
         InstallPhase = 'Initialization'
-
-        # Deploy-Application.ps1 parameters.
-        AllowRebootPassThru = $false
-        TerminalServerMode = $false
-        DisableLogging = $false
 
         # Calculated variables we publicise.
         CurrentDateTime = [System.DateTime]::Now
