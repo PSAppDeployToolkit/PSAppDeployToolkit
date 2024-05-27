@@ -595,3 +595,36 @@ function Show-InstallationPrompt
     # Invoke function with amended parameters.
     Show-ADTInstallationPrompt @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTInstallationProgress
+#
+#---------------------------------------------------------------------------
+
+function Show-InstallationProgress
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String]$StatusMessage,
+
+        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
+        [System.String]$WindowLocation,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$TopMost = $true,
+
+        [System.Management.Automation.SwitchParameter]$Quiet,
+        [System.Management.Automation.SwitchParameter]$NoRelocation
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationProgress] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('TopMost'))
+    {
+        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        [System.Void]$PSBoundParameters.Remove('TopMost')
+    }
+    Show-ADTInstallationProgress @PSBoundParameters
+}

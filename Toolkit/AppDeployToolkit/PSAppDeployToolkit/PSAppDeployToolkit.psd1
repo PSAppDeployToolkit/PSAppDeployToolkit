@@ -129,7 +129,7 @@ FunctionsToExport = @(
     'Show-BalloonTip'
     'Show-DialogBox'
     'Show-HelpConsole'
-    'Show-InstallationProgress'
+    'Show-ADTInstallationProgress'
     'Show-ADTInstallationPrompt'
     'Show-InstallationRestartPrompt'
     'Show-InstallationWelcome'

@@ -135,7 +135,7 @@ function Close-ADTSession
     # Close the Installation Progress Dialog if running.
     if ($Script:SessionBuffer.Count.Equals(1))
     {
-        Close-InstallationProgress
+        Close-ADTInstallationProgress
     }
 
     # Close out the active session and clean up session state.

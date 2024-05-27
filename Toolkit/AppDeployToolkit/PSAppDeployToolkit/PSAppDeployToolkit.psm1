@@ -42,11 +42,13 @@ New-Variable -Name ADT -Option ReadOnly -Value @{
     LastExitCode = 0
 }
 
-# State data used by Show-InstallationProgress.
+# State data used by Show-ADTInstallationProgress.
 New-Variable -Name ProgressWindow -Option Constant -Value @{
-    Runspace = $null
-    SyncHash = $null
+    SyncHash = [System.Collections.Hashtable]::Synchronized(@{})
+    PowerShell = $null
+    Invocation = $null
     Running = $false
+    Xaml = [System.IO.File]::ReadAllText("$PSScriptRoot\Files\Show-ADTInstallationProgress.xml")
 }
 
 # Asset data used by all forms.
@@ -156,7 +158,7 @@ Export-ModuleMember -Function @(
     'Show-BalloonTip'
     'Show-DialogBox'
     'Show-HelpConsole'
-    'Show-InstallationProgress'
+    'Show-ADTInstallationProgress'
     'Show-ADTInstallationPrompt'
     'Show-InstallationRestartPrompt'
     'Show-InstallationWelcome'
