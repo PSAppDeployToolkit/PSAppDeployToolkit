@@ -19,7 +19,6 @@ class ADTSession
     # State values (can change mid-flight).
     hidden [System.Collections.Hashtable]$State = @{
         BlockExecution = $false
-        MsiRebootDetected = $false
         WelcomeTimer = $null
         FormWelcomeStartPosition = $null
         CloseAppsCountdownGlobal = $null
@@ -41,7 +40,8 @@ class ADTSession
         AppArch = [System.String]::Empty
         AppLang = [System.String]::Empty
         AppRevision = [System.String]::Empty
-        AppExitCodes = $null
+        AppExitCodes = @(0)
+        AppRebootCodes = @(1641, 3010)
         AppScriptVersion = [System.String]::Empty
         AppScriptDate = [System.String]::Empty
         AppScriptAuthor = [System.String]::Empty
@@ -100,7 +100,6 @@ class ADTSession
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        if ($null -eq $this.Properties.AppExitCodes) {$this.Properties.AppExitCodes = 0, 1641, 3010}
 
         # Establish script directories.
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -695,7 +694,7 @@ class ADTSession
         }
 
         # Process resulting exit code.
-        if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode))
+        if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
         {
             # Clean up app deferral history.
             if (Test-Path -LiteralPath $this.GetPropertyValue('RegKeyDeferHistory'))
@@ -705,14 +704,10 @@ class ADTSession
             }
 
             # Handle reboot prompts on successful script completion.
-            if ($this.GetPropertyValue('AllowRebootPassThru') -and ($this.State.MsiRebootDetected -or $ExitCode.Equals(3010) -or $ExitCode.Equals(1641)))
+            if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
             {
                 $this.WriteLogEntry('A restart has been flagged as required.')
                 $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
-                if ($this.State.MsiRebootDetected -and !$ExitCode.Equals(1641))
-                {
-                    $ExitCode = 3010
-                }
             }
             $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
             $balloonIcon = 'Info'

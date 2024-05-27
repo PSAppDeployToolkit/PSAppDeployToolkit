@@ -58,6 +58,10 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppRebootCodes,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppScriptVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
