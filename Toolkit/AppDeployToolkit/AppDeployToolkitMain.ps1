@@ -372,3 +372,38 @@ function Get-FileVersion
         }
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTUserProfiles
+#
+#---------------------------------------------------------------------------
+
+function Get-UserProfiles
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ExcludeNTAccount,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeSystemProfiles = $true,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeServiceProfiles = $true,
+
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
+    )
+
+    # Translate parameters.
+    ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
+        if (!$PSBoundParameters["Exclude$_"])
+        {
+            $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+        }
+        [System.Void]$PSBoundParameters.Remove("Exclude$_")
+    })
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTUserProfiles] instead." -Severity 2
+    Get-ADTUserProfiles @PSBoundParameters
+}

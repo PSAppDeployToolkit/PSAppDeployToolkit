@@ -889,7 +889,7 @@ function Invoke-ADTAllUsersRegistryChange
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject[]]$UserProfiles = (Get-UserProfiles)
+        [System.Management.Automation.PSObject[]]$UserProfiles = (Get-ADTUserProfiles)
     )
 
     begin {
