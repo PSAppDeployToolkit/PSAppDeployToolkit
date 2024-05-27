@@ -883,3 +883,41 @@ function Show-BalloonTip
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTBalloonTip] instead." -Severity 2
     Show-ADTBalloonTip @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Copy-ADTContentToCache
+#
+#---------------------------------------------------------------------------
+
+function Copy-ContentToCache
+{
+    param (
+        [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Copy-ADTContentToCache] instead." -Severity 2
+    Copy-ADTContentToCache @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Remove-ADTContentFromCache
+#
+#---------------------------------------------------------------------------
+
+function Remove-ContentFromCache
+{
+    param (
+        [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Remove-ADTContentFromCache] instead." -Severity 2
+    Remove-ADTContentFromCache @PSBoundParameters
+}
