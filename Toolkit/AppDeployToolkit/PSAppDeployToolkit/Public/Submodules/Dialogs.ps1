@@ -164,7 +164,6 @@ https://psappdeploytoolkit.com
             Return
         }
 
-        [Windows.Forms.Application]::EnableVisualStyles()
         $formInstallationPrompt = New-Object -TypeName 'System.Windows.Forms.Form'
         $formInstallationPrompt.SuspendLayout()
         $pictureBanner = New-Object -TypeName 'System.Windows.Forms.PictureBox'
@@ -1435,7 +1434,6 @@ https://psappdeploytoolkit.com
         [DateTime]$startTime = Get-Date
         [DateTime]$countdownTime = $startTime
 
-        [Windows.Forms.Application]::EnableVisualStyles()
         $formRestart = New-Object -TypeName 'System.Windows.Forms.Form'
         $formRestart.SuspendLayout()
         $labelCountdown = New-Object -TypeName 'System.Windows.Forms.Label'

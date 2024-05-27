@@ -22,6 +22,13 @@ Add-Type -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblie
 # Add system types required for the toolkit.
 Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase')
 
+# Set process as DPI-aware for better dialog rendering.
+[System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
+# WinForms modern text rendering. Commented out for now as forms aren't coded for it.
+# [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
+
 # Dot-source our imports.
 (Get-ChildItem -Path $PSScriptRoot\*\*.ps1).FullName.ForEach({. $_})
 
@@ -31,9 +38,6 @@ Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
 Set-Alias -Name 'Refresh-Desktop' -Value 'Update-Desktop'
 Set-Alias -Name 'Refresh-SessionEnvironmentVariables' -Value 'Update-SessionEnvironmentVariables'
 if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTask' -Value 'Get-SchedulerTask'}
-
-# Set process as DPI-aware for better dialog rendering.
-[System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
 
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
