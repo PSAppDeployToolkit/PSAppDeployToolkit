@@ -317,146 +317,105 @@ function Get-ADTInstalledApplication
 #
 #---------------------------------------------------------------------------
 
-Function Get-UserProfiles {
+function Get-ADTUserProfiles
+{
     <#
-.SYNOPSIS
 
-Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine and also the Default User (which does not log on).
+    .SYNOPSIS
+    Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User (which does not log on).
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User (which does  not log on).
 
-Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine and also the Default User (which does  not log on).
+    Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
 
-Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
+    .PARAMETER ExcludeNTAccount
+    Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
-.PARAMETER ExcludeNTAccount
+    .PARAMETER IncludeSystemProfiles
+    Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
 
-Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+    .PARAMETER IncludeServiceProfiles
+    Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
 
-.PARAMETER ExcludeSystemProfiles
+    .PARAMETER ExcludeDefaultUser
+    Exclude the Default User. Default is: $false.
 
-Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ExcludeServiceProfiles
+    .OUTPUTS
+    PSObject. Returns a PSObject with the following properties: NTAccount, SID, ProfilePath
 
-Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+    .EXAMPLE
+    # Return the following properties for each user profile on the system: NTAccount, SID, ProfilePath
+    Get-ADTUserProfiles
 
-.PARAMETER ExcludeDefaultUser
+    .EXAMPLE
+    # Return the following properties for each user profile on the system, except for 'Robot' and 'ntadmin': NTAccount, SID, ProfilePath
+    Get-ADTUserProfiles -ExcludeNTAccount CONTOSO\Robot,CONTOSO\ntadmin
 
-Exclude the Default User. Default is: $false.
+    .EXAMPLE
+    # Return the user profile path for each user on the system. This information can then be used to make modifications under the user profile on the filesystem.
+    [string[]]$ProfilePaths = Get-ADTUserProfiles | Select-Object -ExpandProperty ProfilePath
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-PSObject. Returns a PSObject with the following properties: NTAccount, SID, ProfilePath
-
-.EXAMPLE
-
-Get-UserProfiles
-
-Returns the following properties for each user profile on the system: NTAccount, SID, ProfilePath
-
-.EXAMPLE
-
-Get-UserProfiles -ExcludeNTAccount 'CONTOSO\Robot','CONTOSO\ntadmin'
-
-.EXAMPLE
-
-[String[]]$ProfilePaths = Get-UserProfiles | Select-Object -ExpandProperty 'ProfilePath'
-
-Returns the user profile path for each user on the system. This information can then be used to make modifications under the user profile on the filesystem.
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $false)]
+    param (
         [ValidateNotNullOrEmpty()]
-        [String[]]$ExcludeNTAccount,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeSystemProfiles = $true,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeServiceProfiles = $true,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Switch]$ExcludeDefaultUser = $false
+        [System.String[]]$ExcludeNTAccount,
+
+        [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
+        [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
+        $userProfileListRegKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
+        $excludedSids = if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
 
-            ## Get the User Profile Path, User Account Sid, and the User Account Name for all users that log onto the machine
-            [String]$UserProfileListRegKey = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
-            [PSObject[]]$UserProfiles = Get-ChildItem -LiteralPath $UserProfileListRegKey -ErrorAction 'Stop' |
-                ForEach-Object {
-                    Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Stop' | Where-Object { ($_.ProfileImagePath) } |
-                        Select-Object @{ Label = 'NTAccount'; Expression = { $(ConvertTo-NTAccountOrSID -SID $_.PSChildName).Value } }, @{ Label = 'SID'; Expression = { $_.PSChildName } }, @{ Label = 'ProfilePath'; Expression = { $_.ProfileImagePath } }
-                    } |
-                    Where-Object { $_.NTAccount } # This removes the "defaultuser0" account, which is a Windows 10 bug
-            If ($ExcludeSystemProfiles) {
-                [String[]]$SystemProfiles = 'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
-                [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $SystemProfiles -notcontains $_.SID }
-            }
-            If ($ExcludeServiceProfiles) {
-                [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $_.NTAccount -notlike 'NT SERVICE\*' }
-            }
-            If ($ExcludeNTAccount) {
-                [PSObject[]]$UserProfiles = $UserProfiles | Where-Object { $ExcludeNTAccount -notcontains $_.NTAccount }
+    process {
+        # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
+        Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
+        Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$excludedSids -notcontains $_.PSChildName} | ForEach-Object {
+            # Return early for accounts that have a null NTAccount.
+            if (!($ntAccount = ConvertTo-NTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
+            {
+                return
             }
 
-            ## Find the path to the Default User profile
-            If (-not $ExcludeDefaultUser) {
-                [String]$UserProfilesDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'ProfilesDirectory' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'ProfilesDirectory'
-
-                #  On Windows Vista or higher
-                If ($Script:ADT.Environment.envOSVersionMajor -gt 5) {
-                    # Path to Default User Profile directory on Windows Vista or higher: By default, C:\Users\Default
-                    [string]$DefaultUserProfileDirectory = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'Default' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Default'
-                }
-                #  On Windows XP or lower
-                Else {
-                    #  Default User Profile Name: By default, 'Default User'
-                    [string]$DefaultUserProfileName = Get-ItemProperty -LiteralPath $UserProfileListRegKey -Name 'DefaultUserProfile' -ErrorAction 'Stop' | Select-Object -ExpandProperty 'DefaultUserProfile'
-
-                    #  Path to Default User Profile directory: By default, C:\Documents and Settings\Default User
-                    [String]$DefaultUserProfileDirectory = Join-Path -Path $UserProfilesDirectory -ChildPath $DefaultUserProfileName
-                }
-
-                ## Create a custom object for the Default User profile.
-                #  Since the Default User is not an actual User account, it does not have a username or a SID.
-                #  We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-                [PSObject]$DefaultUserProfile = New-Object -TypeName 'PSObject' -Property @{
-                    NTAccount   = 'Default User'
-                    SID         = 'S-1-5-21-Default-User'
-                    ProfilePath = $DefaultUserProfileDirectory
-                }
-
-                ## Add the Default User custom object to the User Profile list.
-                $UserProfiles += $DefaultUserProfile
+            # Exclude early for excluded accounts.
+            if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
+            {
+                return
             }
 
-            Write-Output -InputObject ($UserProfiles)
+            # Write out the object to the pipeline.
+            [pscustomobject]@{
+                NTAccount = $ntAccount
+                SID = $_.PSChildName
+                ProfilePath = $_.ProfileImagePath
+            }
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to create a custom object representing all user profiles on the machine. `r`n$(Resolve-Error)" -Severity 3
+
+        # Create a custom object for the Default User profile. Since the Default User is not an actual user account, it does not have a username or a SID.
+        # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
+        If (!$ExcludeDefaultUser)
+        {
+            [pscustomobject]@{
+                NTAccount = 'Default User'
+                SID = 'S-1-5-21-Default-User'
+                ProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
+            }
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
@@ -2087,7 +2046,7 @@ https://psappdeploytoolkit.com
                         Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID -Recurse
                     }
                 }
-                Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-UserProfiles -ExcludeDefaultUser)
+                Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)
                 Return
             }
 

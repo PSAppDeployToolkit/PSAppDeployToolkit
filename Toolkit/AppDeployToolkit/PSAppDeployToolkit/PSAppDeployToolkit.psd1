@@ -98,7 +98,7 @@ FunctionsToExport = @(
 	'Get-Shortcut'
 	'Get-SidTypeAccountName'
 	'Get-UniversalDate'
-	'Get-UserProfiles'
+	'Get-ADTUserProfiles'
 	'Get-WindowTitle'
 	'Install-MSUpdates'
 	'Install-SCCMSoftwareUpdates'

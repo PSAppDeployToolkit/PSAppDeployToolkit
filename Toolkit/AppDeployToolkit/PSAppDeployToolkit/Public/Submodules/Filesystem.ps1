@@ -840,7 +840,7 @@ https://psappdeploytoolkit.com
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
-        foreach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath) {
             $CopyFileSplat.Destination = Join-Path $UserProfilePath $Destination
             Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):"
             Copy-File @CopyFileSplat
@@ -971,7 +971,7 @@ https://psappdeploytoolkit.com
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
-        ForEach ($UserProfilePath in (Get-UserProfiles @GetUserProfileSplat).ProfilePath) {
+        ForEach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath) {
             If ($PSCmdlet.ParameterSetName -eq 'Path') {
                 $RemoveFileSplat.Path = $Path | ForEach-Object { Join-Path $UserProfilePath $_ }
                 Write-ADTLogEntry -Message "Removing path [$Path] from $UserProfilePath`:"
