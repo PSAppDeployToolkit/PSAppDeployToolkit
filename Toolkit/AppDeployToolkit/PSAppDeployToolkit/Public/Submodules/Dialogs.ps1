@@ -1424,7 +1424,7 @@ https://psappdeploytoolkit.com
         }
 
         ## If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously
-        If ($Script:ADT.CurrentSession.GetPropertyValue('deployAppScriptFriendlyName')) {
+        If (!$Script:ADT.CurrentSession.GetPropertyValue('InstallPhase').Equals('Asynchronous')) {
             If ($NoCountdown) {
                 Write-ADTLogEntry -Message "Invoking ${CmdletName} asynchronously with no countdown..." -Source ${CmdletName}
             }
@@ -1437,7 +1437,8 @@ https://psappdeploytoolkit.com
             ## Prepare a list of parameters of this function as a string
             [String]$installRestartPromptParameters = $installRestartPromptParameters | Resolve-Parameters
             ## Start another powershell instance silently with function parameters from this function
-            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {& `'$scriptPath`' -ReferredInstallTitle `'$($Script:ADT.CurrentSession.GetPropertyValue('installTitle'))`' -ReferredInstallName `'$($Script:ADT.CurrentSession.GetPropertyValue('installName'))`' -ReferredLogName `'$($Script:ADT.CurrentSession.GetPropertyValue('logName'))`' -ShowInstallationRestartPrompt $installRestartPromptParameters -AsyncToolkitLaunch}" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
+            Export-ADTModuleState
+            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $installRestartPromptParameters)" -WindowStyle 'Hidden' -ErrorAction 'Ignore'
             Return
         }
 
@@ -1590,6 +1591,7 @@ https://psappdeploytoolkit.com
         $pictureBanner.TabStop = $false
 
         ## Label Message
+        $defaultFont = [System.Drawing.SystemFonts]::MessageBoxFont
         $labelMessage.DataBindings.DefaultDataSourceUpdateMode = 0
         $labelMessage.Font = $defaultFont
         $labelMessage.Name = 'labelMessage'
@@ -1637,7 +1639,7 @@ https://psappdeploytoolkit.com
         $labelCountdown.AutoSize = $true
 
         ## Panel Flow Layout
-        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $appDeployLogoBannerHeight)
+        $System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point' -ArgumentList (0, $Script:ADT.BannerHeight)
         $flowLayoutPanel.Location = $System_Drawing_Point
         $flowLayoutPanel.MinimumSize = $DefaultControlSize
         $flowLayoutPanel.MaximumSize = $DefaultControlSize
