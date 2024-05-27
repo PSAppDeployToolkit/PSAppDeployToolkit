@@ -39,6 +39,7 @@ if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTas
 New-Variable -Name ADT -Option Constant -Value @{
     Sessions = [System.Collections.Generic.List[ADTSession]]::new()
     CurrentSession = $null
+    BannerHeight = $null
     Environment = $null
     Language = $null
     Config = $null
