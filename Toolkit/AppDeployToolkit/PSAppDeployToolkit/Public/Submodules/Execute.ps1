@@ -722,11 +722,11 @@ https://psappdeploytoolkit.com
             }
             #  Copy RunHidden.vbs to temp path
             Try {
-                Write-ADTLogEntry -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]."
-                Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
+                Write-ADTLogEntry -Message "Copying [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]."
+                Copy-Item -LiteralPath $Script:PSScriptRoot\RunHidden.vbs -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Severity 2
+                Write-ADTLogEntry -Message "Unable to copy [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]." -Severity 2
             }
             #  Set user permissions on RunHidden.vbs
             Try {
