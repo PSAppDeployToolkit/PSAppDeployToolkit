@@ -1052,146 +1052,114 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-WindowTitle {
+function Get-ADTWindowTitle
+{
     <#
-.SYNOPSIS
 
-Search for an open window title and return details about the window.
+    .SYNOPSIS
+    Search for an open window title and return details about the window.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
 
-Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
+    Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
 
-Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
+    Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
-Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+    .PARAMETER WindowTitle
+    The title of the application window to search for using regex matching.
 
-.PARAMETER WindowTitle
+    .PARAMETER GetAllWindowTitles
+    Get titles for all open windows on the system.
 
-The title of the application window to search for using regex matching.
+    .PARAMETER DisableFunctionLogging
+    Disables logging messages to the script log file.
 
-.PARAMETER GetAllWindowTitles
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Get titles for all open windows on the system.
+    .OUTPUTS
+    System.Management.Automation.PSObject. Returns a PSObject with the following properties: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
 
-.PARAMETER DisableFunctionLogging
+    .EXAMPLE
+    # Gets details for each window that has the words "Microsoft Word" in the title.
+    Get-ADTWindowTitle -WindowTitle 'Microsoft Word'
 
-Disables logging messages to the script log file.
+    .EXAMPLE
 
-.INPUTS
+    # Gets details for all windows with a title.
+    Get-ADTWindowTitle -GetAllWindowTitles
 
-None
+    .EXAMPLE
 
-You cannot pipe objects to this function.
+    # Get details for all windows belonging to Microsoft Word process with name "WINWORD".
+    Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
 
-.OUTPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-System.Management.Automation.PSObject
+    #>
 
-Returns a PSObject with the following properties: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
-
-.EXAMPLE
-
-Get-WindowTitle -WindowTitle 'Microsoft Word'
-
-Gets details for each window that has the words "Microsoft Word" in the title.
-
-.EXAMPLE
-
-Get-WindowTitle -GetAllWindowTitles
-
-Gets details for all windows with a title.
-
-.EXAMPLE
-
-Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
-
-Get details for all windows belonging to Microsoft Word process with name "WINWORD".
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]
-        [String]$WindowTitle,
+        [System.String]$WindowTitle,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'GetAllWinTitles')]
-        [ValidateNotNullorEmpty()]
-        [Switch]$GetAllWindowTitles = $false,
+        [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Switch]$DisableFunctionLogging = $false
+        [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        Try {
-            If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
-                If (-not $DisableFunctionLogging) {
-                    Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching."
-                }
+
+    process {
+        try
+        {
+            if ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle')
+            {
+                Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
             }
-            ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
-                If (-not $DisableFunctionLogging) {
-                    Write-ADTLogEntry -Message 'Finding all open window title(s).'
-                }
+            elseif ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles')
+            {
+                Write-ADTLogEntry -Message 'Finding all open window title(s).' -DebugMessage:$DisableFunctionLogging
             }
 
-            ## Get all window handles for visible windows
-            [IntPtr[]]$VisibleWindowHandles = [PSADT.UiAutomation]::EnumWindows() | Where-Object { [PSADT.UiAutomation]::IsWindowVisible($_) }
+            # Cache all running processes.
+            $processes = [System.Diagnostics.Process]::GetProcesses()
 
-            ## Discover details about each visible window that was discovered
-            ForEach ($VisibleWindowHandle in $VisibleWindowHandles) {
-                If (-not $VisibleWindowHandle) {
-                    Continue
-                }
-                ## Get the window title
-                [String]$VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)
-                If ($VisibleWindowTitle) {
-                    ## Get the process that spawned the window
-                    [Diagnostics.Process]$Process = Get-Process -ErrorAction 'Stop' | Where-Object { $_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle) }
-                    If ($Process) {
-                        ## Build custom object with details about the window and the process
-                        [PSObject]$VisibleWindow = New-Object -TypeName 'PSObject' -Property @{
-                            WindowTitle                   = $VisibleWindowTitle
-                            WindowHandle                  = $VisibleWindowHandle
-                            ParentProcess                 = $Process.ProcessName
-                            ParentProcessMainWindowHandle = $Process.MainWindowHandle
-                            ParentProcessId               = $Process.Id
-                        }
+            # Get all window handles for visible windows and loop through the visible ones.
+            [PSADT.UiAutomation]::EnumWindows().Where({$_ -and [PSADT.UiAutomation]::IsWindowVisible($_)}).ForEach({
+                # Only process handles with window text and an associated running process.
+                if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})))
+                {
+                    # Only save/return the window and process details which match the search criteria.
+                    if ($PSCmdlet.ParameterSetNameEquals('SearchWinTitle') -and ($VisibleWindowTitle -notmatch $WindowTitle))
+                    {
+                        return
+                    }
 
-                        ## Only save/return the window and process details which match the search criteria
-                        If ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle') {
-                            $MatchResult = $VisibleWindow.WindowTitle -match $WindowTitle
-                            If ($MatchResult) {
-                                [PSObject[]]$VisibleWindows += $VisibleWindow
-                            }
-                        }
-                        ElseIf ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles') {
-                            [PSObject[]]$VisibleWindows += $VisibleWindow
-                        }
+                    # Build custom object with details about the window and the process.
+                    [pscustomobject]@{
+                        WindowTitle = $VisibleWindowTitle
+                        WindowHandle = $VisibleWindowHandle
+                        ParentProcess = $Process.ProcessName
+                        ParentProcessMainWindowHandle = $Process.MainWindowHandle
+                        ParentProcessId = $Process.Id
                     }
                 }
-            }
+            })
         }
-        Catch {
-            If (-not $DisableFunctionLogging) {
-                Write-ADTLogEntry -Message "Failed to get requested window title(s). `r`n$(Resolve-Error)" -Severity 3
-            }
+        catch
+        {
+            Write-ADTLogEntry -Message "Failed to get requested window title(s). `r`n$(Resolve-Error)" -Severity 3 -DebugMessage:$DisableFunctionLogging
         }
     }
-    End {
-        Write-Output -InputObject ($VisibleWindows)
 
-        If ($DisableFunctionLogging) {
-            . $RevertScriptLogging
-        }
+    end {
         Write-DebugFooter
     }
 }
@@ -1330,7 +1298,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             If ($WindowHandle) {
-                [PSObject]$Window = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
+                [PSObject]$Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
                 If (-not $Window) {
                     Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                     Return
@@ -1345,7 +1313,7 @@ https://psappdeploytoolkit.com
                 Else {
                     $GetWindowTitleSplat.Add( 'WindowTitle', $WindowTitle)
                 }
-                [PSObject[]]$AllWindows = Get-WindowTitle @GetWindowTitleSplat
+                [PSObject[]]$AllWindows = Get-ADTWindowTitle @GetWindowTitleSplat
                 If (-not $AllWindows) {
                     Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                     Return
@@ -1675,7 +1643,7 @@ https://psappdeploytoolkit.com
                 If ([Environment]::UserInteractive) {
                     #  Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
                     #  There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-                    [PSObject]$PowerPointWindow = Get-WindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT' } | Select-Object -First 1
+                    [PSObject]$PowerPointWindow = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-' } | Where-Object { $_.ParentProcess -eq 'POWERPNT' } | Select-Object -First 1
                     If ($PowerPointWindow) {
                         [Nullable[Boolean]]$IsPowerPointFullScreen = $true
                         Write-ADTLogEntry -Message 'Detected that PowerPoint process [POWERPNT] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-].'

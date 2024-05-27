@@ -44,7 +44,7 @@ Block-AppExecution -ProcessName ('winword','excel')
 
 .NOTES
 
-It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to block applications.
+It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to block applications.
 
 .LINK
 
@@ -232,7 +232,7 @@ Unblock-AppExecution
 
 .NOTES
 
-It is used when the -BlockExecution parameter is specified with the Show-InstallationWelcome function to undo the actions performed by Block-AppExecution.
+It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-AppExecution.
 
 .LINK
 

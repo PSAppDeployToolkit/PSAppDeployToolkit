@@ -677,3 +677,132 @@ function Show-DialogBox
     }
     Show-ADTDialogBox @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTInstallationWelcome
+#
+#---------------------------------------------------------------------------
+
+function Show-InstallationWelcome
+{
+    [CmdletBinding(DefaultParameterSetName = 'None')]
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$CloseApps,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Silent,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$CloseAppsCountdown,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$ForceCloseAppsCountdown,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PromptToSave,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$BlockExecution,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$AllowDefer,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$AllowDeferCloseApps,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$DeferTimes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$DeferDays,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeferDeadline,
+
+        [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $true)]
+        [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
+
+        [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$RequiredDiskSpace,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$MinimizeWindows = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$TopMost = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$ForceCountdown,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$CustomText
+    )
+
+    # Announce overall deprecation.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationWelcome] instead." -Severity 2
+
+    # Tune up parameters. A lot has changed.
+    if ($PSBoundParameters.ContainsKey('CloseApps'))
+    {
+        $PSBoundParameters.ProcessObjects = $CloseApps.Split(',').ForEach({
+            $obj = @{}
+            $obj.ProcessName, $obj.ProcessDescription = $_.Split('=')
+            return [pscustomobject]$obj
+        })
+        [System.Void]$PSBoundParameters.Remove('CloseApps')
+    }
+    if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
+    {
+        $PSBoundParameters.NoMinimizeWindows = !$PSBoundParameters.MinimizeWindows
+        [System.Void]$PSBoundParameters.Remove('MinimizeWindows')
+    }
+    if ($PSBoundParameters.ContainsKey('TopMost'))
+    {
+        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        [System.Void]$PSBoundParameters.Remove('TopMost')
+    }
+
+    # Invoke function with amended parameters.
+    Show-ADTInstallationWelcome @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTWindowTitle
+#
+#---------------------------------------------------------------------------
+
+function Get-WindowTitle
+{
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
+        [AllowEmptyString()]
+        [System.String]$WindowTitle,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetAllWinTitles')]
+        [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTWindowTitle] instead." -Severity 2
+    Get-ADTWindowTitle @PSBoundParameters
+}
