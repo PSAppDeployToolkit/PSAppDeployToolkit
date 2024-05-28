@@ -40,6 +40,7 @@ function Copy-ADTContentToCache
     )
 
     begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
@@ -67,11 +68,11 @@ function Copy-ADTContentToCache
 
             # Copy the toolkit content to the cache folder.
             Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
-            Copy-File -Path (Join-Path (Get-ADTSession).GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
+            Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
 
             # Set the Files directory to the cache path.
-            (Get-ADTSession).SetPropertyValue('DirFiles', "$Path\Files")
-            (Get-ADTSession).SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
+            $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
+            $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
         }
         catch
         {
@@ -119,6 +120,8 @@ function Remove-ADTContentFromCache
     )
 
     begin {
+        $adtSession = Get-ADTSession
+        $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
         Write-ADTDebugHeader
     }
 
@@ -133,8 +136,8 @@ function Remove-ADTContentFromCache
         {
             Write-ADTLogEntry -Message "Removing cache folder [$Path]."
             Remove-Item -Path $Path -Recurse
-            (Get-ADTSession).SetPropertyValue('DirFiles', (Join-Path -Path (Get-ADTSession).GetPropertyValue('scriptParentPath') -ChildPath Files))
-            (Get-ADTSession).SetPropertyValue('DirSupportFiles', (Join-Path -Path (Get-ADTSession).GetPropertyValue('scriptParentPath') -ChildPath SupportFiles))
+            $adtSession.SetPropertyValue('DirFiles', (Join-Path -Path $parentPath -ChildPath Files))
+            $adtSession.SetPropertyValue('DirSupportFiles', (Join-Path -Path $parentPath -ChildPath SupportFiles))
         }
         catch
         {
