@@ -843,7 +843,7 @@ function Show-ADTInstallationWelcome
         }
 
         # Check Deferral history and calculate remaining deferrals.
-        [String]$deferDeadlineUniversal = $null
+        $deferDeadlineUniversal = $null
         if ($AllowDefer -or $AllowDeferCloseApps)
         {
             # Set $AllowDefer to true if $AllowDeferCloseApps is true.
