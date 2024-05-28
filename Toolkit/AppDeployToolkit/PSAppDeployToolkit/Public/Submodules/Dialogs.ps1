@@ -1109,7 +1109,7 @@ function Show-ADTInstallationWelcome
 
                     # Restore minimized windows.
                     [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
-                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DeferExitCode
                 }
             }
         }
