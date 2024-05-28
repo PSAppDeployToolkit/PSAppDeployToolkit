@@ -2258,83 +2258,69 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-LoggedOnUser {
+function Get-ADTLoggedOnUser
+{
     <#
-.SYNOPSIS
 
-Get session details for all local and RDP logged on users.
+    .SYNOPSIS
+    Get session details for all local and RDP logged on users.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
+        NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession
+        IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
 
-Get session details for all local and RDP logged on users using Win32 APIs. Get the following session details:
-    NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession
-    IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, ClientBuildNumber
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.INPUTS
+    .OUTPUTS
+    None. This function does not return any objects.
 
-None
+    .EXAMPLE
+    Get-ADTLoggedOnUser
 
-You cannot pipe objects to this function.
+    .NOTES
+    Description of ConnectState property:
 
-.OUTPUTS
+    Value        Description
+    -----        -----------
+    Active       A user is logged on to the session.
+    ConnectQuery The session is in the process of connecting to a client.
+    Connected    A client is connected to the session.
+    Disconnected The session is active, but the client has disconnected from it.
+    Down         The session is down due to an error.
+    Idle         The session is waiting for a client to connect.
+    Initializing The session is initializing.
+    Listening    The session is listening for connections.
+    Reset        The session is being reset.
+    Shadowing    This session is shadowing another session.
 
-None
+    Description of IsActiveUserSession property:
 
-This function does not return any objects.
+    - If a console user exists, then that will be the active user session.
+    - If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that has ConnectState either 'Active' or 'Connected' is the active user.
 
-.EXAMPLE
+    Description of IsRdpSession property:
+    - Gets a value indicating whether the user is associated with an RDP client session.
 
-Get-LoggedOnUser
+    Description of IsLocalAdmin property:
+    - Checks whether the user is a member of the Administrators group
 
-.NOTES
+    .LINK
+    https://psappdeploytoolkit.com
 
-Description of ConnectState property:
+    #>
 
-Value        Description
------        -----------
-Active       A user is logged on to the session.
-ConnectQuery The session is in the process of connecting to a client.
-Connected    A client is connected to the session.
-Disconnected The session is active, but the client has disconnected from it.
-Down         The session is down due to an error.
-Idle         The session is waiting for a client to connect.
-Initializing The session is initializing.
-Listening    The session is listening for connections.
-Reset        The session is being reset.
-Shadowing    This session is shadowing another session.
-
-Description of IsActiveUserSession property:
-
-- If a console user exists, then that will be the active user session.
-- If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that has ConnectState either 'Active' or 'Connected' is the active user.
-
-Description of IsRdpSession property:
-- Gets a value indicating whether the user is associated with an RDP client session.
-
-Description of IsLocalAdmin property:
-- Checks whether the user is a member of the Administrators group
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-    )
-
-    Begin {
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
-            Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3
-        }
+
+    process {
+        Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
+        return [PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName")
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
