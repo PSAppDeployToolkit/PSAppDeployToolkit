@@ -934,3 +934,16 @@ function Test-NetworkConnection
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Test-ADTNetworkConnection] instead." -Severity 2
     Test-ADTNetworkConnection
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTLoggedOnUser
+#
+#---------------------------------------------------------------------------
+
+function Get-LoggedOnUser
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTLoggedOnUser] instead." -Severity 2
+    Get-ADTLoggedOnUser
+}

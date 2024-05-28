@@ -120,7 +120,7 @@ Export-ModuleMember -Function @(
     'Get-ADTFreeDiskSpace'
     'Get-IniValue'
     'Get-ADTInstalledApplication'
-    'Get-LoggedOnUser'
+    'Get-ADTLoggedOnUser'
     'Get-MsiTableProperty'
     'Get-PendingReboot'
     'Get-RegistryKey'
