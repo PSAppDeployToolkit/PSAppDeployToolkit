@@ -6,6 +6,19 @@
 
 function Initialize-ADTVariableDatabase
 {
+    # Internal function for translating SID types to names.
+    function Get-SidTypeAccountName
+    {
+        param (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [Security.Principal.WellKnownSidType]$WellKnownSidType
+        )
+
+        # Translate the SidType into its user-readable name.
+        return [System.Security.Principal.SecurityIdentifier]::new($WellKnownSidType, $null).Translate([System.Security.Principal.NTAccount]).Value
+    }
+
     ## Open new dictionary for storage.
     $variables = [ordered]@{}
 
