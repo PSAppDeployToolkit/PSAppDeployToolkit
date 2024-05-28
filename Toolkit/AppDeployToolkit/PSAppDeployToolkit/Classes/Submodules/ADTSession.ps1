@@ -478,7 +478,7 @@ class ADTSession
             # Check the health of the 'Task Scheduler' service
             try
             {
-                if (Test-ServiceExists -Name 'Schedule' -ContinueOnError $false)
+                if (Test-ADTServiceExists -Name 'Schedule')
                 {
                     if ((Get-ServiceStartMode -Name 'Schedule' -ContinueOnError $false) -ne 'Automatic')
                     {
