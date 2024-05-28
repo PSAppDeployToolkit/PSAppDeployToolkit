@@ -167,7 +167,7 @@ Export-ModuleMember -Function @(
     'Stop-ServiceAndDependencies'
     'Test-Battery'
     'Test-MSUpdates'
-    'Test-NetworkConnection'
+    'Test-ADTNetworkConnection'
     'Test-PowerPoint'
     'Test-RegistryValue'
     'Test-ServiceExists'

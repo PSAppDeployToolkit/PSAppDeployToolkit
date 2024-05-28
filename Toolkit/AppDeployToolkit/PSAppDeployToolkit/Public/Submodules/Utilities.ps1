@@ -1510,61 +1510,46 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Test-NetworkConnection {
+function Test-ADTNetworkConnection
+{
     <#
-.SYNOPSIS
 
-Tests for an active local network connection, excluding wireless and virtual network adapters.
+    .SYNOPSIS
+    Tests for an active local network connection, excluding wireless and virtual network adapters.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Tests for an active local network connection, excluding wireless and virtual network adapters, by querying the Win32_NetworkAdapter WMI class.
 
-Tests for an active local network connection, excluding wireless and virtual network adapters, by querying the Win32_NetworkAdapter WMI class.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.INPUTS
+    .OUTPUTS
+    System.Boolean. Returns $true if a wired network connection is detected, otherwise returns $false.
 
-None
+    .EXAMPLE
+    Test-ADTNetworkConnection
 
-You cannot pipe objects to this function.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.OUTPUTS
+    #>
 
-System.Boolean
-
-Returns $true if a wired network connection is detected, otherwise returns $false.
-
-.EXAMPLE
-
-Test-NetworkConnection
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-    )
-
-    Begin {
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
+
+    process {
         Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
-
-        [PSObject[]]$networkConnected = Get-WmiObject -Class 'Win32_NetworkAdapter' | Where-Object { ($_.NetConnectionStatus -eq 2) -and ($_.NetConnectionID -match 'Local' -or $_.NetConnectionID -match 'Ethernet') -and ($_.NetConnectionID -notmatch 'Wireless') -and ($_.Name -notmatch 'Virtual') } -ErrorAction 'Ignore'
-        [Boolean]$onNetwork = $false
-        If ($networkConnected) {
+        if (Get-NetAdapter -Physical | Where-Object {$_.Status.Equals('Up')})
+        {
             Write-ADTLogEntry -Message 'Wired network connection found.'
-            [Boolean]$onNetwork = $true
+            return $true
         }
-        Else {
-            Write-ADTLogEntry -Message 'Wired network connection not found.'
-        }
-
-        Write-Output -InputObject ($onNetwork)
+        Write-ADTLogEntry -Message 'Wired network connection not found.'
+        return $false
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
