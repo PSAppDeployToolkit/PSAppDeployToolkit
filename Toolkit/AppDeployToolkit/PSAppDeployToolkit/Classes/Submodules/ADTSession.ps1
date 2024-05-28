@@ -264,10 +264,16 @@ class ADTSession
         $this.Properties.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
+    hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
+    {
+        # Write divider as requested.
+        $this.WriteLogEntry((1..$Count).ForEach({'*' * 79}))
+    }
+
     hidden [System.Void] WriteLogDivider()
     {
         # Write divider as requested.
-        $this.WriteLogEntry('*' * 79)
+        $this.WriteLogDivider(1)
     }
 
     hidden [System.Void] InitLogging()
@@ -338,8 +344,7 @@ class ADTSession
         }
 
         # Open log file with commencement message.
-        $this.WriteLogDivider()
-        $this.WriteLogDivider()
+        $this.WriteLogDivider(2)
         $this.WriteLogEntry("[$($this.Properties.InstallName)] setup started.")
     }
 
