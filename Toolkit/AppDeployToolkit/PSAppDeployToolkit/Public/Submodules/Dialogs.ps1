@@ -1627,7 +1627,7 @@ function Show-ADTBalloonTip
             Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
             return
         }
-        if (Test-PowerPoint)
+        if (Test-ADTPowerPoint)
         {
             Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
             return

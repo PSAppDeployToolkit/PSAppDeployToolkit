@@ -168,7 +168,7 @@ Export-ModuleMember -Function @(
     'Test-Battery'
     'Test-MSUpdates'
     'Test-ADTNetworkConnection'
-    'Test-PowerPoint'
+    'Test-ADTPowerPoint'
     'Test-RegistryValue'
     'Test-ServiceExists'
     'Unblock-AppExecution'
