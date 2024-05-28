@@ -140,7 +140,7 @@ FunctionsToExport = @(
     'Test-ADTNetworkConnection'
     'Test-ADTPowerPoint'
     'Test-RegistryValue'
-    'Test-ServiceExists'
+    'Test-ADTServiceExists'
     'Unblock-AppExecution'
     'Update-ADTDesktop'
     'Update-ADTGroupPolicy'

@@ -4,115 +4,87 @@
 #
 #---------------------------------------------------------------------------
 
-Function Test-ServiceExists {
+function Test-ADTServiceExists
+{
     <#
-.SYNOPSIS
 
-Check to see if a service exists.
+    .SYNOPSIS
+    Check to see if a service exists.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
 
-Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
+    .PARAMETER Name
+    Specify the name of the service.
 
-.PARAMETER Name
+    Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
 
-Specify the name of the service.
+    .PARAMETER ComputerName
+    Specify the name of the computer. Default is: the local computer.
 
-Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
+    .PARAMETER PassThru
+    Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
 
-.PARAMETER ComputerName
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Specify the name of the computer. Default is: the local computer.
+    .OUTPUTS
+    None. This function does not return any objects.
 
-.PARAMETER PassThru
+    .EXAMPLE
+    Test-ADTServiceExists -Name 'wuauserv'
 
-Return the WMI service object. To see all the properties use: Test-ServiceExists -Name 'spooler' -PassThru | Get-Member
+    .EXAMPLE
+    Test-ADTServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
 
-.PARAMETER ContinueOnError
+    Check if a service exists and then delete it by using the -PassThru parameter.
 
-Continue if an error is encountered. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not return any objects.
-
-.EXAMPLE
-
-Test-ServiceExists -Name 'wuauserv'
-
-.EXAMPLE
-
-Test-ServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
-
-Check if a service exists and then delete it by using the -PassThru parameter.
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]$Name,
+        [System.String]$Name,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [System.String]$ComputerName = $env:ComputerName,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Switch]$PassThru,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
-    Begin {
+
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop'
-            # If nothing is returned from Win32_Service, check Win32_BaseService
-            If (-not $ServiceObject) {
-                $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_BaseService' -Filter "Name='$Name'" -ErrorAction 'Stop'
-            }
 
-            If ($ServiceObject) {
-                Write-ADTLogEntry -Message "Service [$Name] exists."
-                If ($PassThru) {
-                    Write-Output -InputObject ($ServiceObject)
-                }
-                Else {
-                    Write-Output -InputObject ($true)
-                }
-            }
-            Else {
-                Write-ADTLogEntry -Message "Service [$Name] does not exist."
-                If ($PassThru) {
-                    Write-Output -InputObject ($ServiceObject)
-                }
-                Else {
-                    Write-Output -InputObject ($false)
-                }
-            }
+    process {
+        # If nothing is returned from Win32_Service, check Win32_BaseService.
+        if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+        {
+            $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed check to see if service [$Name] exists." -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed check to see if service [$Name] exists: $($_.Exception.Message)"
-            }
+
+        # Return early if null.
+        if (!$ServiceObject)
+        {
+            Write-ADTLogEntry -Message "Service [$Name] does not exist."
+            return $false
         }
+        Write-ADTLogEntry -Message "Service [$Name] exists."
+
+        # Return the CIM object if passing through.
+        if ($PassThru)
+        {
+            return $ServiceObject
+        }
+        return $true
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
@@ -207,7 +179,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## Check to see if the service exists
-            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
+            If ((-not $SkipServiceExistsTest) -and (-not (Test-ADTServiceExists -Name $Name -ContinueOnError $false))) {
                 Write-ADTLogEntry -Message "Service [$Name] does not exist." -Severity 2
                 Throw "Service [$Name] does not exist."
             }
@@ -372,7 +344,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## Check to see if the service exists
-            If ((-not $SkipServiceExistsTest) -and (-not (Test-ServiceExists -Name $Name -ContinueOnError $false))) {
+            If ((-not $SkipServiceExistsTest) -and (-not (Test-ADTServiceExists -Name $Name -ContinueOnError $false))) {
                 Write-ADTLogEntry -Message "Service [$Name] does not exist." -Severity 2
                 Throw "Service [$Name] does not exist."
             }

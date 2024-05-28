@@ -1165,3 +1165,49 @@ function Get-UniversalDate
         }
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Test-ADTServiceExists
+#
+#---------------------------------------------------------------------------
+
+function Test-ServiceExists
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ComputerName,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Test-ADTServiceExists] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    try
+    {
+        Test-ADTServiceExists @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)].`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
