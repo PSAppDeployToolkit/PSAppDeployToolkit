@@ -921,3 +921,16 @@ function Remove-ContentFromCache
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Remove-ADTContentFromCache] instead." -Severity 2
     Remove-ADTContentFromCache @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Test-ADTNetworkConnection
+#
+#---------------------------------------------------------------------------
+
+function Test-NetworkConnection
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Test-ADTNetworkConnection] instead." -Severity 2
+    Test-ADTNetworkConnection
+}
