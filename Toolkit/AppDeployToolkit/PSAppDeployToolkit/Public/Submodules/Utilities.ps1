@@ -1664,86 +1664,61 @@ function Test-ADTPowerPoint
 #
 #---------------------------------------------------------------------------
 
-Function Update-GroupPolicy {
+function Update-ADTGroupPolicy
+{
     <#
-.SYNOPSIS
 
-Performs a gpupdate command to refresh Group Policies on the local machine.
+    .SYNOPSIS
+    Performs a gpupdate command to refresh Group Policies on the local machine.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Performs a gpupdate command to refresh Group Policies on the local machine.
 
-Performs a gpupdate command to refresh Group Policies on the local machine.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ContinueOnError
+    .OUTPUTS
+    None. This function does not return any objects.
 
-Continue if an error is encountered. Default is: $true.
+    .EXAMPLE
+    Update-ADTGroupPolicy
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not return any objects.
-
-.EXAMPLE
-
-Update-GroupPolicy
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+        }
         Write-ADTDebugHeader
     }
-    Process {
-        [String[]]$GPUpdateCmds = '/C echo N | gpupdate.exe /Target:Computer /Force', '/C echo N | gpupdate.exe /Target:User /Force'
-        [Int32]$InstallCount = 0
-        ForEach ($GPUpdateCmd in $GPUpdateCmds) {
-            Try {
-                If ($InstallCount -eq 0) {
-                    [String]$InstallMsg = 'Updating Group Policies for the Machine'
-                }
-                Else {
-                    [String]$InstallMsg = 'Updating Group Policies for the User'
-                }
-                Write-ADTLogEntry -Message "$($InstallMsg)..."
-                [PSObject]$ExecuteResult = Execute-Process -Path "$env:WinDir\System32\cmd.exe" -Parameters $GPUpdateCmd -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
 
-                If ($ExecuteResult.ExitCode -ne 0) {
-                    If ($ExecuteResult.ExitCode -eq 60002) {
-                        Throw "Execute-Process function failed with exit code [$($ExecuteResult.ExitCode)]."
-                    }
-                    Else {
-                        Throw "gpupdate.exe failed with exit code [$($ExecuteResult.ExitCode)]."
-                    }
+    process {
+        foreach ($target in ('Computer', 'User'))
+        {
+            Write-ADTLogEntry -Message ($msg = "Updating Group Policies for the $target")
+            [System.Void](cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force")
+            if ($LASTEXITCODE)
+            {
+                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                {
+                    throw $msg
                 }
-                $InstallCount++
-            }
-            Catch {
-                Write-ADTLogEntry -Message "$($InstallMsg) failed. `r`n$(Resolve-Error)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "$($InstallMsg) failed: $($_.Exception.Message)"
-                }
-                Continue
             }
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
