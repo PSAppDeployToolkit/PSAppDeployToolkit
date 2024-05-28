@@ -98,7 +98,7 @@ class ADTSession
 
         # Process provided parameters and amend some incoming values.
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
-        $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
+        $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType.ToLower())
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
 
         # Establish script directories.
@@ -547,30 +547,19 @@ class ADTSession
         $this.WriteLogEntry("Installation is running in [$($this.Properties.DeployMode)] mode.")
         switch ($this.Properties.DeployMode)
         {
-            'Silent' {
-                $this.DeployModeNonInteractive = $true; $this.DeployModeSilent = $true
+            Silent {
+                $this.DeployModeNonInteractive = $true
+                $this.DeployModeSilent = $true
+                break
             }
-            'NonInteractive' {
-                $this.DeployModeNonInteractive = $true; $this.DeployModeSilent = $false
+            NonInteractive {
+                $this.DeployModeNonInteractive = $true
+                break
             }
         }
 
         # Check deployment type (install/uninstall).
-        $this.DeploymentTypeName = switch ($this.Properties.DeploymentType)
-        {
-            'Install' {
-                $Script:ADT.Strings.DeploymentType.Install
-            }
-            'Uninstall' {
-                $Script:ADT.Strings.DeploymentType.UnInstall
-            }
-            'Repair' {
-                $Script:ADT.Strings.DeploymentType.Repair
-            }
-            default {
-                $Script:ADT.Strings.DeploymentType.Install
-            }
-        }
+        $this.DeploymentTypeName = $Script:ADT.Strings.DeploymentType.($this.Properties.DeploymentType)
         $this.WriteLogEntry("Deployment type is [$($this.DeploymentTypeName)].")
     }
 
