@@ -884,15 +884,15 @@ function Show-ADTInstallationWelcome
                 [String]$deferDeadlineUniversal = if ($deferHistoryDeadline)
                 {
                     Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
-                    Get-UniversalDate -DateTime $deferHistoryDeadline
+                    Get-ADTUniversalDate -DateTime $deferHistoryDeadline
                 }
                 else
                 {
-                    Get-UniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
+                    Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
                 }
                 Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
-                if ((Get-UniversalDate) -gt $deferDeadlineUniversal)
+                if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
                 {
                     Write-ADTLogEntry -Message 'Deferral has expired.'
                     $AllowDefer = $false
@@ -904,7 +904,7 @@ function Show-ADTInstallationWelcome
                 # Validate date.
                 try
                 {
-                    [String]$deferDeadlineUniversal = Get-UniversalDate -DateTime $DeferDeadline
+                    [String]$deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
                 }
                 catch
                 {
@@ -913,7 +913,7 @@ function Show-ADTInstallationWelcome
                 }
                 Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
 
-                if ((Get-UniversalDate) -gt $deferDeadlineUniversal)
+                if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
                 {
                     Write-ADTLogEntry -Message 'Deferral has expired.'
                     $AllowDefer = $false

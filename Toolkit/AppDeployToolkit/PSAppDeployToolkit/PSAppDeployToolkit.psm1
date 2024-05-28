@@ -127,7 +127,7 @@ Export-ModuleMember -Function @(
     'Get-SchedulerTask'
     'Get-ServiceStartMode'
     'Get-Shortcut'
-    'Get-UniversalDate'
+    'Get-ADTUniversalDate'
     'Get-ADTUserProfiles'
     'Get-ADTWindowTitle'
     'Install-MSUpdates'

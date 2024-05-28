@@ -1128,3 +1128,40 @@ function Update-GroupPolicy
     }
     Update-ADTGroupPolicy @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTUniversalDate
+#
+#---------------------------------------------------------------------------
+
+function Get-UniversalDate
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DateTime,
+
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTUniversalDate] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    try
+    {
+        Get-ADTUniversalDate @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)].`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}

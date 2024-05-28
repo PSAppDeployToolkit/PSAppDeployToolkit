@@ -726,89 +726,62 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Get-UniversalDate {
+function Get-ADTUniversalDate
+{
     <#
-.SYNOPSIS
 
-Returns the date/time for the local culture in a universal sortable date time pattern.
+    .SYNOPSIS
+    Returns the date/time for the local culture in a universal sortable date time pattern.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Converts the current datetime or a datetime string for the current culture into a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z
 
-Converts the current datetime or a datetime string for the current culture into a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z
+    .PARAMETER DateTime
+    Specify the DateTime in the current culture.
 
-.PARAMETER DateTime
+    .PARAMETER ContinueOnError
+    Continue if an error is encountered. Default: $false.
 
-Specify the DateTime in the current culture.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ContinueOnError
+    .OUTPUTS
+    System.String. Returns the date/time for the local culture in a universal sortable date time pattern.
 
-Continue if an error is encountered. Default: $false.
+    .EXAMPLE
+    Get-ADTUniversalDate
 
-.INPUTS
+    Returns the current date in a universal sortable date time pattern.
 
-None
+    .EXAMPLE
+    Get-ADTUniversalDate -DateTime '25/08/2013'
 
-You cannot pipe objects to this function.
+    Returns the date for the current culture in a universal sortable date time pattern.
 
-.OUTPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-System.String
+    #>
 
-Returns the date/time for the local culture in a universal sortable date time pattern.
-
-.EXAMPLE
-
-Get-UniversalDate
-
-Returns the current date in a universal sortable date time pattern.
-
-.EXAMPLE
-
-Get-UniversalDate -DateTime '25/08/2013'
-
-Returns the date for the current culture in a universal sortable date time pattern.
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
-        #  Get the current date
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$DateTime = (Get-Date -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString(),
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $false
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DateTime = (Get-Date -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
     )
 
-    Begin {
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            ## If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-            If ($DateTime -match 'Z$') {
-                $DateTime = $DateTime -replace 'Z$', ''
-            }
-            [DateTime]$DateTime = [DateTime]::Parse($DateTime, $Script:ADT.Environment.culture)
 
-            ## Convert the date to a universal sortable date time pattern based on the current culture
-            Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]."
-            [String]$universalDateTime = (Get-Date -Date $DateTime -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalSortableDateTimePattern -ErrorAction 'Stop').ToString()
-            Write-Output -InputObject ($universalDateTime)
-        }
-        Catch {
-            Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)]. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "The specified date/time [$DateTime] is not in a format recognized by the current culture: $($_.Exception.Message)"
-            }
-        }
+    process {
+        # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
+        [System.DateTime]$DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Script:ADT.Environment.culture)
+
+        # Convert the date to a universal sortable date time pattern based on the current culture.
+        Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]."
+        return (Get-Date -Date $DateTime -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
