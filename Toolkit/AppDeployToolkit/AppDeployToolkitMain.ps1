@@ -947,3 +947,101 @@ function Get-LoggedOnUser
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTLoggedOnUser] instead." -Severity 2
     Get-ADTLoggedOnUser
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTIniValue
+#
+#---------------------------------------------------------------------------
+
+function Get-IniValue
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Section,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTIniValue] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    try
+    {
+        Get-ADTIniValue @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Set-ADTIniValue
+#
+#---------------------------------------------------------------------------
+
+function Set-IniValue
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Section,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [System.Object]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Set-ADTIniValue] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    try
+    {
+        Set-ADTIniValue @PSBoundParameters
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-Error)" -Severity 3
+        if (!$ContinueOnError)
+        {
+            throw
+        }
+    }
+}

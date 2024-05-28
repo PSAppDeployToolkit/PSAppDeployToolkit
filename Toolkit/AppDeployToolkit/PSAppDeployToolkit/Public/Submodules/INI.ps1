@@ -4,94 +4,65 @@
 #
 #---------------------------------------------------------------------------
 
-Function Get-IniValue {
+function Get-ADTIniValue
+{
     <#
-.SYNOPSIS
 
-Parses an INI file and returns the value of the specified section and key.
+    .SYNOPSIS
+    Parses an INI file and returns the value of the specified section and key.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Parses an INI file and returns the value of the specified section and key.
 
-Parses an INI file and returns the value of the specified section and key.
+    .PARAMETER FilePath
+    Path to the INI file.
 
-.PARAMETER FilePath
+    .PARAMETER Section
+    Section within the INI file.
 
-Path to the INI file.
+    .PARAMETER Key
+    Key within the section of the INI file.
 
-.PARAMETER Section
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Section within the INI file.
+    .OUTPUTS
+    System.String. Returns the value of the specified section and key.
 
-.PARAMETER Key
+    .EXAMPLE
+    Get-ADTIniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 
-Key within the section of the INI file.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.PARAMETER ContinueOnError
+    #>
 
-Continue if an error is encountered. Default is: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the value of the specified section and key.
-
-.EXAMPLE
-
-Get-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$FilePath,
+        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [System.String]$FilePath,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Section,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Section,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key
     )
 
-    Begin {
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
 
-            If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) {
-                Throw "File [$filePath] could not be found."
-            }
-
-            $IniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
-            Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $IniValue]."
-
-            Write-Output -InputObject ($IniValue)
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to read INI file key value. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to read INI file key value: $($_.Exception.Message)"
-            }
-        }
+    process {
+        Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
+        $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
+        Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
+        return $iniValue
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
@@ -103,99 +74,70 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-Function Set-IniValue {
+function Set-ADTIniValue
+{
     <#
-.SYNOPSIS
 
-Opens an INI file and sets the value of the specified section and key.
+    .SYNOPSIS
+    Opens an INI file and sets the value of the specified section and key.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Opens an INI file and sets the value of the specified section and key.
 
-Opens an INI file and sets the value of the specified section and key.
+    .PARAMETER FilePath
+    Path to the INI file.
 
-.PARAMETER FilePath
+    .PARAMETER Section
+    Section within the INI file.
 
-Path to the INI file.
+    .PARAMETER Key
+    Key within the section of the INI file.
 
-.PARAMETER Section
+    .PARAMETER Value
+    Value for the key within the section of the INI file. To remove a value, set this variable to $null.
 
-Section within the INI file.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER Key
+    .OUTPUTS
+    None. This function does not return any output.
 
-Key within the section of the INI file.
+    .EXAMPLE
+    Set-ADTIniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
 
-.PARAMETER Value
+    .LINK
+    https://psappdeploytoolkit.com
 
-Value for the key within the section of the INI file. To remove a value, set this variable to $null.
+    #>
 
-.PARAMETER ContinueOnError
-
-Continue if an error is encountered. Default is: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not return any output.
-
-.EXAMPLE
-
-Set-IniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$FilePath,
+        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [System.String]$FilePath,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Section,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Section,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
-        # Don't strongly type this variable as [String] b/c PowerShell replaces [String]$Value = $null with an empty string
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
         [Parameter(Mandatory = $true)]
         [AllowNull()]
-        $Value,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.Object]$Value
     )
 
-    Begin {
+    begin {
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
 
-            If (-not (Test-Path -LiteralPath $FilePath -PathType 'Leaf')) {
-                Throw "File [$filePath] could not be found."
-            }
-
-            [PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
-        }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to write INI file key value. `r`n$(Resolve-Error)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to write INI file key value: $($_.Exception.Message)"
-            }
-        }
+    process {
+        Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
+        [PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
