@@ -270,6 +270,11 @@ function Get-FreeDiskSpace
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTFreeDiskSpace] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
     try
     {
         Get-ADTFreeDiskSpace @PSBoundParameters
@@ -357,6 +362,11 @@ function Get-FileVersion
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTFileVersion] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
     try
     {
         Get-ADTFileVersion @PSBoundParameters
@@ -619,7 +629,7 @@ function Show-InstallationProgress
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationProgress] instead." -Severity 2
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
@@ -668,7 +678,7 @@ function Show-DialogBox
         [System.Boolean]$TopMost
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTDialogBox] instead." -Severity 2
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
@@ -835,7 +845,7 @@ function Show-InstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$NoCountdown
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTInstallationRestartPrompt] instead." -Severity 2
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
