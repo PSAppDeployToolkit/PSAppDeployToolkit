@@ -2607,22 +2607,3 @@ Function Configure-EdgeExtension {
         Close-ADTSession -ExitCode 60001
     }
 }
-
-
-#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-function Get-SidTypeAccountName
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [Security.Principal.WellKnownSidType]$WellKnownSidType
-    )
-
-    # Translate the SidType into its user-readable name.
-    return [System.Security.Principal.SecurityIdentifier]::new($WellKnownSidType, $null).Translate([System.Security.Principal.NTAccount]).Value
-}

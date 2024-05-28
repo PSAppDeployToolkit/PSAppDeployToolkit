@@ -127,7 +127,6 @@ Export-ModuleMember -Function @(
     'Get-SchedulerTask'
     'Get-ServiceStartMode'
     'Get-Shortcut'
-    'Get-SidTypeAccountName'
     'Get-UniversalDate'
     'Get-ADTUserProfiles'
     'Get-ADTWindowTitle'
