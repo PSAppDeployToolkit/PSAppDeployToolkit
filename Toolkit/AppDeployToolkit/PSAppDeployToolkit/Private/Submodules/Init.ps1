@@ -120,12 +120,13 @@ function Initialize-ADTVariableDatabase
     }
 
     # Get the OS Architecture.
+    $archArr = @('x86', 'x64')
     $variables.Add('Is64Bit', [System.Environment]::Is64BitOperatingSystem)
-    $variables.Add('envOSArchitecture', $(if ($variables.Is64Bit) {'x64'} else {'x86'}))
+    $variables.Add('envOSArchitecture', $archArr[$variables.Is64Bit])
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', $(if ($variables.Is64BitProcess) {'x64'} else {'x86'}))
+    $variables.Add('psArchitecture', $archArr[$variables.Is64BitProcess])
 
     ## Variables: Get normalised paths that vary depending on process bitness.
     if ($variables.Is64Bit)
