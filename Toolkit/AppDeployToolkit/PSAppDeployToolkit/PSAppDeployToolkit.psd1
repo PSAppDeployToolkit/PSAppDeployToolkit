@@ -144,7 +144,7 @@ FunctionsToExport = @(
     'Test-ServiceExists'
     'Unblock-AppExecution'
     'Update-ADTDesktop'
-    'Update-GroupPolicy'
+    'Update-ADTGroupPolicy'
     'Update-ADTSessionEnvironmentVariables'
     'Write-ADTLogEntry'
 )

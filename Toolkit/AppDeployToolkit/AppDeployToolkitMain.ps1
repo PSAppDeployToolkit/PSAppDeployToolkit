@@ -1091,7 +1091,7 @@ function New-Folder
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-PowerPoint
+# Wrapper around Test-ADTPowerPoint
 #
 #---------------------------------------------------------------------------
 
@@ -1099,4 +1099,32 @@ function Test-PowerPoint
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Test-PowerPoint] instead." -Severity 2
     Test-ADTPowerPoint
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Update-ADTGroupPolicy
+#
+#---------------------------------------------------------------------------
+
+function Update-GroupPolicy
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Update-ADTGroupPolicy] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Update-ADTGroupPolicy @PSBoundParameters
 }
