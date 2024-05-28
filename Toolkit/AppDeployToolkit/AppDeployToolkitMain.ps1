@@ -1087,3 +1087,16 @@ function New-Folder
     }
     New-ADTFolder @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Test-PowerPoint
+#
+#---------------------------------------------------------------------------
+
+function Test-PowerPoint
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Test-PowerPoint] instead." -Severity 2
+    Test-ADTPowerPoint
+}
