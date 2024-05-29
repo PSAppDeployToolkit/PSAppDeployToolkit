@@ -698,12 +698,15 @@ class ADTSession
             }
 
             # Handle reboot prompts on successful script completion.
-            if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
+            $balloonText = if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
             {
                 $this.WriteLogEntry('A restart has been flagged as required.')
-                $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
+                "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
             }
-            $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
+            else
+            {
+                "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
+            }
             $balloonIcon = 'Info'
             $logSeverity = 0
         }
