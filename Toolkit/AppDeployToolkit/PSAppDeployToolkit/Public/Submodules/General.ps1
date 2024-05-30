@@ -57,7 +57,7 @@ filter Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(0, 3)]
-        [System.Nullable[System.Int32]]$Severity,
+        [System.Nullable[System.UInt32]]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
