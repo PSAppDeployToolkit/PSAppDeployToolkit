@@ -344,7 +344,6 @@ function Show-ADTHelpConsole
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        Set-PSDebug -Strict
         Set-StrictMode -Version Latest
 
         # Import the module and store its passthru data so we can access it later.
