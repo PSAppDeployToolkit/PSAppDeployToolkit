@@ -1855,10 +1855,19 @@ function Show-ADTInstallationProgress
         }
 
         # Check if the progress thread is running before invoking methods on it.
-        if (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running)
+        if (!$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
             Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+
+            # Load up the XML file.
+            $xaml = [System.Xml.XmlDocument]::new()
+            $xaml.Load("$Script:PSScriptRoot\Files\$($MyInvocation.MyCommand.Name).xml")
+            $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
+            $xaml.Window.TopMost = (!$NotTopMost).ToString()
+            $xaml.Window.Icon = $Script:ADT.Config.Assets.Icon
+            $xaml.Window.Grid.Image.Source = $Script:ADT.Config.Assets.Banner
+            $xaml.Window.Grid.TextBlock.Text = $StatusMessage
 
             # Set up the PowerShell instance and add the initial scriptblock.
             $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
@@ -1869,9 +1878,8 @@ function Show-ADTInstallationProgress
                 Set-StrictMode -Version Latest
 
                 # Create XAML window.
-                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Parse($XamlConfig))
+                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($XamlConfig)))
                 $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
-                $SyncHash.Message.Text = $StatusMessage
                 $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
                 $SyncHash.Window.add_Closing({$this.Cancel = $true})
                 $SyncHash.Window.add_Loaded({
@@ -1892,8 +1900,7 @@ function Show-ADTInstallationProgress
             $Script:ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
             $Script:ProgressWindow.PowerShell.Runspace.Open()
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:ProgressWindow.SyncHash)
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('XamlConfig', [System.String]::Format($Script:ProgressWindow.Xaml, $WindowTitle, (!$NotTopMost).ToString(), $Script:ADT.Config.Assets.Banner, $Script:ADT.Config.Assets.Icon))
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('StatusMessage', $StatusMessage)
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('XamlConfig', $xaml)
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('UpdateWindowLocation', ${Function:Update-WindowLocation})
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('DisableWindowCloseButton', ${Function:Disable-ADTWindowCloseButton})
             $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()

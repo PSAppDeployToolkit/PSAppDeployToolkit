@@ -48,7 +48,6 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
     PowerShell = $null
     Invocation = $null
     Running = $false
-    Xaml = [System.IO.File]::ReadAllText("$PSScriptRoot\Files\Show-ADTInstallationProgress.xml")
 }
 
 # Asset data used by all forms.
