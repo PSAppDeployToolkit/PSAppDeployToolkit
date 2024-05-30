@@ -762,7 +762,7 @@ class ADTSession
         }
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
     {
         # Perform early return checks before wasting time.
         if (($this.GetPropertyValue('DisableLogging') -and !$Script:ADT.Config.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$Script:ADT.Config.Toolkit.LogDebugMessage))
@@ -849,7 +849,7 @@ class ADTSession
         $this.WriteLogEntry($Message, $null, $null, $null, $false)
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity)
     {
         $this.WriteLogEntry($Message, $Severity, $null, $null, $false)
     }
@@ -859,7 +859,7 @@ class ADTSession
         $this.WriteLogEntry($Message, $null, $null, $null, $DebugMessage)
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.Boolean]$DebugMessage)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.Boolean]$DebugMessage)
     {
         $this.WriteLogEntry($Message, $Severity, $null, $null, $DebugMessage)
     }
