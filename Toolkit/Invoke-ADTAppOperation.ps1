@@ -267,7 +267,7 @@ function Repair-ADTApplication
 # Set strict error handling across entire operation.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 1
 $mainExitCode = 0
 
 try

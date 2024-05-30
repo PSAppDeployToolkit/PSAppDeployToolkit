@@ -35,7 +35,7 @@ https://psappdeploytoolkit.com
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 1
 
 # Import our local module.
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit"
