@@ -1656,7 +1656,6 @@ function Show-ADTBalloonTip
                 # Ensure script runs in strict mode since its in a new scope.
                 (Get-Variable -Name ErrorActionPreference).Value = [System.Management.Automation.ActionPreference]::Stop
                 (Get-Variable -Name ProgressPreference).Value = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                Set-PSDebug -Strict
                 Set-StrictMode -Version Latest
 
                 # Add in required assemblies.
@@ -1874,7 +1873,6 @@ function Show-ADTInstallationProgress
                 # Set required variables to ensure script functionality.
                 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
                 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                Set-PSDebug -Strict
                 Set-StrictMode -Version Latest
 
                 # Create XAML window.

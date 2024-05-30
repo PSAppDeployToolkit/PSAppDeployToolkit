@@ -35,7 +35,6 @@ https://psappdeploytoolkit.com
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-PSDebug -Strict
 Set-StrictMode -Version Latest
 
 # Import our local module.
