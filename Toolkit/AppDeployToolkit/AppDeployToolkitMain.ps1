@@ -37,11 +37,31 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 1
 
+function Out-OpenADTSessionParams
+{
+    # Open hashtable for returning at the end. We return it even if it's empty.
+    $daParams = @{Cmdlet = $PSCmdlet}
+
+    # Get all relevant parameters from the targeted function, then check whether they're defined and not empty.
+    foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+    {
+        # Return early if the parameter doesn't exist or its value is null.
+        if (!($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -or [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
+        {
+            continue
+        }
+        $daParams.Add($param, $value)
+    }
+
+    # Return the hashtable to the caller, they'll splat it onto Open-ADTSession.
+    return $daParams
+}
+
 # Import our local module.
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit"
 
 # Open a new PSADT session.
-$sessionParams = Get-ADTDeployApplicationParameters -Cmdlet $PSCmdlet
+$sessionParams = Out-OpenADTSessionParams
 Open-ADTSession @sessionParams
 
 
