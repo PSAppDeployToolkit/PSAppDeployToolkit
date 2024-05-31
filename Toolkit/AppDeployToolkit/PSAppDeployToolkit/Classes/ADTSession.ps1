@@ -14,6 +14,7 @@ class ADTSession
     hidden [System.String]$DeploymentTypeName = [System.String]::Empty
     hidden [System.Boolean]$DeployModeNonInteractive = $false
     hidden [System.Boolean]$DeployModeSilent = $false
+    hidden [System.Object]$CallerVariables = $null
     hidden [System.Boolean]$Initialised = $false
 
     # State values (can change mid-flight).
@@ -100,6 +101,7 @@ class ADTSession
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType.ToLower())
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
+        $this.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -117,9 +119,6 @@ class ADTSession
         {
             "$($this.Properties.DirAppDeployTemp)\ExecuteAsUser"
         })).FullName
-
-        # Lastly, store the caller's $PSCmdlet in our global table. Do this last in case any of the above fails.
-        $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
     }
 
     hidden [System.Void] DetectDefaultMsi()
@@ -600,7 +599,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.LegacyMode -and $this.Initialised)
         {
-            return $Script:SessionCallers[$this].SessionState.PSVariable.Get($Name).Value
+            return $this.CallerVariables.Get($Name).Value
         }
         else
         {
@@ -614,7 +613,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.LegacyMode -and $this.Initialised)
         {
-            $Script:SessionCallers[$this].SessionState.PSVariable.Set($Name, $Value)
+            $this.CallerVariables.Set($Name, $Value)
         }
         else
         {
@@ -665,8 +664,7 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.LegacyMode)
         {
-            $callerSession = $Script:SessionCallers[$this].SessionState
-            $this.Properties.GetEnumerator().ForEach({$callerSession.PSVariable.Set($_.Name, $_.Value)})
+            $this.Properties.GetEnumerator().ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
         }
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
