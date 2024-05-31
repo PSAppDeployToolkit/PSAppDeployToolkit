@@ -10,7 +10,7 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Add the custom types required for the toolkit.
-Add-Type -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblies $(
+Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ReferencedAssemblies $(
     'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
@@ -21,12 +21,21 @@ Add-Type -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblie
 # Add system types required for the toolkit.
 Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationFramework', 'Microsoft.VisualBasic', 'PresentationCore', 'WindowsBase', 'System.Activities')
 
-# Set process as DPI-aware for better dialog rendering.
+# All WinForms-specific initialistion code.
 [System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
 [System.Windows.Forms.Application]::EnableVisualStyles()
-
-# WinForms modern text rendering. Commented out for now as forms aren't coded for it.
-# [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
+[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
+New-Variable -Name FormData -Option Constant -Value @{
+    Font = [System.Drawing.SystemFonts]::MessageBoxFont
+    Width = 450
+    BannerHeight = 0
+    NotifyIcon = $null
+    Assets = @{
+        Icon = $null
+        Logo = $null
+        Banner = $null
+    }
+}
 
 # Dot-source our imports.
 New-Variable -Name ADTSubmodules -Option Constant -Value @{
@@ -53,19 +62,6 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
     PowerShell = $null
     Invocation = $null
     Running = $false
-}
-
-# Asset data used by all forms.
-New-Variable -Name FormData -Option Constant -Value @{
-    Font = [System.Drawing.SystemFonts]::MessageBoxFont
-    Width = 450
-    BannerHeight = 0
-    NotifyIcon = $null
-    Assets = @{
-        Icon = $null
-        Logo = $null
-        Banner = $null
-    }
 }
 
 # Values used for ADT module serialisation.
