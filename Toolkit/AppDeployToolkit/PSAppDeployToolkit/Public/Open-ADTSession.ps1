@@ -111,7 +111,7 @@
     }
     catch
     {
-        Restore-ADTPreviousSession
+        [System.Void]$Script:ADT.Sessions.Remove($Script:ADT.Sessions[-1])
         throw
     }
 

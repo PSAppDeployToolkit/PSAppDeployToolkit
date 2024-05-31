@@ -758,6 +758,9 @@ class ADTSession
                 Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-Error)" -ForegroundColor Red
             }
         }
+
+        # Reset powershell window title to its previous title.
+        $Global:Host.UI.RawUI.WindowTitle = $this.OldPSWindowTitle
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
