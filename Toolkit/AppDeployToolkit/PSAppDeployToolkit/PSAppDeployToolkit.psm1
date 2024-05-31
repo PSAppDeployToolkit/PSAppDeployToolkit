@@ -7,7 +7,7 @@
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 3
 
 # Add the custom types required for the toolkit.
 Add-Type -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblies $(

@@ -105,7 +105,7 @@
                 # Ensure script runs in strict mode since its in a new scope.
                 (Get-Variable -Name ErrorActionPreference).Value = [System.Management.Automation.ActionPreference]::Stop
                 (Get-Variable -Name ProgressPreference).Value = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                Set-StrictMode -Version Latest
+                Set-StrictMode -Version 3
 
                 # Add in required assemblies.
                 if ((Get-Variable -Name PSVersionTable -ValueOnly).PSEdition.Equals('Core'))
