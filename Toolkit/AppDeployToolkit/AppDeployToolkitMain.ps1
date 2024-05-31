@@ -61,8 +61,8 @@ function Out-OpenADTSessionParams
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit"
 
 # Open a new PSADT session.
-$sessionParams = Out-OpenADTSessionParams
-Open-ADTSession @sessionParams
+$sessionProps = Out-OpenADTSessionParams
+Open-ADTSession @sessionProps
 
 
 #---------------------------------------------------------------------------
