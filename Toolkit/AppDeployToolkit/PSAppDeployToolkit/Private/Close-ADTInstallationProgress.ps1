@@ -32,7 +32,7 @@
 
     param (
         [ValidateRange(1, 60)]
-        [System.Int32]$WaitingTime = 5
+        [System.UInt32]$WaitingTime = 5
     )
 
     begin {
@@ -73,7 +73,6 @@
                 if (!$Script:ProgressWindow.SyncHash.Window.IsInitialized)
                 {
                     Write-ADTLogEntry -Message "The installation progress dialog was not created within $WaitingTime seconds." -Severity 2
-                    $Script:ProgressWindow.Running = $false
                 }
             }
             else
@@ -102,42 +101,30 @@
                 if (!($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -band ([System.Threading.ThreadState]::Stopped -bor [System.Threading.ThreadState]::Unstarted)))
                 {
                     Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                    $Script:ProgressWindow.SyncHash.Remove('Message')
                     $Script:ProgressWindow.SyncHash.Window.Dispatcher.InvokeShutdown()
-                    while (!$Script:ProgressWindow.SyncHash.Window.Dispatcher.HasShutdownFinished) {}
+                    while (!$Script:ProgressWindow.SyncHash.Window.Dispatcher.HasShutdownFinished -and !$Script:ProgressWindow.Invocation.IsCompleted) {}
                     $Script:ProgressWindow.SyncHash.Clear()
+                    $Script:ProgressWindow.Invocation = $null
                 }
             }
         }
 
         # Process the PowerShell window.
-        if ($Script:ProgressWindow.PowerShell)
+        if ($Script:ProgressWindow.PowerShell -and $Script:ProgressWindow.PowerShell.Runspace)
         {
-            # End the PowerShell instance if it's invoked.
-            if ($Script:ProgressWindow.Invocation)
+            # If the runspace is still opening, wait.
+            if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opening) -or $Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen))
             {
-                Write-ADTLogEntry -Message "Closing the installation progress dialog's invocation."
-                [System.Void]$Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
-                $Script:ProgressWindow.Invocation = $null
+                Invoke-CloseInstProgressSleep -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..."
             }
 
-            # Close down the runspace.
-            if ($Script:ProgressWindow.PowerShell.Runspace)
+            # If the runspace is opened, close it.
+            if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opened))
             {
-                # If the runspace is still opening, wait.
-                if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opening) -or $Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::BeforeOpen))
-                {
-                    Invoke-CloseInstProgressSleep -Message "The runspace for the installation progress dialog is still opening. Waiting up to $WaitingTime seconds..."
-                }
-
-                # If the runspace is opened, close it.
-                if ($Script:ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opened))
-                {
-                    Write-ADTLogEntry -Message "Closing the installation progress dialog's runspace."
-                    $Script:ProgressWindow.PowerShell.Runspace.Close()
-                    $Script:ProgressWindow.PowerShell.Runspace.Dispose()
-                    $Script:ProgressWindow.PowerShell.Runspace = $null
-                }
+                Write-ADTLogEntry -Message "Closing the installation progress dialog's runspace."
+                $Script:ProgressWindow.PowerShell.Runspace.Close()
+                $Script:ProgressWindow.PowerShell.Runspace.Dispose()
+                $Script:ProgressWindow.PowerShell.Runspace = $null
             }
 
             # Dispose of remaining PowerShell variables.
