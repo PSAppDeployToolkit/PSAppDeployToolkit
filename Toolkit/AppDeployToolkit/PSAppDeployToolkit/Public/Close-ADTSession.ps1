@@ -12,8 +12,8 @@
     }
 
     # Close out the active session and clean up session state.
-    (Get-ADTSession).Close($ExitCode)
-    Restore-ADTPreviousSession
+    ($adtSession = Get-ADTSession).Close($ExitCode)
+    $Script:ADT.Sessions.Remove($adtSession)
 
     # If this was the last session, exit out with our code.
     if (!$Script:ADT.Sessions.Count)
