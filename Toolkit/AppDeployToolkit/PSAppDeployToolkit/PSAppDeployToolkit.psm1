@@ -68,9 +68,6 @@ New-Variable -Name FormData -Option Constant -Value @{
     }
 }
 
-# Variables to track multiple sessions and each session's caller.
-New-Variable -Name SessionCallers -Option Constant -Value @{}
-
 # Values used for ADT module serialisation.
 New-Variable -Name Serialisation -Option Constant -Value ([ordered]@{
     Hive = [Microsoft.Win32.Registry]::CurrentUser
