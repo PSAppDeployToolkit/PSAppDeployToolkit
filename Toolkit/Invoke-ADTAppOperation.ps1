@@ -274,7 +274,7 @@ try
 {
     Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit"
     Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionProps
-    New-Variable -Name sessionProps -Value (Get-ADTSessionProperties) -Option Constant -Force
+    $sessionProps = Get-ADTSessionProperties
 }
 catch
 {
