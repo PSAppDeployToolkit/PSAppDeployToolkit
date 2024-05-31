@@ -29,7 +29,13 @@ Add-Type -AssemblyName ('System.Drawing', 'System.Windows.Forms', 'PresentationF
 # [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
 
 # Dot-source our imports.
-(Get-ChildItem -Path $PSScriptRoot\*\*.ps1).FullName.ForEach({. $_})
+New-Variable -Name ADTSubmodules -Option Constant -Value @{
+    Classes = Get-ChildItem -Path $PSScriptRoot\Classes\*.ps1
+    Private = Get-ChildItem -Path $PSScriptRoot\Private\*.ps1
+    Public = Get-ChildItem -Path $PSScriptRoot\Public\*.ps1
+}
+$ADTSubmodules.Values.ForEach({$_.ForEach({. $_.FullName})})
+Export-ModuleMember -Function $ADTSubmodules.Public.BaseName
 
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
@@ -92,85 +98,3 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
         ([ordered]@{ForegroundColor = [System.ConsoleColor]::Red; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
     ))
 }).AsReadOnly()
-
-# Define exports. It should be done here and in the psd1 to cover all bases.
-Export-ModuleMember -Function @(
-    'Open-ADTSession'
-    'Close-ADTSession'
-    'Update-ADTSessionInstallPhase'
-    'Get-ADTSessionProperties'
-    'Export-ADTModuleState'
-    'Import-ADTModuleState'
-    'Get-ADTDeployApplicationParameters'
-    'Block-AppExecution'
-    'Configure-EdgeExtension'
-    'Convert-RegistryPath'
-    'Copy-ADTContentToCache'
-    'Copy-File'
-    'Copy-FileToUserProfiles'
-    'Disable-TerminalServerInstallMode'
-    'Enable-TerminalServerInstallMode'
-    'Execute-MSI'
-    'Execute-MSP'
-    'Execute-Process'
-    'Execute-ProcessAsUser'
-    'Get-ADTFileVersion'
-    'Get-ADTFreeDiskSpace'
-    'Get-ADTIniValue'
-    'Get-ADTInstalledApplication'
-    'Get-ADTLoggedOnUser'
-    'Get-MsiTableProperty'
-    'Get-PendingReboot'
-    'Get-RegistryKey'
-    'Get-SchedulerTask'
-    'Get-ServiceStartMode'
-    'Get-Shortcut'
-    'Get-ADTUniversalDate'
-    'Get-ADTUserProfiles'
-    'Get-ADTWindowTitle'
-    'Install-MSUpdates'
-    'Install-SCCMSoftwareUpdates'
-    'Invoke-ADTAllUsersRegistryChange'
-    'Invoke-RegisterOrUnregisterDLL'
-    'Invoke-SCCMTask'
-    'New-ADTFolder'
-    'New-MsiTransform'
-    'New-Shortcut'
-    'Remove-ADTContentFromCache'
-    'Remove-ADTFile'
-    'Remove-FileFromUserProfiles'
-    'Remove-Folder'
-    'Remove-ADTInvalidFileNameChars'
-    'Remove-MSIApplications'
-    'Remove-RegistryKey'
-    'Resolve-Error'
-    'Send-Keys'
-    'Set-ActiveSetup'
-    'Set-ADTIniValue'
-    'Set-ItemPermission'
-    'Set-MsiProperty'
-    'Set-PinnedApplication'
-    'Set-RegistryKey'
-    'Set-ServiceStartMode'
-    'Set-Shortcut'
-    'Show-ADTBalloonTip'
-    'Show-ADTDialogBox'
-    'Show-ADTHelpConsole'
-    'Show-ADTInstallationProgress'
-    'Show-ADTInstallationPrompt'
-    'Show-ADTInstallationRestartPrompt'
-    'Show-ADTInstallationWelcome'
-    'Start-ServiceAndDependencies'
-    'Stop-ServiceAndDependencies'
-    'Test-Battery'
-    'Test-MSUpdates'
-    'Test-ADTNetworkConnection'
-    'Test-ADTPowerPoint'
-    'Test-RegistryValue'
-    'Test-ADTServiceExists'
-    'Unblock-AppExecution'
-    'Update-ADTDesktop'
-    'Update-ADTGroupPolicy'
-    'Update-ADTSessionEnvironmentVariables'
-    'Write-ADTLogEntry'
-)
