@@ -116,5 +116,5 @@
     }
 
     # Export environment variables to the user's scope.
-    $Script:ADT.Environment.GetEnumerator().ForEach({$Cmdlet.SessionState.PSVariable.Set([psvariable]::new($_.Name, $_.Value, 'Constant'))})
+    [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($Cmdlet.SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $Script:ADT.Environment)
 }
