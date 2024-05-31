@@ -160,7 +160,7 @@
                 # Set required variables to ensure script functionality.
                 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
                 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                Set-StrictMode -Version Latest
+                Set-StrictMode -Version 3
 
                 # Create XAML window.
                 $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($XamlConfig)))
