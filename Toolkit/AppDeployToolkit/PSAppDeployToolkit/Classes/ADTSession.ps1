@@ -256,9 +256,6 @@ class ADTSession
         }
         $this.Properties.InstallName = ($this.Properties.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
-        # Set PowerShell window title, in case the window is visible.
-        $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
-
         # Set the Defer History registry path.
         $this.Properties.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
@@ -666,6 +663,9 @@ class ADTSession
         {
             $this.Properties.GetEnumerator().ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
         }
+
+        # Set PowerShell window title, in case the window is visible.
+        $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
         $this.Initialised = $true
