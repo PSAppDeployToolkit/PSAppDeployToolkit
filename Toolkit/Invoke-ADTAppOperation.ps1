@@ -278,7 +278,7 @@ try
 }
 catch
 {
-    Write-Error -Message "Module [PSAppDeployToolkit] failed to load:`n$($_.Exception.Message.Replace('The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: ', $null))" -ErrorAction Continue
+    $Host.UI.WriteErrorLine(($_ | Out-String))
     exit ($mainExitCode = 60008)
 }
 
