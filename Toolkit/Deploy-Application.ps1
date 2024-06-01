@@ -132,9 +132,18 @@ Try {
     [String]$deployAppScriptDate = '08/13/2024'
     [Hashtable]$deployAppScriptParameters = $PsBoundParameters
 
+    ## Variables: Environment
+    If (Test-Path -LiteralPath 'variable:HostInvocation') {
+        $InvocationInfo = $HostInvocation
+    }
+    Else {
+        $InvocationInfo = $MyInvocation
+    }
+    [String]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
+
     ## Dot source the required App Deploy Toolkit Functions
     Try {
-        [String]$moduleAppDeployToolkitMain = "$PSScriptRoot\AppDeployToolkit\AppDeployToolkitMain.ps1"
+        [String]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
         If (-not (Test-Path -LiteralPath $moduleAppDeployToolkitMain -PathType 'Leaf')) {
             Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]."
         }
@@ -151,7 +160,12 @@ Try {
         }
         Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
         ## Exit the script, returning the exit code to SCCM
-        exit $mainExitCode
+        If (Test-Path -LiteralPath 'variable:HostInvocation') {
+            $script:ExitCode = $mainExitCode; Exit
+        }
+        Else {
+            Exit $mainExitCode
+        }
     }
 
     #endregion
@@ -167,7 +181,7 @@ Try {
         [String]$installPhase = 'Pre-Installation'
 
         ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-        Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 50 -CheckDiskSpace -PersistPrompt
+        Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 
         ## Show Progress Message (with the default message)
         Show-InstallationProgress
