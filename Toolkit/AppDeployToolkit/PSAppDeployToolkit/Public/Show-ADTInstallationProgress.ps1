@@ -186,6 +186,7 @@
             $Script:ProgressWindow.PowerShell.Runspace.Open()
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:ProgressWindow.SyncHash)
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('XamlConfig', $xaml)
+            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('WindowLocation', $WindowLocation)
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('UpdateWindowLocation', ${Function:Update-WindowLocation})
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('DisableWindowCloseButton', ${Function:Disable-ADTWindowCloseButton})
             $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
