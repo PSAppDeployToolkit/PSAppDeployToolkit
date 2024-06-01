@@ -87,10 +87,13 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-Error)" -Severity 3
-                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
                 {
-                    throw
+                    Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-Error)" -Severity 3
+                    if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                    {
+                        throw
+                    }
                 }
                 continue
             }
@@ -115,10 +118,13 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-Error)" -Severity 3
-                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
                 {
-                    throw
+                    Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-Error)" -Severity 3
+                    if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                    {
+                        throw
+                    }
                 }
             }
         }

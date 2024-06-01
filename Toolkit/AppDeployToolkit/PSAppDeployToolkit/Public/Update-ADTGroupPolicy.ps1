@@ -41,7 +41,7 @@
         {
             Write-ADTLogEntry -Message ($msg = "Updating Group Policies for the $target")
             [System.Void](cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force")
-            if ($LASTEXITCODE)
+            if ($LASTEXITCODE -and ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$'))
             {
                 Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
                 if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
