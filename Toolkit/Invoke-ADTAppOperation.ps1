@@ -272,7 +272,7 @@ $mainExitCode = 0
 
 try
 {
-    Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit"
+    Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit" -Scope Local
     Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionProps
     $sessionProps = Get-ADTSessionProperties
 }
