@@ -58,7 +58,7 @@ function Out-OpenADTSessionParams
 }
 
 # Import our local module.
-Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit"
+Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local
 
 # Open a new PSADT session.
 $sessionProps = Out-OpenADTSessionParams
