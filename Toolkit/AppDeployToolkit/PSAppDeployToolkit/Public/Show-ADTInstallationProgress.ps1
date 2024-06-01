@@ -191,7 +191,7 @@
             $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
 
             # Allow the thread to be spun up safely before invoking actions against it.
-            while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and ($Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState -eq 'Running')))
+            while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
             {
                 if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
                 {
