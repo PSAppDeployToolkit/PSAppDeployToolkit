@@ -135,7 +135,7 @@ https://psappdeploytoolkit.com
         Export-Clixml -LiteralPath "$blockExecutionTempPath\$($Script:MyInvocation.MyCommand.Name.Replace('.psm1', '.xml'))" -Depth ([System.Int32]::MaxValue)
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$($Script:ADT.Environment.envPSProcessPath) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; Show-BlockedAppDialog`""
+        [String[]]$debuggerBlockScript = "strCommand = `"$($Script:ADT.Environment.envPSProcessPath) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; Show-ADTBlockedAppDialog`""
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'Ignore'
