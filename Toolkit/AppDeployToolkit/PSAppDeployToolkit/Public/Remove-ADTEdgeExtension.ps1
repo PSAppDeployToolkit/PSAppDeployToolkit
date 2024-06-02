@@ -42,5 +42,5 @@
 
     # If the deploymentmode is Remove, remove the extension from the list
     $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-    [System.Void](Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
+    [System.Void](Set-RegistryKey -Key $Script:ADT.Environment.regKeyEdgeExtensions -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
 }
