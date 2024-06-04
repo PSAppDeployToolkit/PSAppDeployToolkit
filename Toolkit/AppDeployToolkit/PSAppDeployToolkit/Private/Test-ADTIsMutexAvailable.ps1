@@ -12,9 +12,9 @@
     .PARAMETER MutexName
     The name of the system mutex.
 
-    .PARAMETER MutexWaitTimeInMilliseconds
+    .PARAMETER MutexWaitTime
     The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
-    A wait timeof -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
+    A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
     .INPUTS
     None. You cannot pipe objects to this function.
@@ -23,13 +23,13 @@
     System.Boolean. Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds 500
+    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime 5000000
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds (New-TimeSpan -Minutes 5).TotalMilliseconds
+    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Minutes 5)
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds (New-TimeSpan -Seconds 60).TotalMilliseconds
+    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Seconds 60)
 
     .NOTES
     This is an internal script function and should typically not be called directly.
@@ -49,12 +49,11 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$MutexWaitTimeInMilliseconds = 1
+        [System.TimeSpan]$MutexWaitTime = 10000
     )
 
     begin {
         # Initialize variables.
-        $MutexWaitTime = [System.Timespan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
         {
             "$($MutexWaitTime.TotalMinutes) minute(s)"
@@ -79,7 +78,7 @@
         try
         {
             # Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
-            [Threading.Mutex]$OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
+            $OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
 
             # Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
             $IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)
@@ -107,7 +106,7 @@
         catch
         {
             # Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-Error)" -Severity 3
             $IsUnhandledException = $true
             $IsMutexFree = $true
         }

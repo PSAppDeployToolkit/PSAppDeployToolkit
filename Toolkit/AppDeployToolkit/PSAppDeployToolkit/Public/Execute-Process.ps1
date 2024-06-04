@@ -234,8 +234,7 @@ https://psappdeploytoolkit.com
             ## Please note that a race condition is possible after this check where another process waiting for the MSI installer
             ##  to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
             If (($Path -match 'msiexec') -or ($WaitForMsiExec)) {
-                [Timespan]$MsiExecWaitTimeSpan = New-TimeSpan -Seconds $MsiExecWaitTime
-                [Boolean]$MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTimeInMilliseconds $MsiExecWaitTimeSpan.TotalMilliseconds
+                [Boolean]$MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Seconds $MsiExecWaitTime)
                 Start-Sleep -Seconds 1
                 If (-not $MsiExecAvailable) {
                     #  Default MSI exit code for install already in progress
