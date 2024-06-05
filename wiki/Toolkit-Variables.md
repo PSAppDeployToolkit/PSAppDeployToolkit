@@ -233,3 +233,5 @@ The toolkit has a number of internal variables which can be used in your script.
 | $invalidFileNameChars                    | Array of all invalid file name characters used to sanitize variables which                    |
 |                                          | may be used to create file names.                                                             |
 | $useDefaultMsi                           | A Zero-Config MSI installation was detected.                                                  |
+| $IsConfigMgr                             | Is the toolkit deployed from ConfigMgr? (e.g. $true/$false)                                   |
+| $IsIntune                                | Is the toolkit deployed from Intune? (e.g. $true/$false)                                      |

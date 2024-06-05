@@ -25,27 +25,27 @@ There are two ways to launch the toolkit for deployment of applications.
 #### Examples:
 
 > **Deploy-Application.ps1**
-> 
+>
 > *Deploy an application for installation*
-> 
+>
 > **Deploy-Application.ps1 -DeploymentType "Uninstall" -DeployMode "Silent"**
-> 
+>
 > *Deploy an application for uninstallation in silent mode*
-> 
+>
 > **Deploy-Application.exe /32 -DeploymentType "Uninstall" -DeployMode "Silent"**
-> 
+>
 > *Deploy an application for uninstallation using PowerShell x86, supressing the PowerShell console window and deploying in silent mode.*
-> 
+>
 > **Deploy-Application.exe -AllowRebootPassThru**
-> 
+>
 > *Deploy an application for installation, supressing the PowerShell console window and allowing reboot codes to be returned to the parent process.*
-> 
+>
 > **Deploy-Application.exe "Custom-Script.ps1"**
-> 
+>
 > *Deploy an application with a custom name instead of Deploy-Application.ps1.*
-> 
+>
 > **Deploy-Application.exe -Command "C:\\Testing\\Custom-Script.ps1" -DeploymentType "Uninstall"**
-> 
+>
 > *Deploy an application with a custom name and custom location for the script file.*
 
 ### Toolkit Parameters
@@ -90,10 +90,10 @@ Aside from customizing the “Deploy-Application.ps1” script to deploy your ap
 
 **CompressLogs (option in AppDeployToolkitConfig.xml)** - One of the Toolkit Options in the AppDeployToolkitConfig.xml file is CompressLogs. Enabling this option will create a temporary logging folder where you can save all of the log files you want to include in the single ZIP file that will be created from this folder.
 
-To enable the CompressLogs, set the follow option in AppDeployToolkitConfig.xml to True:
+To enable the CompressLogs, set the following option in AppDeployToolkitConfig.xml to True:
 
 *<Toolkit_CompressLogs>True</Toolkit_CompressLogs>*
- 
+
 When set to True, the following happens:
 
   - Both toolkit and MSI logs are temporally placed in $envTemp\\$installName which gets cleaned up at the end of the install.
@@ -103,6 +103,22 @@ When set to True, the following happens:
   - The Zip file name indicates whether it is an Install / Uninstall and has the timestamp in the filename so previous logs do not get overwritten.
 
   - If your package creates other log files, you can send them to the temporary logging FOLDER at $envTemp\\$installName.
+
+**Log Location Auto Detection (option in AppDeployToolkitConfig.xml)** - One of the Toolkit Options in the AppDeployToolkitConfig.xml file is to automatically detect the log location based on the deployment method so the logs can be collected with Diagnostics data collection from ConfigMgr or Intune.
+
+To disable the Log Location Auto Detection, set the following option in AppDeployToolkitConfig.xml to True:
+
+*<Toolkit_LogPathAutoDetect>False</Toolkit_LogPathAutoDetect>*
+
+When set to True, the following happens:
+
+  - Deployed from ConfigMgr: Logs are placed within `C:\Windows\CCM\Logs\`
+
+  - Deployed from Intune: Logs are placed within `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\`
+
+When set to False, the following happens:
+
+  - Logs are placed within `C:\Windows\Logs\Software\`
 
 ## Example Deployments
 
