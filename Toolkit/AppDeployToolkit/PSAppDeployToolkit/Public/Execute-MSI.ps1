@@ -157,7 +157,7 @@ https://psappdeploytoolkit.com
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [String]$Action = 'Install',
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({ ($_ -match $Script:ADT.Environment.MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [IO.Path]::GetExtension($_)) })]
+        [ValidateScript({ ($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [IO.Path]::GetExtension($_)) })]
         [Alias('FilePath')]
         [String]$Path,
         [Parameter(Mandatory = $false)]
@@ -213,6 +213,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
@@ -223,7 +224,7 @@ https://psappdeploytoolkit.com
         [String[]]$transforms = $null
 
         ## If the path matches a product code
-        If ($Path -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {
+        If ($Path -match $adtEnv.MSIProductCodeRegExPattern) {
             #  Set variable indicating that $Path variable is a Product Code
             [Boolean]$PathIsProductCode = $true
 
@@ -438,7 +439,7 @@ https://psappdeploytoolkit.com
             Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
             #  Build the hashtable with the options that will be passed to Execute-Process using splatting
             [Hashtable]$ExecuteProcessSplat = @{
-                Path                 = $Script:ADT.Environment.exeMsiexec
+                Path                 = $adtEnv.exeMsiexec
                 Parameters           = $argsMSI
                 WindowStyle          = 'Normal'
                 ExitOnProcessFailure = $ExitOnProcessFailure

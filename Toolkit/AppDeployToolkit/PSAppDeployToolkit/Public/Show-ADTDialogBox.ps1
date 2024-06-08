@@ -113,7 +113,7 @@
         }
 
         Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
-        $result = switch ($Script:ADT.Environment.Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + (4096 * !$NotTopMost))))
+        $result = switch ((Get-ADTEnvironment).Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + (4096 * !$NotTopMost))))
         {
             1 {'OK'; break}
             2 {'Cancel'; break}

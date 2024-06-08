@@ -593,7 +593,7 @@
         # Minimize all other windows.
         if (!$NoMinimizeWindows)
         {
-            [System.Void]$Script:ADT.Environment.ShellApp.MinimizeAll()
+            [System.Void](Get-ADTEnvironment).ShellApp.MinimizeAll()
         }
 
         # Run the form and store the result.

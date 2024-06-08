@@ -83,7 +83,7 @@ https://psappdeploytoolkit.com
                         }
                         #  Installation type for Windows updates using Windows Update Standalone Installer
                         '.msu' {
-                            Execute-Process -Path $Script:ADT.Environment.exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            Execute-Process -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                         #  Installation type for Windows Installer Patch
                         '.msp' {

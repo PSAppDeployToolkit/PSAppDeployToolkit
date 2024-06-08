@@ -1,16 +1,16 @@
 ﻿function Import-ADTConfig
 {
     # Create variables within this scope from the database, it's needed during the config import.
-    $Script:ADT.Environment.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
+    ($adtEnv = Get-ADTEnvironment).GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
 
     # Read config file and cast the version into an object.
     $config = Import-LocalizedData -BaseDirectory "$Script:PSScriptRoot\Config" -FileName config.psd1
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
-    if ($config.File.Version -lt $Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)
+    if ($config.File.Version -lt $adtEnv.appDeployMainScriptMinimumConfigVersion)
     {
-        throw [System.Activities.VersionMismatchException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($Script:ADT.Environment.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+        throw [System.Activities.VersionMismatchException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtEnv.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
     }
 
     # Process the config and expand out variables.
@@ -32,7 +32,7 @@
     }
 
     # Change paths to user accessible ones if user isn't an admin.
-    if (!$Script:ADT.Environment.IsAdmin)
+    if (!$adtEnv.IsAdmin)
     {
         if ($config.Toolkit.TempPathNoAdminRights)
         {

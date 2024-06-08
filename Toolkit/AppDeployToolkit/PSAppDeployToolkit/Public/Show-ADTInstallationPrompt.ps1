@@ -117,6 +117,7 @@
     )
 
     begin {
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
@@ -135,7 +136,7 @@
         {
             # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
             Export-ADTModuleState
-            Start-Process -FilePath $Script:ADT.Environment.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+            Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
             return
         }
 
@@ -397,7 +398,7 @@
             # Minimize all other windows
             if ($MinimizeWindows)
             {
-                [System.Void]$Script:ADT.Environment.ShellApp.MinimizeAll()
+                [System.Void]$adtEnv.ShellApp.MinimizeAll()
             }
 
             # Show the Form
@@ -418,7 +419,7 @@
             }
             'Abort' {
                 # Restore minimized windows.
-                [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
+                [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
                 if (!$NoExitOnTimeout)
                 {
                     Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode

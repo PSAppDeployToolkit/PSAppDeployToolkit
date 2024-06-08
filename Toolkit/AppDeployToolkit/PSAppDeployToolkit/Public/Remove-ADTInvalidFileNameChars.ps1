@@ -40,7 +40,7 @@
     }
 
     process {
-        return $Name.Trim() -replace $Script:ADT.Environment.InvalidFileNameCharsRegExPattern
+        return $Name.Trim() -replace (Get-ADTEnvironment).InvalidFileNameCharsRegExPattern
     }
 
     end {

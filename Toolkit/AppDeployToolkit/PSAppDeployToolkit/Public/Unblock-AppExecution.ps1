@@ -37,19 +37,20 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
+        $adtEnv = Get-ADTEnvironment
         $adtSession = Get-ADTSession
+        Write-ADTDebugHeader
     }
     Process {
         ## Bypass if no Admin rights
-        If (!$Script:ADT.Environment.IsAdmin) {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
+        If (!$adtEnv.IsAdmin) {
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             Return
         }
 
         ## Remove Debugger values to unblock processes
         [PSObject[]]$unblockProcesses = $null
-        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $Script:ADT.Environment.regKeyAppExecution -Recurse -ErrorAction 'Ignore' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Ignore' })
+        [PSObject[]]$unblockProcesses += (Get-ChildItem -LiteralPath $adtEnv.regKeyAppExecution -Recurse -ErrorAction 'Ignore' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction 'Ignore' })
         ForEach ($unblockProcess in ($unblockProcesses | Where-Object { $_.Debugger -like '*AppDeployToolkit_BlockAppExecutionMessage*' })) {
             Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($unblockProcess.PSChildName)]."
             $unblockProcess | Remove-ItemProperty -Name 'Debugger' -ErrorAction 'Ignore'
@@ -63,7 +64,7 @@ https://psappdeploytoolkit.com
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
                 Write-ADTLogEntry -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]."
-                Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+                Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
             }
         }
         Catch {

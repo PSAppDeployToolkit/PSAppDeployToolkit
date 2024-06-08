@@ -68,10 +68,11 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
 
         ## Initialize variables
-        [String]$private:ComputerName = $Script:ADT.Environment.envComputerNameFQDN
+        [String]$private:ComputerName = $adtEnv.envComputerNameFQDN
         $PendRebootErrorMsg = $null
     }
     Process {
@@ -89,7 +90,7 @@ https://psappdeploytoolkit.com
 
         ## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
         Try {
-            If ($Script:ADT.Environment.envOSVersionMajor -ge 5) {
+            If ($adtEnv.envOSVersionMajor -ge 5) {
                 If (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction 'Stop') {
                     [Nullable[Boolean]]$IsCBServicingRebootPending = $true
                 }

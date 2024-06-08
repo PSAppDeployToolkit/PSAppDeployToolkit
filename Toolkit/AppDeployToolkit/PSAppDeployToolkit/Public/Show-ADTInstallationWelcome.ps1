@@ -189,6 +189,7 @@
     )
 
     begin {
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
@@ -293,7 +294,7 @@
                 }
                 else
                 {
-                    Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
+                    Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $adtEnv.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
                 }
                 Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
@@ -404,7 +405,7 @@
                 {
                     # Force the applications to close.
                     Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
-                    if ($PromptToSave -and $Script:ADT.Environment.SessionZero -and !$Script:ADT.Environment.IsProcessUserInteractive)
+                    if ($PromptToSave -and $adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive)
                     {
                         Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
                     }
@@ -417,7 +418,7 @@
                     {
                         # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                         $AllOpenWindowsForRunningProcess = $AllOpenWindows | Where-Object {$_.ParentProcess -eq $runningProcess.ProcessName}
-                        if ($PromptToSave -and !($Script:ADT.Environment.SessionZero -and !$Script:ADT.Environment.IsProcessUserInteractive) -and $AllOpenWindowsForRunningProcess -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                        if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and $AllOpenWindowsForRunningProcess -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
                         {
                             foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                             {
@@ -502,7 +503,7 @@
                     }
 
                     # Restore minimized windows.
-                    [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
+                    [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
                     Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                 }
                 elseif ($promptResult -eq 'Defer')
@@ -513,7 +514,7 @@
                     Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                     # Restore minimized windows.
-                    [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
+                    [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
                     Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                 }
             }

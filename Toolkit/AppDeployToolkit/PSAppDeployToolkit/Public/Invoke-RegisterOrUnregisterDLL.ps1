@@ -70,6 +70,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
 
         ## Get name used to invoke this function in case the 'Register-DLL' or 'Unregister-DLL' alias was used and set the correct DLL action
@@ -89,7 +90,7 @@ https://psappdeploytoolkit.com
         If (-not $DLLAction) {
             Throw 'Parameter validation failed. Please specify the [-DLLAction] parameter to determine whether to register or unregister the DLL.'
         }
-        [String]$DLLAction = $Script:ADT.Environment.culture.TextInfo.ToTitleCase($DLLAction.ToLower())
+        [String]$DLLAction = $adtEnv.culture.TextInfo.ToTitleCase($DLLAction.ToLower())
         Switch ($DLLAction) {
             'Register' {
                 [String]$DLLActionParameters = "/s `"$FilePath`""
@@ -111,9 +112,9 @@ https://psappdeploytoolkit.com
                 Throw "File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($DLLAction.ToLower() + 'ed')."
             }
 
-            If ($Script:ADT.Environment.Is64Bit) {
+            If ($adtEnv.Is64Bit) {
                 If ($DLLFileBitness -eq '64BIT') {
-                    If ($Script:ADT.Environment.Is64BitProcess) {
+                    If ($adtEnv.Is64BitProcess) {
                         [String]$RegSvr32Path = "$env:WinDir\System32\regsvr32.exe"
                     }
                     Else {
