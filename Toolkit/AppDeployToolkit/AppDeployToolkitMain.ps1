@@ -1177,7 +1177,7 @@ function Get-UniversalDate
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)].`n$(Resolve-Error)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-Error)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1223,7 +1223,7 @@ function Test-ServiceExists
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Script:ADT.Environment.culture.Name)].`n$(Resolve-Error)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-Error)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
