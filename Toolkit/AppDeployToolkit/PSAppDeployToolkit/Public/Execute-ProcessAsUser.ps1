@@ -121,15 +121,16 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
-            If (($TempPath -eq (Get-ADTSession).LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
+            If (($TempPath -eq $adtSession.LoggedOnUserTempPath) -and ($RunLevel -eq 'HighestPrivilege')) {
                 Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
             }
         }
         Else {
-            [String]$executeAsUserTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'ExecuteAsUser'
+            [String]$executeAsUserTempPath = Join-Path -Path $adtSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'ExecuteAsUser'
         }
     }
     Process {
@@ -274,13 +275,13 @@ https://psappdeploytoolkit.com
                 [String]$schTaskNameCount = '001'
                 [String]$schTaskName = "$($("$($Script:ADT.Environment.appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
                 #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = Get-ChildItem -Path "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
+                [String]$previousXmlFileName = Get-ChildItem -Path "$($adtSession.GetPropertyValue('dirAppDeployTemp'))\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
                 If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
                     [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
                     [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
                 }
                 $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\$($schTaskName).xml"
+                [String]$xmlSchTaskFilePath = "$($adtSession.GetPropertyValue('dirAppDeployTemp'))\$($schTaskName).xml"
 
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'

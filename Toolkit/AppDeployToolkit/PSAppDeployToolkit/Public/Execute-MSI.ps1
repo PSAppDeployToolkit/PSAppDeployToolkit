@@ -214,6 +214,7 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
     }
     Process {
         ## Initialize variable indicating whether $Path variable is a Product Code or not
@@ -265,7 +266,7 @@ https://psappdeploytoolkit.com
 
         If ($Script:ADT.Config.Toolkit.CompressLogs) {
             ## Build the log file path
-            [String]$logPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('LogTempFolder') -ChildPath $LogName
+            [String]$logPath = Join-Path -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
         }
         Else {
             ## Create the Log directory if it doesn't already exist
@@ -277,7 +278,7 @@ https://psappdeploytoolkit.com
         }
 
         ## Set the installation Parameters
-        If ((Get-ADTSession).DeployModeSilent) {
+        If ($adtSession.DeployModeSilent) {
             $msiInstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
             $msiUninstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
         }
@@ -314,8 +315,8 @@ https://psappdeploytoolkit.com
         }
 
         ## If the MSI is in the Files directory, set the full path to the MSI
-        If (Test-Path -LiteralPath (Join-Path -Path (Get-ADTSession).GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
-            [String]$msiFile = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirFiles') -ChildPath $path
+        If (Test-Path -LiteralPath (Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
+            [String]$msiFile = Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path
         }
         ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'Ignore') {
             [String]$msiFile = (Get-Item -LiteralPath $Path).FullName

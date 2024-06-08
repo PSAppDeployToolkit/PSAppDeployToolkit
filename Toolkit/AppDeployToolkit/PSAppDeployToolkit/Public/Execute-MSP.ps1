@@ -57,11 +57,12 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
     }
     Process {
         ## If the MSP is in the Files directory, set the full path to the MSP
-        If (Test-Path -LiteralPath (Join-Path -Path $((Get-ADTSession).GetPropertyValue('dirFiles')) -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
-            [String]$mspFile = Join-Path -Path $((Get-ADTSession).GetPropertyValue('dirFiles')) -ChildPath $path
+        If (Test-Path -LiteralPath (Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
+            [String]$mspFile = Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path
         }
         ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'Ignore') {
             [String]$mspFile = (Get-Item -LiteralPath $Path).FullName
