@@ -54,14 +54,15 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
 
         ## Remove illegal characters from the scheduled task arguments string
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [string]$SchInstallName = (Get-ADTSession).GetPropertyValue('installName')
+        [string]$SchInstallName = $adtSession.GetPropertyValue('installName')
         ForEach ($invalidChar in $invalidScheduledTaskChars) {
             [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
-        [string]$blockExecutionTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
+        [string]$blockExecutionTempPath = Join-Path -Path $adtSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
         [string]$schTaskUnblockAppsCommand = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$blockExecutionTempPath'; Import-ADTModuleState; Unblock-AppExecution"
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
@@ -113,7 +114,7 @@ https://psappdeploytoolkit.com
             Return
         }
 
-        [String]$schTaskBlockedAppsName = (Get-ADTSession).GetPropertyValue('installName') + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = $adtSession.GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
         If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'Ignore') {
@@ -160,7 +161,7 @@ https://psappdeploytoolkit.com
             Try {
                 ## Specify the filename to export the XML to
                 ## XML does not need to be user readable to stays in protected TEMP folder
-                [String]$xmlSchTaskFilePath = "$((Get-ADTSession).GetPropertyValue('dirAppDeployTemp'))\SchTaskUnBlockApps.xml"
+                [String]$xmlSchTaskFilePath = "$($adtSession.GetPropertyValue('dirAppDeployTemp'))\SchTaskUnBlockApps.xml"
                 [String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             }
             Catch {

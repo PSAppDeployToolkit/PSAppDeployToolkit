@@ -38,6 +38,7 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtSession = Get-ADTSession
     }
     Process {
         ## Bypass if no Admin rights
@@ -55,10 +56,10 @@ https://psappdeploytoolkit.com
         }
 
         ## If block execution variable is $true, set it to $false
-        (Get-ADTSession).State.BlockExecution = $false
+        $adtSession.State.BlockExecution = $false
 
         ## Remove the scheduled task if it exists
-        [String]$schTaskBlockedAppsName = (Get-ADTSession).GetPropertyValue('installName') + '_BlockedApps'
+        [String]$schTaskBlockedAppsName = $adtSession.GetPropertyValue('installName') + '_BlockedApps'
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
                 Write-ADTLogEntry -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]."
@@ -70,13 +71,13 @@ https://psappdeploytoolkit.com
         }
 
         ## Remove BlockAppExecution Schedule Task XML file
-        [String]$xmlSchTaskFilePath = "(Get-ADTSession).GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
+        [String]$xmlSchTaskFilePath = "$adtSession.GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml"
         If (Test-Path -LiteralPath $xmlSchTaskFilePath) {
             $null = Remove-Item -LiteralPath $xmlSchTaskFilePath -Force -ErrorAction 'Ignore'
         }
 
         ## Remove BlockAppExection Temporary directory
-        [String]$blockExecutionTempPath = Join-Path -Path (Get-ADTSession).GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
+        [String]$blockExecutionTempPath = Join-Path -Path $adtSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {
             Remove-Folder -Path $blockExecutionTempPath
         }
