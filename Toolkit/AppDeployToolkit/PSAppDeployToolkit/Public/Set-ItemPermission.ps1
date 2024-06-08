@@ -137,7 +137,7 @@ This function does not return any objects.
 
     Process {
         # Test elevated perms
-        If (-not $Script:ADT.Environment.IsAdmin) {
+        If (-not (Get-ADTEnvironment).IsAdmin) {
             Write-ADTLogEntry -Message 'Unable to use the function [Set-ItemPermission] without elevated permissions.'
             Throw 'Unable to use the function [Set-ItemPermission] without elevated permissions.'
         }

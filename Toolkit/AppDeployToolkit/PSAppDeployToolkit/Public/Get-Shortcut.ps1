@@ -103,7 +103,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Else {
-                $shortcut = $Script:ADT.Environment.Shell.CreateShortcut($FullPath)
+                $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($FullPath)
                 ## TargetPath
                 $Output.TargetPath = $shortcut.TargetPath
                 ## Arguments

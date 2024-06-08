@@ -57,6 +57,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
 
         #region Function Get-PinVerb
@@ -90,7 +91,7 @@ https://psappdeploytoolkit.com
             Try {
                 $Verb = $Verb.Replace('&', '')
                 $path = Split-Path -Path $FilePath -Parent -ErrorAction 'Stop'
-                $folder = $Script:ADT.Environment.ShellApp.Namespace($path)
+                $folder = $adtEnv.ShellApp.Namespace($path)
                 $item = $folder.ParseName((Split-Path -Path $FilePath -Leaf -ErrorAction 'Stop'))
                 $itemVerb = $item.Verbs() | Where-Object { $_.Name.Replace('&', '') -eq $Verb } -ErrorAction 'Stop'
 
@@ -108,7 +109,7 @@ https://psappdeploytoolkit.com
         }
         #endregion
 
-        If ($Script:ADT.Environment.envOSVersionMajor -ge 10) {
+        If ($adtEnv.envOSVersionMajor -ge 10) {
             Write-ADTLogEntry -Message 'Detected Windows 10 or higher, using Windows 10 verb codes.'
             [Hashtable]$Verbs = @{
                 'PinToStartMenu'     = 51201
@@ -140,12 +141,12 @@ https://psappdeploytoolkit.com
             }
 
             If ($Action.Contains('StartMenu')) {
-                If ($Script:ADT.Environment.envOSVersionMajor -ge 10)   {
+                If ($adtEnv.envOSVersionMajor -ge 10)   {
                     If ((Get-Item -Path $FilePath).Extension -ne '.lnk') {
                         Throw 'Only shortcut files (.lnk) are supported on Windows 10 and higher.'
                     }
-                    ElseIf (-not ($FilePath.StartsWith($($Script:ADT.Environment.envUserStartMenu), 'OrdinalIgnoreCase') -or $FilePath.StartsWith($($Script:ADT.Environment.envCommonStartMenu), 'OrdinalIgnoreCase'))) {
-                        Throw "Only shortcut files (.lnk) in [$($Script:ADT.Environment.envUserStartMenu)] and [$($Script:ADT.Environment.envCommonStartMenu)] are supported on Windows 10 and higher."
+                    ElseIf (-not ($FilePath.StartsWith($($adtEnv.envUserStartMenu), 'OrdinalIgnoreCase') -or $FilePath.StartsWith($($adtEnv.envCommonStartMenu), 'OrdinalIgnoreCase'))) {
+                        Throw "Only shortcut files (.lnk) in [$($adtEnv.envUserStartMenu)] and [$($adtEnv.envCommonStartMenu)] are supported on Windows 10 and higher."
                     }
                 }
 
@@ -157,12 +158,12 @@ https://psappdeploytoolkit.com
                 Invoke-Verb -FilePath $FilePath -Verb $PinVerbAction
             }
             ElseIf ($Action.Contains('Taskbar')) {
-                If ($Script:ADT.Environment.envOSVersionMajor -ge 10) {
+                If ($adtEnv.envOSVersionMajor -ge 10) {
                     $FileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
                     $PinExists = Test-Path -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk"
 
                     If (($Action -eq 'PinToTaskbar') -and ($PinExists)) {
-                        If ($(Invoke-ADTObjectMethod -InputObject $Script:ADT.Environment.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
+                        If ($(Invoke-ADTObjectMethod -InputObject $adtEnv.Shell -MethodName 'CreateShortcut' -ArgumentList "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\$($FileNameWithoutExtension).lnk").TargetPath -eq $FilePath) {
                             Write-ADTLogEntry -Message "Pin [$FileNameWithoutExtension] already exists."
                             Return
                         }
@@ -173,12 +174,12 @@ https://psappdeploytoolkit.com
                     }
 
                     $ExplorerCommandHandler = Get-RegistryKey -Key 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin' -Value 'ExplorerCommandHandler'
-                    $classesStarKey = (Get-Item "Registry::HKEY_USERS\$($Script:ADT.Environment.RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey('*', $true)
+                    $classesStarKey = (Get-Item "Registry::HKEY_USERS\$($adtEnv.RunasActiveUser.SID)\SOFTWARE\Classes").OpenSubKey('*', $true)
                     $shellKey = $classesStarKey.CreateSubKey('shell', $true)
                     $specialKey = $shellKey.CreateSubKey('{:}', $true)
                     $specialKey.SetValue('ExplorerCommandHandler', $ExplorerCommandHandler)
 
-                    $Folder = Invoke-ADTObjectMethod -InputObject $Script:ADT.Environment.ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
+                    $Folder = Invoke-ADTObjectMethod -InputObject $adtEnv.ShellApp -MethodName 'Namespace' -ArgumentList $(Split-Path -Path $FilePath -Parent)
                     $Item = Invoke-ADTObjectMethod -InputObject $Folder -MethodName 'ParseName' -ArgumentList $(Split-Path -Path $FilePath -Leaf)
 
                     $Item.InvokeVerb('{:}')

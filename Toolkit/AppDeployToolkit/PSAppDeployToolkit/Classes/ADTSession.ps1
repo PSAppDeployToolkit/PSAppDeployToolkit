@@ -92,6 +92,9 @@ class ADTSession
     # Private methods.
     hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
     {
+        # Get the current environment.
+        $adtEnv = Get-ADTEnvironment
+
         # Establish start date/time first so we can accurately mark the start of execution.
         $this.Properties.CurrentTime = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%T'
         $this.Properties.CurrentDate = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%d-%m-%Y'
@@ -107,13 +110,13 @@ class ADTSession
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
         $this.Properties.DirFiles = "$($this.Properties.ScriptParentPath)\Files"
         $this.Properties.DirSupportFiles = "$($this.Properties.ScriptParentPath)\SupportFiles"
-        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
+        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($adtEnv.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
-        if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($Script:ADT.Environment.runasUserProfile))
+        if (($null -ne $adtEnv.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($adtEnv.runasUserProfile))
         {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Environment.runasUserProfile)\ExecuteAsUser").FullName
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
         }
         else
         {
@@ -129,15 +132,18 @@ class ADTSession
             return
         }
 
+        # Get the current environment.
+        $adtEnv = Get-ADTEnvironment
+
         # Find the first MSI file in the Files folder and use that as our install.
         if (!$this.Properties.DefaultMsiFile)
         {
             # Get all MSI files.
             $msiFiles = Get-ChildItem -Path "$($this.Properties.DirFiles)\*.msi" -ErrorAction Ignore
 
-            if ($this.Properties.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($Script:ADT.Environment.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
+            if ($this.Properties.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($adtEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
             {
-                $this.WriteLogEntry("Discovered $($Script:ADT.Environment.envOSArchitecture) Zero-Config MSI under $($this.Properties.DefaultMsiFile)")
+                $this.WriteLogEntry("Discovered $($adtEnv.envOSArchitecture) Zero-Config MSI under $($this.Properties.DefaultMsiFile)")
             }
             elseif ($this.Properties.DefaultMsiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1)
             {
@@ -212,7 +218,7 @@ class ADTSession
         # Set up sample variables if Dot Sourcing the script, app details have not been specified
         if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppName))
         {
-            $this.Properties.AppName = $Script:ADT.Environment.appDeployToolkitName
+            $this.Properties.AppName = ($adtEnv = Get-ADTEnvironment).appDeployToolkitName
 
             if (![System.String]::IsNullOrWhiteSpace($this.Properties.AppVendor))
             {
@@ -220,11 +226,11 @@ class ADTSession
             }
             if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppVersion))
             {
-                $this.Properties.AppVersion = $Script:ADT.Environment.appDeployMainScriptVersion.ToString()
+                $this.Properties.AppVersion = $adtEnv.appDeployMainScriptVersion.ToString()
             }
             if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppLang))
             {
-                $this.Properties.AppLang = $Script:ADT.Environment.currentLanguage
+                $this.Properties.AppLang = $adtEnv.currentLanguage
             }
             if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppRevision))
             {
@@ -257,7 +263,7 @@ class ADTSession
         $this.Properties.InstallName = ($this.Properties.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.Properties.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
+        $this.Properties.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -274,11 +280,12 @@ class ADTSession
 
     hidden [System.Void] InitLogging()
     {
-        # Generate log paths from our installation properties.
-        $this.Properties.LogTempFolder = Join-Path -Path $Script:ADT.Environment.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
+        # Get the current environment and config.
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
 
-        # Generate the log directory to use.
+        # Generate log paths from our installation properties.
+        $this.Properties.LogTempFolder = Join-Path -Path $adtEnv.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
         if ($adtConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
@@ -295,7 +302,7 @@ class ADTSession
         }
 
         # Generate the log filename to use.
-        $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
+        $this.Properties.LogName = "$($this.Properties.InstallName)_$($adtEnv.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
         $this.Properties.LogFile = Join-Path -Path $this.Properties.LogPath -ChildPath $this.Properties.LogName
 
         # Check if log file needs to be rotated.
@@ -348,6 +355,9 @@ class ADTSession
 
     hidden [System.Void] LogScriptInfo()
     {
+        # Get the current environment.
+        $adtEnv = Get-ADTEnvironment
+
         # Announce provided deployment script info.
         if ($this.Properties.AppScriptVersion)
         {
@@ -369,53 +379,60 @@ class ADTSession
         {
             $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-ADTBoundParameters)]")
         }
-        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]")
+        $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] module version is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Version)]")
 
         # Announce session instantiation mode.
         if ($this.LegacyMode)
         {
-            $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session mode is [Legacy]. This mode is deprecated and will be removed in a future release.", 2)
+            $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Legacy]. This mode is deprecated and will be removed in a future release.", 2)
             $this.WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2)
             return
         }
-        $this.WriteLogEntry("[$($Script:ADT.Environment.appDeployToolkitName)] session mode is [Native].")
+        $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Native].")
     }
 
     hidden [System.Void] LogSystemInfo()
     {
-        $this.WriteLogEntry("Computer Name is [$($Script:ADT.Environment.envComputerNameFQDN)]")
-        $this.WriteLogEntry("Current User is [$($Script:ADT.Environment.ProcessNTAccount)]")
-        $this.WriteLogEntry("OS Version is [$($Script:ADT.Environment.envOSName)$(if ($Script:ADT.Environment.envOSServicePack) {" $($Script:ADT.Environment.envOSServicePack)"}) $($Script:ADT.Environment.envOSArchitecture) $($Script:ADT.Environment.envOSVersion)]")
-        $this.WriteLogEntry("OS Type is [$($Script:ADT.Environment.envOSProductTypeName)]")
-        $this.WriteLogEntry("Current Culture is [$($Script:ADT.Environment.culture.Name)], language is [$($Script:ADT.Environment.currentLanguage)] and UI language is [$($Script:ADT.Environment.currentUILanguage)]")
-        $this.WriteLogEntry("Hardware Platform is [$($Script:ADT.Environment.envHardwareType)]")
+        # Get the current environment.
+        $adtEnv = Get-ADTEnvironment
+
+        # Report on all determined system info.
+        $this.WriteLogEntry("Computer Name is [$($adtEnv.envComputerNameFQDN)]")
+        $this.WriteLogEntry("Current User is [$($adtEnv.ProcessNTAccount)]")
+        $this.WriteLogEntry("OS Version is [$($adtEnv.envOSName)$(if ($adtEnv.envOSServicePack) {" $($adtEnv.envOSServicePack)"}) $($adtEnv.envOSArchitecture) $($adtEnv.envOSVersion)]")
+        $this.WriteLogEntry("OS Type is [$($adtEnv.envOSProductTypeName)]")
+        $this.WriteLogEntry("Current Culture is [$($adtEnv.culture.Name)], language is [$($adtEnv.currentLanguage)] and UI language is [$($adtEnv.currentUILanguage)]")
+        $this.WriteLogEntry("Hardware Platform is [$($adtEnv.envHardwareType)]")
         $this.WriteLogEntry("PowerShell Host is [$($Global:Host.Name)] with version [$($Global:Host.Version)]")
-        $this.WriteLogEntry("PowerShell Version is [$($Script:ADT.Environment.envPSVersion) $($Script:ADT.Environment.psArchitecture)]")
-        if ($Script:ADT.Environment.envCLRVersion)
+        $this.WriteLogEntry("PowerShell Version is [$($adtEnv.envPSVersion) $($adtEnv.psArchitecture)]")
+        if ($adtEnv.envCLRVersion)
         {
-            $this.WriteLogEntry("PowerShell CLR (.NET) version is [$($Script:ADT.Environment.envCLRVersion)]")
+            $this.WriteLogEntry("PowerShell CLR (.NET) version is [$($adtEnv.envCLRVersion)]")
         }
     }
 
     hidden [System.Void] LogUserInfo()
     {
-        # Log details for all currently logged in users.
-        $this.WriteLogEntry("Display session information for all logged on users:`n$($Script:ADT.Environment.LoggedOnUserSessions | Format-List | Out-String)", $true)
+        # Get the current environment and config.
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
 
+        # Log details for all currently logged in users.
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($adtEnv.LoggedOnUserSessions | Format-List | Out-String)", $true)
+
         # Provide detailed info about current process state.
-        if ($Script:ADT.Environment.usersLoggedOn)
+        if ($adtEnv.usersLoggedOn)
         {
-            $this.WriteLogEntry("The following users are logged on to the system: [$($Script:ADT.Environment.usersLoggedOn -join ', ')].")
+            $this.WriteLogEntry("The following users are logged on to the system: [$($adtEnv.usersLoggedOn -join ', ')].")
 
             # Check if the current process is running in the context of one of the logged in users
-            if ($Script:ADT.Environment.CurrentLoggedOnUserSession)
+            if ($adtEnv.CurrentLoggedOnUserSession)
             {
-                $this.WriteLogEntry("Current process is running with user account [$($Script:ADT.Environment.ProcessNTAccount)] under logged in user session for [$($Script:ADT.Environment.CurrentLoggedOnUserSession.NTAccount)].")
+                $this.WriteLogEntry("Current process is running with user account [$($adtEnv.ProcessNTAccount)] under logged in user session for [$($adtEnv.CurrentLoggedOnUserSession.NTAccount)].")
             }
             else
             {
-                $this.WriteLogEntry("Current process is running under a system account [$($Script:ADT.Environment.ProcessNTAccount)].")
+                $this.WriteLogEntry("Current process is running under a system account [$($adtEnv.ProcessNTAccount)].")
             }
 
             # Guard Intune detection code behind a variable.
@@ -426,9 +443,9 @@ class ADTSession
             }
 
             # Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-            if ($Script:ADT.Environment.CurrentConsoleUserSession)
+            if ($adtEnv.CurrentConsoleUserSession)
             {
-                $this.WriteLogEntry("The following user is the console user [$($Script:ADT.Environment.CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse).")
+                $this.WriteLogEntry("The following user is the console user [$($adtEnv.CurrentConsoleUserSession.NTAccount)] (user with control of physical monitor, keyboard, and mouse).")
             }
             else
             {
@@ -436,9 +453,9 @@ class ADTSession
             }
 
             # Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-            if ($Script:ADT.Environment.RunAsActiveUser)
+            if ($adtEnv.RunAsActiveUser)
             {
-                $this.WriteLogEntry("The active logged on user is [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)].")
+                $this.WriteLogEntry("The active logged on user is [$($adtEnv.RunAsActiveUser.NTAccount)].")
             }
         }
         else
@@ -447,7 +464,7 @@ class ADTSession
         }
 
         # Log which language's UI messages are loaded from the config file
-        $this.WriteLogEntry("The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)].")
+        $this.WriteLogEntry("The current execution context has a primary UI language of [$($adtEnv.currentLanguage)].")
 
         # Advise whether the UI language was overridden.
         if ($adtConfig.UI.LanguageOverride)
@@ -460,7 +477,7 @@ class ADTSession
     hidden [System.Void] PerformSCCMTests()
     {
         # Check if script is running from a SCCM Task Sequence.
-        if ($Script:ADT.Environment.RunningTaskSequence)
+        if ((Get-ADTEnvironment).RunningTaskSequence)
         {
             $this.WriteLogEntry('Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.')
         }
@@ -472,9 +489,12 @@ class ADTSession
 
     hidden [System.Void] PerformSystemAccountTests()
     {
+        # Get the current environment.
+        $adtEnv = Get-ADTEnvironment
+
         # Check to see if the Task Scheduler service is in a healthy state by checking its services to see if they exist, are currently running, and have a start mode of 'Automatic'.
         # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
-        if ($Script:ADT.Environment.IsLocalSystemAccount)
+        if ($adtEnv.IsLocalSystemAccount)
         {
             # Check the health of the 'Task Scheduler' service
             try
@@ -502,11 +522,11 @@ class ADTSession
         }
         else
         {
-            $this.WriteLogEntry("Skipping attempt to check for and make the task scheduler services healthy, because $($Script:ADT.Environment.appDeployToolkitName) is not running under the [$($Script:ADT.Environment.LocalSystemNTAccount)] account.")
+            $this.WriteLogEntry("Skipping attempt to check for and make the task scheduler services healthy, because $($adtEnv.appDeployToolkitName) is not running under the [$($adtEnv.LocalSystemNTAccount)] account.")
         }
 
         # If script is running in session zero.
-        if ($Script:ADT.Environment.SessionZero)
+        if ($adtEnv.SessionZero)
         {
             # If the script was launched with deployment mode set to NonInteractive, then continue
             if ($this.Properties.DeployMode -eq 'NonInteractive')
@@ -516,12 +536,12 @@ class ADTSession
             elseif ((Get-ADTConfig).Toolkit.SessionDetection)
             {
                 # If the process is not able to display a UI, enable NonInteractive mode
-                if (!$Script:ADT.Environment.IsProcessUserInteractive)
+                if (!$adtEnv.IsProcessUserInteractive)
                 {
                     $this.Properties.DeployMode = 'NonInteractive'
                     $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.Properties.DeployMode)].")
                 }
-                elseif (!$Script:ADT.Environment.usersLoggedOn)
+                elseif (!$adtEnv.usersLoggedOn)
                 {
                     $this.Properties.DeployMode = 'NonInteractive'
                     $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.Properties.DeployMode)].")
@@ -575,10 +595,14 @@ class ADTSession
 
     hidden [System.Void] TestAdminRequired()
     {
+        # Get the current environment and config.
+        $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
+
         # Check current permissions and exit if not running with Administrator rights
-        if ((Get-ADTConfig).Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)
+        if ($adtConfig.Toolkit.RequireAdmin -and !$adtEnv.IsAdmin)
         {
-            $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
+            $adminErr = "[$($adtEnv.appDeployToolkitName)] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
             $this.WriteLogEntry($adminErr, 3)
             Show-ADTDialogBox -Text $adminErr -Icon Stop
             throw [System.UnauthorizedAccessException]::new($adminErr)
@@ -640,7 +664,7 @@ class ADTSession
         # Ensure this session isn't being opened twice.
         if ($this.Initialised)
         {
-            throw [System.InvalidOperationException]::new("The current $($Script:ADT.Environment.appDeployToolkitName) session has already been opened.")
+            throw [System.InvalidOperationException]::new("The current $((Get-ADTEnvironment).appDeployToolkitName) session has already been opened.")
         }
 
         # Initialise PSADT session.

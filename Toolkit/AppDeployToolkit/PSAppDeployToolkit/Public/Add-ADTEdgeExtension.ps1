@@ -58,5 +58,5 @@
     $additionalExtension = @{installation_mode = $InstallationMode; update_url = $UpdateUrl}; if ($MinimumVersionRequired) {$additionalExtension.Add('minimum_version_required', $MinimumVersionRequired)}
 
     # Add the additional extension to the current values, then re-write the definition in the registry.
-    [System.Void](Set-RegistryKey -Key $Script:ADT.Environment.regKeyEdgeExtensions -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | Add-Member -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | ConvertTo-Json -Compress))
+    [System.Void](Set-RegistryKey -Key (Get-ADTEnvironment).regKeyEdgeExtensions -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | Add-Member -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | ConvertTo-Json -Compress))
 }

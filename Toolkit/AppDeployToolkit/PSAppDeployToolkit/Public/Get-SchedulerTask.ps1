@@ -63,6 +63,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
 
         [PSObject[]]$ScheduledTasks = @()
@@ -70,9 +71,9 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
-            [String[]]$exeSchtasksResults = & $Script:ADT.Environment.exeSchTasks /Query /V /FO CSV
+            [String[]]$exeSchtasksResults = & $adtEnv.exeSchTasks /Query /V /FO CSV
             If ($global:LastExitCode -ne 0) {
-                Throw "Failed to retrieve scheduled tasks using [$($Script:ADT.Environment.exeSchTasks)]."
+                Throw "Failed to retrieve scheduled tasks using [$($adtEnv.exeSchTasks)]."
             }
             [PSObject[]]$SchtasksResults = $exeSchtasksResults | ConvertFrom-Csv -Header 'HostName', 'TaskName', 'Next Run Time', 'Status', 'Logon Mode', 'Last Run Time', 'Last Result', 'Author', 'Task To Run', 'Start In', 'Comment', 'Scheduled Task State', 'Idle Time', 'Power Management', 'Run As User', 'Delete Task If Not Rescheduled', 'Stop Task If Runs X Hours and X Mins', 'Schedule', 'Schedule Type', 'Start Time', 'Start Date', 'End Date', 'Days', 'Months', 'Repeat: Every', 'Repeat: Until: Time', 'Repeat: Until: Duration', 'Repeat: Stop If Still Running' -ErrorAction 'Stop'
 

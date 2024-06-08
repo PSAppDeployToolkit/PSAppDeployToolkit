@@ -137,11 +137,12 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
     Process {
         Try {
-            if ($Wow6432Node -and $Script:ADT.Environment.Is64Bit) {
+            if ($Wow6432Node -and $adtEnv.Is64Bit) {
                 [String]$ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                 [String]$HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
             }
@@ -157,8 +158,8 @@ https://psappdeploytoolkit.com
 
                 Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system."
                 [ScriptBlock]$RemoveHKCUActiveSetupKey = {
-                    If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID) {
-                        Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID -Recurse
+                    If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID) {
+                        Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID -Recurse
                     }
                 }
                 Invoke-ADTAllUsersRegistryChange -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)
@@ -209,7 +210,7 @@ https://psappdeploytoolkit.com
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
-                    [String]$CUStubExePath = $Script:ADT.Environment.envPSProcessPath
+                    [String]$CUStubExePath = $adtEnv.envPSProcessPath
                     [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
@@ -413,12 +414,12 @@ https://psappdeploytoolkit.com
 
             ## Execute the StubPath file for the current user as long as not in Session 0
             If ($ExecuteForCurrentUser) {
-                If ($Script:ADT.Environment.SessionZero) {
-                    If ($Script:ADT.Environment.RunAsActiveUser) {
+                If ($adtEnv.SessionZero) {
+                    If ($adtEnv.RunAsActiveUser) {
                         # Skip if Active Setup reg key is present and Version is equal or higher
-                        [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $Script:ADT.Environment.RunAsActiveUser.SID)
+                        [Boolean]$InstallNeeded = (& $TestActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $adtEnv.RunAsActiveUser.SID)
                         If ($InstallNeeded) {
-                            Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]."
+                            Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($adtEnv.RunAsActiveUser.NTAccount)]."
                             If ($CUArguments) {
                                 Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
                             }
@@ -427,10 +428,10 @@ https://psappdeploytoolkit.com
                             }
 
                             Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
-                            & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $Script:ADT.Environment.RunAsActiveUser.SID
+                            & $SetActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID
                         }
                         Else {
-                            Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($Script:ADT.Environment.RunAsActiveUser.NTAccount)]." -Severity 2
+                            Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($adtEnv.RunAsActiveUser.NTAccount)]." -Severity 2
                         }
                     }
                     Else {

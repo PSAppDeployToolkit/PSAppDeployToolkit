@@ -60,7 +60,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             ## If on lower than Windows Vista and 'Automatic (Delayed Start)' selected, then change to 'Automatic' because 'Delayed Start' is not supported.
-            If (($StartMode -eq 'Automatic (Delayed Start)') -and ($Script:ADT.Environment.envOSVersionMajor -lt 6)) {
+            If (($StartMode -eq 'Automatic (Delayed Start)') -and ((Get-ADTEnvironment).envOSVersionMajor -lt 6)) {
                 $StartMode = 'Automatic'
             }
 

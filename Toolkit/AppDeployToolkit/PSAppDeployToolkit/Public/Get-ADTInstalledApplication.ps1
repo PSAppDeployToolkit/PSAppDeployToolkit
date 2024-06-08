@@ -69,6 +69,7 @@
 
     begin {
         # Announce start.
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
         if ($Name)
         {
@@ -80,7 +81,7 @@
         }
 
         # Enumerate the installed applications from the registry for applications that have the "DisplayName" property.
-        $regKeyApplication = Get-ItemProperty -Path ($Script:ADT.Environment.regKeyApplications -replace '$','\*') |
+        $regKeyApplication = Get-ItemProperty -Path ($adtEnv.regKeyApplications -replace '$','\*') |
             Where-Object {$_.PSObject.Properties.Name.Contains('DisplayName') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayName)}
 
         # Set up variables needed in main loop.
@@ -109,7 +110,7 @@
             $appDisplayName = $regKeyApp.DisplayName -replace $stringControlChars
             $appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore) -replace $stringControlChars
             $appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction Ignore) -replace $stringControlChars
-            $Is64BitApp = $Script:ADT.Environment.is64Bit -and ($regKeyApp.PSPath -notmatch $wow6432PSPathRegex)
+            $Is64BitApp = $adtEnv.is64Bit -and ($regKeyApp.PSPath -notmatch $wow6432PSPathRegex)
 
             # Verify if there is a match with the product code passed to the script.
             if ($ProductCode -contains $regKeyApp.PSChildName)
@@ -117,7 +118,7 @@
                 Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
                 [pscustomobject]@{
                     UninstallSubkey    = $regKeyApp.PSChildName
-                    ProductCode        = $(if ($regKeyApp.PSChildName -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
+                    ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
                     DisplayName        = $appDisplayName
                     DisplayVersion     = $appDisplayVersion
                     UninstallString    = $regKeyApp | Select-Object -ExpandProperty UninstallString -ErrorAction Ignore
@@ -153,7 +154,7 @@
                 {
                     [pscustomobject]@{
                         UninstallSubkey    = $regKeyApp.PSChildName
-                        ProductCode        = $(if ($regKeyApp.PSChildName -match $Script:ADT.Environment.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
+                        ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
                         DisplayName        = $appDisplayName
                         DisplayVersion     = $appDisplayVersion
                         UninstallString    = $regKeyApp.UninstallString

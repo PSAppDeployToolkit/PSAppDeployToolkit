@@ -126,7 +126,7 @@ https://psappdeploytoolkit.com
                     }
                     # Forward slash was found in Key. Use REG.exe ADD to create registry key
                     Else {
-                        If ($Script:ADT.Environment.Is64BitProcess -and -not $Wow6432Node) {
+                        If ((Get-ADTEnvironment).Is64BitProcess -and -not $Wow6432Node) {
                             $RegMode = '/reg:64'
                         }
                         Else {

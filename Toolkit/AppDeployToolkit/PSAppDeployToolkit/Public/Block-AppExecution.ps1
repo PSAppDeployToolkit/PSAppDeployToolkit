@@ -53,9 +53,10 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
+        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
+        Write-ADTDebugHeader
 
         ## Remove illegal characters from the scheduled task arguments string
         [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
@@ -101,7 +102,7 @@ https://psappdeploytoolkit.com
     </Settings>
     <Actions Context="Author">
         <Exec>
-            <Command>$($Script:ADT.Environment.envPSProcessPath)</Command>
+            <Command>$($adtEnv.envPSProcessPath)</Command>
             <Arguments>$schTaskUnblockAppsCommand</Arguments>
         </Exec>
     </Actions>
@@ -110,8 +111,8 @@ https://psappdeploytoolkit.com
     }
     Process {
         ## Bypass if no Admin rights
-        If (!$Script:ADT.Environment.IsAdmin) {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($Script:ADT.Environment.ProcessNTAccount)] is not admin."
+        If (!$adtEnv.IsAdmin) {
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             Return
         }
 
@@ -137,7 +138,7 @@ https://psappdeploytoolkit.com
         Export-Clixml -LiteralPath "$blockExecutionTempPath\$($Script:MyInvocation.MyCommand.Name.Replace('.psm1', '.xml'))" -Depth ([System.Int32]::MaxValue)
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$($Script:ADT.Environment.envPSProcessPath) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; Show-ADTBlockedAppDialog`""
+        [String[]]$debuggerBlockScript = "strCommand = `"$($adtEnv.envPSProcessPath) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$([System.IO.Path]::GetDirectoryName($Script:MyInvocation.MyCommand.Path))'; Import-ADTModuleState; Show-ADTBlockedAppDialog`""
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'Ignore'
@@ -171,7 +172,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Import the Scheduled Task XML file to create the Scheduled Task
-            [PSObject]$schTaskResult = Execute-Process -Path $Script:ADT.Environment.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 Write-ADTLogEntry -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3
                 Return
@@ -185,7 +186,7 @@ https://psappdeploytoolkit.com
         ## Enumerate each process and set the debugger value to block application execution
         ForEach ($blockProcess in $blockProcessName) {
             Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$blockProcess]."
-            Set-RegistryKey -Key (Join-Path -Path $Script:ADT.Environment.regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
+            Set-RegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $blockProcess) -Name 'Debugger' -Value $debuggerBlockValue -ContinueOnError $true
         }
     }
     End {

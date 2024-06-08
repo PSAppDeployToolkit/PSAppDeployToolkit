@@ -178,7 +178,7 @@ https://psappdeploytoolkit.com
                 [IO.File]::WriteAllLines($FullPath, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
             }
             Else {
-                $shortcut = $Script:ADT.Environment.Shell.CreateShortcut($FullPath)
+                $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($FullPath)
                 ## TargetPath
                 $shortcut.TargetPath = $targetPath
                 ## Arguments

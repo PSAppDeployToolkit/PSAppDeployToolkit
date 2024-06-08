@@ -37,20 +37,21 @@
 
     param (
         [ValidateNotNullOrEmpty()]
-        [System.String]$DateTime = (Get-Date -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
+        [System.String]$DateTime = (Get-Date -Format (Get-ADTEnvironment).culture.DateTimeFormat.UniversalDateTimePattern).ToString()
     )
 
     begin {
+        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
 
     process {
         # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-        [System.DateTime]$DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Script:ADT.Environment.culture)
+        [System.DateTime]$DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $adtEnv.culture)
 
         # Convert the date to a universal sortable date time pattern based on the current culture.
-        Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Script:ADT.Environment.culture.Name)]."
-        return (Get-Date -Date $DateTime -Format $Script:ADT.Environment.culture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
+        Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($adtEnv.culture.Name)]."
+        return (Get-Date -Date $DateTime -Format $adtEnv.culture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
     }
 
     end {
