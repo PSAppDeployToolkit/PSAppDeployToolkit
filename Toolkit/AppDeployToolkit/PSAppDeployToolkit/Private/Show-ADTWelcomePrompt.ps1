@@ -84,9 +84,12 @@
     )
 
     begin {
-        Write-ADTDebugHeader
+        # Perform initial setup.
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
+        Write-ADTDebugHeader
+
+        # Initialise variables.
         $countdownTime = $startTime = [System.DateTime]::Now
         $showCountdown = $false
         $showCloseApps = $false
