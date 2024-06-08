@@ -56,8 +56,8 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
         $adtSession = Get-ADTSession
+        Write-ADTDebugHeader
     }
     Process {
         ## If the MSP is in the Files directory, set the full path to the MSP

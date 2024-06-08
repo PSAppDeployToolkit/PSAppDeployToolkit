@@ -54,6 +54,7 @@
 
     begin {
         # Initialize variables.
+        Write-ADTDebugHeader
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
         {
             "$($MutexWaitTime.TotalMinutes) minute(s)"
@@ -69,7 +70,6 @@
         $IsUnhandledException = $false
         $IsMutexFree = $false
         [System.Threading.Mutex]$OpenExistingMutex = $null
-        Write-ADTDebugHeader
     }
 
     process

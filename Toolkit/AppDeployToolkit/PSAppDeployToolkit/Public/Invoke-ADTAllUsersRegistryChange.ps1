@@ -54,7 +54,6 @@
     )
 
     begin {
-        # Store the session's PSCmdlet here for use throughout process loop.
         Write-ADTDebugHeader
     }
 
