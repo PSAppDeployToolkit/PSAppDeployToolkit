@@ -1,5 +1,5 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit.Dialogs'
+# Module manifest for module 'PSAppDeployToolkit.Dialogs.Modern'
 #
 # Generated on: 2024-06-05
 #
@@ -7,7 +7,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PSAppDeployToolkit.Dialogs.psm1'
+RootModule = 'PSAppDeployToolkit.Dialogs.Modern.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -16,7 +16,7 @@ ModuleVersion = '3.91.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'f47aa77b-ea0f-4a98-9125-85b64f3e9855'
+GUID = 'd4f26883-ff0e-4857-8724-3380ea9dbc0b'
 
 # Author of this module
 Author = 'PSAppDeployToolkit Team'
@@ -64,20 +64,11 @@ PowerShellVersion = '5.1'
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
-    'Submodules\PSAppDeployToolkit.Dialogs.Classic\PSAppDeployToolkit.Dialogs.Classic.psd1'
-    'Submodules\PSAppDeployToolkit.Dialogs.Modern\PSAppDeployToolkit.Dialogs.Modern.psd1'
-)
+# NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Close-ADTInstallationProgress'
-    'Show-ADTBalloonTip'
-    'Show-ADTBlockedAppDialog'
-    'Show-ADTInstallationProgress'
-    'Show-ADTInstallationPrompt'
-    'Show-ADTInstallationRestartPrompt'
-    'Show-ADTInstallationWelcome'
+    'Show-ADTModernBalloonTip'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
