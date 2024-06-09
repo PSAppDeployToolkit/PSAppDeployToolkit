@@ -1,13 +1,13 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit'
+# Module manifest for module 'PSAppDeployToolkit.Common'
 #
-# Generated on: 2024-04-13
+# Generated on: 2024-06-05
 #
 
 @{
 
 # Script module or binary module file associated with this manifest.
-# RootModule = ''
+RootModule = 'PSAppDeployToolkit.Common.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -16,7 +16,7 @@ ModuleVersion = '3.91.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'
+GUID = '6305ffdd-8ddc-4d83-b9b6-c00986c6a495'
 
 # Author of this module
 Author = 'PSAppDeployToolkit Team'
@@ -49,11 +49,7 @@ PowerShellVersion = '5.1'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Core\PSAppDeployToolkit.Core.psd1"
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Common\PSAppDeployToolkit.Common.psd1"
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Dialogs\PSAppDeployToolkit.Dialogs.psd1"
-)
+# RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -71,7 +67,74 @@ RequiredModules = @(
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @()
+FunctionsToExport = @(
+    'Add-ADTEdgeExtension'
+    'Convert-RegistryPath'
+    'ConvertTo-ADTNTAccountOrSID'
+    'Copy-File'
+    'Copy-FileToUserProfiles'
+    'Execute-MSI'
+    'Execute-MSP'
+    'Execute-Process'
+    'Execute-ProcessAsUser'
+    'Get-ADTDeferHistory'
+    'Get-ADTFileVersion'
+    'Get-ADTFreeDiskSpace'
+    'Get-ADTIniValue'
+    'Get-ADTInstalledApplication'
+    'Get-ADTLoggedOnUser'
+    'Get-ADTMsiExitCodeMessage'
+    'Get-ADTObjectProperty'
+    'Get-ADTPEFileArchitecture'
+    'Get-ADTRunningProcesses'
+    'Get-ADTUniversalDate'
+    'Get-ADTUserProfiles'
+    'Get-ADTWindowTitle'
+    'Get-MsiTableProperty'
+    'Get-PendingReboot'
+    'Get-RegistryKey'
+    'Get-SchedulerTask'
+    'Get-ServiceStartMode'
+    'Get-Shortcut'
+    'Install-MSUpdates'
+    'Install-SCCMSoftwareUpdates'
+    'Invoke-ADTAllUsersRegistryChange'
+    'Invoke-ADTObjectMethod'
+    'Invoke-RegisterOrUnregisterDLL'
+    'Invoke-SCCMTask'
+    'New-ADTFolder'
+    'New-MsiTransform'
+    'New-Shortcut'
+    'Remove-ADTEdgeExtension'
+    'Remove-ADTFile'
+    'Remove-ADTInvalidFileNameChars'
+    'Remove-FileFromUserProfiles'
+    'Remove-Folder'
+    'Remove-MSIApplications'
+    'Remove-RegistryKey'
+    'Send-Keys'
+    'Set-ActiveSetup'
+    'Set-ADTDeferHistory'
+    'Set-ADTIniValue'
+    'Set-ItemPermission'
+    'Set-MsiProperty'
+    'Set-PinnedApplication'
+    'Set-RegistryKey'
+    'Set-ServiceStartMode'
+    'Set-Shortcut'
+    'Start-ServiceAndDependencies'
+    'Stop-ServiceAndDependencies'
+    'Test-ADTIsMutexAvailable'
+    'Test-ADTNetworkConnection'
+    'Test-ADTPowerPoint'
+    'Test-ADTServiceExists'
+    'Test-Battery'
+    'Test-MSUpdates'
+    'Test-RegistryValue'
+    'Update-ADTDesktop'
+    'Update-ADTGroupPolicy'
+    'Update-ADTSessionEnvironmentVariables'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
