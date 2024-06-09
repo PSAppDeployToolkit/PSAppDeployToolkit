@@ -148,7 +148,7 @@
         # Return early in silent mode.
         if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTModernInstallationProgress [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
             return
         }
 
