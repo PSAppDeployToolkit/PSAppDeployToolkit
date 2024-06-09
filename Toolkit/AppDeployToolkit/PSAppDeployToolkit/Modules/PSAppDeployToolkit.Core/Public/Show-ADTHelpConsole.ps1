@@ -5,6 +5,7 @@
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        $WarningPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
         Set-StrictMode -Version 3
 
         # Import the module and store its passthru data so we can access it later.
@@ -16,7 +17,7 @@
         $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
         $helpListBox.Location = [System.Drawing.Point]::new(3,0)
         $helpListBox.add_SelectedIndexChanged({$helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim()})
-        [System.Void]$helpListBox.Items.AddRange($module.ExportedCommands.Keys)
+        [System.Void]$helpListBox.Items.AddRange(((Get-Module -Name "$($module.Name)*").ExportedCommands.Keys | Sort-Object))
 
         # Build out the form's textbox.
         $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
