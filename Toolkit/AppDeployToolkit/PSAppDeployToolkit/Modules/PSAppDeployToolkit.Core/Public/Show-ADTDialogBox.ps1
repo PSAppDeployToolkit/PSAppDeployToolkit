@@ -108,7 +108,7 @@
         # Bypass if in silent mode.
         if ($adtSession.DeployModeSilent)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTDialogBox [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text:$Text"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text:$Text"
             return
         }
 
