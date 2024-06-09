@@ -52,9 +52,7 @@
         if ($Script:ProgressWindow.Window)
         {
             Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-            $Script:ProgressWindow.Window.CloseDialog()
-            $Script:ProgressWindow.Window = $null
-            $Script:ProgressWindow.Thread = $null
+            $Script:ProgressWindow.Window.HideDialog()
         }
 
         # Reset the state bool.
