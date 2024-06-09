@@ -64,5 +64,5 @@
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    Show-ADTClassicBalloonTip @PSBoundParameters
+    & (Get-ADTDialogFunction) @PSBoundParameters
 }

@@ -41,14 +41,6 @@
         UninstallParams = 'REBOOT=ReallySuppress /QN'
     }
 
-    Toast = @{
-        # The name to show by default for all toast notifications.
-        AppName = 'PSAppDeployToolkit'
-
-        # Whether to use toast notifications, or fall back to balloon tips.
-        Disable = $true
-    }
-
     Toolkit = @{
         # Specify the path for the cache folder.
         CachePath = '$envProgramData\SoftwareCache'
@@ -109,6 +101,9 @@
         # Used to turn automatic balloon notifications on or off.
         BalloonNotifications = $true
 
+        # Used to turn automatic balloon notifications on or off.
+        DialogStyle = 'Modern'
+
         # Exit code used when a UI prompt times out or the user opts to defer.
         DefaultExitCode = 1618
 
@@ -153,5 +148,8 @@
 
         # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoCountdown parameter is specified. Default is 600 seconds.
         RestartPromptPersistInterval = 600
+
+        # The name to show by default for all toast notifications.
+        ToastName = 'PSAppDeployToolkit'
     }
 }
