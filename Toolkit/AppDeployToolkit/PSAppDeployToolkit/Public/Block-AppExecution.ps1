@@ -54,6 +54,7 @@ https://psappdeploytoolkit.com
 
     Begin {
         Write-ADTDebugHeader
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
 
         ## Remove illegal characters from the scheduled task arguments string
@@ -117,8 +118,8 @@ https://psappdeploytoolkit.com
         [String]$schTaskBlockedAppsName = $adtSession.GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
-        If (Test-Path -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'Ignore') {
-            $null = Remove-Item -LiteralPath "$($Script:ADT.Config.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -Force -ErrorAction 'Ignore'
+        If (Test-Path -LiteralPath "$($adtConfig.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -PathType 'Leaf' -ErrorAction 'Ignore') {
+            $null = Remove-Item -LiteralPath "$($adtConfig.Toolkit.TempPath)\$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name)" -Force -ErrorAction 'Ignore'
         }
 
         If (Test-Path -LiteralPath $blockExecutionTempPath -PathType 'Container') {

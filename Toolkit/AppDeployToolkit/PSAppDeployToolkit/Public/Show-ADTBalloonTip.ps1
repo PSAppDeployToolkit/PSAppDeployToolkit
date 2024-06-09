@@ -65,15 +65,16 @@
     )
 
     begin {
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
 
     process {
         # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-        if ($adtSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications)
+        if ($adtSession.DeployModeSilent -or !$adtConfig.UI.BalloonNotifications)
         {
-            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
+            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
             return
         }
         if (Test-ADTPowerPoint)
@@ -86,13 +87,13 @@
         Reset-ADTNotifyIcon
 
         # Do a balloon tip if we're on an old OS or toast notifications are disabled.
-        if (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or $Script:ADT.Config.Toast.Disable)
+        if (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or $adtConfig.Toast.Disable)
         {
             # Create in separate process if -NoWait is passed.
             if ($NoWait)
             {
                 Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-                Execute-Process -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($Script:ADT.Config.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
+                Execute-Process -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($adtConfig.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
                 return
             }
             Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
@@ -124,13 +125,13 @@
                 [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\$($Script:ADT.Environment.appDeployToolkitName)', 'SoundFile', '', 'String')
 
                 # Configure the toast notification.
-                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'DisplayName', '$($Script:ADT.Config.Toast.AppName)', 'String')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'DisplayName', '$($adtConfig.Toast.AppName)', 'String')
                 [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'ShowInSettings', 0, 'DWord')
-                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'IconUri', '$($Script:ADT.Config.Assets.Logo)', 'ExpandString')
+                [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'IconUri', '$($adtConfig.Assets.Logo)', 'ExpandString')
                 [Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Classes\AppUserModelId\$($Script:ADT.Environment.appDeployToolkitName)', 'IconBackgroundColor', '', 'ExpandString')
 
                 # Build out toast XML and display it.
-                (New-Variable -Name toastXml -Value ([Windows.Data.Xml.Dom.XmlDocument]::new()) -PassThru).Value.LoadXml('<toast launch="app-defined-string"><visual><binding template="ToastImageAndText02"><text id="1">$BalloonTipTitle</text><text id="2">$BalloonTipText</text><image id="1" src="file://$($Script:ADT.Config.Assets.Logo)" /></binding></visual></toast>')
+                (New-Variable -Name toastXml -Value ([Windows.Data.Xml.Dom.XmlDocument]::new()) -PassThru).Value.LoadXml('<toast launch="app-defined-string"><visual><binding template="ToastImageAndText02"><text id="1">$BalloonTipTitle</text><text id="2">$BalloonTipText</text><image id="1" src="file://$($adtConfig.Assets.Logo)" /></binding></visual></toast>')
                 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('$($Script:ADT.Environment.appDeployToolkitName)').Show((Get-Variable -Name toastXml -ValueOnly))
             }))
 

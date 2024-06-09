@@ -63,7 +63,7 @@
     #>
 
     param (
-        [ValidateScript({if ($_ -gt $Script:ADT.Config.UI.DefaultTimeout) {throw 'The close applications countdown time cannot be longer than the timeout specified in the config file.'}; !!$_})]
+        [ValidateScript({if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout) {throw 'The close applications countdown time cannot be longer than the timeout specified in the config file.'}; !!$_})]
         [System.UInt32]$CloseAppsCountdown = (Get-ADTSession).State.CloseAppsCountdownGlobal,
 
         [ValidateNotNullOrEmpty()]
@@ -85,6 +85,7 @@
 
     begin {
         Write-ADTDebugHeader
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         $countdownTime = $startTime = [System.DateTime]::Now
         $showCountdown = $false
@@ -225,7 +226,7 @@
         }
         else
         {
-            $adtSession.State.WelcomeTimer.Interval = $Script:ADT.Config.UI.DefaultTimeout * 1000
+            $adtSession.State.WelcomeTimer.Interval = $adtConfig.UI.DefaultTimeout * 1000
             {
                 $buttonAbort.PerformClick()
             }
@@ -276,7 +277,7 @@
 
         # Persistence Timer.
         $welcomeTimerPersist = [System.Windows.Forms.Timer]::new()
-        $welcomeTimerPersist.Interval = $Script:ADT.Config.UI.DefaultPromptPersistInterval * 1000
+        $welcomeTimerPersist.Interval = $adtConfig.UI.DefaultPromptPersistInterval * 1000
         $welcomeTimerPersist.add_Tick($welcomeTimerPersist_Tick)
         if ($persistWindow)
         {
@@ -285,9 +286,9 @@
 
         # Process Re-Enumeration Timer.
         $timerRunningProcesses = [System.Windows.Forms.Timer]::new()
-        $timerRunningProcesses.Interval = $Script:ADT.Config.UI.DynamicProcessEvaluationInterval * 1000
+        $timerRunningProcesses.Interval = $adtConfig.UI.DynamicProcessEvaluationInterval * 1000
         $timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
-        if ($Script:ADT.Config.UI.DynamicProcessEvaluation)
+        if ($adtConfig.UI.DynamicProcessEvaluation)
         {
             $timerRunningProcesses.Start()
         }
@@ -606,7 +607,7 @@
         $formWelcome.Dispose()
 
         # Shut down the timer if its running.
-        if ($Script:ADT.Config.UI.DynamicProcessEvaluation)
+        if ($adtConfig.UI.DynamicProcessEvaluation)
         {
             $timerRunningProcesses.Stop()
         }

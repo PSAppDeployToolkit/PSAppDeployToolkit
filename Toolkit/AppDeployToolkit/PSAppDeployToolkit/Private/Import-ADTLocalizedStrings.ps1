@@ -1,10 +1,13 @@
 ﻿function Import-ADTLocalizedStrings
 {
+    # Get the current config.
+    $adtConfig = Get-ADTConfig
+
     # Get the best language identifier.
-    $Script:ADT.Language = if (![System.String]::IsNullOrWhiteSpace($Script:ADT.Config.UI.LanguageOverride))
+    $Script:ADT.Language = if (![System.String]::IsNullOrWhiteSpace($adtConfig.UI.LanguageOverride))
     {
         # The caller has specified a specific language.
-        $Script:ADT.Config.UI.LanguageOverride
+        $adtConfig.UI.LanguageOverride
     }
     else
     {
@@ -13,5 +16,5 @@
     }
 
     # Store the chosen language within this session.
-    $Script:ADT.Strings = Import-LocalizedData -BaseDirectory "$Script:PSScriptRoot\Strings" -FileName strings.psd1 -UICulture $Script:ADT.Language
+    $Script:ADT.Strings = Import-LocalizedData -BaseDirectory $Script:PSScriptRoot\Strings -FileName strings.psd1 -UICulture $Script:ADT.Language
 }

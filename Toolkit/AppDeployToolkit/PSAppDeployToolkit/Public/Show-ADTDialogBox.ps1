@@ -71,7 +71,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+        [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost

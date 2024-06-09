@@ -111,13 +111,13 @@ Execute-Process -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes '1,2'
 
 .EXAMPLE
 
-Execute-Process -Path 'setup.exe' -Parameters "-s -f2`"$($Script:ADT.Config.Toolkit.LogPath)\$installName.log`""
+Execute-Process -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
 
 Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 
 .EXAMPLE
 
-Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$($Script:ADT.Config.Toolkit.LogPath)\$installName.log`"`""
+Execute-Process -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 
 Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
@@ -156,7 +156,7 @@ https://psappdeploytoolkit.com
         [Switch]$WaitForMsiExec = $false,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Int32]$MsiExecWaitTime = $Script:ADT.Config.MSI.MutexWaitTime,
+        [Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [String]$IgnoreExitCodes,

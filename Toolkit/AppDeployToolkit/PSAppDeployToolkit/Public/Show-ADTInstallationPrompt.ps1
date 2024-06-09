@@ -106,8 +106,8 @@
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({if ($_ -gt $Script:ADT.Config.UI.DefaultTimeout) {throw [System.ArgumentException]::new("The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.")}; !!$_})]
-        [System.UInt32]$Timeout = $Script:ADT.Config.UI.DefaultTimeout,
+        [ValidateScript({if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout) {throw [System.ArgumentException]::new("The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.")}; !!$_})]
+        [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
@@ -117,6 +117,7 @@
     )
 
     begin {
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
@@ -191,7 +192,7 @@
 
         # Built out timer for Persist Prompt mode.
         $installPromptTimerPersist = [System.Windows.Forms.Timer]::new()
-        $installPromptTimerPersist.Interval = $Script:ADT.Config.UI.DefaultPromptPersistInterval * 1000
+        $installPromptTimerPersist.Interval = $adtConfig.UI.DefaultPromptPersistInterval * 1000
         $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
 
         # Picture Banner.
@@ -420,7 +421,7 @@
                 [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
                 if (!$NoExitOnTimeout)
                 {
-                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                 }
                 else
                 {

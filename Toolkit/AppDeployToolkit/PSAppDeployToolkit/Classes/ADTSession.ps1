@@ -107,18 +107,18 @@ class ADTSession
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
         $this.Properties.DirFiles = "$($this.Properties.ScriptParentPath)\Files"
         $this.Properties.DirSupportFiles = "$($this.Properties.ScriptParentPath)\SupportFiles"
-        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Config.Toolkit.TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
+        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($Script:ADT.Environment.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
-        $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory($(if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($Script:ADT.Environment.runasUserProfile))
+        if (($null -ne $Script:ADT.Environment.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($Script:ADT.Environment.runasUserProfile))
         {
-            "$($Script:ADT.Environment.runasUserProfile)\ExecuteAsUser"
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($Script:ADT.Environment.runasUserProfile)\ExecuteAsUser").FullName
         }
         else
         {
-            "$($this.Properties.DirAppDeployTemp)\ExecuteAsUser"
-        })).FullName
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.Properties.DirAppDeployTemp)\ExecuteAsUser").FullName
+        }
     }
 
     hidden [System.Void] DetectDefaultMsi()
@@ -257,7 +257,7 @@ class ADTSession
         $this.Properties.InstallName = ($this.Properties.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.Properties.RegKeyDeferHistory = "$($Script:ADT.Config.Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
+        $this.Properties.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$($Script:ADT.Environment.appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -276,34 +276,36 @@ class ADTSession
     {
         # Generate log paths from our installation properties.
         $this.Properties.LogTempFolder = Join-Path -Path $Script:ADT.Environment.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
+        $adtConfig = Get-ADTConfig
 
         # Generate the log directory to use.
-        $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($(if ($Script:ADT.Config.Toolkit.CompressLogs)
+        if ($adtConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
             if ([System.IO.Directory]::Exists($this.Properties.LogTempFolder))
             {
                 [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
             }
-            $this.Properties.LogTempFolder
+            $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($this.Properties.LogTempFolder).FullName
+            
         }
         else
         {
-            $Script:ADT.Config.Toolkit.LogPath
-        })).FullName
+            $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath).FullName
+        }
 
         # Generate the log filename to use.
         $this.Properties.LogName = "$($this.Properties.InstallName)_$($Script:ADT.Environment.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
         $this.Properties.LogFile = Join-Path -Path $this.Properties.LogPath -ChildPath $this.Properties.LogName
 
         # Check if log file needs to be rotated.
-        if ([System.IO.File]::Exists($this.Properties.LogFile) -and !$Script:ADT.Config.Toolkit.LogAppend)
+        if ([System.IO.File]::Exists($this.Properties.LogFile) -and !$adtConfig.Toolkit.LogAppend)
         {
             $logFile = [System.IO.FileInfo]$this.Properties.LogFile
             $logFileSizeMB = $logFile.Length / 1MB
 
             # Rotate if we've exceeded the size already.
-            if (($Script:ADT.Config.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $Script:ADT.Config.Toolkit.LogMaxSize))
+            if (($adtConfig.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $adtConfig.Toolkit.LogMaxSize))
             {
                 try
                 {
@@ -315,21 +317,21 @@ class ADTSession
                     [String]$ArchiveLogFilePath = Join-Path -Path $this.Properties.LogPath -ChildPath $ArchiveLogFileName
 
                     # Log message about archiving the log file.
-                    $this.WriteLogEntry("Maximum log file size [$($Script:ADT.Config.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
+                    $this.WriteLogEntry("Maximum log file size [$($adtConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
 
                     # Rename the file
                     Move-Item -LiteralPath $logFile -Destination $ArchiveLogFilePath -Force
 
                     # Start new log file and log message about archiving the old log file.
-                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($Script:ADT.Config.Toolkit.LogMaxSize) MB] was reached.", 2)
+                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($adtConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
                     $logFiles = $(Get-ChildItem -LiteralPath $this.Properties.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.Properties.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
 
                     # Keep only the max number of log files
-                    if ($logFiles.Count -gt $Script:ADT.Config.Toolkit.LogMaxHistory)
+                    if ($logFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
                     {
-                        $logFiles | Select-Object -First ($logFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item
+                        $logFiles | Select-Object -First ($logFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | Remove-Item
                     }
                 }
                 catch
@@ -399,6 +401,9 @@ class ADTSession
     {
         # Log details for all currently logged in users.
         $this.WriteLogEntry("Display session information for all logged on users:`n$($Script:ADT.Environment.LoggedOnUserSessions | Format-List | Out-String)", $true)
+        $adtConfig = Get-ADTConfig
+
+        # Provide detailed info about current process state.
         if ($Script:ADT.Environment.usersLoggedOn)
         {
             $this.WriteLogEntry("The following users are logged on to the system: [$($Script:ADT.Environment.usersLoggedOn -join ', ')].")
@@ -414,7 +419,7 @@ class ADTSession
             }
 
             # Guard Intune detection code behind a variable.
-            if ($Script:ADT.Config.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
+            if ($adtConfig.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
             {
                 $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.")
                 $this.Properties.DeployMode = 'Silent'
@@ -445,9 +450,9 @@ class ADTSession
         $this.WriteLogEntry("The current execution context has a primary UI language of [$($Script:ADT.Environment.currentLanguage)].")
 
         # Advise whether the UI language was overridden.
-        if ($Script:ADT.Config.UI.LanguageOverride)
+        if ($adtConfig.UI.LanguageOverride)
         {
-            $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($Script:ADT.Config.UI.LanguageOverride)].")
+            $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($adtConfig.UI.LanguageOverride)].")
         }
         $this.WriteLogEntry("The following UI messages were imported from the config file: [$($Script:ADT.Language)].")
     }
@@ -508,7 +513,7 @@ class ADTSession
             {
                 $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.Properties.DeployMode)].")
             }
-            elseif ($Script:ADT.Config.Toolkit.SessionDetection)
+            elseif ((Get-ADTConfig).Toolkit.SessionDetection)
             {
                 # If the process is not able to display a UI, enable NonInteractive mode
                 if (!$Script:ADT.Environment.IsProcessUserInteractive)
@@ -571,7 +576,7 @@ class ADTSession
     hidden [System.Void] TestAdminRequired()
     {
         # Check current permissions and exit if not running with Administrator rights
-        if ($Script:ADT.Config.Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)
+        if ((Get-ADTConfig).Toolkit.RequireAdmin -and !$Script:ADT.Environment.IsAdmin)
         {
             $adminErr = "[$($Script:ADT.Environment.appDeployToolkitName)] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights."
             $this.WriteLogEntry($adminErr, 3)
@@ -673,6 +678,9 @@ class ADTSession
 
     [System.Void] Close([System.Int32]$ExitCode)
     {
+        # Get the current config.
+        $adtConfig = Get-ADTConfig
+
         # If block execution variable is true, call the function to unblock execution.
         if ($this.State.BlockExecution)
         {
@@ -708,7 +716,7 @@ class ADTSession
             $balloonIcon = 'Info'
             $logSeverity = 0
         }
-        elseif (($ExitCode -eq $Script:ADT.Config.UI.DefaultExitCode) -or ($ExitCode -eq $Script:ADT.Config.UI.DeferExitCode))
+        elseif (($ExitCode -eq $adtConfig.UI.DefaultExitCode) -or ($ExitCode -eq $adtConfig.UI.DeferExitCode))
         {
             $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
             $balloonIcon = 'Warning'
@@ -736,21 +744,21 @@ class ADTSession
         $this.SetPropertyValue('DisableLogging', $true)
 
         # Archive the log files to zip format and then delete the temporary logs folder.
-        if ($Script:ADT.Config.Toolkit.CompressLogs)
+        if ($adtConfig.Toolkit.CompressLogs)
         {
             $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
             try
             {
                 # Get all archive files sorted by last write time
-                $ArchiveFiles = Get-ChildItem -LiteralPath $Script:ADT.Config.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | Sort-Object LastWriteTime
+                $ArchiveFiles = Get-ChildItem -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | Sort-Object LastWriteTime
                 $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
 
                 # Keep only the max number of archive files
-                if ($ArchiveFiles.Count -gt $Script:ADT.Config.Toolkit.LogMaxHistory)
+                if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
                 {
-                    $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item
+                    $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | Remove-Item
                 }
-                Compress-Archive -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($Script:ADT.Config.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+                Compress-Archive -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
                 [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
             }
             catch
@@ -765,8 +773,11 @@ class ADTSession
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
     {
+        # Get the current config.
+        $adtConfig = Get-ADTConfig
+
         # Perform early return checks before wasting time.
-        if (($this.GetPropertyValue('DisableLogging') -and !$Script:ADT.Config.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$Script:ADT.Config.Toolkit.LogDebugMessage))
+        if (($this.GetPropertyValue('DisableLogging') -and !$adtConfig.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$adtConfig.Toolkit.LogDebugMessage))
         {
             return
         }
@@ -813,7 +824,7 @@ class ADTSession
 
         # Store the colours we'll use against Write-Host.
         $whParams = $Script:Logging.SeverityColours[$Severity]
-        $logLine = $logFormats[$Script:ADT.Config.Toolkit.LogStyle -ieq 'CMTrace']
+        $logLine = $logFormats[$adtConfig.Toolkit.LogStyle -ieq 'CMTrace']
         $conLine = $logFormats[0]
         $logFile = $this.GetPropertyValue('LogFile')
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($logFile)
@@ -827,7 +838,7 @@ class ADTSession
             }
 
             # Return early if we're not configured to write to the host.
-            if (!$Script:ADT.Config.Toolkit.LogWriteToHost)
+            if (!$adtConfig.Toolkit.LogWriteToHost)
             {
                 return
             }

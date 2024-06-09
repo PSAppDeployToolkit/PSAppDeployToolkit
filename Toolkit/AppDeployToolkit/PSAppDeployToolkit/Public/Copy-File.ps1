@@ -92,7 +92,7 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueFileCopyOnError = $false,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$UseRobocopy = $Script:ADT.Config.Toolkit.UseRobocopy,
+        [Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
