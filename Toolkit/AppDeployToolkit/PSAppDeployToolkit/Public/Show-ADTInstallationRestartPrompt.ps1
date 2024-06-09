@@ -68,6 +68,7 @@
 
     begin {
         $adtEnv = Get-ADTEnvironment
+        $adtStrings = Get-ADTStrings
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
@@ -89,7 +90,7 @@
         }
 
         # Check if we are already displaying a restart prompt.
-        if (Get-Process | Where-Object { $_.MainWindowTitle -match $Script:ADT.Strings.RestartPrompt.Title })
+        if (Get-Process | Where-Object { $_.MainWindowTitle -match $adtStrings.RestartPrompt.Title })
         {
             Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
             return
@@ -257,11 +258,11 @@
         $labelMessage.AutoSize = $true
         $labelMessage.Text = if ($NoCountdown)
         {
-            $Script:ADT.Strings.RestartPrompt.Message
+            $adtStrings.RestartPrompt.Message
         }
         else
         {
-            "$($Script:ADT.Strings.RestartPrompt.Message) $($Script:ADT.Strings.RestartPrompt.MessageTime)`n`n$($Script:ADT.Strings.RestartPrompt.MessageRestart)"
+            "$($adtStrings.RestartPrompt.Message) $($adtStrings.RestartPrompt.MessageTime)`n`n$($adtStrings.RestartPrompt.MessageRestart)"
         }
 
         # Label Countdown.
@@ -298,7 +299,7 @@
             $labelTimeRemaining.Anchor = [System.Windows.Forms.AnchorStyles]::Top
             $labelTimeRemaining.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
             $labelTimeRemaining.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-            $labelTimeRemaining.Text = $Script:ADT.Strings.RestartPrompt.TimeRemaining
+            $labelTimeRemaining.Text = $adtStrings.RestartPrompt.TimeRemaining
             $labelTimeRemaining.Name = 'LabelTimeRemaining'
             $labelTimeRemaining.TabStop = $false
             $labelTimeRemaining.AutoSize = $true
@@ -321,7 +322,7 @@
         $buttonRestartNow.Margin = $buttonRestartNow.Padding = $paddingNone
         $buttonRestartNow.Name = 'ButtonRestartNow'
         $buttonRestartNow.Font = $Script:FormData.Font
-        $buttonRestartNow.Text = $Script:ADT.Strings.RestartPrompt.ButtonRestartNow
+        $buttonRestartNow.Text = $adtStrings.RestartPrompt.ButtonRestartNow
         $buttonRestartNow.TabIndex = 1
         $buttonRestartNow.AutoSize = $true
         $buttonRestartNow.UseVisualStyleBackColor = $true
@@ -335,7 +336,7 @@
         $buttonRestartLater.Margin = $buttonRestartLater.Padding = $paddingNone
         $buttonRestartLater.Name = 'ButtonRestartLater'
         $buttonRestartLater.Font = $Script:FormData.Font
-        $buttonRestartLater.Text = $Script:ADT.Strings.RestartPrompt.ButtonRestartLater
+        $buttonRestartLater.Text = $adtStrings.RestartPrompt.ButtonRestartLater
         $buttonRestartLater.TabIndex = 0
         $buttonRestartLater.AutoSize = $true
         $buttonRestartLater.UseVisualStyleBackColor = $true

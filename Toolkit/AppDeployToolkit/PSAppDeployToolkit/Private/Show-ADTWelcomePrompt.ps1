@@ -86,6 +86,7 @@
     begin {
         # Perform initial setup.
         $adtConfig = Get-ADTConfig
+        $adtStrings = Get-ADTStrings
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
 
@@ -314,7 +315,7 @@
         $labelWelcomeMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
         $labelWelcomeMessage.Font = $Script:FormData.Font
         $labelWelcomeMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelWelcomeMessage.Text = $Script:ADT.Strings.DeferPrompt.WelcomeMessage
+        $labelWelcomeMessage.Text = $adtStrings.DeferPrompt.WelcomeMessage
         $labelWelcomeMessage.Name = 'LabelWelcomeMessage'
         $labelWelcomeMessage.TabStop = $false
         $labelWelcomeMessage.AutoSize = $true
@@ -372,7 +373,7 @@
         $flowLayoutPanel.WrapContents = $true
         $flowLayoutPanel.Controls.Add($labelWelcomeMessage)
         $flowLayoutPanel.Controls.Add($labelAppName)
-        if ($CustomText -and $Script:ADT.Strings.WelcomePrompt.CustomMessage)
+        if ($CustomText -and $adtStrings.WelcomePrompt.CustomMessage)
         {
             # Label CustomMessage.
             $labelCustomMessage = [System.Windows.Forms.Label]::new()
@@ -382,7 +383,7 @@
             $labelCustomMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
             $labelCustomMessage.Font = $Script:FormData.Font
             $labelCustomMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-            $labelCustomMessage.Text = $Script:ADT.Strings.WelcomePrompt.CustomMessage
+            $labelCustomMessage.Text = $adtStrings.WelcomePrompt.CustomMessage
             $labelCustomMessage.Name = 'LabelCustomMessage'
             $labelCustomMessage.TabStop = $false        
             $labelCustomMessage.AutoSize = $true
@@ -398,7 +399,7 @@
             $labelCloseAppsMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
             $labelCloseAppsMessage.Font = $Script:FormData.Font
             $labelCloseAppsMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-            $labelCloseAppsMessage.Text = $Script:ADT.Strings.ClosePrompt.Message
+            $labelCloseAppsMessage.Text = $adtStrings.ClosePrompt.Message
             $labelCloseAppsMessage.Name = 'LabelCloseAppsMessage'
             $labelCloseAppsMessage.TabStop = $false
             $labelCloseAppsMessage.AutoSize = $true
@@ -416,7 +417,7 @@
             $labelDeferExpiryMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
             $labelDeferExpiryMessage.Font = $Script:FormData.Font
             $labelDeferExpiryMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-            $labelDeferExpiryMessage.Text = $Script:ADT.Strings.DeferPrompt.ExpiryMessage
+            $labelDeferExpiryMessage.Text = $adtStrings.DeferPrompt.ExpiryMessage
             $labelDeferExpiryMessage.Name = 'LabelDeferExpiryMessage'
             $labelDeferExpiryMessage.TabStop = $false
             $labelDeferExpiryMessage.AutoSize = $true
@@ -434,11 +435,11 @@
             $labelDeferDeadline.AutoSize = $true
             if ($deferTimes -ge 0)
             {
-                $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt.RemainingDeferrals) $([Int32]$deferTimes + 1)"
+                $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.RemainingDeferrals) $([Int32]$deferTimes + 1)"
             }
             if ($deferDeadline)
             {
-                $labelDeferDeadline.Text = "$($Script:ADT.Strings.DeferPrompt.Deadline) $deferDeadline"
+                $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.Deadline) $deferDeadline"
             }
             $flowLayoutPanel.Controls.Add($labelDeferDeadline)
 
@@ -449,7 +450,7 @@
             $labelDeferWarningMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
             $labelDeferWarningMessage.Font = $Script:FormData.Font
             $labelDeferWarningMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-            $labelDeferWarningMessage.Text = $Script:ADT.Strings.DeferPrompt.WarningMessage
+            $labelDeferWarningMessage.Text = $adtStrings.DeferPrompt.WarningMessage
             $labelDeferWarningMessage.Name = 'LabelDeferWarningMessage'
             $labelDeferWarningMessage.TabStop = $false
             $labelDeferWarningMessage.AutoSize = $true
@@ -470,11 +471,11 @@
             $labelCountdownMessage.AutoSize = $true
             $labelCountdownMessage.Text = if ($forceCountdown -or !$runningProcessDescriptions)
             {
-                [System.String]::Format($Script:ADT.Strings.WelcomePrompt.CountdownMessage, $Script:ADT.Strings.DeploymentType.($adtSession.GetPropertyValue('DeploymentType')))
+                [System.String]::Format($adtStrings.WelcomePrompt.CountdownMessage, $adtStrings.DeploymentType.($adtSession.GetPropertyValue('DeploymentType')))
             }
             else
             {
-                $Script:ADT.Strings.ClosePrompt.CountdownMessage
+                $adtStrings.ClosePrompt.CountdownMessage
             }
             $flowLayoutPanel.Controls.Add($labelCountdownMessage)
 
@@ -499,7 +500,7 @@
             $buttonCloseApps.DialogResult = [System.Windows.Forms.DialogResult]::Yes
             $buttonCloseApps.Font = $Script:FormData.Font
             $buttonCloseApps.Name = 'ButtonCloseApps'
-            $buttonCloseApps.Text = $Script:ADT.Strings.ClosePrompt.ButtonClose
+            $buttonCloseApps.Text = $adtStrings.ClosePrompt.ButtonClose
             $buttonCloseApps.TabIndex = 1
             $buttonCloseApps.AutoSize = $true
             $buttonCloseApps.UseVisualStyleBackColor = $true
@@ -515,7 +516,7 @@
             $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
             $buttonDefer.Font = $Script:FormData.Font
             $buttonDefer.Name = 'ButtonDefer'
-            $buttonDefer.Text = $Script:ADT.Strings.ClosePrompt.ButtonDefer
+            $buttonDefer.Text = $adtStrings.ClosePrompt.ButtonDefer
             $buttonDefer.TabIndex = 0
             $buttonDefer.AutoSize = $true
             $buttonDefer.UseVisualStyleBackColor = $true
@@ -530,7 +531,7 @@
         $buttonContinue.DialogResult = [System.Windows.Forms.DialogResult]::OK
         $buttonContinue.Font = $Script:FormData.Font
         $buttonContinue.Name = 'ButtonContinue'
-        $buttonContinue.Text = $Script:ADT.Strings.ClosePrompt.ButtonContinue
+        $buttonContinue.Text = $adtStrings.ClosePrompt.ButtonContinue
         $buttonContinue.TabIndex = 2
         $buttonContinue.AutoSize = $true
         $buttonContinue.UseVisualStyleBackColor = $true
@@ -542,7 +543,7 @@
             $toolTip.IsBalloon = $false
             $toolTip.InitialDelay = 100
             $toolTip.ReshowDelay = 100
-            $toolTip.SetToolTip($buttonContinue, $Script:ADT.Strings.ClosePrompt.ButtonContinueTooltip)
+            $toolTip.SetToolTip($buttonContinue, $adtStrings.ClosePrompt.ButtonContinueTooltip)
         }
         $panelButtons.Controls.Add($buttonContinue)
         $panelButtons.ResumeLayout()

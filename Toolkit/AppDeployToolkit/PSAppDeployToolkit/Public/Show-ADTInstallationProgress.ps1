@@ -57,7 +57,7 @@
         [System.String]$WindowTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
 
         [ValidateNotNullOrEmpty()]
-        [System.String]$StatusMessage = $Script:ADT.Strings.Progress."Message$((Get-ADTSession).GetPropertyValue('DeploymentType'))",
+        [System.String]$StatusMessage = (Get-ADTStrings).Progress."Message$((Get-ADTSession).GetPropertyValue('DeploymentType'))",
 
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [System.String]$WindowLocation = 'Default',
@@ -144,7 +144,7 @@
         if (!$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $((Get-ADTStrings).BalloonText.Start)"
 
             # Load up the XML file.
             $adtConfig = Get-ADTConfig

@@ -241,7 +241,7 @@
                 Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                 if (!$Silent)
                 {
-                    Show-ADTInstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                    Show-ADTInstallationPrompt -Message ((Get-ADTStrings).DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
                 }
                 Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
             }
