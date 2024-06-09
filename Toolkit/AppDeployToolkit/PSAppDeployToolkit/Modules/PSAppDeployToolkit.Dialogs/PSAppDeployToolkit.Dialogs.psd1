@@ -1,13 +1,13 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit'
+# Module manifest for module 'PSAppDeployToolkit.Dialogs'
 #
-# Generated on: 2024-04-13
+# Generated on: 2024-06-05
 #
 
 @{
 
 # Script module or binary module file associated with this manifest.
-# RootModule = ''
+RootModule = 'PSAppDeployToolkit.Dialogs.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -16,7 +16,7 @@ ModuleVersion = '3.91.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'
+GUID = 'f47aa77b-ea0f-4a98-9125-85b64f3e9855'
 
 # Author of this module
 Author = 'PSAppDeployToolkit Team'
@@ -49,11 +49,7 @@ PowerShellVersion = '5.1'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Core\PSAppDeployToolkit.Core.psd1"
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Common\PSAppDeployToolkit.Common.psd1"
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Dialogs\PSAppDeployToolkit.Dialogs.psd1"
-)
+# RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -68,10 +64,20 @@ RequiredModules = @(
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @()
+NestedModules = @(
+    'Submodules\PSAppDeployToolkit.Dialogs.Classic\PSAppDeployToolkit.Dialogs.Classic.psd1'
+)
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @()
+FunctionsToExport = @(
+    'Close-ADTInstallationProgress'
+    'Show-ADTBalloonTip'
+    'Show-ADTBlockedAppDialog'
+    'Show-ADTInstallationProgress'
+    'Show-ADTInstallationPrompt'
+    'Show-ADTInstallationRestartPrompt'
+    'Show-ADTInstallationWelcome'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
