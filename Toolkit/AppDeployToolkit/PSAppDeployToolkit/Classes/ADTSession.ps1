@@ -580,7 +580,7 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.DeploymentTypeName = $Script:ADT.Strings.DeploymentType.($this.Properties.DeploymentType)
+        $this.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.Properties.DeploymentType)
         $this.WriteLogEntry("Deployment type is [$($this.DeploymentTypeName)].")
     }
 
@@ -702,8 +702,9 @@ class ADTSession
 
     [System.Void] Close([System.Int32]$ExitCode)
     {
-        # Get the current config.
+        # Get the current config and strings.
         $adtConfig = Get-ADTConfig
+        $adtStrings = Get-ADTStrings
 
         # If block execution variable is true, call the function to unblock execution.
         if ($this.State.BlockExecution)
@@ -731,24 +732,24 @@ class ADTSession
             $balloonText = if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
             {
                 $this.WriteLogEntry('A restart has been flagged as required.')
-                "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
+                "$($this.DeploymentTypeName) $($adtStrings.BalloonText.RestartRequired)"
             }
             else
             {
-                "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
+                "$($this.DeploymentTypeName) $($adtStrings.BalloonText.Complete)"
             }
             $balloonIcon = 'Info'
             $logSeverity = 0
         }
         elseif (($ExitCode -eq $adtConfig.UI.DefaultExitCode) -or ($ExitCode -eq $adtConfig.UI.DeferExitCode))
         {
-            $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
+            $balloonText = "$($this.DeploymentTypeName) $($adtStrings.BalloonText.FastRetry)"
             $balloonIcon = 'Warning'
             $logSeverity = 2
         }
         else
         {
-            $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
+            $balloonText = "$($this.DeploymentTypeName) $($adtStrings.BalloonText.Error)"
             $balloonIcon = 'Error'
             $logSeverity = 3
         }
