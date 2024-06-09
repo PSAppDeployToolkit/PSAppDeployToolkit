@@ -170,15 +170,27 @@
 
             # Instantiate a new progress window object and start it up.
             Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
-            $Script:ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
-            $Script:ProgressWindow.Thread = $Script:ProgressWindow.Window.Start()
-
-            # Allow the thread to be spun up safely before invoking actions against it.
-            do
+            if (!$Script:ProgressWindow.Window)
             {
-                $Script:ProgressWindow.Running = $Script:ProgressWindow.Thread -and $Script:ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
+                $Script:ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
+                $Script:ProgressWindow.Thread = $Script:ProgressWindow.Window.Start()
+
+                # Allow the thread to be spun up safely before invoking actions against it.
+                do
+                {
+                    $Script:ProgressWindow.Running = $Script:ProgressWindow.Thread -and $Script:ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
+                }
+                until ($Script:ProgressWindow.Running)
             }
-            until ($Script:ProgressWindow.Running)
+            else
+            {
+                # Update an existing object and present the dialog.
+                $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
+                $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+                $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
+                $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+                $Script:ProgressWindow.Window.ShowDialog()
+            }
         }
         else
         {
