@@ -147,12 +147,13 @@
             Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
 
             # Load up the XML file.
+            $adtConfig = Get-ADTConfig
             $xaml = [System.Xml.XmlDocument]::new()
             $xaml.Load("$Script:PSScriptRoot\Files\$($MyInvocation.MyCommand.Name).xml")
             $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
             $xaml.Window.TopMost = (!$NotTopMost).ToString()
-            $xaml.Window.Icon = $Script:ADT.Config.Assets.Icon
-            $xaml.Window.Grid.Image.Source = $Script:ADT.Config.Assets.Banner
+            $xaml.Window.Icon = $adtConfig.Assets.Icon
+            $xaml.Window.Grid.Image.Source = $adtConfig.Assets.Banner
             $xaml.Window.Grid.TextBlock.Text = $StatusMessage
 
             # Set up the PowerShell instance and add the initial scriptblock.

@@ -189,6 +189,7 @@
     )
 
     begin {
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
@@ -241,7 +242,7 @@
                 {
                     Show-ADTInstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
                 }
-                Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
             }
             Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
         }
@@ -410,7 +411,7 @@
 
                     # Update the process list right before closing, in case it changed.
                     $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -DisableFunctionLogging
-                    $PromptToSaveTimeout = New-TimeSpan -Seconds $Script:ADT.Config.UI.PromptToSaveTimeout
+                    $PromptToSaveTimeout = New-TimeSpan -Seconds $adtConfig.UI.PromptToSaveTimeout
                     $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
                     foreach ($runningProcess in ($runningProcesses = $processObjects | Get-ADTRunningProcesses))
                     {
@@ -422,7 +423,7 @@
                             {
                                 try
                                 {
-                                    Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds)..."
+                                    Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
                                     [System.Void][PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
                                     if (!$runningProcess.CloseMainWindow())
                                     {
@@ -444,7 +445,7 @@
 
                                         if ($IsWindowOpen)
                                         {
-                                            Write-ADTLogEntry -Message "Exceeded the [$($Script:ADT.Config.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                            Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
                                         }
                                         else
                                         {
@@ -502,7 +503,7 @@
 
                     # Restore minimized windows.
                     [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
-                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                 }
                 elseif ($promptResult -eq 'Defer')
                 {
@@ -513,7 +514,7 @@
 
                     # Restore minimized windows.
                     [System.Void]$Script:ADT.Environment.ShellApp.UndoMinimizeAll()
-                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DeferExitCode
+                    Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                 }
             }
         }

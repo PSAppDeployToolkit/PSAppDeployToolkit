@@ -213,8 +213,9 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
+        $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
+        Write-ADTDebugHeader
     }
     Process {
         ## Initialize variable indicating whether $Path variable is a Product Code or not
@@ -264,27 +265,27 @@ https://psappdeploytoolkit.com
             }
         }
 
-        If ($Script:ADT.Config.Toolkit.CompressLogs) {
+        If ($adtConfig.Toolkit.CompressLogs) {
             ## Build the log file path
             [String]$logPath = Join-Path -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
         }
         Else {
             ## Create the Log directory if it doesn't already exist
-            If (-not (Test-Path -LiteralPath $Script:ADT.Config.MSI.LogPath -PathType 'Container' -ErrorAction 'Ignore')) {
-                $null = New-Item -Path $Script:ADT.Config.MSI.LogPath -ItemType 'Directory' -ErrorAction 'Ignore'
+            If (-not (Test-Path -LiteralPath $adtConfig.MSI.LogPath -PathType 'Container' -ErrorAction 'Ignore')) {
+                $null = New-Item -Path $adtConfig.MSI.LogPath -ItemType 'Directory' -ErrorAction 'Ignore'
             }
             ## Build the log file path
-            [String]$logPath = Join-Path -Path $Script:ADT.Config.MSI.LogPath -ChildPath $LogName
+            [String]$logPath = Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $LogName
         }
 
         ## Set the installation Parameters
         If ($adtSession.DeployModeSilent) {
-            $msiInstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
-            $msiUninstallDefaultParams = $Script:ADT.Config.MSI.SilentParams
+            $msiInstallDefaultParams = $adtConfig.MSI.SilentParams
+            $msiUninstallDefaultParams = $adtConfig.MSI.SilentParams
         }
         Else {
-            $msiInstallDefaultParams = $Script:ADT.Config.MSI.InstallParams
-            $msiUninstallDefaultParams = $Script:ADT.Config.MSI.UninstallParams
+            $msiInstallDefaultParams = $adtConfig.MSI.InstallParams
+            $msiUninstallDefaultParams = $adtConfig.MSI.UninstallParams
         }
 
         ## Build the MSI Parameters
@@ -413,7 +414,7 @@ https://psappdeploytoolkit.com
             $argsMSI = "$argsMSI $LoggingOptions $msiLogFile"
         }
         Else {
-            $argsMSI = "$argsMSI $($Script:ADT.Config.MSI.LoggingOptions) $msiLogFile"
+            $argsMSI = "$argsMSI $($adtConfig.MSI.LoggingOptions) $msiLogFile"
         }
 
         ## Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.

@@ -226,7 +226,7 @@
         # Persistence Timer.
         $timerCountdown = [System.Windows.Forms.Timer]::new()
         $restartTimerPersist = [System.Windows.Forms.Timer]::new()
-        $restartTimerPersist.Interval = ($Script:ADT.Config.UI.RestartPromptPersistInterval * 1000)
+        $restartTimerPersist.Interval = ((Get-ADTConfig).UI.RestartPromptPersistInterval * 1000)
         $restartTimerPersist.add_Tick($restartTimerPersist_Tick)
         if ($NoCountdown)
         {

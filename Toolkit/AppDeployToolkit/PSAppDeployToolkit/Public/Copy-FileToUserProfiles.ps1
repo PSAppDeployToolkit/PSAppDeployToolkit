@@ -108,7 +108,7 @@ https://psappdeploytoolkit.com
         [Switch]$Flatten,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$UseRobocopy = $Script:ADT.Config.Toolkit.UseRobocopy,
+        [Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null,
