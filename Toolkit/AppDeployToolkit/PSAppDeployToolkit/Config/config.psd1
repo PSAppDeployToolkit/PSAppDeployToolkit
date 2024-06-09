@@ -101,7 +101,7 @@
         # Used to turn automatic balloon notifications on or off.
         BalloonNotifications = $true
 
-        # Used to turn automatic balloon notifications on or off.
+        # Choose from either 'Modern' for Fluent designed dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForm dialogs.
         DialogStyle = 'Modern'
 
         # Exit code used when a UI prompt times out or the user opts to defer.
