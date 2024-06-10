@@ -763,7 +763,10 @@ class ADTSession
 
         # Annouce session success/failure.
         $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.DeploymentTypeName.ToLower()) completed with exit code [$ExitCode].", $logSeverity)
-        Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
+        if (Get-Module -Name PSAppDeployToolkit.Dialogs)
+        {
+            Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
+        }
 
         # Write out a log divider to indicate the end of logging.
         $this.WriteLogEntry('-' * 79)
@@ -813,10 +816,9 @@ class ADTSession
         $logTime = $dateTimeNow.ToString('HH\:mm\:ss.fff')
         $logDate = $dateTimeNow.ToString('MM-dd-yyyy')
         $logTimePlusBias = $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
-        $writeLogRegex = '^Write-(Log|ADTLogEntry)$'
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = (Get-PSCallStack).Where({![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch $writeLogRegex)})[0]
+        $caller = (Get-PSCallStack).Where({![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')})[0]
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
