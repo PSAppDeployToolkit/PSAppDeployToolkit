@@ -387,7 +387,7 @@
         # Close the Installation Progress Dialog if running
         if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
-            Close-ADTInstallationProgress
+            Close-ADTClassicInstallationProgress
         }
         Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters)]."
 
