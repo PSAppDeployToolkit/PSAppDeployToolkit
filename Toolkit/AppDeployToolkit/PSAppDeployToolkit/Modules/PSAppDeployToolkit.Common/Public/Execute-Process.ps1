@@ -175,6 +175,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
+        $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
     Process {
@@ -456,7 +457,7 @@ https://psappdeploytoolkit.com
                 If ($ignoreExitCodeMatch) {
                     Write-ADTLogEntry -Message "Execution completed and the exit code [$returncode] is being ignored."
                 }
-                ElseIf ($this.GetPropertyValue('AppRebootCodes').Contains($ExitCode)) {
+                ElseIf ($adtSession.GetPropertyValue('AppRebootCodes').Contains($returnCode)) {
                     Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                 }
                 ElseIf (($returnCode -eq 1605) -and ($Path -match 'msiexec')) {
@@ -468,7 +469,7 @@ https://psappdeploytoolkit.com
                 ElseIf (($returnCode -eq 17025) -and ($Path -match 'fullfile')) {
                     Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                 }
-                ElseIf ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode)) {
+                ElseIf ($adtSession.GetPropertyValue('AppExitCodes').Contains($returnCode)) {
                     Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                 }
                 Else {
