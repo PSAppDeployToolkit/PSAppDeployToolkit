@@ -167,7 +167,6 @@
                 $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($XamlConfig)))
                 $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
                 $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
-                $SyncHash.Window.add_Closing({$this.Cancel = $true})
                 $SyncHash.Window.add_Loaded({
                     # Relocate the window and disable the X button.
                     & $UpdateWindowLocation.GetNewClosure() -Window $this
@@ -198,7 +197,24 @@
                 if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
                 {
                     Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
-                    Close-ADTInstallationProgress
+                    Close-ADTClassicInstallationProgress
+                    break
+                }
+                elseif ($Script:ProgressWindow.Invocation.IsCompleted)
+                {
+                    try
+                    {
+                        [System.Void]$Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
+                    }
+                    catch
+                    {
+                        Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $_)" -Severity 3
+                    }
+                    finally
+                    {
+                        $Script:ProgressWindow.Invocation = $null
+                        Close-ADTClassicInstallationProgress
+                    }
                     break
                 }
             }
