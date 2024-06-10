@@ -140,6 +140,15 @@
             }
         }
 
+        function Update-ProgressWindowValues
+        {
+            # Blanketly update values from incoming parameters.
+            $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
+            $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+            $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
+            $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+        }
+
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
@@ -185,20 +194,15 @@
             else
             {
                 # Update an existing object and present the dialog.
-                $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-                $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
-                $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
-                $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+                Update-ProgressWindowValues
                 $Script:ProgressWindow.Window.ShowDialog()
+                $Script:ProgressWindow.Running = $true
             }
         }
         else
         {
             # Update all values.
-            $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-            $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
-            $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
-            $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+            Update-ProgressWindowValues
             Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Quiet
         }
     }
