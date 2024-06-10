@@ -152,20 +152,46 @@
             $xaml.Load("$Script:PSScriptRoot\Files\$($MyInvocation.MyCommand.Name).xml")
             $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
             $xaml.Window.TopMost = (!$NotTopMost).ToString()
-            $xaml.Window.Icon = $adtConfig.Assets.Icon
-            $xaml.Window.Grid.Image.Source = $adtConfig.Assets.Banner
             $xaml.Window.Grid.TextBlock.Text = $StatusMessage
 
             # Set up the PowerShell instance and add the initial scriptblock.
             $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
+                param (
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Xml.XmlDocument]$Xaml,
+
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.String]$WindowTitle,
+
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.IO.FileInfo]$Icon,
+
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.IO.FileInfo]$Banner,
+
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Management.Automation.ScriptBlock]$UpdateWindowLocation,
+
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Management.Automation.ScriptBlock]$DisableWindowCloseButton
+                )
+
                 # Set required variables to ensure script functionality.
                 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
                 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
                 Set-StrictMode -Version 3
 
                 # Create XAML window.
-                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($XamlConfig)))
+                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
                 $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
+                $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+                $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
                 $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
                 $SyncHash.Window.add_Loaded({
                     # Relocate the window and disable the X button.
@@ -178,6 +204,11 @@
                 if ($Error.Count) {$SyncHash.Add('Error', $Error)}
             })
 
+            # Add in local variables, assets, and function delegates.
+            $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument($Xaml).AddArgument($WindowTitle)
+            $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner)
+            $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
+
             # Commence invocation.
             Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
             $Script:ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
@@ -185,10 +216,6 @@
             $Script:ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
             $Script:ProgressWindow.PowerShell.Runspace.Open()
             $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:ProgressWindow.SyncHash)
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('XamlConfig', $xaml)
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('WindowLocation', $WindowLocation)
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('UpdateWindowLocation', ${Function:Update-WindowLocation})
-            $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('DisableWindowCloseButton', ${Function:Disable-ADTWindowCloseButton})
             $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
 
             # Allow the thread to be spun up safely before invoking actions against it.
