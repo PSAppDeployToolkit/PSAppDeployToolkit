@@ -245,13 +245,13 @@
                 Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
                 if ($Parameters)
                 {
-                    if ($Parameters -match '-Command \&')
-                    {
-                        Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
-                    }
-                    elseif ($SecureParameters)
+                    if ($SecureParameters)
                     {
                         Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
+                    }
+                    elseif ($Parameters -match '-Command \&')
+                    {
+                        Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
                     }
                     else
                     {
