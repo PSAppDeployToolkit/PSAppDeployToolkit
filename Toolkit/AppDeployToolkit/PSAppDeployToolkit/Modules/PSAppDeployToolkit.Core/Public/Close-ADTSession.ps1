@@ -6,7 +6,7 @@
     )
 
     # Close the Installation Progress Dialog if running.
-    if ($Script:ADT.Sessions.Count.Equals(1))
+    if ($Script:ADT.Sessions.Count.Equals(1) -and (Get-Module -Name PSAppDeployToolkit.Dialogs))
     {
         Close-ADTInstallationProgress
     }

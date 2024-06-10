@@ -107,7 +107,6 @@ FunctionsToExport = @(
     'New-Shortcut'
     'Remove-ADTEdgeExtension'
     'Remove-ADTFile'
-    'Remove-ADTInvalidFileNameChars'
     'Remove-FileFromUserProfiles'
     'Remove-Folder'
     'Remove-MSIApplications'
