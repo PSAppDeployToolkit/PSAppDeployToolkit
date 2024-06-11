@@ -169,7 +169,7 @@
             else
             {
                 # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                if (!($fqPath = Get-Item -Path ("$((Get-ADTSession).GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                 {
                     Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                     throw [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
@@ -398,8 +398,8 @@
                     Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
                     [pscustomobject]@{
                         ExitCode = $returnCode
-                        StdOut = $stdOut
-                        StdErr = $stdErr
+                        StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
+                        StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
                     }
                 }
 
@@ -462,8 +462,8 @@
             {
                 [pscustomobject]@{
                     ExitCode = $returnCode
-                    StdOut = $stdOut
-                    StdErr = $stdErr
+                    StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
+                    StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
                 }
             }
 
