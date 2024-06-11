@@ -1,4 +1,4 @@
-﻿function Close-ADTModernInstallationProgress
+﻿function Close-ADTFluentInstallationProgress
 {
     <#
 
@@ -20,7 +20,7 @@
     None. This function does not generate any output.
 
     .EXAMPLE
-    Close-ADTModernInstallationProgress
+    Close-ADTFluentInstallationProgress
 
     .NOTES
     This is an internal script function and should typically not be called directly.

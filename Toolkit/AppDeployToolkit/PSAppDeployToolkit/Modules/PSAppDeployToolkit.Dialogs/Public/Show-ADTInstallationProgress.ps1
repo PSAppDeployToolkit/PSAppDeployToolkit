@@ -14,13 +14,13 @@
     The title of the window to be displayed. The default is the derived value from $InstallTitle.
 
     .PARAMETER WindowSubtitle
-    The subtitle of the window to be displayed with a modern progress window. The default is null.
+    The subtitle of the window to be displayed with a fluent progress window. The default is null.
 
     .PARAMETER StatusMessage
     The status message to be displayed. The default status message is taken from the configuration file.
 
     .PARAMETER StatusMessageDetail
-    The status message detail to be displayed with a modern progress window. The default status message is taken from the configuration file.
+    The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.
 
     .PARAMETER WindowLocation
     The location of the progress window. Default: center of the screen.
@@ -75,7 +75,7 @@
     )
 
     dynamicparam {
-        # For modern dialogs, expose extra parameters.
+        # For fluent dialogs, expose extra parameters.
         if (($function = Get-ADTDialogFunction).Contains('Classic'))
         {
             return
@@ -84,7 +84,7 @@
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
-        # Add in the extra parameters for modern dialogs.
+        # Add in the extra parameters for fluent dialogs.
         ('WindowSubtitle', 'StatusMessageDetail').ForEach({
             $paramDictionary.Add($_, [System.Management.Automation.RuntimeDefinedParameter]::new(
                 $_, [System.String], [System.Collections.Generic.List[System.Attribute]]$(

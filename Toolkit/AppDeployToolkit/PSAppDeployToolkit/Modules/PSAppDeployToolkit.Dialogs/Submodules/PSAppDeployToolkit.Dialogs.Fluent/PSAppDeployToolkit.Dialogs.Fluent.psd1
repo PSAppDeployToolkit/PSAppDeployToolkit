@@ -1,5 +1,5 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit.Dialogs.Modern'
+# Module manifest for module 'PSAppDeployToolkit.Dialogs.Fluent'
 #
 # Generated on: 2024-06-05
 #
@@ -7,7 +7,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PSAppDeployToolkit.Dialogs.Modern.psm1'
+RootModule = 'PSAppDeployToolkit.Dialogs.Fluent.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -70,9 +70,9 @@ RequiredAssemblies = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Close-ADTModernInstallationProgress'
-    'Show-ADTModernBalloonTip'
-    'Show-ADTModernInstallationProgress'
+    'Close-ADTFluentInstallationProgress'
+    'Show-ADTFluentBalloonTip'
+    'Show-ADTFluentInstallationProgress'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
