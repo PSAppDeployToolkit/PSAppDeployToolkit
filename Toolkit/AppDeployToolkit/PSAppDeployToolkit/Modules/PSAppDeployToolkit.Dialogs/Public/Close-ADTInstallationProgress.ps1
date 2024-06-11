@@ -10,9 +10,6 @@
 
     This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
-    .PARAMETER WaitingTime
-    How many seconds to wait, at most, for the InstallationProgress window to be initialized, before the function returns, without closing anything. Range: 1 - 60  Default: 5
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -30,10 +27,5 @@
 
     #>
 
-    param (
-        [ValidateRange(1, 60)]
-        [System.UInt32]$WaitingTime = 5
-    )
-
-    & (Get-ADTDialogFunction) @PSBoundParameters
+    & (Get-ADTDialogFunction)
 }
