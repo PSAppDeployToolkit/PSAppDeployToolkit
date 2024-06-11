@@ -3,10 +3,10 @@
     <#
 
     .SYNOPSIS
-    Closes the dialog created by Show-ADTInstallationProgress.
+    Closes the dialog created by Show-ADTClassicInstallationProgress.
 
     .DESCRIPTION
-    Closes the dialog created by Show-ADTInstallationProgress.
+    Closes the dialog created by Show-ADTClassicInstallationProgress.
 
     This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
