@@ -1,4 +1,4 @@
-﻿function Show-ADTModernBalloonTip
+﻿function Show-ADTFluentBalloonTip
 {
     <#
 
@@ -30,10 +30,10 @@
     System.String. Returns the version of the specified file.
 
     .EXAMPLE
-    Show-ADTModernBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
+    Show-ADTFluentBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 
     .EXAMPLE
-    Show-ADTModernBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
+    Show-ADTFluentBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
 
     .LINK
     https://psappdeploytoolkit.com
