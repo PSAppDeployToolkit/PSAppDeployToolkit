@@ -5229,9 +5229,9 @@ https://psappdeploytoolkit.com
     }
     Process {
         Foreach ($srcPath in $Path) {
-            $UseRobocopyThis = $UseRobocopy
-            If ($UseRobocopyThis) {
-                Try {
+            Try {
+                $UseRobocopyThis = $UseRobocopy
+                If ($UseRobocopyThis) {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     If ($srcPath -match '\*.*\\') {
                         $UseRobocopyThis = $false
@@ -5241,7 +5241,6 @@ https://psappdeploytoolkit.com
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
                         $UseRobocopyThis = $false
                         Write-Log "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-
                     }
                     If ($UseRobocopyThis) {
 
@@ -5254,16 +5253,18 @@ https://psappdeploytoolkit.com
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
                             $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path
-                            $RobocopyDestination = Join-Path (Resolve-Path -LiteralPath $Destination).Path (Split-Path -Path $srcPath -Leaf)
+                            $RobocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path) (Split-Path -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
                         Else {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
-                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\')).Path
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent) -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
@@ -5323,28 +5324,20 @@ https://psappdeploytoolkit.com
                             8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
                             16 {
                                 Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default {
-                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                Write-Log -Message "Robocopy error $($RobocopyResult.ExitCode)." -Severity 3 -Source ${CmdletName}
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                         }
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
-                }
-            }
-            If ($UseRobocopyThis -eq $false) {
-                Try {
+                If ($UseRobocopyThis -eq $false) {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
                         Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
@@ -5395,11 +5388,14 @@ https://psappdeploytoolkit.com
                         Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
+            }
+            Catch {
+                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                If (-not $ContinueFileCopyOnError) {
+                    return
+                }
+                If (-not $ContinueOnError) {
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                 }
             }
         }
