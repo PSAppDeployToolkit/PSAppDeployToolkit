@@ -241,7 +241,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 {
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({if ($_ -match '\$UserProfile\.SID') {throw "The function [Invoke-HKCURegistrySettingsForAllUsers] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead."}; ![System.String]::IsNullOrWhiteSpace($_)})]
+        [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-Warning "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." }; ![System.String]::IsNullOrWhiteSpace($_) })]
         [System.Management.Automation.ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
@@ -250,7 +250,14 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Invoke-ADTAllUsersRegistryChange] instead." -Severity 2
-    Invoke-ADTAllUsersRegistryChange @PSBoundParameters
+
+    if ($RegistrySettings -match '\$UserProfile\.SID') {
+        $RegistrySettings = [scriptblock]::Create("`$UserProfile = `$_`n$RegistrySettings")
+    }
+    $SplatParams = @{ RegistrySettings = $RegistrySettings }
+    if ($UserProfiles) { $SplatParams.UserProfiles = $UserProfiles }
+
+    Invoke-ADTAllUsersRegistryChange @SplatParams
 }
 
 
