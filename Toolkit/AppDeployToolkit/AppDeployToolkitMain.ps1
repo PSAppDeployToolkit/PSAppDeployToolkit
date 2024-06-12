@@ -241,7 +241,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 {
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-Warning "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." }; ![System.String]::IsNullOrWhiteSpace($_) })]
+        [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
         [System.Management.Automation.ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
