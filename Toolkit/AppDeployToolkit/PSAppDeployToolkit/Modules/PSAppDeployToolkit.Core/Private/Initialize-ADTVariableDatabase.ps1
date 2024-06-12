@@ -325,7 +325,33 @@
         }
     }))
 
-    # Variables: User profile information.
+    ## Variables: Task Scheduler service state.
+    $variables.Add('IsTaskSchedulerHealthy', $true)
+    if ($variables.IsLocalSystemAccount)
+    {
+        # Check the health of the 'Task Scheduler' service
+        try
+        {
+            if ($svcSchedule = Get-Service -Name Schedule -ErrorAction Ignore)
+            {
+                if ($svcSchedule.StartType -ne 'Automatic')
+                {
+                    Set-Service -Name Schedule -StartupType Automatic
+                }
+                Start-Service -Name Schedule
+            }
+            else
+            {
+                $this.Properties.IsTaskSchedulerHealthy = $false
+            }
+        }
+        catch
+        {
+            $this.Properties.IsTaskSchedulerHealthy = $false
+        }
+    }
+
+    ## Variables: User profile information.
     $variables.Add('dirUserProfile', (Split-Path -LiteralPath $variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
     $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))

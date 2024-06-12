@@ -73,7 +73,6 @@ class ADTSession
         DirAppDeployTemp = [System.String]::Empty
         RegKeyDeferHistory = [System.String]::Empty
         LogTempFolder = [System.String]::Empty
-        IsTaskSchedulerHealthy = $true
     }
 
     # Constructors.
@@ -497,28 +496,6 @@ class ADTSession
         # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
         if ($adtEnv.IsLocalSystemAccount)
         {
-            # Check the health of the 'Task Scheduler' service
-            try
-            {
-                if ($svcSchedule = Get-Service -Name Schedule -ErrorAction Ignore)
-                {
-                    if ($svcSchedule.StartType -ne 'Automatic')
-                    {
-                        Set-Service -Name Schedule -StartupType Automatic
-                    }
-                    Start-Service -Name Schedule
-                }
-                else
-                {
-                    $this.Properties.IsTaskSchedulerHealthy = $false
-                }
-            }
-            catch
-            {
-                $this.Properties.IsTaskSchedulerHealthy = $false
-            }
-
-            # Log the health of the 'Task Scheduler' service.
             $this.WriteLogEntry("The task scheduler service is in a healthy state: $($this.Properties.IsTaskSchedulerHealthy).")
         }
         else
