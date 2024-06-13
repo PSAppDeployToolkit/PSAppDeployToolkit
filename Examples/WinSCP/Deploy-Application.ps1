@@ -109,12 +109,12 @@ Try {
     ## Variables: Application
     [String]$appVendor = 'Martin Prikryl'
     [String]$appName = 'WinSCP'
-    [String]$appVersion = '6.3.2'
+    [String]$appVersion = '6.3.3'
     [String]$appArch = 'x64'
     [String]$appLang = 'EN'
     [String]$appRevision = '01'
     [String]$appScriptVersion = '1.0.0'
-    [String]$appScriptDate = '03/05/2024'
+    [String]$appScriptDate = '13/06/2024'
     [String]$appScriptAuthor = 'PsAppDeployToolkit'
     ##*===============================================
     ## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -206,7 +206,7 @@ Try {
 
         ## <Perform Installation tasks here>
 
-        Execute-MSI -Action Install -Path 'WinSCP-6.3.2.msi'
+        Execute-MSI -Action Install -Path 'WinSCP-6.3.3.msi'
 
         ##*===============================================
         ##* POST-INSTALLATION
@@ -259,7 +259,7 @@ Try {
 
         ## <Perform Uninstallation tasks here>
 
-        Execute-MSI -Action Uninstall -Path 'WinSCP-6.3.2.msi'
+        Execute-MSI -Action Uninstall -Path 'WinSCP-6.3.3.msi'
 
         ##*===============================================
         ##* POST-UNINSTALLATION
@@ -297,7 +297,7 @@ Try {
         }
         ## <Perform Repair tasks here>
 
-        Execute-MSI -Action Repair -Path 'WinSCP-6.3.2.msi' -RepairFromSource $true
+        Execute-MSI -Action Repair -Path 'WinSCP-6.3.3.msi' -RepairFromSource $true
 
         ##*===============================================
         ##* POST-REPAIR
