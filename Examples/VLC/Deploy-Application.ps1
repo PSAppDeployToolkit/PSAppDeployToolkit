@@ -109,12 +109,12 @@ Try {
     ## Variables: Application
     [String]$appVendor = 'VideoLAN'
     [String]$appName = 'VLC Media Player'
-    [String]$appVersion = '3.0.20'
+    [String]$appVersion = '3.0.21'
     [String]$appArch = 'x64'
     [String]$appLang = 'EN'
     [String]$appRevision = '01'
     [String]$appScriptVersion = '1.0.0'
-    [String]$appScriptDate = '03/05/2024'
+    [String]$appScriptDate = '13/06/2024'
     [String]$appScriptAuthor = 'PsAppDeployToolkit'
     ##*===============================================
     ## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -207,7 +207,7 @@ Try {
 
         ## <Perform Installation tasks here>
 
-        Execute-Process -Path 'vlc-3.0.20-win64.exe' -Parameters '/L=1033 /S'
+        Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
 
         ##*===============================================
         ##* POST-INSTALLATION
@@ -295,7 +295,7 @@ Try {
         ## <Perform Repair tasks here>
 
         Execute-Process -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ContinueOnError $true -ExitOnProcessFailure $false
-        Execute-Process -Path 'vlc-3.0.20-win64.exe' -Parameters '/L=1033 /S'
+        Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
 
         ##*===============================================
         ##* POST-REPAIR
