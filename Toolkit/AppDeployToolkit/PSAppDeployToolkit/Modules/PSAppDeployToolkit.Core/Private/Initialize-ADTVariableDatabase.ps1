@@ -1,4 +1,4 @@
-﻿function Initialize-ADTVariableDatabase
+﻿function Initialize-ADTEnvironment
 {
     # Internal function for translating SID types to names.
     function Get-SidTypeAccountName
