@@ -142,15 +142,15 @@ function Install-ADTApplication
     ## Handle Zero-Config MSI installations.
     if ($sessionProps.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $sessionProps.DefaultMsiFile }
+        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $sessionProps.DefaultMsiFile }
         if ($defaultMstFile = $sessionProps.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
+        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
         if ($defaultMspFiles = $sessionProps.DefaultMspFiles)
         {
-            $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ }
+            $defaultMspFiles | ForEach-Object { Start-ADTMsiProcess -Action 'Patch' -Path $_ }
         }
     }
 
@@ -204,7 +204,7 @@ function Uninstall-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
+        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
     }
 
     ## <Perform Uninstallation tasks here>
@@ -248,7 +248,7 @@ function Repair-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Execute-MSI @ExecuteDefaultMSISplat -PassThru).ExitCode
+        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
     }
 
     ## <Perform Repair tasks here>
