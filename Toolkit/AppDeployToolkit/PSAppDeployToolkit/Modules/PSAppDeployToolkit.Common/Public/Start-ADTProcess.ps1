@@ -378,20 +378,6 @@
 
             if (!$NoWait)
             {
-                # Check to see whether we should ignore exit codes.
-                $ignoreExitCodeMatch = if ($IgnoreExitCodes)
-                {
-                    # Check whether * was specified, which would tell us to ignore all exit codes.
-                    if ($($IgnoreExitCodes).Trim() -eq '*')
-                    {
-                        $true
-                    }
-                    else
-                    {
-                        ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)
-                    }
-                }
-
                 # If the passthru switch is specified, return the exit code and any output from process.
                 if ($PassThru)
                 {
@@ -403,7 +389,8 @@
                     }
                 }
 
-                if ($ignoreExitCodeMatch)
+                # Check to see whether we should ignore exit codes.
+                if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
                 {
                     Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
                 }
