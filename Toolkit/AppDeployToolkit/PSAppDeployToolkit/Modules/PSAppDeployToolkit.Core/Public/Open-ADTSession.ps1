@@ -93,12 +93,6 @@
         throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted at this time.")
     }
 
-    # Initialise the PSADT environment before instantiating a session.
-    Initialize-ADTVariableDatabase
-    Import-ADTConfig
-    Import-ADTLocalizedStrings
-    $Script:ADT.LastExitCode = 0
-
     # Sanitise string inputs before instantiating a new session.
     [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
 
