@@ -77,7 +77,6 @@ FunctionsToExport = @(
     'Get-ADTConfig'
     'Get-ADTEnvironment'
     'Get-ADTModuleInfo'
-    'Get-ADTPowerShellProcessPath'
     'Get-ADTSession'
     'Get-ADTStrings'
     'Import-ADTModuleState'
