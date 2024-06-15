@@ -796,7 +796,7 @@ class ADTSession
         $logTimePlusBias = $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = (Get-PSCallStack).Where({![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')})[0]
+        $caller = (Get-PSCallStack).Where({![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')}, 'First')
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
