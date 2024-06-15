@@ -6,20 +6,22 @@
 
 class ADTSession
 {
-    # Private variables (don't change once initialised).
-    hidden [System.Boolean]$LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
-    hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-    hidden [System.String]$LoggedOnUserTempPath = [System.String]::Empty
-    hidden [System.Management.Automation.PSObject[]]$DefaultMsiExecutablesList = $null
-    hidden [System.String]$DeploymentTypeName = [System.String]::Empty
-    hidden [System.Boolean]$DeployModeNonInteractive = $false
-    hidden [System.Boolean]$DeployModeSilent = $false
-    hidden [System.Object]$CallerVariables = $null
-    hidden [System.Boolean]$Initialised = $false
+    # Internal variables that aren't for public access.
+    hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
+        LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
+        OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+        LoggedOnUserTempPath = [System.String]::Empty
+        DefaultMsiExecutablesList = $null
+        DeploymentTypeName = [System.String]::Empty
+        DeployModeNonInteractive = $false
+        DeployModeSilent = $false
+        CallerVariables = $null
+        BlockExecution = $false
+        Initialised = $false
+    }
 
     # State values (can change mid-flight).
     hidden [System.Collections.Hashtable]$State = @{
-        BlockExecution = $false
         WelcomeTimer = $null
         FormWelcomeStartPosition = $null
         CloseAppsCountdownGlobal = $null
@@ -104,7 +106,7 @@ class ADTSession
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType.ToLower())
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        $this.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
+        $this.Internal.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -116,11 +118,11 @@ class ADTSession
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
         if (($null -ne $adtEnv.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($adtEnv.runasUserProfile))
         {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
+            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
         }
         else
         {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.Properties.DirAppDeployTemp)\ExecuteAsUser").FullName
+            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.Properties.DirAppDeployTemp)\ExecuteAsUser").FullName
         }
     }
 
@@ -192,9 +194,9 @@ class ADTSession
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
-            if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[pscustomobject]@{ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
+            if ($this.Internal.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[pscustomobject]@{ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
             {
-                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.ProcessName)].")
+                $this.WriteLogEntry("MSI Executable List [$($this.Internal.DefaultMsiExecutablesList.ProcessName)].")
             }
 
             # Change table and get properties from it.
@@ -382,7 +384,7 @@ class ADTSession
         $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] module version is [$((Get-ADTModuleInfo).Version)]")
 
         # Announce session instantiation mode.
-        if ($this.LegacyMode)
+        if ($this.Internal.LegacyMode)
         {
             $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Legacy]. This mode is deprecated and will be removed in a future release.", 2)
             $this.WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2)
@@ -558,8 +560,7 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.Properties.DeploymentType)
-        $this.WriteLogEntry("Deployment type is [$($this.DeploymentTypeName)].")
+        $this.WriteLogEntry("Deployment type is [$(($this.Internal.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.Properties.DeploymentType)))].")
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -601,9 +602,9 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.LegacyMode -and $this.Initialised)
+        if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
         {
-            return $this.CallerVariables.Get($Name).Value
+            return $this.Internal.CallerVariables.Get($Name).Value
         }
         else
         {
@@ -615,9 +616,9 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.LegacyMode -and $this.Initialised)
+        if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
         {
-            $this.CallerVariables.Set($Name, $Value)
+            $this.Internal.CallerVariables.Set($Name, $Value)
         }
         else
         {
@@ -628,7 +629,7 @@ class ADTSession
     [System.Void] SyncPropertyValues()
     {
         # This is ran ahead of an async operation for legacy mode operations to ensure the module has the current state.
-        if (!$this.LegacyMode -or !$this.Initialised)
+        if (!$this.Internal.LegacyMode -or !$this.Internal.Initialised)
         {
             return
         }
@@ -640,7 +641,7 @@ class ADTSession
     [System.Void] Open()
     {
         # Ensure this session isn't being opened twice.
-        if ($this.Initialised)
+        if ($this.Internal.Initialised)
         {
             throw [System.InvalidOperationException]::new("The current $((Get-ADTEnvironment).appDeployToolkitName) session has already been opened.")
         }
@@ -666,16 +667,16 @@ class ADTSession
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-        if ($this.LegacyMode)
+        if ($this.Internal.LegacyMode)
         {
-            $this.Properties.GetEnumerator().ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
+            $this.Properties.GetEnumerator().ForEach({$this.Internal.CallerVariables.Set($_.Name, $_.Value)})
         }
 
         # Set PowerShell window title, in case the window is visible.
         $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
-        $this.Initialised = $true
+        $this.Internal.Initialised = $true
     }
 
     [System.Void] Close([System.Int32]$ExitCode)
@@ -685,7 +686,7 @@ class ADTSession
         $adtStrings = Get-ADTStrings
 
         # If block execution variable is true, call the function to unblock execution.
-        if ($this.State.BlockExecution)
+        if ($this.Internal.BlockExecution)
         {
             Unblock-AppExecution
         }
@@ -710,24 +711,24 @@ class ADTSession
             $balloonText = if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
             {
                 $this.WriteLogEntry('A restart has been flagged as required.')
-                "$($this.DeploymentTypeName) $($adtStrings.BalloonText.RestartRequired)"
+                "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.RestartRequired)"
             }
             else
             {
-                "$($this.DeploymentTypeName) $($adtStrings.BalloonText.Complete)"
+                "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.Complete)"
             }
             $balloonIcon = 'Info'
             $logSeverity = 0
         }
         elseif (($ExitCode -eq $adtConfig.UI.DefaultExitCode) -or ($ExitCode -eq $adtConfig.UI.DeferExitCode))
         {
-            $balloonText = "$($this.DeploymentTypeName) $($adtStrings.BalloonText.FastRetry)"
+            $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.FastRetry)"
             $balloonIcon = 'Warning'
             $logSeverity = 2
         }
         else
         {
-            $balloonText = "$($this.DeploymentTypeName) $($adtStrings.BalloonText.Error)"
+            $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.Error)"
             $balloonIcon = 'Error'
             $logSeverity = 3
         }
@@ -739,7 +740,7 @@ class ADTSession
         }
 
         # Annouce session success/failure.
-        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.DeploymentTypeName.ToLower()) completed with exit code [$ExitCode].", $logSeverity)
+        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$ExitCode].", $logSeverity)
         if (Get-Module -Name PSAppDeployToolkit.Dialogs)
         {
             Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
@@ -774,7 +775,7 @@ class ADTSession
         }
 
         # Reset powershell window title to its previous title.
-        $Global:Host.UI.RawUI.WindowTitle = $this.OldPSWindowTitle
+        $Global:Host.UI.RawUI.WindowTitle = $this.Internal.OldPSWindowTitle
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
@@ -869,5 +870,35 @@ class ADTSession
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.Boolean]$DebugMessage)
     {
         $this.WriteLogEntry($Message, $Severity, $null, $null, $DebugMessage)
+    }
+
+    [System.Management.Automation.PSObject[]] GetDefaultMsiExecutablesList()
+    {
+        return $this.Internal.DefaultMsiExecutablesList
+    }
+
+    [System.String] GetLoggedOnUserTempPath()
+    {
+        return $this.Internal.LoggedOnUserTempPath
+    }
+
+    [System.String] GetDeploymentTypeName()
+    {
+        return $this.Internal.DeploymentTypeName
+    }
+
+    [System.Void] SetBlockExecution([System.Boolean]$value)
+    {
+        $this.Internal.BlockExecution = $value
+    }
+
+    [System.Boolean] IsNonInteractive()
+    {
+        return $this.Internal.DeployModeNonInteractive
+    }
+
+    [System.Boolean] IsSilent()
+    {
+        return $this.Internal.DeployModeSilent
     }
 }

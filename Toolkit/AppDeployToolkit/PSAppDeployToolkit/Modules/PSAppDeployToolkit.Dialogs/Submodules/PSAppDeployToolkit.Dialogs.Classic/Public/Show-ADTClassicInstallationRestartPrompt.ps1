@@ -75,7 +75,7 @@
 
     process {
         # If in non-interactive mode.
-        if ($adtSession.DeployModeSilent)
+        if ($adtSession.IsSilent())
         {
             if ($SilentRestart)
             {

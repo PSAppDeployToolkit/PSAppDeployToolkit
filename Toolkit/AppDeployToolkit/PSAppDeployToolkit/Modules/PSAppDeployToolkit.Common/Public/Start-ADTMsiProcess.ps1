@@ -251,7 +251,7 @@
         }
 
         # Set the installation parameters.
-        if ($adtSession.DeployModeSilent)
+        if ($adtSession.IsSilent())
         {
             $msiInstallDefaultParams = $adtConfig.MSI.SilentParams
             $msiUninstallDefaultParams = $adtConfig.MSI.SilentParams
