@@ -70,7 +70,7 @@
 
     process {
         # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-        if ($adtSession.DeployModeSilent -or !$adtConfig.UI.BalloonNotifications)
+        if ($adtSession.IsSilent() -or !$adtConfig.UI.BalloonNotifications)
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
             return

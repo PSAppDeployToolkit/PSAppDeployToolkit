@@ -155,7 +155,7 @@
 
     process {
         # Return early in silent mode.
-        if ($adtSession.DeployModeSilent)
+        if ($adtSession.IsSilent())
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message:$StatusMessage" -DebugMessage:$Quiet
             return
@@ -175,7 +175,7 @@
         if (!$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-ADTFluentBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.DeploymentTypeName) $((Get-ADTStrings).BalloonText.Start)"
+            Show-ADTFluentBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
 
             # Instantiate a new progress window object and start it up.
             Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."

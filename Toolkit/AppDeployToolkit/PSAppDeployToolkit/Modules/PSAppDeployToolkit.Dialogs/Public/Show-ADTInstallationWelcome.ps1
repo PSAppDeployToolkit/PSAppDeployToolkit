@@ -197,7 +197,7 @@
 
     process {
         # If running in NonInteractive mode, force the processes to close silently.
-        if ($adtSession.DeployModeNonInteractive)
+        if ($adtSession.IsNonInteractive())
         {
             $Silent = $true
         }
@@ -205,7 +205,7 @@
         # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
         if ($adtSession.GetPropertyValue('UseDefaultMsi'))
         {
-            $ProcessObjects = $($ProcessObjects; $adtSession.DefaultMsiExecutablesList)
+            $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
         }
 
         # Check disk space requirements if specified
@@ -333,7 +333,7 @@
         }
 
         # Prompt the user to close running applications and optionally defer if enabled.
-        if (!$adtSession.DeployModeSilent -and !$Silent)
+        if (!$adtSession.IsSilent() -and !$Silent)
         {
             # Keep the same variable for countdown to simplify the code.
             if ($ForceCloseAppsCountdown -gt 0)
@@ -522,7 +522,7 @@
         }
 
         # Force the processes to close silently, without prompting the user.
-        if (($Silent -or $adtSession.DeployModeSilent) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+        if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
         {
             Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
             $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
@@ -533,7 +533,7 @@
         if ($BlockExecution)
         {
             # Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            $adtSession.State.BlockExecution = $BlockExecution
+            $adtSession.SetBlockExecution($BlockExecution)
             Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
             Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty ProcessName)
         }

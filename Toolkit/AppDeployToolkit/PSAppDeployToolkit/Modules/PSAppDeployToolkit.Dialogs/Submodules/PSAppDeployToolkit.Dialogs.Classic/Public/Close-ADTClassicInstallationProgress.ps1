@@ -34,7 +34,7 @@
 
     process {
         # Return early if we're silent, a window wouldn't have ever opened.
-        if ($adtSession.DeployModeSilent)
+        if ($adtSession.IsSilent())
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]"
             return
