@@ -8,7 +8,7 @@ class ADTSession
 {
     # Internal variables that aren't for public access.
     hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
-        LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
+        CompatibilityMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
         OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
         DefaultMsiExecutablesList = $null
         CallerVariableIntrinsics = $null
@@ -398,9 +398,9 @@ class ADTSession
         $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] module version is [$((Get-ADTModuleInfo).Version)]")
 
         # Announce session instantiation mode.
-        if ($this.Internal.LegacyMode)
+        if ($this.Internal.CompatibilityMode)
         {
-            $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Legacy]. This mode is deprecated and will be removed in a future release.", 2)
+            $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2)
             $this.WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2)
             return
         }
@@ -616,7 +616,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
+        if ($this.Internal.CompatibilityMode -and $this.Internal.Initialised)
         {
             return $this.Internal.CallerVariableIntrinsics.Get($Name).Value
         }
@@ -630,7 +630,7 @@ class ADTSession
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
+        if ($this.Internal.CompatibilityMode -and $this.Internal.Initialised)
         {
             $this.Internal.CallerVariableIntrinsics.Set($Name, $Value)
         }
@@ -642,8 +642,8 @@ class ADTSession
 
     [System.Void] SyncPropertyValues()
     {
-        # This is ran ahead of an async operation for legacy mode operations to ensure the module has the current state.
-        if (!$this.Internal.LegacyMode -or !$this.Internal.Initialised)
+        # This is ran ahead of an async operation for compatibility mode operations to ensure the module has the current state.
+        if (!$this.Internal.CompatibilityMode -or !$this.Internal.Initialised)
         {
             return
         }
@@ -681,7 +681,7 @@ class ADTSession
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-        if ($this.Internal.LegacyMode)
+        if ($this.Internal.CompatibilityMode)
         {
             $this.PSObject.Properties.ForEach({$this.Internal.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
         }
