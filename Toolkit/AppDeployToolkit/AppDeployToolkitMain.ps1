@@ -45,23 +45,15 @@ Initialize-ADTModule
 # Open a new PSADT session.
 if (Test-Path -LiteralPath Variable:PSCmdlet)
 {
-    $sessionProps = & {
-        # Open hashtable for returning at the end. We return it even if it's empty.
-        $daParams = @{Cmdlet = $PSCmdlet}
-
-        # Get all relevant parameters from the targeted function, then check whether they're defined and not empty.
-        foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+    # Get all relevant parameters from the targeted function, then check whether they're defined and not empty.
+    $sessionProps = @{Cmdlet = $PSCmdlet}
+    foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+    {
+        # Return early if the parameter doesn't exist or its value is null.
+        if (($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
         {
-            # Return early if the parameter doesn't exist or its value is null.
-            if (!($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -or [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
-            {
-                continue
-            }
-            $daParams.Add($param, $value)
+            $sessionProps.Add($param, $value)
         }
-
-        # Return the hashtable to the caller, they'll splat it onto Open-ADTSession.
-        return $daParams
     }
     Open-ADTSession @sessionProps
 }
