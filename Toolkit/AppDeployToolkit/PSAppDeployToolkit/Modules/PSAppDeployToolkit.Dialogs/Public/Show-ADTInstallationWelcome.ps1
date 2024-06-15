@@ -256,7 +256,7 @@
             $AllowDefer = $true
 
             # Get the deferral history from the registry.
-            $deferHistory = Get-RegistryKey -Key $adtSession.GetRegKeyDeferHistory() -ContinueOnError $true
+            $deferHistory = Get-ItemProperty -LiteralPath ($adtSession.GetRegKeyDeferHistory()) -ErrorAction Ignore
             $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
             $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
 
