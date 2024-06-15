@@ -10,12 +10,12 @@ class ADTSession
     hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
         LegacyMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
         OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-        LoggedOnUserTempPath = [System.String]::Empty
         DefaultMsiExecutablesList = $null
+        CallerVariableIntrinsics = $null
+        LoggedOnUserTempPath = [System.String]::Empty
         DeploymentTypeName = [System.String]::Empty
         DeployModeNonInteractive = $false
         DeployModeSilent = $false
-        CallerVariables = $null
         BlockExecution = $false
         Initialised = $false
     }
@@ -101,7 +101,7 @@ class ADTSession
         $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType.ToLower())
         $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        $this.Internal.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
+        $this.Internal.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -599,7 +599,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
         {
-            return $this.Internal.CallerVariables.Get($Name).Value
+            return $this.Internal.CallerVariableIntrinsics.Get($Name).Value
         }
         else
         {
@@ -613,7 +613,7 @@ class ADTSession
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.Internal.LegacyMode -and $this.Internal.Initialised)
         {
-            $this.Internal.CallerVariables.Set($Name, $Value)
+            $this.Internal.CallerVariableIntrinsics.Set($Name, $Value)
         }
         else
         {
@@ -664,7 +664,7 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.Internal.LegacyMode)
         {
-            $this.Properties.GetEnumerator().ForEach({$this.Internal.CallerVariables.Set($_.Name, $_.Value)})
+            $this.Properties.GetEnumerator().ForEach({$this.Internal.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
         }
 
         # Set PowerShell window title, in case the window is visible.
