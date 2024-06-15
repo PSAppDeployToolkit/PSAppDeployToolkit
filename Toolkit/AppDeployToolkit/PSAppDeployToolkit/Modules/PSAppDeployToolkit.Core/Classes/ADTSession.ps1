@@ -86,6 +86,28 @@ class ADTSession
     # Private methods.
     hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
     {
+        # Confirm the main system automation params are present.
+        foreach ($param in @('Cmdlet').Where({!$Parameters.ContainsKey($_)}))
+        {
+            throw [System.Management.Automation.ErrorRecord]::new(
+                [System.ArgumentException]::new('One or more mandatory parameters are missing.', $param),
+                'MandatoryParameterMissing',
+                [System.Management.Automation.ErrorCategory]::InvalidArgument,
+                $Parameters
+            )
+        }
+
+        # Confirm the main system automation params aren't null.
+        foreach ($param in @('Cmdlet').Where({!$Parameters[$_]}))
+        {
+            throw [System.Management.Automation.ErrorRecord]::new(
+                [System.ArgumentNullException]::new($param, 'One or more mandatory parameters are null.'),
+                'MandatoryParameterNullOrEmpty',
+                [System.Management.Automation.ErrorCategory]::InvalidData,
+                $Parameters
+            )
+        }
+
         # Get the current environment.
         $adtEnv = Get-ADTEnvironment
 
