@@ -60,44 +60,14 @@
 
     [CmdletBinding()]
     param (
-        [ValidateNotNullOrEmpty()]
-        [System.String]$WindowTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
-
-        [ValidateNotNullOrEmpty()]
-        [System.String]$StatusMessage = (Get-ADTStrings).Progress."Message$((Get-ADTSession).GetPropertyValue('DeploymentType'))",
-
-        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [System.String]$WindowLocation = 'Default',
-
-        [System.Management.Automation.SwitchParameter]$NotTopMost,
-        [System.Management.Automation.SwitchParameter]$Quiet,
-        [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
     dynamicparam {
-        # For fluent dialogs, expose extra parameters.
-        if (($function = Get-ADTDialogFunction).Contains('Classic'))
-        {
-            return
-        }
-
-        # Define parameter dictionary for returning at the end.
-        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-
-        # Add in the extra parameters for fluent dialogs.
-        ('WindowSubtitle', 'StatusMessageDetail').ForEach({
-            $paramDictionary.Add($_, [System.Management.Automation.RuntimeDefinedParameter]::new(
-                $_, [System.String], [System.Collections.Generic.List[System.Attribute]]$(
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
-        })
-
-        # Return the populated dictionary.
-        return $paramDictionary
+        $Command = Get-ADTDialogFunction
+        Convert-ADTCommandParamsToDynamicParams -Command $Command
     }
 
     end {
-        & $function @PSBoundParameters
+        & $Command @PSBoundParameters
     }
 }

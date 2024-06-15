@@ -43,26 +43,16 @@
 
     #>
 
+    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$BalloonTipText,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$BalloonTipTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
-
-        [Parameter(Mandatory = $false)]
-        [ValidateSet('Error', 'Info', 'None', 'Warning')]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    & (Get-ADTDialogFunction) @PSBoundParameters
+    dynamicparam {
+        $Command = Get-ADTDialogFunction
+        Convert-ADTCommandParamsToDynamicParams -Command $Command
+    }
+
+    end {
+        & $Command @PSBoundParameters
+    }
 }
