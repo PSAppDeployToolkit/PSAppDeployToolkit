@@ -41,7 +41,7 @@
 
     begin {
         Write-ADTDebugHeader
-        $regKeyDeferHistory = (Get-ADTSession).GetPropertyValue('RegKeyDeferHistory')
+        $regKeyDeferHistory = (Get-ADTSession).GetRegKeyDeferHistory()
     }
 
     process {
