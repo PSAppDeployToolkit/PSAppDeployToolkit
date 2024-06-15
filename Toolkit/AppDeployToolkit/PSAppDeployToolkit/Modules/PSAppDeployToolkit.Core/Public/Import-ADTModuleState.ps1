@@ -15,7 +15,7 @@
     for ($i = 0; $i -lt ($adtData = Get-ADT).Sessions.Count; $i++)
     {
         $adtData.Sessions[$i] = [ADTSession]::new($adtData.Sessions[$i])
-        $adtData.Sessions[$i].Properties.InstallPhase = 'Asynchronous'
+        $adtData.Sessions[$i].InstallPhase = 'Asynchronous'
         $adtData.Sessions[$i].Internal.LegacyMode = $false
     }
 }
