@@ -344,13 +344,13 @@
             {
                 $CloseAppsCountdown = $ForceCountdown
             }
-            $adtSession.State.CloseAppsCountdownGlobal = $CloseAppsCountdown
+            $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
             $promptResult = $null
 
             while (($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
             {
                 # Get all unique running process descriptions.
-                $adtSession.State.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+                $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
 
                 # Define parameters for welcome prompt.
                 $promptParams = @{
@@ -367,11 +367,11 @@
                 if ($AllowDefer)
                 {
                     # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                    if ($AllowDeferCloseApps -and !$adtSession.State.RunningProcessDescriptions)
+                    if ($AllowDeferCloseApps -and !$adtSession.ExtensionData.RunningProcessDescriptions)
                     {
                         break
                     }
-                    elseif (($promptResult -ne 'Close') -or ($adtSession.State.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
+                    elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
                     {
                         # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                         $deferParams = @{AllowDefer = $true; DeferTimes = $deferTimes}
@@ -379,7 +379,7 @@
                         [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
                     }
                 }
-                elseif ($adtSession.State.RunningProcessDescriptions -or !!$forceCountdown)
+                elseif ($adtSession.ExtensionData.RunningProcessDescriptions -or !!$forceCountdown)
                 {
                     # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                     [String]$promptResult = Show-ADTWelcomePrompt @promptParams
@@ -490,12 +490,12 @@
                     }
 
                     # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
-                    if ($adtSession.State.WelcomeTimer)
+                    if ($adtSession.ExtensionData.ContainsKey('WelcomeTimer') -and $adtSession.ExtensionData.WelcomeTimer)
                     {
                         try
                         {
-                            $adtSession.State.WelcomeTimer.Dispose()
-                            $adtSession.State.WelcomeTimer = $null
+                            $adtSession.ExtensionData.WelcomeTimer.Dispose()
+                            $adtSession.ExtensionData.WelcomeTimer = $null
                         }
                         catch
                         {

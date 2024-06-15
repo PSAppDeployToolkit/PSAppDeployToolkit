@@ -64,7 +64,7 @@
 
     param (
         [ValidateScript({if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout) {throw 'The close applications countdown time cannot be longer than the timeout specified in the config file.'}; !!$_})]
-        [System.UInt32]$CloseAppsCountdown = (Get-ADTSession).State.CloseAppsCountdownGlobal,
+        [System.UInt32]$CloseAppsCountdown,
 
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferTimes,

@@ -20,13 +20,8 @@ class ADTSession
         Initialised = $false
     }
 
-    # State values (can change mid-flight).
-    hidden [System.Collections.Hashtable]$State = @{
-        WelcomeTimer = $null
-        FormWelcomeStartPosition = $null
-        CloseAppsCountdownGlobal = $null
-        RunningProcessDescriptions = $null
-    }
+    # Private variables for modules to use that aren't for public access.
+    hidden [System.Collections.Hashtable]$ExtensionData = @{}
 
     # Variables we export publicly for compatibility.
     hidden $Properties = [ordered]@{
