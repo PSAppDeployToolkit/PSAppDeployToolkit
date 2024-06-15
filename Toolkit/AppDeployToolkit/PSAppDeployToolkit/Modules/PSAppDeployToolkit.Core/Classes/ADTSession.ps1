@@ -23,54 +23,51 @@ class ADTSession
     # Private variables for modules to use that aren't for public access.
     hidden [System.Collections.Hashtable]$ExtensionData = @{}
 
-    # Variables we export publicly for compatibility.
-    hidden $Properties = [ordered]@{
-        # Deploy-Application.ps1 parameters.
-        DeploymentType = 'Install'
-        DeployMode = 'Interactive'
-        AllowRebootPassThru = $false
-        TerminalServerMode = $false
-        DisableLogging = $false
+    # Deploy-Application.ps1 parameters.
+    [System.String]$DeploymentType = 'Install'
+    [System.String]$DeployMode = 'Interactive'
+    [System.Boolean]$AllowRebootPassThru
+    [System.Boolean]$TerminalServerMode
+    [System.Boolean]$DisableLogging
 
-        # Deploy-Application.ps1 variables.
-        AppVendor = [System.String]::Empty
-        AppName = [System.String]::Empty
-        AppVersion = [System.String]::Empty
-        AppArch = [System.String]::Empty
-        AppLang = [System.String]::Empty
-        AppRevision = [System.String]::Empty
-        AppExitCodes = @(0)
-        AppRebootCodes = @(1641, 3010)
-        AppScriptVersion = [System.String]::Empty
-        AppScriptDate = [System.String]::Empty
-        AppScriptAuthor = [System.String]::Empty
-        InstallName = [System.String]::Empty
-        InstallTitle = [System.String]::Empty
-        DeployAppScriptFriendlyName = [System.String]::Empty
-        DeployAppScriptVersion = [System.String]::Empty
-        DeployAppScriptDate = [System.String]::Empty
-        DeployAppScriptParameters = $null
-        InstallPhase = 'Initialization'
+    # Deploy-Application.ps1 variables.
+    [System.String]$AppVendor
+    [System.String]$AppName
+    [System.String]$AppVersion
+    [System.String]$AppArch
+    [System.String]$AppLang
+    [System.String]$AppRevision
+    [System.Int32[]]$AppExitCodes = 0
+    [System.Int32[]]$AppRebootCodes = 1641, 3010
+    [System.String]$AppScriptVersion
+    [System.String]$AppScriptDate
+    [System.String]$AppScriptAuthor
+    [System.String]$InstallName
+    [System.String]$InstallTitle
+    [System.String]$DeployAppScriptFriendlyName
+    [System.String]$DeployAppScriptVersion
+    [System.String]$DeployAppScriptDate
+    [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters
+    [System.String]$InstallPhase = 'Initialization'
 
-        # Calculated variables we publicise.
-        CurrentDateTime = [System.DateTime]::Now
-        CurrentTime = [System.String]::Empty
-        CurrentDate = [System.String]::Empty
-        CurrentTimeZoneBias = $null
-        DefaultMsiFile = [System.String]::Empty
-        DefaultMstFile = [System.String]::Empty
-        DefaultMspFiles = [System.String]::Empty
-        UseDefaultMsi = $false
-        LogPath = [System.String]::Empty
-        LogName = [System.String]::Empty
-        LogFile = [System.String]::Empty
-        ScriptParentPath = [System.String]::Empty
-        DirFiles = [System.String]::Empty
-        DirSupportFiles = [System.String]::Empty
-        DirAppDeployTemp = [System.String]::Empty
-        RegKeyDeferHistory = [System.String]::Empty
-        LogTempFolder = [System.String]::Empty
-    }
+    # Calculated variables we publicise.
+    [System.DateTime]$CurrentDateTime = [System.DateTime]::Now
+    [System.String]$CurrentTime
+    [System.String]$CurrentDate
+    [System.TimeSpan]$CurrentTimeZoneBias
+    [System.String]$ScriptParentPath
+    [System.String]$DirFiles
+    [System.String]$DirSupportFiles
+    [System.String]$DirAppDeployTemp
+    [System.String]$DefaultMsiFile
+    [System.String]$DefaultMstFile
+    [System.String]$DefaultMspFiles
+    [System.Boolean]$UseDefaultMsi
+    [System.String]$LogTempFolder
+    [System.String]$LogPath
+    [System.String]$LogName
+    [System.String]$LogFile
+    [System.String]$RegKeyDeferHistory
 
     # Constructors.
     ADTSession([System.Management.Automation.PSCmdlet]$Cmdlet)
@@ -93,21 +90,21 @@ class ADTSession
         $adtEnv = Get-ADTEnvironment
 
         # Establish start date/time first so we can accurately mark the start of execution.
-        $this.Properties.CurrentTime = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%T'
-        $this.Properties.CurrentDate = Get-Date -Date $this.Properties.CurrentDateTime -UFormat '%d-%m-%Y'
-        $this.Properties.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.Properties.CurrentDateTime)
+        $this.CurrentTime = Get-Date -Date $this.CurrentDateTime -UFormat '%T'
+        $this.CurrentDate = Get-Date -Date $this.CurrentDateTime -UFormat '%d-%m-%Y'
+        $this.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.CurrentDateTime)
 
         # Process provided parameters and amend some incoming values.
-        $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Key] = $_.Value})
-        $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType.ToLower())
-        $this.Properties.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
+        $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.($_.Key) = $_.Value})
+        $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
+        $this.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
         $this.Internal.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
-        $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
-        $this.Properties.DirFiles = "$($this.Properties.ScriptParentPath)\Files"
-        $this.Properties.DirSupportFiles = "$($this.Properties.ScriptParentPath)\SupportFiles"
-        $this.Properties.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($adtEnv.appDeployToolkitName)").FullName
+        $this.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
+        $this.DirFiles = "$($this.ScriptParentPath)\Files"
+        $this.DirSupportFiles = "$($this.ScriptParentPath)\SupportFiles"
+        $this.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($adtEnv.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
@@ -117,14 +114,14 @@ class ADTSession
         }
         else
         {
-            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.Properties.DirAppDeployTemp)\ExecuteAsUser").FullName
+            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.DirAppDeployTemp)\ExecuteAsUser").FullName
         }
     }
 
     hidden [System.Void] DetectDefaultMsi()
     {
         # If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly.
-        if (![System.String]::IsNullOrWhiteSpace($this.Properties.AppName))
+        if (![System.String]::IsNullOrWhiteSpace($this.AppName))
         {
             return
         }
@@ -133,18 +130,18 @@ class ADTSession
         $adtEnv = Get-ADTEnvironment
 
         # Find the first MSI file in the Files folder and use that as our install.
-        if (!$this.Properties.DefaultMsiFile)
+        if (!$this.DefaultMsiFile)
         {
             # Get all MSI files.
-            $msiFiles = Get-ChildItem -Path "$($this.Properties.DirFiles)\*.msi" -ErrorAction Ignore
+            $msiFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore
 
-            if ($this.Properties.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($adtEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
+            if ($this.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($adtEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
             {
-                $this.WriteLogEntry("Discovered $($adtEnv.envOSArchitecture) Zero-Config MSI under $($this.Properties.DefaultMsiFile)")
+                $this.WriteLogEntry("Discovered $($adtEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
             }
-            elseif ($this.Properties.DefaultMsiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1)
+            elseif ($this.DefaultMsiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1)
             {
-                $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.Properties.DefaultMsiFile)")
+                $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.DefaultMsiFile)")
             }
             else
             {
@@ -154,38 +151,38 @@ class ADTSession
         }
         else
         {
-            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)].")
+            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.DefaultMsiFile)].")
         }
 
         try
         {
             # Discover if there is a zero-config MST file
-            if ([System.String]::IsNullOrWhiteSpace($this.Properties.DefaultMstFile))
+            if ([System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
             {
-                $this.Properties.DefaultMstFile = [System.IO.Path]::ChangeExtension($this.Properties.DefaultMsiFile, 'mst')
+                $this.DefaultMstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst')
             }
-            if ([System.IO.File]::Exists($this.Properties.DefaultMstFile))
+            if ([System.IO.File]::Exists($this.DefaultMstFile))
             {
-                $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.Properties.DefaultMstFile)].")
+                $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
             }
             else
             {
-                $this.Properties.DefaultMstFile = [System.String]::Empty
+                $this.DefaultMstFile = [System.String]::Empty
             }
 
             # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-            if (!$this.Properties.DefaultMspFiles)
+            if (!$this.DefaultMspFiles)
             {
-                $this.Properties.DefaultMspFiles = Get-ChildItem -Path "$($this.Properties.DirFiles)\*.msp" | Select-Object -ExpandProperty FullName
+                $this.DefaultMspFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msp" | Select-Object -ExpandProperty FullName
             }
-            if ($this.Properties.DefaultMspFiles)
+            if ($this.DefaultMspFiles)
             {
-                $this.WriteLogEntry("Discovered Zero-Config MSP installation file(s) [$($this.Properties.DefaultMspFiles -join ',')].")
+                $this.WriteLogEntry("Discovered Zero-Config MSP installation file(s) [$($this.DefaultMspFiles -join ',')].")
             }
 
             # Read the MSI and get the installation details.
-            $gmtpParams = @{Path = $this.Properties.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}
-            if ($this.Properties.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.Properties.DefaultMstFile)}
+            $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}
+            if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
@@ -199,10 +196,10 @@ class ADTSession
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Update our app variables with new values.
-            $this.WriteLogEntry("App Vendor [$(($this.Properties.AppVendor = $msiProps.Manufacturer))].")
-            $this.WriteLogEntry("App Name [$(($this.Properties.AppName = $msiProps.ProductName))].")
-            $this.WriteLogEntry("App Version [$(($this.Properties.AppVersion = $msiProps.ProductVersion))].")
-            $this.Properties.UseDefaultMsi = $true
+            $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
+            $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
+            $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
+            $this.UseDefaultMsi = $true
         }
         catch
         {
@@ -213,54 +210,54 @@ class ADTSession
     hidden [System.Void] SetAppProperties()
     {
         # Set up sample variables if Dot Sourcing the script, app details have not been specified
-        if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppName))
+        if ([System.String]::IsNullOrWhiteSpace($this.AppName))
         {
-            $this.Properties.AppName = ($adtEnv = Get-ADTEnvironment).appDeployToolkitName
+            $this.AppName = ($adtEnv = Get-ADTEnvironment).appDeployToolkitName
 
-            if (![System.String]::IsNullOrWhiteSpace($this.Properties.AppVendor))
+            if (![System.String]::IsNullOrWhiteSpace($this.AppVendor))
             {
-                $this.Properties.AppVendor = [System.String]::Empty
+                $this.AppVendor = [System.String]::Empty
             }
-            if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppVersion))
+            if ([System.String]::IsNullOrWhiteSpace($this.AppVersion))
             {
-                $this.Properties.AppVersion = $adtEnv.appDeployMainScriptVersion.ToString()
+                $this.AppVersion = $adtEnv.appDeployMainScriptVersion.ToString()
             }
-            if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppLang))
+            if ([System.String]::IsNullOrWhiteSpace($this.AppLang))
             {
-                $this.Properties.AppLang = $adtEnv.currentLanguage
+                $this.AppLang = $adtEnv.currentLanguage
             }
-            if ([System.String]::IsNullOrWhiteSpace($this.Properties.AppRevision))
+            if ([System.String]::IsNullOrWhiteSpace($this.AppRevision))
             {
-                $this.Properties.AppRevision = '01'
+                $this.AppRevision = '01'
             }
         }
 
         # Sanitize the application details, as they can cause issues in the script.
-        $this.Properties.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppVendor
-        $this.Properties.AppName = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppName
-        $this.Properties.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppVersion
-        $this.Properties.AppArch = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppArch
-        $this.Properties.AppLang = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppLang
-        $this.Properties.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.Properties.AppRevision
+        $this.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.AppVendor
+        $this.AppName = Remove-ADTInvalidFileNameChars -Name $this.AppName
+        $this.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.AppVersion
+        $this.AppArch = Remove-ADTInvalidFileNameChars -Name $this.AppArch
+        $this.AppLang = Remove-ADTInvalidFileNameChars -Name $this.AppLang
+        $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
     }
 
     hidden [System.Void] SetInstallProperties()
     {
         # Build the Installation Title.
-        if ([System.String]::IsNullOrWhiteSpace($this.Properties.InstallTitle))
+        if ([System.String]::IsNullOrWhiteSpace($this.InstallTitle))
         {
-            $this.Properties.InstallTitle = "$($this.Properties.AppVendor) $($this.Properties.AppName) $($this.Properties.AppVersion)".Trim() -replace '\s{2,}',' '
+            $this.InstallTitle = "$($this.AppVendor) $($this.AppName) $($this.AppVersion)".Trim() -replace '\s{2,}',' '
         }
 
         # Build the Installation Name.
-        if ([System.String]::IsNullOrWhiteSpace($this.Properties.InstallName))
+        if ([System.String]::IsNullOrWhiteSpace($this.InstallName))
         {
-            $this.Properties.InstallName = "$($this.Properties.AppVendor)_$($this.Properties.AppName)_$($this.Properties.AppVersion)_$($this.Properties.AppArch)_$($this.Properties.AppLang)_$($this.Properties.AppRevision)"
+            $this.InstallName = "$($this.AppVendor)_$($this.AppName)_$($this.AppVersion)_$($this.AppArch)_$($this.AppLang)_$($this.AppRevision)"
         }
-        $this.Properties.InstallName = ($this.Properties.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
+        $this.InstallName = ($this.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.Properties.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.Properties.InstallName)"
+        $this.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -282,31 +279,31 @@ class ADTSession
         $adtConfig = Get-ADTConfig
 
         # Generate log paths from our installation properties.
-        $this.Properties.LogTempFolder = Join-Path -Path $adtEnv.envTemp -ChildPath "$($this.Properties.InstallName)_$($this.Properties.DeploymentType)"
+        $this.LogTempFolder = Join-Path -Path $adtEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
         if ($adtConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-            if ([System.IO.Directory]::Exists($this.Properties.LogTempFolder))
+            if ([System.IO.Directory]::Exists($this.LogTempFolder))
             {
-                [System.IO.Directory]::Remove($this.Properties.LogTempFolder, $true)
+                [System.IO.Directory]::Remove($this.LogTempFolder, $true)
             }
-            $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($this.Properties.LogTempFolder).FullName
+            $this.LogPath = [System.IO.Directory]::CreateDirectory($this.LogTempFolder).FullName
             
         }
         else
         {
-            $this.Properties.LogPath = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath).FullName
+            $this.LogPath = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath).FullName
         }
 
         # Generate the log filename to use.
-        $this.Properties.LogName = "$($this.Properties.InstallName)_$($adtEnv.appDeployToolkitName)_$($this.Properties.DeploymentType).log"
-        $this.Properties.LogFile = Join-Path -Path $this.Properties.LogPath -ChildPath $this.Properties.LogName
+        $this.LogName = "$($this.InstallName)_$($adtEnv.appDeployToolkitName)_$($this.DeploymentType).log"
+        $this.LogFile = Join-Path -Path $this.LogPath -ChildPath $this.LogName
 
         # Check if log file needs to be rotated.
-        if ([System.IO.File]::Exists($this.Properties.LogFile) -and !$adtConfig.Toolkit.LogAppend)
+        if ([System.IO.File]::Exists($this.LogFile) -and !$adtConfig.Toolkit.LogAppend)
         {
-            $logFile = [System.IO.FileInfo]$this.Properties.LogFile
-            $logFileSizeMB = $logFile.Length / 1MB
+            $logFileInfo = [System.IO.FileInfo]$this.LogFile
+            $logFileSizeMB = $logFileInfo.Length / 1MB
 
             # Rotate if we've exceeded the size already.
             if (($adtConfig.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $adtConfig.Toolkit.LogMaxSize))
@@ -314,23 +311,23 @@ class ADTSession
                 try
                 {
                     # Get new log file path.
-                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($this.Properties.LogFile)
-                    $logFileExtension = [IO.Path]::GetExtension($this.Properties.LogFile)
-                    $Timestamp = $logFile.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($this.LogFile)
+                    $logFileExtension = [IO.Path]::GetExtension($this.LogFile)
+                    $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
                     $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
-                    [String]$ArchiveLogFilePath = Join-Path -Path $this.Properties.LogPath -ChildPath $ArchiveLogFileName
+                    [String]$ArchiveLogFilePath = Join-Path -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
                     # Log message about archiving the log file.
                     $this.WriteLogEntry("Maximum log file size [$($adtConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
 
                     # Rename the file
-                    Move-Item -LiteralPath $logFile -Destination $ArchiveLogFilePath -Force
+                    Move-Item -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
 
                     # Start new log file and log message about archiving the old log file.
                     $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($adtConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
-                    $logFiles = $(Get-ChildItem -LiteralPath $this.Properties.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.Properties.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
+                    $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
 
                     # Keep only the max number of log files
                     if ($logFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
@@ -340,14 +337,14 @@ class ADTSession
                 }
                 catch
                 {
-                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.Properties.InstallPhase) :: Failed to rotate the log file [$($this.Properties.LogFile)].`n$(Resolve-ADTError)" -ForegroundColor Red
+                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($this.LogFile)].`n$(Resolve-ADTError)" -ForegroundColor Red
                 }
             }
         }
 
         # Open log file with commencement message.
         $this.WriteLogDivider(2)
-        $this.WriteLogEntry("[$($this.Properties.InstallName)] setup started.")
+        $this.WriteLogEntry("[$($this.InstallName)] setup started.")
     }
 
     hidden [System.Void] LogScriptInfo()
@@ -356,25 +353,25 @@ class ADTSession
         $adtEnv = Get-ADTEnvironment
 
         # Announce provided deployment script info.
-        if ($this.Properties.AppScriptVersion)
+        if ($this.AppScriptVersion)
         {
-            $this.WriteLogEntry("[$($this.Properties.InstallName)] script version is [$($this.Properties.AppScriptVersion)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script version is [$($this.AppScriptVersion)]")
         }
-        if ($this.Properties.AppScriptDate)
+        if ($this.AppScriptDate)
         {
-            $this.WriteLogEntry("[$($this.Properties.InstallName)] script date is [$($this.Properties.AppScriptDate)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script date is [$($this.AppScriptDate)]")
         }
-        if ($this.Properties.AppScriptAuthor)
+        if ($this.AppScriptAuthor)
         {
-            $this.WriteLogEntry("[$($this.Properties.InstallName)] script author is [$($this.Properties.AppScriptAuthor)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script author is [$($this.AppScriptAuthor)]")
         }
-        if ($this.Properties.DeployAppScriptFriendlyName)
+        if ($this.DeployAppScriptFriendlyName)
         {
-            $this.WriteLogEntry("[$($this.Properties.DeployAppScriptFriendlyName)] script version is [$($this.Properties.DeployAppScriptVersion)]")
+            $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)]")
         }
-        if ($this.Properties.DeployAppScriptParameters.Count)
+        if ($this.DeployAppScriptParameters.Count)
         {
-            $this.WriteLogEntry("The following parameters were passed to [$($this.Properties.DeployAppScriptFriendlyName)]: [$($this.Properties.deployAppScriptParameters | Resolve-ADTBoundParameters)]")
+            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.deployAppScriptParameters | Resolve-ADTBoundParameters)]")
         }
         $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] module version is [$((Get-ADTModuleInfo).Version)]")
 
@@ -436,7 +433,7 @@ class ADTSession
             if ($adtConfig.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
             {
                 $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.")
-                $this.Properties.DeployMode = 'Silent'
+                $this.DeployMode = 'Silent'
             }
 
             # Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
@@ -493,7 +490,7 @@ class ADTSession
         # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
         if ($adtEnv.IsLocalSystemAccount)
         {
-            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($this.Properties.IsTaskSchedulerHealthy).")
+            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($this.IsTaskSchedulerHealthy).")
         }
         else
         {
@@ -504,22 +501,22 @@ class ADTSession
         if ($adtEnv.SessionZero)
         {
             # If the script was launched with deployment mode set to NonInteractive, then continue
-            if ($this.Properties.DeployMode -eq 'NonInteractive')
+            if ($this.DeployMode -eq 'NonInteractive')
             {
-                $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.Properties.DeployMode)].")
+                $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.DeployMode)].")
             }
             elseif ((Get-ADTConfig).Toolkit.SessionDetection)
             {
                 # If the process is not able to display a UI, enable NonInteractive mode
                 if (!$adtEnv.IsProcessUserInteractive)
                 {
-                    $this.Properties.DeployMode = 'NonInteractive'
-                    $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.Properties.DeployMode)].")
+                    $this.DeployMode = 'NonInteractive'
+                    $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.DeployMode)].")
                 }
                 elseif (!$adtEnv.usersLoggedOn)
                 {
-                    $this.Properties.DeployMode = 'NonInteractive'
-                    $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.Properties.DeployMode)].")
+                    $this.DeployMode = 'NonInteractive'
+                    $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.DeployMode)].")
                 }
                 else
                 {
@@ -540,8 +537,8 @@ class ADTSession
     hidden [System.Void] SetDeploymentProperties()
     {
         # Set Deploy Mode switches.
-        $this.WriteLogEntry("Installation is running in [$($this.Properties.DeployMode)] mode.")
-        switch ($this.Properties.DeployMode)
+        $this.WriteLogEntry("Installation is running in [$($this.DeployMode)] mode.")
+        switch ($this.DeployMode)
         {
             Silent {
                 $this.DeployModeNonInteractive = $true
@@ -555,15 +552,15 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.WriteLogEntry("Deployment type is [$(($this.Internal.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.Properties.DeploymentType)))].")
+        $this.WriteLogEntry("Deployment type is [$(($this.Internal.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.DeploymentType)))].")
     }
 
     hidden [System.Void] TestDefaultMsi()
     {
         # Advise the caller if a zero-config MSI was found.
-        if ($this.Properties.UseDefaultMsi)
+        if ($this.UseDefaultMsi)
         {
-            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.Properties.DefaultMsiFile)].")
+            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.DefaultMsiFile)].")
         }
     }
 
@@ -586,7 +583,7 @@ class ADTSession
     hidden [System.Void] PerformTerminalServerTests()
     {
         # If terminal server mode was specified, change the installation mode to support it
-        if ($this.Properties.TerminalServerMode)
+        if ($this.TerminalServerMode)
         {
             Enable-TerminalServerInstallMode
         }
@@ -603,7 +600,7 @@ class ADTSession
         }
         else
         {
-            return $this.Properties.$Name
+            return $this.$Name
         }
     }
 
@@ -617,7 +614,7 @@ class ADTSession
         }
         else
         {
-            $this.Properties[$Name] = $Value
+            $this.$Name = $Value
         }
     }
 
@@ -630,7 +627,7 @@ class ADTSession
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        $($this.Properties.Keys).ForEach({$this.Properties.$_ = $this.GetPropertyValue($_)})
+        $this.PSObject.Properties.Name.ForEach({$this.$_ = $this.GetPropertyValue($_)})
     }
 
     [System.Void] Open()
@@ -658,17 +655,17 @@ class ADTSession
         $this.PerformTerminalServerTests()
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
-        $this.Properties.InstallPhase = 'Execution'
+        $this.InstallPhase = 'Execution'
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.Internal.LegacyMode)
         {
-            $this.Properties.GetEnumerator().ForEach({$this.Internal.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
+            $this.PSObject.Properties.ForEach({$this.Internal.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
         }
 
         # Set PowerShell window title, in case the window is visible.
-        $Global:Host.UI.RawUI.WindowTitle = "$($this.Properties.InstallTitle) - $($this.Properties.DeploymentType)" -replace '\s{2,}',' '
+        $Global:Host.UI.RawUI.WindowTitle = "$($this.InstallTitle) - $($this.DeploymentType)" -replace '\s{2,}',' '
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
         $this.Internal.Initialised = $true
@@ -817,15 +814,15 @@ class ADTSession
         $whParams = $Script:Logging.SeverityColours[$Severity]
         $logLine = $logFormats[$adtConfig.Toolkit.LogStyle -ieq 'CMTrace']
         $conLine = $logFormats[0]
-        $logFile = $this.GetPropertyValue('LogFile')
-        $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($logFile)
+        $outFile = $this.GetPropertyValue('LogFile')
+        $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
         # If the message is not $null or empty, create the log entry for the different logging methods.
         $Message.Where({![System.String]::IsNullOrWhiteSpace($_)}).ForEach({
             # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)
             {
-                [System.String]::Format($logLine, $_) | Out-File -LiteralPath $logFile -Append -NoClobber -Force -Encoding UTF8
+                [System.String]::Format($logLine, $_) | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
 
             # Return early if we're not configured to write to the host.
