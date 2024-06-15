@@ -16,6 +16,6 @@
     {
         $adtData.Sessions[$i] = [ADTSession]::new($adtData.Sessions[$i])
         $adtData.Sessions[$i].InstallPhase = 'Asynchronous'
-        $adtData.Sessions[$i].Internal.LegacyMode = $false
+        $adtData.Sessions[$i].Internal.CompatibilityMode = $false
     }
 }
