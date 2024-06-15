@@ -13,6 +13,7 @@ class ADTSession
         DefaultMsiExecutablesList = $null
         CallerVariableIntrinsics = $null
         LoggedOnUserTempPath = [System.String]::Empty
+        RegKeyDeferHistory = [System.String]::Empty
         DeploymentTypeName = [System.String]::Empty
         DeployModeNonInteractive = $false
         DeployModeSilent = $false
@@ -67,7 +68,6 @@ class ADTSession
     [System.String]$LogPath
     [System.String]$LogName
     [System.String]$LogFile
-    [System.String]$RegKeyDeferHistory
 
     # Constructors.
     ADTSession([System.Management.Automation.PSCmdlet]$Cmdlet)
@@ -257,7 +257,7 @@ class ADTSession
         $this.InstallName = ($this.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.InstallName)"
+        $this.Internal.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -693,10 +693,10 @@ class ADTSession
         if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
         {
             # Clean up app deferral history.
-            if (Test-Path -LiteralPath $this.GetPropertyValue('RegKeyDeferHistory'))
+            if (Test-Path -LiteralPath $this.GetRegKeyDeferHistory())
             {
                 $this.WriteLogEntry('Removing deferral history...')
-                Remove-RegistryKey -Key $this.GetPropertyValue('RegKeyDeferHistory') -Recurse
+                Remove-RegistryKey -Key $this.GetRegKeyDeferHistory() -Recurse
             }
 
             # Handle reboot prompts on successful script completion.
@@ -872,6 +872,11 @@ class ADTSession
     [System.String] GetLoggedOnUserTempPath()
     {
         return $this.Internal.LoggedOnUserTempPath
+    }
+
+    [System.String] GetRegKeyDeferHistory()
+    {
+        return $this.Internal.RegKeyDeferHistory
     }
 
     [System.String] GetDeploymentTypeName()
