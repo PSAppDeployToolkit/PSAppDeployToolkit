@@ -62,7 +62,7 @@ class ADTSession
     [System.String]$DirAppDeployTemp
     [System.String]$DefaultMsiFile
     [System.String]$DefaultMstFile
-    [System.String]$DefaultMspFiles
+    [System.String[]]$DefaultMspFiles
     [System.Boolean]$UseDefaultMsi
     [System.String]$LogTempFolder
     [System.String]$LogPath
@@ -154,10 +154,8 @@ class ADTSession
         # Find the first MSI file in the Files folder and use that as our install.
         if (!$this.DefaultMsiFile)
         {
-            # Get all MSI files.
-            $msiFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore
-
-            if ($this.DefaultMsiFile = $msiFiles | Where-Object {$_.Name.EndsWith(".$($adtEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
+            # Get all MSI files and return early if we haven't found anything.
+            if ($this.DefaultMsiFile = ($msiFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | Where-Object {$_.Name.EndsWith(".$($adtEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
             {
                 $this.WriteLogEntry("Discovered $($adtEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
             }
@@ -167,7 +165,6 @@ class ADTSession
             }
             else
             {
-                # Return early if we haven't found anything.
                 return
             }
         }
@@ -203,8 +200,7 @@ class ADTSession
             }
 
             # Read the MSI and get the installation details.
-            $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}
-            if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
+            $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}; if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
@@ -214,7 +210,7 @@ class ADTSession
             }
 
             # Change table and get properties from it.
-            $gmtpParams.Set_Item('Table', 'Property')
+            $gmtpParams.set_Item('Table', 'Property')
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Update our app variables with new values.
