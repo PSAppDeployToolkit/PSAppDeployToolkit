@@ -902,11 +902,6 @@ class ADTSession
         return $this.Internal.DeploymentTypeName
     }
 
-    [System.Void] SetBlockExecution([System.Boolean]$value)
-    {
-        $this.Internal.BlockExecution = $value
-    }
-
     [System.Boolean] IsNonInteractive()
     {
         return $this.Internal.DeployModeNonInteractive

@@ -532,8 +532,6 @@
         # If block execution switch is true, call the function to block execution of these processes.
         if ($BlockExecution)
         {
-            # Make this variable globally available so we can check whether we need to call Unblock-AppExecution
-            $adtSession.SetBlockExecution($BlockExecution)
             Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
             Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty ProcessName)
         }
