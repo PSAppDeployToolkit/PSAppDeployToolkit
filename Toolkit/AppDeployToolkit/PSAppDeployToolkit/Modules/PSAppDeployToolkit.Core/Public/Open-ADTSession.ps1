@@ -99,11 +99,8 @@
         [System.String]$DeployAppScriptDate
     )
 
-    # Cache the module's global data.
-    $adtData = Get-ADT
-
     # Clamp the session count at one, for now.
-    if ($adtData.Sessions.Count)
+    if (($adtData = Get-ADT).Sessions.Count)
     {
         throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted at this time.")
     }
@@ -112,7 +109,7 @@
     [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
 
     # Instantiate a new ADT session and initialise it.
-    $adtData.Sessions.Add([ADTSession]::new($PSBoundParameters))
+    $adtData.Sessions.Add($PSBoundParameters)
     try
     {
         $adtData.Sessions[-1].Open()
