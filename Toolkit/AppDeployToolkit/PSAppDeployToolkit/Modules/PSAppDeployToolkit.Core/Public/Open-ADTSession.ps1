@@ -67,6 +67,18 @@
         [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultMsiFile,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultMstFile,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$DefaultMspFiles,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [AllowEmptyString()]
         [System.String]$InstallName,
 
