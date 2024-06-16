@@ -14,7 +14,7 @@
     # Create new object based on serialised state and configure for async operations.
     for ($i = 0; $i -lt ($adtData = Get-ADT).Sessions.Count; $i++)
     {
-        $adtData.Sessions[$i] = [ADTSession]::new($adtData.Sessions[$i])
+        $adtData.Sessions[$i] = [ADTSession]$adtData.Sessions[$i]
         $adtData.Sessions[$i].InstallPhase = 'Asynchronous'
         $adtData.Sessions[$i].Internal.CompatibilityMode = $false
     }
