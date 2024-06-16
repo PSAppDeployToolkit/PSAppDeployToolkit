@@ -648,7 +648,7 @@ class ADTSession
         $this.PSObject.Properties.Name.ForEach({if ($value = $this.GetPropertyValue($_)) {$this.$_ = $value}})
     }
 
-    [System.Void] Open()
+    hidden [System.Void] Open()
     {
         # Ensure this session isn't being opened twice.
         if ($this.Internal.Initialised)
@@ -689,7 +689,7 @@ class ADTSession
         $this.Internal.Initialised = $true
     }
 
-    [System.Void] Close([System.Int32]$ExitCode)
+    hidden [System.Void] Close([System.Int32]$ExitCode)
     {
         # Get the current config and strings.
         $adtConfig = Get-ADTConfig
