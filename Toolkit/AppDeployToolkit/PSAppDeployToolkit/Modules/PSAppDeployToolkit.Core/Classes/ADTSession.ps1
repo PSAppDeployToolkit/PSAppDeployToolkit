@@ -1,10 +1,4 @@
-﻿#---------------------------------------------------------------------------
-#
-# 
-#
-#---------------------------------------------------------------------------
-
-class ADTSession
+﻿class ADTSession
 {
     # Internal variables that aren't for public access.
     hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
