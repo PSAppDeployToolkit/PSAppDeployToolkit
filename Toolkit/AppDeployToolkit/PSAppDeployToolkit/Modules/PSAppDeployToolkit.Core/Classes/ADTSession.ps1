@@ -645,7 +645,7 @@ class ADTSession
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        $this.PSObject.Properties.Name.ForEach({$this.$_ = $this.GetPropertyValue($_)})
+        $this.PSObject.Properties.Name.ForEach({if ($value = $this.GetPropertyValue($_)) {$this.$_ = $value}})
     }
 
     [System.Void] Open()
