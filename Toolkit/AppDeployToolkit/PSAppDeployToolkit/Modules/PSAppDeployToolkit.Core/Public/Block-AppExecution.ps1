@@ -117,6 +117,9 @@ https://psappdeploytoolkit.com
             Return
         }
 
+        # Flag that we're blocking execution.
+        $adtSession.Internal.BlockExecution = $true
+
         [String]$schTaskBlockedAppsName = $adtSession.GetPropertyValue('installName') + '_BlockedApps'
 
         ## Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit)
