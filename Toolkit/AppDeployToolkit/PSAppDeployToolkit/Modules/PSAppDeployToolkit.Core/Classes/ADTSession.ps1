@@ -40,13 +40,13 @@ class ADTSession
     [System.String]$AppRevision
     [System.Int32[]]$AppExitCodes = 0
     [System.Int32[]]$AppRebootCodes = 1641, 3010
-    [System.String]$AppScriptVersion
+    [System.Version]$AppScriptVersion
     [System.String]$AppScriptDate
     [System.String]$AppScriptAuthor
     [System.String]$InstallName
     [System.String]$InstallTitle
     [System.String]$DeployAppScriptFriendlyName
-    [System.String]$DeployAppScriptVersion
+    [System.Version]$DeployAppScriptVersion
     [System.String]$DeployAppScriptDate
     [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters
     [System.String]$InstallPhase = 'Initialization'

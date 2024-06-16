@@ -97,7 +97,7 @@ $adtSession = @{
     AppRevision = '01'
     AppExitCodes = @(0)
     AppRebootCodes = @(1641, 3010)
-    AppScriptVersion = '1.0.0'
+    AppScriptVersion = [System.Version]'1.0.0'
     AppScriptDate = 'XX/XX/20XX'
     AppScriptAuthor = '<author name>'
 
