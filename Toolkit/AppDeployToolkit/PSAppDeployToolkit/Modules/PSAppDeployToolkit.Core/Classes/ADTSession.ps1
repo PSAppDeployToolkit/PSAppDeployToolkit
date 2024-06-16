@@ -56,7 +56,7 @@ class ADTSession
     [System.String]$CurrentTime
     [System.String]$CurrentDate
     [System.TimeSpan]$CurrentTimeZoneBias
-    [System.String]$ScriptParentPath
+    [System.String]$ScriptDirectory
     [System.String]$DirFiles
     [System.String]$DirSupportFiles
     [System.String]$DirAppDeployTemp
@@ -123,9 +123,9 @@ class ADTSession
         $this.Internal.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
-        $this.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
-        $this.DirFiles = "$($this.ScriptParentPath)\Files"
-        $this.DirSupportFiles = "$($this.ScriptParentPath)\SupportFiles"
+        $this.ScriptDirectory = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
+        $this.DirFiles = "$($this.ScriptDirectory)\Files"
+        $this.DirSupportFiles = "$($this.ScriptDirectory)\SupportFiles"
         $this.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($adtEnv.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.

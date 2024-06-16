@@ -218,7 +218,7 @@
                 {
                     # Determine the size of the Files folder
                     $fso = New-Object -ComObject Scripting.FileSystemObject
-                    $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptParentPath')).Size / 1MB)
+                    $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptDirectory')).Size / 1MB)
                 }
                 catch
                 {
