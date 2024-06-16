@@ -56,7 +56,7 @@
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppScriptVersion,
+        [System.Version]$AppScriptVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [ValidateNotNullOrEmpty()]
