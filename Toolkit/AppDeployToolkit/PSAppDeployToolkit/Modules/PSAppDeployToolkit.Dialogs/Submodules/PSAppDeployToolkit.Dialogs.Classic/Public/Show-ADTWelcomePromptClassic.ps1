@@ -1,4 +1,4 @@
-﻿function Show-ADTClassicWelcomePrompt
+﻿function Show-ADTWelcomePromptClassic
 {
     <#
 
@@ -52,7 +52,7 @@
     System.String. Returns the user's selection.
 
     .EXAMPLE
-    Show-ADTClassicWelcomePrompt -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
+    Show-ADTWelcomePromptClassic -CloseAppsCountdown 600 -AllowDefer -DeferTimes 10
 
     .NOTES
     This is an internal script function and should typically not be called directly. It is used by the Show-ADTInstallationWelcome prompt to display a custom prompt.

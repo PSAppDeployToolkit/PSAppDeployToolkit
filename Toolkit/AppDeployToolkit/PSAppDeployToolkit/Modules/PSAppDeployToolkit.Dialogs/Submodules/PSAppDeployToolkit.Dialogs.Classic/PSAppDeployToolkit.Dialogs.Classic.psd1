@@ -68,13 +68,13 @@ PowerShellVersion = '5.1'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Close-ADTClassicInstallationProgress'
-    'Show-ADTClassicBalloonTip'
-    'Show-ADTClassicBlockedAppDialog'
-    'Show-ADTClassicInstallationProgress'
-    'Show-ADTClassicInstallationPrompt'
-    'Show-ADTClassicInstallationRestartPrompt'
-    'Show-ADTClassicWelcomePrompt'
+    'Close-ADTInstallationProgressClassic'
+    'Show-ADTBalloonTipClassic'
+    'Show-ADTBlockedAppDialogClassic'
+    'Show-ADTInstallationProgressClassic'
+    'Show-ADTInstallationPromptClassic'
+    'Show-ADTInstallationRestartPromptClassic'
+    'Show-ADTWelcomePromptClassic'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

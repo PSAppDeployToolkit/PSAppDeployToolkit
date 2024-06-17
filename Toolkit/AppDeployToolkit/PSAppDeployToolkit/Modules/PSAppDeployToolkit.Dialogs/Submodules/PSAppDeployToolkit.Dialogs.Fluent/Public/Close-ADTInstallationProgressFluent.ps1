@@ -1,12 +1,12 @@
-﻿function Close-ADTFluentInstallationProgress
+﻿function Close-ADTInstallationProgressFluent
 {
     <#
 
     .SYNOPSIS
-    Closes the dialog created by Show-ADTFluentInstallationProgress.
+    Closes the dialog created by Show-ADTInstallationProgressFluent.
 
     .DESCRIPTION
-    Closes the dialog created by Show-ADTFluentInstallationProgress.
+    Closes the dialog created by Show-ADTInstallationProgressFluent.
 
     This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
@@ -17,7 +17,7 @@
     None. This function does not generate any output.
 
     .EXAMPLE
-    Close-ADTFluentInstallationProgress
+    Close-ADTInstallationProgressFluent
 
     .NOTES
     This is an internal script function and should typically not be called directly.

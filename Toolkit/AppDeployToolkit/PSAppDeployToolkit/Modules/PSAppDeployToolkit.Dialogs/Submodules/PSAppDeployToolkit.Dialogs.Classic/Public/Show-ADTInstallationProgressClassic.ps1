@@ -1,4 +1,4 @@
-﻿function Show-ADTClassicInstallationProgress
+﻿function Show-ADTInstallationProgressClassic
 {
     <#
 
@@ -36,16 +36,16 @@
 
     .EXAMPLE
     # Use the default status message from the configuration file.
-    Show-ADTClassicInstallationProgress
+    Show-ADTInstallationProgressClassic
 
     .EXAMPLE
-    Show-ADTClassicInstallationProgress -StatusMessage 'Installation in Progress...'
+    Show-ADTInstallationProgressClassic -StatusMessage 'Installation in Progress...'
 
     .EXAMPLE
-    Show-ADTClassicInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
+    Show-ADTInstallationProgressClassic -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
 
     .EXAMPLE
-    Show-ADTClassicInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
+    Show-ADTInstallationProgressClassic -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 
     .LINK
     https://psappdeploytoolkit.com
@@ -144,7 +144,7 @@
         if (!$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-ADTClassicBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
+            Show-ADTBalloonTipClassic -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
 
             # Load up the XML file.
             $adtConfig = Get-ADTConfig
@@ -224,7 +224,7 @@
                 if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
                 {
                     Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-ADTError -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
-                    Close-ADTClassicInstallationProgress
+                    Close-ADTInstallationProgressClassic
                     break
                 }
                 elseif ($Script:ProgressWindow.Invocation.IsCompleted)
@@ -240,7 +240,7 @@
                     finally
                     {
                         $Script:ProgressWindow.Invocation = $null
-                        Close-ADTClassicInstallationProgress
+                        Close-ADTInstallationProgressClassic
                     }
                     break
                 }

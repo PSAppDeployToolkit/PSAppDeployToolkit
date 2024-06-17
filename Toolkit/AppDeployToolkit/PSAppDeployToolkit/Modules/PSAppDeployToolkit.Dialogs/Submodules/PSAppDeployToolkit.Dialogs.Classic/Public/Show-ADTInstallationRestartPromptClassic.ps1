@@ -1,4 +1,4 @@
-﻿function Show-ADTClassicInstallationRestartPrompt
+﻿function Show-ADTInstallationRestartPromptClassic
 {
     <#
 
@@ -35,13 +35,13 @@
     System.String. Returns the version of the specified file.
 
     .EXAMPLE
-    Show-ADTClassicInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+    Show-ADTInstallationRestartPromptClassic -CountdownSeconds 600 -CountdownNoHideSeconds 60
 
     .EXAMPLE
-    Show-ADTClassicInstallationRestartPrompt -NoCountdown
+    Show-ADTInstallationRestartPromptClassic -NoCountdown
 
     .EXAMPLE
-    Show-ADTClassicInstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
+    Show-ADTInstallationRestartPromptClassic -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
 
     .NOTES
     Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
