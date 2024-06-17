@@ -90,7 +90,7 @@ param (
 $adtSession = @{
     # App variables.
     AppVendor = 'VideoLAN'
-    AppName = 'VLC Media Player'
+    AppName = 'VLC media player'
     AppVersion = '3.0.21'
     AppArch = 'x64'
     AppLang = 'EN'
@@ -99,7 +99,7 @@ $adtSession = @{
     AppRebootCodes = @(1641, 3010)
     AppScriptVersion = [System.Version]'1.0.0'
     AppScriptDate = '13/06/2024'
-    AppScriptAuthor = 'PsAppDeployToolkit'
+    AppScriptAuthor = 'PSAppDeployToolkit'
 
     # Install Titles (Only set here to override defaults set by the toolkit).
     InstallName = ''
@@ -126,7 +126,7 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close VLC if required, allow up to 3 deferrals, and persist the prompt
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'} -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'; ProcessDescription = $adtSession.AppName} -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

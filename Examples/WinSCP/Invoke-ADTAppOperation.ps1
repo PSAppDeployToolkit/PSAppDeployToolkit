@@ -99,7 +99,7 @@ $adtSession = @{
     AppRebootCodes = @(1641, 3010)
     AppScriptVersion = [System.Version]'1.0.0'
     AppScriptDate = '13/06/2024'
-    AppScriptAuthor = 'PsAppDeployToolkit'
+    AppScriptAuthor = 'PSAppDeployToolkit'
 
     # Install Titles (Only set here to override defaults set by the toolkit).
     InstallName = ''
@@ -126,7 +126,7 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'} -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'; ProcessDescription = $adtSession.AppName} -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
