@@ -172,7 +172,7 @@ function Install-ADTApplication
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
     {
-        Show-ADTInstallationPrompt -Message "$appName installation complete." -ButtonRightText 'OK' -Icon Information -NoWait
+        Show-ADTInstallationPrompt -Message "$($adtSession.AppName) installation complete." -ButtonRightText 'OK' -Icon Information -NoWait
     }
 }
 
