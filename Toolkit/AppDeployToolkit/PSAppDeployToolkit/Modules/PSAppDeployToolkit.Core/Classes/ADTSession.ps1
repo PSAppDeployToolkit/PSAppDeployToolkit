@@ -13,6 +13,7 @@
         DeployModeSilent = $false
         BlockExecution = $false
         Initialised = $false
+        Finalised = $false
         ExitCode = 0
     }
 
@@ -761,6 +762,8 @@
         # Write out a log divider to indicate the end of logging.
         $this.WriteLogEntry('-' * 79)
         $this.SetPropertyValue('DisableLogging', $true)
+        $Global:Host.UI.RawUI.WindowTitle = $this.Internal.OldPSWindowTitle
+        $this.Internal.Finalised = $true
 
         # Archive the log files to zip format and then delete the temporary logs folder.
         if ($adtConfig.Toolkit.CompressLogs)
@@ -785,9 +788,6 @@
                 Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTError)" -ForegroundColor Red
             }
         }
-
-        # Reset powershell window title to its previous title.
-        $Global:Host.UI.RawUI.WindowTitle = $this.Internal.OldPSWindowTitle
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
