@@ -200,7 +200,7 @@
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
-            if ($this.Internal.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {[pscustomobject]@{ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
+            if ($this.Internal.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
             {
                 $this.WriteLogEntry("MSI Executable List [$($this.Internal.DefaultMsiExecutablesList.ProcessName)].")
             }
