@@ -66,5 +66,5 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Show-ADTClassicInstallationRestartPrompt @PSBoundParameters
+    Show-ADTInstallationRestartPromptClassic @PSBoundParameters
 }

@@ -1,4 +1,4 @@
 ﻿function Show-ADTBlockedAppDialog
 {
-    Show-ADTClassicBlockedAppDialog
+    Show-ADTBlockedAppDialogClassic
 }

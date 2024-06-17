@@ -1,4 +1,4 @@
-﻿function Show-ADTClassicInstallationPrompt
+﻿function Show-ADTInstallationPromptClassic
 {
     <#
 
@@ -54,13 +54,13 @@
     None. This function does not generate any output.
 
     .EXAMPLE
-    Show-ADTClassicInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
+    Show-ADTInstallationPromptClassic -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
 
     .EXAMPLE
-    Show-ADTClassicInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
+    Show-ADTInstallationPromptClassic -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 
     .EXAMPLE
-    Show-ADTClassicInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
+    Show-ADTInstallationPromptClassic -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
 
     .LINK
     https://psappdeploytoolkit.com
@@ -387,7 +387,7 @@
         # Close the Installation Progress Dialog if running
         if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
-            Close-ADTClassicInstallationProgress
+            Close-ADTInstallationProgressClassic
         }
         Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters)]."
 

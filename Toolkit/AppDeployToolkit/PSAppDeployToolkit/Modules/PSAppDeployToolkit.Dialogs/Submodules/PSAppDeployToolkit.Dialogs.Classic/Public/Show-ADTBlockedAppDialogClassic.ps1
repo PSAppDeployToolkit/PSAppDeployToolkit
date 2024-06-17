@@ -1,4 +1,4 @@
-﻿function Show-ADTClassicBlockedAppDialog
+﻿function Show-ADTBlockedAppDialogClassic
 {
     # Return early if someone happens to call this in a non-async mode.
     if (!($adtSession = Get-ADTSession).GetPropertyValue('InstallPhase').Equals('Asynchronous'))

@@ -116,5 +116,5 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Show-ADTClassicInstallationPrompt @PSBoundParameters
+    Show-ADTInstallationPromptClassic @PSBoundParameters
 }

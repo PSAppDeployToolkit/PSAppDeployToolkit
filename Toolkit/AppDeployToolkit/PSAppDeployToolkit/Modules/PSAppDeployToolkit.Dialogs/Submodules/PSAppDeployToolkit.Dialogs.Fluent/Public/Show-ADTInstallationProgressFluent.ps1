@@ -1,4 +1,4 @@
-﻿function Show-ADTFluentInstallationProgress
+﻿function Show-ADTInstallationProgressFluent
 {
     <#
 
@@ -42,16 +42,16 @@
 
     .EXAMPLE
     # Use the default status message from the configuration file.
-    Show-ADTFluentInstallationProgress
+    Show-ADTInstallationProgressFluent
 
     .EXAMPLE
-    Show-ADTFluentInstallationProgress -StatusMessage 'Installation in Progress...'
+    Show-ADTInstallationProgressFluent -StatusMessage 'Installation in Progress...'
 
     .EXAMPLE
-    Show-ADTFluentInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
+    Show-ADTInstallationProgressFluent -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
 
     .EXAMPLE
-    Show-ADTFluentInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
+    Show-ADTInstallationProgressFluent -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 
     .LINK
     https://psappdeploytoolkit.com
@@ -175,7 +175,7 @@
         if (!$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-ADTFluentBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
+            Show-ADTBalloonTipFluent -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
 
             # Instantiate a new progress window object and start it up.
             Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
