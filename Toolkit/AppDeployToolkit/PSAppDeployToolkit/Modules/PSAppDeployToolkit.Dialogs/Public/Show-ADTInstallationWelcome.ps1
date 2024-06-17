@@ -127,7 +127,7 @@
     param (
         [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{ProcessName = "winword"; ProcessDescription = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject[]]$ProcessObjects,
+        [ADTProcessObject[]]$ProcessObjects,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [System.Management.Automation.SwitchParameter]$Silent,
@@ -205,7 +205,7 @@
         # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
         if ($adtSession.GetPropertyValue('UseDefaultMsi'))
         {
-            $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
+            $ProcessObjects = $($ProcessObjects; [ADTProcessObject[]]$adtSession.GetDefaultMsiExecutablesList())
         }
 
         # Check disk space requirements if specified
