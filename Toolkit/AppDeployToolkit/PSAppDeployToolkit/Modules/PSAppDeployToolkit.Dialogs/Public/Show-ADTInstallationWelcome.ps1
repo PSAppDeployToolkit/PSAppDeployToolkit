@@ -327,7 +327,7 @@
             }
         }
 
-        if (($deferTimes -lt 0) -and !$deferDeadlineUniversal)
+        if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
         {
             $AllowDefer = $false
         }
@@ -374,7 +374,7 @@
                     elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
                     {
                         # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
-                        $deferParams = @{AllowDefer = $true; DeferTimes = $deferTimes}
+                        $deferParams = @{AllowDefer = $true; DeferTimes = $DeferTimes}
                         if ($deferDeadlineUniversal) {$deferParams.Add('DeferDeadline', $deferDeadlineUniversal)}
                         [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
                     }
@@ -484,7 +484,7 @@
                     # Stop the script (if not actioned before the timeout value).
                     Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
                     $BlockExecution = $false
-                    if (($deferTimes -ge 0) -or $deferDeadlineUniversal)
+                    if (($DeferTimes -ge 0) -or $deferDeadlineUniversal)
                     {
                         Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
                     }
