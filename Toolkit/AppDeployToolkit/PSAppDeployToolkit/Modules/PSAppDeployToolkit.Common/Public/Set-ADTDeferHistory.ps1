@@ -45,7 +45,7 @@
     }
 
     process {
-        if ($DeferTimesRemaining -and ($DeferTimesRemaining -ge 0))
+        if ($null -ne $DeferTimesRemaining)
         {
             Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
             Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ContinueOnError $true
