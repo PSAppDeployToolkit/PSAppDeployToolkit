@@ -100,9 +100,9 @@
     )
 
     # Clamp the session count at one, for now.
-    if (($adtData = Get-ADT).Sessions.Count)
+    if (($adtData = Get-ADT).Sessions.Count -and (($adtData.Sessions.Internal.CompatibilityMode -contains $true) -or (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')))
     {
-        throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted at this time.")
+        throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted for non-native invocations.")
     }
 
     # Instantiate a new ADT session and initialise it.
