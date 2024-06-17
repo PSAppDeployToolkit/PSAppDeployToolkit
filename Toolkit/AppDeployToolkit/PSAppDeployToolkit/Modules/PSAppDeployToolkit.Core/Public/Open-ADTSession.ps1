@@ -105,9 +105,6 @@
         throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted at this time.")
     }
 
-    # Sanitise string inputs before instantiating a new session.
-    [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
-
     # Instantiate a new ADT session and initialise it.
     $adtData.Sessions.Add($PSBoundParameters)
     try

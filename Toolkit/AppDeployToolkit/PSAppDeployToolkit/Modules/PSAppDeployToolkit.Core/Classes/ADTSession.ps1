@@ -113,7 +113,7 @@
         $this.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.CurrentDateTime)
 
         # Process provided parameters and amend some incoming values.
-        $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet')}).ForEach({$this.($_.Key) = $_.Value})
+        $Parameters.GetEnumerator().Where({!$_.Key.Equals('Cmdlet') -and (($_.Value -isnot [System.String]) -or ![System.String]::IsNullOrWhiteSpace($_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
         $this.Internal.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
