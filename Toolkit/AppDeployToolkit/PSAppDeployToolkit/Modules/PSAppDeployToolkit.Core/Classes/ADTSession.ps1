@@ -641,7 +641,7 @@
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        $this.PSObject.Properties.Name.ForEach({if ($value = $this.GetPropertyValue($_)) {$this.$_ = $value}})
+        $this.PSObject.Properties.Name.ForEach({if ($value = $this.Internal.CallerVariableIntrinsics.Get($_).Value) {$this.$_ = $value}})
     }
 
     hidden [System.Void] Open()
