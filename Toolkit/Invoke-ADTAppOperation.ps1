@@ -179,7 +179,7 @@ function Uninstall-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'iexplore'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'iexplore'; ProcessDescription = 'Internet Explorer'} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
