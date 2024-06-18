@@ -184,7 +184,7 @@ function Uninstall-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close VLC with a 60 second countdown before automatically closing
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'; ProcessDescription = $adtSession.AppName} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -227,7 +227,7 @@ function Repair-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close VLC with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'vlc'; ProcessDescription = $adtSession.AppName} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
