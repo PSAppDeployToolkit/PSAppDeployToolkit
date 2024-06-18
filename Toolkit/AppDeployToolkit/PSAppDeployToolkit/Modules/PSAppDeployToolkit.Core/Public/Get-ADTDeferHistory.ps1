@@ -37,7 +37,7 @@
 
     process {
         Write-ADTLogEntry -Message 'Getting deferral history...'
-        return Get-RegistryKey -Key (Get-ADTSession).GetRegKeyDeferHistory() -ContinueOnError $true
+        return Get-RegistryKey -Key (Get-ADTSession).Internal.RegKeyDeferHistory -ContinueOnError $true
     }
 
     end {
