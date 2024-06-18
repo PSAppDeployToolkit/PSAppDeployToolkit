@@ -96,7 +96,10 @@
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeployAppScriptDate
+        [System.String]$DeployAppScriptDate,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     # Clamp the session count at one, for now.
@@ -115,5 +118,11 @@
     {
         [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
         throw
+    }
+
+    # Return the most recent session if passing through.
+    if ($PassThru)
+    {
+        return $adtData.Sessions[-1]
     }
 }
