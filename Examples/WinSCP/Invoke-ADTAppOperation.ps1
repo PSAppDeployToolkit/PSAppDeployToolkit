@@ -190,7 +190,7 @@ function Uninstall-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'; ProcessDescription = $adtSession.AppName} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -234,7 +234,7 @@ function Repair-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'WinSCP'; ProcessDescription = $adtSession.AppName} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
