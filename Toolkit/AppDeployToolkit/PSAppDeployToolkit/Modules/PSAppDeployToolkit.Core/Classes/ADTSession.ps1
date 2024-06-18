@@ -2,7 +2,7 @@
 {
     # Internal variables that aren't for public access.
     hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
-        CompatibilityMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
+        CompatibilityMode = Test-ADTNonNativeCaller
         OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
         DefaultMsiExecutablesList = $null
         CallerVariableIntrinsics = $null
