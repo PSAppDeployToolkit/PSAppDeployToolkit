@@ -78,28 +78,6 @@
     )
 
     begin {
-        $dialogButtons = @{
-            OK = 0
-            OKCancel = 1
-            AbortRetryIgnore = 2
-            YesNoCancel = 3
-            YesNo = 4
-            RetryCancel = 5
-            CancelTryAgainContinue = 6
-        }
-        $dialogIcons = @{
-            None = 0
-            Stop = 16
-            Question = 32
-            Exclamation = 48
-            Information = 64
-        }
-        $dialogDefaultButton = @{
-            First = 0
-            Second = 256
-            Third = 512
-        }
-
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
@@ -113,7 +91,7 @@
         }
 
         Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
-        $result = switch ((Get-ADTEnvironment).Shell.Popup($Text, $Timeout, $Title, ($dialogButtons[$Buttons] + $dialogIcons[$Icon] + $dialogDefaultButton[$DefaultButton] + (4096 * !$NotTopMost))))
+        $result = switch ((Get-ADTEnvironment).Shell.Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons[$Buttons] + $Script:DialogBox.Icons[$Icon] + $Script:DialogBox.DefaultButtons[$DefaultButton] + (4096 * !$NotTopMost))))
         {
             1 {'OK'; break}
             2 {'Cancel'; break}
