@@ -283,7 +283,7 @@ catch
 # Instantiate a new session.
 try
 {
-    Initialize-ADTModule
+    Initialize-ADTModule -Cmdlet $PSCmdlet
     Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @adtSession
     $adtSession = Get-ADTSession
 }

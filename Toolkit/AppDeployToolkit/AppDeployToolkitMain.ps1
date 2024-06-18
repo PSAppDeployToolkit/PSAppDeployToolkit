@@ -40,7 +40,6 @@ Set-StrictMode -Version 1
 # Import our local module.
 Remove-Module -Name PSAppDeployToolkit* -Force
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
-Initialize-ADTModule
 
 # Open a new PSADT session.
 if (Test-Path -LiteralPath Variable:PSCmdlet)
@@ -55,6 +54,9 @@ if (Test-Path -LiteralPath Variable:PSCmdlet)
             $sessionProps.Add($param, $value)
         }
     }
+
+    # Initialise the module and open the session.
+    Initialize-ADTModule -Cmdlet $PSCmdlet
     Open-ADTSession @sessionProps
 }
 

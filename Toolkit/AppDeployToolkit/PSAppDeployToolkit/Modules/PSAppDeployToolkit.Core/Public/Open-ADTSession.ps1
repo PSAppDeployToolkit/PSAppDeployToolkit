@@ -116,7 +116,4 @@
         [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
         throw
     }
-
-    # Export environment variables to the user's scope.
-    [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($Cmdlet.SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
 }
