@@ -296,8 +296,7 @@ catch
 try
 {
     Initialize-ADTModule -Cmdlet $PSCmdlet
-    Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @adtSession
-    $adtSession = Get-ADTSession
+    $adtSession = Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @adtSession -PassThru
 }
 catch
 {
