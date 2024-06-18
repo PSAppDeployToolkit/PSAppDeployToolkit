@@ -714,10 +714,10 @@
         if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
         {
             # Clean up app deferral history.
-            if (Test-Path -LiteralPath $this.GetRegKeyDeferHistory())
+            if (Test-Path -LiteralPath $this.Internal.RegKeyDeferHistory)
             {
                 $this.WriteLogEntry('Removing deferral history...')
-                Remove-RegistryKey -Key $this.GetRegKeyDeferHistory() -Recurse
+                Remove-RegistryKey -Key $this.Internal.RegKeyDeferHistory -Recurse
             }
 
             # Handle reboot prompts on successful script completion.
@@ -893,11 +893,6 @@
     [System.String] GetLoggedOnUserTempPath()
     {
         return $this.Internal.LoggedOnUserTempPath
-    }
-
-    [System.String] GetRegKeyDeferHistory()
-    {
-        return $this.Internal.RegKeyDeferHistory
     }
 
     [System.String] GetDeploymentTypeName()
