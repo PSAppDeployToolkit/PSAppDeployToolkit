@@ -26,7 +26,7 @@
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    PSObject. Returns a PSObject with the following properties: NTAccount, SID, ProfilePath
+    PSADT.Types.UserProfile. Returns a PSADT.Types.UserProfile object with the following properties: NTAccount, SID, ProfilePath
 
     .EXAMPLE
     # Return the following properties for each user profile on the system: NTAccount, SID, ProfilePath
@@ -77,7 +77,7 @@
             }
 
             # Write out the object to the pipeline.
-            [pscustomobject]@{
+            [PSADT.Types.UserProfile]@{
                 NTAccount = $ntAccount
                 SID = $_.PSChildName
                 ProfilePath = $_.ProfileImagePath
@@ -86,9 +86,9 @@
 
         # Create a custom object for the Default User profile. Since the Default User is not an actual user account, it does not have a username or a SID.
         # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-        If (!$ExcludeDefaultUser)
+        if (!$ExcludeDefaultUser)
         {
-            [pscustomobject]@{
+            [PSADT.Types.UserProfile]@{
                 NTAccount = 'Default User'
                 SID = 'S-1-5-21-Default-User'
                 ProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
