@@ -185,6 +185,10 @@
                 $formInstallationPrompt.ControlBox = $false
             }
 
+            # Correct the initial state of the form to prevent the .NET maximized form issue.
+            $formInstallationPrompt.WindowState = [System.Windows.Forms.FormWindowState]::Normal
+            $formInstallationPrompt.BringToFront()
+
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
             $formInstallationPromptStartLocation = $formInstallationPrompt.Location
         }
