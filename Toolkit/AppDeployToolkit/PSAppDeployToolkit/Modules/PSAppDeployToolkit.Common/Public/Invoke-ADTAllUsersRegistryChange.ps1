@@ -50,7 +50,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject[]]$UserProfiles = (Get-ADTUserProfiles)
+        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
     )
 
     begin {

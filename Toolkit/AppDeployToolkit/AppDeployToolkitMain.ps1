@@ -242,7 +242,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject[]]$UserProfiles
+        [PSADT.Types.UserProfile[]]$UserProfiles
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryChange]. Please migrate your scripts to use the new function." -Severity 2

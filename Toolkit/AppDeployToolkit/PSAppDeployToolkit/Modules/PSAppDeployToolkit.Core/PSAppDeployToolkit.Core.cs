@@ -35,6 +35,13 @@ namespace PSADT
             public string Name;
             public string Description;
         }
+
+        public struct UserProfile
+        {
+            public string NTAccount;
+            public string SID;
+            public string ProfilePath;
+        }
     }
 
     public static class Msi
