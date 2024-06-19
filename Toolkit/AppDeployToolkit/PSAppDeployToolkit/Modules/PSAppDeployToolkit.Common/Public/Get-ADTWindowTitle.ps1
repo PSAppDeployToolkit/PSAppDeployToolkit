@@ -25,7 +25,7 @@
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Management.Automation.PSObject. Returns a PSObject with the following properties: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
+    PSADT.Types.WindowInfo. Returns a PSADT.Types.WindowInfo object with the following properties: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
 
     .EXAMPLE
     # Gets details for each window that has the words "Microsoft Word" in the title.
@@ -90,7 +90,7 @@
                     }
 
                     # Build custom object with details about the window and the process.
-                    [pscustomobject]@{
+                    [PSADT.Types.WindowInfo]@{
                         WindowTitle = $VisibleWindowTitle
                         WindowHandle = $VisibleWindowHandle
                         ParentProcess = $Process.ProcessName
