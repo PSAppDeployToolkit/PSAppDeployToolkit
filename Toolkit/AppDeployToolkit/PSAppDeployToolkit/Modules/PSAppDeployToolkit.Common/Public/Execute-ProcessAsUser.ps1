@@ -314,7 +314,7 @@ https://psappdeploytoolkit.com
             Else {
                 Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..."
             }
-            [PSObject]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
+            [PSADT.Types.ProcessResult]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-ADTLogEntry -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3
@@ -336,7 +336,7 @@ https://psappdeploytoolkit.com
             Else {
                 Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..."
             }
-            [PSObject]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
+            [PSADT.Types.ProcessResult]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-ADTLogEntry -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3

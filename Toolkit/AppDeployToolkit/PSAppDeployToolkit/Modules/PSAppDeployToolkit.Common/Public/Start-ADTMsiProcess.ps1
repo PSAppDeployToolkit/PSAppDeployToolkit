@@ -188,7 +188,6 @@
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         $pathIsProductCode = $Path -match $adtEnv.MSIProductCodeRegExPattern
-        $ExecuteResults = $null
         Write-ADTDebugHeader
     }
 
@@ -432,10 +431,10 @@
         }
 
         # Bypass if we're installing and the MSI is already installed, otherwise proceed.
-        if ($IsMsiInstalled -and ($Action -eq 'Install'))
+        $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
         {
             Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-            $ExecuteResults = [pscustomobject]@{ExitCode = 1638; StdOut = $null; StdErr = $null}
+            [PSADT.Types.ProcessResult]@{ExitCode = 1638; StdOut = [System.String]::Empty; StdErr = [System.String]::Empty}
         }
         elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
         {
@@ -473,7 +472,7 @@
             }
 
             # Call the Start-ADTProcess function.
-            $ExecuteResults = Start-ADTProcess @ExecuteProcessSplat
+            Start-ADTProcess @ExecuteProcessSplat
 
             # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.
             Update-ADTDesktop

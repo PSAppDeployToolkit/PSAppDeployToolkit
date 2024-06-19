@@ -79,10 +79,10 @@
     Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 
     .INPUTS
-    None You cannot pipe objects to this function.
+    None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    None This function does not generate any output.
+    None. This function does not generate any output.
 
     .LINK
     https://psappdeploytoolkit.com
@@ -296,7 +296,7 @@
                         if (!$process.HasExited)
                         {
                             Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
-                            [pscustomobject]@{
+                            [PSADT.Types.ProcessInfo]@{
                                 Id = $process.Id
                                 Handle = $process.Handle
                                 ProcessName = $process.ProcessName
@@ -390,7 +390,7 @@
                 if ($PassThru)
                 {
                     Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                    [pscustomobject]@{
+                    [PSADT.Types.ProcessResult]@{
                         ExitCode = $returnCode
                         StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
                         StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
@@ -463,7 +463,7 @@
 
             if ($PassThru)
             {
-                [pscustomobject]@{
+                [PSADT.Types.ProcessResult]@{
                     ExitCode = $returnCode
                     StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
                     StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}

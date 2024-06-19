@@ -315,16 +315,11 @@ https://psappdeploytoolkit.com
             $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
         }
 
-        If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
+        $ExecuteResults = If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
             ForEach ($removeMSIApplication in $removeMSIApplications) {
                 Write-ADTLogEntry -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]."
                 $ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
-                If ($PassThru) {
-                    [PSObject[]]$ExecuteResults += Start-ADTMsiProcess @ExecuteMSISplat
-                }
-                Else {
-                    Start-ADTMsiProcess @ExecuteMSISplat
-                }
+                Start-ADTMsiProcess @ExecuteMSISplat
             }
         }
         Else {
@@ -332,7 +327,7 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        If ($PassThru) {
+        If ($PassThru -and $ExecuteResults) {
             Write-Output -InputObject ($ExecuteResults)
         }
         Write-ADTDebugFooter
