@@ -159,7 +159,7 @@
                 }
 
                 # Output all inner exceptions to the caller.
-                $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, $innerExceptions))"
+                $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join("`n", $innerExceptions)))"
             }
 
             # Output the error message to the caller.
