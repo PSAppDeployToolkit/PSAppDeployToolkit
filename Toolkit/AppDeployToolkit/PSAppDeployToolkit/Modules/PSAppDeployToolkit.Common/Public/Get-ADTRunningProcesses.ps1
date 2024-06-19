@@ -34,7 +34,7 @@
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject]$InputObject,
+        [PSADT.Types.ProcessObject]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$DisableLogging

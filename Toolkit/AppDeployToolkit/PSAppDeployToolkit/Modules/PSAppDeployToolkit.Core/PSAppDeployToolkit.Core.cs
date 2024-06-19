@@ -14,6 +14,15 @@ using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace PSADT
 {
+    namespace Types
+    {
+        public struct ProcessObject
+        {
+            public string ProcessName;
+            public string ProcessDescription;
+        }
+    }
+
     public static class Msi
     {
         enum LoadLibraryFlags : int
