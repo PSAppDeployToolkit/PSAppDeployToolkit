@@ -273,9 +273,9 @@
                 }
                 else
                 {
+                    Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
                     $DeferTimes - 1
                 }
-                Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
 
                 if ($DeferTimes -lt 0)
                 {
@@ -287,7 +287,7 @@
 
             if ($checkDeferDays -and $AllowDefer)
             {
-                [String]$deferDeadlineUniversal = if ($deferHistoryDeadline)
+                $deferDeadlineUniversal = if ($deferHistoryDeadline)
                 {
                     Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
                     Get-ADTUniversalDate -DateTime $deferHistoryDeadline
@@ -310,14 +310,14 @@
                 # Validate date.
                 try
                 {
-                    [String]$deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
+                    $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
+                    Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
                 }
                 catch
                 {
                     Write-ADTLogEntry -Message "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'.`n$(Resolve-ADTError)" -Severity 3
                     throw
                 }
-                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
 
                 if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
                 {
