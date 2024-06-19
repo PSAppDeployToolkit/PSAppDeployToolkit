@@ -134,7 +134,7 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            [PSObject]$ExecuteResult = Start-ADTProcess -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure
+            [PSADT.Types.ProcessResult]$ExecuteResult = Start-ADTProcess -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure
 
             If ($ExecuteResult.ExitCode -ne 0) {
                 If ($ExecuteResult.ExitCode -eq 60002) {

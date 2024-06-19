@@ -36,6 +36,20 @@ namespace PSADT
             public string Description;
         }
 
+        public struct ProcessInfo
+        {
+            public int Id;
+            public IntPtr Handle;
+            public string ProcessName;
+        }
+
+        public struct ProcessResult
+        {
+            public int ExitCode;
+            public string StdOut;
+            public string StdErr;
+        }
+
         public struct UserProfile
         {
             public string NTAccount;
