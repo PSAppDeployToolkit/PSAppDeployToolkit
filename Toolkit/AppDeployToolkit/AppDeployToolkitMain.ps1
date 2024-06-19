@@ -7234,6 +7234,7 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($fileVersion) {
+                    $fileVersion = $fileVersion.Trim()
                     If ($ProductVersion) {
                         Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
                     }
