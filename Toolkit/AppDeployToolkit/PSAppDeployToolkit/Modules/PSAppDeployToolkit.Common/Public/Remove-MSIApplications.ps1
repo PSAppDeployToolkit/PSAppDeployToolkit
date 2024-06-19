@@ -188,7 +188,7 @@ https://psappdeploytoolkit.com
             $GetInstalledApplicationSplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
         }
 
-        [PSObject[]]$installedApplications = Get-ADTInstalledApplication @GetInstalledApplicationSplat
+        [PSADT.Types.InstalledApplication[]]$installedApplications = Get-ADTInstalledApplication @GetInstalledApplicationSplat
 
         Write-ADTLogEntry -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]."
 
