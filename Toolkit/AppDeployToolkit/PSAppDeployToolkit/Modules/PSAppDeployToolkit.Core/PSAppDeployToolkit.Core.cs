@@ -42,6 +42,15 @@ namespace PSADT
             public string SID;
             public string ProfilePath;
         }
+
+        public struct WindowInfo
+        {
+            public string WindowTitle;
+            public IntPtr WindowHandle;
+            public string ParentProcess;
+            public IntPtr ParentProcessMainWindowHandle;
+            public int ParentProcessId;
+        }
     }
 
     public static class Msi

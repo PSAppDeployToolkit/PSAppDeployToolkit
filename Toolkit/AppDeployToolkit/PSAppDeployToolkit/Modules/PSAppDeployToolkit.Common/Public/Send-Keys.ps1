@@ -125,7 +125,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             If ($WindowHandle) {
-                [PSObject]$Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
+                [PSADT.Types.WindowInfo]$Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.WindowHandle -eq $WindowHandle }
                 If (-not $Window) {
                     Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                     Return
@@ -140,7 +140,7 @@ https://psappdeploytoolkit.com
                 Else {
                     $GetWindowTitleSplat.Add( 'WindowTitle', $WindowTitle)
                 }
-                [PSObject[]]$AllWindows = Get-ADTWindowTitle @GetWindowTitleSplat
+                [PSADT.Types.WindowInfo[]]$AllWindows = Get-ADTWindowTitle @GetWindowTitleSplat
                 If (-not $AllWindows) {
                     Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                     Return
