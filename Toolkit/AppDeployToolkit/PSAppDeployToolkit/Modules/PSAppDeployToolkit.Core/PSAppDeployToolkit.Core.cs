@@ -14,7 +14,7 @@ using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace PSADT
 {
-    public class Msi
+    public static class Msi
     {
         enum LoadLibraryFlags : int
         {
@@ -45,7 +45,7 @@ namespace PSADT
         }
     }
 
-    public class Explorer
+    public static class Explorer
     {
         private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
         private const int WM_SETTINGCHANGE = 0x1a;
@@ -70,7 +70,7 @@ namespace PSADT
         }
     }
 
-    public sealed class FileVerb
+    public static class FileVerb
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int LoadString(IntPtr h, uint id, StringBuilder sb, int maxBuffer);
@@ -89,7 +89,7 @@ namespace PSADT
         }
     }
 
-    public sealed class IniFile
+    public static class IniFile
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, int nSize, string lpFileName);
@@ -114,7 +114,7 @@ namespace PSADT
         }
     }
 
-    public class UiAutomation
+    public static class UiAutomation
     {
         public enum GetWindow_Cmd : int
         {
@@ -342,7 +342,7 @@ namespace PSADT
         }
     }
 
-    public class QueryUser
+    public static class QueryUser
     {
         [DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern IntPtr WTSOpenServer(string pServerName);
@@ -805,7 +805,7 @@ namespace PSADT
         }
     }
 
-    public class Utilities
+    public static class Utilities
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         private static extern int OOBEComplete(ref int bIsOOBEComplete);
