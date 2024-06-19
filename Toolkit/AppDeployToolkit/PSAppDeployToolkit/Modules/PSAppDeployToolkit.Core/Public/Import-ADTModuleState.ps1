@@ -16,6 +16,6 @@
     {
         $adtData.Sessions[$i] = [ADTSession]$adtData.Sessions[$i]
         $adtData.Sessions[$i].InstallPhase = 'Asynchronous'
-        $adtData.Sessions[$i].Internal.CompatibilityMode = $false
+        $adtData.Sessions[$i].CompatibilityMode = $false
     }
 }

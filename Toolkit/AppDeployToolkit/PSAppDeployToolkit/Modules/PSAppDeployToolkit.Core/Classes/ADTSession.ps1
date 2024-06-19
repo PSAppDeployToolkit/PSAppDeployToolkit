@@ -1,24 +1,22 @@
 ﻿class ADTSession
 {
-    # Internal variables that aren't for public access.
-    hidden [System.Management.Automation.PSObject]$Internal = [pscustomobject]@{
-        CompatibilityMode = Test-ADTNonNativeCaller
-        OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-        DefaultMsiExecutablesList = $null
-        CallerVariableIntrinsics = $null
-        LoggedOnUserTempPath = [System.String]::Empty
-        RegKeyDeferHistory = [System.String]::Empty
-        DeploymentTypeName = [System.String]::Empty
-        DeployModeNonInteractive = $false
-        DeployModeSilent = $false
-        BlockExecution = $false
-        Initialised = $false
-        Finalised = $false
-        ExitCode = 0
-    }
-
     # Private variables for modules to use that aren't for public access.
     hidden [System.Collections.Hashtable]$ExtensionData = @{}
+
+    # Internal variables that aren't for public access.
+    hidden [System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
+    hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+    hidden [PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
+    hidden [System.Management.Automation.PSVariableIntrinsics]$CallerVariableIntrinsics
+    hidden [System.String]$LoggedOnUserTempPath
+    hidden [System.String]$RegKeyDeferHistory
+    hidden [System.String]$DeploymentTypeName
+    hidden [System.Boolean]$DeployModeNonInteractive
+    hidden [System.Boolean]$DeployModeSilent
+    hidden [System.Boolean]$BlockExecution
+    hidden [System.Boolean]$Initialised
+    hidden [System.Boolean]$Finalised
+    hidden [System.Int32]$ExitCode
 
     # Deploy-Application.ps1 parameters.
     [System.String]$DeploymentType = 'Install'
@@ -117,7 +115,7 @@
         $Parameters.GetEnumerator().Where({($null -ne $_.Value) -and $classProps.Contains($_.Key) -and (($_.Value -isnot [System.String]) -or ![System.String]::IsNullOrWhiteSpace($_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        $this.Internal.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
+        $this.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
         $this.ScriptDirectory = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -129,11 +127,11 @@
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
         if (($null -ne $adtEnv.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($adtEnv.runasUserProfile))
         {
-            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
         }
         else
         {
-            $this.Internal.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.DirAppDeployTemp)\ExecuteAsUser").FullName
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.DirAppDeployTemp)\ExecuteAsUser").FullName
         }
     }
 
@@ -201,9 +199,9 @@
             $msiProps = Get-MsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
-            if ([PSADT.Types.ProcessObject[]]$this.Internal.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
+            if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
             {
-                $this.WriteLogEntry("MSI Executable List [$($this.Internal.DefaultMsiExecutablesList.Name)].")
+                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.Name)].")
             }
 
             # Change table and get properties from it.
@@ -272,7 +270,7 @@
         $this.InstallName = ($this.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.Internal.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.InstallName)"
+        $this.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$((Get-ADTEnvironment).appDeployToolkitName)\DeferHistory\$($this.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -391,7 +389,7 @@
         $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] module version is [$((Get-ADTModuleInfo).Version)]")
 
         # Announce session instantiation mode.
-        if ($this.Internal.CompatibilityMode)
+        if ($this.CompatibilityMode)
         {
             $this.WriteLogEntry("[$($adtEnv.appDeployToolkitName)] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2)
             $this.WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2)
@@ -567,7 +565,7 @@
         }
 
         # Check deployment type (install/uninstall).
-        $this.WriteLogEntry("Deployment type is [$(($this.Internal.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.DeploymentType)))].")
+        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.DeploymentType)))].")
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -609,9 +607,9 @@
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Internal.CompatibilityMode -and $this.Internal.Initialised)
+        if ($this.CompatibilityMode -and $this.Initialised)
         {
-            return $this.Internal.CallerVariableIntrinsics.Get($Name).Value
+            return $this.CallerVariableIntrinsics.Get($Name).Value
         }
         else
         {
@@ -623,9 +621,9 @@
     {
         # This getter exists as once the script is initialised, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.Internal.CompatibilityMode -and $this.Internal.Initialised)
+        if ($this.CompatibilityMode -and $this.Initialised)
         {
-            $this.Internal.CallerVariableIntrinsics.Set($Name, $Value)
+            $this.CallerVariableIntrinsics.Set($Name, $Value)
         }
         else
         {
@@ -636,19 +634,19 @@
     [System.Void] SyncPropertyValues()
     {
         # This is ran ahead of an async operation for compatibility mode operations to ensure the module has the current state.
-        if (!$this.Internal.CompatibilityMode -or !$this.Internal.Initialised)
+        if (!$this.CompatibilityMode -or !$this.Initialised)
         {
             return
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        $this.PSObject.Properties.Name.ForEach({if ($value = $this.Internal.CallerVariableIntrinsics.Get($_).Value) {$this.$_ = $value}})
+        $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariableIntrinsics.Get($_).Value) {$this.$_ = $value}})
     }
 
     hidden [System.Void] Open()
     {
         # Ensure this session isn't being opened twice.
-        if ($this.Internal.Initialised)
+        if ($this.Initialised)
         {
             throw [System.InvalidOperationException]::new("The current $((Get-ADTEnvironment).appDeployToolkitName) session has already been opened.")
         }
@@ -674,26 +672,26 @@
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-        if ($this.Internal.CompatibilityMode)
+        if ($this.CompatibilityMode)
         {
-            $this.PSObject.Properties.ForEach({$this.Internal.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
+            $this.PSObject.Properties.ForEach({$this.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
         }
 
         # Set PowerShell window title, in case the window is visible.
         $Global:Host.UI.RawUI.WindowTitle = "$($this.InstallTitle) - $($this.DeploymentType)" -replace '\s{2,}',' '
 
         # Reflect that we've completed initialisation. This is important for variable retrieval.
-        $this.Internal.Initialised = $true
+        $this.Initialised = $true
     }
 
-    hidden [System.Void] Close([System.Nullable[System.Int32]]$ExitCode)
+    hidden [System.Void] Close([System.Nullable[System.Int32]]$ReturnCode)
     {
         # Get the current config and strings.
         $adtConfig = Get-ADTConfig
         $adtStrings = Get-ADTStrings
 
         # If block execution variable is true, call the function to unblock execution.
-        if ($this.Internal.BlockExecution)
+        if ($this.BlockExecution)
         {
             Unblock-AppExecution
         }
@@ -705,23 +703,23 @@
         }
 
         # Update exit code with that from the session if the input is null.
-        if ($null -eq $ExitCode)
+        if ($null -eq $ReturnCode)
         {
-            $ExitCode = $this.Internal.ExitCode
+            $ReturnCode = $this.ExitCode
         }
 
         # Process resulting exit code.
-        if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
+        if ($this.GetPropertyValue('AppExitCodes').Contains($ReturnCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ReturnCode))
         {
             # Clean up app deferral history.
-            if (Test-Path -LiteralPath $this.Internal.RegKeyDeferHistory)
+            if (Test-Path -LiteralPath $this.RegKeyDeferHistory)
             {
                 $this.WriteLogEntry('Removing deferral history...')
-                Remove-RegistryKey -Key $this.Internal.RegKeyDeferHistory -Recurse
+                Remove-RegistryKey -Key $this.RegKeyDeferHistory -Recurse
             }
 
             # Handle reboot prompts on successful script completion.
-            if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ExitCode))
+            if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ReturnCode))
             {
                 $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.RestartRequired)"
                 $this.WriteLogEntry('A restart has been flagged as required.')
@@ -729,12 +727,12 @@
             else
             {
                 $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.Complete)"
-                $ExitCode = 0
+                $ReturnCode = 0
             }
             $balloonIcon = 'Info'
             $logSeverity = 0
         }
-        elseif (($ExitCode -eq $adtConfig.UI.DefaultExitCode) -or ($ExitCode -eq $adtConfig.UI.DeferExitCode))
+        elseif (($ReturnCode -eq $adtConfig.UI.DefaultExitCode) -or ($ReturnCode -eq $adtConfig.UI.DeferExitCode))
         {
             $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.FastRetry)"
             $balloonIcon = 'Warning'
@@ -748,13 +746,13 @@
         }
 
         # Update the module's last tracked exit code.
-        if ($ExitCode)
+        if ($ReturnCode)
         {
-            (Get-ADT).LastExitCode = $ExitCode
+            (Get-ADT).LastExitCode = $ReturnCode
         }
 
         # Annouce session success/failure.
-        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$ExitCode].", $logSeverity)
+        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$ReturnCode].", $logSeverity)
         if (Get-Module -Name PSAppDeployToolkit.Dialogs)
         {
             Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
@@ -763,8 +761,8 @@
         # Write out a log divider to indicate the end of logging.
         $this.WriteLogEntry('-' * 79)
         $this.SetPropertyValue('DisableLogging', $true)
-        $Global:Host.UI.RawUI.WindowTitle = $this.Internal.OldPSWindowTitle
-        $this.Internal.Finalised = $true
+        $Global:Host.UI.RawUI.WindowTitle = $this.OldPSWindowTitle
+        $this.Finalised = $true
 
         # Archive the log files to zip format and then delete the temporary logs folder.
         if ($adtConfig.Toolkit.CompressLogs)
@@ -887,31 +885,31 @@
 
     [PSADT.Types.ProcessObject[]] GetDefaultMsiExecutablesList()
     {
-        return $this.Internal.DefaultMsiExecutablesList
+        return $this.DefaultMsiExecutablesList
     }
 
     [System.String] GetLoggedOnUserTempPath()
     {
-        return $this.Internal.LoggedOnUserTempPath
+        return $this.LoggedOnUserTempPath
     }
 
     [System.String] GetDeploymentTypeName()
     {
-        return $this.Internal.DeploymentTypeName
+        return $this.DeploymentTypeName
     }
 
     [System.Boolean] IsNonInteractive()
     {
-        return $this.Internal.DeployModeNonInteractive
+        return $this.DeployModeNonInteractive
     }
 
     [System.Boolean] IsSilent()
     {
-        return $this.Internal.DeployModeSilent
+        return $this.DeployModeSilent
     }
 
     [System.Void] SetExitCode([System.Int32]$Value)
     {
-        $this.Internal.ExitCode = $Value
+        $this.ExitCode = $Value
     }
 }

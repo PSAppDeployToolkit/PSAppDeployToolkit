@@ -103,7 +103,7 @@
     )
 
     # Clamp the session count at one, for now.
-    if (($adtData = Get-ADT).Sessions.Count -and (($adtData.Sessions.Internal.CompatibilityMode -contains $true) -or (Test-ADTNonNativeCaller)))
+    if (($adtData = Get-ADT).Sessions.Count -and (($adtData.Sessions.CompatibilityMode -contains $true) -or (Test-ADTNonNativeCaller)))
     {
         throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted for non-native invocations.")
     }

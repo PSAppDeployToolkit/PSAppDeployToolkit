@@ -57,7 +57,7 @@ https://psappdeploytoolkit.com
         }
 
         ## If block execution variable is $true, set it to $false
-        $adtSession.Internal.BlockExecution = $false
+        $adtSession.BlockExecution = $false
 
         ## Remove the scheduled task if it exists
         [String]$schTaskBlockedAppsName = $adtSession.GetPropertyValue('installName') + '_BlockedApps'
