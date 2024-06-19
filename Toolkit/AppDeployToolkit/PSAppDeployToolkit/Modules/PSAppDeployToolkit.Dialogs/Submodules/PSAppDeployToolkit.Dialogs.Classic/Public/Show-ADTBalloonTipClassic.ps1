@@ -72,12 +72,12 @@
         # Skip balloon if in silent mode, disabled in the config or presentation is detected.
         if ($adtSession.IsSilent() -or !$adtConfig.UI.BalloonNotifications)
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
             return
         }
         if (Test-ADTPowerPoint)
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
             return
         }
 
