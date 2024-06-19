@@ -18,8 +18,8 @@ namespace PSADT
     {
         public struct ProcessObject
         {
-            public string ProcessName;
-            public string ProcessDescription;
+            public string Name;
+            public string Description;
         }
     }
 
