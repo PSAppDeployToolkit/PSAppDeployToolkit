@@ -127,7 +127,7 @@
         # Bypass if in non-interactive mode
         if ($adtSession.IsSilent())
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Message:$Message"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Message: $Message"
             return
         }
 
