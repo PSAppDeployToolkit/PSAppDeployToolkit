@@ -22,7 +22,7 @@ New-Variable -Name ProgressWindow -Option Constant -Value @{
 
 # Rig up process to dispose of the ProgressWindow objects for PowerShell 7.x
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-    if ($PSVersionTable.PSEdition.Equals('Core'))
+    if ($PSVersionTable.PSEdition.Equals('Core') -and $ProgressWindow.Window)
     {
         $ProgressWindow.Window.CloseDialog()
         while (!$ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Stopped)) {}
