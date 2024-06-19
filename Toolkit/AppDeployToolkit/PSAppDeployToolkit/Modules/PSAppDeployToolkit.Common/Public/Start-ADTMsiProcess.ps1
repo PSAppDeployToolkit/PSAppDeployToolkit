@@ -422,7 +422,7 @@
         }
 
         # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
-        $IsMsiInstalled = if ($MSIProductCode -and -not $SkipMSIAlreadyInstalledCheck)
+        $IsMsiInstalled = if ($MSIProductCode -and !$SkipMSIAlreadyInstalledCheck)
         {
             !!(Get-ADTInstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
         }

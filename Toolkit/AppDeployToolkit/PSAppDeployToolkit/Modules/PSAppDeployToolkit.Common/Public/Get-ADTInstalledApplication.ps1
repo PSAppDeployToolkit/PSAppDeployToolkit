@@ -32,7 +32,7 @@
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    PSObject. Returns a PSObject with information about an installed application
+    PSADT.Types.InstalledApplication. Returns a custom type with information about an installed application:
     - Publisher
     - DisplayName
     - DisplayVersion
@@ -98,7 +98,7 @@
         # Function to build return object. Can be called in multiple places.
         function Out-InstalledAppObject
         {
-            return [pscustomobject]@{
+            return [PSADT.Types.InstalledApplication]@{
                 UninstallSubkey    = $regKeyApp.PSChildName
                 ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
                 DisplayName        = $appDisplayName

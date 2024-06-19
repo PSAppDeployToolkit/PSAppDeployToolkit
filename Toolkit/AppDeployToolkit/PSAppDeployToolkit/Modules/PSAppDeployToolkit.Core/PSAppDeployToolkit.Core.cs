@@ -16,6 +16,20 @@ namespace PSADT
 {
     namespace Types
     {
+        public struct InstalledApplication
+        {
+            public string UninstallSubkey;
+            public string ProductCode;
+            public string DisplayName;
+            public string DisplayVersion;
+            public string UninstallString;
+            public string InstallSource;
+            public string InstallLocation;
+            public string InstallDate;
+            public string Publisher;
+            public bool Is64BitApplication;
+        }
+
         public struct ProcessObject
         {
             public string Name;
