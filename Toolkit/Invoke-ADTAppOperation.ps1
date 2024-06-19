@@ -126,7 +126,7 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'iexplore'; ProcessDescription = 'Internet Explorer'} -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+    Show-ADTInstallationWelcome -ProcessObjects @{Name = 'iexplore'; Description = 'Internet Explorer'} -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -179,7 +179,7 @@ function Uninstall-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'iexplore'; ProcessDescription = 'Internet Explorer'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{Name = 'iexplore'; Description = 'Internet Explorer'} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -222,7 +222,7 @@ function Repair-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ProcessName = 'iexplore'; ProcessDescription = 'Internet Explorer'} -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects @{Name = 'iexplore'; Description = 'Internet Explorer'} -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

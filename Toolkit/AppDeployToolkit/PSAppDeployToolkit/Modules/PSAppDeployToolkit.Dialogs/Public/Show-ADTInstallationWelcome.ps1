@@ -13,7 +13,7 @@
         d) Prevent users from launching the specified applications while the installation is in progress.
 
     .PARAMETER ProcessObjects
-    Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ProcessName = 'winword'; ProcessDescription = 'Microsoft Office Word'},@{ProcessName = 'excel'; ProcessDescription = 'Microsoft Office Excel'}
+    Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{Name = 'winword'; Description = 'Microsoft Office Word'},@{Name = 'excel'; Description = 'Microsoft Office Excel'}
 
     .PARAMETER Silent
     Stop processes without prompting the user.
@@ -125,7 +125,7 @@
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
     param (
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{ProcessName = "winword"; ProcessDescription = "Microsoft Word"}')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{Name = "winword"; Description = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
@@ -533,7 +533,7 @@
         if ($BlockExecution)
         {
             Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-            Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty ProcessName)
+            Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty Name)
         }
     }
 
