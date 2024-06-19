@@ -185,9 +185,6 @@
                 $formWelcome.ControlBox = $false
             }
 
-            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
-            $adtSession.ExtensionData.FormWelcomeStartPosition = $formWelcome.Location
-
             # Initialize the countdown timer.
             $currentTime = [System.DateTime]::Now
             $countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
@@ -196,6 +193,13 @@
             # Set up the form.
             $remainingTime = $countdownTime.Subtract($currentTime)
             $labelCountdown.Text = [System.String]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
+
+            # Correct the initial state of the form to prevent the .NET maximized form issue.
+            $formWelcome.WindowState = [System.Windows.Forms.FormWindowState]::Normal
+            $formWelcome.BringToFront()
+
+            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
+            $adtSession.ExtensionData.FormWelcomeStartPosition = $formWelcome.Location
         }
         $welcomeTimer_Tick = if ($showCountdown)
         {
