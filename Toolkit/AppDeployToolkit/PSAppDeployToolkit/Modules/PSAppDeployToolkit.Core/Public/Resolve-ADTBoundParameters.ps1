@@ -65,11 +65,11 @@
                         [System.String]::Join(',', $_.Value)
                     }
                 }
-                else
+                elseif ($_.Value -isnot [System.Management.Automation.SwitchParameter])
                 {
                     $_.Value
                 }
-                $paramsArr.Add("-$($_.Key):$val")
+                $paramsArr.Add("-$($_.Key)$(if ($val) {":$val"})")
             }
             else
             {
