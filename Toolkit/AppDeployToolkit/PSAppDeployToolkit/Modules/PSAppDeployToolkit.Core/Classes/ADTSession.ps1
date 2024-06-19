@@ -74,7 +74,7 @@
     }
     hidden ADTSession([System.Management.Automation.PSObject]$DeserialisedSession)
     {
-        $DeserialisedSession.PSObject.Properties.ForEach({$this.($_.Name) = $_.Value})
+        $DeserialisedSession.PSObject.Properties.Where({$_.Value -and !$_.TypeNameOfValue.EndsWith('PSVariableIntrinsics')}).ForEach({$this.($_.Name) = $_.Value})
     }
 
     # Private methods.
