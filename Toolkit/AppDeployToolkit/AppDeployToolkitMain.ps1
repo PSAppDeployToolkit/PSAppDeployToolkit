@@ -787,8 +787,7 @@ function Show-InstallationWelcome
     if ($PSBoundParameters.ContainsKey('CloseApps'))
     {
         $PSBoundParameters.ProcessObjects = $CloseApps.Split(',').ForEach({
-            $obj = @{}
-            $obj.Name, $obj.Description = $_.Split('=')
+            $obj = @{}; $obj.Name, $obj.Description = $_.Split('=')
             return [PSADT.Types.ProcessObject]$obj
         })
         [System.Void]$PSBoundParameters.Remove('CloseApps')

@@ -801,13 +801,13 @@
         }
 
         # Establish logging date/time vars.
-        $dateTimeNow = [System.DateTime]::Now
-        $logTime = $dateTimeNow.ToString('HH\:mm\:ss.fff')
-        $logDate = $dateTimeNow.ToString('MM-dd-yyyy')
+        $dateNow = [System.DateTime]::Now
+        $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
+        $logDate = $dateNow.ToString('MM-dd-yyyy')
         $logTimePlusBias = $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = (Get-PSCallStack).Where({![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')}, 'First')
+        $caller = Get-PSCallStack | Where-Object {![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')} | Select-Object -First 1
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
@@ -837,30 +837,29 @@
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
         # If the message is not $null or empty, create the log entry for the different logging methods.
-        $Message.Where({![System.String]::IsNullOrWhiteSpace($_)}).ForEach({
+        foreach ($msg in $Message.Where({![System.String]::IsNullOrWhiteSpace($_)}))
+        {
             # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)
             {
-                [System.String]::Format($logLine, $_) | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                [System.String]::Format($logLine, $msg) | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
 
-            # Return early if we're not configured to write to the host.
-            if (!$adtConfig.Toolkit.LogWriteToHost)
+            # Only write to host if we're configured to do so.
+            if ($adtConfig.Toolkit.LogWriteToHost)
             {
-                return
+                # Only output using color options if running in a host which supports colors.
+                if ($Global:Host.UI.RawUI.ForegroundColor)
+                {
+                    [System.String]::Format($conLine, $msg) | Write-Host @whParams
+                }
+                else
+                {
+                    # If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are sent to stdout so that they are included in the text log.
+                    [System.Console]::WriteLine([System.String]::Format($conLine, $msg))
+                }
             }
-
-            # Only output using color options if running in a host which supports colors.
-            if ($Global:Host.UI.RawUI.ForegroundColor)
-            {
-                [System.String]::Format($conLine, $_) | Write-Host @whParams
-            }
-            else
-            {
-                # If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are sent to stdout so that they are included in the text log.
-                [System.Console]::WriteLine([System.String]::Format($conLine, $_))
-            }
-        })
+        }
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message)
