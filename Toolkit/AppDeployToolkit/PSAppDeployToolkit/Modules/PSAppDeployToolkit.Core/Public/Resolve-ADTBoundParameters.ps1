@@ -33,55 +33,50 @@
         [System.String[]]$Exclude
     )
 
-    # Save off the invocation's command.
-    $thisFunc = $MyInvocation.MyCommand
+    # Establish array to hold return string.
+    if (!(Test-Path -LiteralPath 'Variable:paramsArr'))
+    {
+        $thisFunc = $MyInvocation.MyCommand
+        $paramsArr = [System.Collections.Generic.List[System.String]]::new()
+    }
 
     # Process the piped hashtable.
-    $_.GetEnumerator().Where({$Exclude -notcontains $_.Key}).ForEach({
-        begin {
-            # Establish array to hold return string.
-            if (!(Test-Path -LiteralPath 'Variable:paramsArr'))
+    foreach ($param in $_.GetEnumerator().Where({$Exclude -notcontains $_.Key}))
+    {
+        # Recursively expand child hashtables.
+        if ($param.Value -isnot [System.Collections.IDictionary])
+        {
+            # Determine value.
+            $val = if ($param.Value -is [System.String])
             {
-                $paramsArr = [System.Collections.Generic.List[System.String]]::new()
+                "'$($param.Value.Replace("'", "''"))'"
             }
-        }
-        process {
-            # Recursively expand child hashtables.
-            if ($_.Value -isnot [System.Collections.IDictionary])
+            elseif ($param.Value -is [System.Collections.IEnumerable])
             {
-                # Determine value.
-                $val = if ($_.Value -is [System.String])
+                if ($param.Value[0] -is [System.String])
                 {
-                    "'$($_.Value.Replace("'", "''"))'"
+                    "'$([System.String]::Join("','", $param.Value.Replace("'", "''")))'"
                 }
-                elseif ($_.Value -is [System.Collections.IEnumerable])
+                else
                 {
-                    if ($_.Value[0] -is [System.String])
-                    {
-                        "'$([System.String]::Join("','", $_.Value.Replace("'", "''")))'"
-                    }
-                    else
-                    {
-                        [System.String]::Join(',', $_.Value)
-                    }
+                    [System.String]::Join(',', $param.Value)
                 }
-                elseif ($_.Value -isnot [System.Management.Automation.SwitchParameter])
-                {
-                    $_.Value
-                }
-                $paramsArr.Add("-$($_.Key)$(if ($val) {":$val"})")
             }
-            else
+            elseif ($param.Value -isnot [System.Management.Automation.SwitchParameter])
             {
-                $_.Value | & $thisFunc
+                $param.Value
             }
+            $paramsArr.Add("-$($param.Key)$(if ($val) {":$val"})")
         }
-        end {
-            # Join the array and return as a string to the caller.
-            if ((Get-PSCallStack).Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
-            {
-                return [System.String]::Join(' ', $paramsArr)
-            }
+        else
+        {
+            $param.Value | & $thisFunc
         }
-    })
+    }
+
+    # Join the array and return as a string to the caller.
+    if ((Get-PSCallStack).Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
+    {
+        return [System.String]::Join(' ', $paramsArr)
+    }
 }
