@@ -8,17 +8,23 @@
     .DESCRIPTION
     Resolve the parameters of a function call to a string.
 
-    .PARAMETER Parameter
-    The name of the function this function is invoked from.
+    .PARAMETER InputObject
+    The $PSBoundParameters object to process.
+
+    .PARAMETER Exclude
+    The names of parameters to exclude from the final result.
 
     .INPUTS
-    System.Object
+    System.Collections.Generic.Dictionary[System.String, System.Object]. Resolve-ADTBoundParameters accepts a $PSBoundParameters value via the pipeline for processing.
 
     .OUTPUTS
-    System.Object
+    System.String. Resolve-ADTBoundParameters returns a string output of all provided parameters that can be used against powershell.exe or pwsh.exe.
 
     .EXAMPLE
     $PSBoundParameters | Resolve-ADTBoundParameters
+
+    .EXAMPLE
+    Resolve-ADTBoundParameters -InputObject $PSBoundParameters
 
     .NOTES
     This is an internal script function and should typically not be called directly.
@@ -28,7 +34,13 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Generic.Dictionary[System.String, System.Object]]$InputObject,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Exclude
     )
@@ -41,7 +53,7 @@
     }
 
     # Process the piped hashtable.
-    foreach ($param in $_.GetEnumerator().Where({$Exclude -notcontains $_.Key}))
+    foreach ($param in $InputObject.GetEnumerator().Where({$Exclude -notcontains $_.Key}))
     {
         # Recursively expand child hashtables.
         if ($param.Value -isnot [System.Collections.IDictionary])
