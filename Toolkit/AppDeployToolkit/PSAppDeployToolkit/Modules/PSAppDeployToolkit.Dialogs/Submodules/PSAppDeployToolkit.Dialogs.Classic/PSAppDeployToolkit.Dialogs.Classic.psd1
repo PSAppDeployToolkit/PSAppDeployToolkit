@@ -70,7 +70,6 @@ PowerShellVersion = '5.1'
 FunctionsToExport = @(
     'Close-ADTInstallationProgressClassic'
     'Show-ADTBalloonTipClassic'
-    'Show-ADTBlockedAppDialogClassic'
     'Show-ADTInstallationProgressClassic'
     'Show-ADTInstallationPromptClassic'
     'Show-ADTInstallationRestartPromptClassic'
