@@ -70,7 +70,7 @@
         [System.UInt32]$CloseAppsCountdown = $(if ((Get-ADTSession).ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) {(Get-ADTSession).ExtensionData.CloseAppsCountdownGlobal}),
 
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeferTimes,
+        [System.UInt32]$DeferTimes,
 
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
@@ -118,7 +118,7 @@
             # Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone.
             if ($DeferDeadline)
             {
-                $DeferDeadline = (Get-Date -Date ($deferDeadline -replace 'Z')).ToString()                
+                $DeferDeadline = (Get-Date -Date ($DeferDeadline -replace 'Z')).ToString()                
             }
         }
 
@@ -443,9 +443,9 @@
             $labelDeferDeadline.Name = 'LabelDeferDeadline'
             $labelDeferDeadline.TabStop = $false
             $labelDeferDeadline.AutoSize = $true
-            if ($deferTimes -ge 0)
+            if ($DeferTimes -ge 0)
             {
-                $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.RemainingDeferrals) $([Int32]$deferTimes + 1)"
+                $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.RemainingDeferrals) $($DeferTimes + 1)"
             }
             if ($deferDeadline)
             {
