@@ -60,35 +60,28 @@
     process {
         foreach ($UserProfile in $UserProfiles)
         {
+            $ManuallyLoadedRegHive = $false
             try
             {
-                # Set the path to the user's registry hive when it is loaded.
-                [String]$UserRegistryPath = "Registry::HKEY_USERS\$($UserProfile.SID)"
-
                 # Set the path to the user's registry hive file.
-                [String]$UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+                $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
-                # Load the User profile registry hive if it is not already loaded because the User is logged in
-                [Boolean]$ManuallyLoadedRegHive = $false
-                if (!(Test-Path -LiteralPath $UserRegistryPath))
+                # Load the User profile registry hive if it is not already loaded because the User is logged in.
+                if (!(Test-Path -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
                 {
-                    # Load the User registry hive if the registry hive file exists
-                    if (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf')
-                    {
-                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                        $HiveLoadResult = & "$env:WinDir\System32\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
-
-                        if ($Global:LastExitCode -ne 0)
-                        {
-                            throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
-                        }
-
-                        [Boolean]$ManuallyLoadedRegHive = $true
-                    }
-                    else
+                    # Load the User registry hive if the registry hive file exists.
+                    if (![System.IO.File]::Exists($UserRegistryHiveFile))
                     {
                         throw "Failed to find the registry hive file [$UserRegistryHiveFile] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue..."
                     }
+
+                    Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                    $HiveLoadResult = & "$env:WinDir\System32\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
+                    if ($Global:LastExitCode -ne 0)
+                    {
+                        throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
+                    }
+                    $ManuallyLoadedRegHive = $true
                 }
                 else
                 {
@@ -111,13 +104,12 @@
                     {
                         Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
-
                         if ($Global:LastExitCode -ne 0)
                         {
                             Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
-                            [GC]::Collect()
-                            [GC]::WaitForPendingFinalizers()
-                            Start-Sleep -Seconds 5
+                            [System.GC]::Collect()
+                            [System.GC]::WaitForPendingFinalizers()
+                            [System.Threading.Thread]::Sleep(5000)
 
                             Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                             $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
