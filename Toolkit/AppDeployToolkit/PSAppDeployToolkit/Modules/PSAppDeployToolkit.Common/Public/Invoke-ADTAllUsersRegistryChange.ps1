@@ -76,7 +76,7 @@
                     if (Test-Path -LiteralPath $UserRegistryHiveFile -PathType 'Leaf')
                     {
                         Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                        [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" load "`"HKEY_USERS\$($UserProfile.SID)`"" "`"$UserRegistryHiveFile`""
+                        $HiveLoadResult = & "$env:WinDir\System32\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
 
                         if ($Global:LastExitCode -ne 0)
                         {
@@ -110,7 +110,7 @@
                     try
                     {
                         Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                        [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
+                        $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
 
                         if ($Global:LastExitCode -ne 0)
                         {
@@ -120,7 +120,7 @@
                             Start-Sleep -Seconds 5
 
                             Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                            [String]$HiveLoadResult = & "$env:WinDir\System32\reg.exe" unload "`"HKEY_USERS\$($UserProfile.SID)`""
+                            $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                             if ($Global:LastExitCode -ne 0)
                             {
                                 throw "REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult]."
