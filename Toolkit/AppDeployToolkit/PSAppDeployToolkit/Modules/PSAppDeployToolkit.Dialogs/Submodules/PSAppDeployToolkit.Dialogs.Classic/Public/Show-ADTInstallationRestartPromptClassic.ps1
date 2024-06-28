@@ -53,13 +53,13 @@
 
     param (
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownSeconds = 60,
+        [System.UInt32]$CountdownSeconds = 60,
 
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownNoHideSeconds = 30,
+        [System.UInt32]$CountdownNoHideSeconds = 30,
 
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$SilentCountdownSeconds = 5,
+        [System.UInt32]$SilentCountdownSeconds = 5,
 
         [System.Management.Automation.SwitchParameter]$SilentRestart,
         [System.Management.Automation.SwitchParameter]$NoCountdown,
