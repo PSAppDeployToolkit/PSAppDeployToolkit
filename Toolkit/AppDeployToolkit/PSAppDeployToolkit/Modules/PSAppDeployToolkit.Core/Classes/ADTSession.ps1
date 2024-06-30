@@ -7,7 +7,7 @@
     hidden [System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
     hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
     hidden [PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
-    hidden [System.Management.Automation.PSVariableIntrinsics]$CallerVariableIntrinsics
+    hidden [System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [System.String]$LoggedOnUserTempPath
     hidden [System.String]$RegKeyDeferHistory
     hidden [System.String]$DeploymentTypeName
@@ -151,7 +151,7 @@
         $Parameters.GetEnumerator().Where({$this.PSObject.Properties.Name.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        $this.CallerVariableIntrinsics = $Parameters.Cmdlet.SessionState.PSVariable
+        $this.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
 
         # Establish script directories.
         $this.ScriptDirectory = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -656,7 +656,7 @@
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.CompatibilityMode -and $this.Opened)
         {
-            return $this.CallerVariableIntrinsics.Get($Name).Value
+            return $this.CallerVariables.Get($Name).Value
         }
         else
         {
@@ -670,7 +670,7 @@
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
         if ($this.CompatibilityMode -and $this.Opened)
         {
-            $this.CallerVariableIntrinsics.Set($Name, $Value)
+            $this.CallerVariables.Set($Name, $Value)
         }
         else
         {
@@ -687,7 +687,7 @@
         }
 
         # Pass through the session's property table. Because objects are passed by reference, this works fine.
-        $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariableIntrinsics.Get($_).Value) {$this.$_ = $value}})
+        $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
     }
 
     hidden [System.Void] Open()
@@ -730,7 +730,7 @@
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.CompatibilityMode)
         {
-            $this.PSObject.Properties.ForEach({$this.CallerVariableIntrinsics.Set($_.Name, $_.Value)})
+            $this.PSObject.Properties.ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
         }
 
         # Set PowerShell window title and reflect that we've completed initialisation. This is important for variable retrieval.
