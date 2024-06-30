@@ -11,7 +11,7 @@ Set-StrictMode -Version 3
 
 # Add the custom types required for the toolkit.
 Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ErrorAction Stop -ReferencedAssemblies $(
-    'System.Drawing', 'System.Windows.Forms', 'System.DirectoryServices'
+    'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
         'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
@@ -19,7 +19,7 @@ Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Modul
 )
 
 # Add system types required by the module.
-Add-Type -AssemblyName System.Windows.Forms, System.Activities
+Add-Type -AssemblyName System.Activities
 
 # Store all available Exception names for use within `New-ADTErrorRecord`.
 New-Variable -Name ExceptionNames -Option Constant -Value ([System.AppDomain]::CurrentDomain.GetAssemblies().Where({!$_.IsDynamic}).GetExportedTypes().Where({$_.FullName.EndsWith('Exception')}).FullName | Sort-Object)
