@@ -1,68 +1,68 @@
 ﻿class ADTSession
 {
     # Private variables for modules to use that aren't for public access.
-    hidden [System.Collections.Hashtable]$ExtensionData = @{}
+    hidden [AllowEmptyCollection()][System.Collections.Hashtable]$ExtensionData = @{}
 
     # Internal variables that aren't for public access.
-    hidden [System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
-    hidden [System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
-    hidden [PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
-    hidden [System.Management.Automation.PSVariableIntrinsics]$CallerVariables
-    hidden [System.String]$LoggedOnUserTempPath
-    hidden [System.String]$RegKeyDeferHistory
-    hidden [System.String]$DeploymentTypeName
-    hidden [System.Boolean]$DeployModeNonInteractive
-    hidden [System.Boolean]$DeployModeSilent
-    hidden [System.Boolean]$BlockExecution
-    hidden [System.Boolean]$Instantiated
-    hidden [System.Boolean]$Opened
-    hidden [System.Boolean]$Closed
-    hidden [System.Int32]$ExitCode
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
+    hidden [ValidateNotNullOrEmpty()][System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
+    hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
+    hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
+    hidden [ValidateNotNullOrEmpty()][System.String]$LoggedOnUserTempPath
+    hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
+    hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeNonInteractive
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeSilent
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$BlockExecution
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$Instantiated
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$Opened
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$Closed
+    hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
 
     # Deploy-Application.ps1 parameters.
-    [System.String]$DeploymentType = 'Install'
-    [System.String]$DeployMode = 'Interactive'
-    [System.Boolean]$AllowRebootPassThru
-    [System.Boolean]$TerminalServerMode
-    [System.Boolean]$DisableLogging
+    [ValidateNotNullOrEmpty()][System.String]$DeploymentType = 'Install'
+    [ValidateNotNullOrEmpty()][System.String]$DeployMode = 'Interactive'
+    [ValidateNotNullOrEmpty()][System.Boolean]$AllowRebootPassThru
+    [ValidateNotNullOrEmpty()][System.Boolean]$TerminalServerMode
+    [ValidateNotNullOrEmpty()][System.Boolean]$DisableLogging
 
     # Deploy-Application.ps1 variables.
-    [System.String]$AppVendor
-    [System.String]$AppName
-    [System.String]$AppVersion
-    [System.String]$AppArch
-    [System.String]$AppLang
-    [System.String]$AppRevision
-    [System.Int32[]]$AppExitCodes = 0
-    [System.Int32[]]$AppRebootCodes = 1641, 3010
-    [System.Version]$AppScriptVersion
-    [System.String]$AppScriptDate
-    [System.String]$AppScriptAuthor
-    [System.String]$InstallName
-    [System.String]$InstallTitle
-    [System.String]$DeployAppScriptFriendlyName
-    [System.Version]$DeployAppScriptVersion
-    [System.String]$DeployAppScriptDate
-    [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters
-    [System.String]$InstallPhase = 'Initialization'
+    [AllowEmptyString()][System.String]$AppVendor
+    [AllowEmptyString()][System.String]$AppName
+    [AllowEmptyString()][System.String]$AppVersion
+    [AllowEmptyString()][System.String]$AppArch
+    [AllowEmptyString()][System.String]$AppLang
+    [AllowEmptyString()][System.String]$AppRevision
+    [ValidateNotNullOrEmpty()][System.Int32[]]$AppExitCodes = 0
+    [ValidateNotNullOrEmpty()][System.Int32[]]$AppRebootCodes = 1641, 3010
+    [ValidateNotNullOrEmpty()][System.Version]$AppScriptVersion
+    [ValidateNotNullOrEmpty()][System.String]$AppScriptDate
+    [ValidateNotNullOrEmpty()][System.String]$AppScriptAuthor
+    [ValidateNotNullOrEmpty()][System.String]$InstallName
+    [ValidateNotNullOrEmpty()][System.String]$InstallTitle
+    [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptFriendlyName
+    [ValidateNotNullOrEmpty()][System.Version]$DeployAppScriptVersion
+    [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptDate
+    [AllowEmptyCollection()][System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters
+    [ValidateNotNullOrEmpty()][System.String]$InstallPhase = 'Initialization'
 
     # Calculated variables we publicise.
-    [System.DateTime]$CurrentDateTime = [System.DateTime]::Now
-    [System.String]$CurrentTime
-    [System.String]$CurrentDate
-    [System.TimeSpan]$CurrentTimeZoneBias
-    [System.String]$ScriptDirectory
-    [System.String]$DirFiles
-    [System.String]$DirSupportFiles
-    [System.String]$DirAppDeployTemp
-    [System.String]$DefaultMsiFile
-    [System.String]$DefaultMstFile
-    [System.String[]]$DefaultMspFiles
-    [System.Boolean]$UseDefaultMsi
-    [System.String]$LogTempFolder
-    [System.String]$LogPath
-    [System.String]$LogName
-    [System.String]$LogFile
+    [ValidateNotNullOrEmpty()][System.DateTime]$CurrentDateTime = [System.DateTime]::Now
+    [ValidateNotNullOrEmpty()][System.String]$CurrentTime
+    [ValidateNotNullOrEmpty()][System.String]$CurrentDate
+    [ValidateNotNullOrEmpty()][System.TimeSpan]$CurrentTimeZoneBias
+    [ValidateNotNullOrEmpty()][System.String]$ScriptDirectory
+    [ValidateNotNullOrEmpty()][System.String]$DirFiles
+    [ValidateNotNullOrEmpty()][System.String]$DirSupportFiles
+    [ValidateNotNullOrEmpty()][System.String]$DirAppDeployTemp
+    [AllowEmptyString()][System.String]$DefaultMsiFile
+    [AllowEmptyString()][System.String]$DefaultMstFile
+    [AllowEmptyCollection()][System.String[]]$DefaultMspFiles
+    [ValidateNotNullOrEmpty()][System.Boolean]$UseDefaultMsi
+    [ValidateNotNullOrEmpty()][System.String]$LogTempFolder
+    [ValidateNotNullOrEmpty()][System.String]$LogPath
+    [ValidateNotNullOrEmpty()][System.String]$LogName
+    [ValidateNotNullOrEmpty()][System.String]$LogFile
 
     # Constructors.
     ADTSession([System.Management.Automation.PSCmdlet]$Cmdlet)
