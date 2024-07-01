@@ -52,8 +52,8 @@
         Write-ADTDebugHeader
 
         # Define path for storing temporary data.
-        $tempPath = Join-Path -Path $adtSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
-        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath\$($adtModule.Name).psd1'; Import-ADTModuleState"
+        $tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp')
+        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'; Import-ADTModuleState"
     }
 
     process {
@@ -123,7 +123,7 @@
         # Enumerate each process and set the debugger value to block application execution.
         $ProcessName -replace '$', '.exe' | ForEach-Object {
             Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$_]."
-            Set-RegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $_) -Name Debugger -Value "$($adtEnv.envPSProcessPath) $pwshArgs; Show-ADTBlockedAppDialog"
+            Set-RegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
         }
     }
 
