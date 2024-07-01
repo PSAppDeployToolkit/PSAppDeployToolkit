@@ -209,6 +209,21 @@ namespace PSADT
             WindowsStoreAppRunning = 7  // Introduced in Windows 8. A Windows Store app is running.
         }
 
+        public enum DeviceCap
+        {
+            HORZRES = 8,
+            VERTRES = 10,
+            DESKTOPVERTRES = 117,
+            DESKTOPHORZRES = 118
+        }
+
+        public enum PROCESS_DPI_AWARENESS
+        {
+            PROCESS_DPI_UNAWARE = 0,
+            PROCESS_SYSTEM_DPI_AWARE,
+            PROCESS_PER_MONITOR_DPI_AWARE,
+        }
+
         // Only for Vista or above
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
@@ -228,14 +243,6 @@ namespace PSADT
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         private static extern IntPtr GetShellWindow();
-
-        public enum DeviceCap
-        {
-            HORZRES = 8,
-            VERTRES = 10,
-            DESKTOPVERTRES = 117,
-            DESKTOPHORZRES = 118
-        }
 
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int GetDeviceCaps(IntPtr hDC, int nIndex);
@@ -297,6 +304,9 @@ namespace PSADT
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern bool SetProcessDPIAware();
+
+        [DllImport("SHCore.dll", CharSet = CharSet.Auto, SetLastError = false, ExactSpelling = true)]
+        public static extern int SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
 
         public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 
