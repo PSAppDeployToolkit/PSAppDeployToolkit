@@ -9,11 +9,13 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 3
 
+# Set process DPI awareness before importing anything else.
+[System.Void][PSADT.UiAutomation]::SetProcessDpiAwareness(2 * $Host.Name.Equals('ConsoleHost'))
+
 # Add system types required by the module.
 Add-Type -AssemblyName System.Drawing, System.Windows.Forms, PresentationCore, PresentationFramework, WindowsBase
 
 # All WinForms-specific initialistion code.
-[System.Void][PSADT.UiAutomation]::SetProcessDPIAware()
 [System.Windows.Forms.Application]::EnableVisualStyles()
 try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {[System.Void]$null}
 
