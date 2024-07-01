@@ -113,7 +113,6 @@ FunctionsToExport = @(
     'Set-ADTServiceStartMode'
     'Set-ItemPermission'
     'Set-MsiProperty'
-    'Set-PinnedApplication'
     'Set-RegistryKey'
     'Set-Shortcut'
     'Start-ADTMsiProcess'
