@@ -224,6 +224,23 @@ namespace PSADT
             PROCESS_PER_MONITOR_DPI_AWARE,
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DPI_AWARENESS_CONTEXT
+        {
+            private readonly IntPtr handle;
+
+            private DPI_AWARENESS_CONTEXT(IntPtr Handle)
+            {
+                handle = Handle;
+            }
+
+            public static readonly DPI_AWARENESS_CONTEXT DPI_AWARENESS_CONTEXT_UNAWARE = new DPI_AWARENESS_CONTEXT(new IntPtr(-1));
+            public static readonly DPI_AWARENESS_CONTEXT DPI_AWARENESS_CONTEXT_SYSTEM_AWARE = new DPI_AWARENESS_CONTEXT(new IntPtr(-2));
+            public static readonly DPI_AWARENESS_CONTEXT DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = new DPI_AWARENESS_CONTEXT(new IntPtr(-3));
+            public static readonly DPI_AWARENESS_CONTEXT DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new DPI_AWARENESS_CONTEXT(new IntPtr(-4));
+            public static readonly DPI_AWARENESS_CONTEXT DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED = new DPI_AWARENESS_CONTEXT(new IntPtr(-5));
+        }
+
         // Only for Vista or above
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
@@ -307,6 +324,10 @@ namespace PSADT
 
         [DllImport("SHCore.dll", CharSet = CharSet.Auto, SetLastError = false, ExactSpelling = true)]
         public static extern int SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT value);
 
         public delegate bool EnumWindowsProcD(IntPtr hWnd, ref IntPtr lItems);
 

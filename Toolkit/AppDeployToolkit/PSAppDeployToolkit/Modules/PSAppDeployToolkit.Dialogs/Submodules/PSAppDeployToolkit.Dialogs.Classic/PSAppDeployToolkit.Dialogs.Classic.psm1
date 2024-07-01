@@ -10,7 +10,14 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Set process DPI awareness before importing anything else.
-[System.Void][PSADT.UiAutomation]::SetProcessDpiAwareness(2 * $Host.Name.Equals('ConsoleHost'))
+if (!$Host.Name.Equals('ConsoleHost'))
+{
+    [System.Void][PSADT.UiAutomation]::SetProcessDpiAwarenessContext([PSADT.UiAutomation+DPI_AWARENESS_CONTEXT]::DPI_AWARENESS_CONTEXT_UNAWARE)
+}
+else
+{
+    [System.Void][PSADT.UiAutomation]::SetProcessDpiAwarenessContext([PSADT.UiAutomation+DPI_AWARENESS_CONTEXT]::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
+}
 
 # Add system types required by the module.
 Add-Type -AssemblyName System.Drawing, System.Windows.Forms, PresentationCore, PresentationFramework, WindowsBase
