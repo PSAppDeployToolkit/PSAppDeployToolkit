@@ -18,9 +18,6 @@ Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Modul
     }
 )
 
-# Add system types required by the module.
-Add-Type -AssemblyName System.Activities
-
 # Store all available Exception names for use within `New-ADTErrorRecord`.
 New-Variable -Name ExceptionNames -Option Constant -Value ([System.AppDomain]::CurrentDomain.GetAssemblies().Where({!$_.IsDynamic}).GetExportedTypes().Where({$_.FullName.EndsWith('Exception')}).FullName | Sort-Object)
 
