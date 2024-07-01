@@ -53,6 +53,7 @@
 
         # Define path for storing temporary data.
         $tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp')
+        $taskName = "$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
         $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'; Import-ADTModuleState"
     }
 
@@ -101,6 +102,13 @@
             Write-ADTLogEntry -Message "Failed to set read permissions on path [$tempPath]. The function might not be able to work correctly." -Severity 2
         }
 
+        # Clean up any previous state that might be lingering.
+        if (Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
+        {
+            Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
+            Unblock-ADTAppExecution
+        }
+
         # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
         Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
         try
@@ -111,8 +119,7 @@
                 Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
                 Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
             }
-            $taskName = "$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
-            [System.Void](ScheduledTasks\New-ScheduledTask @nstParams | ScheduledTasks\Register-ScheduledTask -TaskName $taskName -Force)
+            [System.Void](ScheduledTasks\New-ScheduledTask @nstParams | ScheduledTasks\Register-ScheduledTask -TaskName $taskName)
         }
         catch
         {
