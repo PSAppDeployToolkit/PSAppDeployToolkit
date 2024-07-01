@@ -542,7 +542,7 @@
         # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
         if ($adtEnv.IsLocalSystemAccount)
         {
-            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($this.IsTaskSchedulerHealthy).")
+            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($adtEnv.IsTaskSchedulerHealthy).")
         }
         else
         {
