@@ -53,13 +53,13 @@
         {
             Unregister-ScheduledTask -TaskName "$($adtSession.GetPropertyValue('installName'))_BlockedApps" -Confirm:$false
         }
-        Catch
+        catch
         {
             Write-ADTLogEntry -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-ADTError)" -Severity 3
         }
 
         # Remove BlockAppExection temporary directory.
-        if ([System.IO.Directory]::Exists(($tempPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('dirAppDeployTemp'), 'BlockExecution'))))
+        if ([System.IO.Directory]::Exists(($tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp'))))
         {
             Remove-Folder -Path $tempPath
         }
