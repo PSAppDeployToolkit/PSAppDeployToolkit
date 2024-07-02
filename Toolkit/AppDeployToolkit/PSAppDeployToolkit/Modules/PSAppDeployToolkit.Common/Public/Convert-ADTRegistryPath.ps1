@@ -59,34 +59,14 @@
     )
 
     begin {
-        # Define replacements.
-        $pathMatches = @(
-            ':\\'
-            ':'
-            '\\'
-        )
-        $pathReplacements = @{
-            '^HKLM' = 'HKEY_LOCAL_MACHINE\'
-            '^HKCR' = 'HKEY_CLASSES_ROOT\'
-            '^HKCU' = 'HKEY_CURRENT_USER\'
-            '^HKU' = 'HKEY_USERS\'
-            '^HKCC' = 'HKEY_CURRENT_CONFIG\'
-            '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
-        }
-        $wow64Replacements = @{
-            '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
-            '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
-            '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
-            '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
-        }
         Write-ADTDebugHeader
     }
 
     process {
         # Convert the registry key hive to the full path, only match if at the beginning of the line.
-        foreach ($hive in $pathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
+        foreach ($hive in $Script:ADTRegistry.PathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
         {
-            foreach ($regexMatch in ($pathMatches -replace '^',$hive.Key))
+            foreach ($regexMatch in ($Script:ADTRegistry.PathMatches -replace '^',$hive.Key))
             {
                 $Key = $Key -replace $regexMatch,$hive.Value
             }
@@ -95,7 +75,7 @@
         # Process the WOW6432Node values if applicable.
         if ($Wow6432Node -and (Get-ADTEnvironment).Is64BitProcess)
         {
-            foreach ($path in $wow64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
+            foreach ($path in $Script:ADTRegistry.WOW64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
             {
                 $Key = $Key -replace $path.Key,$path.Value
             }
