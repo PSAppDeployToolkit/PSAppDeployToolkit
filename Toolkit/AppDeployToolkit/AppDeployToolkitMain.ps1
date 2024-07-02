@@ -2703,3 +2703,25 @@ function Send-Keys
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2
     Send-ADTKeys
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Compatibility extension support.
+#
+#---------------------------------------------------------------------------
+
+if ((Test-Path -LiteralPath Variable:PSCmdlet) -and (Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
+{
+    $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
+    {
+        # If this script was invoked by another script
+        Split-Path -Path $invokingScript -Parent
+    }
+    else
+    {
+        # If this script was not invoked by another script, fall back to the directory one level above this script.
+        (Get-Item -LiteralPath (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)).Parent.FullName
+    }
+    . $adtExtensions
+}
