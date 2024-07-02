@@ -134,32 +134,30 @@
             if ($PSBoundParameters.ContainsKey('Value'))
             {
                 # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
+                if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
                 {
-                    if ($DoNotExpandEnvironmentNames)
+                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                    return
+                }
+                if ($DoNotExpandEnvironmentNames)
+                {
+                    # Only useful on 'ExpandString' values.
+                    if ($Value -like '(Default)')
                     {
-                        # Only useful on 'ExpandString' values.
-                        if ($Value -like '(Default)')
-                        {
-                            return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                        }
-                        else
-                        {
-                            return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                        }
-                    }
-                    elseif ($Value -like '(Default)')
-                    {
-                        return (Get-Item -LiteralPath $Key).GetValue($null)
+                        return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                     }
                     else
                     {
-                        return $regKeyValue | Select-Object -ExpandProperty $Value
+                        return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                     }
+                }
+                elseif ($Value -like '(Default)')
+                {
+                    return (Get-Item -LiteralPath $Key).GetValue($null)
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                    return $regKeyValue | Select-Object -ExpandProperty $Value
                 }
             }
             elseif ($regKeyValuePropertyCount -eq 0)

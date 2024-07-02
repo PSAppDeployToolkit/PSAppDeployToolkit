@@ -91,25 +91,24 @@
             }
 
             # Install missing updates and wait for pending updates to finish installing.
-            if ($CMMissingUpdates.Count)
-            {
-                # Install missing updates.
-                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $CMInstallMissingUpdates = (Get-CimInstance -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
-
-                # Wait for pending updates to finish installing or the timeout value to expire.
-                do
-                {
-                    Start-Sleep -Seconds 60
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
-                    Write-ADTLogEntry -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
-                }
-                while (($CMInstallPendingUpdates.Count -ne 0) -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
-            }
-            else
+            if (!$CMMissingUpdates.Count)
             {
                 Write-ADTLogEntry -Message 'There are no missing updates.'
+                return
             }
+
+            # Install missing updates.
+            Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
+            $CMInstallMissingUpdates = (Get-CimInstance -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
+
+            # Wait for pending updates to finish installing or the timeout value to expire.
+            do
+            {
+                Start-Sleep -Seconds 60
+                [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
+                Write-ADTLogEntry -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
+            }
+            while (($CMInstallPendingUpdates.Count -ne 0) -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
         }
         catch
         {

@@ -78,7 +78,7 @@
             [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 
             # Set the MSI property.
-            [__ComObject]$View = if ($Record)
+            $View = if ($Record)
             {
                 # If the property already exists, then create the view for updating the property.
                 Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")

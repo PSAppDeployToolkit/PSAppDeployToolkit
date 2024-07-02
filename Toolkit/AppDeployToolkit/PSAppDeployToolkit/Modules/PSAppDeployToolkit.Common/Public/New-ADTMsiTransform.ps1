@@ -168,7 +168,13 @@
 
             if (!(Test-Path -LiteralPath $NewTransformPath -PathType Leaf))
             {
-                Throw "Failed to generate transform file in path [$NewTransformPath]."
+                $naerParams = @{
+                    Exception = [System.IO.IOException]::new("Failed to generate transform file in path [$NewTransformPath].")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'MsiTransformFileMissing'
+                    TargetObject = $NewTransformPath
+                }
+                throw (New-ADTErrorRecord @naerParams)
             }
             Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
         }

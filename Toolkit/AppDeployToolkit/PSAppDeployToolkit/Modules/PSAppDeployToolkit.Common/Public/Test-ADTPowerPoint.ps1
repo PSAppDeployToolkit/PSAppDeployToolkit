@@ -65,11 +65,11 @@
             Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()))]."
             switch ($UserNotificationState)
             {
-                'PresentationMode' {
+                PresentationMode {
                     Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                     return ($presenting = $true)
                 }
-                'FullScreenOrPresentationModeOrLoginScreen' {
+                FullScreenOrPresentationModeOrLoginScreen {
                     if ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))
                     {
                         Write-ADTLogEntry -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
