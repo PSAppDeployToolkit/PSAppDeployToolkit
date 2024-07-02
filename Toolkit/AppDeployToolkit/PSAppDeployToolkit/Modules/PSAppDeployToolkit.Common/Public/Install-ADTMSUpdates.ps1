@@ -61,28 +61,26 @@
             elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
             {
                 # Check to see whether the KB is already installed
-                if (!(Test-ADTMSUpdates -KBNumber $kbNumber))
-                {
-                    Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
-                    switch ($file.Extension)
-                    {
-                        '.exe' {
-                            # Installation type for executables (i.e., Microsoft Office Updates).
-                            Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
-                        }
-                        '.msu' {
-                            # Installation type for Windows updates using Windows Update Standalone Installer.
-                            Start-ADTProcess -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
-                        }
-                        '.msp' {
-                            # Installation type for Windows Installer Patch
-                            Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
-                        }
-                    }
-                }
-                else
+                if (Test-ADTMSUpdates -KBNumber $kbNumber)
                 {
                     Write-ADTLogEntry -Message "KB Number [$kbNumber] is already installed. Continue..."
+                    continue
+                }
+                Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
+                switch ($file.Extension)
+                {
+                    '.exe' {
+                        # Installation type for executables (i.e., Microsoft Office Updates).
+                        Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                    }
+                    '.msu' {
+                        # Installation type for Windows updates using Windows Update Standalone Installer.
+                        Start-ADTProcess -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                    }
+                    '.msp' {
+                        # Installation type for Windows Installer Patch
+                        Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
+                    }
                 }
             }
         }

@@ -87,7 +87,7 @@
                     # Only save/return the window and process details which match the search criteria.
                     if ($PSCmdlet.ParameterSetName.Equals('SearchWinTitle') -and ($VisibleWindowTitle -notmatch $WindowTitle))
                     {
-                        return
+                        continue
                     }
 
                     # Build custom object with details about the window and the process.

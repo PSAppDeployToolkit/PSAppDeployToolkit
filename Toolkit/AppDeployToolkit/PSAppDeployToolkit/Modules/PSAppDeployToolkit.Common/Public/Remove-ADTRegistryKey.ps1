@@ -89,54 +89,51 @@
 
             if (!$Name)
             {
-                if (Test-Path -LiteralPath $Key)
+                if (!(Test-Path -LiteralPath $Key))
                 {
-                    if ($Recurse)
-                    {
-                        Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
-                        [System.Void](Remove-Item -LiteralPath $Key -Force -Recurse)
-                    }
-                    elseif (!(Get-ChildItem -LiteralPath $Key))
-                    {
-                        # Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
-                        Write-ADTLogEntry -Message "Deleting registry key [$Key]."
-                        [System.Void](Remove-Item -LiteralPath $Key -Force)
-                    }
-                    else
-                    {
-                        $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$Key] without [-Recurse] switch.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                            ErrorId = 'SubkeyRecursionError'
-                            TargetObject = $Key
-                            RecommendedAction = "Please run this command again with [-Recurse]."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
+                    Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
+                    return
+                }
+
+                if ($Recurse)
+                {
+                    Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
+                    [System.Void](Remove-Item -LiteralPath $Key -Force -Recurse)
+                }
+                elseif (!(Get-ChildItem -LiteralPath $Key))
+                {
+                    # Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
+                    Write-ADTLogEntry -Message "Deleting registry key [$Key]."
+                    [System.Void](Remove-Item -LiteralPath $Key -Force)
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$Key] without [-Recurse] switch.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'SubkeyRecursionError'
+                        TargetObject = $Key
+                        RecommendedAction = "Please run this command again with [-Recurse]."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
             }
             else
             {
-                if (Test-Path -LiteralPath $Key)
+                if (!(Test-Path -LiteralPath $Key))
                 {
-                    Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]."
-                    if ($Name -eq '(Default)')
-                    {
-                        # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
-                        [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').DeleteValue(''))
-                    }
-                    else
-                    {
-                        [System.Void](Remove-ItemProperty -LiteralPath $Key -Name $Name -Force)
-                    }
+                    Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
+                    return
+                }
+                Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]."
+                if ($Name -eq '(Default)')
+                {
+                    # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
+                    [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').DeleteValue(''))
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
+                    [System.Void](Remove-ItemProperty -LiteralPath $Key -Name $Name -Force)
                 }
             }
         }
