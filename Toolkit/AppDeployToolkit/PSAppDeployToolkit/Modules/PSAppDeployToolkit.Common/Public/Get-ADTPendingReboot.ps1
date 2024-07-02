@@ -55,13 +55,18 @@
 
     #>
 
+    [CmdletBinding()]
+    param (
+    )
+
     begin {
-        # Initialize variables,
+        # Initialize variables.
         $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
         $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
-    Process {
+
+    process {
         # Get the date/time that the system last booted up.
         Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$($adtEnv.envComputerNameFQDN)]."
         $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Math]::Abs([System.Environment]::TickCount))

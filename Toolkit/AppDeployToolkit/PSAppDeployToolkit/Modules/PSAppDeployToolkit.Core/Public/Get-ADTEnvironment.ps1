@@ -1,5 +1,9 @@
 ﻿function Get-ADTEnvironment
 {
+    [CmdletBinding()]
+    param (
+    )
+
     # Return the environment database if initialised.
     if (!($adtData = Get-ADT).Environment -or !$adtData.Environment.Count)
     {

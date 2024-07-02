@@ -1,5 +1,9 @@
 ﻿function Get-ADTConfig
 {
+    [CmdletBinding()]
+    param (
+    )
+
     # Return the config database if initialised.
     if (!($adtData = Get-ADT).Config -or !$adtData.Config.Count)
     {

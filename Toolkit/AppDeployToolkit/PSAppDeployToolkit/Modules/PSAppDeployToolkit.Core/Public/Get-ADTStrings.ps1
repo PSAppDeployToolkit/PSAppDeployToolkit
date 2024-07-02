@@ -1,5 +1,9 @@
 ﻿function Get-ADTStrings
 {
+    [CmdletBinding()]
+    param (
+    )
+
     # Return the string database if initialised.
     if (!($adtData = Get-ADT).Strings -or !$adtData.Strings.Count)
     {
