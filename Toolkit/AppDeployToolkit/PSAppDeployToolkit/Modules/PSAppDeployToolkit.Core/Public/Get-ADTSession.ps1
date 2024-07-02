@@ -1,5 +1,9 @@
 ﻿function Get-ADTSession
 {
+    [CmdletBinding()]
+    param (
+    )
+
     # Return the most recent session in the database.
     if (!($adtData = Get-ADT).Sessions.Count)
     {
