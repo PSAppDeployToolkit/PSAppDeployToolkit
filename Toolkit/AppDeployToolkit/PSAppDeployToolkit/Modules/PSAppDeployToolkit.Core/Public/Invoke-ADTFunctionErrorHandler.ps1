@@ -11,6 +11,11 @@ function Invoke-ADTFunctionErrorHandler
         [System.Management.Automation.ErrorRecord]$ErrorRecord
     )
 
-    $ErrorActionPreference = $Cmdlet.SessionState.PSVariable.Get('OriginalErrorAction').Value
-    $Cmdlet.WriteError($ErrorRecord)
+    begin {
+        $ErrorActionPreference = $Cmdlet.SessionState.PSVariable.Get('OriginalErrorAction').Value
+    }
+    
+    process {
+        $Cmdlet.WriteError($ErrorRecord)
+    }
 }
