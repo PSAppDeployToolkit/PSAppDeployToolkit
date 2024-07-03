@@ -109,5 +109,15 @@
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
-    Show-ADTWelcomePromptClassic @PSBoundParameters
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Show-ADTWelcomePromptClassic @PSBoundParameters
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

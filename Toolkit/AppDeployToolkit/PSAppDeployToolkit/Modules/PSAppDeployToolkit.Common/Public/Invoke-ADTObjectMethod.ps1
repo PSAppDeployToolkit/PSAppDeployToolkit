@@ -65,16 +65,25 @@
         [System.Collections.Hashtable]$Parameter
     )
 
-    # Switch on the parameter set name.
-    switch ($PSCmdlet.ParameterSetName)
-    {
-        Named {
-            # Invoke method by using parameter names.
-            return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            Named {
+                # Invoke method by using parameter names.
+                return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
+            }
+            Positional {
+                # Invoke method without using parameter names.
+                return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
+            }
         }
-        Positional {
-            # Invoke method without using parameter names.
-            return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
-        }
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

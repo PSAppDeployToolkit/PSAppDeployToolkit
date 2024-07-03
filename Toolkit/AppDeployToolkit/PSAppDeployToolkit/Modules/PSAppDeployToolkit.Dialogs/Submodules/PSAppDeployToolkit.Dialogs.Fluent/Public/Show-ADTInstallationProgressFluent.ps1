@@ -90,136 +90,125 @@
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
-    begin {
-        function Update-WindowLocation
+    # Internal worker functions.
+    function Update-ProgressWindowValues
+    {
+        # Blanketly update values from incoming parameters.
+        $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
+        $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+        $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
+        $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+    }
+    function Update-WindowLocation
+    {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.Windows.Window]$Window
+        )
+
+        # Calculate the position on the screen where the progress dialog should be placed.
+        [System.Double]$screenCenterWidth = [System.Windows.SystemParameters]::WorkArea.Width - $Window.ActualWidth
+        [System.Double]$screenCenterHeight = [System.Windows.SystemParameters]::WorkArea.Height - $Window.ActualHeight
+
+        # Set the start position of the Window based on the screen size.
+        switch ($WindowLocation)
         {
-            [CmdletBinding()]
-            param (
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.Windows.Window]$Window
-            )
-
-            # Calculate the position on the screen where the progress dialog should be placed.
-            [System.Double]$screenCenterWidth = [System.Windows.SystemParameters]::WorkArea.Width - $Window.ActualWidth
-            [System.Double]$screenCenterHeight = [System.Windows.SystemParameters]::WorkArea.Height - $Window.ActualHeight
-
-            # Set the start position of the Window based on the screen size.
-            switch ($WindowLocation)
-            {
-                'TopLeft' {
-                    $Window.Left = 0.
-                    $Window.Top = 0.
-                    break
-                }
-                'Top' {
-                    $Window.Left = $screenCenterWidth * 0.5
-                    $Window.Top = 0.
-                    break
-                }
-                'TopRight' {
-                    $Window.Left = $screenCenterWidth
-                    $Window.Top = 0.
-                    break
-                }
-                'TopCenter' {
-                    $Window.Left = $screenCenterWidth * 0.5
-                    $Window.Top = $screenCenterHeight * (1. / 6.)
-                    break
-                }
-                'BottomLeft' {
-                    $Window.Left = 0.
-                    $Window.Top = $screenCenterHeight
-                    break
-                }
-                'Bottom' {
-                    $Window.Left = $screenCenterWidth * 0.5
-                    $Window.Top = $screenCenterHeight
-                    break
-                }
-                'BottomRight' {
-                    # The -100 offset is needed to not overlap system tray toast notifications.
-                    $Window.Left = $screenCenterWidth
-                    $Window.Top = $screenCenterHeight - 100
-                    break
-                }
-                default {
-                    # Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
-                    $Window.Left = $screenCenterWidth * 0.5
-                    $Window.Top = $screenCenterHeight * 0.5
-                    break
-                }
+            'TopLeft' {
+                $Window.Left = 0.
+                $Window.Top = 0.
+                break
+            }
+            'Top' {
+                $Window.Left = $screenCenterWidth * 0.5
+                $Window.Top = 0.
+                break
+            }
+            'TopRight' {
+                $Window.Left = $screenCenterWidth
+                $Window.Top = 0.
+                break
+            }
+            'TopCenter' {
+                $Window.Left = $screenCenterWidth * 0.5
+                $Window.Top = $screenCenterHeight * (1. / 6.)
+                break
+            }
+            'BottomLeft' {
+                $Window.Left = 0.
+                $Window.Top = $screenCenterHeight
+                break
+            }
+            'Bottom' {
+                $Window.Left = $screenCenterWidth * 0.5
+                $Window.Top = $screenCenterHeight
+                break
+            }
+            'BottomRight' {
+                # The -100 offset is needed to not overlap system tray toast notifications.
+                $Window.Left = $screenCenterWidth
+                $Window.Top = $screenCenterHeight - 100
+                break
+            }
+            default {
+                # Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
+                $Window.Left = $screenCenterWidth * 0.5
+                $Window.Top = $screenCenterHeight * 0.5
+                break
             }
         }
-
-        function Update-ProgressWindowValues
-        {
-            # Blanketly update values from incoming parameters.
-            $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-            $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
-            $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
-            $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
-        }
-
-        $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
-    process {
-        # Return early in silent mode.
-        if ($adtSession.IsSilent())
-        {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message: $StatusMessage" -DebugMessage:$Quiet
-            return
-        }
+    # Return early in silent mode.
+    if (($adtSession = Get-ADTSession).IsSilent())
+    {
+        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message: $StatusMessage" -DebugMessage:$Quiet
+        return
+    }
 
-        # Write warnings for functionality that is not yet implemented.
-        if ($WindowLocation -ne 'Default')
-        {
-            Write-ADTLogEntry -Message "The parameter '-WindowLocation' is not yet implemented within this function." -Severity 2
-        }
-        if (!$NotTopMost)
-        {
-            Write-ADTLogEntry -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
-        }
+    # Write warnings for functionality that is not yet implemented.
+    if ($WindowLocation -ne 'Default')
+    {
+        Write-ADTLogEntry -Message "The parameter '-WindowLocation' is not yet implemented within this function." -Severity 2
+    }
+    if (!$NotTopMost)
+    {
+        Write-ADTLogEntry -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
+    }
 
-        # Check if the progress thread is running before invoking methods on it.
-        if (!$Script:ProgressWindow.Running)
-        {
-            # Notify user that the software installation has started.
-            Show-ADTBalloonTipFluent -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
+    # Check if the progress thread is running before invoking methods on it.
+    if (!$Script:ProgressWindow.Running)
+    {
+        # Notify user that the software installation has started.
+        Show-ADTBalloonTipFluent -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
 
-            # Instantiate a new progress window object and start it up.
-            Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
-            if (!$Script:ProgressWindow.Window)
+        # Instantiate a new progress window object and start it up.
+        Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
+        if (!$Script:ProgressWindow.Window)
+        {
+            $Script:ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
+            $Script:ProgressWindow.Thread = $Script:ProgressWindow.Window.Start()
+
+            # Allow the thread to be spun up safely before invoking actions against it.
+            do
             {
-                $Script:ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
-                $Script:ProgressWindow.Thread = $Script:ProgressWindow.Window.Start()
-
-                # Allow the thread to be spun up safely before invoking actions against it.
-                do
-                {
-                    $Script:ProgressWindow.Running = $Script:ProgressWindow.Thread -and $Script:ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
-                }
-                until ($Script:ProgressWindow.Running)
+                $Script:ProgressWindow.Running = $Script:ProgressWindow.Thread -and $Script:ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
             }
-            else
-            {
-                # Update an existing object and present the dialog.
-                Update-ProgressWindowValues
-                $Script:ProgressWindow.Window.ShowDialog()
-                $Script:ProgressWindow.Running = $true
-            }
+            until ($Script:ProgressWindow.Running)
         }
         else
         {
-            # Update all values.
+            # Update an existing object and present the dialog.
             Update-ProgressWindowValues
-            Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Quiet
+            $Script:ProgressWindow.Window.ShowDialog()
+            $Script:ProgressWindow.Running = $true
         }
     }
-
-    end {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+    else
+    {
+        # Update all values.
+        Update-ProgressWindowValues
+        Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Quiet
     }
 }

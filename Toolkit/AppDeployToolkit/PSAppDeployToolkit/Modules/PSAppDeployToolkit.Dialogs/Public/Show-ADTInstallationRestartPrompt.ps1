@@ -75,5 +75,15 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

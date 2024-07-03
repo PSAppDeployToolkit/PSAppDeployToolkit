@@ -42,5 +42,15 @@
         [System.String]$FilePath
     )
 
-    Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Unregister
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Unregister
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

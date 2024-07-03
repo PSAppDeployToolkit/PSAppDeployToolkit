@@ -57,6 +57,15 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    # Dispatch this to the backend worker.
-    Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

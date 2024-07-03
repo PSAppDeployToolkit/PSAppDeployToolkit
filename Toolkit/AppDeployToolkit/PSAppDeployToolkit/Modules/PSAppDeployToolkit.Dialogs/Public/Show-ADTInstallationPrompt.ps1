@@ -123,5 +123,15 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    Show-ADTInstallationPromptClassic @PSBoundParameters
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Show-ADTInstallationPromptClassic @PSBoundParameters
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

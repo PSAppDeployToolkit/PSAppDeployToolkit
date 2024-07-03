@@ -42,5 +42,15 @@
         [System.String]$FilePath
     )
 
-    Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Register
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Register
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }
