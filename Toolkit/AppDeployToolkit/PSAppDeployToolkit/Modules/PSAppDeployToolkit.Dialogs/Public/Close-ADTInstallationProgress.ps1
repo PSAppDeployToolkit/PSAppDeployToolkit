@@ -27,5 +27,15 @@
 
     #>
 
-    & (Get-ADTDialogFunction)
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        & (Get-ADTDialogFunction)
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

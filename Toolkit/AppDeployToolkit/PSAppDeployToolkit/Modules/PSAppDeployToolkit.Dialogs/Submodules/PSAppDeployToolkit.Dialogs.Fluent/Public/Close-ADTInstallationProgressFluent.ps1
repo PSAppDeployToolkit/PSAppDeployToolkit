@@ -27,31 +27,20 @@
 
     #>
 
-    begin {
-        $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    # Return early if we're silent, a window wouldn't have ever opened.
+    if (($adtSession = Get-ADTSession).IsSilent())
+    {
+        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]"
+        return
     }
 
-    process {
-        # Return early if we're silent, a window wouldn't have ever opened.
-        if ($adtSession.IsSilent())
-        {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]"
-            return
-        }
-
-        # Dispose of the window object.
-        if ($Script:ProgressWindow.Window)
-        {
-            Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-            $Script:ProgressWindow.Window.HideDialog()
-        }
-
-        # Reset the state bool.
-        $Script:ProgressWindow.Running = $false
+    # Dispose of the window object.
+    if ($Script:ProgressWindow.Window)
+    {
+        Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+        $Script:ProgressWindow.Window.HideDialog()
     }
 
-    end {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
-    }
+    # Reset the state bool.
+    $Script:ProgressWindow.Running = $false
 }

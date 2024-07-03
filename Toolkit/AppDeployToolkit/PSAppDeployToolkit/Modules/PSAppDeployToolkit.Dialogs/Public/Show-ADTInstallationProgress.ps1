@@ -67,7 +67,15 @@
         Convert-ADTCommandParamsToDynamicParams -Command $Command
     }
 
-    end {
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
         & $Command @PSBoundParameters
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

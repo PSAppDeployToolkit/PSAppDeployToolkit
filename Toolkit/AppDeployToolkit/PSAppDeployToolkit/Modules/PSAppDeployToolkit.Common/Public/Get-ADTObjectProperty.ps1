@@ -49,6 +49,15 @@
         [System.Object[]]$ArgumentList
     )
 
-    # Retrieve property.
-    return $InputObject.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $InputObject, $ArgumentList, $null, $null, $null)
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        return $InputObject.GetType().InvokeMember($PropertyName, [Reflection.BindingFlags]::GetProperty, $null, $InputObject, $ArgumentList, $null, $null, $null)
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

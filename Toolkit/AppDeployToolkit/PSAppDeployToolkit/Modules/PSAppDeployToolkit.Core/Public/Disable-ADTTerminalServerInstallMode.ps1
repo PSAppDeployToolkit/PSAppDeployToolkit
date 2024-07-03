@@ -29,5 +29,15 @@
     param (
     )
 
-    Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute
+    begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+    }
+
+    process {
+        Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }
