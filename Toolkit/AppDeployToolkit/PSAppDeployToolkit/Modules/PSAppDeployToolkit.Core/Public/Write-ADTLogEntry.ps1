@@ -56,7 +56,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source,
+        [System.String]$Source = (Get-PSCallStack).Command.Where({![System.String]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '^Write-(Log|ADTLogEntry)$')})[0],
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -69,7 +69,19 @@
         [System.Management.Automation.SwitchParameter]$DebugMessage
     )
 
-    # The internals of this are within the session's class object.
-    (Get-ADTSession).WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage)
-    if ($PassThru) {return $Message}
+    # If we don't have an active session, write the message to the verbose stream (4).
+    if ($adtSession = if (($adtData = Get-ADT).Sessions.Count) {$adtData.Sessions[-1]})
+    {
+        $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage)
+    }
+    elseif (!$DebugMessage)
+    {
+        $Message.ForEach({Write-Verbose -Message "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: $_"})
+    }
+
+    # Return the provided message if PassThru is true.
+    if ($PassThru)
+    {
+        return $Message
+    }
 }
