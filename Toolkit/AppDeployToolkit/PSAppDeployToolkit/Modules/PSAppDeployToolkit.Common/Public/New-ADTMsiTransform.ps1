@@ -171,8 +171,7 @@
         }
         catch {
             Write-ADTLogEntry -Message "Failed to create new transform file in path [$NewTransformPath].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
         finally
         {

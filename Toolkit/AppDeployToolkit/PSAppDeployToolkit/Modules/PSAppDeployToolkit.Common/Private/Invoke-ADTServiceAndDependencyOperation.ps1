@@ -139,8 +139,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) the service [$Name].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

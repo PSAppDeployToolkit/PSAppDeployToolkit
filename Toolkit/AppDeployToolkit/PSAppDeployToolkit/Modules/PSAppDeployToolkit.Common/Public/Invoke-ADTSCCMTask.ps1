@@ -106,8 +106,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

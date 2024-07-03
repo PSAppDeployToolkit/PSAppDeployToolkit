@@ -70,8 +70,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

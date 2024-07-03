@@ -113,8 +113,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$Path].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 
