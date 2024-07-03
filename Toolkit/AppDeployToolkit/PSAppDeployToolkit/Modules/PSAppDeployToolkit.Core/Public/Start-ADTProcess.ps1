@@ -172,7 +172,7 @@
                         TargetObject = $Path
                         RecommendedAction = "Please confirm the path of the specified file and try again."
                     }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
             }
@@ -189,7 +189,7 @@
                         TargetObject = $Path
                         RecommendedAction = "Please confirm the path of the specified file and try again."
                     }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
                 $Path = $fqPath
@@ -226,7 +226,7 @@
                         TargetObject = $Path
                         RecommendedAction = "Please wait for the current MSI operation to finish and try again."
                     }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    throw (New-ADTErrorRecord @naerParams)
                 }
             }
 

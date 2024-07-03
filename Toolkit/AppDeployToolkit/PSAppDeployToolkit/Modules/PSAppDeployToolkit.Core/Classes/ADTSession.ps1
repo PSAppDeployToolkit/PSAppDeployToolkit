@@ -79,19 +79,6 @@
     }
 
     # Private methods.
-    hidden [System.Void] ThrowTerminatingError([System.Management.Automation.ErrorRecord]$ErrorRecord)
-    {
-        # To get a nice, clean throw, go up the callstack and get the caller's PSCmdlet object to throw with.
-        $callStack = Get-PSCallStack; $callScope = $callStack.IndexOf($($callStack.Where({![System.String]::IsNullOrWhiteSpace($_.Command)}, 'First', 1)))
-        if ($callerCmdlet = Get-Variable -Name PSCmdlet -Scope $callScope -ValueOnly -ErrorAction Ignore)
-        {
-            $callerCmdlet.ThrowTerminatingError($ErrorRecord)
-        }
-
-        # If we're here, we couldn't get a PSCmdlet object to throw with, so just throw the error record directly.
-        throw $ErrorRecord
-    }
-
     hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
     {
         # Get the current environment.
@@ -109,7 +96,7 @@
                 TargetType = 'Init()'
                 RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being instantiated twice."
             }
-            $this.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Confirm the main system automation params are present.
@@ -124,7 +111,7 @@
                 TargetType = 'Init()'
                 RecommendedAction = "Please review the supplied paramters to this object's constructor and try again."
             }
-            $this.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Confirm the main system automation params aren't null.
@@ -139,7 +126,7 @@
                 TargetType = 'Init()'
                 RecommendedAction = "Please review the supplied paramters to this object's constructor and try again."
             }
-            $this.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Establish start date/time first so we can accurately mark the start of execution.
@@ -704,7 +691,7 @@
                 TargetType = 'Open()'
                 RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being opened again."
             }
-            $this.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Initialise PSADT session.
@@ -752,7 +739,7 @@
                 TargetType = 'Close()'
                 RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being closed again."
             }
-            $this.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Get the current config and strings.

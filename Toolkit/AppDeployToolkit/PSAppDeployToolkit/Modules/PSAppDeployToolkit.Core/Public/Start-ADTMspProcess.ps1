@@ -90,30 +90,9 @@
         $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
         # Free our COM objects.
-        $null = try
-        {
-            [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
-        }
-        catch
-        {
-            $null
-        }
-        $null = try
-        {
-            [Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
-        }
-        catch
-        {
-            $null
-        }
-        $null = try
-        {
-            [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
-        }
-        catch
-        {
-            $null
-        }
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
 
         # If the application is installed, patch it.
         if ($AllTargetedProductCodes)
