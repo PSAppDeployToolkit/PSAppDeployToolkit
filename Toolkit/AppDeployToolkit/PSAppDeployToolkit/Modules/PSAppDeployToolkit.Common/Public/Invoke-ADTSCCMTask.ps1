@@ -41,17 +41,6 @@
     )
 
     begin {
-        # Make this function continue on error.
-        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $PSBoundParameters.ErrorAction
-        }
-        else
-        {
-            [System.Management.Automation.ActionPreference]::Continue
-        }
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-
         # Create a hashtable of Schedule IDs compatible with SCCM Client 2007.
         [Hashtable]$ScheduleIds = @{
             HardwareInventory                        = '{00000000-0000-0000-0000-000000000001}'; # Hardware Inventory Collection Task
@@ -77,7 +66,9 @@
             SoftwareUpdatesScan                      = '{00000000-0000-0000-0000-000000000113}'; # Force Update Scan
             AMTProvisionCycle                        = '{00000000-0000-0000-0000-000000000120}'; # AMT Provision Cycle
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {

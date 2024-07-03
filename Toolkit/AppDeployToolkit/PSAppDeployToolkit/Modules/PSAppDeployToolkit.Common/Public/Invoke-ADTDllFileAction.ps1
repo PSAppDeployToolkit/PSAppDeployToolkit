@@ -48,15 +48,7 @@
 
     begin {
         # Make this function continue on error.
-        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $PSBoundParameters.ErrorAction
-        }
-        else
-        {
-            [System.Management.Automation.ActionPreference]::Continue
-        }
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
 
         # Define parameters to pass to regsrv32.exe.
         $DLLActionParameters = switch ($DLLAction = $Host.CurrentCulture.TextInfo.ToTitleCase($DLLAction.ToLower()))
@@ -68,7 +60,6 @@
                 "/s /u `"$FilePath`""
             }
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {

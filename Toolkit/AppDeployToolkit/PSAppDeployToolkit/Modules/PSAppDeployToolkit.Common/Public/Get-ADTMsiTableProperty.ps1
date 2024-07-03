@@ -94,17 +94,6 @@
     )
 
     begin {
-        # Make this function continue on error.
-        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $PSBoundParameters.ErrorAction
-        }
-        else
-        {
-            [System.Management.Automation.ActionPreference]::Continue
-        }
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-
         # Set default values.
         if ($null -eq $Table)
         {
@@ -139,7 +128,9 @@
                 3
             }
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {

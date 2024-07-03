@@ -77,17 +77,6 @@
     )
 
     begin {
-        # Make this function continue on error.
-        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $PSBoundParameters.ErrorAction
-        }
-        else
-        {
-            [System.Management.Automation.ActionPreference]::Continue
-        }
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-
         # Define properties for how the MSI database is opened.
         $msiOpenDatabaseModeReadOnly = 0
         $msiOpenDatabaseModeTransact = 1
@@ -97,7 +86,9 @@
         $msiTransformErrorNone = 0
         $msiTransformValidationNone = 0
         $msiSuppressApplyTransformErrors = 63
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {

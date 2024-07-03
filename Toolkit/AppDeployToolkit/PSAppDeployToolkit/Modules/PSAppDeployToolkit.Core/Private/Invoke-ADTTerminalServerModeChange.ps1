@@ -31,11 +31,7 @@
 
     begin {
         # Make this function continue on error.
-        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Continue
-        }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {
