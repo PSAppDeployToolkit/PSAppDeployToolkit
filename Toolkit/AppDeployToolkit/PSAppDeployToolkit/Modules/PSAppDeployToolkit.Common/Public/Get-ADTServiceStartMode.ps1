@@ -61,8 +61,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

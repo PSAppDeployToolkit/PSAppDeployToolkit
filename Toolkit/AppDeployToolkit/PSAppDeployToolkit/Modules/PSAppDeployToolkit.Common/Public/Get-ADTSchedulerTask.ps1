@@ -81,8 +81,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks.`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

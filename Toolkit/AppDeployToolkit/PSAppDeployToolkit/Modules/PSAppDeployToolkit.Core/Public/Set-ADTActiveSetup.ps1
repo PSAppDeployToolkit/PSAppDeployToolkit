@@ -469,8 +469,7 @@
         }
         catch {
             Write-ADTLogEntry -Message "Failed to set Active Setup registry entry.`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

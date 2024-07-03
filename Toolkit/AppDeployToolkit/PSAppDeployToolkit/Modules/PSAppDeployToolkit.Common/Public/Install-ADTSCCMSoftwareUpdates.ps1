@@ -104,8 +104,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to trigger installation of missing software updates.`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

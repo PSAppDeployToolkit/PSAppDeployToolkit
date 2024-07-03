@@ -84,9 +84,7 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-ADTError)" -Severity 3
-                $ErrorActionPreference = $OriginalErrorAction
-                $PSCmdlet.WriteError($_)
-                $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
                 continue
             }
 
@@ -111,9 +109,7 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-ADTError)" -Severity 3
-                $ErrorActionPreference = $OriginalErrorAction
-                $PSCmdlet.WriteError($_)
-                $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
             }
         }
     }

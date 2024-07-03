@@ -217,8 +217,7 @@
         }
         catch {
             Write-ADTLogEntry -Message "Failed to get the MSI table [$Table].`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
         finally
         {

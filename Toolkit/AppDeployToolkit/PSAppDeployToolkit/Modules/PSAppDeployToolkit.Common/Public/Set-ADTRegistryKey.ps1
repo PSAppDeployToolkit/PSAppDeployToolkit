@@ -169,8 +169,7 @@
             {
                 Write-ADTLogEntry -Message "Failed to set registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
             }
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

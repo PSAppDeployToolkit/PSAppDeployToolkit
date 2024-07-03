@@ -144,8 +144,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file.`n$(Resolve-ADTError)" -Severity 3
-            $ErrorActionPreference = $OriginalErrorAction
-            $PSCmdlet.WriteError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 
