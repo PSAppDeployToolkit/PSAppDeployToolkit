@@ -45,11 +45,11 @@
     )
 
     begin {
-        # Advise that this function is considered deprecated.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
-
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
+
+        # Advise that this function is considered deprecated.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
     }
 
     process {

@@ -37,4 +37,12 @@
         $Script:ErrorActionPreference
     }))
     $Cmdlet.SessionState.PSVariable.Set('ErrorActionPreference', $Script:ErrorActionPreference)
+
+    # Handle the caller's -Verbose parameter, which doesn't always work between them and the module barrier.
+    # https://github.com/PowerShell/PowerShell/issues/4568
+    if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('Verbose'))
+    {
+        $Cmdlet.SessionState.PSVariable.Set('OriginalVerbosity', $Global:VerbosePreference)
+        $Global:VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
+    }
 }
