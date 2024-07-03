@@ -117,14 +117,21 @@
     }
 
     # Instantiate a new ADT session and initialise it.
-    $adtData.Sessions.Add($PSBoundParameters)
     try
     {
-        $adtData.Sessions[-1].Open()
+        $adtData.Sessions.Add($PSBoundParameters)
+        try
+        {
+            $adtData.Sessions[-1].Open()
+        }
+        catch
+        {
+            [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
+            throw
+        }
     }
     catch
     {
-        [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
         $PSCmdlet.ThrowTerminatingError($_)
     }
 
