@@ -277,7 +277,7 @@
         $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
     }
 
-    hidden [System.Void] SetInstallProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] SetInstallProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Build the Installation Title.
         if ([System.String]::IsNullOrWhiteSpace($this.InstallTitle))
@@ -293,7 +293,7 @@
         $this.InstallName = ($this.InstallName -replace '\s').Trim('_') -replace '[_]+', '_'
 
         # Set the Defer History registry path.
-        $this.RegKeyDeferHistory = "$((Get-ADTConfig).Toolkit.RegPath)\$($ADTEnv.appDeployToolkitName)\DeferHistory\$($this.InstallName)"
+        $this.RegKeyDeferHistory = "$($ADTConfig.Toolkit.RegPath)\$($ADTEnv.appDeployToolkitName)\DeferHistory\$($this.InstallName)"
     }
 
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
@@ -308,14 +308,11 @@
         $this.WriteLogDivider(1)
     }
 
-    hidden [System.Void] InitLogging([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] InitLogging([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # Get the current config.
-        $adtConfig = Get-ADTConfig
-
         # Generate log paths from our installation properties.
         $this.LogTempFolder = Join-Path -Path $ADTEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
-        if ($adtConfig.Toolkit.CompressLogs)
+        if ($ADTConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
             if ([System.IO.Directory]::Exists($this.LogTempFolder))
@@ -327,7 +324,7 @@
         }
         else
         {
-            $this.LogPath = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath).FullName
+            $this.LogPath = [System.IO.Directory]::CreateDirectory($ADTConfig.Toolkit.LogPath).FullName
         }
 
         # Generate the log filename to use.
@@ -335,13 +332,13 @@
         $this.LogFile = Join-Path -Path $this.LogPath -ChildPath $this.LogName
 
         # Check if log file needs to be rotated.
-        if ([System.IO.File]::Exists($this.LogFile) -and !$adtConfig.Toolkit.LogAppend)
+        if ([System.IO.File]::Exists($this.LogFile) -and !$ADTConfig.Toolkit.LogAppend)
         {
             $logFileInfo = [System.IO.FileInfo]$this.LogFile
             $logFileSizeMB = $logFileInfo.Length / 1MB
 
             # Rotate if we've exceeded the size already.
-            if (($adtConfig.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $adtConfig.Toolkit.LogMaxSize))
+            if (($ADTConfig.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $ADTConfig.Toolkit.LogMaxSize))
             {
                 try
                 {
@@ -353,21 +350,21 @@
                     [String]$ArchiveLogFilePath = Join-Path -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
                     # Log message about archiving the log file.
-                    $this.WriteLogEntry("Maximum log file size [$($adtConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
+                    $this.WriteLogEntry("Maximum log file size [$($ADTConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
 
                     # Rename the file
                     Move-Item -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
 
                     # Start new log file and log message about archiving the old log file.
-                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($adtConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
+                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($ADTConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
                     $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
 
                     # Keep only the max number of log files
-                    if ($logFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
+                    if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
                     {
-                        $logFiles | Select-Object -First ($logFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | Remove-Item
+                        $logFiles | Select-Object -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | Remove-Item
                     }
                 }
                 catch
@@ -434,11 +431,8 @@
         }
     }
 
-    hidden [System.Void] LogUserInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] LogUserInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # Get the current and config.
-        $adtConfig = Get-ADTConfig
-
         # Log details for all currently logged in users.
         $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | Format-List | Out-String)", $true)
 
@@ -458,7 +452,7 @@
             }
 
             # Guard Intune detection code behind a variable.
-            if ($adtConfig.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
+            if ($ADTConfig.Toolkit.OobeDetection -and ![PSADT.Utilities]::OobeCompleted())
             {
                 $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.")
                 $this.DeployMode = 'Silent'
@@ -489,9 +483,9 @@
         $this.WriteLogEntry("The current execution context has a primary UI language of [$($ADTEnv.currentLanguage)].")
 
         # Advise whether the UI language was overridden.
-        if ($adtConfig.UI.LanguageOverride)
+        if ($ADTConfig.UI.LanguageOverride)
         {
-            $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($adtConfig.UI.LanguageOverride)].")
+            $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($ADTConfig.UI.LanguageOverride)].")
         }
         $this.WriteLogEntry("The following UI messages were imported from the config file: [$((Get-ADT).Language)].")
     }
@@ -509,7 +503,7 @@
         }
     }
 
-    hidden [System.Void] PerformSystemAccountTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] PerformSystemAccountTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Check to see if the Task Scheduler service is in a healthy state by checking its services to see if they exist, are currently running, and have a start mode of 'Automatic'.
         # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
@@ -530,7 +524,7 @@
             {
                 $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.DeployMode)].")
             }
-            elseif ((Get-ADTConfig).Toolkit.SessionDetection)
+            elseif ($ADTConfig.Toolkit.SessionDetection)
             {
                 # If the process is not able to display a UI, enable NonInteractive mode
                 if (!$ADTEnv.IsProcessUserInteractive)
@@ -589,13 +583,10 @@
         }
     }
 
-    hidden [System.Void] TestAdminRequired([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] TestAdminRequired([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # Get the current and config.
-        $adtConfig = Get-ADTConfig
-
         # Check current permissions and exit if not running with Administrator rights.
-        if ($adtConfig.Toolkit.RequireAdmin -and !$ADTEnv.IsAdmin)
+        if ($ADTConfig.Toolkit.RequireAdmin -and !$ADTEnv.IsAdmin)
         {
             $naerParams = @{
                 Exception = [System.UnauthorizedAccessException]::new("[$($ADTEnv.appDeployToolkitName)] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.")
@@ -664,8 +655,9 @@
 
     hidden [System.Void] Open()
     {
-        # Get the current environment.
+        # Get the current environment and config.
         $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being opened twice.
         if ($this.Opened)
@@ -685,17 +677,17 @@
         # Initialise PSADT session.
         $this.DetectDefaultMsi($adtEnv)
         $this.SetAppProperties($adtEnv)
-        $this.SetInstallProperties($adtEnv)
-        $this.InitLogging($adtEnv)
+        $this.SetInstallProperties($adtEnv, $adtConfig)
+        $this.InitLogging($adtEnv, $adtConfig)
         $this.LogScriptInfo($adtEnv)
         $this.LogSystemInfo($adtEnv)
         $this.WriteLogDivider()
-        $this.LogUserInfo($adtEnv)
+        $this.LogUserInfo($adtEnv, $adtConfig)
         $this.PerformSCCMTests($adtEnv)
-        $this.PerformSystemAccountTests($adtEnv)
+        $this.PerformSystemAccountTests($adtEnv, $adtConfig)
         $this.SetDeploymentProperties()
         $this.TestDefaultMsi()
-        $this.TestAdminRequired($adtEnv)
+        $this.TestAdminRequired($adtEnv, $adtConfig)
         $this.PerformTerminalServerTests()
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
