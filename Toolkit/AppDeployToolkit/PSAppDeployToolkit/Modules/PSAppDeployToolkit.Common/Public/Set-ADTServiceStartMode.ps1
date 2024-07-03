@@ -40,12 +40,6 @@
     )
 
     begin {
-        # Make this function continue on error.
-        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Continue
-        }
-
         # Re-write StartMode to suit sc.exe.
         $StartMode = switch ($StartMode)
         {
@@ -66,7 +60,9 @@
                 break
             }
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {

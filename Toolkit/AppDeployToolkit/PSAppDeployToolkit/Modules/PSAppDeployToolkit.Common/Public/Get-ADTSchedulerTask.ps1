@@ -45,20 +45,11 @@
     )
 
     begin {
-        # Make this function continue on error.
-        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            $PSBoundParameters.ErrorAction
-        }
-        else
-        {
-            [System.Management.Automation.ActionPreference]::Continue
-        }
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-
         # Advise that this function is considered deprecated.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
     }
 
     process {
