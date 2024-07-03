@@ -173,7 +173,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
     Process {
         ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
@@ -330,6 +330,6 @@ https://psappdeploytoolkit.com
         If ($PassThru -and $ExecuteResults) {
             Write-Output -InputObject ($ExecuteResults)
         }
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

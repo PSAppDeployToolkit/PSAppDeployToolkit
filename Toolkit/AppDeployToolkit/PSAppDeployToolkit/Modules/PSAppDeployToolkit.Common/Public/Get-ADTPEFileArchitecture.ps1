@@ -44,7 +44,7 @@
     )
 
     begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
         [System.Int32]$MACHINE_OFFSET = 4
         [System.Int32]$PE_POINTER_OFFSET = 60
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
@@ -90,6 +90,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

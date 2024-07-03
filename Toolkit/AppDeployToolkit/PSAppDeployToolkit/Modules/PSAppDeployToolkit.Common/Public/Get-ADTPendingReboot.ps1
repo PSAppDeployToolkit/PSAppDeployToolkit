@@ -62,7 +62,7 @@
     begin {
         # Initialize variables.
         $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -125,6 +125,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

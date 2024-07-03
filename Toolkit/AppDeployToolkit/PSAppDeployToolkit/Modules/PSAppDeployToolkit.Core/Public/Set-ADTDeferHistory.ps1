@@ -43,7 +43,7 @@
     )
 
     begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
         $regKeyDeferHistory = (Get-ADTSession).RegKeyDeferHistory
     }
 
@@ -61,6 +61,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

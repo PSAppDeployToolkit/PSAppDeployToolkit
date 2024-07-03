@@ -55,7 +55,7 @@
 
     begin {
         # Initialize variables.
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
         {
             "$($MutexWaitTime.TotalMinutes) minute(s)"
@@ -139,6 +139,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

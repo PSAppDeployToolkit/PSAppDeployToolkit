@@ -42,7 +42,7 @@
     )
 
     begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     end {
@@ -82,6 +82,6 @@
                 Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
             }
         }
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

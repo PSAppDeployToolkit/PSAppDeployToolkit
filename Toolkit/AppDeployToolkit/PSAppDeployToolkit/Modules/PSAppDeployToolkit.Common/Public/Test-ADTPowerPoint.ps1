@@ -30,7 +30,7 @@
     begin {
         $procName = 'POWERPNT'
         $presenting = 'Unknown'
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -89,6 +89,6 @@
 
     end {
         Write-ADTLogEntry -Message "PowerPoint is running in fullscreen mode [$presenting]."
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

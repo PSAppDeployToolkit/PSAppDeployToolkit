@@ -122,7 +122,7 @@ https://psappdeploytoolkit.com
     Begin {
         $adtEnv = Get-ADTEnvironment
         $adtSession = Get-ADTSession
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath
@@ -418,6 +418,6 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($executeProcessAsUserExitCode)
         }
 
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

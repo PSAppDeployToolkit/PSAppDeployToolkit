@@ -49,7 +49,7 @@
         $adtConfig = Get-ADTConfig
         $adtModule = Get-ADTModuleInfo
         $adtSession = Get-ADTSession
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         # Define path for storing temporary data.
         $tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp')
@@ -135,6 +135,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

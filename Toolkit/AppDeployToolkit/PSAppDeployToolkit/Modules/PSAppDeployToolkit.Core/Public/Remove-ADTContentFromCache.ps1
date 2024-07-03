@@ -29,7 +29,7 @@
     begin {
         $adtSession = Get-ADTSession
         $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -54,6 +54,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

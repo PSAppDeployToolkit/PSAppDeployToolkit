@@ -97,7 +97,7 @@
         $msiTransformErrorNone = 0
         $msiTransformValidationNone = 0
         $msiSuppressApplyTransformErrors = 63
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -215,6 +215,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

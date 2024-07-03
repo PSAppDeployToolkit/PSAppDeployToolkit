@@ -70,6 +70,7 @@ PowerShellVersion = '5.1'
 FunctionsToExport = @(
     'Block-ADTAppExecution'
     'Close-ADTSession'
+    'Complete-ADTFunction'
     'Copy-ADTContentToCache'
     'Disable-ADTTerminalServerInstallMode'
     'Enable-ADTTerminalServerInstallMode'
@@ -85,6 +86,7 @@ FunctionsToExport = @(
     'Get-ADTSession'
     'Get-ADTStrings'
     'Import-ADTModuleState'
+    'Initialize-ADTFunction'
     'Initialize-ADTModule'
     'New-ADTErrorRecord'
     'New-ADTValidateScriptErrorRecord'
@@ -102,8 +104,6 @@ FunctionsToExport = @(
     'Start-ADTProcess'
     'Test-ADTCallerIsAdmin'
     'Unblock-ADTAppExecution'
-    'Write-ADTDebugFooter'
-    'Write-ADTDebugHeader'
     'Write-ADTLogEntry'
 )
 

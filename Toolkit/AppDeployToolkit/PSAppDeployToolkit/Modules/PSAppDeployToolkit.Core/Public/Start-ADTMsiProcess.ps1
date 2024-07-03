@@ -194,7 +194,7 @@
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -503,6 +503,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
