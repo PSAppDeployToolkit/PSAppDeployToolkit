@@ -122,7 +122,7 @@
                 Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTError)" -Severity 3
             }
         }
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -154,6 +154,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

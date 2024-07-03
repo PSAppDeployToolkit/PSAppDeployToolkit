@@ -100,7 +100,7 @@ https://psappdeploytoolkit.com
         )
 
     Begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         # Check if Robocopy is on the system
         If ($UseRobocopy) {
@@ -294,6 +294,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

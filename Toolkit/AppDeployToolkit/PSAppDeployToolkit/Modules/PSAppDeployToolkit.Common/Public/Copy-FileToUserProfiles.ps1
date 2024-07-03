@@ -133,7 +133,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
     Process {
         [Hashtable]$CopyFileSplat = @{
@@ -164,6 +164,6 @@ https://psappdeploytoolkit.com
         }
     }
     End {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

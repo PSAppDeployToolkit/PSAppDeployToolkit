@@ -60,7 +60,7 @@
             [System.Management.Automation.ActionPreference]::Continue
         }
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -114,6 +114,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

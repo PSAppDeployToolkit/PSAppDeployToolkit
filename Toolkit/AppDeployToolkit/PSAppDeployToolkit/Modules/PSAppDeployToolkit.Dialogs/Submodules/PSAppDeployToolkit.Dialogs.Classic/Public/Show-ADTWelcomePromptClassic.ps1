@@ -114,7 +114,7 @@
         $adtConfig = Get-ADTConfig
         $adtStrings = Get-ADTStrings
         $adtSession = Get-ADTSession
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         # Initialise variables.
         $countdownTime = $startTime = [System.DateTime]::Now
@@ -654,6 +654,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

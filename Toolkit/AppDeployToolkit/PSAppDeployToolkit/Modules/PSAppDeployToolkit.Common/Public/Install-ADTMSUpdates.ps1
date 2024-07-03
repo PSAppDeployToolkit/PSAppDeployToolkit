@@ -35,7 +35,7 @@
     begin {
         # KB Number pattern match.
         $kbPattern = '(?i)kb\d{6,8}'
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -87,6 +87,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

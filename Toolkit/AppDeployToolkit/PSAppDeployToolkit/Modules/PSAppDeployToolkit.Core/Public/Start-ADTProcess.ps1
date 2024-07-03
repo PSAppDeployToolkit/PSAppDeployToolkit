@@ -153,7 +153,7 @@
         $stdOutEvent = $stdErrEvent = $null
         $stdOut = $stdErr = $null
         $returnCode = $null
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
     }
 
     process {
@@ -500,6 +500,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

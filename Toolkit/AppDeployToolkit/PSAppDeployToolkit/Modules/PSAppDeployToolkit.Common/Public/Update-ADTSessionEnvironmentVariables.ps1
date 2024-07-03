@@ -35,7 +35,7 @@
 
     begin {
         # Perform initial setup.
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         # Determine the user SID to base things off of.
         $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = Get-ADTRunAsActiveUser))
@@ -62,6 +62,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

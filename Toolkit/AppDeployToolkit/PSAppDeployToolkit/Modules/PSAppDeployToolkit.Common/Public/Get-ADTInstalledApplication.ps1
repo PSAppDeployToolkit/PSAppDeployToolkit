@@ -79,7 +79,7 @@
 
     begin {
         # Announce start.
-        Write-ADTDebugHeader
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
         if ($Name)
         {
             Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
@@ -193,6 +193,6 @@
     }
 
     end {
-        Write-ADTDebugFooter
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
