@@ -27,6 +27,10 @@ function Invoke-ADTFunctionErrorHandler
     }
     
     process {
+        if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
+        {
+            $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
+        }
         $Cmdlet.WriteError($ErrorRecord)
     }
 }
