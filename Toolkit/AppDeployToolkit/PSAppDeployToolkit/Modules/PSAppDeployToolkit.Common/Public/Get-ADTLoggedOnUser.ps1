@@ -51,6 +51,10 @@
 
     #>
 
+    [CmdletBinding()]
+    param (
+    )
+
     begin {
         Initialize-ADTFunction -Cmdlet $PSCmdlet
     }

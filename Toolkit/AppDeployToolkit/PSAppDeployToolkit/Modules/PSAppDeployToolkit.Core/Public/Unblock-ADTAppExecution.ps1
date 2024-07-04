@@ -25,6 +25,10 @@
 
     #>
 
+    [CmdletBinding()]
+    param (
+    )
+
     begin {
         $adtEnv = Get-ADTEnvironment
         $adtSession = Get-ADTSession
