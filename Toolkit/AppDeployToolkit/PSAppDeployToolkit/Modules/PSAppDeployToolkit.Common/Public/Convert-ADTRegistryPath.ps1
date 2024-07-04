@@ -110,13 +110,16 @@
                 TargetObject = $Key
                 RecommendedAction = "Please confirm the supplied value is correct and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
         }
-        elseif ($Logging)
+        else
         {
-            Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
+            if ($Logging)
+            {
+                Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
+            }
+            return $Key
         }
-        return $Key
     }
 
     end {

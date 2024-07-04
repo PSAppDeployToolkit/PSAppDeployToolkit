@@ -49,7 +49,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to remove cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            $PSCmdlet.ThrowTerminatingError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

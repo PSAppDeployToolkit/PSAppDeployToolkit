@@ -122,13 +122,15 @@
         # Test elevated permissions.
         if (!(Test-ADTCallerIsAdmin))
         {
+            Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
             $naerParams = @{
                 Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
                 Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
                 ErrorId = 'CallerNotLocalAdmin'
                 RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            return
         }
 
         # Get object ACLs and enable inheritance.
@@ -141,7 +143,7 @@
         }
 
         # Modify variables to remove file incompatible flags if this is a file.
-        if (Test-Path -Path $Path -ErrorAction 'Stop' -PathType 'Leaf')
+        if (Test-Path -LiteralPath $Path -PathType Leaf)
         {
             $Permission = $Permission -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
             $Inheritance = [System.Security.AccessControl.InheritanceFlags]::None
