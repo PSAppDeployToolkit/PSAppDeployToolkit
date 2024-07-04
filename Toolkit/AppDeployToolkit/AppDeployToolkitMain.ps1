@@ -5293,16 +5293,22 @@ https://psappdeploytoolkit.com
                         }
                         If ($Recurse) {
                             # Add /E to Robocopy parameters if it is not already included
-                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
+                            if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
-                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
-                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
+                        }
+
+                        # Older versions of Robocopy do not support /IM, remove if unsupported
+                        if (!((&Robocopy /?) -match '/IM\s')) {
+                            $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
                         }
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
