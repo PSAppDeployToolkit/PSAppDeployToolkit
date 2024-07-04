@@ -79,7 +79,7 @@
 
     begin {
         # Announce start.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($Name)
         {
             Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."

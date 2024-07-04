@@ -49,7 +49,7 @@
         $adtConfig = Get-ADTConfig
         $adtModule = Get-ADTModuleInfo
         $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define path for storing temporary data.
         $tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp')

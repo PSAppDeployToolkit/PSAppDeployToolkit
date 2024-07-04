@@ -173,7 +173,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
     Process {
         ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting

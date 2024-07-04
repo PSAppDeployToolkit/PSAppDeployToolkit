@@ -309,7 +309,7 @@
         }
 
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction Continue
     }
 
     process {
@@ -469,7 +469,7 @@
         }
         catch {
             Write-ADTLogEntry -Message "Failed to set Active Setup registry entry.`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

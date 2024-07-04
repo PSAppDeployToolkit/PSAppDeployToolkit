@@ -37,7 +37,7 @@
 
     begin {
         $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -52,7 +52,7 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
                 return
             }
         }
@@ -72,7 +72,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

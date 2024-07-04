@@ -115,7 +115,7 @@
     )
 
     begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -129,7 +129,7 @@
                 ErrorId = 'CallerNotLocalAdmin'
                 RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
             }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
             return
         }
 

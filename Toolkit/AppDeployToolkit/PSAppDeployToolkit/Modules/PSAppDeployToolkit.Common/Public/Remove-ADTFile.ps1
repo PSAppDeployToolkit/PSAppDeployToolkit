@@ -53,7 +53,7 @@
 
     begin {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction Continue
     }
 
     process {
@@ -84,7 +84,7 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
                 continue
             }
 
@@ -109,7 +109,7 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }

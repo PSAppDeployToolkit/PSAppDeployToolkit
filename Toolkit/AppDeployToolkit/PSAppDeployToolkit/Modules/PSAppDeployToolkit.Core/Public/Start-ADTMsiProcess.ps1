@@ -194,7 +194,7 @@
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
         $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -326,7 +326,7 @@
                 TargetObject = $Path
                 RecommendedAction = "Please confirm the path of the MSI file and try again."
             }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
             return
         }
 
