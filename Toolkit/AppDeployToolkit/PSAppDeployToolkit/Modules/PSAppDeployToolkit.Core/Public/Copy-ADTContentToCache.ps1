@@ -52,7 +52,8 @@
             catch
             {
                 Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-                $PSCmdlet.ThrowTerminatingError($_)
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+                return
             }
         }
         else
@@ -71,7 +72,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            $PSCmdlet.ThrowTerminatingError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
         }
     }
 

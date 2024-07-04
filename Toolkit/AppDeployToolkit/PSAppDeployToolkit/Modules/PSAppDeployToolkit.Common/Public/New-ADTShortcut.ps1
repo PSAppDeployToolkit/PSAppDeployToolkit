@@ -150,7 +150,7 @@
                 catch
                 {
                     Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTError)" -Severity 3
-                    Throw
+                    throw
                 }
             }
 

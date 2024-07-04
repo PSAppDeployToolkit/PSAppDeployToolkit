@@ -77,7 +77,8 @@
                 TargetObject = $Path
                 RecommendedAction = "Please confirm the path of the MSP file and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            return
         }
 
         # Create a Windows Installer object and open the database in read-only mode.

@@ -326,7 +326,8 @@
                 TargetObject = $Path
                 RecommendedAction = "Please confirm the path of the MSI file and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            return
         }
 
         # Set the working directory of the MSI.
