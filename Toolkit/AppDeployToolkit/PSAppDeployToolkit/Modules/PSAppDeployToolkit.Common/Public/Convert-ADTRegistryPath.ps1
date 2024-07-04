@@ -59,7 +59,7 @@
     )
 
     begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -110,7 +110,7 @@
                 TargetObject = $Key
                 RecommendedAction = "Please confirm the supplied value is correct and try again."
             }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         }
         else
         {

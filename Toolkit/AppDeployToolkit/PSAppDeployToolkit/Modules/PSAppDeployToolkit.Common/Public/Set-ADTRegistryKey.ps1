@@ -83,7 +83,7 @@
 
     begin {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction Continue
     }
 
     process {
@@ -169,7 +169,7 @@
             {
                 Write-ADTLogEntry -Message "Failed to set registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
             }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

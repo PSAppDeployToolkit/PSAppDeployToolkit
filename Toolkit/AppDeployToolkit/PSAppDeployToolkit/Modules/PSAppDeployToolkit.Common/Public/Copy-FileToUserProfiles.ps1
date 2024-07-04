@@ -133,7 +133,7 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
     Process {
         [Hashtable]$CopyFileSplat = @{

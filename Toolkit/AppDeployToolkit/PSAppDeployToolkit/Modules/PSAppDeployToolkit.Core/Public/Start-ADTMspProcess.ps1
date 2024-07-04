@@ -54,7 +54,7 @@
 
     begin {
         $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -77,7 +77,7 @@
                 TargetObject = $Path
                 RecommendedAction = "Please confirm the path of the MSP file and try again."
             }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
             return
         }
 

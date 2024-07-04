@@ -100,7 +100,7 @@ https://psappdeploytoolkit.com
         )
 
     Begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Check if Robocopy is on the system
         If ($UseRobocopy) {

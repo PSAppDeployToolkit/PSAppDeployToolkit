@@ -32,7 +32,7 @@
     begin {
         $adtEnv = Get-ADTEnvironment
         $adtSession = Get-ADTSession
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {

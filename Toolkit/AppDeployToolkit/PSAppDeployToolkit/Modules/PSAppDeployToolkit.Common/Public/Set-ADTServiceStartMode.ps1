@@ -62,7 +62,7 @@
         }
 
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -ErrorAction Continue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction Continue
     }
 
     process {

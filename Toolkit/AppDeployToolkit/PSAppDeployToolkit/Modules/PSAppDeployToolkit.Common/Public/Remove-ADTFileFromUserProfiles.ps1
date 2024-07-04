@@ -86,7 +86,7 @@
         if ($ExcludeNTAccount) {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
