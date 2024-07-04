@@ -26,6 +26,7 @@ Describe 'Copy-File'-ForEach @(
 			"$SourcePath\Subfolder3\hidden.txt"
 			"$SourcePath\Subfolder3\system.txt"
 			"$SourcePath\Subfolder3\hiddensystem.txt"
+			"$SourcePath\SubfolderHidden\test.txt"
 		) | Out-Null
 
 		Set-Content -Path "$SourcePath\Subfolder3\old.txt" -Value 'old file'
@@ -33,6 +34,7 @@ Describe 'Copy-File'-ForEach @(
 		Set-ItemProperty -Path "$SourcePath\Subfolder3\hidden.txt" -Name Attributes -Value 'Hidden'
 		Set-ItemProperty -Path "$SourcePath\Subfolder3\system.txt" -Name Attributes -Value 'System'
 		Set-ItemProperty -Path "$SourcePath\Subfolder3\hiddensystem.txt" -Name Attributes -Value 'Hidden, System'
+		Set-ItemProperty -Path "$SourcePath\SubfolderHidden" -Name Attributes -Value 'Hidden'
 
 		Mock Write-Host {}
 		#$DebugPreference = 'Continue'
@@ -231,16 +233,20 @@ Describe 'Copy-File'-ForEach @(
 	}
 
 
-	It 'Copies hidden and system files, maintaining attributes ($UseRobocopy = $<UseRobocopy>)' {
+	It 'Maintains attributes on copied items ($UseRobocopy = $<UseRobocopy>)' {
 		Copy-File -Path "$SourcePath\Subfolder3\*.txt" -Destination $DestinationPath -UseRobocopy $UseRobocopy
+		Copy-File -Path "$SourcePath\SubfolderHidden\test.txt" -Destination "$DestinationPath\NewFolder" -UseRobocopy $UseRobocopy
 
 		"$DestinationPath\hidden.txt" | Should -Exist
 		"$DestinationPath\system.txt" | Should -Exist
 		"$DestinationPath\hiddensystem.txt" | Should -Exist
+		"$DestinationPath\NewFolder\test.txt" | Should -Exist
 		Get-ItemPropertyValue -Path "$DestinationPath\hidden.txt" -Name Attributes | Should -Match 'Hidden'
 		Get-ItemPropertyValue -Path "$DestinationPath\system.txt" -Name Attributes | Should -Match 'System'
 		Get-ItemPropertyValue -Path "$DestinationPath\hiddensystem.txt" -Name Attributes | Should -Match 'Hidden'
 		Get-ItemPropertyValue -Path "$DestinationPath\hiddensystem.txt" -Name Attributes | Should -Match 'System'
+		Get-ItemPropertyValue -Path "$DestinationPath\NewFolder\test.txt" -Name Attributes | Should -Not -Match 'Hidden'
+		Get-ItemPropertyValue -Path "$DestinationPath\NewFolder" -Name Attributes | Should -Not -Match 'Hidden'
 	}
 
 	It 'Copies an array of items ($UseRobocopy = $<UseRobocopy>)' {
@@ -263,16 +269,6 @@ Describe 'Copy-File'-ForEach @(
 
 		"$DestinationPath\test.txt" | Should -Exist
 		"$DestinationPath\test2.txt" | Should -Exist
-	}
-
-	It 'Does not hide files when copying from C:\Users\Public\Desktop ($UseRobocopy = $<UseRobocopy>)' {
-		$Shortcut = Get-Item -Path 'C:\Users\Public\Desktop\*.lnk' | Select-Object -First 1
-		Get-ItemPropertyValue -Path $Shortcut.FullName -Name Attributes | Should -Not -Match 'Hidden'
-
-		Copy-File -Path $Shortcut.FullName -Destination $DestinationPath -UseRobocopy $UseRobocopy
-
-		"$DestinationPath\$($Shortcut.Name)" | Should -Exist
-		Get-ItemPropertyValue -Path "$DestinationPath\$($Shortcut.Name)" -Name Attributes | Should -Not -Match 'Hidden'
 	}
 
 	It 'Copies files to and from paths longer than 260 characters ($UseRobocopy = $<UseRobocopy>)' {
