@@ -38,7 +38,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$WaitForPendingUpdatesTimeout = (New-TimeSpan -Minutes 45)
+        [System.TimeSpan]$WaitForPendingUpdatesTimeout = [System.TimeSpan]::FromSeconds(45)
     )
 
     begin {

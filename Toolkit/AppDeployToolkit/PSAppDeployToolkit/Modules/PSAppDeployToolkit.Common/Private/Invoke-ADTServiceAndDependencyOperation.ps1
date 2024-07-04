@@ -58,7 +58,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$PendingStatusWait = (New-TimeSpan -Seconds 60),
+        [System.TimeSpan]$PendingStatusWait = [System.TimeSpan]::FromSeconds(60),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
