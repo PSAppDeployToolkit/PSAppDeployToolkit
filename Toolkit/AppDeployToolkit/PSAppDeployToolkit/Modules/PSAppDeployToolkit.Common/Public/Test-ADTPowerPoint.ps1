@@ -27,6 +27,10 @@
 
     #>
 
+    [CmdletBinding()]
+    param (
+    )
+
     begin {
         $procName = 'POWERPNT'
         $presenting = 'Unknown'
