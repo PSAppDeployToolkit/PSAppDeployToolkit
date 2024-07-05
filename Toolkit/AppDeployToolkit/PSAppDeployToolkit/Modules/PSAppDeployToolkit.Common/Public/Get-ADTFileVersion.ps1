@@ -52,10 +52,10 @@
         if ($ProductVersion)
         {
             Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
-            return $File.VersionInfo.ProductVersion
+            return $File.VersionInfo.ProductVersion.Trim()
         }
         Write-ADTLogEntry -Message "File version is [$($File.VersionInfo.FileVersion)]."
-        return $File.VersionInfo.FileVersion
+        return $File.VersionInfo.FileVersion.Trim()
     }
 
     end {
