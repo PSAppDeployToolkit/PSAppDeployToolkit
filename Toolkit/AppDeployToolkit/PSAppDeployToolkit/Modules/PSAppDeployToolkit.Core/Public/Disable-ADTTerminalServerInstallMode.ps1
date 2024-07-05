@@ -8,9 +8,6 @@
     .DESCRIPTION
     Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 
-    .PARAMETER ContinueOnError
-    Continue if an error is encountered. Default is: $true.
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -29,15 +26,5 @@
     param (
     )
 
-    begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-
-    process {
-        Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute
-    }
-
-    end {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
-    }
+    Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute
 }

@@ -79,7 +79,7 @@
                 TargetObject = $scResult
                 RecommendedAction = "Please review the result in this error's TargetObject property and try again."
             }
-            $PSCmdlet.WriteError((New-ADTErrorRecord @naerParams))
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord (New-ADTErrorRecord @naerParams)
         }
         else
         {
