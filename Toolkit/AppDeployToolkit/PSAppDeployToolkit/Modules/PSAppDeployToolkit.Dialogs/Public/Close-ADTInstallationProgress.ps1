@@ -36,7 +36,25 @@
     }
 
     process {
+        # Call the underlying function to close the progress window.
         & (Get-ADTDialogFunction)
+
+        # Send out the final toast notification.
+        switch (($adtSession = Get-ADTSession).GetDeploymentStatus())
+        {
+            FastRetry {
+                Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                break
+            }
+            Error {
+                Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                break
+            }
+            default {
+                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                break
+            }
+        }
     }
 
     end {
