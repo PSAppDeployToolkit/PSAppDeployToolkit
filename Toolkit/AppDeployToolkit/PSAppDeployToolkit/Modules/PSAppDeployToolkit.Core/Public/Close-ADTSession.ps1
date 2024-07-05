@@ -19,25 +19,10 @@
     # If we're closing the last session, clean up the environment.
     if (($adtData = Get-ADT).Sessions.Count.Equals(1))
     {
-        # Only attempt to finalise the dialogs if we're using our own code.
-        if (Get-Module -Name PSAppDeployToolkit.Dialogs)
+        # Only attempt to finalise the dialogs a dialog module is loaded.
+        if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
         {
             Close-ADTInstallationProgress
-            switch ($adtSession.GetDeploymentStatus())
-            {
-                FastRetry {
-                    Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                    break
-                }
-                Error {
-                    Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                    break
-                }
-                default {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                    break
-                }
-            }
         }
 
         # Unblock all PSAppDeployToolkit blocked apps.
