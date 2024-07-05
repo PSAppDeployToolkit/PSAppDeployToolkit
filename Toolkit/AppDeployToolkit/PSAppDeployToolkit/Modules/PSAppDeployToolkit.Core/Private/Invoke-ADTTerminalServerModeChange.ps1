@@ -37,7 +37,7 @@
         try
         {
             Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
-            $terminalServerResult = & "$env:WinDir\System32\change.exe" User /$Mode 2>&1
+            $terminalServerResult = & "$([System.Environment]::SystemDirectory)\change.exe" User /$Mode 2>&1
             if (!$LASTEXITCODE.Equals(1))
             {
                 Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3

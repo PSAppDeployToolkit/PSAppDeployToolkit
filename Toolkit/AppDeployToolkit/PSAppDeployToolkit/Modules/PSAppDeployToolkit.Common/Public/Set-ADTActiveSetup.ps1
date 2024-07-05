@@ -403,17 +403,17 @@
                     [String]$StubPath = "`"$CUStubExePath`""
                 }
                 '.js' {
-                    [String]$CUStubExePath = "$env:WinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.vbs' {
-                    [String]$CUStubExePath = "$env:WinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.cmd' {
-                    [String]$CUStubExePath = "$env:WinDir\System32\cmd.exe"
+                    [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
                     [String]$CUArguments = "/C `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }

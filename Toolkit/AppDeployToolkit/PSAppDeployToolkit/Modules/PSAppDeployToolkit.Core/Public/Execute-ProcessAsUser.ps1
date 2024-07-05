@@ -217,7 +217,7 @@ https://psappdeploytoolkit.com
                 }
 
                 $Parameters = "$NewParameters $Parameters"
-                $Path = "$env:WinDir\System32\wscript.exe"
+                $Path = "$([System.Environment]::SystemDirectory)\wscript.exe"
             }
             #  Replace invalid XML characters in parameters with their valid XML equivalent
             [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)

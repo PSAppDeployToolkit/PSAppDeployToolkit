@@ -86,7 +86,7 @@
                 {
                     if ([System.Environment]::Is64BitProcess)
                     {
-                        "$env:WinDir\System32\regsvr32.exe"
+                        "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                     }
                     else
                     {
@@ -100,7 +100,7 @@
             }
             elseif ($DLLFileBitness -eq '32BIT')
             {
-               "$env:WinDir\System32\regsvr32.exe"
+               "$([System.Environment]::SystemDirectory)\regsvr32.exe"
             }
             else
             {
