@@ -117,13 +117,21 @@
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Instantiate a new ADT session and initialise it.
+    # Initialise the module, instantiate a new ADT session and open it for usage.
     try
     {
+        if (!$adtData.Sessions.Count)
+        {
+            Initialize-ADTEnvironment
+            Import-ADTConfig
+            Import-ADTLocalizedStrings
+            $adtData.LastExitCode = 0
+        }
         $adtData.Sessions.Add($PSBoundParameters)
         try
         {
             $adtData.Sessions[-1].Open()
+            [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
         }
         catch
         {

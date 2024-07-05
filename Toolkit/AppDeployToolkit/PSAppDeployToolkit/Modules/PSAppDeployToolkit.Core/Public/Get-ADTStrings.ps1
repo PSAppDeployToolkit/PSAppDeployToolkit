@@ -8,11 +8,11 @@
     if (!($adtData = Get-ADT).Strings -or !$adtData.Strings.Count)
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions.")
+            Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTStringTableNotInitialised'
             TargetObject = $adtData.Strings
-            RecommendedAction = "Please ensure the module is initialised via [Initialize-ADTModule] and try again."
+            RecommendedAction = "Please ensure the module is initialised via [Open-ADTSession] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
