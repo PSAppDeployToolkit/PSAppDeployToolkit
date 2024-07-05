@@ -313,7 +313,8 @@ try
 }
 catch
 {
-    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTError) -Severity 3
+    $mainErrorMessage = "$($adtSession.DeployAppScriptFriendlyName) received a terminating error and could not complete its operations.`n`n`n$(Resolve-ADTError)"
+    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode 60001
 }
