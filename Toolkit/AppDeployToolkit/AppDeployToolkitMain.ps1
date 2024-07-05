@@ -42,28 +42,23 @@ Remove-Module -Name PSAppDeployToolkit* -Force
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
 
 # Open a new PSADT session.
-if (Test-Path -LiteralPath Variable:PSCmdlet)
+$sessionProps = @{SessionState = $ExecutionContext.SessionState}; foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
 {
-    # Get all relevant parameters from the targeted function, then check whether they're defined and not empty.
-    $sessionProps = @{Cmdlet = $PSCmdlet}
-    foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+    # Return early if the parameter doesn't exist or its value is null.
+    if (($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
     {
-        # Return early if the parameter doesn't exist or its value is null.
-        if (($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
-        {
-            $sessionProps.Add($param, $value)
-        }
+        $sessionProps.Add($param, $value)
     }
+}
 
-    # Initialise the module and open the session.
-    Initialize-ADTModule -Cmdlet $PSCmdlet
-    Open-ADTSession @sessionProps
+# Initialise the module and open the session.
+Initialize-ADTModule -SessionState $ExecutionContext.SessionState
+Open-ADTSession @sessionProps
 
-    # Enable Terminal Services Install Mode here if requested.
-    if ((Test-Path -LiteralPath Variable:TerminalServerMode) -and $TerminalServerMode)
-    {
-        $TerminalServerMode = Enable-ADTTerminalServerInstallMode
-    }
+# Enable Terminal Services Install Mode here if requested.
+if ((Test-Path -LiteralPath Variable:TerminalServerMode) -and $TerminalServerMode)
+{
+    $TerminalServerMode = Enable-ADTTerminalServerInstallMode
 }
 
 
@@ -2880,7 +2875,7 @@ function New-Shortcut
 #
 #---------------------------------------------------------------------------
 
-if ((Test-Path -LiteralPath Variable:PSCmdlet) -and (Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
+if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
 {
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {

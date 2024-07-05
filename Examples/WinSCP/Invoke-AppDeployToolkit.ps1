@@ -62,21 +62,14 @@ https://psappdeploytoolkit.com
 #>
 
 param (
-    [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
     [System.String]$DeploymentType = 'Install',
 
-    [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
     [System.String]$DeployMode = 'Interactive',
 
-    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
-
-    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$TerminalServerMode,
-
-    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$DisableLogging
 )
 
@@ -109,6 +102,7 @@ $adtSession = @{
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
     DeployAppScriptVersion = [System.Version]'3.91.0'
     DeployAppScriptDate = '05/03/2024'
+    DeployAppScriptParameters = $PSBoundParameters
 }
 
 
@@ -306,8 +300,8 @@ catch
 # Instantiate a new session.
 try
 {
-    Initialize-ADTModule -Cmdlet $PSCmdlet
-    $adtSession = Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @adtSession -PassThru
+    Initialize-ADTModule -SessionState $ExecutionContext.SessionState
+    $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
 }
 catch
 {
