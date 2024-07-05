@@ -36,7 +36,7 @@
     finally
     {
         [System.Void]$adtData.Sessions.Remove($adtSession)
-        if (!$adtData.Sessions.Count -and $MyInvocation.PSCommandPath)
+        if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
         {
             exit $adtData.LastExitCode
         }

@@ -8,6 +8,7 @@
     hidden [ValidateNotNullOrEmpty()][System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
     hidden [ValidateNotNullOrEmpty()][System.String]$LoggedOnUserTempPath
     hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
@@ -131,7 +132,8 @@
         $this.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.CurrentDateTime)
 
         # Process provided parameters and amend some incoming values.
-        $Parameters.GetEnumerator().Where({$this.PSObject.Properties.Name.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
+        $Properties = (Get-Member -InputObject $this -MemberType Property -Force).Name
+        $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
@@ -633,8 +635,6 @@
         {
             return
         }
-
-        # Pass through the session's property table. Because objects are passed by reference, this works fine.
         $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
     }
 
