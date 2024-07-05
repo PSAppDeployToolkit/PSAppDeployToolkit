@@ -7,29 +7,34 @@
         [System.Nullable[System.Int32]]$ExitCode
     )
 
-    begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
+    # Get the current session object.
+    $adtSession = Get-ADTSession
 
-    process {
-        # Close the Installation Progress Dialog if running.
-        if (($adtData = Get-ADT).Sessions.Count.Equals(1) -and (Get-Module -Name PSAppDeployToolkit.Dialogs))
+    # If we're closing the last session, clean up the environment.
+    if (($adtData = Get-ADT).Sessions.Count.Equals(1))
+    {
+        if (Get-Module -Name PSAppDeployToolkit.Dialogs)
         {
             Close-ADTInstallationProgress
         }
-
-        # Close out the active session and clean up session state.
-        ($adtSession = Get-ADTSession).Close($ExitCode)
-        [System.Void]$adtData.Sessions.Remove($adtSession)
-
-        # If this was the last session, exit out with our code.
-        if (!$adtData.Sessions.Count)
+        if ($adtData.TerminalServerMode)
         {
-            exit $adtData.LastExitCode
+            Disable-ADTTerminalServerInstallMode
         }
     }
 
-    end {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+    # Close out the active session and clean up session state.
+    try
+    {
+        $adtSession.Close($ExitCode)
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally
+    {
+        [System.Void]$adtData.Sessions.Remove($adtSession)
+        if (!$adtData.Sessions.Count) {exit $adtData.LastExitCode}
     }
 }

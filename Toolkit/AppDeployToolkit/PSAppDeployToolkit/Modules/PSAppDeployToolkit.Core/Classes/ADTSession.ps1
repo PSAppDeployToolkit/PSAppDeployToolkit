@@ -24,7 +24,6 @@
     [ValidateNotNullOrEmpty()][System.String]$DeploymentType = 'Install'
     [ValidateNotNullOrEmpty()][System.String]$DeployMode = 'Interactive'
     [ValidateNotNullOrEmpty()][System.Boolean]$AllowRebootPassThru
-    [ValidateNotNullOrEmpty()][System.Boolean]$TerminalServerMode
     [ValidateNotNullOrEmpty()][System.Boolean]$DisableLogging
 
     # Deploy-Application.ps1 variables.
@@ -602,15 +601,6 @@
         }
     }
 
-    hidden [System.Void] PerformTerminalServerTests()
-    {
-        # If terminal server mode was specified, change the installation mode to support it
-        if ($this.TerminalServerMode)
-        {
-            Enable-TerminalServerInstallMode
-        }
-    }
-
     # Public methods.
     [System.Object] GetPropertyValue([System.String]$Name)
     {
@@ -687,7 +677,6 @@
         $this.SetDeploymentProperties()
         $this.TestDefaultMsi()
         $this.TestAdminRequired($adtEnv, $adtConfig)
-        $this.PerformTerminalServerTests()
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
         $this.InstallPhase = 'Execution'
@@ -732,12 +721,6 @@
         if ($this.BlockExecution)
         {
             Unblock-ADTAppExecution
-        }
-
-        # If Terminal Server mode was set, turn it off.
-        if ($this.GetPropertyValue('TerminalServerMode'))
-        {
-            Disable-TerminalServerInstallMode
         }
 
         # Update exit code with that from the session if the input is null.

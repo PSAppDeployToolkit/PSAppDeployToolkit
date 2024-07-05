@@ -34,19 +34,30 @@
     }
 
     process {
-        Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
-        $terminalServerResult = & "$env:WinDir\System32\change.exe" User /$Mode 2>&1
-        if (!$LASTEXITCODE.Equals(1))
+        try
         {
-            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
-            $naerParams = @{
-                Exception = [System.ApplicationException]::new($msg)
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'RdsChangeUtilityFailure'
-                TargetObject = $terminalServerResult
-                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+            Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
+            $terminalServerResult = & "$env:WinDir\System32\change.exe" User /$Mode 2>&1
+            if (!$LASTEXITCODE.Equals(1))
+            {
+                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
+                $naerParams = @{
+                    Exception = [System.ApplicationException]::new($msg)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'RdsChangeUtilityFailure'
+                    TargetObject = $terminalServerResult
+                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                }
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord (New-ADTErrorRecord @naerParams)
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+        finally
+        {
+            $LASTEXITCODE.Equals(1)
         }
     }
 

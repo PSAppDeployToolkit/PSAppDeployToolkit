@@ -25,6 +25,7 @@ Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value @{
     Sessions = [System.Collections.Generic.List[ADTSession]]::new()
+    TerminalServerMode = $false
     Environment = $null
     Language = $null
     Config = $null
