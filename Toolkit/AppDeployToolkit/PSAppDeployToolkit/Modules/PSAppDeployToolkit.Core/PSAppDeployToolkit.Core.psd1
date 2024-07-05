@@ -87,7 +87,6 @@ FunctionsToExport = @(
     'Get-ADTStrings'
     'Import-ADTModuleState'
     'Initialize-ADTFunction'
-    'Initialize-ADTModule'
     'Invoke-ADTFunctionErrorHandler'
     'New-ADTErrorRecord'
     'New-ADTValidateScriptErrorRecord'

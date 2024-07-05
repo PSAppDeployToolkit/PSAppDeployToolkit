@@ -51,8 +51,7 @@ $sessionProps = @{SessionState = $ExecutionContext.SessionState}; foreach ($para
     }
 }
 
-# Initialise the module and open the session.
-Initialize-ADTModule -SessionState $ExecutionContext.SessionState
+# Open a new session.
 Open-ADTSession @sessionProps
 
 # Enable Terminal Services Install Mode here if requested.

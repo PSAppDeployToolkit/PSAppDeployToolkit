@@ -300,7 +300,6 @@ catch
 # Instantiate a new session.
 try
 {
-    Initialize-ADTModule -SessionState $ExecutionContext.SessionState
     $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
 }
 catch
