@@ -58,6 +58,12 @@ if (Test-Path -LiteralPath Variable:PSCmdlet)
     # Initialise the module and open the session.
     Initialize-ADTModule -Cmdlet $PSCmdlet
     Open-ADTSession @sessionProps
+
+    # Enable Terminal Services Install Mode here if requested.
+    if ((Test-Path -LiteralPath Variable:TerminalServerMode) -and $TerminalServerMode)
+    {
+        $TerminalServerMode = Enable-ADTTerminalServerInstallMode
+    }
 }
 
 

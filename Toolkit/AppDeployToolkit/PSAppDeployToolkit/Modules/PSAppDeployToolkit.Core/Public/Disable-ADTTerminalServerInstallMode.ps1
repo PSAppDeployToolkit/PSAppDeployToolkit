@@ -26,5 +26,5 @@
     param (
     )
 
-    Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute
+    [System.Void](Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute)
 }

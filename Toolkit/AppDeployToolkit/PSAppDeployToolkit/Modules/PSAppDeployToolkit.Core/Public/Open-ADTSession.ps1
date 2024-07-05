@@ -18,9 +18,6 @@
         [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
-        [System.Management.Automation.SwitchParameter]$TerminalServerMode,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
