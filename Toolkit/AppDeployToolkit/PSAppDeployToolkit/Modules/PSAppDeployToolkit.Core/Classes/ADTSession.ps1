@@ -61,9 +61,9 @@
     [ValidateNotNullOrEmpty()][System.String]$LogName
 
     # Constructors.
-    ADTSession([System.Management.Automation.PSCmdlet]$Cmdlet)
+    ADTSession([System.Management.Automation.SessionState]$SessionState)
     {
-        $this.Init(@{Cmdlet = $Cmdlet})
+        $this.Init(@{SessionState = $SessionState})
     }
     ADTSession([System.Collections.Generic.Dictionary[System.String, System.Object]]$Parameters)
     {
@@ -96,7 +96,7 @@
         }
 
         # Confirm the main system automation params are present.
-        foreach ($param in @('Cmdlet').Where({!$Parameters.ContainsKey($_)}))
+        foreach ($param in @('SessionState').Where({!$Parameters.ContainsKey($_)}))
         {
             $naerParams = @{
                 Exception = [System.ArgumentException]::new('One or more mandatory parameters are missing.', $param)
@@ -111,7 +111,7 @@
         }
 
         # Confirm the main system automation params aren't null.
-        foreach ($param in @('Cmdlet').Where({!$Parameters[$_]}))
+        foreach ($param in @('SessionState').Where({!$Parameters[$_]}))
         {
             $naerParams = @{
                 Exception = [System.ArgumentNullException]::new($param, 'One or more mandatory parameters are null.')
@@ -133,11 +133,10 @@
         # Process provided parameters and amend some incoming values.
         $Parameters.GetEnumerator().Where({$this.PSObject.Properties.Name.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
-        $this.DeployAppScriptParameters = $Parameters.Cmdlet.MyInvocation.BoundParameters
-        $this.CallerVariables = $Parameters.Cmdlet.SessionState.PSVariable
+        $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories.
-        $this.ScriptDirectory = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
+        $this.ScriptDirectory = if ($rootLocation = $Parameters.SessionState.PSVariable.GetValue('PSScriptRoot', $null)) {$rootLocation} else {$PWD.Path}
         $this.DirFiles = "$($this.ScriptDirectory)\Files"
         $this.DirSupportFiles = "$($this.ScriptDirectory)\SupportFiles"
 
@@ -393,7 +392,7 @@
         {
             $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)]")
         }
-        if ($this.DeployAppScriptParameters.Count)
+        if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
         {
             $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | Resolve-ADTBoundParameters)]")
         }

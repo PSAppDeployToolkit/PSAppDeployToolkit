@@ -2,9 +2,9 @@
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, HelpMessage = "Caller's CmdletBinding Object")]
+        [Parameter(Mandatory = $true, HelpMessage = "Caller's SessionState")]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSCmdlet]$Cmdlet,
+        [System.Management.Automation.SessionState]$SessionState,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [ValidateSet('Install', 'Uninstall', 'Repair')]
@@ -95,6 +95,10 @@
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeployAppScriptDate,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
