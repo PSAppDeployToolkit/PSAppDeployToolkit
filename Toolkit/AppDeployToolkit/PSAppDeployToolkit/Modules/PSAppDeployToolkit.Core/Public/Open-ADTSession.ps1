@@ -104,17 +104,13 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    # Clamp the session count at one, for now.
-    if (($adtData = Get-ADT).Sessions.Count -and (($adtData.Sessions.CompatibilityMode -contains $true) -or (Test-ADTNonNativeCaller)))
+    # Get the module's state.
+    $adtData = Get-ADT
+
+    # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
+    if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
     {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted for non-native invocations.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-            ErrorId = 'ADTSessionMaximumExceeded'
-            TargetObject = $PSBoundParameters
-            RecommendedAction = "Please use the new PSAppDeployToolkit frontend, which uses native mode to support multiple concurrent sessions."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $adtData.Sessions.Clear()
     }
 
     # Initialise the module, instantiate a new ADT session and open it for usage.
