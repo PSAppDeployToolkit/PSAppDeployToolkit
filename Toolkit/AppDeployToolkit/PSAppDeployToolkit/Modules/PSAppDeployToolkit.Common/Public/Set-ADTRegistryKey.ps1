@@ -119,7 +119,7 @@
                     {
                         '/reg:32'
                     }
-                    $CreateRegkeyResult = & "$env:WinDir\System32\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
+                    $CreateRegkeyResult = & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
                     if ($Global:LastExitCode -ne 0)
                     {
                         $naerParams = @{

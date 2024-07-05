@@ -84,7 +84,7 @@
                     }
 
                     Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                    $HiveLoadResult = & "$env:WinDir\System32\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
+                    $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
                     if ($Global:LastExitCode -ne 0)
                     {
                         $naerParams = @{
@@ -118,7 +118,7 @@
                     try
                     {
                         Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                        $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
+                        $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                         if ($Global:LastExitCode -ne 0)
                         {
                             Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
@@ -127,7 +127,7 @@
                             [System.Threading.Thread]::Sleep(5000)
 
                             Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                            $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
+                            $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                             if ($Global:LastExitCode -ne 0)
                             {
                                 $naerParams = @{
