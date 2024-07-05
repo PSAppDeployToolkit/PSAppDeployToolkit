@@ -96,14 +96,6 @@
         [ValidateNotNullOrEmpty()]
         [System.String]$Arguments,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Description = (Get-ADTSession).GetPropertyValue('installName'),
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Key = (Get-ADTSession).GetPropertyValue('installName'),
-
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
@@ -127,7 +119,38 @@
         [System.Management.Automation.SwitchParameter]$NoExecuteForCurrentUser
     )
 
+    dynamicparam {
+        # Attempt to get the most recent ADTSession object.
+        $adtSession = try {Get-ADTSession} catch {[System.Void]$null}
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Description', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession; ParameterSetName = 'Create'}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+        $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Key', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
+
     begin {
+        # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
+        if ($adtSession)
+        {
+            ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({Set-Variable -Name $_ -Value $adtSession.GetPropertyValue('InstallName')})
+        }
+
         # Define initial variables.
         $runAsActiveUser = Get-ADTRunAsActiveUser
         $CUStubExePath = $null
@@ -348,11 +371,14 @@
 
             # Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there).
             $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
-            $StubExeFile = Join-Path -Path (Get-ADTSession).GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
-            if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
+            if ($adtSession)
             {
-                # This will overwrite the StubPath file if $StubExePath already exists on target.
-                Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
+                $StubExeFile = Join-Path -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
+                if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
+                {
+                    # This will overwrite the StubPath file if $StubExePath already exists on target.
+                    Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
+                }
             }
 
             # Check if the $StubExePath file exists.
