@@ -13,7 +13,6 @@
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeNonInteractive
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeSilent
-    hidden [ValidateNotNullOrEmpty()][System.Boolean]$BlockExecution
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Instantiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Opened
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Closed
@@ -54,7 +53,6 @@
     [ValidateNotNullOrEmpty()][System.String]$ScriptDirectory
     [ValidateNotNullOrEmpty()][System.String]$DirFiles
     [ValidateNotNullOrEmpty()][System.String]$DirSupportFiles
-    [ValidateNotNullOrEmpty()][System.String]$DirAppDeployTemp
     [AllowEmptyString()][System.String]$DefaultMsiFile
     [AllowEmptyString()][System.String]$DefaultMstFile
     [AllowEmptyCollection()][System.String[]]$DefaultMspFiles
@@ -142,7 +140,6 @@
         $this.ScriptDirectory = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
         $this.DirFiles = "$($this.ScriptDirectory)\Files"
         $this.DirSupportFiles = "$($this.ScriptDirectory)\SupportFiles"
-        $this.DirAppDeployTemp = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\$($adtEnv.appDeployToolkitName)").FullName
 
         # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
         # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
@@ -152,7 +149,7 @@
         }
         else
         {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($this.DirAppDeployTemp)\ExecuteAsUser").FullName
+            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\ExecuteAsUser").FullName
         }
 
         # Reflect that we've completed instantiation.
@@ -716,12 +713,6 @@
         # Get the current config and strings.
         $adtConfig = Get-ADTConfig
         $adtStrings = Get-ADTStrings
-
-        # If block execution variable is true, call the function to unblock execution.
-        if ($this.BlockExecution)
-        {
-            Unblock-ADTAppExecution
-        }
 
         # Update exit code with that from the session if the input is null.
         if ($null -eq $ReturnCode)

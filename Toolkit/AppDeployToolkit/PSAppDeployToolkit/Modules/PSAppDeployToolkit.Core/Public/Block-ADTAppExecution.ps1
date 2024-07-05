@@ -52,9 +52,9 @@
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define path for storing temporary data.
-        $tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp')
-        $taskName = "$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
-        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'; Import-ADTModuleState"
+        $tempPath = $adtConfig.Toolkit.TempPath
+        $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
+        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'"
     }
 
     process {
@@ -63,15 +63,6 @@
         {
             Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             return
-        }
-
-        # Flag that we're blocking execution.
-        $adtSession.BlockExecution = $true
-
-        # Delete this file if it exists as it can cause failures (it is a bug from an older version of the toolkit).
-        if ([System.IO.File]::Exists(($legacyFile = "$($adtConfig.Toolkit.TempPath)\$($adtModule.Name)")))
-        {
-            Remove-Item -LiteralPath $legacyFile -Force -ErrorAction Ignore
         }
 
         # Reset any previous instance of the temp folder.
@@ -89,8 +80,7 @@
         }
 
         # Export the current state of the module for the scheduled task.
-        Copy-Item -Path "$((Get-ADTModuleInfo).ModuleBase)\*" -Destination $tempPath -Exclude thumbs.db -Force -Recurse
-        Export-Clixml -InputObject (Get-ADT) -LiteralPath "$tempPath\$($adtModule.Name).xml" -Depth ([System.Int32]::MaxValue)
+        Copy-Item -Path "$($adtModule.ModuleBase)\*" -Destination $tempPath -Exclude thumbs.db -Force -Recurse
 
         # Set contents to be readable for all users (BUILTIN\USERS).
         try
@@ -130,7 +120,7 @@
         # Enumerate each process and set the debugger value to block application execution.
         $ProcessName -replace '$', '.exe' | ForEach-Object {
             Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$_]."
-            Set-ADTRegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
+            Set-ADTRegistryKey -Key (Join-Path -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Import-ADTModuleState; Show-ADTBlockedAppDialog; #"
         }
     }
 

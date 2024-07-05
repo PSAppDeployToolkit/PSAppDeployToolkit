@@ -353,10 +353,6 @@
     $variables.Add('MSIProductCodeRegExPattern', (Get-ADTGuidRegexPattern))
     $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
-    ## Variables: Registry Keys
-    # Registry keys for native and WOW64 applications
-    $variables.Add('regKeyAppExecution', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
-
     # Add in WScript shell variables.
     $variables.Add('Shell', (New-Object -ComObject 'WScript.Shell'))
     $variables.Add('ShellApp', (New-Object -ComObject 'Shell.Application'))

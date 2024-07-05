@@ -17,6 +17,7 @@
         {
             Close-ADTInstallationProgress
         }
+        Unblock-ADTAppExecution
         if ($adtData.TerminalServerMode)
         {
             Disable-ADTTerminalServerInstallMode
