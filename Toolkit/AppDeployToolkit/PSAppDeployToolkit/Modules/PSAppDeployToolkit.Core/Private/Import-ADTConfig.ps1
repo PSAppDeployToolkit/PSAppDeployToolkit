@@ -63,6 +63,9 @@
         }
     }
 
+    # Append the toolkit's name onto the temporary path.
+    $config.Toolkit.TempPath = [System.IO.Path]::Combine($config.Toolkit.TempPath, $adtModule.Name)
+
     # Finally, store the config globally for usage within module.
     (Get-ADT).Config = $config
 }
