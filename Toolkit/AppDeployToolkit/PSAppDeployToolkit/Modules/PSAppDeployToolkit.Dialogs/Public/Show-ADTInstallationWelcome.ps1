@@ -346,7 +346,7 @@
             $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
             $promptResult = $null
 
-            while (($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+            while (($runningProcesses = if ($ProcessObjects) {$ProcessObjects | Get-ADTRunningProcesses}) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
             {
                 # Get all unique running process descriptions.
                 $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
