@@ -80,8 +80,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks.`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to retrieve scheduled tasks."
         }
     }
 

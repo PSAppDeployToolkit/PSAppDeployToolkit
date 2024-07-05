@@ -475,8 +475,7 @@
 
             if ($returnCode.Equals(60002))
             {
-                Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Function failed, setting exit code to [$returnCode]."
             }
             else
             {

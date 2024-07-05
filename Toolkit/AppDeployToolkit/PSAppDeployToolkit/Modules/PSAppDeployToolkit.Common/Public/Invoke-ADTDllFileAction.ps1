@@ -143,8 +143,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file.`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to $($DLLAction.ToLower()) DLL file."
         }
     }
 

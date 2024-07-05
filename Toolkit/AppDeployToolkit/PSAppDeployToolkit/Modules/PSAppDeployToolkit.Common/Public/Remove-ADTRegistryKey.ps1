@@ -134,15 +134,14 @@
         }
         catch
         {
-            if ($Name)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix $(if ($Name)
             {
-                Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name].`n$(Resolve-ADTError)" -Severity 3
+                "Failed to delete registry value [$Key] [$Name]."
             }
             else
             {
-                Write-ADTLogEntry -Message "Failed to delete registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
-            }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                "Failed to delete registry key [$Key]."
+            })
         }
     }
 

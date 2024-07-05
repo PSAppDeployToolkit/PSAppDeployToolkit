@@ -51,8 +51,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to create cache folder [$Path]."
                 return
             }
         }
@@ -71,8 +70,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to copy toolkit content to cache folder [$Path]."
         }
     }
 

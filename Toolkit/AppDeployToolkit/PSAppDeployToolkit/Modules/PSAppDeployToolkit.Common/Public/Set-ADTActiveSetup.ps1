@@ -493,9 +493,9 @@
                 Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
             }
         }
-        catch {
-            Write-ADTLogEntry -Message "Failed to set Active Setup registry entry.`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to set Active Setup registry entry."
         }
     }
 
