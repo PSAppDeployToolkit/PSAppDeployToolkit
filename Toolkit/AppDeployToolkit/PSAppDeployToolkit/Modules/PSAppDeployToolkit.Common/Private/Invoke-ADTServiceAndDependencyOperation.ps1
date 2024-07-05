@@ -138,8 +138,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) the service [$Name].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to $($Operation.ToLower()) the service [$Name]."
         }
     }
 

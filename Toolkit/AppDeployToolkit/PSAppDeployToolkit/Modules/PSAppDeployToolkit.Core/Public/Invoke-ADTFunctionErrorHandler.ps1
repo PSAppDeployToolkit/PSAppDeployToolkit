@@ -12,7 +12,11 @@ function Invoke-ADTFunctionErrorHandler
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ErrorRecord]$ErrorRecord
+        [System.Management.Automation.ErrorRecord]$ErrorRecord,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Prefix
     )
 
     begin {
@@ -30,6 +34,14 @@ function Invoke-ADTFunctionErrorHandler
         if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
         {
             $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
+        }
+        if ($Prefix)
+        {
+            if (!$ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
+            {
+                $Prefix += "`n$(Resolve-ADTError)"
+            }
+            Write-ADTLogEntry -Message $Prefix -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }
         $Cmdlet.WriteError($ErrorRecord)
     }

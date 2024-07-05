@@ -216,8 +216,7 @@
             }
         }
         catch {
-            Write-ADTLogEntry -Message "Failed to get the MSI table [$Table].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to get the MSI table [$Table]."
         }
         finally
         {

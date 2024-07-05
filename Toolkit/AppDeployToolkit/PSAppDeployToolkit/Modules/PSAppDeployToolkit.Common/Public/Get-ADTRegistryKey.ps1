@@ -167,15 +167,14 @@
         }
         catch
         {
-            if ($Value)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix $(if ($Value)
             {
-                Write-ADTLogEntry -Message "Failed to read registry key [$Key] value [$Value].`n$(Resolve-ADTError)" -Severity 3
+                "Failed to read registry key [$Key] value [$Value]."
             }
             else
             {
-                Write-ADTLogEntry -Message "Failed to read registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
-            }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                "Failed to read registry key [$Key]."
+            })
         }
     }
 

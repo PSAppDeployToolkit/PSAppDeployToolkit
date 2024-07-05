@@ -161,15 +161,14 @@
         }
         catch
         {
-            if ($Name)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix $(if ($Name)
             {
-                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name].`n$(Resolve-ADTError)" -Severity 3
+                "Failed to $RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name]."
             }
             else
             {
-                Write-ADTLogEntry -Message "Failed to set registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
-            }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                "Failed to set registry key [$Key]."
+            })
         }
     }
 

@@ -83,8 +83,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to resolve the path for deletion [$Item].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to resolve the path for deletion [$Item]."
                 continue
             }
 
@@ -108,8 +107,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to delete items in path [$Item].`n$(Resolve-ADTError)" -Severity 3
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to delete items in path [$Item]."
             }
         }
     }

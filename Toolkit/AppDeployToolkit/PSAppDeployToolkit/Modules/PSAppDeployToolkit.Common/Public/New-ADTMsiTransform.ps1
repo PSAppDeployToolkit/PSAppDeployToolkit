@@ -170,8 +170,7 @@
             Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
         }
         catch {
-            Write-ADTLogEntry -Message "Failed to create new transform file in path [$NewTransformPath].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to create new transform file in path [$NewTransformPath]."
         }
         finally
         {

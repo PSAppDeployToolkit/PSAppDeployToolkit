@@ -69,8 +69,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber].`n$(Resolve-ADTError)" -Severity 3
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed discovering Microsoft Update [$kbNumber]."
         }
     }
 
