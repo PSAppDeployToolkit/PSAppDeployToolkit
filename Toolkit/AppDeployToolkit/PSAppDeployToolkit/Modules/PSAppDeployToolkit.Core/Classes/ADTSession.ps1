@@ -483,7 +483,7 @@
         {
             $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($ADTConfig.UI.LanguageOverride)].")
         }
-        $this.WriteLogEntry("The following UI messages were imported from the config file: [$((Get-ADT).Language)].")
+        $this.WriteLogEntry("The following UI messages were imported from the config file: [$((Get-ADTModuleData).Language)].")
     }
 
     hidden [System.Void] PerformSCCMTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
@@ -773,7 +773,7 @@
         # Update the module's last tracked exit code.
         if ($this.ExitCode)
         {
-            (Get-ADT).LastExitCode = $this.ExitCode
+            (Get-ADTModuleData).LastExitCode = $this.ExitCode
         }
 
         # Write out a log divider to indicate the end of logging.

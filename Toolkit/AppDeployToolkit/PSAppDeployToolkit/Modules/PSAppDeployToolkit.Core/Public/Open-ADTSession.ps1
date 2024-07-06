@@ -105,7 +105,7 @@
     )
 
     # Get the module's state.
-    $adtData = Get-ADT
+    $adtData = Get-ADTModuleData
 
     # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
     if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
