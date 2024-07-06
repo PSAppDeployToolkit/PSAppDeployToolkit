@@ -49,7 +49,9 @@ PowerShellVersion = '5.1'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='ScheduledTasks'; GUID='5378ee8e-e349-49bb-83b9-f3d9c396c0a6'; ModuleVersion='1.0.0.0' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
