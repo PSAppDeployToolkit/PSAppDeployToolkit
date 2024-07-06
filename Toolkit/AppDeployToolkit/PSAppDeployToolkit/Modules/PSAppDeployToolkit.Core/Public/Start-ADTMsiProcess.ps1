@@ -191,10 +191,17 @@
     )
 
     begin {
-        $adtConfig = Get-ADTConfig
-        $adtSession = Get-ADTSession
-        $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtConfig = Get-ADTConfig
+            $adtSession = Get-ADTSession
+            $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {

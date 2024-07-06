@@ -145,7 +145,18 @@
     )
 
     begin {
-        $adtSession = Get-ADTSession
+        # Initalise function and get required objects.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+
+        # Set up initial variables.
         $funcCaller = (Get-PSCallStack)[1].InvocationInfo.MyCommand
         $extInvoker = !$funcCaller.Source.StartsWith('PSAppDeployToolkit') -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
         $stdOutBuilder = [System.Text.StringBuilder]::new()
@@ -153,7 +164,6 @@
         $stdOutEvent = $stdErrEvent = $null
         $stdOut = $stdErr = $null
         $returnCode = $null
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {

@@ -156,11 +156,11 @@
         [System.Management.Automation.SwitchParameter]$AllowDeferCloseApps,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of times the deferral is allowed.')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferDays,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
@@ -189,10 +189,17 @@
     )
 
     begin {
-        $adtEnv = Get-ADTEnvironment
-        $adtConfig = Get-ADTConfig
-        $adtSession = Get-ADTSession
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtEnv = Get-ADTEnvironment
+            $adtConfig = Get-ADTConfig
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {

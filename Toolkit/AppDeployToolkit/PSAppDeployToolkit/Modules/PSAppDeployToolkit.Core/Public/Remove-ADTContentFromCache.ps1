@@ -27,9 +27,16 @@
     )
 
     begin {
-        $adtSession = Get-ADTSession
-        $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtSession = Get-ADTSession
+            $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {
