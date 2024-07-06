@@ -3,5 +3,5 @@
     Initialize-ADTEnvironment
     Import-ADTConfig
     Import-ADTLocalizedStrings
-    $Script:ADT.LastExitCode = 0	
+    (Get-ADT).LastExitCode = 0	
 }

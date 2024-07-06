@@ -57,5 +57,5 @@
     }
 
     # Finally, store the config globally for usage within module.
-    $Script:ADT.Config = $config
+    (Get-ADT).Config = $config
 }

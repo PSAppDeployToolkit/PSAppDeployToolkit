@@ -471,7 +471,7 @@ class ADTSession
         {
             $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($adtConfig.UI.LanguageOverride)].")
         }
-        $this.WriteLogEntry("The following UI messages were imported from the config file: [$($Script:ADT.Language)].")
+        $this.WriteLogEntry("The following UI messages were imported from the config file: [$((Get-ADT).Language)].")
     }
 
     hidden [System.Void] PerformSCCMTests()
@@ -735,7 +735,7 @@ class ADTSession
         # Update the module's last tracked exit code.
         if ($ExitCode)
         {
-            $Script:ADT.LastExitCode = $ExitCode
+            (Get-ADT).LastExitCode = $ExitCode
         }
 
         # Annouce session success/failure.

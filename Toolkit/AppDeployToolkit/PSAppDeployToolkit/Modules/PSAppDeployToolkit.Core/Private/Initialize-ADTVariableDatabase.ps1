@@ -379,5 +379,5 @@
     $variables.Add('ShellApp', (New-Object -ComObject 'Shell.Application'))
 
     # Store variables within the module's scope.
-    $Script:ADT.Environment = $variables.AsReadOnly()
+    (Get-ADT).Environment = $variables.AsReadOnly()
 }
