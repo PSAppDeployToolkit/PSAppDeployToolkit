@@ -87,8 +87,11 @@
         [System.String]$DeployAppScriptDate
     )
 
+    # Cache the module's global data.
+    $adtData = Get-ADT
+
     # Clamp the session count at one, for now.
-    if ($Script:ADT.Sessions.Count)
+    if ($adtData.Sessions.Count)
     {
         throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted at this time.")
     }
@@ -97,17 +100,17 @@
     [System.Void]$PSBoundParameters.GetEnumerator().Where({($_.Value -is [System.String]) -and [System.String]::IsNullOrWhiteSpace($_.Value)}).ForEach({$PSBoundParameters.Remove($_.Key)})
 
     # Instantiate a new ADT session and initialise it.
-    $Script:ADT.Sessions.Add([ADTSession]::new($PSBoundParameters))
+    $adtData.Sessions.Add([ADTSession]::new($PSBoundParameters))
     try
     {
-        $Script:ADT.Sessions[-1].Open()
+        $adtData.Sessions[-1].Open()
     }
     catch
     {
-        [System.Void]$Script:ADT.Sessions.Remove($Script:ADT.Sessions[-1])
+        [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
         throw
     }
 
     # Export environment variables to the user's scope.
-    [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($Cmdlet.SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $Script:ADT.Environment)
+    [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($Cmdlet.SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
 }

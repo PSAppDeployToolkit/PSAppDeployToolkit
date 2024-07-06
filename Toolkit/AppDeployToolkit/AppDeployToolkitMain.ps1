@@ -38,7 +38,8 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 1
 
 # Import our local module.
-Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local
+Remove-Module -Name PSAppDeployToolkit* -Force
+Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
 Initialize-ADTModule
 
 # Open a new PSADT session.

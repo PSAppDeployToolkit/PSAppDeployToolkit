@@ -12,10 +12,10 @@
     })
 
     # Create new object based on serialised state and configure for async operations.
-    for ($i = 0; $i -lt $Script:ADT.Sessions.Count; $i++)
+    for ($i = 0; $i -lt ($adtData = Get-ADT).Sessions.Count; $i++)
     {
-        $Script:ADT.Sessions[$i] = [ADTSession]::new($Script:ADT.Sessions[$i])
-        $Script:ADT.Sessions[$i].Properties.InstallPhase = 'Asynchronous'
-        $Script:ADT.Sessions[$i].LegacyMode = $false
+        $adtData.Sessions[$i] = [ADTSession]::new($adtData.Sessions[$i])
+        $adtData.Sessions[$i].Properties.InstallPhase = 'Asynchronous'
+        $adtData.Sessions[$i].LegacyMode = $false
     }
 }

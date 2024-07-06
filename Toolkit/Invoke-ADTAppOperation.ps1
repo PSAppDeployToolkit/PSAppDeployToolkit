@@ -270,9 +270,20 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 1
 $mainExitCode = 0
 
+# Import the module.
 try
 {
-    Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit" -Scope Local
+    Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit" -Scope Local -Force
+}
+catch
+{
+    $Host.UI.WriteErrorLine(($_ | Out-String))
+    exit ($mainExitCode = 60008)
+}
+
+# Instantiate a new session.
+try
+{
     Initialize-ADTModule
     Open-ADTSession -Cmdlet $PSCmdlet @PSBoundParameters @sessionProps
     $sessionProps = Get-ADTSessionProperties
@@ -280,6 +291,7 @@ try
 catch
 {
     $Host.UI.WriteErrorLine(($_ | Out-String))
+    Remove-Module -Name PSAppDeployToolkit* -Force
     exit ($mainExitCode = 60008)
 }
 
@@ -300,4 +312,8 @@ catch
     Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTError) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode ($mainExitCode = 60001)
+}
+finally
+{
+    Remove-Module -Name PSAppDeployToolkit* -Force
 }
