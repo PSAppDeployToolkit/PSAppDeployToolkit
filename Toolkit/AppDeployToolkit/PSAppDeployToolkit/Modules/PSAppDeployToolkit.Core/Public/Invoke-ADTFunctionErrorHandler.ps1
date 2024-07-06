@@ -22,6 +22,7 @@ function Invoke-ADTFunctionErrorHandler
 
     begin
     {
+        # Recover true ErrorActionPreference the caller may have set and set it here.
         $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
         {
             Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
@@ -30,22 +31,38 @@ function Invoke-ADTFunctionErrorHandler
         {
             $SessionState.PSVariable.Get('OriginalErrorAction').Value
         }
+
+        # Determine whether we're stopping, we'll need this later.
+        $Terminating = $ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop)
     }
     
     process
     {
+        # Write-Error enforces its own name against the Activity, let's re-write it.
         if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
         {
             $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
         }
+
+        # Write out the caller's prefix, if provided.
         if ($Prefix)
         {
-            if (!$ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
+            if (!$Terminating)
             {
                 $Prefix += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
             }
             Write-ADTLogEntry -Message $Prefix -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }
-        $Cmdlet.WriteError($ErrorRecord)
+
+        # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
+        # this also writes out an [System.Management.Automation.ActionPreferenceStopException] object.
+        if ($Terminating)
+        {
+            $Cmdlet.ThrowTerminatingError($ErrorRecord)
+        }
+        else
+        {
+            $Cmdlet.WriteError($ErrorRecord)
+        }
     }
 }
