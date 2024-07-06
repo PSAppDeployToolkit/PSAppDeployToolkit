@@ -103,6 +103,8 @@ FunctionsToExport = @(
     'Start-ADTMspProcess'
     'Start-ADTProcess'
     'Test-ADTCallerIsAdmin'
+    'Test-ADTModuleInitialised'
+    'Test-ADTSessionActive'
     'Unblock-ADTAppExecution'
     'Write-ADTLogEntry'
 )

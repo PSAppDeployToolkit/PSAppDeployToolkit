@@ -31,6 +31,7 @@ New-Variable -Name ADT -Option ReadOnly -Value @{
     Config = $null
     Strings = $null
     LastExitCode = 0
+    Initialised = $false
 }
 
 # Logging constants used within an [ADTSession] object.
