@@ -47,7 +47,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ComputerName = $env:ComputerName,
+        [System.String]$ComputerName = [System.Environment]::MachineName,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru

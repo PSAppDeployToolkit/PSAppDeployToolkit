@@ -93,12 +93,12 @@
                     }
                     else
                     {
-                        "$env:WinDir\Sysnative\regsvr32.exe"
+                        "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))\sysnative\regsvr32.exe"
                     }
                 }
                 elseif ($DLLFileBitness -eq '32BIT')
                 {
-                    "$env:WinDir\SysWOW64\regsvr32.exe"
+                    "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SystemX86))\regsvr32.exe"
                 }
             }
             elseif ($DLLFileBitness -eq '32BIT')

@@ -192,7 +192,7 @@
             else
             {
                 # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                 {
                     Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                     $naerParams = @{
