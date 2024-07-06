@@ -75,8 +75,8 @@
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('MiddleLeft', 'MiddleCenter', 'MiddleRight')]
-        [System.Drawing.ContentAlignment]$MessageAlignment = 'MiddleCenter',
+        [ValidateSet('Left', 'Center', 'Right')]
+        [System.String]$MessageAlignment = 'Center',
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

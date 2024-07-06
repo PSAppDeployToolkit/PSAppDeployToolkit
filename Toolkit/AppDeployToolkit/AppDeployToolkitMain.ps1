@@ -603,10 +603,6 @@ function Show-InstallationPrompt
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity 2
 
     # Tune up parameters. A lot has changed.
-    if ($PSBoundParameters.ContainsKey('MessageAlignment'))
-    {
-        $PSBoundParameters.MessageAlignment = [System.Drawing.ContentAlignment]"Middle$($PSBoundParameters.MessageAlignment)"
-    }
     if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
     {
         [System.Void]$PSBoundParameters.Remove('Icon')
