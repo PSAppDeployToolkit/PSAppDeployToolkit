@@ -64,6 +64,10 @@
             [System.Void]$adtData.Sessions.Remove($adtSession)
             if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
             {
+                if ((Get-Command -Name Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning))
+                {
+                    [System.Environment]::Exit($adtData.LastExitCode)
+                }
                 exit $adtData.LastExitCode
             }
         }
