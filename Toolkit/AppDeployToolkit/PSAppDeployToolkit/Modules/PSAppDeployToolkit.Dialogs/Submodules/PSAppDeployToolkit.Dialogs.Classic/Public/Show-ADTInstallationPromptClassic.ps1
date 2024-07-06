@@ -79,8 +79,8 @@
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('MiddleLeft', 'MiddleCenter', 'MiddleRight')]
-        [System.Drawing.ContentAlignment]$MessageAlignment = 'MiddleCenter',
+        [ValidateSet('Left', 'Center', 'Right')]
+        [System.String]$MessageAlignment = 'Center',
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -222,7 +222,7 @@
     $labelMessage.Font = $Script:FormData.Font
     $labelMessage.Name = 'LabelMessage'
     $labelMessage.Text = $Message
-    $labelMessage.TextAlign = $MessageAlignment
+    $labelMessage.TextAlign = [System.Drawing.ContentAlignment]::"Middle$MessageAlignment"
     $labelMessage.TabStop = $false
     $labelMessage.AutoSize = $true
 
