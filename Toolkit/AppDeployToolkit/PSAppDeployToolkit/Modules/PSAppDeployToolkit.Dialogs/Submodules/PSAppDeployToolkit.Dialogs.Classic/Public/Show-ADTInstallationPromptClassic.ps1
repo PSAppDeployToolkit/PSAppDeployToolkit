@@ -387,12 +387,6 @@
     $formInstallationPrompt.add_Load($formInstallationPrompt_Load)
     $formInstallationPrompt.add_FormClosed($formInstallationPrompt_FormClosed)
     $formInstallationPrompt.ResumeLayout()
-
-    # Close the Installation Progress Dialog if running.
-    if ($ADTSession -and !$ADTSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
-    {
-        Close-ADTInstallationProgressClassic
-    }
     Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, ADTSession)]."
 
     # Start the timer.
