@@ -33,6 +33,14 @@
 
     begin {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {
@@ -40,7 +48,7 @@
         & (Get-ADTDialogFunction)
 
         # Send out the final toast notification.
-        switch (($adtSession = Get-ADTSession).GetDeploymentStatus())
+        switch ($adtSession.GetDeploymentStatus())
         {
             FastRetry {
                 Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait

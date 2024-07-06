@@ -8,7 +8,14 @@
     )
 
     # Get the current session object.
-    $adtSession = Get-ADTSession
+    try
+    {
+        $adtSession = Get-ADTSession
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 
     # Update the session's exit code with the provided value.
     if ($PSBoundParameters.ContainsKey('ExitCode'))
