@@ -5,7 +5,7 @@
     )
 
     # Return the config database if initialised.
-    if (!($adtData = Get-ADT).Config -or !$adtData.Config.Count)
+    if (!($adtData = Get-ADTModuleData).Config -or !$adtData.Config.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")

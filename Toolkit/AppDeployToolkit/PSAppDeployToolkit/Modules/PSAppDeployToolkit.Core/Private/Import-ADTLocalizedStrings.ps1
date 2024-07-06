@@ -1,7 +1,7 @@
 ﻿function Import-ADTLocalizedStrings
 {
     # Get the current config and root module.
-    $adtData = Get-ADT
+    $adtData = Get-ADTModuleData
     $adtConfig = Get-ADTConfig
     $adtModule = Get-ADTModuleInfo
 

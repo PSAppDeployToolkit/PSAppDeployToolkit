@@ -5,7 +5,7 @@
     )
 
     # Return the string database if initialised.
-    if (!($adtData = Get-ADT).Strings -or !$adtData.Strings.Count)
+    if (!($adtData = Get-ADTModuleData).Strings -or !$adtData.Strings.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")

@@ -26,5 +26,5 @@
     param (
     )
 
-    (Get-ADT).TerminalServerMode = Invoke-TerminalServerModeChange @PSBoundParameters -Mode Install
+    (Get-ADTModuleData).TerminalServerMode = Invoke-TerminalServerModeChange @PSBoundParameters -Mode Install
 }

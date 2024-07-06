@@ -17,7 +17,7 @@
     }
 
     # If we're closing the last session, clean up the environment.
-    if (($adtData = Get-ADT).Sessions.Count.Equals(1))
+    if (($adtData = Get-ADTModuleData).Sessions.Count.Equals(1))
     {
         # Only attempt to finalise the dialogs a dialog module is loaded.
         if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)

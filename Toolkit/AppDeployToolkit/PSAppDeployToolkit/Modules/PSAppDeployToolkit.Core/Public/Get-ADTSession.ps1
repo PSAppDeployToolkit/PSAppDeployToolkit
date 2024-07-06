@@ -5,7 +5,7 @@
     )
 
     # Return the most recent session in the database.
-    if (!($adtData = Get-ADT).Sessions.Count)
+    if (!($adtData = Get-ADTModuleData).Sessions.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")

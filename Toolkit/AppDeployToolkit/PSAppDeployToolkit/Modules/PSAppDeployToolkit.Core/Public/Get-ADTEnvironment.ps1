@@ -5,7 +5,7 @@
     )
 
     # Return the environment database if initialised.
-    if (!($adtData = Get-ADT).Environment -or !$adtData.Environment.Count)
+    if (!($adtData = Get-ADTModuleData).Environment -or !$adtData.Environment.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")

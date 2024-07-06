@@ -91,7 +91,7 @@
     )
 
     # If we don't have an active session, write the message to the verbose stream (4).
-    if ($adtSession = if (($adtData = Get-ADT).Sessions.Count) {$adtData.Sessions[-1]})
+    if ($adtSession = if (($adtData = Get-ADTModuleData).Sessions.Count) {$adtData.Sessions[-1]})
     {
         $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
     }
