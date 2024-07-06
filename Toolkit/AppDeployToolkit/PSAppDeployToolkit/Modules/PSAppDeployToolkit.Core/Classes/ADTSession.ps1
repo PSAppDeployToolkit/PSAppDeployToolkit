@@ -5,7 +5,6 @@
 
     # Internal variables that aren't for public access.
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
-    hidden [ValidateNotNullOrEmpty()][System.String]$OldPSWindowTitle = $Host.UI.RawUI.WindowTitle
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
@@ -701,9 +700,6 @@
         {
             $this.PSObject.Properties.ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
         }
-
-        # Set PowerShell window title and reflect that we've completed initialisation. This is important for variable retrieval.
-        $Global:Host.UI.RawUI.WindowTitle = "$($this.InstallTitle) - $($this.DeploymentType)" -replace '\s{2,}',' '
         $this.Opened = $true
     }
 
@@ -775,7 +771,6 @@
         # Write out a log divider to indicate the end of logging.
         $this.WriteLogEntry('-' * 79)
         $this.SetPropertyValue('DisableLogging', $true)
-        $Global:Host.UI.RawUI.WindowTitle = $this.OldPSWindowTitle
         $this.Closed = $true
 
         # Archive the log files to zip format and then delete the temporary logs folder.
