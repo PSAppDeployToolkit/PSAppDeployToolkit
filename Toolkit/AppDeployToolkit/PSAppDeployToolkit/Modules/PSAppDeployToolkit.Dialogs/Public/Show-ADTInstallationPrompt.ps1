@@ -126,7 +126,7 @@
         }
 
         # Initialise variables.
-        if (!($adtSession = try {Get-ADTSession} catch {[System.Void]$null}))
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
         {
             Initialize-ADTModule
         }
