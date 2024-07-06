@@ -36,7 +36,7 @@
             }
             return !!$_.TotalSize
         })]
-        [System.IO.DriveInfo]$Drive = $env:SystemDrive
+        [System.IO.DriveInfo]$Drive = [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory)
     )
 
     begin

@@ -32,9 +32,9 @@
     ## Variables: Environment Variables
     $variables.Add('envHost', $Host)
     $variables.Add('envShellFolders', (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction Ignore))
-    $variables.Add('envAllUsersProfile', $env:ALLUSERSPROFILE)
+    $variables.Add('envAllUsersProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envAppData', [System.Environment]::GetFolderPath('ApplicationData'))
-    $variables.Add('envArchitecture', $env:PROCESSOR_ARCHITECTURE)
+    $variables.Add('envArchitecture', [System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))
     $variables.Add('envCommonDesktop', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Desktop' -ErrorAction Ignore))
     $variables.Add('envCommonDocuments', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Documents' -ErrorAction Ignore))
     $variables.Add('envCommonStartMenuPrograms', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Programs' -ErrorAction Ignore))
@@ -42,32 +42,32 @@
     $variables.Add('envCommonStartUp', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Startup' -ErrorAction Ignore))
     $variables.Add('envCommonTemplates', [string]($variables.envShellFolders | Select-Object -ExpandProperty 'Common Templates' -ErrorAction Ignore))
     $variables.Add('envComputerName', [System.Environment]::MachineName.ToUpper())
-    $variables.Add('envHomeDrive', $env:HOMEDRIVE)
-    $variables.Add('envHomePath', $env:HOMEPATH)
-    $variables.Add('envHomeShare', $env:HOMESHARE)
-    $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath('LocalApplicationData'))
+    $variables.Add('envHomeDrive', [System.Environment]::GetEnvironmentVariable('HOMEDRIVE'))
+    $variables.Add('envHomePath', [System.Environment]::GetEnvironmentVariable('HOMEPATH'))
+    $variables.Add('envHomeShare', [System.Environment]::GetEnvironmentVariable('HOMESHARE'))
+    $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData))
     $variables.Add('envLogicalDrives', [System.Environment]::GetLogicalDrives())
-    $variables.Add('envProgramData', [System.Environment]::GetFolderPath('CommonApplicationData'))
-    $variables.Add('envPublic', $env:PUBLIC)
-    $variables.Add('envSystemDrive', $env:SYSTEMDRIVE)
-    $variables.Add('envSystemRoot', $env:SYSTEMROOT)
+    $variables.Add('envProgramData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
+    $variables.Add('envPublic', [System.Environment]::GetEnvironmentVariable('PUBLIC'))
+    $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory).TrimEnd('\'))
+    $variables.Add('envSystemRoot', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))
     $variables.Add('envTemp', [System.IO.Path]::GetTempPath())
-    $variables.Add('envUserCookies', [System.Environment]::GetFolderPath('Cookies'))
-    $variables.Add('envUserDesktop', [System.Environment]::GetFolderPath('DesktopDirectory'))
-    $variables.Add('envUserFavorites', [System.Environment]::GetFolderPath('Favorites'))
-    $variables.Add('envUserInternetCache', [System.Environment]::GetFolderPath('InternetCache'))
-    $variables.Add('envUserInternetHistory', [System.Environment]::GetFolderPath('History'))
-    $variables.Add('envUserMyDocuments', [System.Environment]::GetFolderPath('MyDocuments'))
+    $variables.Add('envUserCookies', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Cookies))
+    $variables.Add('envUserDesktop', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::DesktopDirectory))
+    $variables.Add('envUserFavorites', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Favorites))
+    $variables.Add('envUserInternetCache', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::InternetCache))
+    $variables.Add('envUserInternetHistory', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::History))
+    $variables.Add('envUserMyDocuments', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::MyDocuments))
     $variables.Add('envUserName', [System.Environment]::UserName)
-    $variables.Add('envUserPictures', [System.Environment]::GetFolderPath('MyPictures'))
-    $variables.Add('envUserProfile', $env:USERPROFILE)
-    $variables.Add('envUserSendTo', [System.Environment]::GetFolderPath('SendTo'))
-    $variables.Add('envUserStartMenu', [System.Environment]::GetFolderPath('StartMenu'))
-    $variables.Add('envUserStartMenuPrograms', [System.Environment]::GetFolderPath('Programs'))
-    $variables.Add('envUserStartUp', [System.Environment]::GetFolderPath('StartUp'))
-    $variables.Add('envUserTemplates', [System.Environment]::GetFolderPath('Templates'))
+    $variables.Add('envUserPictures', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::MyPictures))
+    $variables.Add('envUserProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::UserProfile))
+    $variables.Add('envUserSendTo', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SendTo))
+    $variables.Add('envUserStartMenu', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::StartMenu))
+    $variables.Add('envUserStartMenuPrograms', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Programs))
+    $variables.Add('envUserStartUp', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::StartUp))
+    $variables.Add('envUserTemplates', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Templates))
     $variables.Add('envSystem32Directory', [System.Environment]::SystemDirectory)
-    $variables.Add('envWinDir', $env:WINDIR)
+    $variables.Add('envWinDir', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))
 
     ## Variables: Running in SCCM Task Sequence.
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
@@ -81,7 +81,7 @@
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
     $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
-    $variables.Add('envUserDNSDomain', [string]($env:USERDNSDOMAIN | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
+    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
     $variables.Add('envUserDomain', [string]$(try {[System.Environment]::UserDomainName.ToUpper()} catch {[System.Void]$null}))
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain.Equals($true))
@@ -100,7 +100,7 @@
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = [string]$(try
         {
-            $env:LOGONSERVER | Where-Object {$_ -and !$_.Contains('\\MicrosoftAccount')} | ForEach-Object {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}
+            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | Where-Object {$_ -and !$_.Contains('\\MicrosoftAccount')} | ForEach-Object {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}
         }
         catch
         {
@@ -143,13 +143,13 @@
             $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
             $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
             $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
-            $variables.Add('envSYSWOW64Directory', [System.IO.Path]::Combine($Env:windir, 'SysWOW64'))
+            $variables.Add('envSYSWOW64Directory', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SystemX86))
         }
         else
         {
             $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
             $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
-            $variables.Add('envSysNativeDirectory', [System.IO.Path]::Combine($Env:windir, 'sysnative'))
+            $variables.Add('envSysNativeDirectory', [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'sysnative'))
             $variables.Add('envSYSWOW64Directory', [System.Environment]::SystemDirectory)
         }
         $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
@@ -302,7 +302,7 @@
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo($env:ComputerName))
+    $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName))
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
     $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
     $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
