@@ -180,7 +180,7 @@ function Write-Log
             Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTError -ErrorRecord $_)" -ForegroundColor Red
             if (!$ContinueOnError)
             {
-                throw
+                $PSCmdlet.ThrowTerminatingError($_)
             }
         }
     }
@@ -286,7 +286,7 @@ function Get-FreeDiskSpace
         Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -386,7 +386,7 @@ function Get-FileVersion
         Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -454,7 +454,7 @@ function Update-Desktop
         Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -489,7 +489,7 @@ function Update-SessionEnvironmentVariables
         Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -1001,7 +1001,13 @@ function Get-IniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [ValidateScript({
+            if (![System.IO.File]::Exists($_))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+            }
+            return !!$_
+        })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
@@ -1032,7 +1038,7 @@ function Get-IniValue
         Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -1050,7 +1056,13 @@ function Set-IniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
+        [ValidateScript({
+            if (![System.IO.File]::Exists($_))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+            }
+            return !!$_
+        })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
@@ -1085,7 +1097,7 @@ function Set-IniValue
         Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -1201,7 +1213,7 @@ function Get-UniversalDate
         Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
@@ -1249,7 +1261,7 @@ function Test-ServiceExists
         Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 }
