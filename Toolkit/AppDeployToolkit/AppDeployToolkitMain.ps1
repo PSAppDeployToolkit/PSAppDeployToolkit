@@ -14999,7 +14999,7 @@ https://psappdeploytoolkit.com
                 }
                 '.ps1' {
                     [String]$CUStubExePath = "$PSHOME\powershell.exe"
-                    [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
+                    [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
             }
