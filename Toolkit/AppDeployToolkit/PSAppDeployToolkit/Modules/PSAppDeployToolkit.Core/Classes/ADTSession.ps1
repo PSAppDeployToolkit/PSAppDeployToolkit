@@ -42,7 +42,7 @@
     [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptFriendlyName
     [ValidateNotNullOrEmpty()][System.Version]$DeployAppScriptVersion
     [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptDate
-    [AllowEmptyCollection()][System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters
+    [AllowEmptyCollection()][System.Collections.IDictionary]$DeployAppScriptParameters
     [ValidateNotNullOrEmpty()][System.String]$InstallPhase = 'Initialization'
 
     # Calculated variables we publicise.

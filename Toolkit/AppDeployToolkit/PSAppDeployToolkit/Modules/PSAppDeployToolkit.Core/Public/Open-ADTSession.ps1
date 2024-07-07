@@ -99,7 +99,7 @@
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [AllowEmptyCollection()]
-        [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
+        [System.Collections.IDictionary]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
