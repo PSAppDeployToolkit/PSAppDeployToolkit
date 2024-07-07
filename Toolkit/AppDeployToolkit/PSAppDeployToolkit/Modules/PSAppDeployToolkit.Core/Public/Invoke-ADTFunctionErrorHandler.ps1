@@ -31,9 +31,6 @@ function Invoke-ADTFunctionErrorHandler
         {
             $SessionState.PSVariable.Get('OriginalErrorAction').Value
         }
-
-        # Determine whether we're stopping, we'll need this later.
-        $Terminating = $ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop)
     }
     
     process
@@ -47,16 +44,13 @@ function Invoke-ADTFunctionErrorHandler
         # Write out the caller's prefix, if provided.
         if ($Prefix)
         {
-            if (!$Terminating)
-            {
-                $Prefix += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
-            }
+            $Prefix += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
             Write-ADTLogEntry -Message $Prefix -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }
 
         # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
         # this also writes out an [System.Management.Automation.ActionPreferenceStopException] object.
-        if ($Terminating)
+        if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
         {
             $Cmdlet.ThrowTerminatingError($ErrorRecord)
         }

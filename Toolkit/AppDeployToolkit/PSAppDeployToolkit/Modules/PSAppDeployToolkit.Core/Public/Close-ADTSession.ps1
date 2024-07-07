@@ -32,43 +32,52 @@
         }
 
         # If we're closing the last session, clean up the environment.
-        if ($adtData.Sessions.Count.Equals(1))
-        {
-            # Only attempt to finalise the dialogs a dialog module is loaded.
-            if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
-            {
-                Close-ADTInstallationProgress
-            }
-
-            # Unblock all PSAppDeployToolkit blocked apps.
-            Unblock-ADTAppExecution
-
-            # Only attempt to disable Terminal Services Install Mode if previously set.
-            if ($adtData.TerminalServerMode)
-            {
-                Disable-ADTTerminalServerInstallMode
-            }
-        }
-
-        # Close out the active session and clean up session state.
         try
         {
-            $adtSession.Close()
+            if ($adtData.Sessions.Count.Equals(1))
+            {
+                # Only attempt to finalise the dialogs a dialog module is loaded.
+                if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
+                {
+                    Close-ADTInstallationProgress
+                }
+
+                # Unblock all PSAppDeployToolkit blocked apps.
+                Unblock-ADTAppExecution
+
+                # Only attempt to disable Terminal Services Install Mode if previously set.
+                if ($adtData.TerminalServerMode)
+                {
+                    Disable-ADTTerminalServerInstallMode
+                }
+            }
         }
         catch
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failure occurred while cleaning up environment prior to final session closure."
         }
         finally
         {
-            [System.Void]$adtData.Sessions.Remove($adtSession)
-            if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
+            # Close out the active session and clean up session state.
+            try
             {
-                if ((Get-Command -Name Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning))
+                $adtSession.Close()
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+            finally
+            {
+                [System.Void]$adtData.Sessions.Remove($adtSession)
+                if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
                 {
-                    [System.Environment]::Exit($adtData.LastExitCode)
+                    if ((Get-Command -Name Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning))
+                    {
+                        [System.Environment]::Exit($adtData.LastExitCode)
+                    }
+                    exit $adtData.LastExitCode
                 }
-                exit $adtData.LastExitCode
             }
         }
     }
