@@ -3,25 +3,31 @@
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        try
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
         {
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
     }
 
     process
     {
         # Return early if someone happens to call this in a non-async mode.
-        if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+        if ($adtSession)
         {
             return
         }
@@ -30,9 +36,6 @@
         {
             try
             {
-                # If we're here, we're not to log anything.
-                $adtSession.SetPropertyValue('DisableLogging', $true)
-
                 # Create a mutex and specify a name without acquiring a lock on the mutex.
                 $showBlockedAppDialogMutexName = "Global\$((Get-ADTEnvironment).appDeployToolkitName)_ShowBlockedAppDialog_Message"
                 $showBlockedAppDialogMutex = [System.Threading.Mutex]::new($false, $showBlockedAppDialogMutexName)
@@ -40,7 +43,7 @@
                 # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
                 if (($showBlockedAppDialogMutexLocked = Test-ADTIsMutexAvailable -MutexName $showBlockedAppDialogMutexName) -and $showBlockedAppDialogMutex.WaitOne(1))
                 {
-                    Show-ADTInstallationPrompt -Title $adtSession.GetPropertyValue('InstallTitle') -Message (Get-ADTStrings).BlockExecution.Message -Icon Warning -ButtonRightText OK
+                    Show-ADTInstallationPrompt -Title $Title -Message (Get-ADTStrings).BlockExecution.Message -Icon Warning -ButtonRightText OK
                 }
                 else
                 {
