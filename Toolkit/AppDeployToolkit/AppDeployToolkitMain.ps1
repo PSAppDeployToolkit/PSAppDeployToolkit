@@ -14955,7 +14955,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Verify a file with a supported file extension was specified in $StubExePath
-            [String[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.ps1', '.js'
+            [String[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js'
             [String]$StubExeExt = [IO.Path]::GetExtension($StubExePath)
             If ($StubExePathFileExtensions -notcontains $StubExeExt) {
                 Throw "Unsupported Active Setup StubPath file extension [$StubExeExt]."
