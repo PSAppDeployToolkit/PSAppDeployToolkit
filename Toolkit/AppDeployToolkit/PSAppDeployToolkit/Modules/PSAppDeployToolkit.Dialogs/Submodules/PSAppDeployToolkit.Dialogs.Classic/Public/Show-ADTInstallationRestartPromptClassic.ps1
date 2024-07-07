@@ -195,12 +195,6 @@
         Write-ADTLogEntry -Message 'Forcefully restarting the computer...'
         Restart-Computer -Force
     }
-    $formRestart_Resize = {
-        if ($formRestart.WindowState.Equals([System.Windows.Forms.FormWindowState]::Minimized))
-        {
-            $formRestart.WindowState = [System.Windows.Forms.FormWindowState]::Minimized
-        }
-    }
     $timerCountdown_Tick = {
         # Get the time information.
         [DateTime]$currentTime = Get-Date
@@ -237,7 +231,6 @@
         $buttonRestartNow.remove_Click($buttonRestartNow_Click)
         $buttonRestartLater.remove_Click($buttonRestartLater_Click)
         $formRestart.remove_Load($formRestart_Load)
-        $formRestart.remove_Resize($formRestart_Resize)
         $formRestart.remove_FormClosed($formRestart_FormClosed)
     }
     $formRestart_FormClosing = {
@@ -391,7 +384,6 @@
     $formRestart.Icon = $Script:FormData.Assets.Icon
     $formRestart.Controls.Add($pictureBanner)
     $formRestart.Controls.Add($flowLayoutPanel)
-    $formRestart.add_Resize($formRestart_Resize)
     $formRestart.add_Load($formRestart_Load)
     $formRestart.add_FormClosed($formRestart_FormClosed)
     $formRestart.add_FormClosing($formRestart_FormClosing)
