@@ -203,7 +203,14 @@ function Exit-Script
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity 2
-    Close-ADTSession @PSBoundParameters
+    try
+    {
+        Close-ADTSession @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -229,7 +236,14 @@ function Invoke-HKCURegistrySettingsForAllUsers
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryChange]. Please migrate your scripts to use the new function." -Severity 2
     $PSBoundParameters.RegistrySettings = {$UserProfile = $_}, $PSBoundParameters.RegistrySettings
-    Invoke-ADTAllUsersRegistryChange @PSBoundParameters
+    try
+    {
+        Invoke-ADTAllUsersRegistryChange @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -315,7 +329,14 @@ function Remove-InvalidFileNameChars
 
     end
     {
-        $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
+        try
+        {
+            $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -344,7 +365,14 @@ function Get-InstalledApplication
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
-    Get-ADTInstalledApplication @PSBoundParameters
+    try
+    {
+        Get-ADTInstalledApplication @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -425,7 +453,14 @@ function Get-UserProfiles
     })
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
-    Get-ADTUserProfiles @PSBoundParameters
+    try
+    {
+        Get-ADTUserProfiles @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -534,7 +569,14 @@ function Remove-File
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Remove-ADTFile @PSBoundParameters
+    try
+    {
+        Remove-ADTFile @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -619,7 +661,14 @@ function Show-InstallationPrompt
     }
 
     # Invoke function with amended parameters.
-    Show-ADTInstallationPrompt @PSBoundParameters
+    try
+    {
+        Show-ADTInstallationPrompt @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -654,7 +703,14 @@ function Show-InstallationProgress
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
         [System.Void]$PSBoundParameters.Remove('TopMost')
     }
-    Show-ADTInstallationProgress @PSBoundParameters
+    try
+    {
+        Show-ADTInstallationProgress @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -705,7 +761,14 @@ function Show-DialogBox
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
         [System.Void]$PSBoundParameters.Remove('TopMost')
     }
-    Show-ADTDialogBox @PSBoundParameters
+    try
+    {
+        Show-ADTDialogBox @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -809,7 +872,14 @@ function Show-InstallationWelcome
     }
 
     # Invoke function with amended parameters.
-    Show-ADTInstallationWelcome @PSBoundParameters
+    try
+    {
+        Show-ADTInstallationWelcome @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -836,7 +906,14 @@ function Get-WindowTitle
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2
-    Get-ADTWindowTitle @PSBoundParameters
+    try
+    {
+        Get-ADTWindowTitle @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -881,7 +958,14 @@ function Show-InstallationRestartPrompt
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
         [System.Void]$PSBoundParameters.Remove('TopMost')
     }
-    Show-ADTInstallationRestartPrompt @PSBoundParameters
+    try
+    {
+        Show-ADTInstallationRestartPrompt @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -917,7 +1001,14 @@ function Show-BalloonTip
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity 2
-    Show-ADTBalloonTip @PSBoundParameters
+    try
+    {
+        Show-ADTBalloonTip @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -938,7 +1029,14 @@ function Copy-ContentToCache
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity 2
-    Copy-ADTContentToCache @PSBoundParameters
+    try
+    {
+        Copy-ADTContentToCache @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -959,7 +1057,14 @@ function Remove-ContentFromCache
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity 2
-    Remove-ADTContentFromCache @PSBoundParameters
+    try
+    {
+        Remove-ADTContentFromCache @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -972,7 +1077,14 @@ function Remove-ContentFromCache
 function Test-NetworkConnection
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity 2
-    Test-ADTNetworkConnection
+    try
+    {
+        Test-ADTNetworkConnection
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -985,7 +1097,14 @@ function Test-NetworkConnection
 function Get-LoggedOnUser
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity 2
-    Get-ADTLoggedOnUser
+    try
+    {
+        Get-ADTLoggedOnUser
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1133,7 +1252,14 @@ function New-Folder
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    New-ADTFolder @PSBoundParameters
+    try
+    {
+        New-ADTFolder @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1146,7 +1272,14 @@ function New-Folder
 function Test-PowerPoint
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity 2
-    Test-ADTPowerPoint
+    try
+    {
+        Test-ADTPowerPoint
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1176,7 +1309,14 @@ function Update-GroupPolicy
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Update-ADTGroupPolicy @PSBoundParameters
+    try
+    {
+        Update-ADTGroupPolicy @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1195,7 +1335,7 @@ function Get-UniversalDate
         [System.String]$DateTime,
 
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError
+        [System.Boolean]$ContinueOnError = $false
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity 2
@@ -1293,7 +1433,14 @@ function Disable-TerminalServerInstallMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Disable-ADTTerminalServerInstallMode @PSBoundParameters
+    try
+    {
+        Disable-ADTTerminalServerInstallMode @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1323,7 +1470,14 @@ function Enable-TerminalServerInstallMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Enable-ADTTerminalServerInstallMode @PSBoundParameters
+    try
+    {
+        Enable-ADTTerminalServerInstallMode @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1364,7 +1518,14 @@ function Configure-EdgeExtension
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity 2
     [System.Void]$PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
-    & "$($PSCmdlet.ParameterSetName)-ADTEdgeExtension" @PSBoundParameters
+    try
+    {
+        & "$($PSCmdlet.ParameterSetName)-ADTEdgeExtension" @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1416,13 +1577,27 @@ function Resolve-Error
     # If function was called without specifying an error record, then choose the latest error that occurred.
     if (!$ErrorRecord)
     {
-        if ($Global:Error.Count -eq 0)
+        $ErrorRecord = if (($errRecord = Get-Variable -Name PSItem -Scope 1 -ValueOnly -ErrorAction Ignore) -and ($errRecord -is [System.Management.Automation.ErrorRecord]))
+        {
+            $errRecord
+        }
+        elseif ($Global:Error.Count)
+        {
+            $($Global:Error[0].Where({$_ -is [System.Management.Automation.ErrorRecord]}, [System.Management.Automation.WhereOperatorSelectionMode]::First, 1))
+        }
+        else
         {
             return
         }
-        $ErrorRecord = $($Global:Error[0].Where({$_ -is [System.Management.Automation.ErrorRecord]}, [System.Management.Automation.WhereOperatorSelectionMode]::First, 1))
     }
-    $ErrorRecord | Resolve-ADTError @PSBoundParameters
+    try
+    {
+        $ErrorRecord | Resolve-ADTError @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1462,7 +1637,14 @@ function Get-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Get-ADTServiceStartMode @PSBoundParameters
+    try
+    {
+        Get-ADTServiceStartMode @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1502,7 +1684,14 @@ function Set-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Set-ADTServiceStartMode @PSBoundParameters
+    try
+    {
+        Set-ADTServiceStartMode @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1573,7 +1762,7 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError
+        [System.Boolean]$ContinueOnError = $false
     )
 
     # Announce deprecation of this function.
@@ -1591,12 +1780,19 @@ function Execute-Process
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::Continue} else {[System.Management.Automation.ActionPreference]::Stop}
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
     }
 
     # Invoke function with amended parameters.
-    Start-ADTProcess @PSBoundParameters
+    try
+    {
+        Start-ADTProcess @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1683,7 +1879,7 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError
+        [System.Boolean]$ContinueOnError = $false
     )
 
     # Announce deprecation of this function.
@@ -1701,12 +1897,19 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::Continue} else {[System.Management.Automation.ActionPreference]::Stop}
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
     }
 
     # Invoke function with amended parameters.
-    Start-ADTMsiProcess @PSBoundParameters
+    try
+    {
+        Start-ADTMsiProcess @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1732,7 +1935,14 @@ function Execute-MSP
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity 2
-    Start-ADTMspProcess @PSBoundParameters
+    try
+    {
+        Start-ADTMspProcess @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1745,7 +1955,14 @@ function Execute-MSP
 function Unblock-AppExecution
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
-    Unblock-ADTAppExecution
+    try
+    {
+        Unblock-ADTAppExecution
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1766,7 +1983,14 @@ function Block-AppExecution
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
-    Block-ADTAppExecution @PSBoundParameters
+    try
+    {
+        Block-ADTAppExecution @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 #---------------------------------------------------------------------------
@@ -1797,7 +2021,14 @@ function Test-RegistryValue
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
-    Test-ADTRegistryValue @PSBoundParameters
+    try
+    {
+        Test-ADTRegistryValue @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1833,7 +2064,14 @@ function Convert-RegistryPath
     {
         $PSBoundParameters.Logging = [System.Management.Automation.SwitchParameter]$true
     }
-    Convert-ADTRegistryPath @PSBoundParameters
+    try
+    {
+        Convert-ADTRegistryPath @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1867,7 +2105,14 @@ function Test-MSUpdates
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Test-ADTMSUpdates @PSBoundParameters
+    try
+    {
+        Test-ADTMSUpdates @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1887,7 +2132,14 @@ function Test-Battery
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2
-    Test-ADTBattery @PSBoundParameters
+    try
+    {
+        Test-ADTBattery @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1941,7 +2193,14 @@ function Start-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Start-ADTServiceAndDependencies @PSBoundParameters
+    try
+    {
+        Start-ADTServiceAndDependencies @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -1995,7 +2254,14 @@ function Stop-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Stop-ADTServiceAndDependencies @PSBoundParameters
+    try
+    {
+        Stop-ADTServiceAndDependencies @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2047,7 +2313,14 @@ function Set-RegistryKey
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Set-ADTRegistryKey @PSBoundParameters
+    try
+    {
+        Set-ADTRegistryKey @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2092,7 +2365,14 @@ function Remove-RegistryKey
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Remove-ADTRegistryKey @PSBoundParameters
+    try
+    {
+        Remove-ADTRegistryKey @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2153,7 +2433,14 @@ function Remove-FileFromUserProfiles
     }
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
-    Remove-ADTFileFromUserProfiles @PSBoundParameters
+    try
+    {
+        Remove-ADTFileFromUserProfiles @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2206,7 +2493,14 @@ function Get-RegistryKey
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Get-ADTRegistryKey @PSBoundParameters
+    try
+    {
+        Get-ADTRegistryKey @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2227,7 +2521,14 @@ function Install-MSUpdates
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2
-    Install-ADTMSUpdates @PSBoundParameters
+    try
+    {
+        Install-ADTMSUpdates @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2261,7 +2562,14 @@ function Get-SchedulerTask
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Get-ADTSchedulerTask @PSBoundParameters
+    try
+    {
+        Get-ADTSchedulerTask @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2274,7 +2582,14 @@ function Get-SchedulerTask
 function Get-PendingReboot
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2
-    Get-ADTPendingReboot
+    try
+    {
+        Get-ADTPendingReboot
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2312,7 +2627,14 @@ function Invoke-RegisterOrUnregisterDLL
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Invoke-ADTDllFileAction @PSBoundParameters
+    try
+    {
+        Invoke-ADTDllFileAction @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2346,7 +2668,14 @@ function Register-DLL
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Register-ADTDllFile @PSBoundParameters
+    try
+    {
+        Register-ADTDllFile @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2380,7 +2709,14 @@ function Unregister-DLL
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Unregister-ADTDllFile @PSBoundParameters
+    try
+    {
+        Unregister-ADTDllFile @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2417,7 +2753,14 @@ function Remove-Folder
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Remove-ADTFolder @PSBoundParameters
+    try
+    {
+        Remove-ADTFolder @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2490,7 +2833,14 @@ function Set-ActiveSetup
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Set-ADTActiveSetup @PSBoundParameters
+    try
+    {
+        Set-ADTActiveSetup @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2551,7 +2901,14 @@ function Set-ItemPermission
     {
         $PSBoundParameters.Method = $PSBoundParameters.Method -replace '^(Add|Set|Reset|Remove)(Specific|All)?$', '$1AccessRule$2'
     }
-    Set-ADTItemPermission @PSBoundParameters
+    try
+    {
+        Set-ADTItemPermission @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2597,7 +2954,14 @@ function New-MsiTransform
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    New-ADTMsiTransform @PSBoundParameters
+    try
+    {
+        New-ADTMsiTransform @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2651,7 +3015,14 @@ function Get-MsiTableProperty
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Get-ADTMsiTableProperty @PSBoundParameters
+    try
+    {
+        Get-ADTMsiTableProperty @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2685,7 +3056,14 @@ function Invoke-SCCMTask
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Invoke-ADTSCCMTask @PSBoundParameters
+    try
+    {
+        Invoke-ADTSCCMTask @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2723,7 +3101,14 @@ function Install-SCCMSoftwareUpdates
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Install-ADTSCCMSoftwareUpdates @PSBoundParameters
+    try
+    {
+        Install-ADTSCCMSoftwareUpdates @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2765,7 +3150,14 @@ function Set-MsiProperty
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Set-ADTMsiProperty @PSBoundParameters
+    try
+    {
+        Set-ADTMsiProperty @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2778,7 +3170,14 @@ function Set-MsiProperty
 function Send-Keys
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2
-    Send-ADTKeys
+    try
+    {
+        Send-ADTKeys
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2812,7 +3211,14 @@ function Get-Shortcut
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Get-ADTShortcut @PSBoundParameters
+    try
+    {
+        Get-ADTShortcut @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2890,7 +3296,14 @@ function Set-Shortcut
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    Set-ADTShortcut @PSBoundParameters
+    try
+    {
+        Set-ADTShortcut @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
@@ -2959,7 +3372,14 @@ function New-Shortcut
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    New-ADTShortcut @PSBoundParameters
+    try
+    {
+        New-ADTShortcut @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
 }
 
 
