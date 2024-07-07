@@ -14983,12 +14983,12 @@ https://psappdeploytoolkit.com
                     [String]$StubPath = "`"$CUStubExePath`""
                 }
                 '.js' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$envWinDir\System32\wscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.vbs' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
+                    [String]$CUStubExePath = "$envWinDir\System32\wscript.exe"
                     [String]$CUArguments = "//nologo `"$StubExePath`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
