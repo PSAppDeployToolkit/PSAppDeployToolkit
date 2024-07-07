@@ -38,6 +38,7 @@
         try
         {
             Invoke-ADTTerminalServerModeChange -Mode Execute
+            (Get-ADTModuleData).TerminalServerMode = $false
         }
         catch
         {
