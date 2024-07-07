@@ -113,7 +113,7 @@
     }
 
     # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
-    if ($ADTSession -and !$ADTSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+    if ($ADTSession)
     {
         if ($NoCountdown)
         {
