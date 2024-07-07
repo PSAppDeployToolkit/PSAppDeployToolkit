@@ -812,8 +812,6 @@
         # Establish logging date/time vars.
         $dateNow = [System.DateTime]::Now
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
-        $logDate = $dateNow.ToString('MM-dd-yyyy')
-        $logTimePlusBias = $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes
 
         # Get caller's invocation info, we'll need it for some variables.
         $caller = Get-PSCallStack | Where-Object {![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')} | Select-Object -First 1
@@ -850,8 +848,8 @@
 
         # Store log string to format with message.
         $logFormats = @(
-            [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $logDate, $logTime, $ScriptSection, $Source, $Script:Logging.SeverityNames[$Severity])
-            [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTimePlusBias, $logDate, $Source, $Severity, $caller.ScriptName)
+            [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $Script:Logging.SeverityNames[$Severity])
+            [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
         )
 
         # Store the colours we'll use against Write-Host.
