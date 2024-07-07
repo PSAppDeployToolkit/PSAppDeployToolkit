@@ -192,6 +192,11 @@
         {
             try
             {
+                # Close the Installation Progress Dialog if running.
+                if ($adtSession)
+                {
+                    Close-ADTInstallationProgress
+                }
                 Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
             }
             catch
