@@ -4,13 +4,13 @@ Function IsCmdAtEnd(commandLine)
     Dim regEx, cmdPattern
     ' Regular expression pattern to match "cmd" or "cmd.exe" at the end of the string
     cmdPattern = "(cmd\.exe|cmd)$"
-    
+
     ' Create a RegExp object
     Set regEx = New RegExp
     regEx.Pattern = cmdPattern
     regEx.IgnoreCase = True
     regEx.Global = False
-    
+
     ' Test the pattern against the provided command line
     IsCmdAtEnd = regEx.Test(commandLine)
 End Function
@@ -78,11 +78,7 @@ Function ArgvQuote(Argument, ForceQuote, CmdDetected)
             End If
         Next
 
-        If CmdDetected Then
-            sEscapedArgument = "^" & """" & sEscapedArgument & "^" & """"
-        Else
-            sEscapedArgument = """" & sEscapedArgument & """"
-        End If
+        sEscapedArgument = """" & sEscapedArgument & """"
     End If
 
     ArgvQuote = sEscapedArgument
@@ -101,9 +97,9 @@ If WScript.Arguments.Count > 0 Then
         oArgumentList(iCount) = ArgvQuote(sArg, False, bCmdDetected)
         iCount = iCount + 1
     Next
-    
+
     sCmd = Join(oArgumentList, " ")
-    
+
     Set oWShell = CreateObject("WScript.Shell")
     iReturn = oWShell.Run(sCmd, 0, True)
 End If
