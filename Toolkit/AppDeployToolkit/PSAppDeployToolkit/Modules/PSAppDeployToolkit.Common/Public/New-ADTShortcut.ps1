@@ -161,7 +161,7 @@
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                        Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                         throw
                     }
                 }

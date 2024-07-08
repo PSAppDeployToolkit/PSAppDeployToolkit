@@ -109,7 +109,7 @@
         catch
         {
             # Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
             $IsUnhandledException = $true
             $IsMutexFree = $true
         }

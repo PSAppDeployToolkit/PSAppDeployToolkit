@@ -49,7 +49,7 @@ function Invoke-ADTFunctionErrorHandler
         {
             if (!$DisableErrorResolving)
             {
-                $LogMessage += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
+                $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
             }
             Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }

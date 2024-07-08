@@ -177,7 +177,7 @@ function Write-Log
         }
         catch
         {
-            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTError -ErrorRecord $_)" -ForegroundColor Red
+            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
             if (!$ContinueOnError)
             {
                 $PSCmdlet.ThrowTerminatingError($_)
@@ -297,7 +297,7 @@ function Get-FreeDiskSpace
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -411,7 +411,7 @@ function Get-FileVersion
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -486,7 +486,7 @@ function Update-Desktop
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -521,7 +521,7 @@ function Update-SessionEnvironmentVariables
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1154,7 +1154,7 @@ function Get-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1213,7 +1213,7 @@ function Set-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1350,7 +1350,7 @@ function Get-UniversalDate
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1398,7 +1398,7 @@ function Test-ServiceExists
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1531,7 +1531,7 @@ function Configure-EdgeExtension
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Resolve-ADTError
+# Wrapper around Resolve-ADTErrorRecord
 #
 #---------------------------------------------------------------------------
 
@@ -1562,7 +1562,7 @@ function Resolve-Error
     )
 
     # Announce overall deprecation and translate bad switches before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTError]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
     ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
         $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
         [System.Void]$PSBoundParameters.Remove("Get$_")
@@ -1592,7 +1592,7 @@ function Resolve-Error
     }
     try
     {
-        $ErrorRecord | Resolve-ADTError @PSBoundParameters
+        $ErrorRecord | Resolve-ADTErrorRecord @PSBoundParameters
     }
     catch
     {
