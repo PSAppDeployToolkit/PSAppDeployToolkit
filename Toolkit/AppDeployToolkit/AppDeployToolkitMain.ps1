@@ -50,8 +50,6 @@ $sessionProps = @{SessionState = $ExecutionContext.SessionState}; foreach ($para
         $sessionProps.Add($param, $value)
     }
 }
-
-# Open a new session.
 Open-ADTSession @sessionProps
 
 # Enable Terminal Services Install Mode here if requested.
