@@ -151,7 +151,7 @@
         }
         catch
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
 
         # Return the most recent session if passing through.

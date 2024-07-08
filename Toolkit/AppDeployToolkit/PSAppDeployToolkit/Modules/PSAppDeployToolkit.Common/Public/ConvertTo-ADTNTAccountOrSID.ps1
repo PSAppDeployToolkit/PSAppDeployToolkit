@@ -117,8 +117,7 @@
                 break
             }
             'WellKnownName' {
-                $ConversionType = if ($WellKnownToNTAccount) {'NTAccount'} else {'SID'}
-                $msg = "the Well Known SID Name [$WellKnownSIDName] to a $ConversionType"
+                $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(if ($WellKnownToNTAccount) {'NTAccount'} else {'SID'})"
                 Write-ADTLogEntry -Message "Converting $msg."
 
                 # Get the SID for the root domain.

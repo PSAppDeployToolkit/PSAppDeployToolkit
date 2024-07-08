@@ -54,11 +54,11 @@
         # Create the cache folder if it does not exist.
         if (![System.IO.Directory]::Exists($Path)) 
         {
+            Write-ADTLogEntry -Message "Creating cache folder [$Path]."
             try
             {
                 try
                 {
-                    Write-ADTLogEntry -Message "Creating cache folder [$Path]."
                     [System.Void](New-Item -Path $Path -ItemType Directory)
                 }
                 catch
@@ -78,11 +78,11 @@
         }
 
         # Copy the toolkit content to the cache folder.
+        Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
         try
         {
             try
             {
-                Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
                 Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
                 $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
                 $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")

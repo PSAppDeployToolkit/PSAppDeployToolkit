@@ -52,6 +52,7 @@
 
     process
     {
+        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'; 
         try
         {
             try
@@ -60,8 +61,7 @@
                 # Offline : The system is not using AC power.
                 # Online  : The system is using AC power.
                 # Unknown : The power status of the system is unknown.
-                Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'; $powerStatus = @{}
-                $powerStatus.Add('ACPowerLineStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus)
+                $powerStatus = @{ACPowerLineStatus = [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus}
 
                 # Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
                 $powerStatus.Add('BatteryChargeStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryChargeStatus)

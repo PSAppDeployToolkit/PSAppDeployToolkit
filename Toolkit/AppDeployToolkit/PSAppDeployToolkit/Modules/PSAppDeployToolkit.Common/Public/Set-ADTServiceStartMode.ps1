@@ -75,12 +75,12 @@
 
     process
     {
+        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
         try
         {
             try
             {
                 # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-                Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
                 $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $ScExeStartMode 2>&1
                 if ($LASTEXITCODE)
                 {

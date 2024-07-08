@@ -53,12 +53,12 @@
 
     process
     {
+        Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
         try
         {
             try
             {
                 # Get CSV data from the binary and confirm success.
-                Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
                 $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV
                 if ($Global:LastExitCode -ne 0)
                 {
