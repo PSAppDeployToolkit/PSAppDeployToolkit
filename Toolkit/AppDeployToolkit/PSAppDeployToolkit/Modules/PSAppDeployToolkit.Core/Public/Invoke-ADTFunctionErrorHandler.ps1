@@ -17,7 +17,7 @@ function Invoke-ADTFunctionErrorHandler
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Prefix
+        [System.String]$LogMessage
     )
 
     begin
@@ -42,10 +42,10 @@ function Invoke-ADTFunctionErrorHandler
         }
 
         # Write out the caller's prefix, if provided.
-        if ($Prefix)
+        if ($LogMessage)
         {
-            $Prefix += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
-            Write-ADTLogEntry -Message $Prefix -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+            $LogMessage += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
+            Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }
 
         # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
