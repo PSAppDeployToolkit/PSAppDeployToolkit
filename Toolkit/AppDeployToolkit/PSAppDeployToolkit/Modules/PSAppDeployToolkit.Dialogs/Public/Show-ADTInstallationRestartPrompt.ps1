@@ -84,7 +84,14 @@
         # Initialise variables.
         if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
         {
-            Initialize-ADTModule
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
 
         # Define parameter dictionary for returning at the end.
