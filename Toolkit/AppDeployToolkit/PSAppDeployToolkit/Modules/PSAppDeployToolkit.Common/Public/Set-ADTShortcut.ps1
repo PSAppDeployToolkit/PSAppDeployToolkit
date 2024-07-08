@@ -117,13 +117,13 @@
 
     process
     {
+        Write-ADTLogEntry -Message "Changing shortcut [$Path]."
         try
         {
             try
             {
                 # Make sure .NET's current directory is synced with PowerShell's.
                 [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                Write-ADTLogEntry -Message "Changing shortcut [$Path]."
                 if ($extension -eq '.url')
                 {
                     $URLFile = [System.IO.File]::ReadAllLines($Path).ForEach({

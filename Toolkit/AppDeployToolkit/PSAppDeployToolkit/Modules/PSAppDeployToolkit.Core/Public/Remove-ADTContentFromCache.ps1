@@ -49,11 +49,11 @@
             return
         }
 
+        Write-ADTLogEntry -Message "Removing cache folder [$Path]."
         try
         {
             try
             {
-                Write-ADTLogEntry -Message "Removing cache folder [$Path]."
                 Remove-Item -Path $Path -Recurse
                 $adtSession.SetPropertyValue('DirFiles', (Join-Path -Path $parentPath -ChildPath Files))
                 $adtSession.SetPropertyValue('DirSupportFiles', (Join-Path -Path $parentPath -ChildPath SupportFiles))

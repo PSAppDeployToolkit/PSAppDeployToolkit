@@ -82,14 +82,6 @@
     {
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ($Name)
-        {
-            Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
-        }
-        if ($ProductCode)
-        {
-            Write-ADTLogEntry -Message "Getting information for installed Product Code [$ProductCode]..."
-        }
 
         # Enumerate the installed applications from the registry for applications that have the "DisplayName" property.
         $regUninstallPaths = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
@@ -126,6 +118,14 @@
     }
     process
     {
+        if ($Name)
+        {
+            Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
+        }
+        if ($ProductCode)
+        {
+            Write-ADTLogEntry -Message "Getting information for installed Product Code [$ProductCode]..."
+        }
         try
         {
             try

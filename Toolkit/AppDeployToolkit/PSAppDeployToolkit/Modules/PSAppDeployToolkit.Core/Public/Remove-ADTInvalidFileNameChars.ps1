@@ -37,32 +37,5 @@
         [System.String]$Name
     )
 
-    begin
-    {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-
-    process
-    {
-        try
-        {
-            try
-            {
-                return $Name.Trim() -replace "($([System.String]::Join('|', [System.IO.Path]::GetInvalidFileNameChars().ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))"
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix 'Failed to remove invalid characters from the supplied filename.'
-        }
-    }
-
-    end
-    {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
-    }
+    return ($Name.Trim() -replace "($([System.String]::Join('|', [System.IO.Path]::GetInvalidFileNameChars().ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 }

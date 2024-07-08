@@ -58,12 +58,12 @@
 
     process
     {
+        Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
         try
         {
             try
             {
-                # Open the requested table view from the database
-                Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
+                # Open the requested table view from the database.
                 $View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
                 [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
 

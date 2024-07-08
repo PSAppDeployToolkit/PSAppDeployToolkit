@@ -71,12 +71,12 @@
 
     process
     {
-        # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
         Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
         try
         {
             try
             {
+                # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
                 Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
                     # Return early for accounts that have a null NTAccount.
                     if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))

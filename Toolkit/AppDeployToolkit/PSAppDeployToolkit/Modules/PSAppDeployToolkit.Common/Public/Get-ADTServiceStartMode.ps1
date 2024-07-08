@@ -54,12 +54,12 @@
 
     process
     {
-        # Get the start mode and adjust it if the automatic type is delayed.
         Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
         try
         {
             try
             {
+                # Get the start mode and adjust it if the automatic type is delayed.
                 if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
                 {
                     $serviceStartMode = 'Automatic (Delayed Start)'

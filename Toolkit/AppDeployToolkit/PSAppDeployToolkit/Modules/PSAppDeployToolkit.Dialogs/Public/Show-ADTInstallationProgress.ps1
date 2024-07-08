@@ -66,7 +66,14 @@
     dynamicparam
     {
         $Command = Get-ADTDialogFunction
-        Convert-ADTCommandParamsToDynamicParams -Command $Command
+        try
+        {
+            Convert-ADTCommandParamsToDynamicParams -Command $Command
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     begin
