@@ -287,26 +287,23 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 1
 
-# Import the module.
+# Import the module and instantiate a new session.
 try
 {
     Import-Module -Name "$PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit" -Scope Local -Force
+    try
+    {
+        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
+    }
+    catch
+    {
+        Remove-Module -Name PSAppDeployToolkit* -Force
+        throw
+    }
 }
 catch
 {
     $Host.UI.WriteErrorLine(($_ | Out-String))
-    exit 60008
-}
-
-# Instantiate a new session.
-try
-{
-    $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
-}
-catch
-{
-    $Host.UI.WriteErrorLine(($_ | Out-String))
-    Remove-Module -Name PSAppDeployToolkit* -Force
     exit 60008
 }
 
