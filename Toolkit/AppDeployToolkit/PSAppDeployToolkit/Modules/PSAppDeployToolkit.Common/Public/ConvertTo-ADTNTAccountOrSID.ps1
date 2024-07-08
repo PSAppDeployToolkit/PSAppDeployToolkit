@@ -98,7 +98,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
                 }
                 break
             }
@@ -112,7 +112,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
                 }
                 break
             }
@@ -142,7 +142,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                 }
                 break
             }

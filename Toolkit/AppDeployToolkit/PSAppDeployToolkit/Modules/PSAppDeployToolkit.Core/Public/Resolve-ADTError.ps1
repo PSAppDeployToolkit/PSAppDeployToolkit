@@ -1,4 +1,4 @@
-﻿function Resolve-ADTError
+﻿function Resolve-ADTErrorRecord
 {
     <#
 
@@ -35,16 +35,16 @@
     System.String. Displays the error record details.
 
     .EXAMPLE
-    Resolve-ADTError
+    Resolve-ADTErrorRecord
 
     .EXAMPLE
-    Resolve-ADTError -Property *
+    Resolve-ADTErrorRecord -Property *
 
     .EXAMPLE
-    Resolve-ADTError -Property InnerException
+    Resolve-ADTErrorRecord -Property InnerException
 
     .EXAMPLE
-    Resolve-ADTError -GetErrorInvocation:$false
+    Resolve-ADTErrorRecord -GetErrorInvocation:$false
 
     .LINK
     https://psappdeploytoolkit.com

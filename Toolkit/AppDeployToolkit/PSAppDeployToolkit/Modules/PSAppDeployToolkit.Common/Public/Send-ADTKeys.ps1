@@ -131,7 +131,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
             }
         }
     }
@@ -168,7 +168,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to send keys to specified window.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to send keys to specified window.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         }
     }
 
