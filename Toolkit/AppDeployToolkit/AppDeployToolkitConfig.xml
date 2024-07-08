@@ -318,7 +318,7 @@
         <DeferPrompt_WarningMessage>Quand le temps aura expiré, vous n'aurez plus la possibilité de reporter.</DeferPrompt_WarningMessage>
         <DeferPrompt_RemainingDeferrals>Nombre(s) de report restant(s):</DeferPrompt_RemainingDeferrals>
         <DeferPrompt_Deadline>Temps limite:</DeferPrompt_Deadline>
-        <WelcomePrompt_CountdownMessage>Le {0} va continuer automatiquement:</WelcomePrompt_CountdownMessage>
+        <WelcomePrompt_CountdownMessage>L'{0} va continuer automatiquement:</WelcomePrompt_CountdownMessage>
         <WelcomePrompt_CustomMessage></WelcomePrompt_CustomMessage>
 
 
