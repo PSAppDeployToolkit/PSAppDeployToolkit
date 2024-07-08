@@ -1,6 +1,6 @@
 function Invoke-ADTFunctionErrorHandler
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -15,9 +15,12 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'LogMessage')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LogMessage
+        [System.String]$LogMessage,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'LogMessage')]
+        [System.Management.Automation.SwitchParameter]$DisableErrorResolving
     )
 
     begin
@@ -44,12 +47,15 @@ function Invoke-ADTFunctionErrorHandler
         # Write out the caller's prefix, if provided.
         if ($LogMessage)
         {
-            $LogMessage += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
+            if (!$DisableErrorResolving)
+            {
+                $LogMessage += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
+            }
             Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }
 
         # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
-        # this also writes out an [System.Management.Automation.ActionPreferenceStopException] object.
+        # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
         if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
         {
             $Cmdlet.ThrowTerminatingError($ErrorRecord)
