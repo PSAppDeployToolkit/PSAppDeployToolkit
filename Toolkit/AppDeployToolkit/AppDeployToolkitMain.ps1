@@ -2365,6 +2365,9 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formInstallationPrompt.ControlBox = $false
             }
+            # Correct the initial state of the form
+            $formInstallationPrompt.WindowState = 'Normal'
+
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
         }
@@ -7249,6 +7252,7 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($fileVersion) {
+                    $fileVersion = $fileVersion.Trim()
                     If ($ProductVersion) {
                         Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
                     }
@@ -10152,7 +10156,10 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formWelcome.ControlBox = $false
             }
-            #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+            # Correct the initial state of the form
+            $formWelcome.WindowState = 'Normal'
+
+            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
 
             ## Initialize the countdown timer
