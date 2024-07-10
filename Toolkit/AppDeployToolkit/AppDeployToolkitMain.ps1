@@ -5317,19 +5317,12 @@ https://psappdeploytoolkit.com
                             $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
                         }
 
-                        If (-not (Test-Path -LiteralPath $RobocopyDestination -PathType Container)) {
-                            $null = New-Item -Path $RobocopyDestination -Type 'Directory' -Force -ErrorAction 'Stop'
-                        }
-                        $DestFolderAttributes = (Get-Item -LiteralPath $RobocopyDestination -Force).Attributes
-
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
                         Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
-
-                        Set-ItemProperty -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
