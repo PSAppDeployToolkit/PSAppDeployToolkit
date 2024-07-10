@@ -50,10 +50,24 @@
 
     dynamicparam
     {
-        $Command = Get-ADTDialogFunction
+        # Initialise the module first if needed.
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
+        {
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+        }
+        $adtConfig = Get-ADTConfig
+
+        # Build out the necessary parameters.
         try
         {
-            Convert-ADTCommandParamsToDynamicParams -Command $Command
+            Convert-ADTCommandParamsToDynamicParams -Command ($Command = Get-ADTDialogFunction)
         }
         catch
         {
@@ -64,15 +78,6 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        try
-        {
-            $adtConfig = Get-ADTConfig
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
     }
 
     process
@@ -82,14 +87,14 @@
             try
             {
                 # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-                if ($adtSession.IsSilent() -or !$adtConfig.UI.BalloonNotifications)
+                if (($adtSession -and $adtSession.IsSilent()) -or !$adtConfig.UI.BalloonNotifications)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('DeployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [$(if ($adtSession) {"Mode:$($adtSession.GetPropertyValue('DeployMode')), "})Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
                     return
                 }
                 if (Test-ADTPowerPoint)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('DeployMode')), Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [$(if ($adtSession) {"Mode:$($adtSession.GetPropertyValue('DeployMode')), "})Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
                     return
                 }
 

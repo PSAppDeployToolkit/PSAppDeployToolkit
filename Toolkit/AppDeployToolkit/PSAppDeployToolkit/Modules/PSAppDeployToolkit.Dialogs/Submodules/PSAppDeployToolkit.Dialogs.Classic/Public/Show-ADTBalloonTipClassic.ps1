@@ -63,17 +63,18 @@
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    # Initialise variables.
-    $adtConfig = Get-ADTConfig
+    # Balloon tip script to run and handle disposal for us. The sleep of 7 seconds is the maximum amount of time a notification will display in Windows 10+.
+    $balloonScript = [System.Management.Automation.ScriptBlock]::Create("Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$((Get-ADTConfig).Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep(7000)")
 
     # Create in separate process if -NoWait is passed.
     if ($NoWait)
     {
         Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($adtConfig.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
+        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $balloonScript" -NoWait -WindowStyle Hidden -CreateNoWindow
         return
     }
+
+    # Create in an asynchronous job so that disposal is managed for us.
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    Read-ADTAssetsIntoMemory -ADTConfig $adtConfig
-    ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = $BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = $Script:FormData.Assets.Icon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
+    [System.Void](Start-Job -ScriptBlock $balloonScript)
 }
