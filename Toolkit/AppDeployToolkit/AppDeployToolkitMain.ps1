@@ -5263,13 +5263,7 @@ https://psappdeploytoolkit.com
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
                             # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
-                            $ParentPath = Split-Path -Path $srcPath -Parent
-                            if ([string]::IsNullOrEmpty($ParentPath)) {
-                                $RobocopySource = $PWD
-                            }
-                            else {
-                                $RobocopySource = (Resolve-Path -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                            }
+                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent) -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
