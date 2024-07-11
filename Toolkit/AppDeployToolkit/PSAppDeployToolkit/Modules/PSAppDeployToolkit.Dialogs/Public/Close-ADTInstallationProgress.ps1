@@ -35,17 +35,7 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
-        {
-            try
-            {
-                Initialize-ADTModule
-            }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-        }
+        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
     }
 
     process

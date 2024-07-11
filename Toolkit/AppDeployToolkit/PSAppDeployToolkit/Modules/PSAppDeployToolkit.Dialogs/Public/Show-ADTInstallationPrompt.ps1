@@ -126,17 +126,7 @@
         }
 
         # Initialise variables.
-        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
-        {
-            try
-            {
-                Initialize-ADTModule
-            }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-        }
+        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.

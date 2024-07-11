@@ -82,17 +82,7 @@
     dynamicparam
     {
         # Initialise variables.
-        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
-        {
-            try
-            {
-                Initialize-ADTModule
-            }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-        }
+        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
