@@ -78,17 +78,7 @@
     dynamicparam
     {
         # Initialise the module first if needed.
-        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
-        {
-            try
-            {
-                Initialize-ADTModule
-            }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-        }
+        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStrings
         $fluentUi = (Get-ADTConfig).UI.DialogStyle -eq 'Fluent'
 
