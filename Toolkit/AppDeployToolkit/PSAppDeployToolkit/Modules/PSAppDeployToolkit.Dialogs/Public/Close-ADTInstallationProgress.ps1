@@ -35,13 +35,16 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        try
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
         {
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
     }
 
@@ -52,7 +55,11 @@
             try
             {
                 # Return early if we're silent, a window wouldn't have ever opened.
-                if (!(Test-ADTInstallationProgressRunning) -or $adtSession.IsSilent())
+                if (!(Test-ADTInstallationProgressRunning))
+                {
+                    return
+                }
+                if ($adtSession -and $adtSession.IsSilent())
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
                     return
@@ -62,19 +69,22 @@
                 & (Get-ADTDialogFunction)
 
                 # Send out the final toast notification.
-                switch ($adtSession.GetDeploymentStatus())
+                if ($adtSession)
                 {
-                    FastRetry {
-                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                        break
-                    }
-                    Error {
-                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                        break
-                    }
-                    default {
-                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                        break
+                    switch ($adtSession.GetDeploymentStatus())
+                    {
+                        FastRetry {
+                            Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                            break
+                        }
+                        Error {
+                            Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                            break
+                        }
+                        default {
+                            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                            break
+                        }
                     }
                 }
             }

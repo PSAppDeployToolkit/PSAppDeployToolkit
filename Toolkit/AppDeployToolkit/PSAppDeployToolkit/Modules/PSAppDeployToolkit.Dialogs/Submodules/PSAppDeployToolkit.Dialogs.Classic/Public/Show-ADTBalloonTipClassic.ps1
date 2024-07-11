@@ -47,9 +47,9 @@
         [ValidateNotNullOrEmpty()]
         [System.String]$BalloonTipText,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$BalloonTipTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
+        [System.String]$BalloonTipTitle,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]

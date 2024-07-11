@@ -61,30 +61,84 @@
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WindowSubtitle,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
+        [System.String]$WindowLocation = 'Default',
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Quiet,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
     dynamicparam
     {
-        try
+        # Initialise the module first if needed.
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
         {
-            Convert-ADTCommandParamsToDynamicParams -Command ($Command = Get-ADTDialogFunction)
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        $adtStrings = Get-ADTStrings
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('WindowTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'WindowTitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+        $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'StatusMessage', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+        $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'StatusMessageDetail', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
     }
 
     begin
     {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        try
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('WindowTitle'))
         {
-            $adtSession = Get-ADTSession
+            $PSBoundParameters.Add('WindowTitle', $adtSession.GetPropertyValue('InstallTitle'))
         }
-        catch
+        if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
+        }
+        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail'))
+        {
+            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
         }
     }
 
@@ -95,17 +149,20 @@
             try
             {
                 # Return early in silent mode.
-                if ($adtSession.IsSilent())
+                if ($adtSession)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$($PSBoundParameters.ContainsKey('Quiet') -and $PSBoundParameters.Quiet)
-                    return
+                    if ($adtSession.IsSilent())
+                    {
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Quiet
+                        return
+                    }
+
+                    # Notify user that the software installation has started.
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
                 }
 
-                # Notify user that the software installation has started.
-                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
-
                 # Call the underlying function to open the progress window.
-                & $Command @PSBoundParameters
+                & (Get-ADTDialogFunction) @PSBoundParameters
             }
             catch
             {
