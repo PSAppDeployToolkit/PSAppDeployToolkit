@@ -62,10 +62,8 @@
 
     #>
 
-    [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
@@ -79,34 +77,20 @@
         })]
         [System.UInt32]$CloseAppsCountdown = $(if ((Get-ADTSession).ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) {(Get-ADTSession).ExtensionData.CloseAppsCountdownGlobal}),
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceCloseAppsCountdown,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowDefer,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
