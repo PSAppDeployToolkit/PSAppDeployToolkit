@@ -119,24 +119,13 @@
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$ADTConfig,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Object]$ADTSession
+        [System.Collections.Hashtable]$ADTConfig
     )
-
-    # Bypass if in non-interactive mode
-    if ($ADTSession -and $ADTSession.IsSilent())
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($ADTSession.GetPropertyValue('deployMode'))]. Message: $Message"
-        return
-    }
 
     # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
     if ($NoWait)
     {
-        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, ADTSession, NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
         return
     }
 
@@ -387,7 +376,7 @@
     $formInstallationPrompt.add_Load($formInstallationPrompt_Load)
     $formInstallationPrompt.add_FormClosed($formInstallationPrompt_FormClosed)
     $formInstallationPrompt.ResumeLayout()
-    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, ADTSession)]."
+    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
 
     # Start the timer.
     $installPromptTimer.Start()

@@ -180,10 +180,6 @@
         {
             $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
         }
-        if ($adtSession)
-        {
-            $PSBoundParameters.Add('ADTSession', $adtSession)
-        }
     }
 
     process
@@ -192,11 +188,21 @@
         {
             try
             {
-                # Close the Installation Progress Dialog if running.
+                # Extra checks for when a session is active.
                 if ($adtSession)
                 {
+                    # Bypass if in non-interactive mode.
+                    if ($adtSession.IsNonInteractive())
+                    {
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
+                        return
+                    }
+
+                    # Close the Installation Progress dialog if running.
                     Close-ADTInstallationProgress
                 }
+
+                # Call the underlying function to open the message prompt.
                 Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
             }
             catch
