@@ -84,6 +84,7 @@
     )
 
     # Initialise variables.
+    $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStrings
     Read-ADTAssetsIntoMemory
 
@@ -199,7 +200,7 @@
     # Persistence Timer.
     $timerCountdown = [System.Windows.Forms.Timer]::new()
     $restartTimerPersist = [System.Windows.Forms.Timer]::new()
-    $restartTimerPersist.Interval = ((Get-ADTConfig).UI.RestartPromptPersistInterval * 1000)
+    $restartTimerPersist.Interval = $adtConfig.UI.RestartPromptPersistInterval * 1000
     $restartTimerPersist.add_Tick($restartTimerPersist_Tick)
     if ($NoCountdown)
     {
