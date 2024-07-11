@@ -122,13 +122,6 @@
         [System.Collections.Hashtable]$ADTConfig
     )
 
-    # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
-    if ($NoWait)
-    {
-        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
-        return
-    }
-
     # Read all form assets into memory.
     Read-ADTAssetsIntoMemory -ADTConfig $ADTConfig
 

@@ -119,10 +119,6 @@
         {
             $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
         }
-        if ($adtSession)
-        {
-            $PSBoundParameters.Add('ADTSession', $adtSession)
-        }
     }
 
     process
@@ -147,7 +143,8 @@
                 }
 
                 # Check if we are already displaying a restart prompt.
-                if (Get-Process | Where-Object {$_.MainWindowTitle -match (Get-ADTStrings).RestartPrompt.Title})
+                $restartPromptTitle = (Get-ADTStrings).RestartPrompt.Title
+                if (Get-Process | Where-Object {$_.MainWindowTitle -match $restartPromptTitle})
                 {
                     Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return
@@ -162,11 +159,11 @@
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$countDownSeconds] second countdown..."
+                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
 
                     # Start another powershell instance silently with function parameters from this function.
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart,SilentCountdownSeconds))" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
