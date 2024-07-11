@@ -80,55 +80,11 @@
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Object]$ADTSession
+        [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
     # Initialise variables.
     $adtStrings = Get-ADTStrings
-
-    # If in non-interactive mode.
-    if ($ADTSession -and $ADTSession.IsSilent())
-    {
-        if ($SilentRestart)
-        {
-            Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($ADTSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
-            Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
-        }
-        else
-        {
-            Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($ADTSession.GetPropertyValue('deployMode'))] and [SilentRestart] is false."
-        }
-        return
-    }
-
-    # Check if we are already displaying a restart prompt.
-    if (Get-Process | Where-Object { $_.MainWindowTitle -match $adtStrings.RestartPrompt.Title })
-    {
-        Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
-        return
-    }
-
-    # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
-    if ($ADTSession)
-    {
-        if ($NoCountdown)
-        {
-            Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with no countdown..."
-        }
-        else {
-            Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$countDownSeconds] second countdown..."
-        }
-
-        # Start another powershell instance silently with function parameters from this function.
-        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart,SilentCountdownSeconds))" -WindowStyle Hidden -ErrorAction Ignore
-        return
-    }
-
-    # Read all form assets into memory.
     Read-ADTAssetsIntoMemory
 
     # Define starting counters.
