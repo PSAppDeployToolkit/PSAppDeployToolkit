@@ -62,14 +62,11 @@
 
     #>
 
-    [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
-        [Parameter(Mandatory = $false)]
         [ValidateScript({
             if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
             {
@@ -79,49 +76,23 @@
         })]
         [System.UInt32]$CloseAppsCountdown,
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferTimes,
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceCloseAppsCountdown,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowDefer,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
-    begin
-    {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-
-    process
-    {
-        Show-ADTWelcomePromptClassic @PSBoundParameters
-    }
-
-    end
-    {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
-    }
+    # Dispatch this straight to classic until we write a replacement.
+    Show-ADTWelcomePromptClassic @PSBoundParameters
 }
