@@ -46,6 +46,20 @@
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$BalloonTipText,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Error', 'Info', 'None', 'Warning')]
+        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$BalloonTipTime = 10000,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait
     )
 
     dynamicparam
@@ -64,20 +78,31 @@
         }
         $adtConfig = Get-ADTConfig
 
-        # Build out the necessary parameters.
-        try
-        {
-            Convert-ADTCommandParamsToDynamicParams -Command ($Command = Get-ADTDialogFunction)
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('BalloonTipTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'BalloonTipTitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
     }
 
     begin
     {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
+        {
+            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.GetPropertyValue('InstallTitle'))
+        }
     }
 
     process
@@ -87,19 +112,24 @@
             try
             {
                 # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-                if (($adtSession -and $adtSession.IsSilent()) -or !$adtConfig.UI.BalloonNotifications)
+                if (!$adtConfig.UI.BalloonNotifications)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [$(if ($adtSession) {"Mode:$($adtSession.GetPropertyValue('DeployMode')), "})Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    return
+                }
+                if ($adtSession -and $adtSession.IsSilent())
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. BalloonTipText: $BalloonTipText"
                     return
                 }
                 if (Test-ADTPowerPoint)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [$(if ($adtSession) {"Mode:$($adtSession.GetPropertyValue('DeployMode')), "})Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation Detected: $true]. BalloonTipText: $BalloonTipText"
                     return
                 }
 
                 # Call the underlying function to show the balloon tip.
-                & $Command @PSBoundParameters
+                & (Get-ADTDialogFunction) @PSBoundParameters
             }
             catch
             {
