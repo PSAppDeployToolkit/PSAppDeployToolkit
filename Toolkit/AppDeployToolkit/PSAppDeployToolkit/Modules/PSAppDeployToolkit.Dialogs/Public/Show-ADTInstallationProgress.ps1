@@ -62,10 +62,6 @@
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$WindowSubtitle,
-
-        [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [System.String]$WindowLocation = 'Default',
 
@@ -94,6 +90,7 @@
             }
         }
         $adtStrings = Get-ADTStrings
+        $fluentUi = (Get-ADTConfig).UI.DialogStyle -eq 'Fluent'
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -105,6 +102,12 @@
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
+        $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'WindowSubtitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
         $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
             'StatusMessage', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
@@ -113,7 +116,7 @@
         ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
             'StatusMessageDetail', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession -and $fluentUi}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
@@ -136,9 +139,18 @@
         {
             $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
         }
-        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail'))
+        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and $fluentUi)
         {
             $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
+        }
+
+        # Remove fluent dialog parameters if specified.
+        if (!$fluentUi)
+        {
+            $($PSBoundParameters.Keys) | Where-Object {$_ -match '^(WindowSubtitle|StatusMessageDetail)$'} | ForEach-Object {
+                Write-ADTLogEntry -Message "The parameter [$($_)] is only supported by fluent dialogs and has been removed for you." -Severity 2
+                [System.Void]$PSBoundParameters.Remove($_)
+            }
         }
     }
 
