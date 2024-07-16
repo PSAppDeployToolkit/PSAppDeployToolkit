@@ -145,6 +145,8 @@
 
     begin {
         $adtSession = Get-ADTSession
+        $funcCaller = (Get-PSCallStack)[1].InvocationInfo.MyCommand
+        $extInvoker = !$funcCaller.Source.StartsWith('PSAppDeployToolkit') -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
         $stdOutBuilder = [System.Text.StringBuilder]::new()
         $stdErrBuilder = [System.Text.StringBuilder]::new()
         $stdOutEvent = $stdErrEvent = $null
@@ -326,6 +328,12 @@
                     # Get the exit code for the process.
                     $returnCode = $process.ExitCode
 
+                    # Update the session's last exit code with the value if externally called.
+                    if ($extInvoker)
+                    {
+                        $adtSession.SetExitCode($returnCode)
+                    }
+
                     # Process all streams.
                     if (!$process.StartInfo.UseShellExecute)
                     {
@@ -437,6 +445,14 @@
             if ($null -eq $returnCode)
             {
                 $returnCode = 60002
+            }
+            if ($extInvoker)
+            {
+                $adtSession.SetExitCode($returnCode)
+            }
+
+            if ($returnCode.Equals(60002))
+            {
                 Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode].`n$(Resolve-ADTError)" -Severity 3
                 throw
             }

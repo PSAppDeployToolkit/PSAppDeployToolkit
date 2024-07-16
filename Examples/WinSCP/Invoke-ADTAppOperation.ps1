@@ -147,7 +147,7 @@ function Install-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
+        Start-ADTMsiProcess @ExecuteDefaultMSISplat
         if ($defaultMspFiles = $adtSession.DefaultMspFiles)
         {
             $defaultMspFiles | ForEach-Object { Start-ADTMsiProcess -Action 'Patch' -Path $_ }
@@ -211,7 +211,7 @@ function Uninstall-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
+        Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
 
     ## <Perform Uninstallation tasks here>
@@ -255,7 +255,7 @@ function Repair-ADTApplication
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
-        $mainExitCode = (Start-ADTMsiProcess @ExecuteDefaultMSISplat -PassThru).ExitCode
+        Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
 
     ## <Perform Repair tasks here>
@@ -291,7 +291,6 @@ function Repair-ADTApplication
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 1
-$mainExitCode = 0
 
 # Import the module.
 try
@@ -301,7 +300,7 @@ try
 catch
 {
     $Host.UI.WriteErrorLine(($_ | Out-String))
-    exit ($mainExitCode = 60008)
+    exit 60008
 }
 
 # Instantiate a new session.
@@ -315,7 +314,7 @@ catch
 {
     $Host.UI.WriteErrorLine(($_ | Out-String))
     Remove-Module -Name PSAppDeployToolkit* -Force
-    exit ($mainExitCode = 60008)
+    exit 60008
 }
 
 
@@ -328,13 +327,13 @@ catch
 try
 {
     & "$($DeploymentType)-ADTApplication"
-    Close-ADTSession -ExitCode $mainExitCode
+    Close-ADTSession
 }
 catch
 {
     Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTError) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
-    Close-ADTSession -ExitCode ($mainExitCode = 60001)
+    Close-ADTSession -ExitCode 60001
 }
 finally
 {

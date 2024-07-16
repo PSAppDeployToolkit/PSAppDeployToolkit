@@ -19,6 +19,7 @@ class ADTSession
         DeployModeSilent = $false
         BlockExecution = $false
         Initialised = $false
+        ExitCode = 0
     }
 
     # Private variables for modules to use that aren't for public access.
@@ -689,7 +690,7 @@ class ADTSession
         $this.Internal.Initialised = $true
     }
 
-    hidden [System.Void] Close([System.Int32]$ExitCode)
+    hidden [System.Void] Close([System.Nullable[System.Int32]]$ExitCode)
     {
         # Get the current config and strings.
         $adtConfig = Get-ADTConfig
@@ -705,6 +706,12 @@ class ADTSession
         if ($this.GetPropertyValue('TerminalServerMode'))
         {
             Disable-TerminalServerInstallMode
+        }
+
+        # Update exit code with that from the session if the input is null.
+        if ($null -eq $ExitCode)
+        {
+            $ExitCode = $this.Internal.ExitCode
         }
 
         # Process resulting exit code.
@@ -910,5 +917,10 @@ class ADTSession
     [System.Boolean] IsSilent()
     {
         return $this.Internal.DeployModeSilent
+    }
+
+    [System.Void] SetExitCode([System.Int32]$Value)
+    {
+        $this.Internal.ExitCode = $Value
     }
 }
