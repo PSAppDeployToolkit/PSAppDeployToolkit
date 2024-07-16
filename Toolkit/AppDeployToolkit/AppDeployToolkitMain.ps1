@@ -42,9 +42,9 @@ Remove-Module -Name PSAppDeployToolkit* -Force
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
 
 # Open a new PSADT session.
-$sessionProps = @{SessionState = $ExecutionContext.SessionState}; foreach ($param in (Get-Item -LiteralPath Function:Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
+$sessionProps = @{SessionState = $ExecutionContext.SessionState}
+foreach ($param in (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
 {
-    # Return early if the parameter doesn't exist or its value is null.
     if (($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
     {
         $sessionProps.Add($param, $value)
@@ -3349,7 +3349,7 @@ function New-Shortcut
         [System.String]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
-        [Switch]$RunAsAdmin,
+        [System.Management.Automation.SwitchParameter]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
