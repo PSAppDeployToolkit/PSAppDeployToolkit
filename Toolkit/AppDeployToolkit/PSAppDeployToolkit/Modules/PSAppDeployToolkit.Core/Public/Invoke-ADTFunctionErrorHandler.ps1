@@ -11,7 +11,7 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SessionState]$SessionState,
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
@@ -23,46 +23,40 @@ function Invoke-ADTFunctionErrorHandler
         [System.Management.Automation.SwitchParameter]$DisableErrorResolving
     )
 
-    begin
+    # Recover true ErrorActionPreference the caller may have set and set it here.
+    $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
     {
-        # Recover true ErrorActionPreference the caller may have set and set it here.
-        $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
-        {
-            Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
-        }
-        else
-        {
-            $SessionState.PSVariable.Get('OriginalErrorAction').Value
-        }
+        Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
     }
-    
-    process
+    else
     {
-        # Write-Error enforces its own name against the Activity, let's re-write it.
-        if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
-        {
-            $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
-        }
+        $SessionState.PSVariable.Get('OriginalErrorAction').Value
+    }
 
-        # Write out the caller's prefix, if provided.
-        if ($LogMessage)
-        {
-            if (!$DisableErrorResolving)
-            {
-                $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
-            }
-            Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
-        }
+    # Write-Error enforces its own name against the Activity, let's re-write it.
+    if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
+    {
+        $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
+    }
 
-        # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
-        # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
-        if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
+    # Write out the caller's prefix, if provided.
+    if ($LogMessage)
+    {
+        if (!$DisableErrorResolving)
         {
-            $Cmdlet.ThrowTerminatingError($ErrorRecord)
+            $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
         }
-        else
-        {
-            $Cmdlet.WriteError($ErrorRecord)
-        }
+        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+    }
+
+    # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
+    # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
+    if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
+    {
+        $Cmdlet.ThrowTerminatingError($ErrorRecord)
+    }
+    else
+    {
+        $Cmdlet.WriteError($ErrorRecord)
     }
 }
