@@ -8191,6 +8191,9 @@ https://psappdeploytoolkit.com
                     $NewParameters = "$NewParameters $Path"
                 }
 
+                # VBScript args do not handle quotes well, so replace all double quotes with placeholder [{quote}] before sending to the script
+                $Parameters = $Parameters.Replace('"','[{quote}]')
+
                 $Parameters = "$NewParameters $Parameters"
                 $Path = "$envWinDir\System32\wscript.exe"
             }
@@ -14978,40 +14981,45 @@ https://psappdeploytoolkit.com
             ## Define Active Setup StubPath according to file extension of $StubExePath
             Switch ($StubExeExt) {
                 '.exe' {
-                    [String]$CUStubExePath = "$StubExePath"
+                    [String]$CUStubExePath = $StubExePath
                     [String]$CUArguments = $Arguments
-                    [String]$StubPath = "`"$CUStubExePath`""
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$StubPath = "`"$CUStubExePath`""
+                    } else {
+                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                    }
                 }
-                '.js' {
+                {$_ -in '.js','.vbs'} {
                     [String]$CUStubExePath = "$envWinDir\System32\wscript.exe"
-                    [String]$CUArguments = "//nologo `"$StubExePath`""
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "//nologo `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "//nologo `"$StubExePath`"  $Arguments"
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
-                '.vbs' {
-                    [String]$CUStubExePath = "$envWinDir\System32\wscript.exe"
-                    [String]$CUArguments = "//nologo `"$StubExePath`""
-                    [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                }
-                '.cmd' {
+                {$_ -in '.cmd','.bat'} {
                     [String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
-                    [String]$CUArguments = "/C `"$StubExePath`""
-                    [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                }
-                '.bat' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
-                    [String]$CUArguments = "/C `"$StubExePath`""
+                    # Prefix any CMD.exe metacharacters with ^ to escape them
+                    $StubExePath = $StubExePath -replace '([()%!^&])', '^$1'
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "/C `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "/C `"`"$StubExePath`" $Arguments`""
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
                     [String]$CUStubExePath = "$PSHOME\powershell.exe"
-                    [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                }
-            }
-            If ($Arguments) {
-                [String]$StubPath = "$StubPath $Arguments"
-                If ($StubExeExt -ne '.exe') {
-                    [String]$CUArguments = "$CUArguments $Arguments"
                 }
             }
 
