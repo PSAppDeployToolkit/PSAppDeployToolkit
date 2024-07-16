@@ -18,9 +18,10 @@
             {
                 # Initialise the module's global state.
                 $adtData = Get-ADTModuleData
-                Initialize-ADTEnvironment
-                Import-ADTConfig
-                Import-ADTLocalizedStrings
+                $adtData.Environment = New-ADTEnvironmentTable
+                $adtData.Config = Import-ADTConfig
+                $adtData.Language = Get-ADTStringLanguage
+                $adtData.Strings = Import-ADTLocalizedStrings -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.Initialised = $true
             }

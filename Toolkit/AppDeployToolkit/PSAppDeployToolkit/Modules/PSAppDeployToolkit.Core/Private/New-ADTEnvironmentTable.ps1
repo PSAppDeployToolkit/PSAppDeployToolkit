@@ -1,4 +1,4 @@
-﻿function Initialize-ADTEnvironment
+﻿function New-ADTEnvironmentTable
 {
     # Internal function for translating SID types to names.
     function Get-SidTypeAccountName
@@ -353,6 +353,6 @@
     $variables.Add('Shell', (New-Object -ComObject 'WScript.Shell'))
     $variables.Add('ShellApp', (New-Object -ComObject 'Shell.Application'))
 
-    # Store variables within the module's scope.
-    (Get-ADTModuleData).Environment = $variables.AsReadOnly()
+    # Return variables for use within the module.
+    return $variables.AsReadOnly()
 }
