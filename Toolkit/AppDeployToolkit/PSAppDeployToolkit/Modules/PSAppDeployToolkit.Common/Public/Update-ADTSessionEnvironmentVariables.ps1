@@ -52,16 +52,30 @@
 
     process
     {
-        # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
         Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
-        Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
-            $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
-                Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
-            })
-        }
+        try
+        {
+            try
+            {
+                # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
+                Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
+                    $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
+                        Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
+                    })
+                }
 
-        # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-        Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique)))
+                # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
+                Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique)))
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

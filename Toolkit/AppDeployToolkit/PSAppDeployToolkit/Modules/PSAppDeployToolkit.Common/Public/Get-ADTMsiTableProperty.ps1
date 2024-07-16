@@ -137,88 +137,95 @@
 
     process
     {
+        if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
+        {
+            Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$Path] in table [$Table]."
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$Path]."
+        }
         try
         {
-            if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
+            try
             {
-                Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$Path] in table [$Table]."
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$Path]."
-            }
-
-            # Create a Windows Installer object and define properties for how the MSI database is opened
-            $Installer = New-Object -ComObject WindowsInstaller.Installer
-            $msiOpenDatabaseModeReadOnly = 0
-            $msiSuppressApplyTransformErrors = 63
-            $msiOpenDatabaseModePatchFile = 32
-            $msiOpenDatabaseMode = if ($IsMspFile = [IO.Path]::GetExtension($Path) -eq '.msp')
-            {
-                $msiOpenDatabaseModePatchFile
-            }
-            else
-            {
-                $msiOpenDatabaseModeReadOnly
-            }
-
-            # Open database in read only mode and apply a list of transform(s).
-            $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($Path, $msiOpenDatabaseMode)
-            if ($TransformPath -and !$IsMspFile)
-            {
-                $null = foreach ($Transform in $TransformPath)
+                # Create a Windows Installer object and define properties for how the MSI database is opened
+                $Installer = New-Object -ComObject WindowsInstaller.Installer
+                $msiOpenDatabaseModeReadOnly = 0
+                $msiSuppressApplyTransformErrors = 63
+                $msiOpenDatabaseModePatchFile = 32
+                $msiOpenDatabaseMode = if ($IsMspFile = [IO.Path]::GetExtension($Path) -eq '.msp')
                 {
-                    Invoke-ADTObjectMethod -InputObject $Database -MethodName ApplyTransform -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
+                    $msiOpenDatabaseModePatchFile
                 }
-            }
-
-            # Get either the requested windows database table information or summary information.
-            if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
-            {
-                # Open the requested table view from the database.
-                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
-                [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
-
-                # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
-                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                $TableProperties = [ordered]@{}
-                do
+                else
                 {
-                    if ($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch)
+                    $msiOpenDatabaseModeReadOnly
+                }
+
+                # Open database in read only mode and apply a list of transform(s).
+                $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($Path, $msiOpenDatabaseMode)
+                if ($TransformPath -and !$IsMspFile)
+                {
+                    $null = foreach ($Transform in $TransformPath)
                     {
-                        $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)))
+                        Invoke-ADTObjectMethod -InputObject $Database -MethodName ApplyTransform -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
                     }
                 }
-                while ($Record)
-                return [pscustomobject]$TableProperties
-            }
-            else
-            {
-                # Get the SummaryInformation from the windows installer database.
-                # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
-                $SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                return [pscustomobject]@{
-                    CodePage = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)
-                    Title = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)
-                    Subject = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)
-                    Author = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(4)
-                    Keywords = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(5)
-                    Comments = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(6)
-                    Template = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)
-                    LastSavedBy = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(8)
-                    RevisionNumber = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(9)
-                    LastPrinted = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(11)
-                    CreateTimeDate = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(12)
-                    LastSaveTimeDate = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(13)
-                    PageCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(14)
-                    WordCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(15)
-                    CharacterCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(16)
-                    CreatingApplication = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)
-                    Security = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19)
+
+                # Get either the requested windows database table information or summary information.
+                if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
+                {
+                    # Open the requested table view from the database.
+                    $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
+                    [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
+
+                    # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
+                    # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+                    $TableProperties = [ordered]@{}
+                    do
+                    {
+                        if ($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch)
+                        {
+                            $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @($TablePropertyValueColumnNum)))
+                        }
+                    }
+                    while ($Record)
+                    return [pscustomobject]$TableProperties
+                }
+                else
+                {
+                    # Get the SummaryInformation from the windows installer database.
+                    # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
+                    $SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
+                    return [pscustomobject]@{
+                        CodePage = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)
+                        Title = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)
+                        Subject = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)
+                        Author = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(4)
+                        Keywords = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(5)
+                        Comments = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(6)
+                        Template = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)
+                        LastSavedBy = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(8)
+                        RevisionNumber = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(9)
+                        LastPrinted = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(11)
+                        CreateTimeDate = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(12)
+                        LastSaveTimeDate = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(13)
+                        PageCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(14)
+                        WordCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(15)
+                        CharacterCount = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(16)
+                        CreatingApplication = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)
+                        Security = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19)
+                    }
                 }
             }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        catch {
+        catch
+        {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to get the MSI table [$Table]."
         }
         finally

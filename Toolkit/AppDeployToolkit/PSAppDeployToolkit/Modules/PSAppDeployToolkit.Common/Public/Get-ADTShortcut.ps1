@@ -62,8 +62,15 @@
         # Make sure .NET's current directory is synced with PowerShell's.
         try
         {
-            [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-            $Output = @{Path = [System.IO.Path]::GetFullPath($Path)}
+            try
+            {
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                $Output = @{Path = [System.IO.Path]::GetFullPath($Path)}
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {
@@ -73,37 +80,44 @@
 
         try
         {
-            # Build out remainder of object.
-            if ($Path -match '\.url$')
+            try
             {
-                [System.IO.File]::ReadAllLines($Path).ForEach({
-                    switch ($_)
-                    {
-                        {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null)}
-                        {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null)}
-                        {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null)}
-                    }
-                })
-                return [PSADT.Types.ShortcutUrl]$Output
-            }
-            else
-            {
-                $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
-                $Output.TargetPath = $shortcut.TargetPath
-                $Output.Arguments = $shortcut.Arguments
-                $Output.Description = $shortcut.Description
-                $Output.WorkingDirectory = $shortcut.WorkingDirectory
-                $Output.Hotkey = $shortcut.Hotkey
-                $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',')
-                $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
-                $Output.WindowStyle = switch ($shortcut.WindowStyle)
+                # Build out remainder of object.
+                if ($Path -match '\.url$')
                 {
-                    1 {'Normal'}
-                    3 {'Maximized'}
-                    7 {'Minimized'}
-                    default {'Normal'}
+                    [System.IO.File]::ReadAllLines($Path).ForEach({
+                        switch ($_)
+                        {
+                            {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null)}
+                            {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null)}
+                            {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null)}
+                        }
+                    })
+                    return [PSADT.Types.ShortcutUrl]$Output
                 }
-                return [PSADT.Types.ShortcutLnk]$Output
+                else
+                {
+                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
+                    $Output.TargetPath = $shortcut.TargetPath
+                    $Output.Arguments = $shortcut.Arguments
+                    $Output.Description = $shortcut.Description
+                    $Output.WorkingDirectory = $shortcut.WorkingDirectory
+                    $Output.Hotkey = $shortcut.Hotkey
+                    $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',')
+                    $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
+                    $Output.WindowStyle = switch ($shortcut.WindowStyle)
+                    {
+                        1 {'Normal'}
+                        3 {'Maximized'}
+                        7 {'Minimized'}
+                        default {'Normal'}
+                    }
+                    return [PSADT.Types.ShortcutLnk]$Output
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
         }
         catch

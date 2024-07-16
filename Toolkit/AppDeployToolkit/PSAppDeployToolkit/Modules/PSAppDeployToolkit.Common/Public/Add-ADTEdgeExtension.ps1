@@ -62,12 +62,26 @@
 
     process
     {
-        # Set up the additional extension.
         Write-ADTLogEntry -Message "Adding extension with ID [$ExtensionID] using installation mode [$InstallationMode] and update URL [$UpdateUrl]$(if ($MinimumVersionRequired) {" with minimum version required [$MinimumVersionRequired]"})."
-        $additionalExtension = @{installation_mode = $InstallationMode; update_url = $UpdateUrl}; if ($MinimumVersionRequired) {$additionalExtension.Add('minimum_version_required', $MinimumVersionRequired)}
+        try
+        {
+            try
+            {
+                # Set up the additional extension.
+                $additionalExtension = @{installation_mode = $InstallationMode; update_url = $UpdateUrl}; if ($MinimumVersionRequired) {$additionalExtension.Add('minimum_version_required', $MinimumVersionRequired)}
 
-        # Add the additional extension to the current values, then re-write the definition in the registry.
-        [System.Void](Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | Add-Member -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | ConvertTo-Json -Compress))
+                # Add the additional extension to the current values, then re-write the definition in the registry.
+                [System.Void](Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | Add-Member -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | ConvertTo-Json -Compress))
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

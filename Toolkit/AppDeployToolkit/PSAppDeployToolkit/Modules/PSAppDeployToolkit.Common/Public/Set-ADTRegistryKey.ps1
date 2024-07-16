@@ -92,74 +92,81 @@
     {
         try
         {
-            # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-            $Key = if ($PSBoundParameters.ContainsKey('SID'))
+            try
             {
-                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
-            }
-            else
-            {
-                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
-            }
-
-            # Create registry key if it doesn't exist.
-            if (!(Test-Path -LiteralPath $Key))
-            {
-                Write-ADTLogEntry -Message "Creating registry key [$Key]."
-                if (($Key.Split('/').Count - 1) -eq 0)
+                # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+                $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    # No forward slash found in Key. Use New-Item cmdlet to create registry key.
-                    [System.Void](New-Item -Path $Key -ItemType Registry -Force)
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    # Forward slash was found in Key. Use REG.exe ADD to create registry key
-                    $RegMode = if ([System.Environment]::Is64BitProcess -and !$Wow6432Node)
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                }
+
+                # Create registry key if it doesn't exist.
+                if (!(Test-Path -LiteralPath $Key))
+                {
+                    Write-ADTLogEntry -Message "Creating registry key [$Key]."
+                    if (($Key.Split('/').Count - 1) -eq 0)
                     {
-                        '/reg:64'
+                        # No forward slash found in Key. Use New-Item cmdlet to create registry key.
+                        [System.Void](New-Item -Path $Key -ItemType Registry -Force)
                     }
                     else
                     {
-                        '/reg:32'
-                    }
-                    $CreateRegKeyResult = & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
-                    if ($Global:LastExitCode -ne 0)
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new("Failed to create registry key [$Key]")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'RegKeyCreationFailure'
-                            TargetObject = $CreateRegKeyResult
-                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                        # Forward slash was found in Key. Use REG.exe ADD to create registry key
+                        $RegMode = if ([System.Environment]::Is64BitProcess -and !$Wow6432Node)
+                        {
+                            '/reg:64'
                         }
-                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                        else
+                        {
+                            '/reg:32'
+                        }
+                        $CreateRegKeyResult = & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
+                        if ($Global:LastExitCode -ne 0)
+                        {
+                            $naerParams = @{
+                                Exception = [System.ApplicationException]::new("Failed to create registry key [$Key]")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'RegKeyCreationFailure'
+                                TargetObject = $CreateRegKeyResult
+                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
                     }
                 }
-            }
 
-            if ($Name)
-            {
-                if (!(Get-ItemProperty -LiteralPath $Key -Name $Name -ErrorAction Ignore))
+                if ($Name)
                 {
-                    # Set registry value if it doesn't exist.
-                    Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
-                    [System.Void](New-ItemProperty -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
-                }
-                else
-                {
-                    # Update registry value if it does exist.
-                    $RegistryValueWriteAction = 'update'
-                    if ($Name -eq '(Default)')
+                    if (!(Get-ItemProperty -LiteralPath $Key -Name $Name -ErrorAction Ignore))
                     {
-                        # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
-                        [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
+                        # Set registry value if it doesn't exist.
+                        Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
+                        [System.Void](New-ItemProperty -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
-                        [System.Void](Set-ItemProperty -LiteralPath $Key -Name $Name -Value $Value)
+                        # Update registry value if it does exist.
+                        $RegistryValueWriteAction = 'update'
+                        if ($Name -eq '(Default)')
+                        {
+                            # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
+                            [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
+                            [System.Void](Set-ItemProperty -LiteralPath $Key -Name $Name -Value $Value)
+                        }
                     }
                 }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
         }
         catch

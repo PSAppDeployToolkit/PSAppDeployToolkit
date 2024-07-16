@@ -56,39 +56,53 @@
     {
         foreach ($Path in $filePath)
         {
-            # Read the first 4096 bytes of the file.
-            $stream = [System.IO.FileStream]::new($Path.FullName, 'Open', 'Read')
-            [System.Void]$stream.Read($data, 0, $data.Count)
-            $stream.Flush()
-            $stream.Close()
-
-            # Get the file header from the header's address, factoring in any offsets.
-            $PEArchitecture = switch ($PE_IMAGE_FILE_HEADER = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
+            try
             {
-                0 {
-                    # The contents of this file are assumed to be applicable to any machine type
-                    'Native'
+                try
+                {
+                    # Read the first 4096 bytes of the file.
+                    $stream = [System.IO.FileStream]::new($Path.FullName, 'Open', 'Read')
+                    [System.Void]$stream.Read($data, 0, $data.Count)
+                    $stream.Flush()
+                    $stream.Close()
+
+                    # Get the file header from the header's address, factoring in any offsets.
+                    $PEArchitecture = switch ($PE_IMAGE_FILE_HEADER = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
+                    {
+                        0 {
+                            # The contents of this file are assumed to be applicable to any machine type
+                            'Native'
+                        }
+                        0x014c {
+                            # File for Windows 32-bit systems
+                            '32BIT'
+                        }
+                        0x0200 {
+                            # File for Intel Itanium x64 processor family
+                            'Itanium-x64'
+                        }
+                        0x8664 {
+                            # File for Windows 64-bit systems
+                            '64BIT'
+                        }
+                        default {
+                            'Unknown'
+                        }
+                    }
+                    Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
+
+                    # Output the string to the pipeline.
+                    $PEArchitecture
                 }
-                0x014c {
-                    # File for Windows 32-bit systems
-                    '32BIT'
-                }
-                0x0200 {
-                    # File for Intel Itanium x64 processor family
-                    'Itanium-x64'
-                }
-                0x8664 {
-                    # File for Windows 64-bit systems
-                    '64BIT'
-                }
-                default {
-                    'Unknown'
+                catch
+                {
+                    Write-Error -ErrorRecord $_
                 }
             }
-            Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
-
-            # Output the string to the pipeline.
-            $PEArchitecture
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            }
         }
     }
 

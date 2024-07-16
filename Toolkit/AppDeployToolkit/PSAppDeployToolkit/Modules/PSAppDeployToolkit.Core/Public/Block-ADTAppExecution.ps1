@@ -75,62 +75,76 @@
             return
         }
 
-        # Reset any previous instance of the temp folder.
-        if ([System.IO.Directory]::Exists($tempPath))
-        {
-            Remove-ADTFolder -Path $tempPath
-        }
         try
         {
-            [System.Void][System.IO.Directory]::CreateDirectory($tempPath)
-        }
-        catch
-        {
-            Write-ADTLogEntry -Message "Unable to create [$tempPath]. Possible attempt to gain elevated rights."
-        }
+            try
+            {
+                # Reset any previous instance of the temp folder.
+                if ([System.IO.Directory]::Exists($tempPath))
+                {
+                    Remove-ADTFolder -Path $tempPath
+                }
+                try
+                {
+                    [System.Void][System.IO.Directory]::CreateDirectory($tempPath)
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Unable to create [$tempPath]. Possible attempt to gain elevated rights."
+                }
 
-        # Export the current state of the module for the scheduled task.
-        Copy-Item -Path "$($adtModule.ModuleBase)\*" -Destination $tempPath -Exclude thumbs.db -Force -Recurse
+                # Export the current state of the module for the scheduled task.
+                Copy-Item -Path "$($adtModule.ModuleBase)\*" -Destination $tempPath -Exclude thumbs.db -Force -Recurse
 
-        # Set contents to be readable for all users (BUILTIN\USERS).
-        try
-        {
-            Set-ADTItemPermission -Path $tempPath -User (ConvertTo-ADTNTAccountOrSID -SID S-1-5-32-545) -Permission Read -Inheritance ObjectInherit, ContainerInherit
-        }
-        catch
-        {
-            Write-ADTLogEntry -Message "Failed to set read permissions on path [$tempPath]. The function might not be able to work correctly." -Severity 2
-        }
+                # Set contents to be readable for all users (BUILTIN\USERS).
+                try
+                {
+                    Set-ADTItemPermission -Path $tempPath -User (ConvertTo-ADTNTAccountOrSID -SID S-1-5-32-545) -Permission Read -Inheritance ObjectInherit, ContainerInherit
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to set read permissions on path [$tempPath]. The function might not be able to work correctly." -Severity 2
+                }
 
-        # Clean up any previous state that might be lingering.
-        if (Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
-        {
-            Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
-            Unblock-ADTAppExecution
-        }
+                # Clean up any previous state that might be lingering.
+                if (Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
+                {
+                    Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
+                    Unblock-ADTAppExecution
+                }
 
-        # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-        Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
-        try
-        {
-            $nstParams = @{
-                Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
-                Trigger = New-ScheduledTaskTrigger -AtStartup
-                Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
-                Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
+                # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
+                Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
+                try
+                {
+                    $nstParams = @{
+                        Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
+                        Trigger = New-ScheduledTaskTrigger -AtStartup
+                        Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
+                        Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
+                    }
+                    [System.Void](ScheduledTasks\New-ScheduledTask @nstParams | ScheduledTasks\Register-ScheduledTask -TaskName $taskName)
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
+                    return
+                }
+
+                # Enumerate each process and set the debugger value to block application execution.
+                $ProcessName -replace '$', '.exe' | ForEach-Object {
+                    Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$_]."
+                    Set-ADTRegistryKey -Key (Join-Path -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
+                }
             }
-            [System.Void](ScheduledTasks\New-ScheduledTask @nstParams | ScheduledTasks\Register-ScheduledTask -TaskName $taskName)
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
-            return
-        }
-
-        # Enumerate each process and set the debugger value to block application execution.
-        $ProcessName -replace '$', '.exe' | ForEach-Object {
-            Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$_]."
-            Set-ADTRegistryKey -Key (Join-Path -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

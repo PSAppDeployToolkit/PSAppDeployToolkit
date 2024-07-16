@@ -41,35 +41,42 @@
 
     process
     {
+        Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
         try
         {
-            # Attempt to get the update via Get-HotFix first as it's cheap.
-            Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
-            if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
+            try
             {
-                Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
-                $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
-                $updateSearcher.IncludePotentiallySupersededUpdates = $false
-                $updateSearcher.Online = $false
-                if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
+                # Attempt to get the update via Get-HotFix first as it's cheap.
+                if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
                 {
-                    $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | Where-Object {($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)})
+                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
+                    $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
+                    $updateSearcher.IncludePotentiallySupersededUpdates = $false
+                    $updateSearcher.Online = $false
+                    if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
+                    {
+                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | Where-Object {($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)})
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
+                        return
+                    }
                 }
-                else
-                {
-                    Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
-                    return
-                }
-            }
 
-            # Return result.
-            if ($kbFound)
-            {
-                Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is installed."
-                return $true
+                # Return result.
+                if ($kbFound)
+                {
+                    Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is installed."
+                    return $true
+                }
+                Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is not installed."
+                return $false
             }
-            Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is not installed."
-            return $false
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

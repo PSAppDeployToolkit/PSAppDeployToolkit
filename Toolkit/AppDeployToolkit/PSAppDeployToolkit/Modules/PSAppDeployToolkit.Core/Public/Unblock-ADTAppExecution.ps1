@@ -44,16 +44,30 @@
             return
         }
 
-        # Remove Debugger values to unblock processes.
-        Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | Where-Object {$_.Debugger.Contains('Show-ADTBlockedAppDialog')} | ForEach-Object {
-            Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
-            Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger
-        }
-
-        # Remove the scheduled task if it exists.
-        if (Get-ScheduledTask -TaskName ($taskName = "PSAppDeployToolkit_*_BlockedApps") -ErrorAction Ignore)
+        try
         {
-            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+            try
+            {
+                # Remove Debugger values to unblock processes.
+                Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | Where-Object {$_.Debugger.Contains('Show-ADTBlockedAppDialog')} | ForEach-Object {
+                    Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
+                    Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger
+                }
+
+                # Remove the scheduled task if it exists.
+                if (Get-ScheduledTask -TaskName ($taskName = "PSAppDeployToolkit_*_BlockedApps") -ErrorAction Ignore)
+                {
+                    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

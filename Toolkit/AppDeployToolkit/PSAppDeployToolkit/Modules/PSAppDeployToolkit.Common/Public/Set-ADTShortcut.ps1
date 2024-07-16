@@ -119,104 +119,111 @@
     {
         try
         {
-            # Make sure .NET's current directory is synced with PowerShell's.
-            [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-            Write-ADTLogEntry -Message "Changing shortcut [$Path]."
-            if ($extension -eq '.url')
+            try
             {
-                $URLFile = [System.IO.File]::ReadAllLines($Path).ForEach({
-                    switch ($_)
+                # Make sure .NET's current directory is synced with PowerShell's.
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                Write-ADTLogEntry -Message "Changing shortcut [$Path]."
+                if ($extension -eq '.url')
+                {
+                    $URLFile = [System.IO.File]::ReadAllLines($Path).ForEach({
+                        switch ($_)
+                        {
+                            {$_.StartsWith('URL=') -and $TargetPath} {"URL=$TargetPath"}
+                            {$_.StartsWith('IconIndex=') -and ($null -ne $IconIndex)} {"IconIndex=$IconIndex"}
+                            {$_.StartsWith('IconFile=') -and $IconLocation} {"IconFile=$IconLocation"}
+                            default {$_}
+                        }
+                    })
+                    [System.IO.File]::WriteAllLines($Path, $URLFile, [System.Text.UTF8Encoding]::new($false))
+                }
+                else
+                {
+                    # Open shortcut and set initial properties.
+                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Path)
+                    if ($TargetPath)
                     {
-                        {$_.StartsWith('URL=') -and $TargetPath} {"URL=$TargetPath"}
-                        {$_.StartsWith('IconIndex=') -and ($null -ne $IconIndex)} {"IconIndex=$IconIndex"}
-                        {$_.StartsWith('IconFile=') -and $IconLocation} {"IconFile=$IconLocation"}
-                        default {$_}
+                        $shortcut.TargetPath = $TargetPath
                     }
-                })
-                [System.IO.File]::WriteAllLines($Path, $URLFile, [System.Text.UTF8Encoding]::new($false))
+                    if ($Arguments)
+                    {
+                        $shortcut.Arguments = $Arguments
+                    }
+                    if ($Description)
+                    {
+                        $shortcut.Description = $Description
+                    }
+                    if ($WorkingDirectory)
+                    {
+                        $shortcut.WorkingDirectory = $WorkingDirectory
+                    }
+                    if ($Hotkey)
+                    {
+                        $shortcut.Hotkey = $Hotkey
+                    }
+
+                    # Set the WindowStyle based on input.
+                    $windowStyleInt = switch ($WindowStyle)
+                    {
+                        Normal {1}
+                        Maximized {3}
+                        Minimized {7}
+                    }
+                    If ($null -ne $windowStyleInt)
+                    {
+                        $shortcut.WindowStyle = $WindowStyleInt
+                    }
+
+                    # Handle icon, starting with retrieval previous value and split the path from the index.
+                    $TempIconLocation, $TempIconIndex = $shortcut.IconLocation.Split(',')
+                    $IconLocation = if ($IconLocation)
+                    {
+                        # New icon path was specified. Check whether new icon index was also specified.
+                        if ($null -ne $IconIndex)
+                        {
+                            # Create new icon path from new icon path and new icon index.
+                            $IconLocation + ",$IconIndex"
+                        }
+                        else
+                        {
+                            # No new icon index was specified as a parameter. We will keep the old one.
+                            $IconLocation + ",$TempIconIndex"
+                        }
+                    }
+                    elseif ($null -ne $IconIndex)
+                    {
+                        # New icon index was specified, but not the icon location. Append it to the icon path from the shortcut.
+                        $IconLocation = $TempIconLocation + ",$IconIndex"
+                    }
+                    if ($IconLocation)
+                    {
+                        $shortcut.IconLocation = $IconLocation
+                    }
+
+                    # Save the changes.
+                    $shortcut.Save()
+
+                    # Set shortcut to run program as administrator.
+                    if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
+                    {
+                        $fileBytes = [System.IO.FIle]::ReadAllBytes($Path)
+                        $fileBytes[21] = if ($PSBoundParameters.RunAsAdmin)
+                        {
+                            Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
+                            $fileBytes[21] -bor 32
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.'
+                            $fileBytes[21] -band (-bnot 32)
+                        }
+                        [System.IO.FIle]::WriteAllBytes($Path, $fileBytes)
+                    }
+                }
             }
-            else
+            catch
             {
-                # Open shortcut and set initial properties.
-                $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Path)
-                if ($TargetPath)
-                {
-                    $shortcut.TargetPath = $TargetPath
-                }
-                if ($Arguments)
-                {
-                    $shortcut.Arguments = $Arguments
-                }
-                if ($Description)
-                {
-                    $shortcut.Description = $Description
-                }
-                if ($WorkingDirectory)
-                {
-                    $shortcut.WorkingDirectory = $WorkingDirectory
-                }
-                if ($Hotkey)
-                {
-                    $shortcut.Hotkey = $Hotkey
-                }
-
-                # Set the WindowStyle based on input.
-                $windowStyleInt = switch ($WindowStyle)
-                {
-                    Normal {1}
-                    Maximized {3}
-                    Minimized {7}
-                }
-                If ($null -ne $windowStyleInt)
-                {
-                    $shortcut.WindowStyle = $WindowStyleInt
-                }
-
-                # Handle icon, starting with retrieval previous value and split the path from the index.
-                $TempIconLocation, $TempIconIndex = $shortcut.IconLocation.Split(',')
-                $IconLocation = if ($IconLocation)
-                {
-                    # New icon path was specified. Check whether new icon index was also specified.
-                    if ($null -ne $IconIndex)
-                    {
-                        # Create new icon path from new icon path and new icon index.
-                        $IconLocation + ",$IconIndex"
-                    }
-                    else
-                    {
-                        # No new icon index was specified as a parameter. We will keep the old one.
-                        $IconLocation + ",$TempIconIndex"
-                    }
-                }
-                elseif ($null -ne $IconIndex)
-                {
-                    # New icon index was specified, but not the icon location. Append it to the icon path from the shortcut.
-                    $IconLocation = $TempIconLocation + ",$IconIndex"
-                }
-                if ($IconLocation)
-                {
-                    $shortcut.IconLocation = $IconLocation
-                }
-
-                # Save the changes.
-                $shortcut.Save()
-
-                # Set shortcut to run program as administrator.
-                if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
-                {
-                    $fileBytes = [System.IO.FIle]::ReadAllBytes($Path)
-                    $fileBytes[21] = if ($PSBoundParameters.RunAsAdmin)
-                    {
-                        Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
-                        $fileBytes[21] -bor 32
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.'
-                        $fileBytes[21] -band (-bnot 32)
-                    }
-                    [System.IO.FIle]::WriteAllBytes($Path, $fileBytes)
-                }
+                Write-Error -ErrorRecord $_
             }
         }
         catch

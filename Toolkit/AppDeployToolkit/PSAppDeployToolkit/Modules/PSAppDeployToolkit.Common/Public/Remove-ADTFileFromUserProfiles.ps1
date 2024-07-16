@@ -104,7 +104,21 @@
                 $RemoveFileSplat.LiteralPath = $LiteralPath.ForEach({[System.IO.Path]::Combine($UserProfilePath, $_)})
                 Write-ADTLogEntry -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:"
             }
-            Remove-ADTFile @RemoveFileSplat
+            try
+            {
+                try
+                {
+                    Remove-ADTFile @RemoveFileSplat
+                }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
+            }
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            }
         }
     }
 

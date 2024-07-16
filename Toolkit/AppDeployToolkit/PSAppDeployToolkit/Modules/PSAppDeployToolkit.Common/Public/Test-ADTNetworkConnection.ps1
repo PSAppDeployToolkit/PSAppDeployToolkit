@@ -35,13 +35,27 @@
     process
     {
         Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
-        if (Get-NetAdapter -Physical | Where-Object {$_.Status.Equals('Up')})
+        try
         {
-            Write-ADTLogEntry -Message 'Wired network connection found.'
-            return $true
+            try
+            {
+                if (Get-NetAdapter -Physical | Where-Object {$_.Status.Equals('Up')})
+                {
+                    Write-ADTLogEntry -Message 'Wired network connection found.'
+                    return $true
+                }
+                Write-ADTLogEntry -Message 'Wired network connection not found.'
+                return $false
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        Write-ADTLogEntry -Message 'Wired network connection not found.'
-        return $false
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

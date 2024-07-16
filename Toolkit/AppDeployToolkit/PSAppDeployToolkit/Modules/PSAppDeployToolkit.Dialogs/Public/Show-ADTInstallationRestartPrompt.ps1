@@ -120,7 +120,21 @@
 
     process
     {
-        Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+        try
+        {
+            try
+            {
+                Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

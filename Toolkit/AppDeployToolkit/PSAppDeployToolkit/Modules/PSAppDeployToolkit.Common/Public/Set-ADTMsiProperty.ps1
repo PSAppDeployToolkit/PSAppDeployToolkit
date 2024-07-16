@@ -60,29 +60,36 @@
     {
         try
         {
-            # Open the requested table view from the database
-            Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
-            $View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
-            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
-
-            # Retrieve the requested property from the requested table and close off the view.
-            # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-            $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
-            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @())
-            [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
-
-            # Set the MSI property.
-            $View = if ($Record)
+            try
             {
-                # If the property already exists, then create the view for updating the property.
-                Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                # Open the requested table view from the database
+                Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
+                $View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+                [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
+
+                # Retrieve the requested property from the requested table and close off the view.
+                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+                $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
+                [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @())
+                [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
+
+                # Set the MSI property.
+                $View = if ($Record)
+                {
+                    # If the property already exists, then create the view for updating the property.
+                    Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                }
+                else
+                {
+                    # If property does not exist, then create view for inserting the property.
+                    Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                }
+                [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
             }
-            else
+            catch
             {
-                # If property does not exist, then create view for inserting the property.
-                Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                Write-Error -ErrorRecord $_
             }
-            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
         }
         catch
         {

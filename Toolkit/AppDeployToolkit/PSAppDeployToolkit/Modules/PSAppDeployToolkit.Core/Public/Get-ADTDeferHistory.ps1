@@ -52,7 +52,14 @@
     process
     {
         Write-ADTLogEntry -Message 'Getting deferral history...'
-        Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
+        try
+        {
+            Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     end

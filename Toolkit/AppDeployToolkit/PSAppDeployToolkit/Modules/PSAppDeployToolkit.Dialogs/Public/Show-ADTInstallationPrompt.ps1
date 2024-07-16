@@ -181,7 +181,21 @@
 
     process
     {
-        Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
+        try
+        {
+            try
+            {
+                Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

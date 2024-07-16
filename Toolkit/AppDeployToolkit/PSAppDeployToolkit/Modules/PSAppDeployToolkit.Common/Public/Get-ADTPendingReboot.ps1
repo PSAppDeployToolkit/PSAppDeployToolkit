@@ -68,62 +68,76 @@
 
     process
     {
-        # Get the date/time that the system last booted up.
-        Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$([System.Environment]::MachineName)]."
-        $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Math]::Abs([System.Environment]::TickCount))
-
-        # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
-        $IsCBServicingRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
-
-        # Determine if there is a pending reboot from a Windows Update.
-        $IsWindowsUpdateRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
-
-        # Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon).
-        $IsAppVRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
-
-        # Get the value of PendingFileRenameOperations.
-        $PendingFileRenameOperations = if ($IsFileRenameRebootPending = Test-ADTRegistryValue -Key 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations')
+        try
         {
             try
             {
-                Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations
+                # Get the date/time that the system last booted up.
+                Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$([System.Environment]::MachineName)]."
+                $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Math]::Abs([System.Environment]::TickCount))
+
+                # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
+                $IsCBServicingRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+
+                # Determine if there is a pending reboot from a Windows Update.
+                $IsWindowsUpdateRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+
+                # Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon).
+                $IsAppVRebootPending = Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
+
+                # Get the value of PendingFileRenameOperations.
+                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = Test-ADTRegistryValue -Key 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations')
+                {
+                    try
+                    {
+                        Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations
+                    }
+                    catch
+                    {
+                        Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                        $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
+                    }
+                }
+
+                # Determine SCCM 2012 Client reboot pending status.
+                $IsSCCMClientRebootPending = try
+                {
+                    if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).ReturnValue -eq 0)
+                    {
+                        $SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending
+                    }
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                    $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
+                }
+
+                # Create a custom object containing pending reboot information for the system.
+                [PSADT.Types.RebootInfo]$PendingRebootInfo = @{
+                    ComputerName                 = [System.Environment]::MachineName
+                    LastBootUpTime               = $LastBootUpTime
+                    IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending
+                    IsCBServicingRebootPending   = $IsCBServicingRebootPending
+                    IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
+                    IsSCCMClientRebootPending    = $IsSCCMClientRebootPending
+                    IsAppVRebootPending          = $IsAppVRebootPending
+                    IsFileRenameRebootPending    = $IsFileRenameRebootPending
+                    PendingFileRenameOperations  = $PendingFileRenameOperations
+                    ErrorMsg                     = $PendRebootErrorMsg
+                }
+                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$([System.Environment]::MachineName)]:`n$($PendingRebootInfo | Format-List | Out-String)"
+                return $PendingRebootInfo
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
-                $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
-            }
-        }
-
-        # Determine SCCM 2012 Client reboot pending status.
-        $IsSCCMClientRebootPending = try
-        {
-            if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).ReturnValue -eq 0)
-            {
-                $SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
-            $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
-
-        # Create a custom object containing pending reboot information for the system.
-        [PSADT.Types.RebootInfo]$PendingRebootInfo = @{
-            ComputerName                 = [System.Environment]::MachineName
-            LastBootUpTime               = $LastBootUpTime
-            IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending
-            IsCBServicingRebootPending   = $IsCBServicingRebootPending
-            IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
-            IsSCCMClientRebootPending    = $IsSCCMClientRebootPending
-            IsAppVRebootPending          = $IsAppVRebootPending
-            IsFileRenameRebootPending    = $IsFileRenameRebootPending
-            PendingFileRenameOperations  = $PendingFileRenameOperations
-            ErrorMsg                     = $PendRebootErrorMsg
-        }
-        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$([System.Environment]::MachineName)]:`n$($PendingRebootInfo | Format-List | Out-String)"
-        return $PendingRebootInfo
     }
 
     end

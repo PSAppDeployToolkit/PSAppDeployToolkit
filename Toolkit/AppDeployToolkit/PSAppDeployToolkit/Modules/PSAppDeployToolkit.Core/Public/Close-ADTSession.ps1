@@ -34,22 +34,29 @@
         # If we're closing the last session, clean up the environment.
         try
         {
-            if ($adtData.Sessions.Count.Equals(1))
+            try
             {
-                # Only attempt to finalise the dialogs a dialog module is loaded.
-                if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
+                if ($adtData.Sessions.Count.Equals(1))
                 {
-                    Close-ADTInstallationProgress
-                }
+                    # Only attempt to finalise the dialogs a dialog module is loaded.
+                    if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
+                    {
+                        Close-ADTInstallationProgress
+                    }
 
-                # Unblock all PSAppDeployToolkit blocked apps.
-                Unblock-ADTAppExecution
+                    # Unblock all PSAppDeployToolkit blocked apps.
+                    Unblock-ADTAppExecution
 
-                # Only attempt to disable Terminal Services Install Mode if previously set.
-                if ($adtData.TerminalServerMode)
-                {
-                    Disable-ADTTerminalServerInstallMode
+                    # Only attempt to disable Terminal Services Install Mode if previously set.
+                    if ($adtData.TerminalServerMode)
+                    {
+                        Disable-ADTTerminalServerInstallMode
+                    }
                 }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
         }
         catch

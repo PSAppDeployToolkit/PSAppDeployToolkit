@@ -67,24 +67,38 @@
 
     process
     {
-        # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-        $Key = if ($PSBoundParameters.ContainsKey('SID'))
+        try
         {
-            Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
-        }
-        else
-        {
-            Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
-        }
+            try
+            {
+                # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+                $Key = if ($PSBoundParameters.ContainsKey('SID'))
+                {
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                }
+                else
+                {
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                }
 
-        # Test whether value exists or not.
-        if ((Get-Item -LiteralPath $Key -ErrorAction Ignore | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
-        {
-            Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does exist."
-            return $true
+                # Test whether value exists or not.
+                if ((Get-Item -LiteralPath $Key -ErrorAction Ignore | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
+                {
+                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does exist."
+                    return $true
+                }
+                Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist."
+                return $false
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist."
-        return $false
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

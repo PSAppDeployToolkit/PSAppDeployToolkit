@@ -61,9 +61,23 @@
     process
     {
         Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
-        $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
-        Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
-        return $iniValue
+        try
+        {
+            try
+            {
+                $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
+                Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
+                return $iniValue
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

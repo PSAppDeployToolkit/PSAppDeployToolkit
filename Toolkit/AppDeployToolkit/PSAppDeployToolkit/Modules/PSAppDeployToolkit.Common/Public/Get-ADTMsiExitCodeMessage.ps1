@@ -46,9 +46,23 @@
 
     process
     {
-        if (![System.String]::IsNullOrWhiteSpace(($res = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode).Trim())))
+        try
         {
-            return $res
+            try
+            {
+                if (![System.String]::IsNullOrWhiteSpace(($res = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode).Trim())))
+                {
+                    return $res
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

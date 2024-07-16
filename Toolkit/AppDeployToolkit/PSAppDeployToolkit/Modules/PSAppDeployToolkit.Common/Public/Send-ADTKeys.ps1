@@ -89,37 +89,44 @@
 
             try
             {
-                # Bring the window to the foreground and make sure it's enabled.
-                if (![PSADT.UiAutomation]::BringWindowToFront($WindowHandle))
+                try
                 {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new('Failed to bring window to foreground.')
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'WindowHandleForegroundError'
-                        TargetObject = $WindowHandle
-                        RecommendedAction = "Please check the status of this window and try again."
+                    # Bring the window to the foreground and make sure it's enabled.
+                    if (![PSADT.UiAutomation]::BringWindowToFront($WindowHandle))
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new('Failed to bring window to foreground.')
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'WindowHandleForegroundError'
+                            TargetObject = $WindowHandle
+                            RecommendedAction = "Please check the status of this window and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
-                if (![PSADT.UiAutomation]::IsWindowEnabled($WindowHandle))
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'WindowHandleDisabledError'
-                        TargetObject = $WindowHandle
-                        RecommendedAction = "Please check the status of this window and try again."
+                    if (![PSADT.UiAutomation]::IsWindowEnabled($WindowHandle))
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'WindowHandleDisabledError'
+                            TargetObject = $WindowHandle
+                            RecommendedAction = "Please check the status of this window and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
 
-                # Send the Key sequence.
-                Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
-                [Windows.Forms.SendKeys]::SendWait($Keys)
-                if ($WaitSeconds)
+                    # Send the Key sequence.
+                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
+                    [Windows.Forms.SendKeys]::SendWait($Keys)
+                    if ($WaitSeconds)
+                    {
+                        Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
+                        Start-Sleep -Seconds $WaitSeconds
+                    }
+                }
+                catch
                 {
-                    Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
-                    Start-Sleep -Seconds $WaitSeconds
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
@@ -133,23 +140,30 @@
     {
         try
         {
-            if ($WindowHandle)
+            try
             {
-                if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {$_.WindowHandle -eq $WindowHandle}))
+                if ($WindowHandle)
                 {
-                    Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
-                    return
+                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {$_.WindowHandle -eq $WindowHandle}))
+                    {
+                        Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
+                        return
+                    }
+                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle
                 }
-                Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle
+                else
+                {
+                    if (!($AllWindows = if ($GetAllWindowTitles) {Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles} else {Get-ADTWindowTitle -WindowTitle $WindowTitle}))
+                    {
+                        Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
+                        return
+                    }
+                    $AllWindows | Send-ADTKeysToWindow
+                }
             }
-            else
+            catch
             {
-                if (!($AllWindows = if ($GetAllWindowTitles) {Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles} else {Get-ADTWindowTitle -WindowTitle $WindowTitle}))
-                {
-                    Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
-                    return
-                }
-                $AllWindows | Send-ADTKeysToWindow
+                Write-Error -ErrorRecord $_
             }
         }
         catch

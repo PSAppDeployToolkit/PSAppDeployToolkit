@@ -7,17 +7,29 @@ function New-ADTFunction
 
     begin
     {
-        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        try
+        {
+            try
+            {
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end
     {
-        # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

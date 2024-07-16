@@ -64,7 +64,21 @@
     process
     {
         Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
-        return [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName)
+        try
+        {
+            try
+            {
+                return [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName)
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

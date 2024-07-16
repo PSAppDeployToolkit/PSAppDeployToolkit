@@ -58,15 +58,29 @@
 
     process
     {
-        if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
+        try
         {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
-            Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
+            try
+            {
+                if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
+                {
+                    Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
+                    Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
+                }
+                if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
+                {
+                    Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
+                    Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
+        catch
         {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
-            Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

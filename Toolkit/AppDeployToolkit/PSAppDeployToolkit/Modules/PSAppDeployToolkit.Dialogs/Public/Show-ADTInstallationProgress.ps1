@@ -76,7 +76,21 @@
 
     process
     {
-        & $Command @PSBoundParameters
+        try
+        {
+            try
+            {
+                & $Command @PSBoundParameters
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

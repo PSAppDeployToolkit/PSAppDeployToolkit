@@ -60,26 +60,40 @@
 
     process
     {
-        # If nothing is returned from Win32_Service, check Win32_BaseService.
-        if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+        try
         {
-            $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
-        }
+            try
+            {
+                # If nothing is returned from Win32_Service, check Win32_BaseService.
+                if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+                {
+                    $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                }
 
-        # Return early if null.
-        if (!$ServiceObject)
-        {
-            Write-ADTLogEntry -Message "Service [$Name] does not exist."
-            return $false
-        }
-        Write-ADTLogEntry -Message "Service [$Name] exists."
+                # Return early if null.
+                if (!$ServiceObject)
+                {
+                    Write-ADTLogEntry -Message "Service [$Name] does not exist."
+                    return $false
+                }
+                Write-ADTLogEntry -Message "Service [$Name] exists."
 
-        # Return the CIM object if passing through.
-        if ($PassThru)
-        {
-            return $ServiceObject
+                # Return the CIM object if passing through.
+                if ($PassThru)
+                {
+                    return $ServiceObject
+                }
+                return $true
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        return $true
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

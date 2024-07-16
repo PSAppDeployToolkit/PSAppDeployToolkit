@@ -49,41 +49,55 @@
 
     end
     {
-        # Confirm input isn't null before proceeding.
-        if ($processObjects = $input.Where({$null -ne $_}))
+        try
         {
-            # Get all running processes and append properties.
-            Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
-            $runningProcesses = Get-Process -Name $processObjects.Name -ErrorAction Ignore | ForEach-Object {
-                $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
-                    {
-                        # The description of the process provided with the object.
-                        $objDescription
+            try
+            {
+                # Confirm input isn't null before proceeding.
+                if ($processObjects = $input.Where({$null -ne $_}))
+                {
+                    # Get all running processes and append properties.
+                    Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
+                    $runningProcesses = Get-Process -Name $processObjects.Name -ErrorAction Ignore | ForEach-Object {
+                        $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                            if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
+                            {
+                                # The description of the process provided with the object.
+                                $objDescription
+                            }
+                            elseif ($_.Description)
+                            {
+                                # If the process already has a description field specified, then use it.
+                                $_.Description
+                            }
+                            else
+                            {
+                                # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                                $_.ProcessName
+                            }
+                        )
                     }
-                    elseif ($_.Description)
+
+                    # Return output if there's any.
+                    if ($runningProcesses)
                     {
-                        # If the process already has a description field specified, then use it.
-                        $_.Description
+                        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -DebugMessage:$DisableLogging
+                        $runningProcesses | Sort-Object -Property ProcessDescription
                     }
                     else
                     {
-                        # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                        $_.ProcessName
+                        Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
                     }
-                )
+                }
             }
-
-            # Return output if there's any.
-            if ($runningProcesses)
+            catch
             {
-                Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -DebugMessage:$DisableLogging
-                $runningProcesses | Sort-Object -Property ProcessDescription
+                Write-Error -ErrorRecord $_
             }
-            else
-            {
-                Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
-            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

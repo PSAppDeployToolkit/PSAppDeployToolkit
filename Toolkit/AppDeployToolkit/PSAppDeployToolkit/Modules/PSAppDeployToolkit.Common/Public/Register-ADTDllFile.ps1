@@ -50,7 +50,14 @@
 
     process
     {
-        Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Register
+        try
+        {
+            Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Register
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     end

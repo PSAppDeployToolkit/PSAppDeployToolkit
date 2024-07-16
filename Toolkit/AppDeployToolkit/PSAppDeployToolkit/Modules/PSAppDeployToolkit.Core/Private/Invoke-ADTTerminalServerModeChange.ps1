@@ -39,6 +39,6 @@
             TargetObject = $terminalServerResult
             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
         }
-        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+        throw (New-ADTErrorRecord @naerParams)
     }
 }

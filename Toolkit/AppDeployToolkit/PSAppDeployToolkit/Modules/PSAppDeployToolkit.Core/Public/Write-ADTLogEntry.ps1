@@ -91,19 +91,33 @@
         [System.Management.Automation.SwitchParameter]$DebugMessage
     )
 
-    # If we don't have an active session, write the message to the verbose stream (4).
-    if ($adtSession = if (Test-ADTSessionActive) {Get-ADTSession})
+    try
     {
-        $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
-    }
-    elseif (!$DebugMessage)
-    {
-        $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
-    }
+        try
+        {
+            # If we don't have an active session, write the message to the verbose stream (4).
+            if ($adtSession = if (Test-ADTSessionActive) {Get-ADTSession})
+            {
+                $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+            }
+            elseif (!$DebugMessage)
+            {
+                $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
+            }
 
-    # Return the provided message if PassThru is true.
-    if ($PassThru)
+            # Return the provided message if PassThru is true.
+            if ($PassThru)
+            {
+                return $Message
+            }
+        }
+        catch
+        {
+            Write-Error -ErrorRecord $_
+        }
+    }
+    catch
     {
-        return $Message
+        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
     }
 }

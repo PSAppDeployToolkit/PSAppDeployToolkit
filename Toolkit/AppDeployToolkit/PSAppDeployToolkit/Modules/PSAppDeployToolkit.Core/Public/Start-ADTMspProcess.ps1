@@ -68,47 +68,60 @@
 
     process
     {
-        # If the MSP is in the Files directory, set the full path to the MSP.
-        $mspFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+        try
         {
-            $dirFilesPath
-        }
-        elseif (Test-Path -LiteralPath $Path)
-        {
-            (Get-Item -LiteralPath $Path).FullName
-        }
-        else
-        {
-            Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
-            $naerParams = @{
-                Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
-                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                ErrorId = 'MsiFileNotFound'
-                TargetObject = $Path
-                RecommendedAction = "Please confirm the path of the MSP file and try again."
+            try
+            {
+                # If the MSP is in the Files directory, set the full path to the MSP.
+                $mspFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+                {
+                    $dirFilesPath
+                }
+                elseif (Test-Path -LiteralPath $Path)
+                {
+                    (Get-Item -LiteralPath $Path).FullName
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
+                    $naerParams = @{
+                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
+                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        ErrorId = 'MsiFileNotFound'
+                        TargetObject = $Path
+                        RecommendedAction = "Please confirm the path of the MSP file and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Create a Windows Installer object and open the database in read-only mode.
+                Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
+                [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
+                [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
+
+                # Get the SummaryInformation from the windows installer database and store all product codes found.
+                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
+                $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
+
+                # Free our COM objects.
+                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
+                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
+                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
+
+                # If the application is installed, patch it.
+                if ($AllTargetedProductCodes)
+                {
+                    Start-ADTMsiProcess -Action Patch @PSBoundParameters
+                }
             }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-            return
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-
-        # Create a Windows Installer object and open the database in read-only mode.
-        Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
-        [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
-        [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
-
-        # Get the SummaryInformation from the windows installer database and store all product codes found.
-        [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-        $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
-
-        # Free our COM objects.
-        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
-        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
-        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
-
-        # If the application is installed, patch it.
-        if ($AllTargetedProductCodes)
+        catch
         {
-            Start-ADTMsiProcess -Action Patch @PSBoundParameters
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

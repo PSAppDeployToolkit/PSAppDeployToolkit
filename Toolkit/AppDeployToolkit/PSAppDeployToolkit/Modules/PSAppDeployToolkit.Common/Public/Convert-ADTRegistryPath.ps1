@@ -66,62 +66,75 @@
 
     process
     {
-        # Convert the registry key hive to the full path, only match if at the beginning of the line.
-        foreach ($hive in $Script:ADTRegistry.PathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
+        try
         {
-            foreach ($regexMatch in ($Script:ADTRegistry.PathMatches -replace '^',$hive.Key))
+            try
             {
-                $Key = $Key -replace $regexMatch,$hive.Value
-            }
-        }
+                # Convert the registry key hive to the full path, only match if at the beginning of the line.
+                foreach ($hive in $Script:ADTRegistry.PathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
+                {
+                    foreach ($regexMatch in ($Script:ADTRegistry.PathMatches -replace '^',$hive.Key))
+                    {
+                        $Key = $Key -replace $regexMatch,$hive.Value
+                    }
+                }
 
-        # Process the WOW6432Node values if applicable.
-        if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
-        {
-            foreach ($path in $Script:ADTRegistry.WOW64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
+                # Process the WOW6432Node values if applicable.
+                if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
+                {
+                    foreach ($path in $Script:ADTRegistry.WOW64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
+                    {
+                        $Key = $Key -replace $path.Key,$path.Value
+                    }
+                }
+
+                # Append the PowerShell provider to the registry key path.
+                if ($Key -notmatch '^Registry::')
+                {
+                    $Key = "Registry::$key"
+                }
+
+                # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+                if ($PSBoundParameters.ContainsKey('SID'))
+                {
+                    if ($Key -match '^Registry::HKEY_CURRENT_USER\\')
+                    {
+                        $Key = $Key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
+                    }
+                    elseif ($Logging)
+                    {
+                        Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
+                        return
+                    }
+                }
+
+                # Check for expected key string format.
+                if ($Key -notmatch '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA')
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new("Unable to detect target registry hive in string [$Key].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'RegistryKeyValueInvalid'
+                        TargetObject = $Key
+                        RecommendedAction = "Please confirm the supplied value is correct and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+                if ($Logging)
+                {
+                    Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
+                }
+                return $Key
+            }
+            catch
             {
-                $Key = $Key -replace $path.Key,$path.Value
+                Write-Error -ErrorRecord $_
             }
         }
-
-        # Append the PowerShell provider to the registry key path.
-        if ($Key -notmatch '^Registry::')
+        catch
         {
-            $Key = "Registry::$key"
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
-
-        # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-        if ($PSBoundParameters.ContainsKey('SID'))
-        {
-            if ($Key -match '^Registry::HKEY_CURRENT_USER\\')
-            {
-                $Key = $Key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
-            }
-            elseif ($Logging)
-            {
-                Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
-                return
-            }
-        }
-
-        # Check for expected key string format.
-        if ($Key -notmatch '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA')
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentException]::new("Unable to detect target registry hive in string [$Key].")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'RegistryKeyValueInvalid'
-                TargetObject = $Key
-                RecommendedAction = "Please confirm the supplied value is correct and try again."
-            }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-            return
-        }
-        if ($Logging)
-        {
-            Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
-        }
-        return $Key
     }
 
     end

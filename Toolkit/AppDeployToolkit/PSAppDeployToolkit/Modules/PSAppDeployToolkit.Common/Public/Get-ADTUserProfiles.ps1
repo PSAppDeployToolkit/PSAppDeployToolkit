@@ -73,36 +73,50 @@
     {
         # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
         Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
-        Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
-            # Return early for accounts that have a null NTAccount.
-            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
+        try
+        {
+            try
             {
-                return
-            }
+                Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
+                    # Return early for accounts that have a null NTAccount.
+                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
+                    {
+                        return
+                    }
 
-            # Exclude early for excluded accounts.
-            if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
+                    # Exclude early for excluded accounts.
+                    if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
+                    {
+                        return
+                    }
+
+                    # Write out the object to the pipeline.
+                    [PSADT.Types.UserProfile]@{
+                        NTAccount = $ntAccount
+                        SID = $_.PSChildName
+                        ProfilePath = $_.ProfileImagePath
+                    }
+                }
+
+                # Create a custom object for the Default User profile. Since the Default User is not an actual user account, it does not have a username or a SID.
+                # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
+                if (!$ExcludeDefaultUser)
+                {
+                    [PSADT.Types.UserProfile]@{
+                        NTAccount = 'Default User'
+                        SID = 'S-1-5-21-Default-User'
+                        ProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
+                    }
+                }
+            }
+            catch
             {
-                return
-            }
-
-            # Write out the object to the pipeline.
-            [PSADT.Types.UserProfile]@{
-                NTAccount = $ntAccount
-                SID = $_.PSChildName
-                ProfilePath = $_.ProfileImagePath
+                Write-Error -ErrorRecord $_
             }
         }
-
-        # Create a custom object for the Default User profile. Since the Default User is not an actual user account, it does not have a username or a SID.
-        # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-        if (!$ExcludeDefaultUser)
+        catch
         {
-            [PSADT.Types.UserProfile]@{
-                NTAccount = 'Default User'
-                SID = 'S-1-5-21-Default-User'
-                ProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
-            }
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
