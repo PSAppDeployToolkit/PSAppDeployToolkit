@@ -2,14 +2,11 @@
 {
     param (
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ExitCode
+        [System.Nullable[System.Int32]]$ExitCode
     )
 
-    # Cache the module's global data.
-    $adtData = Get-ADT
-
     # Close the Installation Progress Dialog if running.
-    if ($adtData.Sessions.Count.Equals(1) -and (Get-Module -Name PSAppDeployToolkit.Dialogs))
+    if (($adtData = Get-ADT).Sessions.Count.Equals(1) -and (Get-Module -Name PSAppDeployToolkit.Dialogs))
     {
         Close-ADTInstallationProgress
     }
