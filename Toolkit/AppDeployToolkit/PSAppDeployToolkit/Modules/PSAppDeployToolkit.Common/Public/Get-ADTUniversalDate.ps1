@@ -47,12 +47,26 @@
 
     process
     {
-        # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-        $DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture)
+        try
+        {
+            try
+            {
+                # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
+                $DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture)
 
-        # Convert the date to a universal sortable date time pattern based on the current culture.
-        Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
-        return (Get-Date -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
+                # Convert the date to a universal sortable date time pattern based on the current culture.
+                Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
+                return (Get-Date -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

@@ -47,9 +47,17 @@
             return
         }
 
-        try {
-            Write-ADTLogEntry -Message "Creating folder [$Path]."
-            [System.Void](New-Item -Path $Path -ItemType Directory -Force)
+        try
+        {
+            try
+            {
+                Write-ADTLogEntry -Message "Creating folder [$Path]."
+                [System.Void](New-Item -Path $Path -ItemType Directory -Force)
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

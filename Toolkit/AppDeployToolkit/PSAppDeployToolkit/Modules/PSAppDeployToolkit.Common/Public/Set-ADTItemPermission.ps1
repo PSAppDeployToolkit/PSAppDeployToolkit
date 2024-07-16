@@ -123,73 +123,86 @@
 
     process
     {
-        # Test elevated permissions.
-        if (!(Test-ADTCallerIsAdmin))
+        try
         {
-            Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
-            $naerParams = @{
-                Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
-                Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
-                ErrorId = 'CallerNotLocalAdmin'
-                RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
-            }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-            return
-        }
-
-        # Get object ACLs and enable inheritance.
-        if ($EnableInheritance)
-        {
-            ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($false, $true)
-            Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
-            [System.Void](Set-Acl -Path $Path -AclObject $Acl)
-            return
-        }
-
-        # Modify variables to remove file incompatible flags if this is a file.
-        if (Test-Path -LiteralPath $Path -PathType Leaf)
-        {
-            $Permission = $Permission -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
-            $Inheritance = [System.Security.AccessControl.InheritanceFlags]::None
-            $Propagation = [System.Security.AccessControl.PropagationFlags]::None
-        }
-
-        # Get object ACLs, disable inheritance but preserve inherited permissions.
-        ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($true, $true)
-        [System.Void](Set-Acl -Path $Path -AclObject $Acl)
-
-        # Get updated ACLs - without inheritance.
-        $Acl = Get-Acl -Path $Path
-
-        # Apply permissions on each user.
-        foreach ($U in $User.Trim().Where({$_.Length}))
-        {
-            # Set Username.
-            [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))
+            try
             {
-                try
+                # Test elevated permissions.
+                if (!(Test-ADTCallerIsAdmin))
                 {
-                    # Translate the SID.
-                    ConvertTo-ADTNTAccountOrSID -SID ($U = $U.Remove(0, 1))
+                    Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
+                    $naerParams = @{
+                        Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
+                        Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
+                        ErrorId = 'CallerNotLocalAdmin'
+                        RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
-                catch
+
+                # Get object ACLs and enable inheritance.
+                if ($EnableInheritance)
                 {
-                    Write-ADTLogEntry "Failed to translate SID [$U]. Skipping..." -Severity 2
-                    continue
+                    ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($false, $true)
+                    Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
+                    [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+                    return
                 }
+
+                # Modify variables to remove file incompatible flags if this is a file.
+                if (Test-Path -LiteralPath $Path -PathType Leaf)
+                {
+                    $Permission = $Permission -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
+                    $Inheritance = [System.Security.AccessControl.InheritanceFlags]::None
+                    $Propagation = [System.Security.AccessControl.PropagationFlags]::None
+                }
+
+                # Get object ACLs, disable inheritance but preserve inherited permissions.
+                ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($true, $true)
+                [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+
+                # Get updated ACLs - without inheritance.
+                $Acl = Get-Acl -Path $Path
+
+                # Apply permissions on each user.
+                foreach ($U in $User.Trim().Where({$_.Length}))
+                {
+                    # Set Username.
+                    [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))
+                    {
+                        try
+                        {
+                            # Translate the SID.
+                            ConvertTo-ADTNTAccountOrSID -SID ($U = $U.Remove(0, 1))
+                        }
+                        catch
+                        {
+                            Write-ADTLogEntry "Failed to translate SID [$U]. Skipping..." -Severity 2
+                            continue
+                        }
+                    }
+                    else
+                    {
+                        $U
+                    }
+
+                    # Set/Add/Remove/Replace permissions and log the changes.
+                    Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
+                    $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
+                }
+
+                # Use the prepared ACL.
+                [System.Void](Set-Acl -Path $Path -AclObject $Acl)
             }
-            else
+            catch
             {
-                $U
+                Write-Error -ErrorRecord $_
             }
-
-            # Set/Add/Remove/Replace permissions and log the changes.
-            Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
-            $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
         }
-
-        # Use the prepared ACL.
-        [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

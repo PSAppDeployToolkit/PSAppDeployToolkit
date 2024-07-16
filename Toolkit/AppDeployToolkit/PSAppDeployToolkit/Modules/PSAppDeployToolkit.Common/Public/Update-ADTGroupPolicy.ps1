@@ -37,19 +37,33 @@
     {
         foreach ($target in ('Computer', 'User'))
         {
-            Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
-            $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
-            if ($LASTEXITCODE)
+            try
             {
-                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
-                $naerParams = @{
-                    Exception = [System.ApplicationException]::new($msg)
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'GpUpdateFailure'
-                    TargetObject = $gpUpdateResult
-                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                try
+                {
+                    Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
+                    $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
+                    if ($LASTEXITCODE)
+                    {
+                        Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new($msg)
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'GpUpdateFailure'
+                            TargetObject = $gpUpdateResult
+                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
                 }
-                New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
+            }
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }

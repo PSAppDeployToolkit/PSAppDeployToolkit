@@ -56,14 +56,28 @@
     {
         # Get the start mode and adjust it if the automatic type is delayed.
         Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
-        if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+        try
         {
-            $serviceStartMode = 'Automatic (Delayed Start)'
-        }
+            try
+            {
+                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+                {
+                    $serviceStartMode = 'Automatic (Delayed Start)'
+                }
 
-        # Return startup type to the caller.
-        Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
-        return $serviceStartMode
+                # Return startup type to the caller.
+                Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+                return $serviceStartMode
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

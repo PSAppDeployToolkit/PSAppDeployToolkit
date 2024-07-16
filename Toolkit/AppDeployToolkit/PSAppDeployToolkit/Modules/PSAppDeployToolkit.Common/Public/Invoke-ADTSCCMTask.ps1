@@ -77,34 +77,41 @@
     {
         try
         {
-            # If SCCM 2012 Client or higher, modify hashtabe containing Schedule IDs so that it only has the ones compatible with this version of the SCCM client.
-            Write-ADTLogEntry -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..."
-            if ((Get-ADTSCCMClientVersion).Major -ge 5)
+            try
             {
-                $ScheduleIds.Remove('PeerDistributionPointStatus')
-                $ScheduleIds.Remove('PeerDistributionPointProvisioning')
-                $ScheduleIds.Remove('ComplianceIntervalEnforcement')
-                $ScheduleIds.Add('UpdateStorePolicy', '{00000000-0000-0000-0000-000000000114}') # Update Store Policy
-                $ScheduleIds.Add('StateSystemBulkSend', '{00000000-0000-0000-0000-000000000116}') # State System Policy Bulk Send Low
-                $ScheduleIds.Add('ApplicationManagerPolicyAction', '{00000000-0000-0000-0000-000000000121}') # Application Manager Policy Action
-                $ScheduleIds.Add('PowerManagementStartSummarizer', '{00000000-0000-0000-0000-000000000131}') # Power Management Start Summarizer
-            }
-
-            # Determine if the requested Schedule ID is available on this version of the SCCM Client.
-            if (!$ScheduleIds.ContainsKey($ScheduleId))
-            {
-                $naerParams = @{
-                    Exception = [System.ApplicationException]::new("The requested ScheduleId [$ScheduleId] is not available with this version of the SCCM Client [$SCCMClientVersion].")
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidData
-                    ErrorId = 'CcmExecInvalidScheduleId'
-                    RecommendedAction = "Please check the supplied ScheduleId and try again."
+                # If SCCM 2012 Client or higher, modify hashtabe containing Schedule IDs so that it only has the ones compatible with this version of the SCCM client.
+                Write-ADTLogEntry -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..."
+                if ((Get-ADTSCCMClientVersion).Major -ge 5)
+                {
+                    $ScheduleIds.Remove('PeerDistributionPointStatus')
+                    $ScheduleIds.Remove('PeerDistributionPointProvisioning')
+                    $ScheduleIds.Remove('ComplianceIntervalEnforcement')
+                    $ScheduleIds.Add('UpdateStorePolicy', '{00000000-0000-0000-0000-000000000114}') # Update Store Policy
+                    $ScheduleIds.Add('StateSystemBulkSend', '{00000000-0000-0000-0000-000000000116}') # State System Policy Bulk Send Low
+                    $ScheduleIds.Add('ApplicationManagerPolicyAction', '{00000000-0000-0000-0000-000000000121}') # Application Manager Policy Action
+                    $ScheduleIds.Add('PowerManagementStartSummarizer', '{00000000-0000-0000-0000-000000000131}') # Power Management Start Summarizer
                 }
-                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-            }
 
-            # Trigger SCCM task.
-            Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
-            [System.Void](Get-CimInstance -Namespace ROOT\CCM -ClassName SMS_Client).TriggerSchedule($ScheduleIds.$ScheduleID)
+                # Determine if the requested Schedule ID is available on this version of the SCCM Client.
+                if (!$ScheduleIds.ContainsKey($ScheduleId))
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new("The requested ScheduleId [$ScheduleId] is not available with this version of the SCCM Client [$SCCMClientVersion].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                        ErrorId = 'CcmExecInvalidScheduleId'
+                        RecommendedAction = "Please check the supplied ScheduleId and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Trigger SCCM task.
+                Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
+                [System.Void](Get-CimInstance -Namespace ROOT\CCM -ClassName SMS_Client).TriggerSchedule($ScheduleIds.$ScheduleID)
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

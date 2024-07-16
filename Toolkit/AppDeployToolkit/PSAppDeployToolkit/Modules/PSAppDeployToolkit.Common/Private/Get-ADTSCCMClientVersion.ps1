@@ -10,7 +10,7 @@
             ErrorId = 'CcmExecServiceMissing'
             RecommendedAction = "Please check the availability of this service and try again."
         }
-        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+        throw (New-ADTErrorRecord @naerParams)
     } 
     if (($svc = Get-Service -Name ccmexec).Status -ne 'Running')
     {
@@ -21,7 +21,7 @@
             TargetObject = $svc
             RecommendedAction = "Please check the status of this service and try again."
         }
-        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+        throw (New-ADTErrorRecord @naerParams)
     }
 
     # Determine the SCCM Client Version.
@@ -42,7 +42,7 @@
             ErrorId = 'CcmExecVersionNullOrEmpty'
             RecommendedAction = "Please check the installed version and try again."
         }
-        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+        throw (New-ADTErrorRecord @naerParams)
     }
     Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
     return $SCCMClientVersion

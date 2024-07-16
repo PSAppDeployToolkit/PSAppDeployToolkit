@@ -37,8 +37,15 @@
     {
         try
         {
-            Invoke-ADTTerminalServerModeChange -Mode Install
-            (Get-ADTModuleData).TerminalServerMode = $true
+            try
+            {
+                Invoke-ADTTerminalServerModeChange -Mode Install
+                (Get-ADTModuleData).TerminalServerMode = $true
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

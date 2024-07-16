@@ -41,17 +41,31 @@
 
     process
     {
-        # Return early if the extension isn't installed.
         Write-ADTLogEntry -Message "Removing extension with ID [$ExtensionID]."
-        if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
+        try
         {
-            Write-ADTLogEntry -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
-            return
-        }
+            try
+            {
+                # Return early if the extension isn't installed.
+                if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
+                {
+                    Write-ADTLogEntry -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
+                    return
+                }
 
-        # If the deploymentmode is Remove, remove the extension from the list.
-        $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-        [System.Void](Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
+                # If the deploymentmode is Remove, remove the extension from the list.
+                $installedExtensions.PSObject.Properties.Remove($ExtensionID)
+                [System.Void](Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

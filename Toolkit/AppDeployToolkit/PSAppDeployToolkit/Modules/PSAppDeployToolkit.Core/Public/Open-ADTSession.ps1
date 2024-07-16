@@ -123,23 +123,30 @@
         # Initialise the module, instantiate a new ADT session and open it for usage.
         try
         {
-            if (!$adtData.Sessions.Count)
-            {
-                Initialize-ADTModule
-            }
-            $adtData.Sessions.Add($PSBoundParameters)
             try
             {
-                $adtData.Sessions[-1].Open()
-                if ($adtData.Sessions.Count.Equals(1))
+                if (!$adtData.Sessions.Count)
                 {
-                    [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
+                    Initialize-ADTModule
+                }
+                $adtData.Sessions.Add($PSBoundParameters)
+                try
+                {
+                    $adtData.Sessions[-1].Open()
+                    if ($adtData.Sessions.Count.Equals(1))
+                    {
+                        [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
+                    }
+                }
+                catch
+                {
+                    [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
+                    throw
                 }
             }
             catch
             {
-                [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
-                throw
+                Write-Error -ErrorRecord $_
             }
         }
         catch

@@ -126,73 +126,87 @@
     }
     process
     {
-        # Create a custom object with the desired properties for the installed applications and sanitize property details.
-        $installedApplication = foreach ($regKeyApp in $regKeyApplication)
+        try
         {
-            # Bypass any updates or hotfixes.
-            if (!$IncludeUpdatesAndHotfixes -and ($regKeyApp.DisplayName -match $updatesHotfixRegex))
+            try
             {
-                $updatesSkippedCounter++
-                continue
+                # Create a custom object with the desired properties for the installed applications and sanitize property details.
+                $installedApplication = foreach ($regKeyApp in $regKeyApplication)
+                {
+                    # Bypass any updates or hotfixes.
+                    if (!$IncludeUpdatesAndHotfixes -and ($regKeyApp.DisplayName -match $updatesHotfixRegex))
+                    {
+                        $updatesSkippedCounter++
+                        continue
+                    }
+
+                    # Remove any control characters which may interfere with logging and creating file path names from these variables.
+                    $appDisplayName = $regKeyApp.DisplayName -replace $stringControlChars
+                    $appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore) -replace $stringControlChars
+                    $appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction Ignore) -replace $stringControlChars
+                    $Is64BitApp = [System.Environment]::Is64BitOperatingSystem -and ($regKeyApp.PSPath -notmatch $wow6432PSPathRegex)
+
+                    # Verify if there is a match with the product code passed to the script.
+                    if ($ProductCode -contains $regKeyApp.PSChildName)
+                    {
+                        Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
+                        Out-InstalledAppObject
+                    }
+
+                    # Verify if there is a match with the application name(s) passed to the script.
+                    foreach ($application in $Name)
+                    {
+                        if ($Exact -and ($regKeyApp.DisplayName -eq $application))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
+                            Out-InstalledAppObject
+                        }
+                        elseif ($WildCard -and ($regKeyApp.DisplayName -like $application))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
+                            Out-InstalledAppObject
+                        }
+                        elseif ($RegEx -and ($regKeyApp.DisplayName -match $application))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
+                            Out-InstalledAppObject
+                        }
+                        elseif ($regKeyApp.DisplayName -match [System.Text.RegularExpressions.Regex]::Escape($application))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
+                            Out-InstalledAppObject
+                        }
+                    }
+                }
+
+                # Write to log the number of entries skipped due to them being considered updates.
+                if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
+                {
+                    if ($updatesSkippedCounter -eq 1)
+                    {
+                        Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+                    }
+                }
+
+                if ($installedApplication)
+                {
+                    return $installedApplication
+                }
+                Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.'
             }
-
-            # Remove any control characters which may interfere with logging and creating file path names from these variables.
-            $appDisplayName = $regKeyApp.DisplayName -replace $stringControlChars
-            $appDisplayVersion = ($regKeyApp | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore) -replace $stringControlChars
-            $appPublisher = ($regKeyApp | Select-Object -ExpandProperty Publisher -ErrorAction Ignore) -replace $stringControlChars
-            $Is64BitApp = [System.Environment]::Is64BitOperatingSystem -and ($regKeyApp.PSPath -notmatch $wow6432PSPathRegex)
-
-            # Verify if there is a match with the product code passed to the script.
-            if ($ProductCode -contains $regKeyApp.PSChildName)
+            catch
             {
-                Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
-                Out-InstalledAppObject
-            }
-
-            # Verify if there is a match with the application name(s) passed to the script.
-            foreach ($application in $Name)
-            {
-                if ($Exact -and ($regKeyApp.DisplayName -eq $application))
-                {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
-                    Out-InstalledAppObject
-                }
-                elseif ($WildCard -and ($regKeyApp.DisplayName -like $application))
-                {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
-                    Out-InstalledAppObject
-                }
-                elseif ($RegEx -and ($regKeyApp.DisplayName -match $application))
-                {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
-                    Out-InstalledAppObject
-                }
-                elseif ($regKeyApp.DisplayName -match [System.Text.RegularExpressions.Regex]::Escape($application))
-                {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
-                    Out-InstalledAppObject
-                }
+                Write-Error -ErrorRecord $_
             }
         }
-
-        # Write to log the number of entries skipped due to them being considered updates.
-        if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
+        catch
         {
-            if ($updatesSkippedCounter -eq 1)
-            {
-                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
-            }
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
-
-        if ($installedApplication)
-        {
-            return $installedApplication
-        }
-        Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.'
     }
 
     end

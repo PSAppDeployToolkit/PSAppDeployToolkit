@@ -67,48 +67,55 @@
             $ManuallyLoadedRegHive = $false
             try
             {
-                # Set the path to the user's registry hive file.
-                $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
-
-                # Load the User profile registry hive if it is not already loaded because the User is logged in.
-                if (!(Test-Path -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
+                try
                 {
-                    # Load the User registry hive if the registry hive file exists.
-                    if (![System.IO.File]::Exists($UserRegistryHiveFile))
+                    # Set the path to the user's registry hive file.
+                    $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+
+                    # Load the User profile registry hive if it is not already loaded because the User is logged in.
+                    if (!(Test-Path -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
                     {
-                        $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$UserRegistryHiveFile] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")
-                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                            ErrorId = 'UserRegistryHiveFileNotFound'
-                            TargetObject = $UserRegistryHiveFile
-                            RecommendedAction = "Please confirm the state of this user profile and try again."
+                        # Load the User registry hive if the registry hive file exists.
+                        if (![System.IO.File]::Exists($UserRegistryHiveFile))
+                        {
+                            $naerParams = @{
+                                Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$UserRegistryHiveFile] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")
+                                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                                ErrorId = 'UserRegistryHiveFileNotFound'
+                                TargetObject = $UserRegistryHiveFile
+                                RecommendedAction = "Please confirm the state of this user profile and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
                         }
-                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+
+                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                        $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
+                        if ($Global:LastExitCode -ne 0)
+                        {
+                            $naerParams = @{
+                                Exception = [System.ApplicationException]::new("Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue...")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'UserRegistryHiveLoadFailure'
+                                TargetObject = $UserRegistryHiveFile
+                                RecommendedAction = "Please confirm the state of this user profile and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                        $ManuallyLoadedRegHive = $true
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
                     }
 
-                    Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                    $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
-                    if ($Global:LastExitCode -ne 0)
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new("Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue...")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'UserRegistryHiveLoadFailure'
-                            TargetObject = $UserRegistryHiveFile
-                            RecommendedAction = "Please confirm the state of this user profile and try again."
-                        }
-                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                    }
-                    $ManuallyLoadedRegHive = $true
+                    # Invoke changes against registry.
+                    Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
+                    ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
                 }
-                else
+                catch
                 {
-                    Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
+                    Write-Error -ErrorRecord $_
                 }
-
-                # Invoke changes against registry.
-                Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
             }
             catch
             {
@@ -120,28 +127,35 @@
                 {
                     try
                     {
-                        Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
-                        $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
-                        if ($Global:LastExitCode -ne 0)
+                        try
                         {
-                            Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
-                            [System.GC]::Collect()
-                            [System.GC]::WaitForPendingFinalizers()
-                            [System.Threading.Thread]::Sleep(5000)
-
                             Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                             $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                             if ($Global:LastExitCode -ne 0)
                             {
-                                $naerParams = @{
-                                    Exception = [System.ApplicationException]::new("REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult].")
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                    ErrorId = 'UserRegistryHiveUnloadFailure'
-                                    TargetObject = "HKEY_USERS\$($UserProfile.SID)"
-                                    RecommendedAction = "Please confirm the state of this user profile and try again."
+                                Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
+                                [System.GC]::Collect()
+                                [System.GC]::WaitForPendingFinalizers()
+                                [System.Threading.Thread]::Sleep(5000)
+
+                                Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                                $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
+                                if ($Global:LastExitCode -ne 0)
+                                {
+                                    $naerParams = @{
+                                        Exception = [System.ApplicationException]::new("REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult].")
+                                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                        ErrorId = 'UserRegistryHiveUnloadFailure'
+                                        TargetObject = "HKEY_USERS\$($UserProfile.SID)"
+                                        RecommendedAction = "Please confirm the state of this user profile and try again."
+                                    }
+                                    throw (New-ADTErrorRecord @naerParams)
                                 }
-                                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                             }
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
                         }
                     }
                     catch

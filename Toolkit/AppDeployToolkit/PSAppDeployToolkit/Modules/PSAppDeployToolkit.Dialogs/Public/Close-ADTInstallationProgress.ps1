@@ -47,24 +47,38 @@
 
     process
     {
-        # Call the underlying function to close the progress window.
-        & (Get-ADTDialogFunction)
-
-        # Send out the final toast notification.
-        switch ($adtSession.GetDeploymentStatus())
+        try
         {
-            FastRetry {
-                Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                break
+            try
+            {
+                # Call the underlying function to close the progress window.
+                & (Get-ADTDialogFunction)
+
+                # Send out the final toast notification.
+                switch ($adtSession.GetDeploymentStatus())
+                {
+                    FastRetry {
+                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                        break
+                    }
+                    Error {
+                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                        break
+                    }
+                    default {
+                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
+                        break
+                    }
+                }
             }
-            Error {
-                Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                break
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
-            default {
-                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.$_)" -NoWait
-                break
-            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

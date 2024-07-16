@@ -67,7 +67,14 @@
     {
         try
         {
-            Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+            try
+            {
+                Invoke-ADTServiceAndDependencyOperation -Operation Start @PSBoundParameters
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

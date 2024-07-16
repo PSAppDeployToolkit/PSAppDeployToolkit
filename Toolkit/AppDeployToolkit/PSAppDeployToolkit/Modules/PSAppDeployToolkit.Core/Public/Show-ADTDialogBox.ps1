@@ -102,23 +102,37 @@
         }
 
         Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
-        $result = switch ([System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons[$Buttons] + $Script:DialogBox.Icons[$Icon] + $Script:DialogBox.DefaultButtons[$DefaultButton] + (4096 * !$NotTopMost))))
+        try
         {
-            1 {'OK'; break}
-            2 {'Cancel'; break}
-            3 {'Abort'; break}
-            4 {'Retry'; break}
-            5 {'Ignore'; break}
-            6 {'Yes'; break}
-            7 {'No'; break}
-            10 {'Try Again'; break}
-            11 {'Continue'; break}
-            -1 {'Timeout'; break}
-            default {'Unknown'; break}
-        }
+            try
+            {
+                $result = switch ([System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons[$Buttons] + $Script:DialogBox.Icons[$Icon] + $Script:DialogBox.DefaultButtons[$DefaultButton] + (4096 * !$NotTopMost))))
+                {
+                    1 {'OK'; break}
+                    2 {'Cancel'; break}
+                    3 {'Abort'; break}
+                    4 {'Retry'; break}
+                    5 {'Ignore'; break}
+                    6 {'Yes'; break}
+                    7 {'No'; break}
+                    10 {'Try Again'; break}
+                    11 {'Continue'; break}
+                    -1 {'Timeout'; break}
+                    default {'Unknown'; break}
+                }
 
-        Write-ADTLogEntry -Message "Dialog Box Response: $result"
-        return $result
+                Write-ADTLogEntry -Message "Dialog Box Response: $result"
+                return $result
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

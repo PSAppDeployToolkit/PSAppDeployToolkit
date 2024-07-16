@@ -56,8 +56,15 @@
         {
             try
             {
-                Write-ADTLogEntry -Message "Creating cache folder [$Path]."
-                [System.Void](New-Item -Path $Path -ItemType Directory)
+                try
+                {
+                    Write-ADTLogEntry -Message "Creating cache folder [$Path]."
+                    [System.Void](New-Item -Path $Path -ItemType Directory)
+                }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
             }
             catch
             {
@@ -73,10 +80,17 @@
         # Copy the toolkit content to the cache folder.
         try
         {
-            Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
-            Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
-            $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
-            $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
+            try
+            {
+                Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
+                Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
+                $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
+                $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
         catch
         {

@@ -53,28 +53,41 @@
 
     process
     {
-        # Get CSV data from the binary and confirm success.
-        Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
-        $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV
-        if ($Global:LastExitCode -ne 0)
+        try
         {
-            $naerParams = @{
-                Exception = [System.ApplicationException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'SchTasksExecutableFailure'
-                TargetObject = $exeSchtasksResults
-                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-            }
-            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -Prefix "Failed to retrieve scheduled tasks."
-            return
-        }
+            try
+            {
+                # Get CSV data from the binary and confirm success.
+                Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
+                $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV
+                if ($Global:LastExitCode -ne 0)
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'SchTasksExecutableFailure'
+                        TargetObject = $exeSchtasksResults
+                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
 
-        # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
-        if ($schTasks = $exeSchtasksResults | ConvertFrom-Csv | Where-Object {$_.TaskName.StartsWith('\') -and ($_.TaskName -match $TaskName)})
+                # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
+                if ($schTasks = $exeSchtasksResults | ConvertFrom-Csv | Where-Object {$_.TaskName.StartsWith('\') -and ($_.TaskName -match $TaskName)})
+                {
+                    return $schTasks | Select-Object -Property $schTasks[0].PSObject.Properties.Name.ForEach({
+                        @{Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'")}
+                    })
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
         {
-            return $schTasks | Select-Object -Property $schTasks[0].PSObject.Properties.Name.ForEach({
-                @{Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'")}
-            })
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to retrieve scheduled tasks."
         }
     }
 

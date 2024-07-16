@@ -172,308 +172,315 @@
     {
         try
         {
-            # Validate and find the fully qualified path for the $Path variable.
-            if ([System.IO.Path]::IsPathRooted($Path) -and [System.IO.Path]::HasExtension($Path))
-            {
-                if (![System.IO.File]::Exists($Path))
-                {
-                    Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
-                    $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("File [$Path] not found.")
-                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'PathFileNotFound'
-                        TargetObject = $Path
-                        RecommendedAction = "Please confirm the path of the specified file and try again."
-                    }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
-                Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
-            }
-            else
-            {
-                # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
-                {
-                    Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
-                    $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
-                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'PathFileNotFound'
-                        TargetObject = $Path
-                        RecommendedAction = "Please confirm the path of the specified file and try again."
-                    }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
-                Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
-                $Path = $fqPath
-            }
-
-            # Set the Working directory if not specified.
-            if (!$WorkingDirectory)
-            {
-                $WorkingDirectory = [System.IO.Path]::GetDirectoryName($Path)
-            }
-
-            # If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true'.
-            if ($WindowStyle -eq 'Hidden')
-            {
-                $UseShellExecute = $true
-            }
-
-            # If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
-            # Please note that a race condition is possible after this check where another process waiting for the MSI installer
-            # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
-            if (($Path -match 'msiexec') -or $WaitForMsiExec)
-            {
-                $MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
-                [System.Threading.Thread]::Sleep(1000)
-                if (!$MsiExecAvailable)
-                {
-                    # Default MSI exit code for install already in progress.
-                    Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
-                    $returnCode = 1618
-                    $naerParams = @{
-                        Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
-                        Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
-                        ErrorId = 'MsiExecUnavailable'
-                        TargetObject = $Path
-                        RecommendedAction = "Please wait for the current MSI operation to finish and try again."
-                    }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
-            }
-
             try
             {
-                # Disable Zone checking to prevent warnings when running executables.
-                $env:SEE_MASK_NOZONECHECKS = 1
-
-                # Define process.
-                $process = [System.Diagnostics.Process]@{
-                    StartInfo = [System.Diagnostics.ProcessStartInfo]@{
-                        FileName = $Path
-                        WorkingDirectory = $WorkingDirectory
-                        UseShellExecute = $UseShellExecute
-                        ErrorDialog = $false
-                        RedirectStandardOutput = $true
-                        RedirectStandardError = $true
-                        CreateNoWindow = $CreateNoWindow
-                        WindowStyle = $WindowStyle
+                # Validate and find the fully qualified path for the $Path variable.
+                if ([System.IO.Path]::IsPathRooted($Path) -and [System.IO.Path]::HasExtension($Path))
+                {
+                    if (![System.IO.File]::Exists($Path))
+                    {
+                        Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
+                        $naerParams = @{
+                            Exception = [System.IO.FileNotFoundException]::new("File [$Path] not found.")
+                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            ErrorId = 'PathFileNotFound'
+                            TargetObject = $Path
+                            RecommendedAction = "Please confirm the path of the specified file and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
-                }
-                if ($Parameters)
-                {
-                    $process.StartInfo.Arguments = $Parameters
-                }
-                if ($process.StartInfo.UseShellExecute)
-                {
-                    Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
-                    $process.StartInfo.RedirectStandardOutput = $false
-                    $process.StartInfo.RedirectStandardError = $false
+                    Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
                 }
                 else
                 {
-                    # Add event handler to capture process's standard output redirection.
-                    $processEventHandler = {if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) {$Event.MessageData.AppendLine($EventArgs.Data)}}
-                    $stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
-                    $stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
+                    # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
+                    if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    {
+                        Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
+                        $naerParams = @{
+                            Exception = [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
+                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            ErrorId = 'PathFileNotFound'
+                            TargetObject = $Path
+                            RecommendedAction = "Please confirm the path of the specified file and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+                    Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
+                    $Path = $fqPath
                 }
 
-                # Start Process.
-                Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
-                if ($Parameters)
+                # Set the Working directory if not specified.
+                if (!$WorkingDirectory)
                 {
-                    if ($SecureParameters)
+                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($Path)
+                }
+
+                # If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true'.
+                if ($WindowStyle -eq 'Hidden')
+                {
+                    $UseShellExecute = $true
+                }
+
+                # If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
+                # Please note that a race condition is possible after this check where another process waiting for the MSI installer
+                # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
+                if (($Path -match 'msiexec') -or $WaitForMsiExec)
+                {
+                    $MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
+                    [System.Threading.Thread]::Sleep(1000)
+                    if (!$MsiExecAvailable)
                     {
-                        Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
+                        # Default MSI exit code for install already in progress.
+                        Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
+                        $returnCode = 1618
+                        $naerParams = @{
+                            Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                            Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
+                            ErrorId = 'MsiExecUnavailable'
+                            TargetObject = $Path
+                            RecommendedAction = "Please wait for the current MSI operation to finish and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
-                    elseif ($Parameters -match '-Command \&')
+                }
+
+                try
+                {
+                    # Disable Zone checking to prevent warnings when running executables.
+                    $env:SEE_MASK_NOZONECHECKS = 1
+
+                    # Define process.
+                    $process = [System.Diagnostics.Process]@{
+                        StartInfo = [System.Diagnostics.ProcessStartInfo]@{
+                            FileName = $Path
+                            WorkingDirectory = $WorkingDirectory
+                            UseShellExecute = $UseShellExecute
+                            ErrorDialog = $false
+                            RedirectStandardOutput = $true
+                            RedirectStandardError = $true
+                            CreateNoWindow = $CreateNoWindow
+                            WindowStyle = $WindowStyle
+                        }
+                    }
+                    if ($Parameters)
                     {
-                        Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
+                        $process.StartInfo.Arguments = $Parameters
+                    }
+                    if ($process.StartInfo.UseShellExecute)
+                    {
+                        Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
+                        $process.StartInfo.RedirectStandardOutput = $false
+                        $process.StartInfo.RedirectStandardError = $false
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$Path $Parameters]..."
+                        # Add event handler to capture process's standard output redirection.
+                        $processEventHandler = {if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) {$Event.MessageData.AppendLine($EventArgs.Data)}}
+                        $stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
+                        $stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
                     }
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Executing [$Path]..."
-                }
-                [System.Void]$process.Start()
 
-                # Set priority
-                if ($PriorityClass -ne 'Normal')
-                {
-                    try
+                    # Start Process.
+                    Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
+                    if ($Parameters)
                     {
-                        if (!$process.HasExited)
+                        if ($SecureParameters)
                         {
-                            Write-ADTLogEntry -Message "Changing the priority class for the process to [$PriorityClass]"
-                            $process.PriorityClass = $PriorityClass
+                            Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
+                        }
+                        elseif ($Parameters -match '-Command \&')
+                        {
+                            Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2
+                            Write-ADTLogEntry -Message "Executing [$Path $Parameters]..."
                         }
                     }
-                    catch
+                    else
                     {
-                        Write-ADTLogEntry -Message 'Failed to change the priority class for the process.' -Severity 2
+                        Write-ADTLogEntry -Message "Executing [$Path]..."
                     }
-                }
+                    [System.Void]$process.Start()
 
-                # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
-                if ($NoWait)
-                {
-                    Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
-                    if ($PassThru)
+                    # Set priority
+                    if ($PriorityClass -ne 'Normal')
                     {
-                        if (!$process.HasExited)
+                        try
                         {
-                            Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
-                            [PSADT.Types.ProcessInfo]@{
-                                Id = $process.Id
-                                Handle = $process.Handle
-                                ProcessName = $process.ProcessName
+                            if (!$process.HasExited)
+                            {
+                                Write-ADTLogEntry -Message "Changing the priority class for the process to [$PriorityClass]"
+                                $process.PriorityClass = $PriorityClass
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2
                             }
                         }
-                        else
+                        catch
                         {
-                            Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
+                            Write-ADTLogEntry -Message 'Failed to change the priority class for the process.' -Severity 2
+                        }
+                    }
+
+                    # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
+                    if ($NoWait)
+                    {
+                        Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
+                        if ($PassThru)
+                        {
+                            if (!$process.HasExited)
+                            {
+                                Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
+                                [PSADT.Types.ProcessInfo]@{
+                                    Id = $process.Id
+                                    Handle = $process.Handle
+                                    ProcessName = $process.ProcessName
+                                }
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
+                            }
+                        }
+                    }
+                    else
+                    {
+                        # Read all streams to end and wait for the process to exit.
+                        if (!$process.StartInfo.UseShellExecute)
+                        {
+                            $process.BeginOutputReadLine()
+                            $process.BeginErrorReadLine()
+                        }
+                        $process.WaitForExit()
+
+                        # HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
+                        while (!$process.HasExited)
+                        {
+                            $process.Refresh()
+                            [System.Threading.Thread]::Sleep(1000)
+                        }
+
+                        # Get the exit code for the process.
+                        $returnCode = $process.ExitCode
+
+                        # Update the session's last exit code with the value if externally called.
+                        if ($extInvoker)
+                        {
+                            $adtSession.SetExitCode($returnCode)
+                        }
+
+                        # Process all streams.
+                        if (!$process.StartInfo.UseShellExecute)
+                        {
+                            # Unregister standard output and error event to retrieve process output.
+                            if ($stdOutEvent)
+                            {
+                                Unregister-Event -SourceIdentifier $stdOutEvent.Name
+                                $stdOutEvent = $null
+                            }
+                            if ($stdErrEvent)
+                            {
+                                Unregister-Event -SourceIdentifier $stdErrEvent.Name
+                                $stdErrEvent = $null
+                            }
+                            $stdOut = $stdOutBuilder.ToString() -replace $null
+                            $stdErr = $stdErrBuilder.ToString() -replace $null
+                            if (![System.String]::IsNullOrWhiteSpace($stdErr))
+                            {
+                                Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
+                            }
                         }
                     }
                 }
-                else
+                finally
                 {
-                    # Read all streams to end and wait for the process to exit.
-                    if (!$process.StartInfo.UseShellExecute)
+                    # Make sure the standard output and error event is unregistered.
+                    if ($process.StartInfo.UseShellExecute -eq $false)
                     {
-                        $process.BeginOutputReadLine()
-                        $process.BeginErrorReadLine()
-                    }
-                    $process.WaitForExit()
-
-                    # HasExited indicates that the associated process has terminated, either normally or abnormally. Wait until HasExited returns $true.
-                    while (!$process.HasExited)
-                    {
-                        $process.Refresh()
-                        [System.Threading.Thread]::Sleep(1000)
-                    }
-
-                    # Get the exit code for the process.
-                    $returnCode = $process.ExitCode
-
-                    # Update the session's last exit code with the value if externally called.
-                    if ($extInvoker)
-                    {
-                        $adtSession.SetExitCode($returnCode)
-                    }
-
-                    # Process all streams.
-                    if (!$process.StartInfo.UseShellExecute)
-                    {
-                        # Unregister standard output and error event to retrieve process output.
                         if ($stdOutEvent)
                         {
-                            Unregister-Event -SourceIdentifier $stdOutEvent.Name
+                            Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction Ignore
                             $stdOutEvent = $null
                         }
                         if ($stdErrEvent)
                         {
-                            Unregister-Event -SourceIdentifier $stdErrEvent.Name
+                            Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction Ignore
                             $stdErrEvent = $null
                         }
-                        $stdOut = $stdOutBuilder.ToString() -replace $null
-                        $stdErr = $stdErrBuilder.ToString() -replace $null
-                        if (![System.String]::IsNullOrWhiteSpace($stdErr))
-                        {
-                            Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
+                    }
+
+                    # Free resources associated with the process, this does not cause process to exit.
+                    if ($process)
+                    {
+                        $process.Dispose()
+                    }
+
+                    # Re-enable Zone checking.
+                    Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction Ignore
+                }
+
+                if (!$NoWait)
+                {
+                    # If the passthru switch is specified, return the exit code and any output from process.
+                    if ($PassThru)
+                    {
+                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                        [PSADT.Types.ProcessResult]@{
+                            ExitCode = $returnCode
+                            StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
+                            StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
                         }
                     }
-                }
-            }
-            finally
-            {
-                # Make sure the standard output and error event is unregistered.
-                if ($process.StartInfo.UseShellExecute -eq $false)
-                {
-                    if ($stdOutEvent)
+
+                    # Check to see whether we should ignore exit codes.
+                    if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
                     {
-                        Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction Ignore
-                        $stdOutEvent = $null
+                        Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
                     }
-                    if ($stdErrEvent)
+                    elseif ($adtSession.GetPropertyValue('AppRebootCodes').Contains($returnCode))
                     {
-                        Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction Ignore
-                        $stdErrEvent = $null
+                        Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     }
-                }
-
-                # Free resources associated with the process, this does not cause process to exit.
-                if ($process)
-                {
-                    $process.Dispose()
-                }
-
-                # Re-enable Zone checking.
-                Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction Ignore
-            }
-
-            if (!$NoWait)
-            {
-                # If the passthru switch is specified, return the exit code and any output from process.
-                if ($PassThru)
-                {
-                    Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                    [PSADT.Types.ProcessResult]@{
-                        ExitCode = $returnCode
-                        StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
-                        StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
-                    }
-                }
-
-                # Check to see whether we should ignore exit codes.
-                if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
-                {
-                    Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
-                }
-                elseif ($adtSession.GetPropertyValue('AppRebootCodes').Contains($returnCode))
-                {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
-                }
-                elseif (($returnCode -eq 1605) -and ($Path -match 'msiexec'))
-                {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
-                }
-                elseif (($returnCode -eq -2145124329) -and ($Path -match 'wusa'))
-                {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
-                }
-                elseif (($returnCode -eq 17025) -and ($Path -match 'fullfile'))
-                {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
-                }
-                elseif ($adtSession.GetPropertyValue('AppExitCodes').Contains($returnCode))
-                {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
-                }
-                else
-                {
-                    if ($MsiExitCodeMessage = if ($Path -match 'msiexec') {Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode})
+                    elseif (($returnCode -eq 1605) -and ($Path -match 'msiexec'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
+                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
+                    }
+                    elseif (($returnCode -eq -2145124329) -and ($Path -match 'wusa'))
+                    {
+                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
+                    }
+                    elseif (($returnCode -eq 17025) -and ($Path -match 'fullfile'))
+                    {
+                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
+                    }
+                    elseif ($adtSession.GetPropertyValue('AppExitCodes').Contains($returnCode))
+                    {
+                        Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
-                    }
+                        if ($MsiExitCodeMessage = if ($Path -match 'msiexec') {Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode})
+                        {
+                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
+                        }
 
-                    if (!$NoExitOnProcessFailure)
-                    {
-                        Close-ADTSession -ExitCode $returnCode
+                        if (!$NoExitOnProcessFailure)
+                        {
+                            Close-ADTSession -ExitCode $returnCode
+                        }
                     }
                 }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
         }
         catch

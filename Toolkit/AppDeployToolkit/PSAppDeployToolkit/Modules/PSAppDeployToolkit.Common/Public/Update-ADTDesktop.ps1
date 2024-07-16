@@ -34,7 +34,21 @@
 
     process
     {
-        [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
+        try
+        {
+            try
+            {
+                [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

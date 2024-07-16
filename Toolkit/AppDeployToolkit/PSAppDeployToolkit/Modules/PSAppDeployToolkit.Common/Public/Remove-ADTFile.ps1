@@ -65,24 +65,31 @@
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
             {
-                $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
+                try
                 {
-                    (Resolve-Path -Path $Item).Path
+                    $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
+                    {
+                        (Resolve-Path -Path $Item).Path
+                    }
+                    else
+                    {
+                        (Resolve-Path -LiteralPath $Item).Path
+                    }
                 }
-                else
+                catch [System.Management.Automation.ItemNotFoundException]
                 {
-                    (Resolve-Path -LiteralPath $Item).Path
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
+                    continue
                 }
-            }
-            catch [System.Management.Automation.ItemNotFoundException]
-            {
-                Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
-                continue
-            }
-            catch [System.Management.Automation.DriveNotFoundException]
-            {
-                Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
-                continue
+                catch [System.Management.Automation.DriveNotFoundException]
+                {
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
+                    continue
+                }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
             }
             catch
             {
@@ -93,20 +100,27 @@
             # Delete specified path if it was successfully resolved.
             try
             {
-                if (Test-Path -LiteralPath $Item -PathType Container)
+                try
                 {
-                    if (!$Recurse)
+                    if (Test-Path -LiteralPath $Item -PathType Container)
                     {
-                        Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
-                        continue
+                        if (!$Recurse)
+                        {
+                            Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
+                            continue
+                        }
+                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
                     }
-                    Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                    }
+                    [System.Void](Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force)
                 }
-                else
+                catch
                 {
-                    Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                    Write-Error -ErrorRecord $_
                 }
-                [System.Void](Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force)
             }
             catch
             {

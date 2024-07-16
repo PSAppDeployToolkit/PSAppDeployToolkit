@@ -52,64 +52,78 @@
 
     process
     {
-        # Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
-        # Offline : The system is not using AC power.
-        # Online  : The system is using AC power.
-        # Unknown : The power status of the system is unknown.
-        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'; $powerStatus = @{}
-        $powerStatus.Add('ACPowerLineStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus)
-
-        # Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
-        $powerStatus.Add('BatteryChargeStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryChargeStatus)
-        $invalidBattery = ($powerStatus.BatteryChargeStatus -eq 'NoSystemBattery') -or ($powerStatus.BatteryChargeStatus -eq 'Unknown')
-
-        # Get the approximate amount, from 0.00 to 1.0, of full battery charge remaining.
-        # This property can report 1.0 when the battery is damaged and Windows can't detect a battery.
-        # Therefore, this property is only indicative of battery charge remaining if 'BatteryChargeStatus' property is not reporting 'NoSystemBattery' or 'Unknown'.
-        $powerStatus.Add('BatteryLifePercent', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifePercent * !$invalidBattery)
-
-        # The reported approximate number of seconds of battery life remaining. It will report -1 if the remaining life is unknown because the system is on AC power.
-        $powerStatus.Add('BatteryLifeRemaining', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifeRemaining)
-
-        # Get the manufacturer reported full charge lifetime of the primary battery power source in seconds.
-        # The reported number of seconds of battery life available when the battery is fully charged, or -1 if it is unknown.
-        # This will only be reported if the battery supports reporting this information. You will most likely get -1, indicating unknown.
-        $powerStatus.Add('BatteryFullLifetime', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryFullLifetime)
-
-        # Determine if the system is using AC power.
-        $powerStatus.Add('IsUsingACPower', $(switch ($powerStatus.ACPowerLineStatus)
+        try
         {
-            Online {
-                Write-ADTLogEntry -Message 'System is using AC power.'
-                $true
-            }
-            Offline {
-                Write-ADTLogEntry -Message 'System is using battery power.'
-                $false
-            }
-            Unknown {
-                if ($invalidBattery)
-                {
-                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
-                    $true
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
-                    $false
-                }
-            }
-        }))
+            try
+            {
+                # Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
+                # Offline : The system is not using AC power.
+                # Online  : The system is using AC power.
+                # Unknown : The power status of the system is unknown.
+                Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'; $powerStatus = @{}
+                $powerStatus.Add('ACPowerLineStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus)
 
-        # Determine if the system is a laptop.
-        $powerStatus.Add('IsLaptop', !$invalidBattery -and ((Get-CimInstance -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$'))
+                # Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
+                $powerStatus.Add('BatteryChargeStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryChargeStatus)
+                $invalidBattery = ($powerStatus.BatteryChargeStatus -eq 'NoSystemBattery') -or ($powerStatus.BatteryChargeStatus -eq 'Unknown')
 
-        # Return the object if we're passing through, otherwise just whether we're on AC.
-        if ($PassThru)
-        {
-            return [PSADT.Types.BatteryInfo]$powerStatus
+                # Get the approximate amount, from 0.00 to 1.0, of full battery charge remaining.
+                # This property can report 1.0 when the battery is damaged and Windows can't detect a battery.
+                # Therefore, this property is only indicative of battery charge remaining if 'BatteryChargeStatus' property is not reporting 'NoSystemBattery' or 'Unknown'.
+                $powerStatus.Add('BatteryLifePercent', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifePercent * !$invalidBattery)
+
+                # The reported approximate number of seconds of battery life remaining. It will report -1 if the remaining life is unknown because the system is on AC power.
+                $powerStatus.Add('BatteryLifeRemaining', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifeRemaining)
+
+                # Get the manufacturer reported full charge lifetime of the primary battery power source in seconds.
+                # The reported number of seconds of battery life available when the battery is fully charged, or -1 if it is unknown.
+                # This will only be reported if the battery supports reporting this information. You will most likely get -1, indicating unknown.
+                $powerStatus.Add('BatteryFullLifetime', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryFullLifetime)
+
+                # Determine if the system is using AC power.
+                $powerStatus.Add('IsUsingACPower', $(switch ($powerStatus.ACPowerLineStatus)
+                {
+                    Online {
+                        Write-ADTLogEntry -Message 'System is using AC power.'
+                        $true
+                    }
+                    Offline {
+                        Write-ADTLogEntry -Message 'System is using battery power.'
+                        $false
+                    }
+                    Unknown {
+                        if ($invalidBattery)
+                        {
+                            Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
+                            $true
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
+                            $false
+                        }
+                    }
+                }))
+
+                # Determine if the system is a laptop.
+                $powerStatus.Add('IsLaptop', !$invalidBattery -and ((Get-CimInstance -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$'))
+
+                # Return the object if we're passing through, otherwise just whether we're on AC.
+                if ($PassThru)
+                {
+                    return [PSADT.Types.BatteryInfo]$powerStatus
+                }
+                return $powerStatus.IsUsingACPower
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-        return $powerStatus.IsUsingACPower
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
     }
 
     end

@@ -73,16 +73,30 @@
 
     process
     {
-        switch ($PSCmdlet.ParameterSetName)
+        try
         {
-            Named {
-                # Invoke method by using parameter names.
-                return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
+            try
+            {
+                switch ($PSCmdlet.ParameterSetName)
+                {
+                    Named {
+                        # Invoke method by using parameter names.
+                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
+                    }
+                    Positional {
+                        # Invoke method without using parameter names.
+                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
+                    }
+                }
             }
-            Positional {
-                # Invoke method without using parameter names.
-                return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
+            catch
+            {
+                Write-Error -ErrorRecord $_
             }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

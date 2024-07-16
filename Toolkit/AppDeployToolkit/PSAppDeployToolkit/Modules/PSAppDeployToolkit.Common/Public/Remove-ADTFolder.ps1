@@ -61,56 +61,63 @@
 
         try
         {
-            # With -Recurse, we can just send it and return early.
-            if (!$DisableRecursion)
+            try
             {
-                Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
-                Remove-Item -LiteralPath $Path -Force -Recurse
-                return
-            }
-
-            # Without recursion, we can only send it if the folder has no items as Remove-Item will ask for confirmation without recursion.
-            Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
-            if (!($ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force))
-            {
-                Remove-Item -LiteralPath $Path -Force
-                return
-            }
-
-            # We must have some subfolders, let's see what we can do.
-            $SubfoldersSkipped = foreach ($item in $ListOfChildItems)
-            {
-                # Check whether this item is a folder
-                if ($item -is [System.IO.DirectoryInfo])
+                # With -Recurse, we can just send it and return early.
+                if (!$DisableRecursion)
                 {
-                    # Item is a folder. Check if its empty.
-                    if (($item | Get-ChildItem -Force | Measure-Object).Count -eq 0)
+                    Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
+                    Remove-Item -LiteralPath $Path -Force -Recurse
+                    return
+                }
+
+                # Without recursion, we can only send it if the folder has no items as Remove-Item will ask for confirmation without recursion.
+                Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
+                if (!($ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force))
+                {
+                    Remove-Item -LiteralPath $Path -Force
+                    return
+                }
+
+                # We must have some subfolders, let's see what we can do.
+                $SubfoldersSkipped = foreach ($item in $ListOfChildItems)
+                {
+                    # Check whether this item is a folder
+                    if ($item -is [System.IO.DirectoryInfo])
                     {
-                        # The folder is empty, delete it
-                        $item | Remove-Item -Force
+                        # Item is a folder. Check if its empty.
+                        if (($item | Get-ChildItem -Force | Measure-Object).Count -eq 0)
+                        {
+                            # The folder is empty, delete it
+                            $item | Remove-Item -Force
+                        }
+                        else
+                        {
+                            # Folder is not empty, skip it.
+                            $item
+                        }
                     }
                     else
                     {
-                        # Folder is not empty, skip it.
-                        $item
+                        # Item is a file. Delete it.
+                        $item | Remove-Item -Force
                     }
                 }
-                else
+                if ($SubfoldersSkipped)
                 {
-                    # Item is a file. Delete it.
-                    $item | Remove-Item -Force
+                    $naerParams = @{
+                        Exception = [System.IO.IOException]::new("The following folders are not empty ['$($SubfoldersSkipped.FullName.Replace($Path.FullName, $null) -join "'; '")'].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'NonEmptySubfolderError'
+                        TargetObject = $SubfoldersSkipped
+                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
             }
-            if ($SubfoldersSkipped)
+            catch
             {
-                $naerParams = @{
-                    Exception = [System.IO.IOException]::new("The following folders are not empty ['$($SubfoldersSkipped.FullName.Replace($Path.FullName, $null) -join "'; '")'].")
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                    ErrorId = 'NonEmptySubfolderError'
-                    TargetObject = $SubfoldersSkipped
-                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                }
-                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord $_
             }
         }
         catch

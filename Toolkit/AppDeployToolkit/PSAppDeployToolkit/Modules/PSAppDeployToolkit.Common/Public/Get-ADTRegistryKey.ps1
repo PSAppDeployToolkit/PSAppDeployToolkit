@@ -94,78 +94,85 @@
     {
         try
         {
-            # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-            [String]$Key = if ($PSBoundParameters.ContainsKey('SID'))
+            try
             {
-                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
-            }
-            else
-            {
-                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
-            }
-
-            # Check if the registry key exists before continuing.
-            if (!(Test-Path -LiteralPath $Key))
-            {
-                Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
-                return
-            }
-
-            if ($PSBoundParameters.ContainsKey('Value'))
-            {
-                Write-ADTLogEntry -Message "Getting registry key [$Key] value [$Value]."
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
-            }
-
-            # Get all property values for registry key.
-            $regKeyValue = Get-ItemProperty -LiteralPath $Key
-            $regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty Count
-
-            # Select requested property.
-            if ($PSBoundParameters.ContainsKey('Value'))
-            {
-                # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
+                # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+                [String]$Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                }
+                else
+                {
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                }
+
+                # Check if the registry key exists before continuing.
+                if (!(Test-Path -LiteralPath $Key))
+                {
+                    Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
                     return
                 }
-                if ($DoNotExpandEnvironmentNames)
+
+                if ($PSBoundParameters.ContainsKey('Value'))
                 {
-                    # Only useful on 'ExpandString' values.
-                    if ($Value -like '(Default)')
+                    Write-ADTLogEntry -Message "Getting registry key [$Key] value [$Value]."
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
+                }
+
+                # Get all property values for registry key.
+                $regKeyValue = Get-ItemProperty -LiteralPath $Key
+                $regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty Count
+
+                # Select requested property.
+                if ($PSBoundParameters.ContainsKey('Value'))
+                {
+                    # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
+                    if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
                     {
-                        return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                        return
+                    }
+                    if ($DoNotExpandEnvironmentNames)
+                    {
+                        # Only useful on 'ExpandString' values.
+                        if ($Value -like '(Default)')
+                        {
+                            return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                        }
+                        else
+                        {
+                            return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                        }
+                    }
+                    elseif ($Value -like '(Default)')
+                    {
+                        return (Get-Item -LiteralPath $Key).GetValue($null)
                     }
                     else
                     {
-                        return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                        return $regKeyValue | Select-Object -ExpandProperty $Value
                     }
                 }
-                elseif ($Value -like '(Default)')
+                elseif ($regKeyValuePropertyCount -eq 0)
                 {
-                    return (Get-Item -LiteralPath $Key).GetValue($null)
-                }
-                else
-                {
-                    return $regKeyValue | Select-Object -ExpandProperty $Value
+                    # Select all properties or return empty key object.
+                    if ($ReturnEmptyKeyIfExists)
+                    {
+                        Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
+                        return (Get-Item -LiteralPath $Key -Force)
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
+                    }
                 }
             }
-            elseif ($regKeyValuePropertyCount -eq 0)
+            catch
             {
-                # Select all properties or return empty key object.
-                if ($ReturnEmptyKeyIfExists)
-                {
-                    Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
-                    return (Get-Item -LiteralPath $Key -Force)
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
-                }
+                Write-Error -ErrorRecord $_
             }
         }
         catch

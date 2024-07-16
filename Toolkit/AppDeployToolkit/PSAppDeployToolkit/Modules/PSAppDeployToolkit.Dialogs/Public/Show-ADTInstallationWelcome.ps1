@@ -206,342 +206,356 @@
 
     process
     {
-        # If running in NonInteractive mode, force the processes to close silently.
-        if ($adtSession.IsNonInteractive())
+        try
         {
-            $Silent = $true
-        }
-
-        # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
-        if ($adtSession.GetPropertyValue('UseDefaultMsi'))
-        {
-            $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
-        }
-
-        # Check disk space requirements if specified
-        if ($CheckDiskSpace)
-        {
-            Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
-            if (!$RequiredDiskSpace)
+            try
             {
-                try
+                # If running in NonInteractive mode, force the processes to close silently.
+                if ($adtSession.IsNonInteractive())
                 {
-                    # Determine the size of the Files folder
-                    $fso = New-Object -ComObject Scripting.FileSystemObject
-                    $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptDirectory')).Size / 1MB)
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
-                }
-                finally
-                {
-                    try
-                    {
-                        [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
-                    }
-                    catch
-                    {
-                        [System.Void]$null
-                    }
-                }
-            }
-            if (($freeDiskSpace = Get-ADTFreeDiskSpace) -lt $RequiredDiskSpace)
-            {
-                Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
-                if (!$Silent)
-                {
-                    Show-ADTInstallationPrompt -Message ((Get-ADTStrings).DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
-                }
-                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
-            }
-            Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
-        }
-
-        # Check Deferral history and calculate remaining deferrals.
-        $deferDeadlineUniversal = $null
-        if ($AllowDefer -or $AllowDeferCloseApps)
-        {
-            # Set $AllowDefer to true if $AllowDeferCloseApps is true.
-            $AllowDefer = $true
-
-            # Get the deferral history from the registry.
-            $deferHistory = Get-ADTDeferHistory
-            $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
-            $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
-
-            # Reset switches.
-            $checkDeferDays = $DeferDays -ne 0
-            $checkDeferDeadline = !!$DeferDeadline
-
-            if ($DeferTimes -ne 0)
-            {
-                $DeferTimes = if ($deferHistoryTimes -ge 0)
-                {
-                    Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
-                    $deferHistory.DeferTimesRemaining - 1
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
-                    $DeferTimes - 1
+                    $Silent = $true
                 }
 
-                if ($DeferTimes -lt 0)
+                # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
+                if ($adtSession.GetPropertyValue('UseDefaultMsi'))
                 {
-                    Write-ADTLogEntry -Message 'Deferral has expired.'
-                    $DeferTimes = 0
-                    $AllowDefer = $false
-                }
-            }
-
-            if ($checkDeferDays -and $AllowDefer)
-            {
-                $deferDeadlineUniversal = if ($deferHistoryDeadline)
-                {
-                    Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
-                    Get-ADTUniversalDate -DateTime $deferHistoryDeadline
-                }
-                else
-                {
-                    Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $adtEnv.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
-                }
-                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
-
-                if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
-                {
-                    Write-ADTLogEntry -Message 'Deferral has expired.'
-                    $AllowDefer = $false
-                }
-            }
-
-            if ($checkDeferDeadline -and $AllowDefer)
-            {
-                # Validate date.
-                try
-                {
-                    $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
-                    Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
-
-                    if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
-                    {
-                        Write-ADTLogEntry -Message 'Deferral has expired.'
-                        $AllowDefer = $false
-                    }
-                }
-                catch
-                {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
-                }
-            }
-        }
-
-        if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
-        {
-            $AllowDefer = $false
-        }
-
-        # Prompt the user to close running applications and optionally defer if enabled.
-        if (!$adtSession.IsSilent() -and !$Silent)
-        {
-            # Keep the same variable for countdown to simplify the code.
-            if ($ForceCloseAppsCountdown -gt 0)
-            {
-                $CloseAppsCountdown = $ForceCloseAppsCountdown
-            }
-            elseif ($ForceCountdown -gt 0)
-            {
-                $CloseAppsCountdown = $ForceCountdown
-            }
-            $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
-            $promptResult = $null
-
-            while (($runningProcesses = if ($ProcessObjects) {$ProcessObjects | Get-ADTRunningProcesses}) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
-            {
-                # Get all unique running process descriptions.
-                $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
-
-                # Define parameters for welcome prompt.
-                $promptParams = @{
-                    ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
-                    ForceCountdown = $ForceCountdown
-                    PersistPrompt = $PersistPrompt
-                    NoMinimizeWindows =$NoMinimizeWindows
-                    CustomText = $CustomText
-                    NotTopMost = $NotTopMost
-                }
-                if ($ProcessObjects) {$promptParams.Add('ProcessObjects', $ProcessObjects)}
-
-                # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
-                if ($AllowDefer)
-                {
-                    # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                    if ($AllowDeferCloseApps -and !$adtSession.ExtensionData.RunningProcessDescriptions)
-                    {
-                        break
-                    }
-                    elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
-                    {
-                        # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
-                        $deferParams = @{AllowDefer = $true; DeferTimes = $DeferTimes}
-                        if ($deferDeadlineUniversal) {$deferParams.Add('DeferDeadline', $deferDeadlineUniversal)}
-                        [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
-                    }
-                }
-                elseif ($adtSession.ExtensionData.RunningProcessDescriptions -or !!$forceCountdown)
-                {
-                    # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
-                    [String]$promptResult = Show-ADTWelcomePrompt @promptParams
-                }
-                else
-                {
-                    # If there is no deferral and no processes running, break the while loop.
-                    break
+                    $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
                 }
 
-                # Process the form results.
-                if ($promptResult -eq 'Continue')
+                # Check disk space requirements if specified
+                if ($CheckDiskSpace)
                 {
-                    # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
-                    Write-ADTLogEntry -Message 'The user selected to continue...'
-                    if (!$runningProcesses)
-                    {
-                        # Break the while loop if there are no processes to close and the user has clicked OK to continue.
-                        break
-                    }
-                    [System.Threading.Thread]::Sleep(2000)
-                }
-                elseif ($promptResult -eq 'Close')
-                {
-                    # Force the applications to close.
-                    Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
-                    if ($PromptToSave -and $adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive)
-                    {
-                        Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
-                    }
-
-                    # Update the process list right before closing, in case it changed.
-                    $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -DisableFunctionLogging
-                    $PromptToSaveTimeout = New-TimeSpan -Seconds $adtConfig.UI.PromptToSaveTimeout
-                    $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                    foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
-                    {
-                        # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                        if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | Where-Object {$_.ParentProcess -eq $runningProcess.ProcessName}) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
-                        {
-                            foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
-                            {
-                                try
-                                {
-                                    Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                    [System.Void][PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
-                                    if (!$runningProcess.CloseMainWindow())
-                                    {
-                                        Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
-                                    }
-                                    else
-                                    {
-                                        $PromptToSaveStopWatch.Reset()
-                                        $PromptToSaveStopWatch.Start()
-                                        do
-                                        {
-                                            if (!($IsWindowOpen = $AllOpenWindows | Where-Object {$_.WindowHandle -eq $OpenWindow.WindowHandle}))
-                                            {
-                                                Break
-                                            }
-                                            [System.Threading.Thread]::Sleep(3000)
-                                        }
-                                        while (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
-
-                                        if ($IsWindowOpen)
-                                        {
-                                            Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
-                                        }
-                                        else
-                                        {
-                                            Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
-                                        }
-                                    }
-                                }
-                                catch
-                                {
-                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
-                                }
-                                finally
-                                {
-                                    $runningProcess.Refresh()
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..."
-                            Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
-                        }
-                    }
-
-                    if ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses -DisableLogging)
-                    {
-                        # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
-                        Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
-                        [System.Threading.Thread]::Sleep(2000)
-                    }
-                }
-                elseif ($promptResult -eq 'Timeout')
-                {
-                    # Stop the script (if not actioned before the timeout value).
-                    Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
-                    $BlockExecution = $false
-                    if (($DeferTimes -ge 0) -or $deferDeadlineUniversal)
-                    {
-                        Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
-                    }
-
-                    # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
-                    if ($adtSession.ExtensionData.ContainsKey('WelcomeTimer') -and $adtSession.ExtensionData.WelcomeTimer)
+                    Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
+                    if (!$RequiredDiskSpace)
                     {
                         try
                         {
-                            $adtSession.ExtensionData.WelcomeTimer.Dispose()
-                            $adtSession.ExtensionData.WelcomeTimer = $null
+                            # Determine the size of the Files folder
+                            $fso = New-Object -ComObject Scripting.FileSystemObject
+                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptDirectory')).Size / 1MB)
                         }
                         catch
                         {
-                            [System.Void]$null
+                            Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
+                            }
+                            catch
+                            {
+                                [System.Void]$null
+                            }
+                        }
+                    }
+                    if (($freeDiskSpace = Get-ADTFreeDiskSpace) -lt $RequiredDiskSpace)
+                    {
+                        Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
+                        if (!$Silent)
+                        {
+                            Show-ADTInstallationPrompt -Message ((Get-ADTStrings).DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                        }
+                        Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                    }
+                    Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
+                }
+
+                # Check Deferral history and calculate remaining deferrals.
+                $deferDeadlineUniversal = $null
+                if ($AllowDefer -or $AllowDeferCloseApps)
+                {
+                    # Set $AllowDefer to true if $AllowDeferCloseApps is true.
+                    $AllowDefer = $true
+
+                    # Get the deferral history from the registry.
+                    $deferHistory = Get-ADTDeferHistory
+                    $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
+                    $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
+
+                    # Reset switches.
+                    $checkDeferDays = $DeferDays -ne 0
+                    $checkDeferDeadline = !!$DeferDeadline
+
+                    if ($DeferTimes -ne 0)
+                    {
+                        $DeferTimes = if ($deferHistoryTimes -ge 0)
+                        {
+                            Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
+                            $deferHistory.DeferTimesRemaining - 1
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
+                            $DeferTimes - 1
+                        }
+
+                        if ($DeferTimes -lt 0)
+                        {
+                            Write-ADTLogEntry -Message 'Deferral has expired.'
+                            $DeferTimes = 0
+                            $AllowDefer = $false
                         }
                     }
 
-                    # Restore minimized windows.
-                    [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
-                    Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
-                }
-                elseif ($promptResult -eq 'Defer')
-                {
-                    #  Stop the script (user chose to defer)
-                    Write-ADTLogEntry -Message 'Installation deferred by the user.'
-                    $BlockExecution = $false
-                    Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+                    if ($checkDeferDays -and $AllowDefer)
+                    {
+                        $deferDeadlineUniversal = if ($deferHistoryDeadline)
+                        {
+                            Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
+                            Get-ADTUniversalDate -DateTime $deferHistoryDeadline
+                        }
+                        else
+                        {
+                            Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $adtEnv.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
+                        }
+                        Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
-                    # Restore minimized windows.
-                    [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
-                    Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                        if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                        {
+                            Write-ADTLogEntry -Message 'Deferral has expired.'
+                            $AllowDefer = $false
+                        }
+                    }
+
+                    if ($checkDeferDeadline -and $AllowDefer)
+                    {
+                        # Validate date.
+                        try
+                        {
+                            $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
+                            Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
+
+                            if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                            {
+                                Write-ADTLogEntry -Message 'Deferral has expired.'
+                                $AllowDefer = $false
+                            }
+                        }
+                        catch
+                        {
+                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
+                        }
+                    }
+                }
+
+                if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
+                {
+                    $AllowDefer = $false
+                }
+
+                # Prompt the user to close running applications and optionally defer if enabled.
+                if (!$adtSession.IsSilent() -and !$Silent)
+                {
+                    # Keep the same variable for countdown to simplify the code.
+                    if ($ForceCloseAppsCountdown -gt 0)
+                    {
+                        $CloseAppsCountdown = $ForceCloseAppsCountdown
+                    }
+                    elseif ($ForceCountdown -gt 0)
+                    {
+                        $CloseAppsCountdown = $ForceCountdown
+                    }
+                    $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
+                    $promptResult = $null
+
+                    while (($runningProcesses = if ($ProcessObjects) {$ProcessObjects | Get-ADTRunningProcesses}) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    {
+                        # Get all unique running process descriptions.
+                        $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+
+                        # Define parameters for welcome prompt.
+                        $promptParams = @{
+                            ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
+                            ForceCountdown = $ForceCountdown
+                            PersistPrompt = $PersistPrompt
+                            NoMinimizeWindows =$NoMinimizeWindows
+                            CustomText = $CustomText
+                            NotTopMost = $NotTopMost
+                        }
+                        if ($ProcessObjects) {$promptParams.Add('ProcessObjects', $ProcessObjects)}
+
+                        # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
+                        if ($AllowDefer)
+                        {
+                            # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
+                            if ($AllowDeferCloseApps -and !$adtSession.ExtensionData.RunningProcessDescriptions)
+                            {
+                                break
+                            }
+                            elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
+                            {
+                                # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
+                                $deferParams = @{AllowDefer = $true; DeferTimes = $DeferTimes}
+                                if ($deferDeadlineUniversal) {$deferParams.Add('DeferDeadline', $deferDeadlineUniversal)}
+                                [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
+                            }
+                        }
+                        elseif ($adtSession.ExtensionData.RunningProcessDescriptions -or !!$forceCountdown)
+                        {
+                            # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
+                            [String]$promptResult = Show-ADTWelcomePrompt @promptParams
+                        }
+                        else
+                        {
+                            # If there is no deferral and no processes running, break the while loop.
+                            break
+                        }
+
+                        # Process the form results.
+                        if ($promptResult -eq 'Continue')
+                        {
+                            # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
+                            Write-ADTLogEntry -Message 'The user selected to continue...'
+                            if (!$runningProcesses)
+                            {
+                                # Break the while loop if there are no processes to close and the user has clicked OK to continue.
+                                break
+                            }
+                            [System.Threading.Thread]::Sleep(2000)
+                        }
+                        elseif ($promptResult -eq 'Close')
+                        {
+                            # Force the applications to close.
+                            Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
+                            if ($PromptToSave -and $adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive)
+                            {
+                                Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
+                            }
+
+                            # Update the process list right before closing, in case it changed.
+                            $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -DisableFunctionLogging
+                            $PromptToSaveTimeout = New-TimeSpan -Seconds $adtConfig.UI.PromptToSaveTimeout
+                            $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
+                            foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+                            {
+                                # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
+                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | Where-Object {$_.ParentProcess -eq $runningProcess.ProcessName}) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                                {
+                                    foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
+                                    {
+                                        try
+                                        {
+                                            Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
+                                            [System.Void][PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                            if (!$runningProcess.CloseMainWindow())
+                                            {
+                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
+                                            }
+                                            else
+                                            {
+                                                $PromptToSaveStopWatch.Reset()
+                                                $PromptToSaveStopWatch.Start()
+                                                do
+                                                {
+                                                    if (!($IsWindowOpen = $AllOpenWindows | Where-Object {$_.WindowHandle -eq $OpenWindow.WindowHandle}))
+                                                    {
+                                                        Break
+                                                    }
+                                                    [System.Threading.Thread]::Sleep(3000)
+                                                }
+                                                while (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
+
+                                                if ($IsWindowOpen)
+                                                {
+                                                    Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                                }
+                                                else
+                                                {
+                                                    Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
+                                                }
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
+                                        }
+                                        finally
+                                        {
+                                            $runningProcess.Refresh()
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..."
+                                    Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
+                                }
+                            }
+
+                            if ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses -DisableLogging)
+                            {
+                                # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
+                                Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
+                                [System.Threading.Thread]::Sleep(2000)
+                            }
+                        }
+                        elseif ($promptResult -eq 'Timeout')
+                        {
+                            # Stop the script (if not actioned before the timeout value).
+                            Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
+                            $BlockExecution = $false
+                            if (($DeferTimes -ge 0) -or $deferDeadlineUniversal)
+                            {
+                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+                            }
+
+                            # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
+                            if ($adtSession.ExtensionData.ContainsKey('WelcomeTimer') -and $adtSession.ExtensionData.WelcomeTimer)
+                            {
+                                try
+                                {
+                                    $adtSession.ExtensionData.WelcomeTimer.Dispose()
+                                    $adtSession.ExtensionData.WelcomeTimer = $null
+                                }
+                                catch
+                                {
+                                    [System.Void]$null
+                                }
+                            }
+
+                            # Restore minimized windows.
+                            [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
+                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                        }
+                        elseif ($promptResult -eq 'Defer')
+                        {
+                            #  Stop the script (user chose to defer)
+                            Write-ADTLogEntry -Message 'Installation deferred by the user.'
+                            $BlockExecution = $false
+                            Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+
+                            # Restore minimized windows.
+                            [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
+                            Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                        }
+                    }
+                }
+
+                # Force the processes to close silently, without prompting the user.
+                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+                {
+                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
+                    $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
+                    [System.Threading.Thread]::Sleep(2000)
+                }
+
+                # If block execution switch is true, call the function to block execution of these processes.
+                if ($BlockExecution -and $ProcessObjects)
+                {
+                    Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
+                    Block-ADTAppExecution -ProcessName $ProcessObjects.Name
                 }
             }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
-
-        # Force the processes to close silently, without prompting the user.
-        if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+        catch
         {
-            Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
-            $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
-            [System.Threading.Thread]::Sleep(2000)
-        }
-
-        # If block execution switch is true, call the function to block execution of these processes.
-        if ($BlockExecution -and $ProcessObjects)
-        {
-            Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-            Block-ADTAppExecution -ProcessName $ProcessObjects.Name
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
