@@ -1,11 +1,13 @@
 BeforeAll {
 	try {
 		$DeployMode = 'NonInteractive'
-		$null = . "$env:USERPROFILE\Git\PSAppDeployToolkit\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
+		$null = . "$PSScriptRoot\..\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
+		Mock Write-Host {}
+		$DebugPreference = 'Continue'
 	} catch {
+		# Error may be thrown if dot-sourcing main without elevation, but elevation is not required for these tests.
 		Write-Warning $_
 	}
-
 }
 
 Describe 'Copy-File'-ForEach @(
@@ -35,9 +37,6 @@ Describe 'Copy-File'-ForEach @(
 		Set-ItemProperty -Path "$SourcePath\Subfolder3\system.txt" -Name Attributes -Value 'System'
 		Set-ItemProperty -Path "$SourcePath\Subfolder3\hiddensystem.txt" -Name Attributes -Value 'Hidden, System'
 		Set-ItemProperty -Path "$SourcePath\SubfolderHidden" -Name Attributes -Value 'Hidden'
-
-		Mock Write-Host {}
-		#$DebugPreference = 'Continue'
 	}
 	BeforeEach {
 		if (Test-Path -Path $DestinationPath -PathType Container) {
