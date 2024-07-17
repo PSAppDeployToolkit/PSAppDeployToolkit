@@ -10,13 +10,9 @@ sCmd = ""
 For Each sArg In WScript.Arguments
     'Replace the [{quote}] placeholder with a double quote
     sArg = Replace(sArg, "[{quote}]", """")
-
-    If InStr(sArg, " ") > 0 Then
-        sCmd = sCmd & """" & sArg & """ "
-    Else
-        sCmd = sCmd & sArg & " "
-    End If
+    sCmd = sCmd & sArg & " "
 Next
+'Trim the trailing space
 sCmd = Left(sCmd, Len(sCmd) - 1)
 
 iReturn = 0
