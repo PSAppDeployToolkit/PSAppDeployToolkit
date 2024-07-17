@@ -117,6 +117,14 @@ Describe 'Execute-ProcessAsUser' {
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
 		}
+		It 'Should run a .cmd file with a space in the name' {
+			$ScriptContent = 'echo Hello World > "%LOCALAPPDATA%\Temp\Execute-ProcessAsUser\test.txt"'
+			Set-Content -Path "$UserTestDrive\test 1.cmd" -Value $ScriptContent -Encoding ASCII
+			$ProcessExitCode = Execute-ProcessAsUser -Path 'cmd.exe' -Parameters '/c "test 1.cmd"' -WorkingDirectory $UserTestDrive -Wait -PassThru
+			$ProcessExitCode | Should -Be 0
+			"$UserTestDrive\test.txt" | Should -Exist
+			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
+		}
 	}
 
 	Context 'powershell.exe' {

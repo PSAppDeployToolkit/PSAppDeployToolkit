@@ -63,6 +63,13 @@ Describe 'Set-ActiveSetup' {
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
 		}
+		It 'Should run a .CMD file with a space in the name' {
+			$ScriptContent = "echo Hello World > `"$UserTestDrive\test.txt`""
+			Set-Content -Path "$UserTestDrive\test 1.cmd" -Value $ScriptContent -Encoding ASCII
+			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test 1.cmd"
+			"$UserTestDrive\test.txt" | Should -Exist
+			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
+		}
 	}
 
 	Context '.PS1 file' {
@@ -82,6 +89,13 @@ Set-Content -Path `"$UserTestDrive\test.txt`" -Value "`$FirstWord...`$SecondWord
 			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test.ps1" -Arguments '-FirstWord "Hello" -SecondWord "To The" -ThirdWord "World"'
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello...To The...World'
+		}
+		It 'Should run a .PS1 file with a space in the name' {
+			$ScriptContent = "Set-Content -Path `"$UserTestDrive\test.txt`" -Value 'Hello World'"
+			Set-Content -Path "$UserTestDrive\test 1.ps1" -Value $ScriptContent -Encoding UTF8
+			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test 1.ps1"
+			"$UserTestDrive\test.txt" | Should -Exist
+			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
 		}
 	}
 
