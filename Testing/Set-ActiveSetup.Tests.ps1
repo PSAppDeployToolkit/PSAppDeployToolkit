@@ -56,19 +56,35 @@ Describe 'Set-ActiveSetup' {
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello..."To The"...World'
 		}
-		It 'Should run a .CMD file with metacharacters in the name' {
+		It 'Should run a .CMD file with metacharacters in the name 1' {
 			$ScriptContent = "echo Hello World > `"$UserTestDrive\test.txt`""
 			Set-Content -Path "$UserTestDrive\test()%!^&.cmd" -Value $ScriptContent -Encoding ASCII
 			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test()%!^&.cmd"
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
 		}
-		It 'Should run a .CMD file with a space in the name' {
+		It 'Should run a .CMD file with metacharacters in the name 2' {
 			$ScriptContent = "echo Hello World > `"$UserTestDrive\test.txt`""
-			Set-Content -Path "$UserTestDrive\test 1.cmd" -Value $ScriptContent -Encoding ASCII
-			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test 1.cmd"
+			Set-Content -Path "$UserTestDrive\test(1).cmd" -Value $ScriptContent -Encoding ASCII
+			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test(1).cmd"
 			"$UserTestDrive\test.txt" | Should -Exist
 			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
+		}
+		It 'Should run a .CMD file with metacharacters in the name 3' {
+			$ScriptContent = "echo Hello World > `"$UserTestDrive\test.txt`""
+			Set-Content -Path "$UserTestDrive\test (1).cmd" -Value $ScriptContent -Encoding ASCII
+			Set-ActiveSetup -Key $Key -StubExePath "$UserTestDrive\test (1).cmd"
+			"$UserTestDrive\test.txt" | Should -Exist
+			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
+		}
+		It 'Should run a .CMD file from %ProgramData%' {
+			# Note this does not currently work for per-user variables like %APPDATA% since they are expanded by the script in system context
+			$ScriptContent = "echo Hello World > `"$UserTestDrive\test.txt`""
+			Set-Content -Path "$env:ProgramData\Set-ActiveSetup_Test.cmd" -Value $ScriptContent -Encoding ASCII
+			Set-ActiveSetup -Key $Key -StubExePath '%ProgramData%\Set-ActiveSetup_Test.cmd'
+			"$UserTestDrive\test.txt" | Should -Exist
+			"$UserTestDrive\test.txt" | Should -FileContentMatch 'Hello World'
+			Remove-File -Path "$env:ProgramData\Set-ActiveSetup_Test.cmd"
 		}
 	}
 
