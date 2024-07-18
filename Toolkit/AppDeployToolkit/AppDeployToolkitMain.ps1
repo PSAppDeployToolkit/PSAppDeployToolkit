@@ -2365,6 +2365,9 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formInstallationPrompt.ControlBox = $false
             }
+            # Correct the initial state of the form
+            $formInstallationPrompt.WindowState = 'Normal'
+
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
         }
@@ -5229,9 +5232,9 @@ https://psappdeploytoolkit.com
     }
     Process {
         Foreach ($srcPath in $Path) {
-            $UseRobocopyThis = $UseRobocopy
-            If ($UseRobocopyThis) {
-                Try {
+            Try {
+                $UseRobocopyThis = $UseRobocopy
+                If ($UseRobocopyThis) {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     If ($srcPath -match '\*.*\\') {
                         $UseRobocopyThis = $false
@@ -5241,7 +5244,6 @@ https://psappdeploytoolkit.com
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
                         $UseRobocopyThis = $false
                         Write-Log "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-
                     }
                     If ($UseRobocopyThis) {
 
@@ -5254,16 +5256,24 @@ https://psappdeploytoolkit.com
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path
-                            $RobocopyDestination = Join-Path (Resolve-Path -LiteralPath $Destination).Path (Split-Path -Path $srcPath -Leaf)
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            $RobocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
                         Else {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
-                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\')).Path
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $ParentPath = Split-Path -Path $srcPath -Parent
+                            if ([string]::IsNullOrEmpty($ParentPath)) {
+                                $RobocopySource = $PWD
+                            }
+                            else {
+                                $RobocopySource = (Resolve-Path -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            }
+                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
@@ -5292,17 +5302,28 @@ https://psappdeploytoolkit.com
                         }
                         If ($Recurse) {
                             # Add /E to Robocopy parameters if it is not already included
-                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
+                            if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
-                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
-                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
+
+                        # Older versions of Robocopy do not support /IM, remove if unsupported
+                        if (!((&Robocopy /?) -match '/IM\s')) {
+                            $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
+                        }
+
+                        If (-not (Test-Path -LiteralPath $RobocopyDestination -PathType Container)) {
+                            $null = New-Item -Path $RobocopyDestination -Type 'Directory' -Force -ErrorAction 'Stop'
+                        }
+                        $DestFolderAttributes = (Get-Item -LiteralPath $RobocopyDestination -Force).Attributes
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
@@ -5310,6 +5331,8 @@ https://psappdeploytoolkit.com
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
                         Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
+
+                        Set-ItemProperty -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
@@ -5323,28 +5346,20 @@ https://psappdeploytoolkit.com
                             8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
                             16 {
                                 Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default {
-                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                Write-Log -Message "Robocopy error $($RobocopyResult.ExitCode)." -Severity 3 -Source ${CmdletName}
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                         }
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
-                }
-            }
-            If ($UseRobocopyThis -eq $false) {
-                Try {
+                If ($UseRobocopyThis -eq $false) {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
                         Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
@@ -5395,11 +5410,14 @@ https://psappdeploytoolkit.com
                         Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
+            }
+            Catch {
+                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                If (-not $ContinueFileCopyOnError) {
+                    return
+                }
+                If (-not $ContinueOnError) {
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                 }
             }
         }
@@ -7234,6 +7252,7 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($fileVersion) {
+                    $fileVersion = $fileVersion.Trim()
                     If ($ProductVersion) {
                         Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
                     }
@@ -10140,7 +10159,10 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formWelcome.ControlBox = $false
             }
-            #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+            # Correct the initial state of the form
+            $formWelcome.WindowState = 'Normal'
+
+            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
 
             ## Initialize the countdown timer
