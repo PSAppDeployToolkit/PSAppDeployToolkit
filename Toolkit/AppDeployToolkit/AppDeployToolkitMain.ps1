@@ -15001,8 +15001,13 @@ https://psappdeploytoolkit.com
                 }
                 {$_ -in '.cmd','.bat'} {
                     [String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
-                    # Prefix any CMD.exe metacharacters with ^ to escape them
-                    $StubExePath = $StubExePath -replace '([()%!^&])', '^$1'
+                    # Prefix any CMD.exe metacharacters ^ or & with ^ to escape them - parentheses only require escaping when there's no space in the path!
+                    if ($StubExePath.Trim() -match '\s') {
+                        $StubExePath = $StubExePath -replace '([&^])', '^$1'
+                    }
+                    else {
+                        $StubExePath = $StubExePath -replace '([()&^])', '^$1'
+                    }
                     if ([string]::IsNullOrEmpty($Arguments)) {
                         [String]$CUArguments = "/C `"$StubExePath`""
                     }
