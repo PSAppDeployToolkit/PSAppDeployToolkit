@@ -496,17 +496,6 @@
 
     hidden [System.Void] PerformSystemAccountTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # Check to see if the Task Scheduler service is in a healthy state by checking its services to see if they exist, are currently running, and have a start mode of 'Automatic'.
-        # The task scheduler service and the services it is dependent on can/should only be started/stopped/modified when running in the SYSTEM context.
-        if ($ADTEnv.IsLocalSystemAccount)
-        {
-            $this.WriteLogEntry("The task scheduler service is in a healthy state: $($ADTEnv.IsTaskSchedulerHealthy).")
-        }
-        else
-        {
-            $this.WriteLogEntry("Skipping attempt to check for and make the task scheduler services healthy, because $($ADTEnv.appDeployToolkitName) is not running under the [$($ADTEnv.LocalSystemNTAccount)] account.")
-        }
-
         # If script is running in session zero.
         if ($ADTEnv.SessionZero)
         {
