@@ -76,7 +76,10 @@
         [System.String]$WellKnownSIDName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
-        [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount
+        [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
+        [System.Management.Automation.SwitchParameter]$LocalHost
     )
 
     begin
@@ -121,13 +124,16 @@
                 Write-ADTLogEntry -Message "Converting $msg."
 
                 # Get the SID for the root domain.
-                $DomainSid = try
+                $DomainSid = if (!$LocalHost)
                 {
-                    [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+                    try
+                    {
+                        [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
+                    }
+                    catch
+                    {
+                        Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+                    }
                 }
 
                 # Get the SID for the well known SID name.
