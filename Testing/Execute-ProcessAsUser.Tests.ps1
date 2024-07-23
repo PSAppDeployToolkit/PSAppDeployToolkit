@@ -1,8 +1,10 @@
 BeforeAll {
+	$DebugPreference = 'Continue'
+	$appName = 'Execute-ProcessAsUser.Tests'
 	$DeployMode = 'NonInteractive'
 	$null = . "$PSScriptRoot\..\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
-	Mock Write-Host {}
-	$DebugPreference = 'Continue'
+	#Mock Write-Host {}
+	Write-Debug "$configToolkitLogDir\$logName"
 }
 
 Describe 'Execute-ProcessAsUser' {
@@ -170,6 +172,35 @@ exit $ExitCode
 			Set-Content -Path "$UserTestDrive\test.ps1" -Value $ScriptContent -Encoding UTF8
 			$ProcessExitCode = Execute-ProcessAsUser -Path 'powershell.exe' -Parameters '-ExecutionPolicy Bypass -NoProfile -File .\Test.ps1 -ExitCode 42' -WorkingDirectory $UserTestDrive -Wait -PassThru
 			$ProcessExitCode | Should -Be 42
+		}
+	}
+
+	Context 'No Users Logged On' {
+		It 'Should not produce an error when no users are logged on and ContinueOnError=$true' {
+			$BackupRunAsActiveUser = $RunAsActiveUser
+			$RunAsActiveUser = $null
+			try {
+				Execute-ProcessAsUser -Path 'C:\Windows\System32\cmd.exe' -Parameters '/c echo Hello World' -ContinueOnError $true
+				$? | Should -BeTrue
+			}
+			catch {
+				$_ | Should -BeNullOrEmpty
+			}
+			finally {
+				$RunAsActiveUser = $BackupRunAsActiveUser
+			}
+		}
+		It 'Should produce an error when no users are logged on and ContinueOnError=$false' {
+			$BackupRunAsActiveUser = $RunAsActiveUser
+			$RunAsActiveUser = $null
+			try {
+				Execute-ProcessAsUser -Path 'C:\Windows\System32\cmd.exe' -Parameters '/c echo Hello World' -ContinueOnError $false
+				$? | Should -BeFalse
+			} catch {
+				$_ | Should -Not -BeNullOrEmpty
+			} finally {
+				$RunAsActiveUser = $BackupRunAsActiveUser
+			}
 		}
 	}
 }
