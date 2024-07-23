@@ -8110,106 +8110,106 @@ https://psappdeploytoolkit.com
         }
     }
     Process {
+
+        ## Initialize exit code variable
+        [Int32]$executeProcessAsUserExitCode = 0
+
+        ## Confirm that the username field is not empty
+        If (-not $UserName) {
+            [Int32]$executeProcessAsUserExitCode = 60009
+            Write-Log -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
+            }
+            Return
+        }
+
+        ## Confirm if the toolkit is running with administrator privileges
+        If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
+            [Int32]$executeProcessAsUserExitCode = 60003
+            Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
+            }
+            Return
+        }
+
+        ## Check whether the specified Working Directory exists
+        If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
+            Write-Log -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
+        }
+
+        ##  Remove the temporary folder
+        If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+            Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
+            Remove-Folder -Path $executeAsUserTempPath
+        }
+        #  Recreate the temporary folder
         Try {
-            ## Initialize exit code variable
-            [Int32]$executeProcessAsUserExitCode = 0
+            Write-Log -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
+            $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
+        }
+        #  Copy RunHidden.vbs to temp path
+        Try {
+            Write-Log -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName}
+            Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName} -Severity 2
+        }
+        #  Set user permissions on RunHidden.vbs
+        Try {
+            Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+        }
 
-            ## Confirm that the username field is not empty
-            If (-not $UserName) {
-                [Int32]$executeProcessAsUserExitCode = 60009
-                Write-Log -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
-                }
-                Return
+        ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
+        If (((Split-Path -Path $Path -Leaf) -ilike 'powershell*') -or ((Split-Path -Path $Path -Leaf) -ilike 'cmd*')) {
+            If ($SecureParameters) {
+                Write-Log -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
             }
-
-            ## Confirm if the toolkit is running with administrator privileges
-            If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
-                [Int32]$executeProcessAsUserExitCode = 60003
-                Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
-                }
-                Return
-            }
-
-            ## Check whether the specified Working Directory exists
-            If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
-                Write-Log -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
-            }
-
-            ##  Remove the temporary folder
-            If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-                Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
-                Remove-Folder -Path $executeAsUserTempPath
-            }
-            #  Recreate the temporary folder
-            Try {
-                Write-Log -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
-                $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
-            }
-            #  Copy RunHidden.vbs to temp path
-            Try {
-                Write-Log -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName}
-                Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName} -Severity 2
-            }
-            #  Set user permissions on RunHidden.vbs
-            Try {
-                Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+            Else {
+                Write-Log -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
             }
 
-            ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
-            If (((Split-Path -Path $Path -Leaf) -ilike 'powershell*') -or ((Split-Path -Path $Path -Leaf) -ilike 'cmd*')) {
-                If ($SecureParameters) {
-                    Write-Log -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
-                }
-
-                [String]$NewParameters = "/e:vbscript"
-                If ($executeAsUserTempPath -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
-                }
-                Else {
-                    $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
-                }
-                If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($Path)`""
-                }
-                Else {
-                    $NewParameters = "$NewParameters $Path"
-                }
-
-                # VBScript args do not handle quotes well, so replace all double quotes with placeholder [{quote}] before sending to the script
-                $Parameters = $Parameters.Replace('"','[{quote}]')
-
-                $Parameters = "$NewParameters $Parameters"
-                $Path = "$envWinDir\System32\wscript.exe"
+            [String]$NewParameters = "/e:vbscript"
+            If ($executeAsUserTempPath -match ' ') {
+                $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
             }
-            #  Replace invalid XML characters in parameters with their valid XML equivalent
-            [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
-            [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
-            #  Prepare working directory XML element
-            [String]$WorkingDirectoryInsert = ''
-            If ($WorkingDirectory) {
-                [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
-                $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+            Else {
+                $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
             }
-            [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+            If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
+                $NewParameters = "$($NewParameters) `"$($Path)`""
+            }
+            Else {
+                $NewParameters = "$NewParameters $Path"
+            }
 
-            ## Specify the scheduled task configuration in XML format
-            [String]$xmlSchTask = @"
+            # VBScript args do not handle quotes well, so replace all double quotes with placeholder [{quote}] before sending to the script
+            $Parameters = $Parameters.Replace('"','[{quote}]')
+
+            $Parameters = "$NewParameters $Parameters"
+            $Path = "$envWinDir\System32\wscript.exe"
+        }
+        #  Replace invalid XML characters in parameters with their valid XML equivalent
+        [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
+        [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
+        #  Prepare working directory XML element
+        [String]$WorkingDirectoryInsert = ''
+        If ($WorkingDirectory) {
+            [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
+            $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+        }
+        [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+
+        ## Specify the scheduled task configuration in XML format
+        [String]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo />
@@ -8248,50 +8248,52 @@ https://psappdeploytoolkit.com
   </Principals>
 </Task>
 "@
-            ## Export the XML to file
-            Try {
-                ## Build the scheduled task XML name
-                [String]$schTaskNameCount = '001'
-                [String]$schTaskName = "$($("$($appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
-                #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = Get-ChildItem -Path "$($dirAppDeployTemp)\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
-                If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
-                    [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
-                    [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
-                }
-                $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
+        ## Export the XML to file
+        Try {
+            ## Build the scheduled task XML name
+            [String]$schTaskNameCount = '001'
+            [String]$schTaskName = "$($("$($appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
+            #  Specify the filename to export the XML to
+            [String]$previousXmlFileName = Get-ChildItem -Path "$($dirAppDeployTemp)\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
+            If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
+                [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
+                [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
+            }
+            $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
+            [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
 
-                #  Export the XML file
-                [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-                Try {
-                    Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
-                }
-                Catch {
-                    Write-Log -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
-                }
+            #  Export the XML file
+            [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
+            Try {
+                Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
             }
             Catch {
-                [Int32]$executeProcessAsUserExitCode = 60007
-                Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
-                }
-                Return
+                Write-Log -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
             }
+        }
+        Catch {
+            [Int32]$executeProcessAsUserExitCode = 60007
+            Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
+            }
+            Return
+        }
 
-            ## Create Scheduled Task to run the process with a logged-on user account
-            If ($Parameters) {
-                If ($SecureParameters) {
-                    Write-Log -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
-                }
+        ## Create Scheduled Task to run the process with a logged-on user account
+        If ($Parameters) {
+            If ($SecureParameters) {
+                Write-Log -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
             Else {
-                Write-Log -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+                Write-Log -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
+        }
+        Else {
+            Write-Log -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+        }
+
+        Try {
             [PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
@@ -8369,6 +8371,9 @@ https://psappdeploytoolkit.com
             Else {
                 Start-Sleep -Seconds 1
             }
+        }
+        Catch {
+            Throw $_
         }
         Finally {
             ## Delete scheduled task
