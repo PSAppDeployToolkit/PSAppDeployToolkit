@@ -28,6 +28,9 @@
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "PSAppDeployToolkit_*_BlockedApps" -ErrorAction Ignore)
     )
 
     begin
@@ -55,9 +58,9 @@
                 }
 
                 # Remove the scheduled task if it exists.
-                if (Get-ScheduledTask -TaskName ($taskName = "PSAppDeployToolkit_*_BlockedApps") -ErrorAction Ignore)
+                if ($Tasks)
                 {
-                    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+                    $Tasks | Unregister-ScheduledTask -Confirm:$false
                 }
             }
             catch

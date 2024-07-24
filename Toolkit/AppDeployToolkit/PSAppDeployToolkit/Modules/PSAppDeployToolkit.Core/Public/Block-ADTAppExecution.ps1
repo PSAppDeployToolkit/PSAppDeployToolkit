@@ -107,10 +107,10 @@
                 }
 
                 # Clean up any previous state that might be lingering.
-                if (Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
+                if ($task = Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
                 {
                     Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
-                    Unblock-ADTAppExecution
+                    Unblock-ADTAppExecution -Tasks $task
                 }
 
                 # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
