@@ -2365,6 +2365,9 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formInstallationPrompt.ControlBox = $false
             }
+            # Correct the initial state of the form
+            $formInstallationPrompt.WindowState = 'Normal'
+
             # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formInstallationPromptStartPosition' -Value $formInstallationPrompt.Location -Scope 'Script'
         }
@@ -5229,9 +5232,9 @@ https://psappdeploytoolkit.com
     }
     Process {
         Foreach ($srcPath in $Path) {
-            $UseRobocopyThis = $UseRobocopy
-            If ($UseRobocopyThis) {
-                Try {
+            Try {
+                $UseRobocopyThis = $UseRobocopy
+                If ($UseRobocopyThis) {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     If ($srcPath -match '\*.*\\') {
                         $UseRobocopyThis = $false
@@ -5241,7 +5244,6 @@ https://psappdeploytoolkit.com
                     If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
                         $UseRobocopyThis = $false
                         Write-Log "Destination path appears to be a file. Falling back to native PowerShell method." -Source ${CmdletName} -Severity 2
-
                     }
                     If ($UseRobocopyThis) {
 
@@ -5254,16 +5256,24 @@ https://psappdeploytoolkit.com
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path
-                            $RobocopyDestination = Join-Path (Resolve-Path -LiteralPath $Destination).Path (Split-Path -Path $srcPath -Leaf)
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $RobocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            $RobocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
                         Else {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
-                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\')).Path
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the begginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $ParentPath = Split-Path -Path $srcPath -Parent
+                            if ([string]::IsNullOrEmpty($ParentPath)) {
+                                $RobocopySource = $PWD
+                            }
+                            else {
+                                $RobocopySource = (Resolve-Path -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            }
+                            $RobocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (Split-Path -Path $srcPath -Leaf)
                         }
                         If ($Flatten) {
@@ -5292,17 +5302,28 @@ https://psappdeploytoolkit.com
                         }
                         If ($Recurse) {
                             # Add /E to Robocopy parameters if it is not already included
-                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
+                            if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)') {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-Log -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
                         Else {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
-                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
-                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                             Write-Log -Message "Copying file(s) in path [$srcPath] to destination [$Destination]." -Source ${CmdletName}
                         }
+
+                        # Older versions of Robocopy do not support /IM, remove if unsupported
+                        if (!((&Robocopy /?) -match '/IM\s')) {
+                            $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
+                        }
+
+                        If (-not (Test-Path -LiteralPath $RobocopyDestination -PathType Container)) {
+                            $null = New-Item -Path $RobocopyDestination -Type 'Directory' -Force -ErrorAction 'Stop'
+                        }
+                        $DestFolderAttributes = (Get-Item -LiteralPath $RobocopyDestination -Force).Attributes
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
@@ -5310,6 +5331,8 @@ https://psappdeploytoolkit.com
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | Select-Object -SkipLast 1) -join "`n"
                         Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
+
+                        Set-ItemProperty -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
 
                         Switch ($RobocopyResult.ExitCode) {
                             0 { Write-Log -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." -Source ${CmdletName} }
@@ -5323,28 +5346,20 @@ https://psappdeploytoolkit.com
                             8 { Write-Log -Message "Robocopy completed. Several files didn't copy." -Severity 2 -Source ${CmdletName} }
                             16 {
                                 Write-Log -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default {
-                                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                                If (-not $ContinueOnError) {
+                                Write-Log -Message "Robocopy error $($RobocopyResult.ExitCode)." -Severity 3 -Source ${CmdletName}
+                                If (-not $ContinueFileCopyOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                         }
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
-                }
-            }
-            If ($UseRobocopyThis -eq $false) {
-                Try {
+                If ($UseRobocopyThis -eq $false) {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (Test-Path -LiteralPath $Destination -PathType 'Container'))) {
                         Write-Log -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]." -Source ${CmdletName}
@@ -5395,11 +5410,14 @@ https://psappdeploytoolkit.com
                         Write-Log -Message 'File copy completed successfully.' -Source ${CmdletName}
                     }
                 }
-                Catch {
-                    Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                    If (-not $ContinueOnError) {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
+            }
+            Catch {
+                Write-Log -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+                If (-not $ContinueFileCopyOnError) {
+                    return
+                }
+                If (-not $ContinueOnError) {
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                 }
             }
         }
@@ -7234,6 +7252,7 @@ https://psappdeploytoolkit.com
                 }
 
                 If ($fileVersion) {
+                    $fileVersion = $fileVersion.Trim()
                     If ($ProductVersion) {
                         Write-Log -Message "Product version is [$fileVersion]." -Source ${CmdletName}
                     }
@@ -8091,103 +8110,106 @@ https://psappdeploytoolkit.com
         }
     }
     Process {
+
+        ## Initialize exit code variable
+        [Int32]$executeProcessAsUserExitCode = 0
+
+        ## Confirm that the username field is not empty
+        If (-not $UserName) {
+            [Int32]$executeProcessAsUserExitCode = 60009
+            Write-Log -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
+            }
+            Return
+        }
+
+        ## Confirm if the toolkit is running with administrator privileges
+        If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
+            [Int32]$executeProcessAsUserExitCode = 60003
+            Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
+            }
+            Return
+        }
+
+        ## Check whether the specified Working Directory exists
+        If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
+            Write-Log -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
+        }
+
+        ##  Remove the temporary folder
+        If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
+            Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
+            Remove-Folder -Path $executeAsUserTempPath
+        }
+        #  Recreate the temporary folder
         Try {
-            ## Initialize exit code variable
-            [Int32]$executeProcessAsUserExitCode = 0
+            Write-Log -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
+            $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
+        }
+        #  Copy RunHidden.vbs to temp path
+        Try {
+            Write-Log -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName}
+            Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName} -Severity 2
+        }
+        #  Set user permissions on RunHidden.vbs
+        Try {
+            Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
+        }
+        Catch {
+            Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+        }
 
-            ## Confirm that the username field is not empty
-            If (-not $UserName) {
-                [Int32]$executeProcessAsUserExitCode = 60009
-                Write-Log -Message "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
-                }
-                Return
+        ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
+        If (((Split-Path -Path $Path -Leaf) -ilike 'powershell*') -or ((Split-Path -Path $Path -Leaf) -ilike 'cmd*')) {
+            If ($SecureParameters) {
+                Write-Log -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
             }
-
-            ## Confirm if the toolkit is running with administrator privileges
-            If (($RunLevel -eq 'HighestAvailable') -and (-not $IsAdmin)) {
-                [Int32]$executeProcessAsUserExitCode = 60003
-                Write-Log -Message "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "The function [${CmdletName}] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
-                }
-                Return
-            }
-
-            ## Check whether the specified Working Directory exists
-            If ($WorkingDirectory -and (-not (Test-Path -LiteralPath $WorkingDirectory -PathType 'Container'))) {
-                Write-Log -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2 -Source ${CmdletName}
-            }
-
-            ##  Remove the temporary folder
-            If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-                Write-Log -Message "Previous [$executeAsUserTempPath] found. Attempting removal." -Source ${CmdletName}
-                Remove-Folder -Path $executeAsUserTempPath
-            }
-            #  Recreate the temporary folder
-            Try {
-                Write-Log -Message "Creating [$executeAsUserTempPath]." -Source ${CmdletName}
-                $null = New-Item -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Source ${CmdletName} -Severity 2
-            }
-            #  Copy RunHidden.vbs to temp path
-            Try {
-                Write-Log -Message "Copying [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName}
-                Copy-Item -LiteralPath $appDeployRunHiddenVbsFile -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Unable to copy [$appDeployRunHiddenVbsFile] to destination [$executeAsUserTempPath]." -Source ${CmdletName} -Severity 2
-            }
-            #  Set user permissions on RunHidden.vbs
-            Try {
-                Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
-            }
-            Catch {
-                Write-Log -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
+            Else {
+                Write-Log -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
             }
 
-            ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
-            If (((Split-Path -Path $Path -Leaf) -ilike 'powershell*') -or ((Split-Path -Path $Path -Leaf) -ilike 'cmd*')) {
-                If ($SecureParameters) {
-                    Write-Log -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..." -Source ${CmdletName}
-                }
-
-                [String]$NewParameters = "/e:vbscript"
-                If ($executeAsUserTempPath -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
-                }
-                Else {
-                    $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
-                }
-                If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
-                    $NewParameters = "$($NewParameters) `"$($Path)`""
-                }
-                Else {
-                    $NewParameters = "$NewParameters $Path"
-                }
-
-                $Parameters = "$NewParameters $Parameters"
-                $Path = "$envWinDir\System32\wscript.exe"
+            [String]$NewParameters = "/e:vbscript"
+            If ($executeAsUserTempPath -match ' ') {
+                $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
             }
-            #  Replace invalid XML characters in parameters with their valid XML equivalent
-            [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
-            [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
-            #  Prepare working directory XML element
-            [String]$WorkingDirectoryInsert = ''
-            If ($WorkingDirectory) {
-                [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
-                $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+            Else {
+                $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
             }
-            [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+            If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ') {
+                $NewParameters = "$($NewParameters) `"$($Path)`""
+            }
+            Else {
+                $NewParameters = "$NewParameters $Path"
+            }
 
-            ## Specify the scheduled task configuration in XML format
-            [String]$xmlSchTask = @"
+            # VBScript args do not handle quotes well, so replace all double quotes with placeholder [{quote}] before sending to the script
+            $Parameters = $Parameters.Replace('"','[{quote}]')
+
+            $Parameters = "$NewParameters $Parameters"
+            $Path = "$envWinDir\System32\wscript.exe"
+        }
+        #  Replace invalid XML characters in parameters with their valid XML equivalent
+        [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
+        [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
+        #  Prepare working directory XML element
+        [String]$WorkingDirectoryInsert = ''
+        If ($WorkingDirectory) {
+            [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
+            $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+        }
+        [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+
+        ## Specify the scheduled task configuration in XML format
+        [String]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo />
@@ -8226,50 +8248,52 @@ https://psappdeploytoolkit.com
   </Principals>
 </Task>
 "@
-            ## Export the XML to file
-            Try {
-                ## Build the scheduled task XML name
-                [String]$schTaskNameCount = '001'
-                [String]$schTaskName = "$($("$($appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
-                #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = Get-ChildItem -Path "$($dirAppDeployTemp)\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
-                If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
-                    [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
-                    [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
-                }
-                $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
+        ## Export the XML to file
+        Try {
+            ## Build the scheduled task XML name
+            [String]$schTaskNameCount = '001'
+            [String]$schTaskName = "$($("$($appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
+            #  Specify the filename to export the XML to
+            [String]$previousXmlFileName = Get-ChildItem -Path "$($dirAppDeployTemp)\*" -Attributes '!Directory' -Include '*.xml' | Where-Object { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | Sort-Object -Descending -Property 'LastWriteTime' | Select-Object -ExpandProperty 'Name' -First 1
+            If (-not [String]::IsNullOrEmpty($previousXmlFileName)) {
+                [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | ForEach-Object { $_.Substring($_.length - 3, 3) }
+                [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
+            }
+            $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
+            [String]$xmlSchTaskFilePath = "$($dirAppDeployTemp)\$($schTaskName).xml"
 
-                #  Export the XML file
-                [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-                Try {
-                    Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
-                }
-                Catch {
-                    Write-Log -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
-                }
+            #  Export the XML file
+            [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
+            Try {
+                Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
             }
             Catch {
-                [Int32]$executeProcessAsUserExitCode = 60007
-                Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
-                If (-not $ContinueOnError) {
-                    Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
-                }
-                Return
+                Write-Log -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Source ${CmdletName} -Severity 2
             }
+        }
+        Catch {
+            [Int32]$executeProcessAsUserExitCode = 60007
+            Write-Log -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
+            If (-not $ContinueOnError) {
+                Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
+            }
+            Return
+        }
 
-            ## Create Scheduled Task to run the process with a logged-on user account
-            If ($Parameters) {
-                If ($SecureParameters) {
-                    Write-Log -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..." -Source ${CmdletName}
-                }
-                Else {
-                    Write-Log -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
-                }
+        ## Create Scheduled Task to run the process with a logged-on user account
+        If ($Parameters) {
+            If ($SecureParameters) {
+                Write-Log -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
             Else {
-                Write-Log -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+                Write-Log -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..." -Source ${CmdletName}
             }
+        }
+        Else {
+            Write-Log -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..." -Source ${CmdletName}
+        }
+
+        Try {
             [PSObject]$schTaskResult = Execute-Process -Path $exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
@@ -8347,6 +8371,9 @@ https://psappdeploytoolkit.com
             Else {
                 Start-Sleep -Seconds 1
             }
+        }
+        Catch {
+            Throw $_
         }
         Finally {
             ## Delete scheduled task
@@ -10137,7 +10164,10 @@ https://psappdeploytoolkit.com
                 Write-Log 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2 -Source ${CmdletName}
                 $formWelcome.ControlBox = $false
             }
-            #  Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
+            # Correct the initial state of the form
+            $formWelcome.WindowState = 'Normal'
+
+            # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled
             Set-Variable -Name 'formWelcomeStartPosition' -Value $formWelcome.Location -Scope 'Script'
 
             ## Initialize the countdown timer
@@ -14933,7 +14963,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Verify a file with a supported file extension was specified in $StubExePath
-            [String[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.ps1', '.js'
+            [String[]]$StubExePathFileExtensions = '.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js'
             [String]$StubExeExt = [IO.Path]::GetExtension($StubExePath)
             If ($StubExePathFileExtensions -notcontains $StubExeExt) {
                 Throw "Unsupported Active Setup StubPath file extension [$StubExeExt]."
@@ -14956,35 +14986,50 @@ https://psappdeploytoolkit.com
             ## Define Active Setup StubPath according to file extension of $StubExePath
             Switch ($StubExeExt) {
                 '.exe' {
-                    [String]$CUStubExePath = "$StubExePath"
+                    [String]$CUStubExePath = $StubExePath
                     [String]$CUArguments = $Arguments
-                    [String]$StubPath = "`"$CUStubExePath`""
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$StubPath = "`"$CUStubExePath`""
+                    } else {
+                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                    }
                 }
-                '.js' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
-                    [String]$CUArguments = "//nologo `"$StubExePath`""
+                {$_ -in '.js','.vbs'} {
+                    [String]$CUStubExePath = "$envWinDir\System32\wscript.exe"
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "//nologo `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "//nologo `"$StubExePath`"  $Arguments"
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
-                '.vbs' {
-                    [String]$CUStubExePath = "$envWinDir\System32\cscript.exe"
-                    [String]$CUArguments = "//nologo `"$StubExePath`""
-                    [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                }
-                '.cmd' {
+                {$_ -in '.cmd','.bat'} {
                     [String]$CUStubExePath = "$envWinDir\System32\cmd.exe"
-                    [String]$CUArguments = "/C `"$StubExePath`""
+                    # Prefix any CMD.exe metacharacters ^ or & with ^ to escape them - parentheses only require escaping when there's no space in the path!
+                    if ($StubExePath.Trim() -match '\s') {
+                        $StubExePath = $StubExePath -replace '([&^])', '^$1'
+                    }
+                    else {
+                        $StubExePath = $StubExePath -replace '([()&^])', '^$1'
+                    }
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "/C `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "/C `"`"$StubExePath`" $Arguments`""
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
                     [String]$CUStubExePath = "$PSHOME\powershell.exe"
-                    [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
+                    if ([string]::IsNullOrEmpty($Arguments)) {
+                        [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                    }
+                    else {
+                        [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                    }
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                }
-            }
-            If ($Arguments) {
-                [String]$StubPath = "$StubPath $Arguments"
-                If ($StubExeExt -ne '.exe') {
-                    [String]$CUArguments = "$CUArguments $Arguments"
                 }
             }
 
