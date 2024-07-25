@@ -630,12 +630,7 @@ Else {
 [Boolean]$BlockExecution = $false
 [Boolean]$installationStarted = $false
 [Boolean]$runningTaskSequence = $false
-if ($AsyncToolkitLaunch -and $ReferredLogname) {
-    [Boolean]$LogFileInitialized = $true
-}
-else {
-    [Boolean]$LogFileInitialized = $false
-}
+[Boolean]$LogFileInitialized = $AsyncToolkitLaunch -and $ReferredLogname
 If (Test-Path -LiteralPath 'variable:welcomeTimer') {
     Remove-Variable -Name 'welcomeTimer' -Scope 'Script'
 }
