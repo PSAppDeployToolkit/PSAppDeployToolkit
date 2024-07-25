@@ -3597,6 +3597,11 @@ https://psappdeploytoolkit.com
             }
         }
 
+        ## Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+        if (-not $IsAdmin) {
+            $msiLogFile = $msiLogFile + '_' + (Remove-InvalidFileNameChars -Name $EnvUserName)
+        }
+
         ## Append ".log" to the MSI logfile path and enclose in quotes
         If ([IO.Path]::GetExtension($msiLogFile) -ne '.log') {
             [String]$msiLogFile = $msiLogFile + '.log'
@@ -16938,7 +16943,13 @@ If ($ReferredLogName) {
     [String]$logName = $ReferredLogName
 }
 If (-not $logName) {
-    [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log'
+    if ($IsAdmin) {
+        [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log'
+    }
+    else {
+        #  Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+        [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '_' + (Remove-InvalidFileNameChars -Name $EnvUserName) + '.log'
+    }
 }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
 [String]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
