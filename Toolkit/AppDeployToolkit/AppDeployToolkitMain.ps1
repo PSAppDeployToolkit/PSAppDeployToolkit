@@ -16032,7 +16032,8 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message 'Getting session information for all logged on users.' -Source ${CmdletName}
-            Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
+            ## Changed from $env:ComputerName to [System.Net.Dns]::GetHostName(), as environment variable contains a truncated name which breaks operation in Windows Sandbox
+            Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo([System.Net.Dns]::GetHostName()))
         }
         Catch {
             Write-Log -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
