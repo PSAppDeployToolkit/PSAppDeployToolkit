@@ -137,10 +137,10 @@
         # Remove fluent dialog parameters if specified.
         if (!$fluentUi)
         {
-            $($PSBoundParameters.Keys) | Where-Object {$_ -match '^(WindowSubtitle|StatusMessageDetail)$'} | ForEach-Object {
+            $PSBoundParameters.Keys.GetEnumerator().Where({$_ -match '^(WindowSubtitle|StatusMessageDetail)$'}).ForEach({
                 Write-ADTLogEntry -Message "The parameter [$($_)] is only supported by fluent dialogs and has been removed for you." -Severity 2
                 [System.Void]$PSBoundParameters.Remove($_)
-            }
+            })
         }
     }
 
