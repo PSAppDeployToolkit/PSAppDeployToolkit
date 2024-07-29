@@ -1385,6 +1385,11 @@ function Test-ServiceExists
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity 2
+    if ($ComputerName)
+    {
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('ComputerName')
+    }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
@@ -1625,8 +1630,11 @@ function Get-ServiceStartMode
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    if ($ComputerName)
+    {
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('ComputerName')
+    }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
@@ -1635,6 +1643,9 @@ function Get-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
+
     try
     {
         Get-ADTServiceStartMode @PSBoundParameters
@@ -2157,6 +2168,10 @@ function Start-ServiceAndDependencies
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ComputerName,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
 
         [Parameter(Mandatory = $false)]
@@ -2176,8 +2191,11 @@ function Start-ServiceAndDependencies
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    if ($ComputerName)
+    {
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('ComputerName')
+    }
     if ($SkipServiceExistsTest)
     {
         Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -2191,6 +2209,9 @@ function Start-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
+
     try
     {
         Start-ADTServiceAndDependencies @PSBoundParameters
@@ -2218,6 +2239,10 @@ function Stop-ServiceAndDependencies
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ComputerName,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
 
         [Parameter(Mandatory = $false)]
@@ -2237,8 +2262,11 @@ function Stop-ServiceAndDependencies
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    if ($ComputerName)
+    {
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('ComputerName')
+    }
     if ($SkipServiceExistsTest)
     {
         Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -2252,6 +2280,9 @@ function Stop-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
+
     try
     {
         Stop-ADTServiceAndDependencies @PSBoundParameters
