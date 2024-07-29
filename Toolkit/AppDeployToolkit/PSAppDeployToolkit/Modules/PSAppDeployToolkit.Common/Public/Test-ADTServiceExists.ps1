@@ -13,9 +13,6 @@
 
     Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
 
-    .PARAMETER ComputerName
-    Specify the name of the computer. Default is: the local computer.
-
     .PARAMETER PassThru
     Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
 
@@ -46,10 +43,6 @@
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$ComputerName = [System.Net.Dns]::GetHostName(),
-
-        [Parameter(Mandatory = $false)]
         [Alias('UseWMI')]
         [System.Management.Automation.SwitchParameter]$UseCIM,
 
@@ -72,9 +65,9 @@
                 if ($UseCIM)
                 {
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
-                    if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+                    if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))
                     {
-                        $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                        $ServiceObject = Get-CimInstance -ClassName Win32_BaseService -Filter "Name = '$Name'"
                     }
                 }
                 else

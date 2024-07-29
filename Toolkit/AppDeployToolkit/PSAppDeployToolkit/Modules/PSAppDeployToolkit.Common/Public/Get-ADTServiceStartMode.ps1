@@ -11,9 +11,6 @@
     .PARAMETER Name
     Specify the name of the service.
 
-    .PARAMETER ComputerName
-    Specify the name of the computer. Default is: the local computer.
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -39,11 +36,7 @@
             }
             return !!$_
         })]
-        [System.ServiceProcess.ServiceController]$Service,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$ComputerName
+        [System.ServiceProcess.ServiceController]$Service
     )
 
     begin
