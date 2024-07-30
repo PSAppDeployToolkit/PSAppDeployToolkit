@@ -186,21 +186,26 @@
             $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
             Set-StrictMode -Version 3
 
-            # Create XAML window.
-            $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
-            $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
-            $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-            $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-            $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
-            $SyncHash.Window.add_Loaded({
-                # Relocate the window and disable the X button.
-                & $UpdateWindowLocation.GetNewClosure() -Window $this
-                & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
-            })
-
-            # Bring up the window and capture any errors thereafter.
-            [System.Void]$SyncHash.Window.ShowDialog()
-            if ($Error.Count) {$SyncHash.Add('Error', $Error)}
+            # Create XAML window and bring it up.
+            try
+            {
+                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
+                $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
+                $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+                $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+                $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
+                $SyncHash.Window.add_Loaded({
+                    # Relocate the window and disable the X button.
+                    & $UpdateWindowLocation.GetNewClosure() -Window $this
+                    & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
+                })
+                [System.Void]$SyncHash.Window.ShowDialog()
+            }
+            catch
+            {
+                $SyncHash.Error = $_
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         })
 
         # Add in local variables, assets, and function delegates.
@@ -220,28 +225,20 @@
         # Allow the thread to be spun up safely before invoking actions against it.
         while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
         {
-            if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
+            if ($Script:ProgressWindow.SyncHash.ContainsKey('Error'))
             {
-                Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-ADTErrorRecord -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
-                Close-ADTInstallationProgressClassic
-                break
+                throw $Script:ProgressWindow.SyncHash.Error
             }
             elseif ($Script:ProgressWindow.Invocation.IsCompleted)
             {
-                try
-                {
-                    [System.Void]$Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'InstallationProgressDialogFailure'
+                    TargetObject = $(if ($SyncHash.ContainsKey('Window')) {$SyncHash.Window})
+                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                }
-                finally
-                {
-                    $Script:ProgressWindow.Invocation = $null
-                    Close-ADTInstallationProgressClassic
-                }
-                break
+                throw (New-ADTErrorRecord @naerParams)
             }
         }
     }
