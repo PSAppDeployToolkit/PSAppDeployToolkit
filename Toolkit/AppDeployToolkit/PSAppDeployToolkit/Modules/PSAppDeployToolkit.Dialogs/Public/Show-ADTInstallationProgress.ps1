@@ -146,24 +146,31 @@
 
     process
     {
+        # Return early in silent mode.
+        if ($adtSession)
+        {
+            if ($adtSession.IsSilent())
+            {
+                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Quiet
+                return
+            }
+
+            # Notify user that the software installation has started.
+            try
+            {
+                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+        }
+
+        # Call the underlying function to open the progress window.
         try
         {
             try
             {
-                # Return early in silent mode.
-                if ($adtSession)
-                {
-                    if ($adtSession.IsSilent())
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Quiet
-                        return
-                    }
-
-                    # Notify user that the software installation has started.
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
-                }
-
-                # Call the underlying function to open the progress window.
                 & (Get-ADTDialogFunction) @PSBoundParameters
             }
             catch
@@ -174,6 +181,7 @@
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Close-ADTInstallationProgress
         }
     }
 
