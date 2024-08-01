@@ -41,22 +41,12 @@ Set-StrictMode -Version 1
 Remove-Module -Name PSAppDeployToolkit* -Force
 Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
 
-# Open a new PSADT session.
+# Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{SessionState = $ExecutionContext.SessionState}
-foreach ($param in (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name)
-{
-    if (($value = Get-Variable -Name $param -ValueOnly -ErrorAction Ignore) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $value)))
-    {
-        $sessionProps.Add($param, $value)
-    }
-}
+Get-Variable -Name (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name -ErrorAction Ignore | Where-Object {$_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))} | ForEach-Object {$sessionProps.Add($_.Name, $_.Value)}
 Open-ADTSession @sessionProps
-
-# Enable Terminal Services Install Mode here if requested.
-if ((Test-Path -LiteralPath Variable:TerminalServerMode) -and $TerminalServerMode)
-{
-    $TerminalServerMode = Enable-ADTTerminalServerInstallMode
-}
+if ($sessionProps.ContainsKey('TerminalServerMode')) {Enable-ADTTerminalServerInstallMode}
+Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 
 #---------------------------------------------------------------------------
