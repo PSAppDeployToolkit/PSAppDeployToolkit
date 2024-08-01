@@ -15293,7 +15293,7 @@ Check to see if a service exists.
 
 .DESCRIPTION
 
-Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
+Check to see if a service exists.
 
 .PARAMETER Name
 
@@ -15362,29 +15362,25 @@ https://psappdeploytoolkit.com
     }
     Process {
         Try {
-            $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop'
-            # If nothing is returned from Win32_Service, check Win32_BaseService
-            If (-not $ServiceObject) {
-                $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_BaseService' -Filter "Name='$Name'" -ErrorAction 'Stop'
+            If ($PassThru) {
+                $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -ErrorAction 'Stop'
+                # If nothing is returned from Win32_Service, check Win32_BaseService
+                If (-not $ServiceObject) {
+                    $ServiceObject = Get-WmiObject -ComputerName $ComputerName -Class 'Win32_BaseService' -Filter "Name='$Name'" -ErrorAction 'Stop'
+                }
+            }
+            else {
+                # Known issue that WMI method fails in Sandbox, so only use it if -PassThru requested
+                $ServiceObject = (Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction Ignore).Count -gt 0
             }
 
             If ($ServiceObject) {
                 Write-Log -Message "Service [$Name] exists." -Source ${CmdletName}
-                If ($PassThru) {
-                    Write-Output -InputObject ($ServiceObject)
-                }
-                Else {
-                    Write-Output -InputObject ($true)
-                }
+                Write-Output -InputObject $ServiceObject
             }
             Else {
                 Write-Log -Message "Service [$Name] does not exist." -Source ${CmdletName}
-                If ($PassThru) {
-                    Write-Output -InputObject ($ServiceObject)
-                }
-                Else {
-                    Write-Output -InputObject ($false)
-                }
+                Write-Output -InputObject $ServiceObject
             }
         }
         Catch {
@@ -15804,11 +15800,7 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message "Getting the service [$Name] startup mode." -Source ${CmdletName}
-            [String]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
-            ## If service start mode is set to 'Auto', change value to 'Automatic' to be consistent with 'Set-ServiceStartMode' function
-            If ($ServiceStartMode -eq 'Auto') {
-                $ServiceStartMode = 'Automatic'
-            }
+            [String]$ServiceStartMode = (Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction 'Stop').StartType
 
             ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
             If (($ServiceStartMode -eq 'Automatic') -and (([Version]$envOSVersion).Major -gt 5)) {
@@ -15855,10 +15847,6 @@ Set the service startup mode.
 
 Specify the name of the service.
 
-.PARAMETER ComputerName
-
-Specify the name of the computer. Default is: the local computer.
-
 .PARAMETER StartMode
 
 Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
@@ -15896,7 +15884,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [String]$ComputerName = $env:ComputerName, # Not used but kept for backwards compatibility
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
         [String]$StartMode,
