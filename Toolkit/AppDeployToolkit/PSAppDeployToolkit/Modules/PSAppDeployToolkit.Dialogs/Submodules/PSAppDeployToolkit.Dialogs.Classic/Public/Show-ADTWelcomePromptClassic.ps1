@@ -342,7 +342,7 @@
     $labelAppName.Anchor = [System.Windows.Forms.AnchorStyles]::Top
     $labelAppName.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
     $labelAppName.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-    $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle')
+    $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle').Replace('&','&&')
     $labelAppName.Name = 'LabelAppName'
     $labelAppName.TabStop = $false
     $labelAppName.AutoSize = $true
