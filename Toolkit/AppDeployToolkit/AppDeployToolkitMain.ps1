@@ -15348,7 +15348,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [String]$ComputerName = 'localhost',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Switch]$PassThru,
@@ -15465,7 +15465,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [String]$ComputerName = 'localhost',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Switch]$SkipServiceExistsTest,
@@ -15634,7 +15634,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [String]$ComputerName = 'localhost',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Switch]$SkipServiceExistsTest,
@@ -15788,7 +15788,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
+        [String]$ComputerName = 'localhost',
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$ContinueOnError = $true
@@ -15884,7 +15884,7 @@ https://psappdeploytoolkit.com
         [String]$Name,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName, # Not used but kept for backwards compatibility
+        [String]$ComputerName = 'localhost', # Not used but kept for backwards compatibility
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
         [String]$StartMode,
