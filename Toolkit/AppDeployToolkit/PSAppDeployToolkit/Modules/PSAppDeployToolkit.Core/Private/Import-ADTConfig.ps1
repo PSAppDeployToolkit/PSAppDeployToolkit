@@ -42,6 +42,12 @@
         $config.Assets.$asset = (Get-Item -LiteralPath "$($adtModule.ModuleBase)\Assets\$($config.Assets.$asset)").FullName
     }
 
+    # If we're using fluent dialogs but running in the ISE, force it back to classic.
+    if (!$Host.Name.Equals('ConsoleHost') -and ($config.UI.DialogStyle -eq 'Fluent'))
+    {
+        $config.UI.DialogStyle = 'Classic'
+    }
+
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)
     {

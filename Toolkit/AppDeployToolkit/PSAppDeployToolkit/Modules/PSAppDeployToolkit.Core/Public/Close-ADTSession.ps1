@@ -39,7 +39,7 @@
                 if ($adtData.Sessions.Count.Equals(1))
                 {
                     # Only attempt to finalise the dialogs a dialog module is loaded.
-                    if (Get-Command -Name Close-ADTInstallationProgress -ErrorAction Ignore)
+                    if (Get-Item -LiteralPath Function:Close-ADTInstallationProgress -ErrorAction Ignore)
                     {
                         Close-ADTInstallationProgress
                     }
@@ -79,7 +79,7 @@
                 [System.Void]$adtData.Sessions.Remove($adtSession)
                 if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
                 {
-                    if ((Get-Job | Where-Object {$_.State.Equals('Running')}) -or ((Get-Command -Name Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning)))
+                    if ($Host.Name.Equals('ConsoleHost') -and ((Get-Job | Where-Object {$_.State.Equals('Running')}) -or ((Get-Item -LiteralPath Function:Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning))))
                     {
                         [System.Environment]::Exit($adtData.LastExitCode)
                     }
