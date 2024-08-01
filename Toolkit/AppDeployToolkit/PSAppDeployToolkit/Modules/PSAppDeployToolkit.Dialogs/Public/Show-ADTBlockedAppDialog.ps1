@@ -5,7 +5,11 @@
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Title
+        [System.String]$Title,
+
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$UnboundArguments
     )
 
     begin
