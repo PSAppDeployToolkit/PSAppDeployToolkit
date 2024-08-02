@@ -136,9 +136,9 @@
                 try
                 {
                     $adtData.Sessions[-1].Open()
-                    if ($TerminalServerMode -and !$adtData.TerminalServerMode)
+                    foreach ($callback in $adtData.OpeningCallbacks)
                     {
-                        Enable-ADTTerminalServerInstallMode
+                        & $callback
                     }
                     if ($adtData.Sessions.Count.Equals(1))
                     {

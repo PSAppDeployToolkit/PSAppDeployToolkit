@@ -27,13 +27,14 @@
 
     #>
 
-    # Dispose of the window object.
-    if ($Script:ProgressWindow.Window)
+    # Return early if a dialog window isn't running.
+    if (!$Script:ProgressWindow.Running)
     {
-        Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-        $Script:ProgressWindow.Window.HideDialog()
+        return
     }
 
-    # Reset the state bool.
+    # Hide the dialog and reset the state bool.
+    Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+    $Script:ProgressWindow.Window.HideDialog()
     $Script:ProgressWindow.Running = $false
 }
