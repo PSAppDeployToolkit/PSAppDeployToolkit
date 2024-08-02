@@ -129,13 +129,13 @@
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Description', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'Description', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession; ParameterSetName = 'Create'}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
         $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Key', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'Key', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )

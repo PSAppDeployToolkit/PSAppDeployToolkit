@@ -73,7 +73,7 @@
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('BalloonTipTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'BalloonTipTitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'BalloonTipTitle', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
