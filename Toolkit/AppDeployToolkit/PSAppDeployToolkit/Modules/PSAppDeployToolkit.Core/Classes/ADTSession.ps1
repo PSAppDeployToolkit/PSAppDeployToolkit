@@ -108,7 +108,7 @@
         }
 
         # Confirm the main system automation params aren't null.
-        foreach ($param in @('SessionState').Where({!$Parameters[$_]}))
+        foreach ($param in @('SessionState').Where({!$Parameters.$_}))
         {
             $naerParams = @{
                 Exception = [System.ArgumentNullException]::new($param, 'One or more mandatory parameters are null.')

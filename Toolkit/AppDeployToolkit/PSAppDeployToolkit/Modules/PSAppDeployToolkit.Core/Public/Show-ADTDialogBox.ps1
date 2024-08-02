@@ -106,7 +106,7 @@
         {
             try
             {
-                $result = switch ([System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons[$Buttons] + $Script:DialogBox.Icons[$Icon] + $Script:DialogBox.DefaultButtons[$DefaultButton] + (4096 * !$NotTopMost))))
+                $result = switch ([System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons.$Buttons + $Script:DialogBox.Icons.$Icon + $Script:DialogBox.DefaultButtons.$DefaultButton + (4096 * !$NotTopMost))))
                 {
                     1 {'OK'; break}
                     2 {'Cancel'; break}

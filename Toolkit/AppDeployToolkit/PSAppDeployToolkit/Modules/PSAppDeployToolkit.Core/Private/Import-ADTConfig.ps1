@@ -27,11 +27,11 @@
     # Process the config and expand out variables.
     foreach ($section in $($config.Keys))
     {
-        foreach ($subsection in $($config[$section].Keys))
+        foreach ($subsection in $($config.$section.Keys))
         {
-            if ($config[$section][$subsection] -is [System.String])
+            if ($config.$section.$subsection -is [System.String])
             {
-                $config[$section][$subsection] = $ExecutionContext.InvokeCommand.ExpandString($config[$section][$subsection])
+                $config.$section.$subsection = $ExecutionContext.InvokeCommand.ExpandString($config.$section.$subsection)
             }
         }
     }
