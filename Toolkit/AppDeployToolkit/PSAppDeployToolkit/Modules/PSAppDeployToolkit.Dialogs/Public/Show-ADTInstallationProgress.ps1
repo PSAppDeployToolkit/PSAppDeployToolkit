@@ -87,25 +87,25 @@
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('WindowTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'WindowTitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'WindowTitle', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
         $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'WindowSubtitle', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'WindowSubtitle', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
         $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'StatusMessage', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'StatusMessage', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
         ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'StatusMessageDetail', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+            'StatusMessageDetail', [System.String], $(
                 [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession -and $fluentUi}
                 [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
             )
