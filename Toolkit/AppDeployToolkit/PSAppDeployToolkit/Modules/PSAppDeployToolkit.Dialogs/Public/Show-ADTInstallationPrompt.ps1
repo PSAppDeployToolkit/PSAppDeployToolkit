@@ -110,6 +110,19 @@
     )
 
     dynamicparam {
+        # Throw a terminating error if at least one button isn't specified.
+        if (!($PSBoundParameters.Keys -match '^Button'))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new('At least one button must be specified when calling this function.')
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'MandatoryParameterMissing'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
         # Initialise variables.
         if (!($adtSession = try {Get-ADTSession} catch {[System.Void]$null}))
         {
