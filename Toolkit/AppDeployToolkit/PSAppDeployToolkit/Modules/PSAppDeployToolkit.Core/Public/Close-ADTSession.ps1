@@ -32,60 +32,49 @@
         }
 
         # If we're closing the last session, clean up the environment.
-        try
+        $callbackErrors = if ($adtData.Sessions.Count.Equals(1))
         {
-            try
+            foreach ($callback in $adtData.ClosingCallbacks)
             {
-                if ($adtData.Sessions.Count.Equals(1))
+                try
                 {
-                    # Only attempt to finalise the dialogs a dialog module is loaded.
-                    if (Get-Item -LiteralPath Function:Close-ADTInstallationProgress -ErrorAction Ignore)
-                    {
-                        Close-ADTInstallationProgress
-                    }
-
-                    # Unblock all PSAppDeployToolkit blocked apps.
-                    Unblock-ADTAppExecution
-
-                    # Only attempt to disable Terminal Services Install Mode if previously set.
-                    if ($adtData.TerminalServerMode)
-                    {
-                        Disable-ADTTerminalServerInstallMode
-                    }
+                    & $callback
+                }
+                catch
+                {
+                    $_
                 }
             }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
+        }
+
+        # Close out the active session and clean up session state.
+        $sessionCloseError = try
+        {
+            $adtSession.Close()
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while cleaning up environment prior to final session closure."
+            $_
         }
         finally
         {
-            # Close out the active session and clean up session state.
-            try
+            [System.Void]$adtData.Sessions.Remove($adtSession)
+        }
+
+        # Exit out if this was the last PowerShell session.
+        if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
+        {
+            if ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or (Get-Job | Where-Object {$_.State.Equals('Running')})))
             {
-                $adtSession.Close()
+                [System.Environment]::Exit($adtData.LastExitCode)
             }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-            finally
-            {
-                [System.Void]$adtData.Sessions.Remove($adtSession)
-                if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
-                {
-                    if ($Host.Name.Equals('ConsoleHost') -and ((Get-Job | Where-Object {$_.State.Equals('Running')}) -or ((Get-Item -LiteralPath Function:Test-ADTInstallationProgressRunning -ErrorAction Ignore) -and (Test-ADTInstallationProgressRunning))))
-                    {
-                        [System.Environment]::Exit($adtData.LastExitCode)
-                    }
-                    exit $adtData.LastExitCode
-                }
-            }
+            exit $adtData.LastExitCode
+        }
+
+        # If this wasn't the last session and its closure failed, terminate out.
+        if ($sessionCloseError)
+        {
+            $PSCmdlet.ThrowTerminatingError($sessionCloseError)
         }
     }
 

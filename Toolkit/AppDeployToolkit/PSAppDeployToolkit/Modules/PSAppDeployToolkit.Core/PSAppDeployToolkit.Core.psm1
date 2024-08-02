@@ -24,6 +24,13 @@ Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).
 
 # Define object for holding all PSADT variables.
 New-Variable -Name ADT -Option ReadOnly -Value ([pscustomobject]@{
+    OpeningCallbacks = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
+        $MyInvocation.MyCommand.ScriptBlock.Module.ExportedCommands.'Enable-ADTTerminalServerInstallMode'
+    )
+    ClosingCallbacks = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
+        $MyInvocation.MyCommand.ScriptBlock.Module.ExportedCommands.'Unblock-ADTAppExecution'
+        $MyInvocation.MyCommand.ScriptBlock.Module.ExportedCommands.'Disable-ADTTerminalServerInstallMode'
+    )
     Sessions = [System.Collections.Generic.List[ADTSession]]::new()
     TerminalServerMode = $false
     Environment = $null

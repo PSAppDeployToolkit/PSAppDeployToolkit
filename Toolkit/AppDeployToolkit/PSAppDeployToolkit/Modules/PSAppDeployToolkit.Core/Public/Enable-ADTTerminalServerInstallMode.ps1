@@ -31,16 +31,22 @@
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $adtModule = Get-ADTModuleData
     }
 
     process
     {
+        if ($adtModule.TerminalServerMode -or ((Test-ADTSessionActive) -and !(Get-ADTSession).TerminalServerMode))
+        {
+            return
+        }
+
         try
         {
             try
             {
                 Invoke-ADTTerminalServerModeChange -Mode Install
-                (Get-ADTModuleData).TerminalServerMode = $true
+                $adtModule.TerminalServerMode = $true
             }
             catch
             {
