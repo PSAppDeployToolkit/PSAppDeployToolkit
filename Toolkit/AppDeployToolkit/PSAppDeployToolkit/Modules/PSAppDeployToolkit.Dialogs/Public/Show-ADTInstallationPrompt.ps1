@@ -178,25 +178,24 @@
         {
             try
             {
-                # Extra checks for when a session is active.
-                if ($adtSession)
+                # Bypass if in non-interactive mode.
+                if ($adtSession -and $adtSession.IsNonInteractive())
                 {
-                    # Bypass if in non-interactive mode.
-                    if ($adtSession.IsNonInteractive())
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
-                        return
-                    }
-
-                    # Close the Installation Progress dialog if running.
-                    Close-ADTInstallationProgress
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
+                    return
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
                     return
+                }
+
+                # Close the Installation Progress dialog if running.
+                if ($adtSession)
+                {
+                    Close-ADTInstallationProgress
                 }
 
                 # Call the underlying function to open the message prompt.
