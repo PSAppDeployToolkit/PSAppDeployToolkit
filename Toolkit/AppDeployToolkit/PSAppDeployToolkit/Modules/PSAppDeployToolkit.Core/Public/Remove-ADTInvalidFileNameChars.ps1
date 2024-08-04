@@ -24,6 +24,9 @@
     This functions always returns a string however it can be empty if the name only contains invalid characters.
     Do no use this command for an entire path as '\' is not a valid filename character.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

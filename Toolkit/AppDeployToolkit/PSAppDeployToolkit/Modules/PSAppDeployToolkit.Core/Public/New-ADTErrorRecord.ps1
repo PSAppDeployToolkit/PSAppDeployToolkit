@@ -1,5 +1,12 @@
 ﻿function New-ADTErrorRecord
 {
+    <#
+
+    .NOTES
+    This function can be called without an active ADT session.
+
+    #>
+
     [CmdletBinding()]
     param
     (

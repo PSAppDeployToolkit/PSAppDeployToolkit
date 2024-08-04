@@ -1,5 +1,12 @@
 ﻿function Show-ADTHelpConsole
 {
+    <#
+
+    .NOTES
+    This function can be called without an active ADT session.
+
+    #>
+
     # Run this via a new PowerShell window so it doesn't stall the main thread.
     Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$({
         [CmdletBinding()]

@@ -17,6 +17,9 @@
     .EXAMPLE
     Disable-TerminalServerInstallMode
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

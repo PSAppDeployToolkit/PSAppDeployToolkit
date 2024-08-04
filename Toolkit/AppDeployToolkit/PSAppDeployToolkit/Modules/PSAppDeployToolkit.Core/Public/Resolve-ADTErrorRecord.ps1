@@ -46,6 +46,9 @@
     .EXAMPLE
     Resolve-ADTErrorRecord -GetErrorInvocation:$false
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
