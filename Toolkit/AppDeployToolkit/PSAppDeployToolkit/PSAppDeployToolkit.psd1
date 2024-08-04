@@ -51,7 +51,6 @@ PowerShellVersion = '5.1'
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
     "$PSScriptRoot\Modules\PSAppDeployToolkit.Core\PSAppDeployToolkit.Core.psd1"
-    "$PSScriptRoot\Modules\PSAppDeployToolkit.Common\PSAppDeployToolkit.Common.psd1"
     "$PSScriptRoot\Modules\PSAppDeployToolkit.Dialogs\PSAppDeployToolkit.Dialogs.psd1"
 )
 
