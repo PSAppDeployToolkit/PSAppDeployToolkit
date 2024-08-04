@@ -45,7 +45,6 @@
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $regKeyDeferHistory = (Get-ADTSession).RegKeyDeferHistory
@@ -54,6 +53,7 @@
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process

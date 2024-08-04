@@ -120,7 +120,6 @@ https://psappdeploytoolkit.com
     )
 
     Begin {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $adtEnv = Get-ADTEnvironment
@@ -131,6 +130,7 @@ https://psappdeploytoolkit.com
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         If (-not [String]::IsNullOrEmpty($TempPath)) {
             $executeAsUserTempPath = $TempPath

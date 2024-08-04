@@ -47,7 +47,6 @@
     begin
     {
         # Get everything we need before commencing.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $adtEnv = Get-ADTEnvironment
@@ -59,6 +58,7 @@
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define path for storing temporary data.
         $tempPath = $adtConfig.Toolkit.TempPath
