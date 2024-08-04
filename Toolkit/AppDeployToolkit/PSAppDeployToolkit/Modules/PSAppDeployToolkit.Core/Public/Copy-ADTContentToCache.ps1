@@ -38,7 +38,6 @@
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $adtSession = Get-ADTSession
@@ -47,6 +46,7 @@
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process

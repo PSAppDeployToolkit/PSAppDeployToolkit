@@ -148,7 +148,6 @@
     begin
     {
         # Initalise function and get required objects.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $adtSession = Get-ADTSession
@@ -157,6 +156,7 @@
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up initial variables.
         $funcCaller = (Get-PSCallStack)[1].InvocationInfo.MyCommand
