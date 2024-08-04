@@ -61,14 +61,21 @@
             [System.Void]$adtData.Sessions.Remove($adtSession)
         }
 
-        # Exit out if this was the last PowerShell session.
-        if (!$adtData.Sessions.Count -and !$adtSession.RunspaceOrigin)
+        # Clean up environment if this was the last session.
+        if (!$adtData.Sessions.Count)
         {
-            if ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or (Get-Job | Where-Object {$_.State.Equals('Running')})))
+            # Flag the module as uninitialised upon last session closure.
+            $adtData.Initialised = $false
+
+            # Exit out if this function was called within a script.
+            if (!$adtSession.RunspaceOrigin)
             {
-                [System.Environment]::Exit($adtData.LastExitCode)
+                if ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or (Get-Job | Where-Object {$_.State.Equals('Running')})))
+                {
+                    [System.Environment]::Exit($adtData.LastExitCode)
+                }
+                exit $adtData.LastExitCode
             }
-            exit $adtData.LastExitCode
         }
 
         # If this wasn't the last session and its closure failed, terminate out.
