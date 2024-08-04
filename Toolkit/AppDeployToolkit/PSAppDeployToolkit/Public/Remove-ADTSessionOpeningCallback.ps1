@@ -3,12 +3,11 @@ function Remove-ADTSessionOpeningCallback
 	[CmdletBinding()]
 	param
 	(
-		[Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+		[Parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
-		[System.Management.Automation.CommandInfo]$Callback
+		[System.Management.Automation.CommandInfo[]]$Callback
 	)
 
-	# Grab all pipeline accumulation and remove all applicable callbacks.
-	$openingCallbacks = (Get-ADTModuleData).OpeningCallbacks
-	$input.Where({$openingCallbacks.Contains($_)}).ForEach({$openingCallbacks.Remove($_)})
+	# Send it off to the backend function.
+	Invoke-ADTSessionCallbackOperation -Type Opening -Action Remove @PSBoundParameters
 }

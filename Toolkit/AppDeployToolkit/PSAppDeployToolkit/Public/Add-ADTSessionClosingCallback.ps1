@@ -3,12 +3,11 @@ function Add-ADTSessionClosingCallback
 	[CmdletBinding()]
 	param
 	(
-		[Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+		[Parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
-		[System.Management.Automation.CommandInfo]$Callback
+		[System.Management.Automation.CommandInfo[]]$Callback
 	)
 
-	# Grab all pipeline accumulation and add all valid callbacks.
-	$closingCallbacks = (Get-ADTModuleData).ClosingCallbacks
-	$input.Where({!$closingCallbacks.Contains($_)}).ForEach({$closingCallbacks.Add($_)})
+	# Send it off to the backend function.
+	Invoke-ADTSessionCallbackOperation -Type Closing -Action Add @PSBoundParameters
 }

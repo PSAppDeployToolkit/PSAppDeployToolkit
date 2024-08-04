@@ -57,6 +57,7 @@
 
                 # Call the underlying function to close the progress window.
                 & (Get-ADTDialogFunction)
+                Remove-ADTSessionClosingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Close-ADTInstallationProgress'
 
                 # Send out the final toast notification.
                 if ($adtSession)
