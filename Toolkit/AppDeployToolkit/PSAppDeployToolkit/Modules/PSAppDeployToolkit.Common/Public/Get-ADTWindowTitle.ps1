@@ -41,6 +41,9 @@
     # Get details for all windows belonging to Microsoft Word process with name "WINWORD".
     Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

@@ -37,6 +37,9 @@
     .EXAMPLE
     Remove-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

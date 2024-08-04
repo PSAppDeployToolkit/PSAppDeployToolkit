@@ -36,6 +36,9 @@
     .EXAMPLE
     Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

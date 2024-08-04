@@ -28,6 +28,9 @@
     # Delete all files in the Temp\MyAppCache folder but does not delete any subfolders.
     Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

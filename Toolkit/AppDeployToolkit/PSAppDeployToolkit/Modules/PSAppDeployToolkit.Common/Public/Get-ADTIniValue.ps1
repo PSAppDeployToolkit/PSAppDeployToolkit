@@ -26,6 +26,9 @@
     .EXAMPLE
     Get-ADTIniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

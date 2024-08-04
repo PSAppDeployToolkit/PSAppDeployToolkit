@@ -64,6 +64,9 @@
     .NOTES
     Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

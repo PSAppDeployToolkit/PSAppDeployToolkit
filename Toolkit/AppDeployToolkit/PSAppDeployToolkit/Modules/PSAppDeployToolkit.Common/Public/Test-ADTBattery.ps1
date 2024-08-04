@@ -33,6 +33,9 @@
     # Determine if the current system is a laptop or not.
     (Test-ADTBattery -PassThru).IsLaptop
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

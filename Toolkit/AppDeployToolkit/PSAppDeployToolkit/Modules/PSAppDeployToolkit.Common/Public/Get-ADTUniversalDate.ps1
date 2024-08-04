@@ -27,6 +27,9 @@
 
     Returns the date for the current culture in a universal sortable date time pattern.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

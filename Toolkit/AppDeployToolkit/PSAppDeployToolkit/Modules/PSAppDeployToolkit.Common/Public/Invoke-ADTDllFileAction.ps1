@@ -24,6 +24,9 @@
     # Register DLL file.
     Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

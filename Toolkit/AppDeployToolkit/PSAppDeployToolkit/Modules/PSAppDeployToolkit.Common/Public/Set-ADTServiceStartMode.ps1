@@ -23,6 +23,9 @@
     .EXAMPLE
     Set-ADTServiceStartMode -Name 'wuauserv' -StartMode 'Automatic (Delayed Start)'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

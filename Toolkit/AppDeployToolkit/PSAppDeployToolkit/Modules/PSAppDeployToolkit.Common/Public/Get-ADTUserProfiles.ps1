@@ -40,6 +40,9 @@
     # Return the user profile path for each user on the system. This information can then be used to make modifications under the user profile on the filesystem.
     [string[]]$ProfilePaths = Get-ADTUserProfiles | Select-Object -ExpandProperty ProfilePath
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

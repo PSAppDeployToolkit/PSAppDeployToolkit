@@ -55,6 +55,9 @@
     .NOTES
     Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

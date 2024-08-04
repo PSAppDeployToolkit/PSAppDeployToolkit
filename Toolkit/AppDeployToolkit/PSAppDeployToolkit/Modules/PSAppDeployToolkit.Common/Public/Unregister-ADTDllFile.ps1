@@ -24,6 +24,9 @@
     # Unregister DLL file.
     Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

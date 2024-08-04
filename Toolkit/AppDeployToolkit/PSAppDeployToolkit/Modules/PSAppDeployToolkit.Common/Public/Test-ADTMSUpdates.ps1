@@ -20,6 +20,9 @@
     .EXAMPLE
     Test-ADTMSUpdates -KBNumber 'KB2549864'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

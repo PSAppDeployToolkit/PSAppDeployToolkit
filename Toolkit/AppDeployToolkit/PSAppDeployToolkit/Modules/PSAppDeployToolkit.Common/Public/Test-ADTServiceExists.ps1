@@ -30,6 +30,9 @@
 
     Check if a service exists and then delete it by using the -PassThru parameter.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

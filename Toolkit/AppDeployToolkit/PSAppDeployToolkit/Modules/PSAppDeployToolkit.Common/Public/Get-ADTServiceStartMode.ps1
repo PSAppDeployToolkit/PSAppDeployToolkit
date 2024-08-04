@@ -20,6 +20,9 @@
     .EXAMPLE
     Get-ADTServiceStartMode -Name 'wuauserv'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
