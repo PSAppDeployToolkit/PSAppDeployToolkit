@@ -49,6 +49,9 @@
     .NOTES
     This is an internal script function and should typically not be called directly.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

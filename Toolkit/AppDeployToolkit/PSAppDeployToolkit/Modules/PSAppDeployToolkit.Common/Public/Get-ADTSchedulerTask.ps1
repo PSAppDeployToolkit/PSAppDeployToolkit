@@ -29,6 +29,9 @@
     # Display a list of all scheduled task names.
     Get-ADTSchedulerTask | Select-Object -Property TaskName
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

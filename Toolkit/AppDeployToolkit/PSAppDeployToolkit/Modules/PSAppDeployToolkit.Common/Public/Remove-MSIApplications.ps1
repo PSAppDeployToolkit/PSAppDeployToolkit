@@ -130,6 +130,10 @@ Removes all versions of software that match the name "Java 8 Update"; however, i
 
 More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
 
+.NOTES
+
+This function can be called without an active ADT session..
+
 .LINK
 
 https://psappdeploytoolkit.com

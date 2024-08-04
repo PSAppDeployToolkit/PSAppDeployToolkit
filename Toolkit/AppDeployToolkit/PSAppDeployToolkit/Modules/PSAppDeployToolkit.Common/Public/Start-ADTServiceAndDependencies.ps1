@@ -29,6 +29,9 @@
     .EXAMPLE
     Start-ADTServiceAndDependencies -Service 'wuauserv'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

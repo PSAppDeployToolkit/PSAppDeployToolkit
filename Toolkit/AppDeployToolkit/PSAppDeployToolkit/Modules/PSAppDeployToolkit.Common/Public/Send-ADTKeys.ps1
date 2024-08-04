@@ -43,6 +43,9 @@
     # Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.
     Send-ADTKeys -WindowHandle ([IntPtr]17368294) -Key 'Hello World'
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
     https://psappdeploytoolkit.com

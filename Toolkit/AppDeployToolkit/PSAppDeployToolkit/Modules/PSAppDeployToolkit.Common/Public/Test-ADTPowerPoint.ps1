@@ -22,6 +22,9 @@
 
     There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

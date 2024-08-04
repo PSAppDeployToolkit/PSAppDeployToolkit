@@ -46,6 +46,9 @@
     Description of IsLocalAdmin property:
     - Checks whether the user is a member of the Administrators group
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

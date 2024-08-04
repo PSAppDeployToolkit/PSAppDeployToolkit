@@ -68,6 +68,8 @@ Copy all of the files in a folder to a destination folder.
 
 .NOTES
 
+This function can be called without an active ADT session.
+
 .LINK
 
 https://psappdeploytoolkit.com

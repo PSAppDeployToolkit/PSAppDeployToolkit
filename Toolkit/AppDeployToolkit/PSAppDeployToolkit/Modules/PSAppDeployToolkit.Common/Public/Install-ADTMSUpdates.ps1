@@ -20,6 +20,9 @@
     .EXAMPLE
     Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 

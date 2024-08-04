@@ -92,6 +92,8 @@ Copy an entire folder to C:\Users\<UserName> for each user.
 
 .NOTES
 
+This function can be called without an active ADT session.
+
 .LINK
 
 https://psappdeploytoolkit.com

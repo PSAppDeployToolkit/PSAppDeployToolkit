@@ -34,6 +34,9 @@
     .NOTES
     This is an internal script function and should typically not be called directly.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
 
