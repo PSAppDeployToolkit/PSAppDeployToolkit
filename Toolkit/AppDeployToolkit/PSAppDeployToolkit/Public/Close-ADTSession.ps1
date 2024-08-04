@@ -34,7 +34,7 @@
         # If we're closing the last session, clean up the environment.
         $callbackErrors = if ($adtData.Sessions.Count.Equals(1))
         {
-            foreach ($callback in $adtData.ClosingCallbacks)
+            foreach ($callback in $($adtData.Callbacks.Closing))
             {
                 try
                 {

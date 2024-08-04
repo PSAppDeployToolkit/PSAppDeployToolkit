@@ -174,7 +174,15 @@
         {
             try
             {
+                # Archive off the curent running state first.
+                $start = Test-ADTInstallationProgressRunning
                 & (Get-ADTDialogFunction) @PSBoundParameters
+
+                # If we've opened the window for the first time, add a closing callback.
+                if (!(Test-ADTInstallationProgressRunning).Equals($start))
+                {
+                    Add-ADTSessionClosingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Close-ADTInstallationProgress'
+                }
             }
             catch
             {

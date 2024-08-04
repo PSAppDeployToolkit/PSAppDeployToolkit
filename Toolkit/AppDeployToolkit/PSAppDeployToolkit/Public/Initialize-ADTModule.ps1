@@ -8,6 +8,7 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtData = Get-ADTModuleData
     }
 
     process
@@ -17,7 +18,13 @@
             try
             {
                 # Initialise the module's global state.
-                $adtData = Get-ADTModuleData
+                $adtData.Callbacks.Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
+                    $MyInvocation.MyCommand.Module.ExportedCommands.'Enable-ADTTerminalServerInstallMode'
+                )
+                $adtData.Callbacks.Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
+                    $MyInvocation.MyCommand.Module.ExportedCommands.'Unblock-ADTAppExecution'
+                    $MyInvocation.MyCommand.Module.ExportedCommands.'Disable-ADTTerminalServerInstallMode'
+                )
                 $adtData.Environment = New-ADTEnvironmentTable
                 $adtData.Config = Import-ADTConfig
                 $adtData.Language = Get-ADTStringLanguage

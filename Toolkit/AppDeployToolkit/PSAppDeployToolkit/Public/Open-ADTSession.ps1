@@ -136,7 +136,7 @@
                 try
                 {
                     $adtData.Sessions[-1].Open()
-                    foreach ($callback in $adtData.OpeningCallbacks)
+                    foreach ($callback in $($adtData.Callbacks.Opening))
                     {
                         & $callback
                     }
