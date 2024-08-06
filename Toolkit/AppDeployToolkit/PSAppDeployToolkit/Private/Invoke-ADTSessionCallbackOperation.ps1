@@ -26,7 +26,7 @@ function Invoke-ADTSessionCallbackOperation
         if (!($callbacks = (Get-ADTModuleData).Callbacks.$Type))
         {
             $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions.")
+                Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 ErrorId = 'ADTCallbacksTableNotInitialised'
                 TargetObject = $callbacks

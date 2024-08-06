@@ -54,6 +54,8 @@ function Send-ADTKeys
 
     .LINK
     http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+
+    .LINK
     https://psappdeploytoolkit.com
 
     #>
