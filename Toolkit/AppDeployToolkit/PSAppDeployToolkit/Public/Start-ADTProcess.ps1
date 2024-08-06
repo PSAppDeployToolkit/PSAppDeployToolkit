@@ -166,7 +166,7 @@ function Start-ADTProcess
 
         # Set up initial variables.
         $funcCaller = (& $Script:CommandTable.'Get-PSCallStack')[1].InvocationInfo.MyCommand
-        $extInvoker = !$funcCaller.Source.StartsWith('PSAppDeployToolkit') -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
+        $extInvoker = !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
         $stdOutBuilder = [System.Text.StringBuilder]::new()
         $stdErrBuilder = [System.Text.StringBuilder]::new()
         $stdOutEvent = $stdErrEvent = $null

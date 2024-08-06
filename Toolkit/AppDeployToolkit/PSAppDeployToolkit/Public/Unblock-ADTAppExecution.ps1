@@ -36,7 +36,7 @@ function Unblock-ADTAppExecution
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (& $Script:CommandTable.'Get-ScheduledTask' -TaskName "PSAppDeployToolkit_*_BlockedApps" -ErrorAction Ignore)
+        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (& $Script:CommandTable.'Get-ScheduledTask' -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
     )
 
     begin

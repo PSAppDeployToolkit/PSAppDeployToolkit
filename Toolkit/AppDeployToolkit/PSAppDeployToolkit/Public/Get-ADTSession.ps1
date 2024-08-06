@@ -15,7 +15,7 @@ function Get-ADTSession
     if (!($adtData = Get-ADTModuleData).Sessions.Count)
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
+            Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTSessionBufferEmpty'
             TargetObject = $adtData.Sessions
