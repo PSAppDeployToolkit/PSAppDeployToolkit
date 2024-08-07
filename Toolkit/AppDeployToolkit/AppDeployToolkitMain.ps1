@@ -1324,7 +1324,7 @@ https://psappdeploytoolkit.com
                     }
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
-                    $LogFiles = @(Get-ChildItem -LiteralPath $LogFileDirectory -Filter ("{0}_*{1}" -f $LogFileNameWithoutExtension, $LogFileExtension)) + @(Get-Item -LiteralPath ([IO.Path]::ChangeExtension($LogFilePath, 'lo_')) -ErrorAction Ignore) | Sort-Object LastWriteTime
+                    $LogFiles = @(Get-ChildItem -LiteralPath $LogFileDirectory -Filter ("{0}_*{1}" -f $LogFileNameWithoutExtension, $LogFileExtension)) + @(Get-Item -LiteralPath ([IO.Path]::ChangeExtension($LogFilePath, 'lo_')) -ErrorAction SilentlyContinue) | Sort-Object LastWriteTime
 
                     # Keep only the max number of log files
                     if ($LogFiles.Count -gt $MaxLogHistory) {
@@ -3142,7 +3142,7 @@ https://psappdeploytoolkit.com
                 ForEach ($UninstallKeyApp in $UninstallKeyApps) {
                     Try {
                         [PSObject]$regKeyApplicationProps = Get-ItemProperty -LiteralPath $UninstallKeyApp.PSPath -ErrorAction 'Stop'
-                        If ($regKeyApplicationProps | Select-Object -ExpandProperty DisplayName -ErrorAction Ignore) {
+                        If ($regKeyApplicationProps | Select-Object -ExpandProperty DisplayName -ErrorAction SilentlyContinue) {
                             $regKeyApplicationProps
                         }
                     }
@@ -15371,7 +15371,7 @@ https://psappdeploytoolkit.com
             }
             else {
                 # Known issue that WMI method fails in Sandbox, so only use it if -PassThru requested
-                $ServiceObject = (Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction Ignore).Count -gt 0
+                $ServiceObject = (Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction SilentlyContinue).Count -gt 0
             }
 
             If ($ServiceObject) {
