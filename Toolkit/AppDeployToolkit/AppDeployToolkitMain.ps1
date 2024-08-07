@@ -8765,14 +8765,12 @@ https://psappdeploytoolkit.com
         [String]${CmdletName} = $PSCmdlet.MyInvocation.MyCommand.Name
         Write-FunctionHeaderOrFooter -CmdletName ${CmdletName} -CmdletBoundParameters $PSBoundParameters -Header
 
-        ## Remove illegal characters from the scheduled task arguments string
-        [char[]]$invalidScheduledTaskChars = '$', '!', '''', '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' '
-        [string]$SchInstallName = $installName
-        ForEach ($invalidChar in $invalidScheduledTaskChars) {
-            [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
-        }
+        ## Replace any double quotes with two single quotes to avoid issues calling VBScript
+        $SchInstallName = $installName.Replace('"', "''")
+        $SchInstallTitle = $installTitle.Replace('"', "''")
         [string]$blockExecutionTempPath = Join-Path -Path $dirAppDeployTemp -ChildPath 'BlockExecution'
-        [string]$schTaskUnblockAppsCommand += "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$installTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch"
+        ## Escape characters ready for insertion in XML, e.g.  & = &amp;   " = &quot;
+        [string]$schTaskUnblockAppsCommand = [System.Security.SecurityElement]::Escape("-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$blockExecutionTempPath\$scriptFileName`" -CleanupBlockedApps -ReferredInstallName `"$SchInstallName`" -ReferredInstallTitle `"$SchInstallTitle`" -ReferredLogName `"$logName`" -AsyncToolkitLaunch")
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
@@ -8844,7 +8842,7 @@ https://psappdeploytoolkit.com
         Copy-Item -Path "$scriptRoot\*.*" -Destination $blockExecutionTempPath -Exclude 'thumbs.db' -Force -Recurse -ErrorAction 'SilentlyContinue'
 
         ## Build the debugger block value script
-        [String[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$installTitle`" & chr(34)"
+        [String[]]$debuggerBlockScript = "strCommand = `"$PSHome\powershell.exe -ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `" & chr(34) & `"$blockExecutionTempPath\$scriptFileName`" & chr(34) & `" -ShowBlockedAppDialog -AsyncToolkitLaunch -ReferredInstallTitle `" & chr(34) & `"$SchInstallTitle`" & chr(34)"
         $debuggerBlockScript += 'set oWShell = CreateObject("WScript.Shell")'
         $debuggerBlockScript += 'oWShell.Run strCommand, 0, false'
         $debuggerBlockScript | Out-File -FilePath "$blockExecutionTempPath\AppDeployToolkit_BlockAppExecutionMessage.vbs" -Force -Encoding 'Default' -ErrorAction 'SilentlyContinue'
