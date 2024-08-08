@@ -5333,9 +5333,8 @@ https://psappdeploytoolkit.com
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-Log -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs" -Source ${CmdletName}
                         $RobocopyResult = Execute-Process -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -ContinueOnError $true -ExitOnProcessFailure $false -Passthru -IgnoreExitCodes '0,1,2,3,4,5,6,7,8'
-                        # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
-                        $RobocopyOutput = $RobocopyResult.StdOut.Split("`n").TrimStart()
-                        $RobocopyOutput = $RobocopyOutput[0..($RobocopyOutput.Count - 2)] -join "`n"
+                        # Trim the last line plus leading whitespace from each line of Robocopy output
+                        $RobocopyOutput = $RobocopyResult.StdOut.Trim() -Replace '\n\s+',"`n"
                         Write-Log -Message "Robocopy output:`n$RobocopyOutput" -Source ${CmdletName}
 
                         Set-ItemProperty -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
