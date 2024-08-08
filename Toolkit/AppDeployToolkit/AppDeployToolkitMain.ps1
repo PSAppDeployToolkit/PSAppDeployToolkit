@@ -15370,8 +15370,8 @@ https://psappdeploytoolkit.com
                 }
             }
             else {
-                # Known issue that WMI method fails in Sandbox, so only use it if -PassThru requested
-                $ServiceObject = (Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction SilentlyContinue).Count -gt 0
+                # Known issue that WMI method fails in Sandbox, so only use it if -PassThru requested. !! is used to convert to boolean.
+                $ServiceObject = !!(Get-Service -ComputerName $ComputerName -Name $Name -ErrorAction SilentlyContinue)
             }
 
             If ($ServiceObject) {
