@@ -99,37 +99,19 @@
         # Set default values.
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
-            $Table = if ([System.IO.Path]::GetExtension($Path) -eq '.msi')
-            {
-                'Property'
-            }
-            else
-            {
-                'MsiPatchMetadata'
-            }
+            $PSBoundParameters.Add('Table', $(if ([System.IO.Path]::GetExtension($Path) -eq '.msi') {'Property'} else {'MsiPatchMetadata'}))
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {
-            $TablePropertyNameColumnNum = if ([IO.Path]::GetExtension($Path) -eq '.msi')
-            {
-                1
-            }
-            else
-            {
-                2
-            }
+            $PSBoundParameters.Add('TablePropertyNameColumnNum', 2 - ([System.IO.Path]::GetExtension($Path) -eq '.msi'))
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyValueColumnNum'))
         {
-            $TablePropertyValueColumnNum = if ([IO.Path]::GetExtension($Path) -eq '.msi')
-            {
-                2
-            }
-            else
-            {
-                3
-            }
+            $PSBoundParameters.Add('TablePropertyValueColumnNum', 3 - ([System.IO.Path]::GetExtension($Path) -eq '.msi'))
         }
+        $Table = $PSBoundParameters.Table
+        $TablePropertyNameColumnNum = $PSBoundParameters.TablePropertyNameColumnNum
+        $TablePropertyValueColumnNum = $PSBoundParameters.TablePropertyValueColumnNum
 
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue

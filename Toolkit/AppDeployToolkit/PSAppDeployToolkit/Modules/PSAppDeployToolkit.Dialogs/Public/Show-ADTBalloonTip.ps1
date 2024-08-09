@@ -93,6 +93,7 @@
         {
             $PSBoundParameters.Add('BalloonTipTitle', $adtSession.GetPropertyValue('InstallTitle'))
         }
+        $BalloonTipTitle = $PSBoundParameters.BalloonTipTitle
     }
 
     process
