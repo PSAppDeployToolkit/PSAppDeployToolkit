@@ -67,7 +67,7 @@ function Update-ADTSessionEnvironmentVariables
             try
             {
                 # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
-                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | & $Script:CommandTable.'ForEach-Object' {
+                $null = & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | & $Script:CommandTable.'ForEach-Object' {
                     $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
                         & $Script:CommandTable.'Set-Item' -LiteralPath "Env:$($_.Name)" -Value $_.Value
                     })

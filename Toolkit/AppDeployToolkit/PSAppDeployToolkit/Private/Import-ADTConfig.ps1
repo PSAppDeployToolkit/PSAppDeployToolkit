@@ -10,7 +10,7 @@ function Import-ADTConfig
     $adtEnv = Get-ADTEnvironment
 
     # Create variables within this scope from the database, it's needed during the config import.
-    $adtEnv.GetEnumerator().ForEach({& $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant})
+    $null = $adtEnv.GetEnumerator().ForEach({& $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant})
 
     # Read config file and cast the version into an object.
     $config = & $Script:CommandTable.'Import-LocalizedData' -BaseDirectory $Script:PSScriptRoot\Config -FileName config.psd1

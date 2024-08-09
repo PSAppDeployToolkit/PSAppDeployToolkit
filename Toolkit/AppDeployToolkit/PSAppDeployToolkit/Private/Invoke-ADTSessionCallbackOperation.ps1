@@ -36,5 +36,5 @@ function Invoke-ADTSessionCallbackOperation
         }
 
         # Perform any required action.
-        $Callback.Where($(if ($Action -eq 'Add') {{!$callbacks.Contains($_)}} else {{$callbacks.Contains($_)}})).ForEach({$callbacks.$Action($_)})
+        $null = $Callback.Where($(if ($Action -eq 'Add') {{!$callbacks.Contains($_)}} else {{$callbacks.Contains($_)}})).ForEach({$callbacks.$Action($_)})
 }

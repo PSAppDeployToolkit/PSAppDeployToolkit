@@ -135,7 +135,7 @@ class ADTSession
 
         # Process provided parameters and amend some incoming values.
         $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
-        $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
+        $null = $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
@@ -626,7 +626,7 @@ class ADTSession
         {
             return
         }
-        $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
+        $null = $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
     }
 
     [System.String] GetDeploymentStatus()
@@ -694,7 +694,7 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.CompatibilityMode)
         {
-            $this.PSObject.Properties.ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
+            $null = $this.PSObject.Properties.ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
         }
         $this.Opened = $true
     }

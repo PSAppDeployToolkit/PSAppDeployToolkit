@@ -419,12 +419,12 @@ function Get-UserProfiles
     )
 
     # Translate parameters.
-    ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
+    $null = ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
         if (!$PSBoundParameters["Exclude$_"])
         {
             $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
         }
-        $null = $PSBoundParameters.Remove("Exclude$_")
+        $PSBoundParameters.Remove("Exclude$_")
     })
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
@@ -1543,9 +1543,9 @@ function Resolve-Error
 
     # Announce overall deprecation and translate bad switches before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
-    ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
+    $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
         $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
-        $null = $PSBoundParameters.Remove("Get$_")
+        $PSBoundParameters.Remove("Get$_")
     })
 
     # Remove ErrorRecord from the bound parameters.
@@ -2425,12 +2425,12 @@ function Remove-FileFromUserProfiles
     )
 
     # Translate parameters.
-    ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
+    $null = ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
         if (!$PSBoundParameters["Exclude$_"])
         {
             $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
         }
-        $null = $PSBoundParameters.Remove("Exclude$_")
+        $PSBoundParameters.Remove("Exclude$_")
     })
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
