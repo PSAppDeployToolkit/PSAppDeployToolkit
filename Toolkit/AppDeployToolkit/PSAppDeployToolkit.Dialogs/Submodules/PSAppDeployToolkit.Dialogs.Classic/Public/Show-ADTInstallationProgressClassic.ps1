@@ -151,8 +151,7 @@ function Show-ADTInstallationProgressClassic
     {
         # Load up the XML file.
         $adtConfig = Get-ADTConfig
-        $xaml = [System.Xml.XmlDocument]::new()
-        $xaml.Load("$Script:PSScriptRoot\Files\$($MyInvocation.MyCommand.Name).xml")
+        $xaml = $Script:ProgressWindow.XamlCode.PSObject.Copy()
         $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
         $xaml.Window.TopMost = (!$NotTopMost).ToString()
         $xaml.Window.Grid.TextBlock.Text = $StatusMessage
