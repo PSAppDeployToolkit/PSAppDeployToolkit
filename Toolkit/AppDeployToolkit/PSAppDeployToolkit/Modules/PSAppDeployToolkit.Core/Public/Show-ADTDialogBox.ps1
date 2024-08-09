@@ -56,10 +56,6 @@
         [System.String]$Text,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Title = (Get-ADTSession).GetPropertyValue('InstallTitle'),
-
-        [Parameter(Mandatory = $false)]
         [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
         [System.String]$Buttons = 'OK',
 
@@ -72,30 +68,74 @@
         [System.String]$Icon = 'None',
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
+    dynamicparam
+    {
+        # Initialise the module if there's no session and it hasn't been previously initialised.
+        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
+        {
+            try
+            {
+                Initialize-ADTModule
+            }
+            catch
+            {
+                $Cmdlet.ThrowTerminatingError($_)
+            }
+        }
+        $adtConfig = Get-ADTConfig
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Title', [System.String], $(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+        $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Timeout', [System.UInt32], $(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
+                [System.Management.Automation.ValidateScriptAttribute]::new({
+                    if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                    {
+                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                    }
+                    return !!$_
+                })
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
+
     begin
     {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        try
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $adtSession = Get-ADTSession
+            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
         }
-        catch
+        if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
         }
+        $Title = $PSBoundParameters.Title
+        $Timeout = $PSBoundParameters.Timeout
     }
 
     process
     {
         # Bypass if in silent mode.
-        if ($adtSession.IsSilent())
+        if ($adtSession -and $adtSession.IsSilent())
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text: $Text"
             return
