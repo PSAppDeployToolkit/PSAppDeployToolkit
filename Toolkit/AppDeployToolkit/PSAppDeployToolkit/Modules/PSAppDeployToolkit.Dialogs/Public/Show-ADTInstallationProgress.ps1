@@ -133,6 +133,9 @@
         {
             $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
         }
+        $WindowTitle = $PSBoundParameters.WindowTitle
+        $StatusMessage = $PSBoundParameters.StatusMessage
+        $StatusMessageDetail = $PSBoundParameters.StatusMessageDetail
 
         # Remove fluent dialog parameters if specified.
         if (!$fluentUi)
