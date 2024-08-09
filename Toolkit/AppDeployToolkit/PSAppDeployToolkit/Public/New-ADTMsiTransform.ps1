@@ -206,17 +206,16 @@ function New-ADTMsiTransform
             }
 
             # Delete the temporary copy of the MSI database.
-            $null = try
+            $null = if (& $Script:CommandTable.'Test-Path' -LiteralPath $TempMsiPath -PathType Leaf)
             {
-                # Delete the temporary copy of the MSI database.
-                if (& $Script:CommandTable.'Test-Path' -LiteralPath $TempMsiPath -PathType Leaf)
+                try
                 {
                     & $Script:CommandTable.'Remove-Item' -LiteralPath $TempMsiPath -Force
                 }
-            }
-            catch
-            {
-                $null
+                catch
+                {
+                    $null
+                }
             }
         }
     }
