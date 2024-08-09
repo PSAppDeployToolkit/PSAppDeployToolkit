@@ -141,7 +141,7 @@ function Show-ADTInstallationProgress
         }
         $WindowTitle = $PSBoundParameters.WindowTitle
         $StatusMessage = $PSBoundParameters.StatusMessage
-        $StatusMessageDetail = $PSBoundParameters.StatusMessageDetail
+        $StatusMessageDetail = if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) {$PSBoundParameters.StatusMessageDetail}
 
         # Remove fluent dialog parameters if specified.
         if (!$fluentUi)
