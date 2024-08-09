@@ -104,7 +104,7 @@ function Get-ADTInstalledApplication
         $stringControlChars = '[^\p{L}\p{Nd}\p{Z}\p{P}]'
 
         # Ensure provided data in unique.
-        ('Name','ProductCode').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
+        $null = ('Name','ProductCode').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
             $PSBoundParameters.$_ = (& $Script:CommandTable.'Set-Variable' -Name $_ -Value ((& $Script:CommandTable.'Get-Variable' -Name $_ -ValueOnly) | & $Script:CommandTable.'Select-Object' -Unique) -PassThru).Value
         })
 

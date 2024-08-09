@@ -162,7 +162,7 @@ function Set-ADTActiveSetup
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
         if ($adtSession)
         {
-            ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({$PSBoundParameters.Add($_, (& $Script:CommandTable.'Set-Variable' -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value)})
+            $null = ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({$PSBoundParameters.Add($_, (& $Script:CommandTable.'Set-Variable' -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value)})
         }
 
         # Define initial variables.

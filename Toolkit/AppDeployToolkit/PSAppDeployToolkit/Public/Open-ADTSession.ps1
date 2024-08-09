@@ -165,7 +165,7 @@ function Open-ADTSession
                     # Export the environment table to variables within the caller's scope.
                     if ($adtData.Sessions.Count.Equals(1))
                     {
-                        $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[1].GetEnumerator().ForEach({& $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force}, $args[0])}.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
+                        $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$null = $args[1].GetEnumerator().ForEach({& $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force}, $args[0])}.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
                     }
                 }
                 catch

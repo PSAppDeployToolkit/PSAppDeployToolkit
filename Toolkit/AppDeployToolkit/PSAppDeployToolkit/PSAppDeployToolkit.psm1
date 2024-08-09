@@ -10,8 +10,8 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
 $CommandTable = [ordered]@{}
-$ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault}).ForEach({$CommandTable.Add($_.Name, $_)})
-(& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().RequiredModules)).ForEach({$CommandTable.Add($_.Name, $_)})
+$null = $ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault}).ForEach({$CommandTable.Add($_.Name, $_)})
+$null = (& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().RequiredModules)).ForEach({$CommandTable.Add($_.Name, $_)})
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
 
 # Ensure module operates under the strictest of conditions.
