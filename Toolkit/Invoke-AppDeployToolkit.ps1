@@ -138,12 +138,12 @@ function Install-ADTApplication
     if ($adtSession.UseDefaultMsi)
     {
         [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $adtSession.DefaultMsiFile }
-        if ($defaultMstFile = $adtSession.DefaultMstFile)
+        if (($defaultMstFile = $adtSession.DefaultMstFile))
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
-        if ($defaultMspFiles = $adtSession.DefaultMspFiles)
+        if (($defaultMspFiles = $adtSession.DefaultMspFiles))
         {
             $defaultMspFiles | ForEach-Object { Start-ADTMsiProcess -Action 'Patch' -Path $_ }
         }
@@ -191,7 +191,7 @@ function Uninstall-ADTApplication
     if ($adtSession.UseDefaultMsi)
     {
         [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $adtSession.DefaultMsiFile }
-        if ($defaultMstFile = $adtSession.DefaultMstFile)
+        if (($defaultMstFile = $adtSession.DefaultMstFile))
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
@@ -234,7 +234,7 @@ function Repair-ADTApplication
     if ($adtSession.UseDefaultMsi)
     {
         [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Repair'; Path = $adtSession.DefaultMsiFile }
-        if ($defaultMstFile = $adtSession.DefaultMstFile)
+        if (($defaultMstFile = $adtSession.DefaultMstFile))
         {
             $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
         }
