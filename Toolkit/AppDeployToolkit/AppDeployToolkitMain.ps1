@@ -630,7 +630,7 @@ Else {
 [Boolean]$BlockExecution = $false
 [Boolean]$installationStarted = $false
 [Boolean]$runningTaskSequence = $false
-[Boolean]$LogFileInitialized = $false
+[Boolean]$LogFileInitialized = $AsyncToolkitLaunch -and $ReferredLogname
 If (Test-Path -LiteralPath 'variable:welcomeTimer') {
     Remove-Variable -Name 'welcomeTimer' -Scope 'Script'
 }
@@ -3598,6 +3598,11 @@ https://psappdeploytoolkit.com
             'ActiveSetup' {
                 $option = '/fups'; [String]$msiLogFile = "$logPath" + '_ActiveSetup'
             }
+        }
+
+        ## Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+        if (-not $IsAdmin) {
+            $msiLogFile = $msiLogFile + '_' + (Remove-InvalidFileNameChars -Name $EnvUserName)
         }
 
         ## Append ".log" to the MSI logfile path and enclose in quotes
@@ -16015,7 +16020,8 @@ https://psappdeploytoolkit.com
     Process {
         Try {
             Write-Log -Message 'Getting session information for all logged on users.' -Source ${CmdletName}
-            Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName"))
+            ## Changed from $env:ComputerName to [System.Net.Dns]::GetHostName(), as environment variable contains a truncated name which breaks operation in Windows Sandbox
+            Write-Output -InputObject ([PSADT.QueryUser]::GetUserSessionInfo([System.Net.Dns]::GetHostName()))
         }
         Catch {
             Write-Log -Message "Failed to get session information for all logged on users. `r`n$(Resolve-Error)" -Severity 3 -Source ${CmdletName}
@@ -16971,7 +16977,13 @@ If ($ReferredLogName) {
     [String]$logName = $ReferredLogName
 }
 If (-not $logName) {
-    [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log'
+    if ($IsAdmin) {
+        [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '.log'
+    }
+    else {
+        #  Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+        [String]$logName = $installName + '_' + $appDeployToolkitName + '_' + $deploymentType + '_' + (Remove-InvalidFileNameChars -Name $EnvUserName) + '.log'
+    }
 }
 #  If option to compress logs is selected, then log will be created in temp log folder ($logTempFolder) and then copied to actual log folder ($configToolkitLogDir) after being zipped.
 [String]$logTempFolder = Join-Path -Path $envTemp -ChildPath "${installName}_$deploymentType"
