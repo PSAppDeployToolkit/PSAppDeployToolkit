@@ -61,7 +61,7 @@ function Invoke-ADTFunctionErrorHandler
     {
         $Cmdlet.ThrowTerminatingError($ErrorRecord)
     }
-    else
+    elseif (!(Test-ADTSessionActive) -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))
     {
         $Cmdlet.WriteError($ErrorRecord)
     }
