@@ -13,7 +13,9 @@ function New-ADTErrorRecord
 
     #>
 
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
+    [OutputType([System.Management.Automation.ErrorRecord])]
     param
     (
         [Parameter(Mandatory = $true)]

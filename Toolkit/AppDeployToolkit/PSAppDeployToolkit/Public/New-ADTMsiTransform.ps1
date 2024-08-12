@@ -54,7 +54,8 @@ function New-ADTMsiTransform
 
     #>
 
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -92,14 +93,16 @@ function New-ADTMsiTransform
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Define properties for how the MSI database is opened.
-        $msiOpenDatabaseModeReadOnly = 0
-        $msiOpenDatabaseModeTransact = 1
-        $msiViewModifyUpdate = 2
-        $msiViewModifyReplace = 4
-        $msiViewModifyDelete = 6
-        $msiTransformErrorNone = 0
-        $msiTransformValidationNone = 0
-        $msiSuppressApplyTransformErrors = 63
+        $msiOpenDatabaseTypes = @{
+            OpenDatabaseModeReadOnly = 0
+            OpenDatabaseModeTransact = 1
+            ViewModifyUpdate = 2
+            ViewModifyReplace = 4
+            ViewModifyDelete = 6
+            TransformErrorNone = 0
+            TransformValidationNone = 0
+            SuppressApplyTransformErrors = 63
+        }
     }
 
     process
@@ -118,15 +121,15 @@ function New-ADTMsiTransform
                 # Open both copies of the MSI database.
                 Write-ADTLogEntry -Message "Opening the MSI database [$MsiPath] in read only mode."
                 $Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
-                $MsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($MsiPath, $msiOpenDatabaseModeReadOnly)
+                $MsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($MsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
                 Write-ADTLogEntry -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode."
-                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiViewModifyUpdate)
+                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.ViewModifyUpdate)
 
                 # If a MSI transform file was specified, then apply it to the temporary copy of the MSI database.
                 if ($ApplyTransformPath)
                 {
                     Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
-                    $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName ApplyTransform -ArgumentList @($ApplyTransformPath, $msiSuppressApplyTransformErrors)
+                    $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName ApplyTransform -ArgumentList @($ApplyTransformPath, $msiOpenDatabaseTypes.SuppressApplyTransformErrors)
                 }
 
                 # Determine the path for the new transform file that will be generated.
@@ -155,7 +158,7 @@ function New-ADTMsiTransform
                 # Reopen the temporary copy of the MSI database in read only mode.
                 Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
                 $null = [System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
-                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseModeReadOnly)
+                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
 
                 # Delete the new transform file path if it already exists.
                 if (& $Script:CommandTable.'Test-Path' -LiteralPath $NewTransformPath -PathType Leaf)
@@ -167,7 +170,7 @@ function New-ADTMsiTransform
                 # Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database.
                 Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]."
                 $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName GenerateTransform -ArgumentList @($MsiPathDatabase, $NewTransformPath)
-                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiTransformErrorNone, $msiTransformValidationNone)
+                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiOpenDatabaseTypes.TransformErrorNone, $msiOpenDatabaseTypes.TransformValidationNone)
 
                 if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $NewTransformPath -PathType Leaf))
                 {

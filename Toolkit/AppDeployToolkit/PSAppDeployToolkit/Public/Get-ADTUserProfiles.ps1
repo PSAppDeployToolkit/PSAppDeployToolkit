@@ -54,7 +54,9 @@ function Get-ADTUserProfiles
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
+    [OutputType([PSADT.Types.UserProfile])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -86,9 +88,10 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & $Script:CommandTable.'Where-Object' {$_.PSChildName -notmatch $excludedSids} | & $Script:CommandTable.'ForEach-Object' {
+                foreach ($profileListing in (& $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & $Script:CommandTable.'Where-Object' {$_.PSChildName -notmatch $excludedSids}))
+                {
                     # Return early for accounts that have a null NTAccount.
-                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
+                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $profileListing.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
                     {
                         return
                     }
@@ -102,8 +105,8 @@ function Get-ADTUserProfiles
                     # Write out the object to the pipeline.
                     [PSADT.Types.UserProfile]@{
                         NTAccount = $ntAccount
-                        SID = $_.PSChildName
-                        ProfilePath = $_.ProfileImagePath
+                        SID = $profileListing.PSChildName
+                        ProfilePath = $profileListing.ProfileImagePath
                     }
                 }
 

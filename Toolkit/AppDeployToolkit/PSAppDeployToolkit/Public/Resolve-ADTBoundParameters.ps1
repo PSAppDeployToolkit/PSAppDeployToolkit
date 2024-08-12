@@ -43,6 +43,7 @@ function Resolve-ADTBoundParameters
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
     (
@@ -74,7 +75,7 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Process the piped hashtable.
-                foreach ($param in $InputObject.GetEnumerator().Where({$Exclude -notcontains $_.Key}))
+                foreach ($param in ($InputObject.GetEnumerator() | Where-Object -Property Key -NotIn -Value $Exclude))
                 {
                     # Recursively expand child hashtables.
                     if ($param.Value -isnot [System.Collections.IDictionary])

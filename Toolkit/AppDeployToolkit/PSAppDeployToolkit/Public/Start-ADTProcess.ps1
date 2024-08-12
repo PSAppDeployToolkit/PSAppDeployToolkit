@@ -96,6 +96,8 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.Types.ProcessResult])]
+    [OutputType([PSADT.Types.ProcessInfo])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -116,7 +118,6 @@ function Start-ADTProcess
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false)]

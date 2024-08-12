@@ -118,6 +118,7 @@ function Start-ADTMsiProcess
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Int32])]
     param
     (
         [Parameter(Mandatory = $false)]

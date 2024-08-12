@@ -4,7 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
-function Get-ADTStrings
+function Get-ADTStringTable
 {
     [CmdletBinding()]
     param

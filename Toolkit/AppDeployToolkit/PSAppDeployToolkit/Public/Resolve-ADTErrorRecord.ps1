@@ -92,6 +92,7 @@ function Resolve-ADTErrorRecord
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
         {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
             [CmdletBinding()]
             param
             (
@@ -140,12 +141,19 @@ function Resolve-ADTErrorRecord
         $logErrorProperties = [ordered]@{}
         foreach ($errorObject in $errorObjects)
         {
-            $errorObject | Get-ErrorPropertyNames | & $Script:CommandTable.'ForEach-Object' -Begin {
-                $propCount = $logErrorProperties.Count
-            } -Process {
-                $logErrorProperties.Add($_, ($errorObject.$_).ToString().Trim())
-            } -End {
-                if (!$propCount.Equals($logErrorProperties.Count)) {$logErrorProperties.($logErrorProperties.Keys | & $Script:CommandTable.'Select-Object' -Last 1) += "`n"}
+            # Store initial property count.
+            $propCount = $logErrorProperties.Count
+
+            # Add in all properties for the object.
+            foreach ($propName in ($errorObject | Get-ErrorPropertyNames))
+            {
+                $logErrorProperties.Add($propName, ($errorObject.$propName).ToString().Trim())
+            }
+
+            # Append a new line to the last value for formatting purposes.
+            if (!$propCount.Equals($logErrorProperties.Count))
+            {
+                $logErrorProperties.($logErrorProperties.Keys | & $Script:CommandTable.'Select-Object' -Last 1) += "`n"
             }
         }
 

@@ -4,7 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
-function Update-ADTSessionEnvironmentVariables
+function Update-ADTEnvironmentPsProvider
 {
     <#
 
@@ -26,7 +26,7 @@ function Update-ADTSessionEnvironmentVariables
     None. This function does not return objects.
 
     .EXAMPLE
-    Update-ADTSessionEnvironmentVariables
+    Update-ADTEnvironmentPsProvider
 
     .NOTES
     This function can be called without an active ADT session.

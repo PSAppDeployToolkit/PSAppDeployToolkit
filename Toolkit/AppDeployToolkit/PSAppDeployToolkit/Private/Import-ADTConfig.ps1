@@ -17,10 +17,10 @@ function Import-ADTConfig
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
-    if ($config.File.Version -lt ($moduleVersion = $MyInvocation.MyCommand.Module.Version))
+    if ($config.File.Version -lt $MyInvocation.MyCommand.Module.Version)
     {
         $naerParams = @{
-            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$moduleVersion]. Please upgrade the configuration file.")
+            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($MyInvocation.MyCommand.Module.Version)]. Please upgrade the configuration file.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'ConfigFileVersionMismatch'
             TargetObject = $config

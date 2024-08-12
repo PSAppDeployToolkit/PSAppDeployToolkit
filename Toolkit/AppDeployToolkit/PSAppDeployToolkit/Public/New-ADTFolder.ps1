@@ -34,7 +34,7 @@ function New-ADTFolder
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]

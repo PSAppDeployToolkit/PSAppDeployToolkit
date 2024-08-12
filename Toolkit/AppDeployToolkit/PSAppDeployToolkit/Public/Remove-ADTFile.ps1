@@ -69,7 +69,7 @@ function Remove-ADTFile
 
     process
     {
-        foreach ($Item in (& $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName -ValueOnly))
+        foreach ($Item in $(if ($PSCmdlet.ParameterSetName -eq 'Path') {$Path} else {$LiteralPath}))
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try

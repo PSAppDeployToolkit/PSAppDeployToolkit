@@ -115,7 +115,7 @@ FunctionsToExport = @(
     'Get-ADTServiceStartMode'
     'Get-ADTSession'
     'Get-ADTShortcut'
-    'Get-ADTStrings'
+    'Get-ADTStringTable'
     'Get-ADTUniversalDate'
     'Get-ADTUserProfiles'
     'Get-ADTWindowTitle'
@@ -180,8 +180,8 @@ FunctionsToExport = @(
     'Unblock-ADTAppExecution'
     'Unregister-ADTDllFile'
     'Update-ADTDesktop'
+    'Update-ADTEnvironmentPsProvider'
     'Update-ADTGroupPolicy'
-    'Update-ADTSessionEnvironmentVariables'
     'Write-ADTLogEntry'
 )
 

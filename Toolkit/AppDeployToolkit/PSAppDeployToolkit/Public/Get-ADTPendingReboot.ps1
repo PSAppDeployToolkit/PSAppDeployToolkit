@@ -65,6 +65,7 @@ function Get-ADTPendingReboot
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.Types.RebootInfo])]
     param
     (
     )
@@ -124,7 +125,7 @@ function Get-ADTPendingReboot
                 }
 
                 # Create a custom object containing pending reboot information for the system.
-                [PSADT.Types.RebootInfo]$PendingRebootInfo = @{
+                [PSADT.Types.RebootInfo]$PendingRebootInfo = [PSADT.Types.RebootInfo]@{
                     ComputerName                 = $HostName
                     LastBootUpTime               = $LastBootUpTime
                     IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending

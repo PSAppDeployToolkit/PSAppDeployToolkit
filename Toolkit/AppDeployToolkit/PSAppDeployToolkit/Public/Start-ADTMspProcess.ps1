@@ -40,6 +40,7 @@ function Start-ADTMspProcess
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Int32])]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]

@@ -23,7 +23,7 @@ function Set-ADTActiveSetup
         - Creates StubPath value depending on the file extension of the $StubExePath parameter.
         - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
         - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-        - Executes the StubPath file for the current user based on $ExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
+        - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 
     .PARAMETER StubExePath
     Use this parameter to specify the destination path of the file that will be executed upon user login.
@@ -56,7 +56,7 @@ function Set-ADTActiveSetup
     Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry. Function returns after purging.
 
     .PARAMETER DisableActiveSetup
-    Disables the Active Setup entry so that the StubPath file will not be executed. This also disables -ExecuteForCurrentUser
+    Disables the Active Setup entry so that the StubPath file will not be executed. This also enables -NoExecuteForCurrentUser.
 
     .PARAMETER NoExecuteForCurrentUser
     Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
@@ -117,14 +117,12 @@ function Set-ADTActiveSetup
         [System.String]$Locale,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Purge')]
         [System.Management.Automation.SwitchParameter]$PurgeActiveSetupKey,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$NoExecuteForCurrentUser
     )
 
@@ -175,6 +173,7 @@ function Set-ADTActiveSetup
         function Test-ADTActiveSetup
         {
             [CmdletBinding()]
+            [OutputType([System.Boolean])]
             param
             (
                 [Parameter(Mandatory = $true)]
@@ -319,33 +318,45 @@ function Set-ADTActiveSetup
         }
 
         # Define internal function to the required ActiveSetup registry keys.
-        function Set-ADTActiveSetupRegKeys
+        function Set-ADTActiveSetupRegistryEntry
         {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
             [CmdletBinding()]
             param
             (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$ActiveSetupRegKey,
+                [System.String]$RegPath,
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$SID
+                [System.String]$SID,
+
+                [Parameter(Mandatory = $false)]
+                [ValidateNotNullOrEmpty()]
+                [System.String]$Version,
+
+                [Parameter(Mandatory = $false)]
+                [AllowEmptyString()]
+                [System.String]$Locale,
+
+                [Parameter(Mandatory = $false)]
+                [System.Management.Automation.SwitchParameter]$DisableActiveSetup
             )
 
             $srkParams = if ($SID) {@{SID = $SID}} else {@{}}
-            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description @srkParams
-            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version @srkParams
-            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
-            if ($Locale)
+            Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
+            if (![System.String]::IsNullOrWhitespace($Locale))
             {
-                Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale @srkParams
+                Set-ADTRegistryKey -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
             }
 
             # Only Add IsInstalled to HKLM.
-            if ($ActiveSetupRegKey.Contains('HKEY_LOCAL_MACHINE'))
+            if ($RegPath.Contains('HKEY_LOCAL_MACHINE'))
             {
-                Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
+                Set-ADTRegistryKey -Key $RegPath -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
             }
         }
     }
@@ -359,28 +370,28 @@ function Set-ADTActiveSetup
                 # Set up the relevant keys, factoring in bitness and architecture.
                 if ($Wow6432Node -and [System.Environment]::Is64BitOperatingSystem)
                 {
-                    $ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
-                    $HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKLMRegKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKCURegKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                 }
                 else
                 {
-                    $ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
-                    $HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKLMRegKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKCURegKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
                 }
 
                 # Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system.
                 if ($PurgeActiveSetupKey)
                 {
-                    Write-ADTLogEntry -Message "Removing Active Setup entry [$ActiveSetupKey]."
-                    Remove-ADTRegistryKey -Key $ActiveSetupKey -Recurse
+                    Write-ADTLogEntry -Message "Removing Active Setup entry [$HKLMRegKey]."
+                    Remove-ADTRegistryKey -Key $HKLMRegKey -Recurse
 
                     if ($runAsActiveUser)
                     {
-                        Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all logged on user registry hives on the system."
+                        Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
                         Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & $Script:CommandTable.'Where-Object' {$_.SID -eq $runAsActiveUser.SID}) -RegistrySettings {
-                            if (Get-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID)
+                            if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
                             {
-                                Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID -Recurse
+                                Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
                             }
                         }
                     }
@@ -450,12 +461,19 @@ function Set-ADTActiveSetup
                     }
                 }
 
+                # Define common parameters split for Set-ADTActiveSetupRegistryEntry.
+                $sasreParams = @{
+                    Version = $Version
+                    Locale = $Locale
+                    DisableActiveSetup = $DisableActiveSetup
+                }
+
                 # Create the Active Setup entry in the registry.
-                Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$ActiveSetupKey]."
-                Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $ActiveSetupKey
+                Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
+                Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKLMRegKey
 
                 # Execute the StubPath file for the current user as long as not in Session 0.
-                if (!$ExecuteForCurrentUser)
+                if ($NoExecuteForCurrentUser)
                 {
                     return
                 }
@@ -469,7 +487,7 @@ function Set-ADTActiveSetup
                     }
 
                     # Skip if Active Setup reg key is present and Version is equal or higher
-                    if (!($InstallNeeded = Test-ADTActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $runAsActiveUser.SID))
+                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -UserSID $runAsActiveUser.SID))
                     {
                         Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
                         return
@@ -485,13 +503,13 @@ function Set-ADTActiveSetup
                         Execute-ProcessAsUser -Path $CUStubExePath -Wait -ContinueOnError $true
                     }
 
-                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
-                    Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $runAsActiveUser.SID
+                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
+                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.SID
                 }
                 else
                 {
                     # Skip if Active Setup reg key is present and Version is equal or higher
-                    if (!($InstallNeeded = Test-ADTActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey))
+                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey))
                     {
                         Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity 2
                         return
@@ -507,8 +525,8 @@ function Set-ADTActiveSetup
                         Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
                     }
 
-                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
-                    Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey
+                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
+                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey
                 }
             }
             catch

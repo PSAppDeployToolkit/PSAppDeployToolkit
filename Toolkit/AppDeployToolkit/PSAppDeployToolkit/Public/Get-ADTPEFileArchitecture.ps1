@@ -40,6 +40,7 @@ function Get-ADTPEFileArchitecture
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -70,38 +71,41 @@ function Get-ADTPEFileArchitecture
                 try
                 {
                     # Read the first 4096 bytes of the file.
-                    $stream = [System.IO.FileStream]::new($Path.FullName, 'Open', 'Read')
+                    $stream = [System.IO.FileStream]::new($Path.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
                     $null = $stream.Read($data, 0, $data.Count)
                     $stream.Flush()
                     $stream.Close()
 
                     # Get the file header from the header's address, factoring in any offsets.
-                    $PEArchitecture = switch ($PE_IMAGE_FILE_HEADER = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
+                    $PEArchitecture = switch ([System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
                     {
                         0 {
                             # The contents of this file are assumed to be applicable to any machine type
                             'Native'
+                            break
                         }
-                        0x014c {
+                        0x014C {
                             # File for Windows 32-bit systems
                             '32BIT'
+                            break
                         }
                         0x0200 {
                             # File for Intel Itanium x64 processor family
                             'Itanium-x64'
+                            break
                         }
                         0x8664 {
                             # File for Windows 64-bit systems
                             '64BIT'
+                            break
                         }
                         default {
                             'Unknown'
+                            break
                         }
                     }
                     Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
-
-                    # Output the string to the pipeline.
-                    $PEArchitecture
+                    return $PEArchitecture
                 }
                 catch
                 {

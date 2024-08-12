@@ -44,7 +44,9 @@ function Test-ADTServiceExists
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -81,11 +83,8 @@ function Test-ADTServiceExists
                 }
                 else
                 {
-                    # If the name is empty, it means the provided service is invalid.
-                    if (!($ServiceObject = [System.ServiceProcess.ServiceController]$Name).Name)
-                    {
-                        $ServiceObject = $null
-                    }
+                    # If the result is empty, it means the provided service is invalid.
+                    $ServiceObject = & $Script:CommandTable.'Get-Service' -Name $Name -ErrorAction Ignore
                 }
 
                 # Return early if null.

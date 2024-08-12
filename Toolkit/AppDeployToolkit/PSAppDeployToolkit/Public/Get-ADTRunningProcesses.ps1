@@ -40,6 +40,7 @@ function Get-ADTRunningProcesses
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
     (
@@ -53,17 +54,28 @@ function Get-ADTRunningProcesses
 
     begin
     {
+        # Initalise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $processObjects = [System.Collections.Generic.List[PSADT.Types.ProcessObject]]::new()
+    }
+
+    process
+    {
+        # Filter out any null input.
+        if ($null -ne $InputObject)
+        {
+            $processObjects.Add($InputObject)
+        }
     }
 
     end
     {
-        try
+        # Proceed only if we collected process objects.
+        if ($processObjects.Count)
         {
             try
             {
-                # Confirm input isn't null before proceeding.
-                if ($processObjects = $input.Where({$null -ne $_}))
+                try
                 {
                     # Get all running processes and append properties.
                     Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
@@ -98,16 +110,18 @@ function Get-ADTRunningProcesses
                         Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
                     }
                 }
+                catch
+                {
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-        }
+
+        # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

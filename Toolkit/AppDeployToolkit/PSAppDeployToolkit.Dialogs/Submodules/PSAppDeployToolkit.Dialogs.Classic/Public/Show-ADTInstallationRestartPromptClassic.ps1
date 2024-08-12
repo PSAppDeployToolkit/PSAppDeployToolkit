@@ -91,7 +91,7 @@ function Show-ADTInstallationRestartPromptClassic
 
     # Initialise variables.
     $adtConfig = Get-ADTConfig
-    $adtStrings = Get-ADTStrings
+    $adtStrings = Get-ADTStringTable
     Read-ADTAssetsIntoMemory
 
     # Define starting counters.

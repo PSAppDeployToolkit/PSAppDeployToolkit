@@ -37,7 +37,7 @@ function Initialize-ADTModule
                 $adtData.Environment = New-ADTEnvironmentTable
                 $adtData.Config = Import-ADTConfig
                 $adtData.Language = Get-ADTStringLanguage
-                $adtData.Strings = Import-ADTLocalizedStrings -UICulture $adtData.Language
+                $adtData.Strings = Import-ADTStringTable -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.Initialised = $true
             }

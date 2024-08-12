@@ -52,6 +52,7 @@ function Test-ADTIsMutexAvailable
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]

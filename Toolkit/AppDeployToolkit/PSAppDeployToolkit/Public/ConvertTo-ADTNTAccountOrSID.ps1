@@ -70,6 +70,7 @@ function ConvertTo-ADTNTAccountOrSID
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Security.Principal.SecurityIdentifier])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
