@@ -76,7 +76,7 @@ function Remove-ADTFolder
                 if (!$DisableRecursion)
                 {
                     Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
-                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force -Recurse
+                    Invoke-ADTCommandWithRetries -Command Remove-Item -LiteralPath $Path -Force -Recurse
                     return
                 }
 
@@ -84,7 +84,7 @@ function Remove-ADTFolder
                 Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
                 if (!($ListOfChildItems = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $Path -Force))
                 {
-                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force
+                    Invoke-ADTCommandWithRetries -Command Remove-Item -LiteralPath $Path -Force
                     return
                 }
 
@@ -98,7 +98,7 @@ function Remove-ADTFolder
                         if (($item | & $Script:CommandTable.'Get-ChildItem' -Force | & $Script:CommandTable.'Measure-Object').Count -eq 0)
                         {
                             # The folder is empty, delete it
-                            $item | & $Script:CommandTable.'Remove-Item' -Force
+                            $item | Invoke-ADTCommandWithRetries -Command Remove-Item -Force
                         }
                         else
                         {
@@ -109,7 +109,7 @@ function Remove-ADTFolder
                     else
                     {
                         # Item is a file. Delete it.
-                        $item | & $Script:CommandTable.'Remove-Item' -Force
+                        $item | Invoke-ADTCommandWithRetries -Command Remove-Item -Force
                     }
                 }
                 if ($SubfoldersSkipped)
