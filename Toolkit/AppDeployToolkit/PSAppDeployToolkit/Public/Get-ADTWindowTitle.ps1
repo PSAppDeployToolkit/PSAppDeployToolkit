@@ -56,6 +56,7 @@ function Get-ADTWindowTitle
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.Types.WindowInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
@@ -76,13 +77,13 @@ function Get-ADTWindowTitle
 
     process
     {
-        if ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle')
-        {
-            Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq 'GetAllWinTitles')
+        if ($GetAllWindowTitles)
         {
             Write-ADTLogEntry -Message 'Finding all open window title(s).' -DebugMessage:$DisableFunctionLogging
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
         }
 
         try
@@ -96,7 +97,7 @@ function Get-ADTWindowTitle
                 foreach ($VisibleWindowHandle in [PSADT.UiAutomation]::EnumWindows().Where({$_ -and [PSADT.UiAutomation]::IsWindowVisible($_)}))
                 {
                     # Only process handles with window text and an associated running process, and only save/return the window and process details which match the search criteria.
-                    if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})) -and ($PSCmdlet.ParameterSetName.Equals('SearchWinTitle') -and ($VisibleWindowTitle -notmatch $WindowTitle)))
+                    if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})) -and ($GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle)))
                     {
                         # Build custom object with details about the window and the process.
                         [PSADT.Types.WindowInfo]@{

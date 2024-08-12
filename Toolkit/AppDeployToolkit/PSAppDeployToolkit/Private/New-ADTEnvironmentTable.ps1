@@ -6,6 +6,11 @@
 
 function New-ADTEnvironmentTable
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
+    param
+    (
+    )
+
     # Perform initial setup.
     $variables = [ordered]@{}
 

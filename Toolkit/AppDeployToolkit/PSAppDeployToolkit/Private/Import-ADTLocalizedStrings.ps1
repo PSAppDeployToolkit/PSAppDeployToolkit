@@ -4,7 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
-function Import-ADTLocalizedStrings
+function Import-ADTStringTable
 {
     [CmdletBinding()]
     param

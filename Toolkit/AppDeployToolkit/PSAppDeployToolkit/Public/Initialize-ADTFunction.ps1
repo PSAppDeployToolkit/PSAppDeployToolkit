@@ -24,7 +24,8 @@ function Initialize-ADTFunction
     # Internal worker function to set variables within the caller's scope.
     function Set-CallerVariable
     {
-        [CmdletBinding()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [CmdletBinding(SupportsShouldProcess = $false)]
         param
         (
             [Parameter(Mandatory = $true)]

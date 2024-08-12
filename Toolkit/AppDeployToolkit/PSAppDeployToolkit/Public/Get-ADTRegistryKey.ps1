@@ -85,11 +85,9 @@ function Get-ADTRegistryKey
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$DoNotExpandEnvironmentNames
     )
 

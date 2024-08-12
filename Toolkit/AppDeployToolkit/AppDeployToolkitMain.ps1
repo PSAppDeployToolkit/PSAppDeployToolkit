@@ -474,7 +474,7 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Update-ADTSessionEnvironmentVariables
+# Wrapper around Update-ADTEnvironmentPsProvider
 #
 #---------------------------------------------------------------------------
 
@@ -489,10 +489,10 @@ function Update-SessionEnvironmentVariables
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTSessionEnvironmentVariables]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity 2
     try
     {
-        Update-ADTSessionEnvironmentVariables
+        Update-ADTEnvironmentPsProvider -LoadLoggedOnUserEnvironmentVariables:$LoadLoggedOnUserEnvironmentVariables
     }
     catch
     {
@@ -504,7 +504,7 @@ function Update-SessionEnvironmentVariables
     }
 }
 
-Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTSessionEnvironmentVariables
+Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider
 
 
 #---------------------------------------------------------------------------

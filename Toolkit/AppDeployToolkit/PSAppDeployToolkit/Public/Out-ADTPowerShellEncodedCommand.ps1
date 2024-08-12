@@ -14,6 +14,7 @@ function Out-ADTPowerShellEncodedCommand
     #>
 
 	[CmdletBinding()]
+	[OutputType([System.String])]
 	param
 	(
 		[Parameter(Mandatory = $true)]

@@ -39,6 +39,7 @@ function Install-ADTSCCMSoftwareUpdates
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
     (
@@ -104,7 +105,7 @@ function Install-ADTSCCMSoftwareUpdates
 
                 # Install missing updates.
                 Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $CMInstallMissingUpdates = (& $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
+                $null = (& $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
 
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do

@@ -60,42 +60,57 @@ function Send-ADTKeys
 
     #>
 
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     param
     (
-        [Parameter(Mandatory = $false, Position = 0)]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'WindowTitle')]
         [AllowEmptyString()]
         [ValidateNotNull()]
         [System.String]$WindowTitle,
 
-        [Parameter(Mandatory = $false, Position = 1)]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'AllWindowTitles')]
         [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
 
-        [Parameter(Mandatory = $false, Position = 2)]
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.IntPtr]$WindowHandle,
 
-        [Parameter(Mandatory = $false, Position = 3)]
+        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'AllWindowTitles')]
+        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Keys,
 
-        [Parameter(Mandatory = $false, Position = 4)]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'AllWindowTitles')]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$WaitSeconds
     )
 
     begin
     {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        function Send-ADTKeysToWindow
+        # Internal worker filter.
+        filter Send-ADTKeysToWindow
         {
             [CmdletBinding()]
             param
             (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
                 [ValidateNotNullOrEmpty()]
-                [System.IntPtr]$WindowHandle
+                [System.IntPtr]$WindowHandle,
+
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.String]$Keys,
+
+                [Parameter(Mandatory = $false)]
+                [ValidateNotNullOrEmpty()]
+                [System.Int32]$WaitSeconds
             )
 
             try
@@ -128,7 +143,7 @@ function Send-ADTKeys
 
                     # Send the Key sequence.
                     Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
-                    [Windows.Forms.SendKeys]::SendWait($Keys)
+                    [System.Windows.Forms.SendKeys]::SendWait($Keys)
                     if ($WaitSeconds)
                     {
                         Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
@@ -145,6 +160,9 @@ function Send-ADTKeys
                 Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
             }
         }
+
+        # Set up parameter splat for worker filter.
+        $sktwParams = @{Keys = $Keys}; if ($PSBoundParameters.ContainsKey('Keys')) {$sktwParams.Add('WaitSeconds', $WaitSeconds)}
     }
 
     process
@@ -153,6 +171,19 @@ function Send-ADTKeys
         {
             try
             {
+                # Throw an error if no WindowTitle parameters are passed.
+                if ($PSBoundParameters.ParameterSetName.Equals('None'))
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new('Please specify a WindowTitle or WindowHandle, or specify that all WindowTitles should be parsed.')
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'ParameterSpecificationError'
+                        RecommendedAction = 'Please specify a WindowTitle or WindowHandle, or specify that all WindowTitles should be parsed.'
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Process the specified input.
                 if ($WindowHandle)
                 {
                     if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & $Script:CommandTable.'Where-Object' {$_.WindowHandle -eq $WindowHandle}))
@@ -160,7 +191,7 @@ function Send-ADTKeys
                         Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return
                     }
-                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle
+                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle @sktwParams
                 }
                 else
                 {
@@ -169,7 +200,7 @@ function Send-ADTKeys
                         Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                         return
                     }
-                    $AllWindows | Send-ADTKeysToWindow
+                    $AllWindows | Send-ADTKeysToWindow @sktwParams
                 }
             }
             catch

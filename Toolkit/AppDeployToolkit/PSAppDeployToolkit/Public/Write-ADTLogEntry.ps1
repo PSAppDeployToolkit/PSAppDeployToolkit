@@ -60,6 +60,7 @@ function Write-ADTLogEntry
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String[]])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -97,33 +98,36 @@ function Write-ADTLogEntry
         [System.Management.Automation.SwitchParameter]$DebugMessage
     )
 
-    try
+    process
     {
         try
         {
-            # If we don't have an active session, write the message to the verbose stream (4).
-            if ($adtSession = if (Test-ADTSessionActive) {Get-ADTSession})
+            try
             {
-                $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
-            }
-            elseif (!$DebugMessage)
-            {
-                $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
-            }
+                # If we don't have an active session, write the message to the verbose stream (4).
+                if ($adtSession = if (Test-ADTSessionActive) {Get-ADTSession})
+                {
+                    $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+                }
+                elseif (!$DebugMessage)
+                {
+                    $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
+                }
 
-            # Return the provided message if PassThru is true.
-            if ($PassThru)
+                # Return the provided message if PassThru is true.
+                if ($PassThru)
+                {
+                    return $Message
+                }
+            }
+            catch
             {
-                return $Message
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
-    }
-    catch
-    {
-        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
     }
 }

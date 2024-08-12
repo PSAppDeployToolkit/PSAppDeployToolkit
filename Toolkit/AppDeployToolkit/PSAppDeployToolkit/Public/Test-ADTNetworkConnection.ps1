@@ -32,6 +32,7 @@ function Test-ADTNetworkConnection
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
     )

@@ -102,7 +102,7 @@ function Show-ADTWelcomePromptClassic
 
     # Perform initial setup.
     $adtConfig = Get-ADTConfig
-    $adtStrings = Get-ADTStrings
+    $adtStrings = Get-ADTStringTable
     $adtSession = Get-ADTSession
 
     # Initialise variables.

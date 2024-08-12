@@ -557,7 +557,7 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (Get-ADTStrings).DeploymentType.($this.DeploymentType)))].")
+        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (Get-ADTStringTable).DeploymentType.($this.DeploymentType)))].")
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -625,7 +625,7 @@ class ADTSession
         {
             return
         }
-        $null = $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
+        $null = $this.PSObject.Properties.Name.ForEach({if (($value = $this.CallerVariables.Get($_).Value)) {$this.$_ = $value}})
     }
 
     [System.String] GetDeploymentStatus()
@@ -700,8 +700,9 @@ class ADTSession
 
     hidden [System.Void] Close()
     {
-        # Get the current environment.
+        # Get the current environment and config.
         $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being closed twice.
         if ($this.Closed)
@@ -717,10 +718,6 @@ class ADTSession
             }
             throw (New-ADTErrorRecord @naerParams)
         }
-
-        # Get the current config and strings.
-        $adtConfig = Get-ADTConfig
-        $adtStrings = Get-ADTStrings
 
         # Process resulting exit code.
         switch ($this.GetDeploymentStatus())

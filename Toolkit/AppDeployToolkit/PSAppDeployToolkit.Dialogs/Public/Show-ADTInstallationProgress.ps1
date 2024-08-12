@@ -85,7 +85,7 @@ function Show-ADTInstallationProgress
     {
         # Initialise the module first if needed.
         $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
-        $adtStrings = Get-ADTStrings
+        $adtStrings = Get-ADTStringTable
         $fluentUi = (Get-ADTConfig).UI.DialogStyle -eq 'Fluent'
 
         # Define parameter dictionary for returning at the end.

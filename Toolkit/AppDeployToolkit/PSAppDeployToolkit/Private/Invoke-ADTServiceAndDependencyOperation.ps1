@@ -75,10 +75,6 @@ function Invoke-ADTServiceAndDependencyOperation
     function Invoke-DependentServiceOperation
     {
         # Discover all dependent services.
-        if ($SkipDependentServices)
-        {
-            return
-        }
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
         if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & $Script:CommandTable.'Where-Object' {$_.Status -ne $status})
         {
@@ -102,7 +98,7 @@ function Invoke-ADTServiceAndDependencyOperation
     }
 
     # Wait up to 60 seconds if service is in a pending state.
-    if ([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped'}[$Service.Status])
+    if (([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped'}[$Service.Status]))
     {
         Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
@@ -114,7 +110,10 @@ function Invoke-ADTServiceAndDependencyOperation
     if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
     {
         # Process all dependent services.
-        Invoke-DependentServiceOperation
+        if (!$SkipDependentServices)
+        {
+            Invoke-DependentServiceOperation
+        }
 
         # Stop the parent service.
         Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
@@ -127,7 +126,10 @@ function Invoke-ADTServiceAndDependencyOperation
         $Service = $Service | & $Script:CommandTable.'Start-Service' -PassThru -WarningAction Ignore
 
         # Process all dependent services.
-        Invoke-DependentServiceOperation
+        if (!$SkipDependentServices)
+        {
+            Invoke-DependentServiceOperation
+        }
     }
 
     # Return the service object if option selected.
