@@ -128,8 +128,8 @@ Try {
 
     ## Variables: Script
     [String]$deployAppScriptFriendlyName = 'Deploy Application'
-    [Version]$deployAppScriptVersion = [Version]'3.10.1'
-    [String]$deployAppScriptDate = '05/03/2024'
+    [Version]$deployAppScriptVersion = [Version]'3.10.2'
+    [String]$deployAppScriptDate = '08/13/2024'
     [Hashtable]$deployAppScriptParameters = $PsBoundParameters
 
     ## Variables: Environment
