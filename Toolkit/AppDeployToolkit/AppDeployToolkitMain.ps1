@@ -1001,6 +1001,11 @@ function Show-BalloonTip
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity 2
+    if ($NoWait)
+    {
+        Write-ADTLogEntry -Message "The parameter '-NoWait' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        $null = $PSBoundParameters.Remove('NoWait')
+    }
     try
     {
         Show-ADTBalloonTip @PSBoundParameters

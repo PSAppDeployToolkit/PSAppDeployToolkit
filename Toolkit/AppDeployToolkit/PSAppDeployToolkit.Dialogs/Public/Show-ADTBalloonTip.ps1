@@ -26,9 +26,6 @@ function Show-ADTBalloonTip
     .PARAMETER BalloonTipTime
     Time in milliseconds to display the balloon tip. Default: 10000.
 
-    .PARAMETER NoWait
-    Create the balloontip asynchronously. Default: $false
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -62,10 +59,7 @@ function Show-ADTBalloonTip
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
+        [System.UInt32]$BalloonTipTime = 10000
     )
 
     dynamicparam
