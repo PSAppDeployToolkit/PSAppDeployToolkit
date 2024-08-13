@@ -1,4 +1,17 @@
-﻿**Version 3.10.1 [05/03/2024]**
+﻿**Version 3.10.2 [08/13/2024]**
+- Added support for MARKs in VSCode. #994
+- Added Pester Tests for Copy-File, Execute-ProcessAsUser and Set-ActiveSetup
+- Fixed an issue with Test-ServiceExists / Get-LoggedOnUser working in a Windows Sandbox. #1031 #1032 #1035
+- Fixed an issue with log file rotation and log file permissions when running in user context. #1024 #1029 #1030
+- Fixed a number of issues relating to Robocopy in Copy-Files. #868 #1015 #1020 #1021 #1038
+- Fixed an issue where the Show-InstallationPrompt dialog would not display when run through MCM / SCCM in interactive mode. #1004 #1016
+- Fixed an issue where Execute-ProcessAsUser would throw a terminating error when no user logged on #1027
+- Fixed escaping of invalid characters in Block-AppExecution. #1036
+- Fixed a number of issues in Set-ActiveSetup / Execute-ProcessAsUser. #1017
+- Fixed an issue in French translations. #1019
+- Fixed an issue with Get-FileVersion #1007
+
+**Version 3.10.1 [05/03/2024]**
 - Added Turkish language support. Fixes #973.
 - Added parameter sets to Configure-EdgeExtensions to ensure mandatory parameters are correctly grouped.
 - Added missing elements to XML for Finnish language. Fixes #967.

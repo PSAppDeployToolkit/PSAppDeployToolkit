@@ -189,3 +189,6 @@ site/
 
 # OSX files
 .DS_Store
+
+# VSCode History extension files
+.history/
