@@ -35,9 +35,6 @@ function Show-ADTInstallationPromptClassic
     .PARAMETER Icon
     Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None
 
-    .PARAMETER NoWait
-    Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
-
     .PARAMETER PersistPrompt
     Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
 
@@ -66,7 +63,7 @@ function Show-ADTInstallationPromptClassic
     Show-ADTInstallationPromptClassic -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 
     .EXAMPLE
-    Show-ADTInstallationPromptClassic -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
+    Show-ADTInstallationPromptClassic -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information
 
     .LINK
     https://psappdeploytoolkit.com
@@ -105,9 +102,6 @@ function Show-ADTInstallationPromptClassic
         [Parameter(Mandatory = $false)]
         [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'Question', 'Shield', 'Warning', 'WinLogo')]
         [System.String]$Icon,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,

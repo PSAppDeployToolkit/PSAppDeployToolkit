@@ -26,9 +26,6 @@ function Show-ADTBalloonTipClassic
     .PARAMETER BalloonTipTime
     Time in milliseconds to display the balloon tip. Default: 10000.
 
-    .PARAMETER NoWait
-    Create the balloontip asynchronously. Default: $false
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -63,10 +60,7 @@ function Show-ADTBalloonTipClassic
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
+        [System.UInt32]$BalloonTipTime = 10000
     )
 
     # Define internal worker function.
@@ -119,15 +113,7 @@ function Show-ADTBalloonTipClassic
         TrayIcon = (Get-ADTConfig).Assets.Icon
     }
 
-    # Create in separate process if -NoWait is passed.
-    if ($NoWait)
-    {
-        Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
-        return
-    }
-
-    # Create in an asynchronous job so that disposal is managed for us.
+    # Create in an asynchronous process so that disposal is managed for us.
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    $null = Start-Job -ScriptBlock ${Function:New-ADTBalloonTip} -ArgumentList $($nabtParams.Values)
+    Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
 }
