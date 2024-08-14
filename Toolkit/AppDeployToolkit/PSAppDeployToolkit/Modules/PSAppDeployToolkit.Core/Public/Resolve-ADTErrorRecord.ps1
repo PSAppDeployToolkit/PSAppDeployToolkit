@@ -107,32 +107,41 @@
 
     process
     {
-        # Build out error properties.
-        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject $(
-            # Capture Error Exception here if the caller has selected all property values.
+        # Build out error objects to process in the right order.
+        $errorObjects = $(
             if (($($Property) -ne '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
             {
-                $ErrorRecord.Exception | Select-Object -Property ($ErrorRecord.Exception | Get-ErrorPropertyNames)
+                $ErrorRecord.Exception
             }
-
-            # Capture Error Record.
             if (!$ExcludeErrorRecord)
             {
-                $ErrorRecord | Select-Object -Property ($ErrorRecord | Get-ErrorPropertyNames)
+                $ErrorRecord
             }
-
-            # Error Invocation Information.
             if (!$ExcludeErrorInvocation -and $ErrorRecord.InvocationInfo)
             {
-                $ErrorRecord.InvocationInfo | Select-Object -Property ($ErrorRecord.InvocationInfo | Get-ErrorPropertyNames)
+                $ErrorRecord.InvocationInfo
             }
-
-            # Capture Error Exception here to display using our custom order.
             if (($($Property) -eq '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
             {
-                $ErrorRecord.Exception | Select-Object -Property ($ErrorRecord.Exception | Get-ErrorPropertyNames)
+                $ErrorRecord.Exception
             }
-        ))).Trim())
+        )
+
+        # Open property collector and build it out.
+        $logErrorProperties = [ordered]@{}
+        foreach ($errorObject in $errorObjects)
+        {
+            $errorObject | Get-ErrorPropertyNames | ForEach-Object -Begin {
+                $propCount = $logErrorProperties.Count
+            } -Process {
+                $logErrorProperties.Add($_, ($errorObject.$_).ToString().Trim())
+            } -End {
+                if (!$propCount.Equals($logErrorProperties.Count)) {$logErrorProperties.($logErrorProperties.Keys | Select-Object -Last 1) += "`n"}
+            }
+        }
+
+        # Build out error properties.
+        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties))).Trim())
 
         # Capture Error Inner Exception(s).
         if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
