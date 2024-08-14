@@ -1,6 +1,6 @@
 ﻿#---------------------------------------------------------------------------
 #
-# 
+#
 #
 #---------------------------------------------------------------------------
 
@@ -318,7 +318,6 @@ class ADTSession
                 [System.IO.Directory]::Remove($this.LogTempFolder, $true)
             }
             $this.LogPath = [System.IO.Directory]::CreateDirectory($this.LogTempFolder).FullName
-            
         }
         else
         {

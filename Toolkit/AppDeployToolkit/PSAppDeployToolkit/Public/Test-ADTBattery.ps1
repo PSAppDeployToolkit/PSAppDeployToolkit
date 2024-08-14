@@ -1,6 +1,6 @@
 ﻿#---------------------------------------------------------------------------
 #
-# 
+#
 #
 #---------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ function Test-ADTBattery
 
     process
     {
-        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'; 
+        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'
         try
         {
             try

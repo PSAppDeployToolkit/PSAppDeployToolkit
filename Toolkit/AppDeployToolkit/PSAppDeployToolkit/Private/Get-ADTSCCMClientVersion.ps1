@@ -1,6 +1,6 @@
 ﻿#---------------------------------------------------------------------------
 #
-# 
+#
 #
 #---------------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ function Get-ADTSCCMClientVersion
             RecommendedAction = "Please check the availability of this service and try again."
         }
         throw (New-ADTErrorRecord @naerParams)
-    } 
+    }
     if (($svc = & $Script:CommandTable.'Get-Service' -Name ccmexec).Status -ne 'Running')
     {
         $naerParams = @{

@@ -1,6 +1,6 @@
 ﻿#---------------------------------------------------------------------------
 #
-# 
+#
 #
 #---------------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ function Invoke-ADTDllFileAction
     {
         Write-ADTLogEntry -Message "$DLLAction DLL file [$FilePath]."
         try
-        {            
+        {
             try
             {
                 # Determine the bitness of the DLL file.
