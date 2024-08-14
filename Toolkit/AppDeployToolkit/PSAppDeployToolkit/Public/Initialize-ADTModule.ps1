@@ -24,12 +24,15 @@ function Initialize-ADTModule
             try
             {
                 # Initialise the module's global state.
+                $adtData.Callbacks.Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                 $adtData.Callbacks.Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
                     $MyInvocation.MyCommand.Module.ExportedCommands.'Enable-ADTTerminalServerInstallMode'
                 )
                 $adtData.Callbacks.Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
-                    $MyInvocation.MyCommand.Module.ExportedCommands.'Unblock-ADTAppExecution'
                     $MyInvocation.MyCommand.Module.ExportedCommands.'Disable-ADTTerminalServerInstallMode'
+                )
+                $adtData.Callbacks.Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]$(
+                    $MyInvocation.MyCommand.Module.ExportedCommands.'Unblock-ADTAppExecution'
                 )
                 $adtData.Environment = New-ADTEnvironmentTable
                 $adtData.Config = Import-ADTConfig

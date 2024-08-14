@@ -187,7 +187,7 @@ function Show-ADTInstallationProgress
                 # If we've opened the window for the first time, add a closing callback.
                 if (!(Test-ADTInstallationProgressRunning).Equals($start))
                 {
-                    Add-ADTSessionClosingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Close-ADTInstallationProgress'
+                    Add-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Close-ADTInstallationProgress'
                 }
             }
             catch

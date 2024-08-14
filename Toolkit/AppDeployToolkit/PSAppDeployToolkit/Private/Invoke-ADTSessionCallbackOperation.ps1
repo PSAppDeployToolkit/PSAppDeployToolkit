@@ -10,7 +10,7 @@ function Invoke-ADTSessionCallbackOperation
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Opening', 'Closing')]
+        [ValidateSet('Starting', 'Opening', 'Closing', 'Finishing')]
         [System.String]$Type,
 
         [Parameter(Mandatory = $true)]

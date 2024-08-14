@@ -129,23 +129,40 @@ function Open-ADTSession
             $adtData.Sessions.Clear()
         }
 
-        # Initialise the module, instantiate a new ADT session and open it for usage.
+        # Commence the opening process.
         try
         {
             try
             {
+                # Initialise the module before instantiating the first session.
                 if (!$adtData.Sessions.Count)
                 {
                     Initialize-ADTModule
                 }
                 $adtData.Sessions.Add($PSBoundParameters)
+
+                # Process the instantiated session.
                 try
                 {
+                    # Open the newly instantiated session.
                     $adtData.Sessions[-1].Open()
+
+                    # Invoke first time callbacks.
+                    if ($adtData.Sessions.Count.Equals(1))
+                    {
+                        foreach ($callback in $($adtData.Callbacks.Starting))
+                        {
+                            & $callback
+                        }
+                    }
+
+                    # Invoke new session callbacks.
                     foreach ($callback in $($adtData.Callbacks.Opening))
                     {
                         & $callback
                     }
+
+                    # Export the environment table to variables within the caller's scope.
                     if ($adtData.Sessions.Count.Equals(1))
                     {
                         $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[1].GetEnumerator().ForEach({& $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force}, $args[0])}.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)

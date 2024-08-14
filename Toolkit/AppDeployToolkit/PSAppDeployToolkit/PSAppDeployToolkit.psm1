@@ -50,8 +50,10 @@ $ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -an
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
     Callbacks = [pscustomobject]@{
+        Starting = $null
         Opening = $null
         Closing = $null
+        Finishing = $null
     }
     Sessions = [System.Collections.Generic.List[ADTSession]]::new()
     TerminalServerMode = $false
