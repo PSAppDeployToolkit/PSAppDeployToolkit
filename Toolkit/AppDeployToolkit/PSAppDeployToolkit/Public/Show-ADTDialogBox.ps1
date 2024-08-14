@@ -83,7 +83,7 @@ function Show-ADTDialogBox
     dynamicparam
     {
         # Initialise the module if there's no session and it hasn't been previously initialised.
-        if (!($adtSession = if (Test-ADTSessionActive) {Get-ADTSession}) -and !(Test-ADTModuleInitialised))
+        if (!($adtSession = if (Test-ADTSessionActive) { Get-ADTSession }) -and !(Test-ADTModuleInitialised))
         {
             try
             {
@@ -101,23 +101,23 @@ function Show-ADTDialogBox
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Title', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'Title', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Timeout', [System.UInt32], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
-                [System.Management.Automation.ValidateScriptAttribute]::new({
-                    if ($_ -gt $adtConfig.UI.DefaultTimeout)
-                    {
-                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
-                    }
-                    return !!$_
-                })
-            )
-        ))
+                'Timeout', [System.UInt32], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ValidateScriptAttribute]::new({
+                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                            {
+                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                            }
+                            return !!$_
+                        })
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -157,17 +157,17 @@ function Show-ADTDialogBox
             {
                 $result = switch ([System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons.$Buttons + $Script:DialogBox.Icons.$Icon + $Script:DialogBox.DefaultButtons.$DefaultButton + (4096 * !$NotTopMost))))
                 {
-                    1 {'OK'; break}
-                    2 {'Cancel'; break}
-                    3 {'Abort'; break}
-                    4 {'Retry'; break}
-                    5 {'Ignore'; break}
-                    6 {'Yes'; break}
-                    7 {'No'; break}
-                    10 {'Try Again'; break}
-                    11 {'Continue'; break}
-                    -1 {'Timeout'; break}
-                    default {'Unknown'; break}
+                    1 { 'OK'; break }
+                    2 { 'Cancel'; break }
+                    3 { 'Abort'; break }
+                    4 { 'Retry'; break }
+                    5 { 'Ignore'; break }
+                    6 { 'Yes'; break }
+                    7 { 'No'; break }
+                    10 { 'Try Again'; break }
+                    11 { 'Continue'; break }
+                    -1 { 'Timeout'; break }
+                    default { 'Unknown'; break }
                 }
 
                 Write-ADTLogEntry -Message "Dialog Box Response: $result"

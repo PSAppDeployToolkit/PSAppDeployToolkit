@@ -68,22 +68,22 @@ function Get-ADTMsiTableProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String[]]$TransformPath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
@@ -107,7 +107,7 @@ function Get-ADTMsiTableProperty
         # Set default values.
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
-            $PSBoundParameters.Add('Table', $(if ([System.IO.Path]::GetExtension($Path) -eq '.msi') {'Property'} else {'MsiPatchMetadata'}))
+            $PSBoundParameters.Add('Table', $(if ([System.IO.Path]::GetExtension($Path) -eq '.msi') { 'Property' } else { 'MsiPatchMetadata' }))
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {

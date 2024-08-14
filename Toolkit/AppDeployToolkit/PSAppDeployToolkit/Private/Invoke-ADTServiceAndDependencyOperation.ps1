@@ -48,12 +48,12 @@ function Invoke-ADTServiceAndDependencyOperation
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!$_.Name)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!$_.Name)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                }
+                return !!$_
+            })]
         [System.ServiceProcess.ServiceController]$Service,
 
         [Parameter(Mandatory = $true)]
@@ -76,7 +76,7 @@ function Invoke-ADTServiceAndDependencyOperation
     {
         # Discover all dependent services.
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & {process {if ($_.Status -ne $status) {return $_}}})
+        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } })
         {
             foreach ($dependent in $dependentServices)
             {
@@ -98,7 +98,7 @@ function Invoke-ADTServiceAndDependencyOperation
     }
 
     # Wait up to 60 seconds if service is in a pending state.
-    if (([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped'}[$Service.Status]))
+    if (([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
     {
         Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)

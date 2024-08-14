@@ -33,7 +33,7 @@ https://psappdeploytoolkit.com
 #---------------------------------------------------------------------------
 
 # Remove all functions defined in this script from the function provider.
-Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {process {if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) {return "Function:$($_.Name)"}}}) -Force -ErrorAction Ignore
+Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Function:$($_.Name)" } } }) -Force -ErrorAction Ignore
 
 
 #---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryChange]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.RegistrySettings = {New-Variable -Name UserProfile -Value $_ -Force}, $PSBoundParameters.RegistrySettings
+    $PSBoundParameters.RegistrySettings = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.RegistrySettings
     try
     {
         Invoke-ADTAllUsersRegistryChange @PSBoundParameters
@@ -437,13 +437,13 @@ function Get-UserProfiles
     )
 
     # Translate parameters.
-    $null = ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
-        if (!$PSBoundParameters["Exclude$_"])
-        {
-            $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
-        }
-        $PSBoundParameters.Remove("Exclude$_")
-    })
+    $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
+            if (!$PSBoundParameters["Exclude$_"])
+            {
+                $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+            }
+            $PSBoundParameters.Remove("Exclude$_")
+        })
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
     try
@@ -1127,12 +1127,12 @@ function Get-IniValue
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
@@ -1183,12 +1183,12 @@ function Set-IniValue
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
@@ -1582,10 +1582,10 @@ function Resolve-Error
     {
         # Announce overall deprecation and translate bad switches before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
-        $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
-            $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
-            $PSBoundParameters.Remove("Get$_")
-        })
+        $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
+                $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
+                $PSBoundParameters.Remove("Get$_")
+            })
 
         # Set up collector for piped in ErrorRecord objects.
         $errRecords = [System.Collections.Generic.List[System.Management.Automation.ErrorRecord]]::new()
@@ -1594,7 +1594,7 @@ function Resolve-Error
     process
     {
         # Process piped input and collect ErrorRecord objects.
-        foreach ($errRecord in ($ErrorRecord | & {process {if ($_ -is [System.Management.Automation.ErrorRecord]) {return $_}}}))
+        foreach ($errRecord in ($ErrorRecord | & { process { if ($_ -is [System.Management.Automation.ErrorRecord]) { return $_ } } }))
         {
             $errRecords.Add($errRecord)
         }
@@ -1614,7 +1614,7 @@ function Resolve-Error
                 }
                 elseif ($Global:Error.Count)
                 {
-                    $Global:Error.Where({$_ -is [System.Management.Automation.ErrorRecord]}, 'First', 1) | Resolve-ADTErrorRecord @PSBoundParameters
+                    $Global:Error.Where({ $_ -is [System.Management.Automation.ErrorRecord] }, 'First', 1) | Resolve-ADTErrorRecord @PSBoundParameters
                 }
             }
             else
@@ -1815,7 +1815,7 @@ function Execute-Process
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) { [System.Management.Automation.ActionPreference]::SilentlyContinue } else { [System.Management.Automation.ActionPreference]::Stop }
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
@@ -1848,7 +1848,7 @@ function Execute-MSI
         [System.String]$Action,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_))})]
+        [ValidateScript({ ($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
         [Alias('FilePath')]
         [System.String]$Path,
 
@@ -1932,7 +1932,7 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) { [System.Management.Automation.ActionPreference]::SilentlyContinue } else { [System.Management.Automation.ActionPreference]::Stop }
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
@@ -1961,7 +1961,7 @@ function Execute-MSP
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
-        [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
+        [ValidateScript({ ('.msp' -contains [System.IO.Path]::GetExtension($_)) })]
         [Alias('FilePath')]
         [System.String]$Path,
 
@@ -2491,13 +2491,13 @@ function Remove-FileFromUserProfiles
     )
 
     # Translate parameters.
-    $null = ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
-        if (!$PSBoundParameters["Exclude$_"])
-        {
-            $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
-        }
-        $PSBoundParameters.Remove("Exclude$_")
-    })
+    $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
+            if (!$PSBoundParameters["Exclude$_"])
+            {
+                $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+            }
+            $PSBoundParameters.Remove("Exclude$_")
+        })
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -3487,8 +3487,8 @@ Remove-Module -Name PSAppDeployToolkit* -Force
 Import-Module -Name (Get-ChildItem -Path "$PSScriptRoot\PSAppDeployToolkit*" -Directory).FullName -Force
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
-$sessionProps = @{SessionState = $ExecutionContext.SessionState}
-Get-Variable -Name ((Get-Command -Name Open-ADTSession).Parameters.Values | & {process {if ($_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1') {$_.Name}}}) -ErrorAction Ignore | & {process {if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) {$sessionProps.Add($_.Name, $_.Value)}}}
+$sessionProps = @{ SessionState = $ExecutionContext.SessionState }
+Get-Variable -Name ((Get-Command -Name Open-ADTSession).Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
 Open-ADTSession @sessionProps
 
 # Redefine all functions as read-only and clean up temp variables.

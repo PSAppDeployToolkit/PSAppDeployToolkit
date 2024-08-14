@@ -93,12 +93,12 @@ function Set-ADTActiveSetup
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
         [ValidateScript({
-            if (('.exe', '.vbs', '.cmd', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
-            }
-            return !!$_
-        })]
+                if (('.exe', '.vbs', '.cmd', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
+                }
+                return !!$_
+            })]
         [System.String]$StubExePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -129,24 +129,24 @@ function Set-ADTActiveSetup
     dynamicparam
     {
         # Attempt to get the most recent ADTSession object.
-        $adtSession = try {Get-ADTSession} catch {$null = $null}
+        $adtSession = try { Get-ADTSession } catch { $null = $null }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Description', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession; ParameterSetName = 'Create'}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'Description', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; ParameterSetName = 'Create' }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Key', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'Key', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -160,7 +160,7 @@ function Set-ADTActiveSetup
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
         if ($adtSession)
         {
-            $null = ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({$PSBoundParameters.Add($_, (& $Script:CommandTable.'Set-Variable' -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value)})
+            $null = ('Description', 'Key').Where({ !$PSBoundParameters.ContainsKey($_) }).ForEach({ $PSBoundParameters.Add($_, (& $Script:CommandTable.'Set-Variable' -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value) })
         }
 
         # Define initial variables.
@@ -238,14 +238,14 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & {process {if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) {return $_}}}))))
+            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & {process {if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) {return $_}}}))))
+            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
@@ -255,7 +255,7 @@ function Set-ADTActiveSetup
             try
             {
                 # Convert the version property to Version type and compare.
-                if (([System.Version]$HKLMValidVer.Replace(',','.')) -gt ([System.Version]$HKCUValidVer.Replace(',','.')))
+                if (([System.Version]$HKLMValidVer.Replace(',', '.')) -gt ([System.Version]$HKCUValidVer.Replace(',', '.')))
                 {
                     # HKLM is greater, run the StubPath.
                     Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
@@ -344,7 +344,7 @@ function Set-ADTActiveSetup
                 [System.Management.Automation.SwitchParameter]$DisableActiveSetup
             )
 
-            $srkParams = if ($SID) {@{SID = $SID}} else {@{}}
+            $srkParams = if ($SID) { @{ SID = $SID } } else { @{} }
             Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
             Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version @srkParams
             Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
@@ -388,7 +388,7 @@ function Set-ADTActiveSetup
                     if ($runAsActiveUser)
                     {
                         Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & {process {if ($_.SID -eq $runAsActiveUser.SID) {return $_}}}) -RegistrySettings {
+                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } }) -RegistrySettings {
                             if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
                             {
                                 Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
@@ -426,27 +426,32 @@ function Set-ADTActiveSetup
                 # Define Active Setup StubPath according to file extension of $StubExePath.
                 switch ($StubExeExt)
                 {
-                    '.exe' {
+                    '.exe'
+                    {
                         [String]$CUStubExePath = "$StubExePath"
                         [String]$CUArguments = $Arguments
                         [String]$StubPath = "`"$CUStubExePath`""
                     }
-                    '.js' {
+                    '.js'
+                    {
                         [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
                         [String]$CUArguments = "//nologo `"$StubExePath`""
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
-                    '.vbs' {
+                    '.vbs'
+                    {
                         [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
                         [String]$CUArguments = "//nologo `"$StubExePath`""
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
-                    '.cmd' {
+                    '.cmd'
+                    {
                         [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
                         [String]$CUArguments = "/C `"$StubExePath`""
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
-                    '.ps1' {
+                    '.ps1'
+                    {
                         [String]$CUStubExePath = Get-ADTPowerShellProcessPath
                         [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"

@@ -6,5 +6,5 @@
 
 function Test-ADTSessionActive
 {
-	return !!(Get-ADTModuleData).Sessions.Count
+    return !!(Get-ADTModuleData).Sessions.Count
 }

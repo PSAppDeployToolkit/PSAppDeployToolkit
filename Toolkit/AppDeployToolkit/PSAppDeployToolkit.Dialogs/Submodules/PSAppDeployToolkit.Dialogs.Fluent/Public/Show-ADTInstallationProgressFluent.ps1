@@ -131,43 +131,51 @@ function Show-ADTInstallationProgressFluent
         # Set the start position of the Window based on the screen size.
         switch ($WindowLocation)
         {
-            'TopLeft' {
+            'TopLeft'
+            {
                 $Window.Left = 0.
                 $Window.Top = 0.
                 break
             }
-            'Top' {
+            'Top'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = 0.
                 break
             }
-            'TopRight' {
+            'TopRight'
+            {
                 $Window.Left = $screenCenterWidth
                 $Window.Top = 0.
                 break
             }
-            'TopCenter' {
+            'TopCenter'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight * (1. / 6.)
                 break
             }
-            'BottomLeft' {
+            'BottomLeft'
+            {
                 $Window.Left = 0.
                 $Window.Top = $screenCenterHeight
                 break
             }
-            'Bottom' {
+            'Bottom'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight
                 break
             }
-            'BottomRight' {
+            'BottomRight'
+            {
                 # The -100 offset is needed to not overlap system tray toast notifications.
                 $Window.Left = $screenCenterWidth
                 $Window.Top = $screenCenterHeight - 100
                 break
             }
-            default {
+            default
+            {
                 # Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight * 0.5

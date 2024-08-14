@@ -11,12 +11,12 @@ function Disable-ADTWindowCloseButton
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (($null -eq $_) -or $_.Equals([System.IntPtr]::Zero))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName WindowHandle -ProvidedValue $_ -ExceptionMessage 'The provided window handle is invalid.'))
-            }
-            return !!$_
-        })]
+                if (($null -eq $_) -or $_.Equals([System.IntPtr]::Zero))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName WindowHandle -ProvidedValue $_ -ExceptionMessage 'The provided window handle is invalid.'))
+                }
+                return !!$_
+            })]
         [System.IntPtr]$WindowHandle
     )
 

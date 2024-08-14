@@ -88,11 +88,13 @@ function Invoke-ADTObjectMethod
             {
                 switch ($PSCmdlet.ParameterSetName)
                 {
-                    Named {
+                    Named
+                    {
                         # Invoke method by using parameter names.
                         return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
                     }
-                    Positional {
+                    Positional
+                    {
                         # Invoke method without using parameter names.
                         return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
                     }

@@ -84,12 +84,12 @@ function Set-ADTItemPermission
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
         [ValidateScript({
-            if (!(& $Script:CommandTable.'Test-Path' -Path $_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!(& $Script:CommandTable.'Test-Path' -Path $_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                }
+                return !!$_
+            })]
         [Alias('File', 'Folder')]
         [System.String]$Path,
 
@@ -174,7 +174,7 @@ function Set-ADTItemPermission
                 $Acl = & $Script:CommandTable.'Get-Acl' -Path $Path
 
                 # Apply permissions on each user.
-                foreach ($U in $User.Trim() | & {process {if ($_.Length) {return $_}}})
+                foreach ($U in $User.Trim() | & { process { if ($_.Length) { return $_ } } })
                 {
                     # Set Username.
                     [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))

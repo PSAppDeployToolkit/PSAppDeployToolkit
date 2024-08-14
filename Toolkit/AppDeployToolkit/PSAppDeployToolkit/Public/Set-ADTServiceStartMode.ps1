@@ -42,12 +42,12 @@ function Set-ADTServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!$_.Name)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!$_.Name)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                }
+                return !!$_
+            })]
         [System.ServiceProcess.ServiceController]$Service,
 
         [Parameter(Mandatory = $true)]
@@ -63,19 +63,23 @@ function Set-ADTServiceStartMode
         # Re-write StartMode to suit sc.exe.
         $StartMode = switch ($StartMode)
         {
-            'Automatic' {
+            'Automatic'
+            {
                 'Auto'
                 break
             }
-            'Automatic (Delayed Start)' {
+            'Automatic (Delayed Start)'
+            {
                 'Delayed-Auto'
                 break
             }
-            'Manual' {
+            'Manual'
+            {
                 'Demand'
                 break
             }
-            default {
+            default
+            {
                 $_
                 break
             }

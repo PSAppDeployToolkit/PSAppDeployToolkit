@@ -113,43 +113,51 @@ function Show-ADTInstallationProgressClassic
         # Set the start position of the Window based on the screen size.
         switch ($WindowLocation)
         {
-            'TopLeft' {
+            'TopLeft'
+            {
                 $Window.Left = 0.
                 $Window.Top = 0.
                 break
             }
-            'Top' {
+            'Top'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = 0.
                 break
             }
-            'TopRight' {
+            'TopRight'
+            {
                 $Window.Left = $screenCenterWidth
                 $Window.Top = 0.
                 break
             }
-            'TopCenter' {
+            'TopCenter'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight * (1. / 6.)
                 break
             }
-            'BottomLeft' {
+            'BottomLeft'
+            {
                 $Window.Left = 0.
                 $Window.Top = $screenCenterHeight
                 break
             }
-            'Bottom' {
+            'Bottom'
+            {
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight
                 break
             }
-            'BottomRight' {
+            'BottomRight'
+            {
                 # The -100 offset is needed to not overlap system tray toast notifications.
                 $Window.Left = $screenCenterWidth
                 $Window.Top = $screenCenterHeight - 100
                 break
             }
-            default {
+            default
+            {
                 # Center the progress window by calculating the center of the workable screen based on the width of the screen minus half the width of the progress bar
                 $Window.Left = $screenCenterWidth * 0.5
                 $Window.Top = $screenCenterHeight * 0.5
@@ -170,56 +178,56 @@ function Show-ADTInstallationProgressClassic
 
         # Set up the PowerShell instance and add the initial scriptblock.
         $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
-            [CmdletBinding()]
-            param
-            (
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.Xml.XmlDocument]$Xaml,
+                [CmdletBinding()]
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Xml.XmlDocument]$Xaml,
 
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.IO.FileInfo]$Icon,
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.IO.FileInfo]$Icon,
 
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.IO.FileInfo]$Banner,
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.IO.FileInfo]$Banner,
 
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.Management.Automation.ScriptBlock]$UpdateWindowLocation,
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Management.Automation.ScriptBlock]$UpdateWindowLocation,
 
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.Management.Automation.ScriptBlock]$DisableWindowCloseButton
-            )
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.Management.Automation.ScriptBlock]$DisableWindowCloseButton
+                )
 
-            # Set required variables to ensure script functionality.
-            $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-            $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-            Set-StrictMode -Version 3
+                # Set required variables to ensure script functionality.
+                $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+                $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                Set-StrictMode -Version 3
 
-            # Create XAML window and bring it up.
-            try
-            {
-                $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
-                $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
-                $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-                $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-                $SyncHash.Window.add_MouseLeftButtonDown({$this.DragMove()})
-                $SyncHash.Window.add_Loaded({
-                    # Relocate the window and disable the X button.
-                    & $UpdateWindowLocation.GetNewClosure() -Window $this
-                    & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
-                })
-                $null = $SyncHash.Window.ShowDialog()
-            }
-            catch
-            {
-                $SyncHash.Error = $_
-                $PSCmdlet.ThrowTerminatingError($_)
-            }
-        }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
+                # Create XAML window and bring it up.
+                try
+                {
+                    $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
+                    $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
+                    $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+                    $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+                    $SyncHash.Window.add_MouseLeftButtonDown({ $this.DragMove() })
+                    $SyncHash.Window.add_Loaded({
+                            # Relocate the window and disable the X button.
+                            & $UpdateWindowLocation.GetNewClosure() -Window $this
+                            & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
+                        })
+                    $null = $SyncHash.Window.ShowDialog()
+                }
+                catch
+                {
+                    $SyncHash.Error = $_
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
+            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
 
         # Commence invocation.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
@@ -243,7 +251,7 @@ function Show-ADTInstallationProgressClassic
                     Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'InstallationProgressDialogFailure'
-                    TargetObject = $(if ($SyncHash.ContainsKey('Window')) {$SyncHash.Window})
+                    TargetObject = $(if ($SyncHash.ContainsKey('Window')) { $SyncHash.Window })
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
                 throw (New-ADTErrorRecord @naerParams)

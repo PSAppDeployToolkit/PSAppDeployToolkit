@@ -95,11 +95,11 @@ function Show-ADTInstallationRestartPrompt
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Title', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'Title', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -140,7 +140,7 @@ function Show-ADTInstallationRestartPrompt
 
                 # Check if we are already displaying a restart prompt.
                 $restartPromptTitle = (Get-ADTStringTable).RestartPrompt.Title
-                if (Get-Process | & {process {if ($_.MainWindowTitle -match $restartPromptTitle) {return $_}}})
+                if (Get-Process | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } })
                 {
                     Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return

@@ -4,7 +4,8 @@
 #
 #---------------------------------------------------------------------------
 
-function Copy-File {
+function Copy-File
+{
     <#
 .SYNOPSIS
 
@@ -105,49 +106,63 @@ https://psappdeploytoolkit.com
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
         [String]$RobocopyAdditionalParams
-        )
+    )
 
-    Begin {
+    Begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Check if Robocopy is on the system
-        If ($UseRobocopy) {
-            If (& $Script:CommandTable.'Test-Path' -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf) {
+        If ($UseRobocopy)
+        {
+            If (& $Script:CommandTable.'Test-Path' -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)
+            {
                 $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
             }
-            Else {
+            Else
+            {
                 $UseRobocopy = $false
                 Write-ADTLogEntry "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2
             }
         }
-        Else {
+        Else
+        {
             $UseRobocopy = $false
         }
     }
-    Process {
-        Foreach ($srcPath in $Path) {
+    Process
+    {
+        Foreach ($srcPath in $Path)
+        {
             $UseRobocopyThis = $UseRobocopy
-            If ($UseRobocopyThis) {
-                Try {
+            If ($UseRobocopyThis)
+            {
+                Try
+                {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
-                    If ($srcPath -match '\*.*\\') {
+                    If ($srcPath -match '\*.*\\')
+                    {
                         $UseRobocopyThis = $false
                         Write-ADTLogEntry "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
                     }
                     # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config
-                    If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container)) {
+                    If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
+                    {
                         $UseRobocopyThis = $false
                         Write-ADTLogEntry "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
 
                     }
-                    If ($UseRobocopyThis) {
+                    If ($UseRobocopyThis)
+                    {
 
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
-                        If (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container)) {
+                        If (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
+                        {
                             Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]."
                             $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                         }
-                        If (& $Script:CommandTable.'Test-Path' -LiteralPath $srcPath -PathType Container) {
+                        If (& $Script:CommandTable.'Test-Path' -LiteralPath $srcPath -PathType Container)
+                        {
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
@@ -155,7 +170,8 @@ https://psappdeploytoolkit.com
                             $RobocopyDestination = & $Script:CommandTable.'Join-Path' (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination).Path (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
-                        Else {
+                        Else
+                        {
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
@@ -163,7 +179,8 @@ https://psappdeploytoolkit.com
                             $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\')).Path
                             $RobocopyFile = (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                         }
-                        If ($Flatten) {
+                        If ($Flatten)
+                        {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
                             [Hashtable]$CopyFileSplat = @{
                                 Path                     = (& $Script:CommandTable.'Join-Path' $RobocopySource $RobocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
@@ -187,14 +204,17 @@ https://psappdeploytoolkit.com
                             # Skip to next $SrcPath in $Path since we have handed off all copy tasks to separate executions of the function
                             Continue
                         }
-                        If ($Recurse) {
+                        If ($Recurse)
+                        {
                             # Add /E to Robocopy parameters if it is not already included
-                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)') {
+                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)')
+                            {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
                         }
-                        Else {
+                        Else
+                        {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
                             $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
                             $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
@@ -203,12 +223,13 @@ https://psappdeploytoolkit.com
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-ADTLogEntry -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs"
-                        $RobocopyResult = Start-ADTProcess -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -IgnoreExitCodes 0,1,2,3,4,5,6,7,8 -ErrorAction Ignore
+                        $RobocopyResult = Start-ADTProcess -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -IgnoreExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
                         # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
                         $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | & $Script:CommandTable.'Select-Object' -SkipLast 1) -join "`n"
                         Write-ADTLogEntry -Message "Robocopy output:`n$RobocopyOutput"
 
-                        Switch ($RobocopyResult.ExitCode) {
+                        Switch ($RobocopyResult.ExitCode)
+                        {
                             0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." }
                             1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully." }
                             2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." }
@@ -218,90 +239,114 @@ https://psappdeploytoolkit.com
                             6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 }
                             7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 }
                             8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity 2 }
-                            16 {
+                            16
+                            {
                                 Write-ADTLogEntry -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3
-                                If (-not $ContinueOnError) {
+                                If (-not $ContinueOnError)
+                                {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
-                            default {
+                            default
+                            {
                                 Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord)" -Severity 3
-                                If (-not $ContinueOnError) {
+                                If (-not $ContinueOnError)
+                                {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                         }
                     }
                 }
-                Catch {
+                Catch
+                {
                     Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    If (-not $ContinueOnError) {
+                    If (-not $ContinueOnError)
+                    {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
                 }
             }
-            If ($UseRobocopyThis -eq $false) {
-                Try {
+            If ($UseRobocopyThis -eq $false)
+            {
+                Try
+                {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
-                    If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType 'Container'))) {
+                    If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType 'Container')))
+                    {
                         Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]."
                         $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type 'Directory' -Force -ErrorAction 'Stop'
                     }
                     # If destination appears to be a file name but parent folder does not exist, create it
                     $DestinationParent = & $Script:CommandTable.'Split-Path' $Destination -Parent
-                    If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $DestinationParent -PathType 'Container')) {
+                    If ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $DestinationParent -PathType 'Container'))
+                    {
                         Write-ADTLogEntry -Message "Destination assumed to be a file whose parent folder does not exist, creating destination folder [$DestinationParent]."
                         $null = & $Script:CommandTable.'New-Item' -Path $DestinationParent -Type 'Directory' -Force -ErrorAction 'Stop'
                     }
-                    If ($Flatten) {
+                    If ($Flatten)
+                    {
                         Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                        If ($ContinueFileCopyOnError) {
+                        If ($ContinueFileCopyOnError)
+                        {
                             $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
                                 & $Script:CommandTable.'Copy-Item' -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                             }
                         }
-                        Else {
+                        Else
+                        {
                             $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
                                 & $Script:CommandTable.'Copy-Item' -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Stop'
                             }
                         }
                     }
-                    ElseIf ($Recurse) {
+                    ElseIf ($Recurse)
+                    {
                         Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
-                        If ($ContinueFileCopyOnError) {
+                        If ($ContinueFileCopyOnError)
+                        {
                             $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
-                        Else {
+                        Else
+                        {
                             $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Stop'
                         }
                     }
-                    Else {
+                    Else
+                    {
                         Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
-                        If ($ContinueFileCopyOnError) {
+                        If ($ContinueFileCopyOnError)
+                        {
                             $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
                         }
-                        Else {
+                        Else
+                        {
                             $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -ErrorAction 'Stop'
                         }
                     }
 
-                    If ($FileCopyError) {
+                    If ($FileCopyError)
+                    {
                         Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n$FileCopyError" -Severity 2
                     }
-                    Else {
+                    Else
+                    {
                         Write-ADTLogEntry -Message 'File copy completed successfully.'
                     }
                 }
-                Catch {
+                Catch
+                {
                     Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    If (-not $ContinueOnError) {
+                    If (-not $ContinueOnError)
+                    {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
                 }
             }
         }
     }
-    End {
+    End
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -39,12 +39,12 @@ function Get-ADTFreeDiskSpace
     (
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if (!$_.TotalSize)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive does not exist or has no media loaded.'))
-            }
-            return !!$_.TotalSize
-        })]
+                if (!$_.TotalSize)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive does not exist or has no media loaded.'))
+                }
+                return !!$_.TotalSize
+            })]
         [System.IO.DriveInfo]$Drive = [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory)
     )
 

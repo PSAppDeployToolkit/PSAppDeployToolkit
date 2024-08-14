@@ -14,6 +14,6 @@ New-Variable -Name ModuleManifest -Value ([System.Management.Automation.Language
 New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
 New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
 Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-$ModuleFiles.FullName | . {process {. $_}}
+$ModuleFiles.FullName | . { process { . $_ } }
 Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
 Export-ModuleMember -Function $ModuleManifest.FunctionsToExport

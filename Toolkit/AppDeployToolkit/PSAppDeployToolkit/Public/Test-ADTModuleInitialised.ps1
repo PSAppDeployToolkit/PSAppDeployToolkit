@@ -6,5 +6,5 @@
 
 function Test-ADTModuleInitialised
 {
-	return (Get-ADTModuleData).Initialised
+    return (Get-ADTModuleData).Initialised
 }

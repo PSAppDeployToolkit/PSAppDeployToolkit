@@ -76,7 +76,7 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Process the piped hashtable.
-                foreach ($param in ($InputObject.GetEnumerator() | & {process {if ($Exclude -notcontains $_.Key) {return $_}}}))
+                foreach ($param in ($InputObject.GetEnumerator() | & { process { if ($Exclude -notcontains $_.Key) { return $_ } } }))
                 {
                     # Recursively expand child hashtables.
                     if ($param.Value -isnot [System.Collections.IDictionary])
@@ -110,7 +110,7 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Join the array and return as a string to the caller.
-                if ((& $Script:CommandTable.'Get-PSCallStack' | & {process {if ($_.Command.Equals($thisFunc.Name)) {return $_.Command}}}) -is [System.String])
+                if ((& $Script:CommandTable.'Get-PSCallStack' | & { process { if ($_.Command.Equals($thisFunc.Name)) { return $_.Command } } }) -is [System.String])
                 {
                     return ($paramsArr -join ' ')
                 }

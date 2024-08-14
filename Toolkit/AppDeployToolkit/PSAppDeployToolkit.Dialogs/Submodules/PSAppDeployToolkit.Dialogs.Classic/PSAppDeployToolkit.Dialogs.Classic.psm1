@@ -17,14 +17,14 @@ Add-Type -AssemblyName System.Drawing, System.Windows.Forms, PresentationCore, P
 
 # All WinForms-specific initialistion code.
 [System.Windows.Forms.Application]::EnableVisualStyles()
-try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {$null = $null}
+try { [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false) } catch { $null = $null }
 
 # Dot-source our imports and perform exports.
 New-Variable -Name ModuleManifest -Value ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()) -Option Constant -Force -Confirm:$false
 New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
 New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
 Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-$ModuleFiles.FullName | . {process {. $_}}
+$ModuleFiles.FullName | . { process { . $_ } }
 Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
 Export-ModuleMember -Function $ModuleManifest.FunctionsToExport
 

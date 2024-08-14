@@ -39,12 +39,12 @@ function Get-ADTServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!$_.Name)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!$_.Name)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                }
+                return !!$_
+            })]
         [System.ServiceProcess.ServiceController]$Service
     )
 

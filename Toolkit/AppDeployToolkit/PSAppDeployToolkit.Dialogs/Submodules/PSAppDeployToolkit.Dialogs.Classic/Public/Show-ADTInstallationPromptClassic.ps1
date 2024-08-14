@@ -375,7 +375,7 @@ function Show-ADTInstallationPromptClassic
 
     # Start the timer.
     $installPromptTimer.Start()
-    if ($PersistPrompt) {$installPromptTimerPersist.Start()}
+    if ($PersistPrompt) { $installPromptTimerPersist.Start() }
 
     # Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
     $shellApp = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application'))
@@ -393,17 +393,22 @@ function Show-ADTInstallationPromptClassic
     until ($formResult -match '^(Yes|No|Ignore|Abort)$')
 
     # Return the button text to the caller.
-    switch ($formResult) {
-        'Yes' {
+    switch ($formResult)
+    {
+        'Yes'
+        {
             return $ButtonRightText
         }
-        'No' {
+        'No'
+        {
             return $ButtonLeftText
         }
-        'Ignore' {
+        'Ignore'
+        {
             return $ButtonMiddleText
         }
-        'Abort' {
+        'Abort'
+        {
             # Restore minimized windows.
             $null = $shellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)

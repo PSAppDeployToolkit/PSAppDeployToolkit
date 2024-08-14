@@ -45,12 +45,12 @@ function Get-ADTPEFileArchitecture
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_) -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_) -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
+                }
+                return !!$_
+            })]
         [System.IO.FileInfo[]]$FilePath
     )
 
@@ -79,27 +79,32 @@ function Get-ADTPEFileArchitecture
                     # Get the file header from the header's address, factoring in any offsets.
                     $PEArchitecture = switch ([System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
                     {
-                        0 {
+                        0
+                        {
                             # The contents of this file are assumed to be applicable to any machine type
                             'Native'
                             break
                         }
-                        0x014C {
+                        0x014C
+                        {
                             # File for Windows 32-bit systems
                             '32BIT'
                             break
                         }
-                        0x0200 {
+                        0x0200
+                        {
                             # File for Intel Itanium x64 processor family
                             'Itanium-x64'
                             break
                         }
-                        0x8664 {
+                        0x8664
+                        {
                             # File for Windows 64-bit systems
                             '64BIT'
                             break
                         }
-                        default {
+                        default
+                        {
                             'Unknown'
                             break
                         }

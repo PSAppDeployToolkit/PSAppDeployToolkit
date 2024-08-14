@@ -74,12 +74,12 @@ function Show-ADTWelcomePrompt
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
         [ValidateScript({
-            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
-            }
-            return !!$_
-        })]
+                if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+                }
+                return !!$_
+            })]
         [System.UInt32]$CloseAppsCountdown,
 
         [ValidateNotNullOrEmpty()]

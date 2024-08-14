@@ -19,7 +19,7 @@ function Show-ADTInstallationWelcome
         d) Prevent users from launching the specified applications while the installation is in progress.
 
     .PARAMETER ProcessObjects
-    Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{Name = 'winword'; Description = 'Microsoft Office Word'},@{Name = 'excel'; Description = 'Microsoft Office Excel'}
+    Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
 
     .PARAMETER Silent
     Stop processes without prompting the user.
@@ -132,7 +132,7 @@ function Show-ADTInstallationWelcome
     [CmdletBinding(DefaultParameterSetName = 'None')]
     param
     (
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
@@ -366,7 +366,7 @@ function Show-ADTInstallationWelcome
                     $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
-                    while (($runningProcesses = if ($ProcessObjects) {$ProcessObjects | Get-ADTRunningProcesses}) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
@@ -380,7 +380,7 @@ function Show-ADTInstallationWelcome
                             CustomText = $CustomText
                             NotTopMost = $NotTopMost
                         }
-                        if ($ProcessObjects) {$promptParams.Add('ProcessObjects', $ProcessObjects)}
+                        if ($ProcessObjects) { $promptParams.Add('ProcessObjects', $ProcessObjects) }
 
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
@@ -393,8 +393,8 @@ function Show-ADTInstallationWelcome
                             elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
                             {
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
-                                $deferParams = @{AllowDefer = $true; DeferTimes = $DeferTimes}
-                                if ($deferDeadlineUniversal) {$deferParams.Add('DeferDeadline', $deferDeadlineUniversal)}
+                                $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }
+                                if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
                                 [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
                             }
                         }
@@ -437,7 +437,7 @@ function Show-ADTInstallationWelcome
                             foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & {process {if ($_.ParentProcess -eq $runningProcess.ProcessName) {return $_}}}) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } }) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
                                 {
                                     foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                                     {
@@ -455,7 +455,7 @@ function Show-ADTInstallationWelcome
                                                 $PromptToSaveStopWatch.Start()
                                                 do
                                                 {
-                                                    if (!($IsWindowOpen = $AllOpenWindows | & {process {if ($_.WindowHandle -eq $OpenWindow.WindowHandle) {return $_}}}))
+                                                    if (!($IsWindowOpen = $AllOpenWindows | & { process { if ($_.WindowHandle -eq $OpenWindow.WindowHandle) { return $_ } } }))
                                                     {
                                                         break
                                                     }

@@ -201,7 +201,7 @@ function Start-ADTProcess
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                    if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+                    if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
                     {
                         Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
@@ -283,7 +283,7 @@ function Start-ADTProcess
                     else
                     {
                         # Add event handler to capture process's standard output redirection.
-                        $processEventHandler = {if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) {$Event.MessageData.AppendLine($EventArgs.Data)}}
+                        $processEventHandler = { if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
                         $stdOutEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
                         $stdErrEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
                     }
@@ -437,8 +437,8 @@ function Start-ADTProcess
                         Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
                         [PSADT.Types.ProcessResult]@{
                             ExitCode = $returnCode
-                            StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
-                            StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
+                            StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
+                            StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
                         }
                     }
 
@@ -469,7 +469,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        if ($MsiExitCodeMessage = if ($Path -match 'msiexec') {Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode})
+                        if ($MsiExitCodeMessage = if ($Path -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode })
                         {
                             Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                         }
@@ -514,8 +514,8 @@ function Start-ADTProcess
             {
                 [PSADT.Types.ProcessResult]@{
                     ExitCode = $returnCode
-                    StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) {$stdOut} else {[System.String]::Empty}
-                    StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) {$stdErr} else {[System.String]::Empty}
+                    StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
+                    StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
                 }
             }
 

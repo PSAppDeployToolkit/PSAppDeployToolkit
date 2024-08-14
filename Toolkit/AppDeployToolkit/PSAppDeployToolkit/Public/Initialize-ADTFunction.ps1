@@ -50,7 +50,7 @@ function Initialize-ADTFunction
 
     # Write debug log messages.
     Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
-    if ($CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | & $Script:CommandTable.'Format-Table' -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) {$_.Value.GetType().Name} }; Alignment = 'Left' } -AutoSize -Wrap | & $Script:CommandTable.'Out-String')
+    if ($CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | & $Script:CommandTable.'Format-Table' -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | & $Script:CommandTable.'Out-String')
     {
         Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     }
@@ -63,20 +63,20 @@ function Initialize-ADTFunction
     # For the caller-provided values, we deliberately use a string value to escape issues when 'Ignore' is passed.
     # https://github.com/PowerShell/PowerShell/issues/1759#issuecomment-442916350
     Set-CallerVariable -Name OriginalErrorAction -Value $(if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('ErrorAction'))
-    {
-        # Caller's value directly against the function.
-        $Cmdlet.MyInvocation.BoundParameters.ErrorAction.ToString()
-    }
-    elseif ($PSBoundParameters.ContainsKey('ErrorAction'))
-    {
-        # A function's own specified override.
-        $PSBoundParameters.ErrorAction.ToString()
-    }
-    else
-    {
-        # The module's default ErrorActionPreference.
-        $Script:ErrorActionPreference
-    })
+        {
+            # Caller's value directly against the function.
+            $Cmdlet.MyInvocation.BoundParameters.ErrorAction.ToString()
+        }
+        elseif ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            # A function's own specified override.
+            $PSBoundParameters.ErrorAction.ToString()
+        }
+        else
+        {
+            # The module's default ErrorActionPreference.
+            $Script:ErrorActionPreference
+        })
     Set-CallerVariable -Name ErrorActionPreference -Value $Script:ErrorActionPreference
 
     # Handle the caller's -Verbose parameter, which doesn't always work between them and the module barrier.
