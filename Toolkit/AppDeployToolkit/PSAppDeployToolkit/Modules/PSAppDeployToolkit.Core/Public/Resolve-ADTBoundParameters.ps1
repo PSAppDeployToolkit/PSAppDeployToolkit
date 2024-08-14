@@ -38,7 +38,7 @@
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Generic.Dictionary[System.String, System.Object]]$InputObject,
+        [System.Collections.IDictionary]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

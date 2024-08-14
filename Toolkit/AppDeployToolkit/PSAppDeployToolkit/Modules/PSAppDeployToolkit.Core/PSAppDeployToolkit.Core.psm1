@@ -33,14 +33,6 @@ New-Variable -Name ADT -Option ReadOnly -Value @{
     LastExitCode = 0
 }
 
-# Values used for ADT module serialisation.
-New-Variable -Name Serialisation -Option Constant -Value ([ordered]@{
-    Hive = [Microsoft.Win32.Registry]::CurrentUser
-    Key = "SOFTWARE\PSAppDeployToolkit"
-    Name = 'ModuleState'
-    Type = [Microsoft.Win32.RegistryValueKind]::String
-}).AsReadOnly()
-
 # Logging constants used within an [ADTSession] object.
 New-Variable -Name Logging -Option Constant -Value ([ordered]@{
     Formats = ([ordered]@{

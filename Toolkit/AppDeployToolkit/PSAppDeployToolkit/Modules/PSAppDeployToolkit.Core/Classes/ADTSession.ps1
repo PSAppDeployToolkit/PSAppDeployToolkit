@@ -70,10 +70,6 @@
     {
         $this.Init($Parameters)
     }
-    hidden ADTSession([System.Management.Automation.PSObject]$DeserialisedSession)
-    {
-        $DeserialisedSession.PSObject.Properties.Where({$_.Value -and !$_.TypeNameOfValue.EndsWith('PSVariableIntrinsics')}).ForEach({$this.($_.Name) = $_.Value})
-    }
 
     # Private methods.
     hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)

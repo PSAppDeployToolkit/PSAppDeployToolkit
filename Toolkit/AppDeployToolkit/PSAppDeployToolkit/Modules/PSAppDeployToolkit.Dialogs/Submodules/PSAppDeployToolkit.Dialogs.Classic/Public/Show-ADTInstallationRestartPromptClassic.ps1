@@ -8,6 +8,9 @@
     .DESCRIPTION
     Displays a restart prompt with a countdown to a forced restart.
 
+    .PARAMETER Title
+    Title of the prompt. Default: the application installation name.
+
     .PARAMETER CountdownSeconds
     Specifies the number of seconds to countdown before the system restart. Default: 60
 
@@ -53,6 +56,10 @@
 
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownSeconds = 60,
@@ -72,25 +79,27 @@
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$ADTSession
     )
 
     # Initialise variables.
-    $adtEnv = Get-ADTEnvironment
     $adtStrings = Get-ADTStrings
-    $adtSession = Get-ADTSession
 
     # If in non-interactive mode.
-    if ($adtSession.IsSilent())
+    if ($ADTSession -and $ADTSession.IsSilent())
     {
         if ($SilentRestart)
         {
-            Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
-            Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
+            Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($ADTSession.GetPropertyValue('deployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
+            Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
         }
         else
         {
-            Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.GetPropertyValue('deployMode'))] and [SilentRestart] is false."
+            Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($ADTSession.GetPropertyValue('deployMode'))] and [SilentRestart] is false."
         }
         return
     }
@@ -103,7 +112,7 @@
     }
 
     # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
-    if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+    if ($ADTSession -and !$ADTSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
     {
         if ($NoCountdown)
         {
@@ -114,8 +123,7 @@
         }
 
         # Start another powershell instance silently with function parameters from this function.
-        Export-ADTModuleState
-        Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart,SilentCountdownSeconds))" -WindowStyle Hidden -ErrorAction Ignore
+        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart,SilentCountdownSeconds))" -WindowStyle Hidden -ErrorAction Ignore
         return
     }
 
@@ -369,7 +377,7 @@
     $formRestart.Margin = $formRestart.Padding = $paddingNone
     $formRestart.Font = $Script:FormData.Font
     $formRestart.Name = 'FormRestart'
-    $formRestart.Text = $adtSession.GetPropertyValue('installTitle')
+    $formRestart.Text = $Title
     $formRestart.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
     $formRestart.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
     $formRestart.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
