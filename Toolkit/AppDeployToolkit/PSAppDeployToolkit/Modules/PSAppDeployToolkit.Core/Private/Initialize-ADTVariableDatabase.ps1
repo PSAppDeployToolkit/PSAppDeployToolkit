@@ -3,6 +3,7 @@
     # Internal function for translating SID types to names.
     function Get-SidTypeAccountName
     {
+        [CmdletBinding()]
         param (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]

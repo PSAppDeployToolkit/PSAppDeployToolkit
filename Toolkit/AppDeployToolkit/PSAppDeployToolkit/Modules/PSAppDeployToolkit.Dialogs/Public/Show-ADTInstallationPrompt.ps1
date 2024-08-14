@@ -67,6 +67,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -106,7 +107,13 @@
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout) {throw [System.ArgumentException]::new("The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.")}; !!$_})]
+        [ValidateScript({
+            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+            }
+            return !!$_
+        })]
         [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
 
         [Parameter(Mandatory = $false)]

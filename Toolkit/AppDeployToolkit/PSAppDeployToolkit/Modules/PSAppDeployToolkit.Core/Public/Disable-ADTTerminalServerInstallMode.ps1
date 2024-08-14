@@ -26,7 +26,7 @@
     #>
 
     [CmdletBinding()]
-    Param (
+    param (
     )
 
     Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute

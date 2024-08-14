@@ -27,7 +27,9 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables
     )
 

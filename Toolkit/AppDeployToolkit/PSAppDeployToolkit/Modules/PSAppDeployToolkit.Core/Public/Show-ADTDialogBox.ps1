@@ -48,6 +48,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
         [ValidateNotNullOrEmpty()]

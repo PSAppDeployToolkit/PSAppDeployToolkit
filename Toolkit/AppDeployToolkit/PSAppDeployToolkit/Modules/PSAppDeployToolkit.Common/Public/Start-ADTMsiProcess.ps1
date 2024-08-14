@@ -114,13 +114,20 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action = 'Install',
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or (('.msi', '.msp') -contains [System.IO.Path]::GetExtension($_))})]
+        [ValidateScript({
+            if (($_ -notmatch (Get-ADTEnvironment).MSIProductCodeRegExPattern) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
+            }
+            return !!$_
+        })]
         [Alias('FilePath')]
         [System.String]$Path,
 
@@ -313,7 +320,14 @@
         else
         {
             Write-ADTLogEntry -Message "Failed to find MSI file [$Path]." -Severity 3
-            throw [System.IO.FileNotFoundException]::new("Failed to find MSI file [$Path].")
+            $naerParams = @{
+                Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$Path].")
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                ErrorId = 'MsiFileNotFound'
+                TargetObject = $Path
+                RecommendedAction = "Please confirm the path of the MSI file and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Set the working directory of the MSI.

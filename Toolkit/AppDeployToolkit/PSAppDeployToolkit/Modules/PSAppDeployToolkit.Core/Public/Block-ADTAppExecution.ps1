@@ -36,6 +36,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
         [ValidateNotNullOrEmpty()]

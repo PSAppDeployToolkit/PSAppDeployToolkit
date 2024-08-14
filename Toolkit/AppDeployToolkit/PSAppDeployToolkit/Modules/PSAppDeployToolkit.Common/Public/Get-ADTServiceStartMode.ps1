@@ -28,6 +28,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -40,11 +41,15 @@
 
     begin {
         # Make this function continue on error.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
         {
-            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+            $PSBoundParameters.ErrorAction
         }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
 
@@ -53,7 +58,7 @@
         {
             # Get the start mode and adjust it if the automatic type is delayed.
             Write-ADTLogEntry -Message "Getting the service [$Name] startup mode."
-            if ((($serviceStartMode = (Get-Service @PSBoundParameters).StartType) -eq 'Automatic') -and (Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1)
+            if ((($serviceStartMode = (Get-Service @PSBoundParameters).StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
             {
                 $serviceStartMode = 'Automatic (Delayed Start)'
             }
@@ -64,14 +69,9 @@
         }
         catch
         {
-            if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
-            {
-                Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
-                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
-                {
-                    throw
-                }
-            }
+            Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
 

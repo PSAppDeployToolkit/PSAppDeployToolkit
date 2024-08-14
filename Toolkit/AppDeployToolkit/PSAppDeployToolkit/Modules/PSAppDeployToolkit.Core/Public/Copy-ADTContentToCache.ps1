@@ -28,7 +28,9 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
     )
@@ -39,39 +41,37 @@
     }
 
     process {
+        # Create the cache folder if it does not exist.
+        if (![System.IO.Directory]::Exists($Path)) 
+        {
+            try
+            {
+                Write-ADTLogEntry -Message "Creating cache folder [$Path]."
+                [System.Void](New-Item -Path $Path -ItemType Directory)
+            }
+            catch
+            {
+                Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Cache folder [$Path] already exists."
+        }
+
+        # Copy the toolkit content to the cache folder.
         try
         {
-            # Create the cache folder if it does not exist.
-            if (![System.IO.Directory]::Exists($Path)) 
-            {
-                try
-                {
-                    Write-ADTLogEntry -Message "Creating cache folder [$Path]."
-                    [System.Void](New-Item -Path $Path -ItemType Directory)
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-                    throw
-                }
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Cache folder [$Path] already exists."
-            }
-
-            # Copy the toolkit content to the cache folder.
             Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
             Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
-
-            # Set the Files directory to the cache path.
             $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
             $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
         }
         catch
         {
             Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 

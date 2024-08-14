@@ -46,6 +46,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]

@@ -43,6 +43,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -72,14 +73,28 @@
                     # Load the User registry hive if the registry hive file exists.
                     if (![System.IO.File]::Exists($UserRegistryHiveFile))
                     {
-                        throw "Failed to find the registry hive file [$UserRegistryHiveFile] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue..."
+                        $naerParams = @{
+                            Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$UserRegistryHiveFile] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")
+                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            ErrorId = 'UserRegistryHiveFileNotFound'
+                            TargetObject = $UserRegistryHiveFile
+                            RecommendedAction = "Please confirm the state of this user profile and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
 
                     Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                     $HiveLoadResult = & "$env:WinDir\System32\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
                     if ($Global:LastExitCode -ne 0)
                     {
-                        throw "Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue..."
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new("Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue...")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'UserRegistryHiveLoadFailure'
+                            TargetObject = $UserRegistryHiveFile
+                            RecommendedAction = "Please confirm the state of this user profile and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
                     $ManuallyLoadedRegHive = $true
                 }
@@ -115,7 +130,14 @@
                             $HiveLoadResult = & "$env:WinDir\System32\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                             if ($Global:LastExitCode -ne 0)
                             {
-                                throw "REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult]."
+                                $naerParams = @{
+                                    Exception = [System.ApplicationException]::new("REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult].")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                    ErrorId = 'UserRegistryHiveUnloadFailure'
+                                    TargetObject = "HKEY_USERS\$($UserProfile.SID)"
+                                    RecommendedAction = "Please confirm the state of this user profile and try again."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
                             }
                         }
                     }

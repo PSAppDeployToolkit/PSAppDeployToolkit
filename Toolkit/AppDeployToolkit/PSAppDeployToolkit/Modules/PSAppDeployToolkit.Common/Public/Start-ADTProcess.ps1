@@ -89,6 +89,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
@@ -164,7 +165,14 @@
                 if (![System.IO.File]::Exists($Path))
                 {
                     Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
-                    throw [System.IO.FileNotFoundException]::new("File [$Path] not found.")
+                    $naerParams = @{
+                        Exception = [System.IO.FileNotFoundException]::new("File [$Path] not found.")
+                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        ErrorId = 'PathFileNotFound'
+                        TargetObject = $Path
+                        RecommendedAction = "Please confirm the path of the specified file and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
             }
@@ -174,7 +182,14 @@
                 if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                 {
                     Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
-                    throw [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
+                    $naerParams = @{
+                        Exception = [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
+                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        ErrorId = 'PathFileNotFound'
+                        TargetObject = $Path
+                        RecommendedAction = "Please confirm the path of the specified file and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
                 $Path = $fqPath
@@ -202,9 +217,16 @@
                 if (!$MsiExecAvailable)
                 {
                     # Default MSI exit code for install already in progress.
-                    $returnCode = 1618
                     Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
-                    throw [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                    $returnCode = 1618
+                    $naerParams = @{
+                        Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                        Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
+                        ErrorId = 'MsiExecUnavailable'
+                        TargetObject = $Path
+                        RecommendedAction = "Please wait for the current MSI operation to finish and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
             }
 
@@ -454,7 +476,7 @@
             if ($returnCode.Equals(60002))
             {
                 Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode].`n$(Resolve-ADTError)" -Severity 3
-                throw
+                $PSCmdlet.ThrowTerminatingError($_)
             }
             else
             {

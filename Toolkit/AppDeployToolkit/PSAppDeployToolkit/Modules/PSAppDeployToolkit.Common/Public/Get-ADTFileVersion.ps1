@@ -28,9 +28,16 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({if (!$_.VersionInfo) {throw "The file does not exist or does not have any version info."}; $_.VersionInfo})]
+        [ValidateScript({
+            if (!$_.VersionInfo)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The file does not exist or does not have any version info.'))
+            }
+            return !!$_.VersionInfo
+        })]
         [System.IO.FileInfo]$File,
 
         [Parameter(Mandatory = $false)]

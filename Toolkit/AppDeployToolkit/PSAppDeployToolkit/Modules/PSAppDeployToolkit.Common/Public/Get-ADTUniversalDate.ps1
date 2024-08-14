@@ -35,7 +35,9 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DateTime = (Get-Date -Format (Get-ADTEnvironment).culture.DateTimeFormat.UniversalDateTimePattern).ToString()
     )

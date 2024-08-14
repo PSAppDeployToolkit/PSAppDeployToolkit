@@ -33,9 +33,17 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
-        [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
+        [ValidateScript({})]
+        [ValidateScript({
+            if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
+            }
+            return !!$_
+        })]
         [Alias('FilePath')]
         [System.String]$Path,
 
@@ -62,7 +70,14 @@
         else
         {
             Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
-            throw [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
+            $naerParams = @{
+                Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                ErrorId = 'MsiFileNotFound'
+                TargetObject = $Path
+                RecommendedAction = "Please confirm the path of the MSP file and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Create a Windows Installer object and open the database in read-only mode.

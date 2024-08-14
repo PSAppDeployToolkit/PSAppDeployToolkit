@@ -51,18 +51,27 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownSeconds = 60,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownNoHideSeconds = 30,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$SilentCountdownSeconds = 5,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SilentRestart,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 

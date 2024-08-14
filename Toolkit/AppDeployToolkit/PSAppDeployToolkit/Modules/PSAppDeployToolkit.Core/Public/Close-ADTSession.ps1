@@ -1,6 +1,8 @@
 ﻿function Close-ADTSession
 {
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Nullable[System.Int32]]$ExitCode
     )

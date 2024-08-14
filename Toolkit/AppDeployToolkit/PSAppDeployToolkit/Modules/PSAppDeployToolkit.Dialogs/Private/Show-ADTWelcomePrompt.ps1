@@ -62,27 +62,50 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
-        [ValidateScript({if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout) {throw 'The close applications countdown time cannot be longer than the timeout specified in the config file.'}; !!$_})]
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+            }
+            return !!$_
+        })]
         [System.UInt32]$CloseAppsCountdown,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferTimes,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceCloseAppsCountdown,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowDefer,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
