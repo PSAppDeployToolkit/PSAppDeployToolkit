@@ -229,7 +229,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTError)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
                 }
                 finally
                 {
@@ -462,7 +462,7 @@
                                 }
                                 catch
                                 {
-                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTError)" -Severity 3
+                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
                                 }
                                 finally
                                 {

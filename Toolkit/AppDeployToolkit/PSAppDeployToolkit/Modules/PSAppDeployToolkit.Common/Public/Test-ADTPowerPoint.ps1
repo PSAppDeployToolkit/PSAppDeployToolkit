@@ -87,7 +87,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode.`n$(Resolve-ADTError)" -Severity 3
+            Write-ADTLogEntry -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         }
     }
 
