@@ -449,3 +449,26 @@ function Import-ADTConfig
     # Finally, store the config globally for usage within module.
     $Script:ADT.Config = $config
 }
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Reset-ADTNotifyIcon
+{
+    $null = if ($Script:FormData.NotifyIcon)
+    {
+        try
+        {
+            $Script:FormData.NotifyIcon.Dispose()
+            $Script:FormData.NotifyIcon = $null
+        }
+        catch
+        {
+            $null
+        }
+    }
+}

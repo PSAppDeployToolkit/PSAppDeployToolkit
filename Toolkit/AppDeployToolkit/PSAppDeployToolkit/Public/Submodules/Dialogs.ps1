@@ -1545,180 +1545,107 @@ function Show-ADTInstallationRestartPrompt
 #
 #---------------------------------------------------------------------------
 
-Function Show-BalloonTip {
+function Show-ADTBalloonTip
+{
     <#
-.SYNOPSIS
 
-Displays a balloon tip notification in the system tray.
+    .SYNOPSIS
+    Displays a balloon tip notification in the system tray.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Displays a balloon tip notification in the system tray.
 
-Displays a balloon tip notification in the system tray.
+    .PARAMETER BalloonTipText
+    Text of the balloon tip.
 
-.PARAMETER BalloonTipText
+    .PARAMETER BalloonTipTitle
+    Title of the balloon tip.
 
-Text of the balloon tip.
+    .PARAMETER BalloonTipIcon
+    Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 
-.PARAMETER BalloonTipTitle
+    .PARAMETER BalloonTipTime
+    Time in milliseconds to display the balloon tip. Default: 10000.
 
-Title of the balloon tip.
+    .PARAMETER NoWait
+    Create the balloontip asynchronously. Default: $false
 
-.PARAMETER BalloonTipIcon
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
+    .OUTPUTS
+    System.String. Returns the version of the specified file.
 
-.PARAMETER BalloonTipTime
+    .EXAMPLE
+    Show-ADTBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 
-Time in milliseconds to display the balloon tip. Default: 10000.
+    .EXAMPLE
+    Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
 
-.PARAMETER NoWait
+    .NOTES
+    For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
-Create the balloontip asynchronously. Default: $false
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the version of the specified file.
-
-.EXAMPLE
-
-Show-BalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
-
-.EXAMPLE
-
-Show-BalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
-
-.NOTES
-
-For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [String]$BalloonTipText,
-        [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateNotNullorEmpty()]
-        [String]$BalloonTipTitle = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
-        [Parameter(Mandatory = $false, Position = 2)]
+        [System.String]$BalloonTipText,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$BalloonTipTitle = $Script:ADT.CurrentSession.GetPropertyValue('InstallTitle'),
+
+        [Parameter(Mandatory = $false)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
-        [Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
-        [Parameter(Mandatory = $false, Position = 3)]
-        [ValidateNotNullorEmpty()]
-        [Int32]$BalloonTipTime = 10000,
-        [Parameter(Mandatory = $false, Position = 4)]
-        [Switch]$NoWait = $false
+        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$BalloonTipTime = 10000,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    Begin {
+    begin {
         Write-DebugHeader
     }
-    Process {
-        ## Skip balloon if in silent mode, disabled in the config or presentation is detected
-        If ($Script:ADT.CurrentSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications) {
-            Write-ADTLogEntry -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
-            Return
+
+    process {
+        # Skip balloon if in silent mode, disabled in the config or presentation is detected.
+        if ($Script:ADT.CurrentSession.DeployModeSilent -or !$Script:ADT.Config.UI.BalloonNotifications)
+        {
+            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($Script:ADT.Config.UI.BalloonNotifications)]. BalloonTipText:$BalloonTipText"
+            return
         }
-        If (Test-PowerPoint) {
-            Write-ADTLogEntry -Message "Bypassing Show-BalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
-            Return
-        }
-        ## Dispose of previous balloon
-        If ($Script:ADT.CurrentSession.State.NotifyIcon) {
-            Try {
-                $Script:ADT.CurrentSession.State.NotifyIcon.Dispose()
-                $Script:ADT.CurrentSession.State.NotifyIcon = $null
-            }
-            Catch {
-            }
+        if (Test-PowerPoint)
+        {
+            Write-ADTLogEntry -Message "Bypassing Show-ADTBalloonTip [Mode:$($Script:ADT.CurrentSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText:$BalloonTipText"
+            return
         }
 
-        If (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or ($Script:ADT.Config.Toast.Disable -eq $true)) {
-            ## NoWait - Create the balloontip icon asynchronously
-            If ($NoWait) {
+        # Dispose of previous balloon.
+        Reset-ADTNotifyIcon
+
+        # Do a balloon tip if we're on an old OS or toast notifications are disabled.
+        if (($Script:ADT.Environment.envOSVersionMajor -lt 10) -or $Script:ADT.Config.Toast.Disable)
+        {
+            # Create in separate process if -NoWait is passed.
+            if ($NoWait)
+            {
                 Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-                ## Create a script block to display the balloon notification in a new PowerShell process so that we can wait to cleanly dispose of the balloon tip without having to make the deployment script wait
-                ## Scriptblock text has to be as short as possible because it is passed as a parameter to powershell
-                ## Don't strongly type parameter BalloonTipIcon as System.Drawing assembly not loaded yet in asynchronous scriptblock so will throw error
-                [ScriptBlock]$notifyIconScriptBlock = {
-                    Param(
-                        [Parameter(Mandatory = $true, Position = 0)]
-                        [ValidateNotNullOrEmpty()]
-                        [String]$BalloonTipText,
-                        [Parameter(Mandatory = $false, Position = 1)]
-                        [ValidateNotNullorEmpty()]
-                        [String]$BalloonTipTitle,
-                        [Parameter(Mandatory = $false, Position = 2)]
-                        [ValidateSet('Error', 'Info', 'None', 'Warning')]
-                        $BalloonTipIcon = 'Info',
-                        [Parameter(Mandatory = $false, Position = 3)]
-                        [ValidateNotNullorEmpty()]
-                        [Int32]$BalloonTipTime,
-                        [Parameter(Mandatory = $false, Position = 4)]
-                        [ValidateNotNullorEmpty()]
-                        [String]$AppDeployLogoIcon
-                    )
-                    Add-Type -AssemblyName 'System.Windows.Forms', 'System.Drawing' -ErrorAction 'Stop'
-                    $BalloonTipIconText = [String]::Concat($BalloonTipTitle, ' - ', $BalloonTipText)
-                    If ($BalloonTipIconText.Length -gt 63) {
-                        $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0, 60), '...')
-                    }
-                    [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-                    $Script:ADT.CurrentSession.State.NotifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
-                        BalloonTipIcon  = $BalloonTipIcon
-                        BalloonTipText  = $BalloonTipText
-                        BalloonTipTitle = $BalloonTipTitle
-                        Icon            = $Script:FormData.Assets.Icon
-                        Text            = $BalloonTipIconText
-                        Visible         = $true
-                    }
-
-                    $Script:ADT.CurrentSession.State.NotifyIcon.ShowBalloonTip($BalloonTipTime)
-                    Start-Sleep -Milliseconds ($BalloonTipTime)
-                    $Script:ADT.CurrentSession.State.NotifyIcon.Dispose() }
-
-                ## Invoke a separate PowerShell process passing the script block as a command and associated parameters to display the balloon tip notification asynchronously
-                Try {
-                    Execute-Process -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command & {$notifyIconScriptBlock} `'$BalloonTipText`' `'$BalloonTipTitle`' `'$BalloonTipIcon`' `'$BalloonTipTime`' `'$AppDeployLogoIcon`'" -NoWait -WindowStyle 'Hidden' -CreateNoWindow
-                }
-                Catch {
-                }
+                Execute-Process -Path $Script:ADT.Environment.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = '$BalloonTipIcon'; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($Script:ADT.Config.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
+                return
             }
-            ## Otherwise create the balloontip icon synchronously
-            Else {
-                Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                ## Prepare Text - Cut it if longer than 63 chars
-                $BalloonTipIconText = [String]::Concat($BalloonTipTitle, ' - ', $BalloonTipText)
-                If ($BalloonTipIconText.Length -gt 63) {
-                    $BalloonTipIconText = [String]::Concat($BalloonTipIconText.Substring(0, 60), '...')
-                }
-                ## Create the BalloonTip
-                [Windows.Forms.ToolTipIcon]$BalloonTipIcon = $BalloonTipIcon
-                $Script:ADT.CurrentSession.State.NotifyIcon = New-Object -TypeName 'System.Windows.Forms.NotifyIcon' -Property @{
-                    BalloonTipIcon  = $BalloonTipIcon
-                    BalloonTipText  = $BalloonTipText
-                    BalloonTipTitle = $BalloonTipTitle
-                    Icon            = $Script:FormData.Assets.Icon
-                    Text            = $BalloonTipIconText
-                    Visible         = $true
-                }
-                ## Display the balloon tip notification
-                $Script:ADT.CurrentSession.State.NotifyIcon.ShowBalloonTip($BalloonTipTime)
-            }
+            Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
+            ($Script:FormData.NotifyIcon = [System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = $BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = $Script:FormData.Assets.Icon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
         }
-        # Otherwise use toast notification
-        Else {
+        else
+        {
             $toastAppID = $Script:ADT.Environment.appDeployToolkitName
             $toastAppDisplayName = $Script:ADT.Config.Toast.AppName
 
@@ -1809,7 +1736,8 @@ https://psappdeploytoolkit.com
             }
         }
     }
-    End {
+
+    end {
         Write-DebugFooter
     }
 }
@@ -1966,7 +1894,7 @@ function Show-ADTInstallationProgress
         if (!$Script:ProgressWindow.Count -or !$Script:ProgressWindow.Running)
         {
             # Notify user that the software installation has started.
-            Show-BalloonTip -BalloonTipIcon Info -BalloonTipText "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
+            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($Script:ADT.CurrentSession.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Start)"
 
             # Set up the PowerShell instance and add the initial scriptblock.
             $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({

@@ -849,3 +849,37 @@ function Show-InstallationRestartPrompt
     }
     Show-ADTInstallationRestartPrompt @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Show-ADTBalloonTip
+#
+#---------------------------------------------------------------------------
+
+function Show-BalloonTip
+{
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$BalloonTipText,
+
+        [Parameter(Mandatory = $false, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$BalloonTipTitle,
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateSet('Error', 'Info', 'None', 'Warning')]
+        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon,
+
+        [Parameter(Mandatory = $false, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$BalloonTipTime,
+
+        [Parameter(Mandatory = $false, Position = 4)]
+        [System.Management.Automation.SwitchParameter]$NoWait
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Show-ADTBalloonTip] instead." -Severity 2
+    Show-ADTBalloonTip @PSBoundParameters
+}

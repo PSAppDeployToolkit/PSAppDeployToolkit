@@ -107,7 +107,7 @@
 
     UI = @{
         # Used to turn automatic balloon notifications on or off.
-        BalloonNotifications = $false
+        BalloonNotifications = $true
 
         # Exit code used when a UI prompt times out or the user opts to defer.
         DefaultExitCode = 1618

@@ -148,6 +148,7 @@ function Close-ADTSession
     # If this was the last session, exit out with our code.
     if (!$Script:SessionBuffer.Count)
     {
+        Reset-ADTNotifyIcon
         exit $Script:ADT.LastExitCode
     }
 }

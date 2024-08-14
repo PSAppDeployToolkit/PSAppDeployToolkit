@@ -131,7 +131,7 @@ FunctionsToExport = @(
     'Set-RegistryKey'
     'Set-ServiceStartMode'
     'Set-Shortcut'
-    'Show-BalloonTip'
+    'Show-ADTBalloonTip'
     'Show-ADTDialogBox'
     'Show-HelpConsole'
     'Show-ADTInstallationProgress'

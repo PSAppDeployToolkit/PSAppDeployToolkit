@@ -56,6 +56,7 @@ New-Variable -Name FormData -Option Constant -Value @{
     Font = [System.Drawing.SystemFonts]::MessageBoxFont
     Width = 450
     BannerHeight = 0
+    NotifyIcon = $null
     Assets = @{
         Icon = $null
         Logo = $null
@@ -160,7 +161,7 @@ Export-ModuleMember -Function @(
     'Set-RegistryKey'
     'Set-ServiceStartMode'
     'Set-Shortcut'
-    'Show-BalloonTip'
+    'Show-ADTBalloonTip'
     'Show-ADTDialogBox'
     'Show-HelpConsole'
     'Show-ADTInstallationProgress'
