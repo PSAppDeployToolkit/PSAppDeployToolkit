@@ -43,6 +43,7 @@ New-Variable -Name ADT -Option ReadOnly -Value @{
     Language = $null
     Config = $null
     Strings = $null
+    LastExitCode = 0
 }
 
 # State data used by Show-InstallationProgress.
@@ -85,6 +86,7 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
 # Define exports. It should be done here and in the psd1 to cover all bases.
 Export-ModuleMember -Function @(
     'Open-ADTSession'
+    'Close-ADTSession'
     'Get-ADTSession'
     'Export-ADTModuleState'
     'Import-ADTModuleState'
@@ -99,7 +101,6 @@ Export-ModuleMember -Function @(
     'Execute-MSP'
     'Execute-Process'
     'Execute-ProcessAsUser'
-    'Exit-Script'
     'Get-FileVersion'
     'Get-FreeDiskSpace'
     'Get-HardwarePlatform'

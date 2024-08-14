@@ -96,7 +96,7 @@ Specifies priority class for the process. Options: Idle, Normal, High, AboveNorm
 
 .PARAMETER ExitOnProcessFailure
 
-Specifies whether the function should call Exit-Script when the process returns an exit code that is considered an error/failure. Default: $true
+Specifies whether the function should call Close-ADTSession when the process returns an exit code that is considered an error/failure. Default: $true
 
 .PARAMETER RepairFromSource
 

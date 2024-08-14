@@ -79,6 +79,7 @@ $sessionParams = @{
     AppArch = $(if (Test-Path -LiteralPath 'Variable:AppArch') {$AppArch})
     AppLang = $(if (Test-Path -LiteralPath 'Variable:AppLang') {$AppLang})
     AppRevision = $(if (Test-Path -LiteralPath 'Variable:AppRevision') {$AppRevision})
+    AppExitCodes = $(if (Test-Path -LiteralPath 'Variable:AppExitCodes') {$AppExitCodes})
     AppScriptVersion = $(if (Test-Path -LiteralPath 'Variable:AppScriptVersion') {$AppScriptVersion})
     AppScriptDate = $(if (Test-Path -LiteralPath 'Variable:AppScriptDate') {$AppScriptDate})
     AppScriptAuthor = $(if (Test-Path -LiteralPath 'Variable:AppScriptAuthor') {$AppScriptAuthor})
@@ -226,6 +227,24 @@ function Write-Log
             }
         }
     }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Close-ADTSession
+#
+#---------------------------------------------------------------------------
+
+function Exit-Script
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$ExitCode
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Close-ADTSession] instead." -Severity 2
+    Close-ADTSession @PSBoundParameters
 }
 
 <#

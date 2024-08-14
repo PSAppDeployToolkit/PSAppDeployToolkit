@@ -215,7 +215,7 @@ Unblocks the execution of applications performed by the Block-AppExecution funct
 
 .DESCRIPTION
 
-This function is called by the Exit-Script function or when the script itself is called with the parameters -CleanupBlockedApps
+This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps
 
 .INPUTS
 

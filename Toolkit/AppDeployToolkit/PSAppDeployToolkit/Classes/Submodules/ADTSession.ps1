@@ -39,6 +39,7 @@ class ADTSession
         AppArch = [System.String]::Empty
         AppLang = [System.String]::Empty
         AppRevision = [System.String]::Empty
+        AppExitCodes = $null
         AppScriptVersion = [System.String]::Empty
         AppScriptDate = [System.String]::Empty
         AppScriptAuthor = [System.String]::Empty
@@ -98,8 +99,9 @@ class ADTSession
         $Script:SessionCallers.Add($this, $Parameters.Cmdlet)
         $Parameters.GetEnumerator().Where({!$_.Name.Equals('Cmdlet')}).ForEach({$this.Properties[$_.Name] = $_.Value})
 
-        # Ensure the deployment type is always title-cased for log aesthetics.
+        # Amend some incoming parameters to ensure there's no undefined behaviour.
         $this.Properties.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.Properties.DeploymentType)
+        if ($null -eq $this.Properties.AppExitCodes) {$this.Properties.AppExitCodes = 0, 1641, 3010}
 
         # Establish script directories.
         $this.Properties.ScriptParentPath = [System.IO.Path]::GetDirectoryName($Parameters.Cmdlet.MyInvocation.MyCommand.Path)
@@ -678,9 +680,110 @@ class ADTSession
         $this.Initialised = $true
     }
 
-    [System.Void] Close()
+    [System.Void] Close([System.Int32]$ExitCode)
     {
-        # Migrate `Exit-Script` into here.
+        # If block execution variable is true, call the function to unblock execution.
+        if ($this.State.BlockExecution)
+        {
+            Unblock-AppExecution
+        }
+
+        # If Terminal Server mode was set, turn it off.
+        if ($this.GetPropertyValue('TerminalServerMode'))
+        {
+            Disable-TerminalServerInstallMode
+        }
+
+        # Store default variables.
+        $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Complete)"
+        $balloonIcon = 'Info'
+        $logSeverity = 0
+        $logSrc = $this.GetLogSource()
+
+        # Process resulting exit code.
+        if ($this.GetPropertyValue('AppExitCodes').Contains($ExitCode))
+        {
+            # Clean up app deferral history.
+            if (Test-Path -LiteralPath $this.GetPropertyValue('RegKeyDeferHistory'))
+            {
+                $this.WriteLogEntry('Removing deferral history...', $logSrc)
+                Remove-RegistryKey -Key $this.GetPropertyValue('RegKeyDeferHistory') -Recurse
+            }
+
+            # Handle reboot prompts on successful script completion.
+            if ($this.GetPropertyValue('AllowRebootPassThru') -and ($this.State.MsiRebootDetected -or $ExitCode.Equals(3010) -or $ExitCode.Equals(1641)))
+            {
+                $this.WriteLogEntry('A restart has been flagged as required.', $logSrc)
+                $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.RestartRequired)"
+                if ($this.State.MsiRebootDetected -and !$ExitCode.Equals(1641))
+                {
+                    $ExitCode = 3010
+                }
+            }
+        }
+        elseif (($ExitCode -eq $Script:ADT.Config.UI.DefaultExitCode) -or ($ExitCode -eq $Script:ADT.Config.UI.DeferExitCode))
+        {
+            $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.FastRetry)"
+            $balloonIcon = 'Warning'
+            $logSeverity = 2
+        }
+        else
+        {
+            $balloonText = "$($this.DeploymentTypeName) $($Script:ADT.Strings.BalloonText.Error)"
+            $balloonIcon = 'Error'
+            $logSeverity = 3
+        }
+
+        # Update the module's last tracked exit code.
+        if ($ExitCode)
+        {
+            $Script:ADT.LastExitCode = $ExitCode
+        }
+
+        # Annouce session success/failure.
+        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.DeploymentTypeName.ToLower()) completed with exit code [$ExitCode].", $logSeverity, $logSrc)
+        Show-BalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
+
+        # Write out a log divider to indicate the end of logging.
+        $this.WriteLogEntry('-' * 79, $logSrc)
+        $this.SetPropertyValue('DisableLogging', $true)
+
+        # Archive the log files to zip format and then delete the temporary logs folder.
+        if ($Script:ADT.Config.Toolkit.CompressLogs)
+        {
+            $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
+            try
+            {
+                # Get all archive files sorted by last write time
+                $ArchiveFiles = Get-ChildItem -LiteralPath $Script:ADT.Config.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | Sort-Object LastWriteTime
+                $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
+
+                # Keep only the max number of archive files
+                if ($ArchiveFiles.Count -gt $Script:ADT.Config.Toolkit.LogMaxHistory)
+                {
+                    $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $Script:ADT.Config.Toolkit.LogMaxHistory) | Remove-Item
+                }
+                New-ZipFile -DestinationArchiveDirectoryPath $Script:ADT.Config.Toolkit.LogPath -DestinationArchiveFileName $DestinationArchiveFileName -SourceDirectory $this.GetPropertyValue('LogTempFolder') -RemoveSourceAfterArchiving
+            }
+            catch
+            {
+                Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$logSrc] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-Error)" -ForegroundColor Red
+            }
+
+        }
+
+        # Clean up potentially locked assets.
+        $null = if ($this.State.NotifyIcon)
+        {
+            try
+            {
+                $this.State.NotifyIcon.Dispose()
+            }
+            catch
+            {
+                $null
+            }
+        }
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.Int32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)

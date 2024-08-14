@@ -45,6 +45,10 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
+        [System.Int32[]]$AppExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
         [System.String]$AppScriptVersion,
 
         [Parameter(Mandatory = $false)]
@@ -99,6 +103,7 @@ function Open-ADTSession
     Initialize-ADTVariableDatabase
     Import-ADTConfig
     Import-ADTLocalizedStrings
+    $Script:ADT.LastExitCode = 0
 
     # Instantiate a new ADT session and initialise it.
     $Script:SessionBuffer.Add(($Script:ADT.CurrentSession = [ADTSession]::new($PSBoundParameters)))
@@ -108,17 +113,62 @@ function Open-ADTSession
     }
     catch
     {
-        [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
-        $Script:SessionCallers.Remove($Script:ADT.CurrentSession)
-        $Script:ADT.CurrentSession = if ($Script:SessionBuffer.Count)
-        {
-            $Script:SessionBuffer[-1]
-        }
+        Restore-ADTPreviousSession
         throw
     }
 
     # Export environment variables to the user's scope.
     $Script:ADT.Environment.GetEnumerator().ForEach({$Cmdlet.SessionState.PSVariable.Set([psvariable]::new($_.Name, $_.Value, 'Constant'))})
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Close-ADTSession
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$ExitCode
+    )
+
+    # Close the Installation Progress Dialog if running.
+    if ($Script:SessionBuffer.Count.Equals(1))
+    {
+        Close-InstallationProgress
+    }
+
+    # Close out the active session and clean up session state.
+    $Script:ADT.CurrentSession.Close($ExitCode)
+    Restore-ADTPreviousSession
+
+    # If this was the last session, exit out with our code.
+    if (!$Script:SessionBuffer.Count)
+    {
+        exit $Script:ADT.LastExitCode
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Restore-ADTPreviousSession
+{
+    # Destruct the active session and restore the previous one if available.
+    $Host.UI.RawUI.WindowTitle = $Script:ADT.CurrentSession.OldPSWindowTitle
+    [System.Void]$Script:SessionBuffer.Remove($Script:ADT.CurrentSession)
+    $Script:SessionCallers.Remove($Script:ADT.CurrentSession)
+    $Script:ADT.CurrentSession = if ($Script:SessionBuffer.Count)
+    {
+        $Script:SessionBuffer[-1]
+    }
 }
 
 
