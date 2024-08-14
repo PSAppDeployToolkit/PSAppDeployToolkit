@@ -10,7 +10,7 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Add system types required by the module.
-Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Windows.Forms, System.ServiceProcess
 
 # Dot-source our imports and perform exports.
 (Get-ChildItem -Path $PSScriptRoot\*\*.ps1).FullName.ForEach({. $_})
