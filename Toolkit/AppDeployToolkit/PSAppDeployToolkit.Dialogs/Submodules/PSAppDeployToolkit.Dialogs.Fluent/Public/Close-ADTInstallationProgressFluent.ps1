@@ -1,4 +1,10 @@
-﻿function Close-ADTInstallationProgressFluent
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Close-ADTInstallationProgressFluent
 {
     <#
 

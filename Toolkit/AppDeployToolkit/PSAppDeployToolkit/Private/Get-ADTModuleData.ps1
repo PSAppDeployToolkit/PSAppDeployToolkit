@@ -1,4 +1,10 @@
-﻿function Get-ADTModuleData
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTModuleData
 {
 	# When a PowerShell module is re-loaded, its cached data in incorrectly validated. This results in duplicate classes, etc.
 	# The issue has been fixed in PowerShell 7.x, however this is our work around for PowerShell 5.x clients.

@@ -1,4 +1,10 @@
-﻿function Import-ADTConfig
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Import-ADTConfig
 {
     # Get the current environment and root module.
     $adtEnv = Get-ADTEnvironment

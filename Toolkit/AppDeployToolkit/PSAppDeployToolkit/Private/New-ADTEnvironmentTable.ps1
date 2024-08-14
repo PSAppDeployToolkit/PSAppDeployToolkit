@@ -1,4 +1,10 @@
-﻿function New-ADTEnvironmentTable
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function New-ADTEnvironmentTable
 {
     # Perform initial setup.
     $variables = [ordered]@{}

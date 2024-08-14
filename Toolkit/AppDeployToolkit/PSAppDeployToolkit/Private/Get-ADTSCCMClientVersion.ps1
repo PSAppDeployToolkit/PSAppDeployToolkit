@@ -1,4 +1,10 @@
-﻿function Get-ADTSCCMClientVersion
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTSCCMClientVersion
 {
     # Make sure SCCM client is installed and running.
     Write-ADTLogEntry -Message 'Checking to see if SCCM Client service [ccmexec] is installed and running.'

@@ -1,4 +1,10 @@
-﻿function Show-ADTBlockedAppDialog
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Show-ADTBlockedAppDialog
 {
     [CmdletBinding()]
     param

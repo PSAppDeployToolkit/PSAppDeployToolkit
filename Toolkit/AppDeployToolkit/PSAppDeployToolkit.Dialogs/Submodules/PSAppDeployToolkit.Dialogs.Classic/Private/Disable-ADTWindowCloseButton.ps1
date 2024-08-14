@@ -1,4 +1,10 @@
-﻿function Disable-ADTWindowCloseButton
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Disable-ADTWindowCloseButton
 {
     [CmdletBinding()]
     param

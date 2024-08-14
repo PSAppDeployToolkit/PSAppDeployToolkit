@@ -1,4 +1,10 @@
-﻿function Update-ADTSessionEnvironmentVariables
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Update-ADTSessionEnvironmentVariables
 {
     <#
 

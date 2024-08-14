@@ -1,4 +1,10 @@
-﻿function Show-ADTInstallationProgressClassic
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Show-ADTInstallationProgressClassic
 {
     <#
 

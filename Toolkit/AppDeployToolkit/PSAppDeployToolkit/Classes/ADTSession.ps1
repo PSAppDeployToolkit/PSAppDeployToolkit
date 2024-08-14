@@ -1,4 +1,10 @@
-﻿class ADTSession
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+class ADTSession
 {
     # Private variables for modules to use that aren't for public access.
     hidden [AllowEmptyCollection()][System.Collections.Hashtable]$ExtensionData = @{}

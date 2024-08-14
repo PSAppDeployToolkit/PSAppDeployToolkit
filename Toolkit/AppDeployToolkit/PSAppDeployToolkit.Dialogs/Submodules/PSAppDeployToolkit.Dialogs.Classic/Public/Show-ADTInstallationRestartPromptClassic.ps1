@@ -1,4 +1,10 @@
-﻿function Show-ADTInstallationRestartPromptClassic
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Show-ADTInstallationRestartPromptClassic
 {
     <#
 
