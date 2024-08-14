@@ -17,6 +17,7 @@
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Instantiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Opened
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Closed
+    hidden [ValidateNotNullOrEmpty()][System.String]$LogPath
     hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
 
     # Deploy-Application.ps1 parameters.
@@ -60,9 +61,7 @@
     [AllowEmptyCollection()][System.String[]]$DefaultMspFiles
     [ValidateNotNullOrEmpty()][System.Boolean]$UseDefaultMsi
     [ValidateNotNullOrEmpty()][System.String]$LogTempFolder
-    [ValidateNotNullOrEmpty()][System.String]$LogPath
     [ValidateNotNullOrEmpty()][System.String]$LogName
-    [ValidateNotNullOrEmpty()][System.String]$LogFile
 
     # Constructors.
     ADTSession([System.Management.Automation.PSCmdlet]$Cmdlet)
@@ -329,12 +328,12 @@
 
         # Generate the log filename to use.
         $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType).log"
-        $this.LogFile = Join-Path -Path $this.LogPath -ChildPath $this.LogName
+        $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
 
         # Check if log file needs to be rotated.
-        if ([System.IO.File]::Exists($this.LogFile) -and !$ADTConfig.Toolkit.LogAppend)
+        if ([System.IO.File]::Exists($logFile) -and !$ADTConfig.Toolkit.LogAppend)
         {
-            $logFileInfo = [System.IO.FileInfo]$this.LogFile
+            $logFileInfo = [System.IO.FileInfo]$logFile
             $logFileSizeMB = $logFileInfo.Length / 1MB
 
             # Rotate if we've exceeded the size already.
@@ -343,8 +342,8 @@
                 try
                 {
                     # Get new log file path.
-                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($this.LogFile)
-                    $logFileExtension = [IO.Path]::GetExtension($this.LogFile)
+                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($logFile)
+                    $logFileExtension = [IO.Path]::GetExtension($logFile)
                     $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
                     $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
                     [String]$ArchiveLogFilePath = Join-Path -Path $this.LogPath -ChildPath $ArchiveLogFileName
@@ -359,7 +358,7 @@
                     $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($ADTConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
-                    $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($this.LogFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
+                    $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
 
                     # Keep only the max number of log files
                     if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
@@ -369,7 +368,7 @@
                 }
                 catch
                 {
-                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($this.LogFile)].`n$(Resolve-ADTError)" -ForegroundColor Red
+                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTError)" -ForegroundColor Red
                 }
             }
         }
@@ -828,7 +827,7 @@
         }
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
     {
         # Get the current config.
         $adtConfig = Get-ADTConfig
@@ -861,6 +860,22 @@
         {
             $ScriptSection = $this.GetPropertyValue('InstallPhase')
         }
+        if ([System.String]::IsNullOrWhiteSpace($LogType))
+        {
+            $LogType = $adtConfig.Toolkit.LogStyle
+        }
+        if ([System.String]::IsNullOrWhiteSpace($LogFileDirectory))
+        {
+            $LogFileDirectory = $this.LogPath
+        }
+        elseif (!(Test-Path -LiteralPath $LogFileDirectory -PathType Container))
+        {
+            [System.Void](New-Item -Path $LogFileDirectory -Type Directory -Force)
+        }
+        if ([System.String]::IsNullOrWhiteSpace($LogFileName))
+        {
+            $LogFileName = $this.GetPropertyValue('LogName')
+        }
 
         # Store log string to format with message.
         $logFormats = @(
@@ -870,9 +885,9 @@
 
         # Store the colours we'll use against Write-Host.
         $whParams = $Script:Logging.SeverityColours[$Severity]
-        $logLine = $logFormats[$adtConfig.Toolkit.LogStyle -ieq 'CMTrace']
+        $logLine = $logFormats[$LogType -ieq 'CMTrace']
         $conLine = $logFormats[0]
-        $outFile = $this.GetPropertyValue('LogFile')
+        $outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName)
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
         # If the message is not $null or empty, create the log entry for the different logging methods.
@@ -881,7 +896,7 @@
             # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)
             {
-                [System.String]::Format($logLine, $msg) | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                Out-File -InputObject ([System.String]::Format($logLine, $msg)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
 
             # Only write to host if we're configured to do so.
@@ -890,7 +905,7 @@
                 # Only output using color options if running in a host which supports colors.
                 if ($Global:Host.UI.RawUI.ForegroundColor)
                 {
-                    [System.String]::Format($conLine, $msg) | Write-Host @whParams
+                    Write-Host -Object ([System.String]::Format($conLine, $msg)) @whParams
                 }
                 else
                 {
@@ -903,22 +918,27 @@
 
     [System.Void] WriteLogEntry([System.String[]]$Message)
     {
-        $this.WriteLogEntry($Message, $null, $null, $null, $false)
+        $this.WriteLogEntry($Message, $null, $null, $null, $false, $null, $null, $null)
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity)
     {
-        $this.WriteLogEntry($Message, $Severity, $null, $null, $false)
+        $this.WriteLogEntry($Message, $Severity, $null, $null, $false, $null, $null, $null)
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Boolean]$DebugMessage)
     {
-        $this.WriteLogEntry($Message, $null, $null, $null, $DebugMessage)
+        $this.WriteLogEntry($Message, $null, $null, $null, $DebugMessage, $null, $null, $null)
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.Boolean]$DebugMessage)
     {
-        $this.WriteLogEntry($Message, $Severity, $null, $null, $DebugMessage)
+        $this.WriteLogEntry($Message, $Severity, $null, $null, $DebugMessage, $null, $null, $null)
+    }
+
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
+    {
+        $this.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $null, $null, $null)
     }
 
     [PSADT.Types.ProcessObject[]] GetDefaultMsiExecutablesList()

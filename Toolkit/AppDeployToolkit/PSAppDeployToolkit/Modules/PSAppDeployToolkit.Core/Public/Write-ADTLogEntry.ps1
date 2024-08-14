@@ -21,6 +21,15 @@
     .PARAMETER ScriptSection
     The heading for the portion of the script that is being executed. Default is: $installPhase.
 
+    .PARAMETER LogType
+    Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
+
+    .PARAMETER LogFileDirectory
+    Set the directory where the log file will be saved.
+
+    .PARAMETER LogFileName
+    Set the name of the log file.
+
     .PARAMETER PassThru
     Return the message that was passed to the function.
 
@@ -62,6 +71,18 @@
         [ValidateNotNullOrEmpty()]
         [System.String]$ScriptSection,
 
+        [Parameter(Mandatory = $false, Position = 4)]
+        [ValidateSet('CMTrace', 'Legacy')]
+        [System.String]$LogType,
+
+        [Parameter(Mandatory = $false, Position = 5)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LogFileDirectory,
+
+        [Parameter(Mandatory = $false, Position = 6)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LogFileName,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
 
@@ -72,11 +93,11 @@
     # If we don't have an active session, write the message to the verbose stream (4).
     if ($adtSession = if (($adtData = Get-ADT).Sessions.Count) {$adtData.Sessions[-1]})
     {
-        $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage)
+        $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
     }
     elseif (!$DebugMessage)
     {
-        $Message.ForEach({Write-Verbose -Message "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: $_"})
+        $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
     }
 
     # Return the provided message if PassThru is true.
