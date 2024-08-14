@@ -118,7 +118,7 @@ function Convert-ADTRegistryPath
                 }
 
                 # Check for expected key string format.
-                if ($Key -notmatch '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA')
+                if ($Key -notmatch '^Registry::HKEY_(LOCAL_MACHINE|CLASSES_ROOT|CURRENT_USER|USERS|CURRENT_CONFIG|PERFORMANCE_DATA)')
                 {
                     $naerParams = @{
                         Exception = [System.ArgumentException]::new("Unable to detect target registry hive in string [$Key].")
