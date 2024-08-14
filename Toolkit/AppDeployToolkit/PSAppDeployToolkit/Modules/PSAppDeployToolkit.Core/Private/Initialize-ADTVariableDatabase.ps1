@@ -14,16 +14,12 @@
         return [System.Security.Principal.SecurityIdentifier]::new($WellKnownSidType, $null).Translate([System.Security.Principal.NTAccount]).Value
     }
 
-    # Get info for the root module.
+    # Perform initial setup.
     $adtModule = Get-ADTModuleInfo
-
-    ## Open new dictionary for storage.
     $variables = [ordered]@{}
 
-    ## Variables: Toolkit Name
+    ## Variables: Toolkit Info
     $variables.Add('appDeployToolkitName', $adtModule.Name)
-
-    ## Variables: Script Info
     $variables.Add('appDeployMainScriptVersion', $adtModule.Version)
 
     ## Variables: Culture
@@ -33,8 +29,8 @@
     $variables.Add('currentUILanguage', $variables.uiculture.TwoLetterISOLanguageName.ToUpper())
 
     ## Variables: Environment Variables
+    $variables.Add('envHost', $Host)
     $variables.Add('envShellFolders', (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction Ignore))
-    $variables.envShellFolders.PSObject.Properties.Remove('PSProvider')
     $variables.Add('envAllUsersProfile', $env:ALLUSERSPROFILE)
     $variables.Add('envAppData', [System.Environment]::GetFolderPath('ApplicationData'))
     $variables.Add('envArchitecture', $env:PROCESSOR_ARCHITECTURE)
@@ -193,7 +189,6 @@
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
-    if ($variables.envOfficeVars) {$variables.envOfficeVars.PSObject.Properties.Remove('PSProvider')}
     $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
     $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
 
@@ -289,15 +284,15 @@
     }
 
     ## Variables: Permissions/Accounts
-    $currentProcessToken = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    $variables.Add('CurrentProcessSID', $currentProcessToken.User.Value)
-    $variables.Add('ProcessNTAccount', $currentProcessToken.Name)
-    $variables.Add('ProcessNTAccountSID', $currentProcessToken.User.Value)
+    $variables.Add('CurrentProcessToken', [System.Security.Principal.WindowsIdentity]::GetCurrent())
+    $variables.Add('CurrentProcessSID', [System.Security.Principal.SecurityIdentifier]$variables.CurrentProcessToken.User)
+    $variables.Add('ProcessNTAccount', $variables.CurrentProcessToken.Name)
+    $variables.Add('ProcessNTAccountSID', $variables.CurrentProcessSID.Value)
     $variables.Add('IsAdmin', (Test-ADTCallerIsAdmin))
-    $variables.Add('IsLocalSystemAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid'))
-    $variables.Add('IsLocalServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid'))
-    $variables.Add('IsNetworkServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid'))
-    $variables.Add('IsServiceAccount', ($currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6'))
+    $variables.Add('IsLocalSystemAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid'))
+    $variables.Add('IsLocalServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid'))
+    $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid'))
+    $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-6'))
     $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
     $variables.Add('LocalSystemNTAccount', (Get-SidTypeAccountName -WellKnownSidType LocalSystemSid))
     $variables.Add('LocalUsersGroup', (Get-SidTypeAccountName -WellKnownSidType BuiltinUsersSid))
@@ -305,7 +300,7 @@
     $variables.Add('LocalAdministratorsGroup', (Get-SidTypeAccountName -WellKnownSidType BuiltinAdministratorsSid))
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
-    # Variables: Logged on user information
+    ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo($env:ComputerName))
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
     $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))

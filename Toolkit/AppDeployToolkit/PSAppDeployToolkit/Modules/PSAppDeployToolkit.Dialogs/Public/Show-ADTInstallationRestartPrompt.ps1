@@ -8,6 +8,9 @@
     .DESCRIPTION
     Displays a restart prompt with a countdown to a forced restart.
 
+    .PARAMETER Title
+    Title of the prompt. Default: the application installation name.
+
     .PARAMETER CountdownSeconds
     Specifies the number of seconds to countdown before the system restart. Default: 60
 
@@ -75,8 +78,41 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
+    dynamicparam {
+        # Initialise variables.
+        if (!($adtSession = try {Get-ADTSession} catch {[System.Void]$null}))
+        {
+            Initialize-ADTModule
+        }
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Title', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
+
     begin {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('Title'))
+        {
+            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+        }
+        if ($adtSession)
+        {
+            $PSBoundParameters.Add('ADTSession', $adtSession)
+        }
     }
 
     process {

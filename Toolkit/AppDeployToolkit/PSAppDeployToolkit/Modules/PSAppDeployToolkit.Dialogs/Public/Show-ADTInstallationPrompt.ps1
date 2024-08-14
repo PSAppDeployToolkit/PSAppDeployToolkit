@@ -69,10 +69,6 @@
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Title = (Get-ADTSession).GetPropertyValue('InstallTitle'),
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Message,
@@ -107,28 +103,68 @@
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
-            }
-            return !!$_
-        })]
-        [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
+    dynamicparam {
+        # Initialise variables.
+        if (!($adtSession = try {Get-ADTSession} catch {[System.Void]$null}))
+        {
+            Initialize-ADTModule
+        }
+        $adtConfig = Get-ADTConfig
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Title', [System.String], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
+                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+            )
+        ))
+        $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
+            'Timeout', [System.UInt32], [System.Collections.Generic.List[System.Attribute]]@(
+                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
+                [System.Management.Automation.ValidateScriptAttribute]::new({
+                    if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                    {
+                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                    }
+                    return !!$_
+                })
+            )
+        ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
+
     begin {
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('Title'))
+        {
+            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+        }
+        if (!$PSBoundParameters.ContainsKey('Timeout'))
+        {
+            $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
+        }
+        if ($adtSession)
+        {
+            $PSBoundParameters.Add('ADTSession', $adtSession)
+        }
     }
 
     process {
-        Show-ADTInstallationPromptClassic @PSBoundParameters
+        Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
     }
 
     end {

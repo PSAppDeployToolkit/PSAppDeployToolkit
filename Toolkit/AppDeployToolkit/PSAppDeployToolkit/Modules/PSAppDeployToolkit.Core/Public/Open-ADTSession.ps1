@@ -118,10 +118,7 @@
     {
         if (!$adtData.Sessions.Count)
         {
-            Initialize-ADTEnvironment
-            Import-ADTConfig
-            Import-ADTLocalizedStrings
-            $adtData.LastExitCode = 0
+            Initialize-ADTModule
         }
         $adtData.Sessions.Add($PSBoundParameters)
         try

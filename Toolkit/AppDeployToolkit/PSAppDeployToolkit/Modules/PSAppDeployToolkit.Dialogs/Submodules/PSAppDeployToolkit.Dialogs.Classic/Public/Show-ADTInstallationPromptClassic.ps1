@@ -69,9 +69,9 @@
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Title = (Get-ADTSession).GetPropertyValue('InstallTitle'),
+        [System.String]$Title,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -106,46 +106,41 @@
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateScript({
-            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
-            }
-            return !!$_
-        })]
-        [System.UInt32]$Timeout = (Get-ADTConfig).UI.DefaultTimeout,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$Timeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$ADTConfig,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$ADTSession
     )
 
-    # Initialise variables.
-    $adtEnv = Get-ADTEnvironment
-    $adtConfig = Get-ADTConfig
-    $adtSession = Get-ADTSession
-
     # Bypass if in non-interactive mode
-    if ($adtSession.IsSilent())
+    if ($ADTSession -and $ADTSession.IsSilent())
     {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Message: $Message"
+        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($ADTSession.GetPropertyValue('deployMode'))]. Message: $Message"
         return
     }
 
     # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
     if ($NoWait)
     {
-        # Remove the NoWait parameter so that the script is run synchronously in the new PowerShell session. This also prevents the function to loop indefinitely.
-        Export-ADTModuleState
-        Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; Import-ADTModuleState; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModuleInfo).ModuleBase)'; [System.Void]($($MyInvocation.MyCommand.Name.Replace('Classic', $null)) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, ADTSession, NoWait).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
         return
     }
 
     # Read all form assets into memory.
-    Read-ADTAssetsIntoMemory
+    Read-ADTAssetsIntoMemory -ADTConfig $ADTConfig
 
     # Set up some default values.
     $controlSize = [System.Drawing.Size]::new($Script:FormData.Width, 0)
@@ -204,7 +199,7 @@
 
     # Built out timer for Persist Prompt mode.
     $installPromptTimerPersist = [System.Windows.Forms.Timer]::new()
-    $installPromptTimerPersist.Interval = $adtConfig.UI.DefaultPromptPersistInterval * 1000
+    $installPromptTimerPersist.Interval = $ADTConfig.UI.DefaultPromptPersistInterval * 1000
     $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
 
     # Picture Banner.
@@ -392,24 +387,25 @@
     $formInstallationPrompt.add_FormClosed($formInstallationPrompt_FormClosed)
     $formInstallationPrompt.ResumeLayout()
 
-    # Close the Installation Progress Dialog if running
-    if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
+    # Close the Installation Progress Dialog if running.
+    if ($ADTSession -and !$ADTSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
     {
         Close-ADTInstallationProgressClassic
     }
-    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters)]."
+    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig, ADTSession)]."
 
     # Start the timer.
     $installPromptTimer.Start()
     if ($PersistPrompt) {$installPromptTimerPersist.Start()}
 
     # Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
+    $shellApp = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application'))
     do
     {
         # Minimize all other windows
         if ($MinimizeWindows)
         {
-            [System.Void]$adtEnv.ShellApp.MinimizeAll()
+            [System.Void]$shellApp.MinimizeAll()
         }
 
         # Show the Form
@@ -430,10 +426,10 @@
         }
         'Abort' {
             # Restore minimized windows.
-            [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
+            [System.Void]$shellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)
             {
-                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
             }
             else
             {
