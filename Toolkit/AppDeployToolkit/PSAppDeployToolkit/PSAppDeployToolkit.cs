@@ -114,6 +114,27 @@ namespace PSADT
             public string Hotkey;
             public bool RunAsAdmin;
         }
+
+        public struct MsiSummaryInfo
+        {
+            public int CodePage;
+            public string Title;
+            public string Subject;
+            public string Author;
+            public string Keywords;
+            public string Comments;
+            public string Template;
+            public string LastSavedBy;
+            public Guid RevisionNumber;
+            public Nullable<DateTime> LastPrinted;
+            public DateTime CreateTimeDate;
+            public DateTime LastSaveTimeDate;
+            public int PageCount;
+            public int WordCount;
+            public Nullable<int> CharacterCount;
+            public string CreatingApplication;
+            public int Security;
+        }
     }
 
     public static class Msi
