@@ -59,7 +59,7 @@
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 
         # Define parameters to pass to regsrv32.exe.
-        $DLLActionParameters = switch ($DLLAction = $adtEnv.culture.TextInfo.ToTitleCase($DLLAction.ToLower()))
+        $DLLActionParameters = switch ($DLLAction = $Host.CurrentCulture.TextInfo.ToTitleCase($DLLAction.ToLower()))
         {
             Register {
                 "/s `"$FilePath`""
@@ -68,7 +68,6 @@
                 "/s /u `"$FilePath`""
             }
         }
-        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
 
@@ -90,11 +89,11 @@
             }
 
             # Get the correct path to regsrv32.exe for the system and DLL file.
-            $RegSvr32Path = if ($adtEnv.Is64Bit)
+            $RegSvr32Path = if ([System.Environment]::Is64BitOperatingSystem)
             {
                 if ($DLLFileBitness -eq '64BIT')
                 {
-                    if ($adtEnv.Is64BitProcess)
+                    if ([System.Environment]::Is64BitProcess)
                     {
                         "$env:WinDir\System32\regsvr32.exe"
                     }

@@ -1,17 +1,14 @@
 ﻿function Get-ADTEdgeExtensions
 {
-    # Get the current environment.
-    $adtEnv = Get-ADTEnvironment
-
     # Check if the ExtensionSettings registry key exists if not create it.
-    if (!(Test-ADTRegistryValue -Key $adtEnv.regKeyEdgeExtensions -Value ExtensionSettings))
+    if (!(Test-ADTRegistryValue -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Value ExtensionSettings))
     {
-        Set-ADTRegistryKey -Key $adtEnv.regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
+        Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value "" | Out-Null
         return [pscustomobject]@{}
     }
     else
     {
-        $extensionSettings = Get-ADTRegistryKey -Key $adtEnv.regKeyEdgeExtensions -Value ExtensionSettings
+        $extensionSettings = Get-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Value ExtensionSettings
         Write-ADTLogEntry -Message "Configured extensions: [$($extensionSettings)]." -Severity 1
         return $extensionSettings | ConvertFrom-Json
     }

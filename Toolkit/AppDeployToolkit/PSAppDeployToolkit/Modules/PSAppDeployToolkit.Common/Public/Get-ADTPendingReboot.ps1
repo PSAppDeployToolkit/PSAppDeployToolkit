@@ -62,13 +62,12 @@
     begin {
         # Initialize variables.
         $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
-        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
 
     process {
         # Get the date/time that the system last booted up.
-        Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$($adtEnv.envComputerNameFQDN)]."
+        Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$([System.Environment]::MachineName)]."
         $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Math]::Abs([System.Environment]::TickCount))
 
         # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
@@ -110,7 +109,7 @@
 
         # Create a custom object containing pending reboot information for the system.
         [PSADT.Types.RebootInfo]$PendingRebootInfo = @{
-            ComputerName                 = $adtEnv.envComputerNameFQDN
+            ComputerName                 = [System.Environment]::MachineName
             LastBootUpTime               = $LastBootUpTime
             IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending
             IsCBServicingRebootPending   = $IsCBServicingRebootPending
@@ -121,7 +120,7 @@
             PendingFileRenameOperations  = $PendingFileRenameOperations
             ErrorMsg                     = $PendRebootErrorMsg
         }
-        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$($adtEnv.envComputerNameFQDN)]:`n$($PendingRebootInfo | Format-List | Out-String)"
+        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$([System.Environment]::MachineName)]:`n$($PendingRebootInfo | Format-List | Out-String)"
         return $PendingRebootInfo
     }
 

@@ -140,7 +140,7 @@
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 
         # Define initial variables.
-        $adtEnv = Get-ADTEnvironment
+        $runAsActiveUser = Get-ADTRunAsActiveUser
         $CUStubExePath = $null
         $CUArguments = $null
         $StubPath = $null
@@ -325,7 +325,7 @@
         try
         {
             # Set up the relevant keys, factoring in bitness and architecture.
-            if ($Wow6432Node -and $adtEnv.Is64Bit)
+            if ($Wow6432Node -and [System.Environment]::Is64BitOperatingSystem)
             {
                 $ActiveSetupKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                 $HKCUActiveSetupKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
@@ -342,11 +342,14 @@
                 Write-ADTLogEntry -Message "Removing Active Setup entry [$ActiveSetupKey]."
                 Remove-ADTRegistryKey -Key $ActiveSetupKey -Recurse
 
-                Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all logged on user registry hives on the system."
-                Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | Where-Object {$_.SID -eq $adtEnv.RunAsActiveUser.SID}) -RegistrySettings {
-                    if (Get-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID)
-                    {
-                        Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID -Recurse
+                if ($runAsActiveUser)
+                {
+                    Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all logged on user registry hives on the system."
+                    Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | Where-Object {$_.SID -eq $runAsActiveUser.SID}) -RegistrySettings {
+                        if (Get-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID)
+                        {
+                            Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID -Recurse
+                        }
                     }
                 }
                 return
@@ -398,7 +401,7 @@
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
                 '.ps1' {
-                    [String]$CUStubExePath = $adtEnv.envPSProcessPath
+                    [String]$CUStubExePath = Get-ADTPowerShellProcessPath
                     [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
                     [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                 }
@@ -422,22 +425,22 @@
                 return
             }
 
-            if ($adtEnv.SessionZero)
+            if (![System.Diagnostics.Process]::GetCurrentProcess().SessionId)
             {
-                if (!$adtEnv.RunAsActiveUser)
+                if (!$runAsActiveUser)
                 {
                     Write-ADTLogEntry -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.'
                     return
                 }
 
                 # Skip if Active Setup reg key is present and Version is equal or higher
-                if (!($InstallNeeded = Test-ADTActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $adtEnv.RunAsActiveUser.SID))
+                if (!($InstallNeeded = Test-ADTActiveSetup -HKLMKey $ActiveSetupKey -HKCUKey $HKCUActiveSetupKey -UserSID $runAsActiveUser.SID))
                 {
-                    Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($adtEnv.RunAsActiveUser.NTAccount)]." -Severity 2
+                    Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
                     return
                 }
 
-                Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($adtEnv.RunAsActiveUser.NTAccount)]."
+                Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
                 if ($CUArguments)
                 {
                     Execute-ProcessAsUser -Path $CUStubExePath -Parameters $CUArguments -Wait -ContinueOnError $true
@@ -448,7 +451,7 @@
                 }
 
                 Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."
-                Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID
+                Set-ADTActiveSetupRegKeys -ActiveSetupRegKey $HKCUActiveSetupKey -SID $runAsActiveUser.SID
             }
             else
             {

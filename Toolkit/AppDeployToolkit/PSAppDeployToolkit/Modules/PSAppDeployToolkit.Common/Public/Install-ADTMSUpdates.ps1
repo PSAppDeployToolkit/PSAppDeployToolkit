@@ -75,7 +75,7 @@
                     }
                     '.msu' {
                         # Installation type for Windows updates using Windows Update Standalone Installer.
-                        Start-ADTProcess -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                        Start-ADTProcess -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                     }
                     '.msp' {
                         # Installation type for Windows Installer Patch

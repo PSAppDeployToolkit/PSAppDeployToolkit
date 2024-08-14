@@ -58,7 +58,6 @@
 
         # Advise that this function is considered deprecated.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
-        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
     }
 
@@ -67,11 +66,11 @@
         {
             # Get CSV data from the binary and confirm success.
             Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
-            $exeSchtasksResults = & $adtEnv.exeSchTasks /Query /V /FO CSV
+            $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV
             if ($Global:LastExitCode -ne 0)
             {
                 $naerParams = @{
-                    Exception = [System.ApplicationException]::new("Failed to retrieve scheduled tasks using [$($adtEnv.exeSchTasks)].")
+                    Exception = [System.ApplicationException]::new("Failed to retrieve scheduled tasks using [$([System.Environment]::SystemDirectory)\schtasks.exe].")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'SchTasksExecutableFailure'
                     TargetObject = $exeSchtasksResults

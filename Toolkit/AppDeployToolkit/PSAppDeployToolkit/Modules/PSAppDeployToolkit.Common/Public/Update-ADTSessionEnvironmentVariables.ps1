@@ -35,13 +35,12 @@
 
     begin {
         # Perform initial setup.
-        $adtEnv = Get-ADTEnvironment
         Write-ADTDebugHeader
 
         # Determine the user SID to base things off of.
-        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and $adtEnv.RunAsActiveUser)
+        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = Get-ADTRunAsActiveUser))
         {
-            $adtEnv.RunAsActiveUser.SID
+            $runAsActiveUser.SID
         }
         else
         {

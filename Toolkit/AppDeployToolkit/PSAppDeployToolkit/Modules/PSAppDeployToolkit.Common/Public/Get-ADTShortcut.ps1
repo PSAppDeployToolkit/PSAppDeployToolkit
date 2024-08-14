@@ -94,7 +94,7 @@
             }
             else
             {
-                $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($FullPath)
+                $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
                 $Output.TargetPath = $shortcut.TargetPath
                 $Output.Arguments = $shortcut.Arguments
                 $Output.Description = $shortcut.Description
