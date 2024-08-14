@@ -106,7 +106,7 @@
                         TargetObject = $Key
                         RecommendedAction = "Please run this command again with [-Recurse]."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
             }
             else

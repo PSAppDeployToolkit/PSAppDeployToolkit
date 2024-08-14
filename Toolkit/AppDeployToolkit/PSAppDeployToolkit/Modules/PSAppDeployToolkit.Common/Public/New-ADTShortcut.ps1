@@ -137,7 +137,7 @@
                         TargetObject = $FullPath
                         RecommendedAction = "Please confirm the provided value and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
             }
             elseif (!(Test-Path -LiteralPath $PathDirectory -PathType Container))

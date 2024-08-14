@@ -59,7 +59,7 @@
                     TargetObject = $SCCMClientVersion
                     RecommendedAction = "Please review the installed CcmExec client and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
 
             # Trigger SCCM client scan for Software Updates.

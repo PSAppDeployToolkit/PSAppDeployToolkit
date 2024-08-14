@@ -80,7 +80,7 @@
                             TargetObject = $UserRegistryHiveFile
                             RecommendedAction = "Please confirm the state of this user profile and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                     }
 
                     Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
@@ -94,7 +94,7 @@
                             TargetObject = $UserRegistryHiveFile
                             RecommendedAction = "Please confirm the state of this user profile and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                     }
                     $ManuallyLoadedRegHive = $true
                 }
@@ -137,7 +137,7 @@
                                     TargetObject = "HKEY_USERS\$($UserProfile.SID)"
                                     RecommendedAction = "Please confirm the state of this user profile and try again."
                                 }
-                                throw (New-ADTErrorRecord @naerParams)
+                                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                             }
                         }
                     }

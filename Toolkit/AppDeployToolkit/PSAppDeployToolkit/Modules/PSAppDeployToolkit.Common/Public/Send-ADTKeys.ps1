@@ -94,7 +94,7 @@
                         TargetObject = $WindowHandle
                         RecommendedAction = "Please check the status of this window and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
                 if (![PSADT.UiAutomation]::IsWindowEnabled($WindowHandle))
                 {
@@ -105,7 +105,7 @@
                         TargetObject = $WindowHandle
                         RecommendedAction = "Please check the status of this window and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
 
                 # Send the Key sequence.

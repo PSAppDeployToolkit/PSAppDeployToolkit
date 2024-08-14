@@ -96,7 +96,7 @@
                     ErrorId = 'CcmExecInvalidScheduleId'
                     RecommendedAction = "Please check the supplied ScheduleId and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
 
             # Trigger SCCM task.

@@ -365,7 +365,7 @@
                     TargetObject = $ActiveSetupFileName
                     RecommendedAction = "Please confirm the provided value and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
 
             # Define Active Setup StubPath according to file extension of $StubExePath.

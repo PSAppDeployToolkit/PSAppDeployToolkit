@@ -165,7 +165,7 @@
                     ErrorId = 'MsiTransformFileMissing'
                     TargetObject = $NewTransformPath
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
             Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
         }
