@@ -48,12 +48,12 @@ function Set-ADTIniValue
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]

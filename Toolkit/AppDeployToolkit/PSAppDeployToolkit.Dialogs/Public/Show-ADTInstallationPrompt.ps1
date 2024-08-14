@@ -140,23 +140,23 @@ function Show-ADTInstallationPrompt
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Title', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'Title', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'Timeout', [System.UInt32], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
-                [System.Management.Automation.ValidateScriptAttribute]::new({
-                    if ($_ -gt $adtConfig.UI.DefaultTimeout)
-                    {
-                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
-                    }
-                    return !!$_
-                })
-            )
-        ))
+                'Timeout', [System.UInt32], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ValidateScriptAttribute]::new({
+                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                            {
+                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                            }
+                            return !!$_
+                        })
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary

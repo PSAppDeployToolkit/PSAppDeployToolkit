@@ -132,11 +132,12 @@ function Test-ADTIsMutexAvailable
                     Write-ADTLogEntry -Message "Mutex [$MutexName] is available for an exclusive lock."
                 }
             }
-            elseif (($MutexName -eq 'Global\_MSIExecute') -and ($msiInProgressCmdLine = & $Script:CommandTable.'Get-Process' -Name msiexec -ErrorAction Ignore | & {process {if ($_.CommandLine -match '\.msi') {$_.CommandLine.Trim()}}}))
+            elseif (($MutexName -eq 'Global\_MSIExecute') -and ($msiInProgressCmdLine = & $Script:CommandTable.'Get-Process' -Name msiexec -ErrorAction Ignore | & { process { if ($_.CommandLine -match '\.msi') { $_.CommandLine.Trim() } } }))
             {
                 Write-ADTLogEntry -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2
             }
-            else {
+            else
+            {
                 Write-ADTLogEntry -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it."
             }
 

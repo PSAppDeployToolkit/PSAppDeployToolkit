@@ -69,12 +69,12 @@ function New-ADTShortcut
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateScript({
-            if (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url'))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url'))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
+                }
+                return !!$_
+            })]
         [System.String]$Path,
 
         [Parameter(Mandatory = $true)]
@@ -223,10 +223,10 @@ function New-ADTShortcut
                     }
                     $shortcut.WindowStyle = switch ($WindowStyle)
                     {
-                        Normal {1}
-                        Maximized {3}
-                        Minimized {7}
-                        default {1}
+                        Normal { 1 }
+                        Maximized { 3 }
+                        Minimized { 7 }
+                        default { 1 }
                     }
 
                     # Save the changes.

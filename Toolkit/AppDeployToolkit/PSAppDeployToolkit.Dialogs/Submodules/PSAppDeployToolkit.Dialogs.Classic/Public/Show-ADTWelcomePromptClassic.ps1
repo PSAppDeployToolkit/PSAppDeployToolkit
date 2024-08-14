@@ -76,13 +76,13 @@ function Show-ADTWelcomePromptClassic
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
-            }
-            return !!$_
-        })]
-        [System.UInt32]$CloseAppsCountdown = $(if ((Get-ADTSession).ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) {(Get-ADTSession).ExtensionData.CloseAppsCountdownGlobal}),
+                if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+                }
+                return !!$_
+            })]
+        [System.UInt32]$CloseAppsCountdown = $(if ((Get-ADTSession).ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) { (Get-ADTSession).ExtensionData.CloseAppsCountdownGlobal }),
 
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
@@ -264,7 +264,7 @@ function Show-ADTWelcomePromptClassic
     }
     $timerRunningProcesses_Tick = {
         # Grab current list of running processes.
-        $dynamicRunningProcesses = if ($ProcessObjects) {$ProcessObjects | Get-ADTRunningProcesses -DisableLogging}
+        $dynamicRunningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses -DisableLogging }
         $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
         $previousRunningProcessDescriptions = $adtSession.ExtensionData.RunningProcessDescriptions
 
@@ -349,7 +349,7 @@ function Show-ADTWelcomePromptClassic
     $labelAppName.Anchor = [System.Windows.Forms.AnchorStyles]::Top
     $labelAppName.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
     $labelAppName.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-    $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle').Replace('&','&&')
+    $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&')
     $labelAppName.Name = 'LabelAppName'
     $labelAppName.TabStop = $false
     $labelAppName.AutoSize = $true
@@ -533,7 +533,7 @@ function Show-ADTWelcomePromptClassic
         $buttonDefer = [System.Windows.Forms.Button]::new()
         $buttonDefer.MinimumSize = $buttonDefer.ClientSize = $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.Margin = $buttonDefer.Padding = $paddingNone
-        $buttonDefer.Location = [System.Drawing.Point]::new($(if (!$showCloseApps) {14} else {160}), 4)
+        $buttonDefer.Location = [System.Drawing.Point]::new($(if (!$showCloseApps) { 14 } else { 160 }), 4)
         $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
         $buttonDefer.Font = $Script:FormData.Font
         $buttonDefer.Name = 'ButtonDefer'
@@ -574,7 +574,7 @@ function Show-ADTWelcomePromptClassic
     $flowLayoutPanel.ResumeLayout()
 
     # Button Abort (Hidden).
-    $buttonAbort =  [System.Windows.Forms.Button]::new()
+    $buttonAbort = [System.Windows.Forms.Button]::new()
     $buttonAbort.MinimumSize = $buttonAbort.ClientSize = $buttonAbort.MaximumSize = [System.Drawing.Size]::new(0, 0)
     $buttonAbort.Margin = $buttonAbort.Padding = $paddingNone
     $buttonAbort.DialogResult = [System.Windows.Forms.DialogResult]::Abort
@@ -624,10 +624,10 @@ function Show-ADTWelcomePromptClassic
     # Run the form and store the result.
     $result = switch ($formWelcome.ShowDialog())
     {
-        OK {'Continue'; break}
-        No {'Defer'; break}
-        Yes {'Close'; break}
-        Abort {'Timeout'; break}
+        OK { 'Continue'; break }
+        No { 'Defer'; break }
+        Yes { 'Close'; break }
+        Abort { 'Timeout'; break }
     }
     $formWelcome.Dispose()
 

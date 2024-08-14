@@ -73,7 +73,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack' | & {process {if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) {return $_.Command}}} | & $Script:CommandTable.'Select-Object' -First 1),
+        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) { return $_.Command } } } | & $Script:CommandTable.'Select-Object' -First 1),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -105,13 +105,13 @@ function Write-ADTLogEntry
             try
             {
                 # If we don't have an active session, write the message to the verbose stream (4).
-                if ($adtSession = if (Test-ADTSessionActive) {Get-ADTSession})
+                if ($adtSession = if (Test-ADTSessionActive) { Get-ADTSession })
                 {
                     $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
                 }
                 elseif (!$DebugMessage)
                 {
-                    $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
+                    $Message -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
                 }
 
                 # Return the provided message if PassThru is true.

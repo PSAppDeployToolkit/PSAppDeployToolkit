@@ -46,12 +46,12 @@ function Start-ADTMspProcess
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
         [ValidateScript({})]
         [ValidateScript({
-            if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
-            }
-            return !!$_
-        })]
+                if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
+                }
+                return !!$_
+            })]
         [Alias('FilePath')]
         [System.String]$Path,
 

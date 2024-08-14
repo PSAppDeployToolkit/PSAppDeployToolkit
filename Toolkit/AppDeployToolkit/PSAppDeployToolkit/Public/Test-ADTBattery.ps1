@@ -70,7 +70,7 @@ function Test-ADTBattery
                 # Offline : The system is not using AC power.
                 # Online  : The system is using AC power.
                 # Unknown : The power status of the system is unknown.
-                $powerStatus = @{ACPowerLineStatus = [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus}
+                $powerStatus = @{ ACPowerLineStatus = [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus }
 
                 # Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
                 $powerStatus.Add('BatteryChargeStatus', [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryChargeStatus)
@@ -91,28 +91,31 @@ function Test-ADTBattery
 
                 # Determine if the system is using AC power.
                 $powerStatus.Add('IsUsingACPower', $(switch ($powerStatus.ACPowerLineStatus)
-                {
-                    Online {
-                        Write-ADTLogEntry -Message 'System is using AC power.'
-                        $true
-                    }
-                    Offline {
-                        Write-ADTLogEntry -Message 'System is using battery power.'
-                        $false
-                    }
-                    Unknown {
-                        if ($invalidBattery)
                         {
-                            Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
-                            $true
-                        }
-                        else
-                        {
-                            Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
-                            $false
-                        }
-                    }
-                }))
+                            Online
+                            {
+                                Write-ADTLogEntry -Message 'System is using AC power.'
+                                $true
+                            }
+                            Offline
+                            {
+                                Write-ADTLogEntry -Message 'System is using battery power.'
+                                $false
+                            }
+                            Unknown
+                            {
+                                if ($invalidBattery)
+                                {
+                                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
+                                    $true
+                                }
+                                else
+                                {
+                                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
+                                    $false
+                                }
+                            }
+                        }))
 
                 # Determine if the system is a laptop.
                 $powerStatus.Add('IsLaptop', !$invalidBattery -and ((& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$'))

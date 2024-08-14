@@ -162,7 +162,7 @@ function Send-ADTKeys
         }
 
         # Set up parameter splat for worker filter.
-        $sktwParams = @{Keys = $Keys}; if ($PSBoundParameters.ContainsKey('Keys')) {$sktwParams.Add('WaitSeconds', $WaitSeconds)}
+        $sktwParams = @{ Keys = $Keys }; if ($PSBoundParameters.ContainsKey('Keys')) { $sktwParams.Add('WaitSeconds', $WaitSeconds) }
     }
 
     process
@@ -186,7 +186,7 @@ function Send-ADTKeys
                 # Process the specified input.
                 if ($WindowHandle)
                 {
-                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & {process {if ($_.WindowHandle -eq $WindowHandle) {return $_}}}))
+                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } }))
                     {
                         Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return
@@ -195,7 +195,7 @@ function Send-ADTKeys
                 }
                 else
                 {
-                    if (!($AllWindows = if ($GetAllWindowTitles) {Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles} else {Get-ADTWindowTitle -WindowTitle $WindowTitle}))
+                    if (!($AllWindows = if ($GetAllWindowTitles) { Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles } else { Get-ADTWindowTitle -WindowTitle $WindowTitle }))
                     {
                         Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                         return

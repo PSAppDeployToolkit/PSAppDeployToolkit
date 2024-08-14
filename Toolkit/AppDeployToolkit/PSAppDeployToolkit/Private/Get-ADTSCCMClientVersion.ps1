@@ -33,7 +33,7 @@ function Get-ADTSCCMClientVersion
     # Determine the SCCM Client Version.
     try
     {
-        [System.Version]$SCCMClientVersion = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | & {process {if ($_.Name -eq 'SmsClient') {$_.Version}}}
+        [System.Version]$SCCMClientVersion = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | & { process { if ($_.Name -eq 'SmsClient') { $_.Version } } }
     }
     catch
     {

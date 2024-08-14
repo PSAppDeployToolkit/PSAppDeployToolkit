@@ -43,12 +43,12 @@ function Invoke-ADTDllFileAction
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
+                }
+                return !!$_
+            })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
@@ -64,10 +64,12 @@ function Invoke-ADTDllFileAction
         # Define parameters to pass to regsrv32.exe.
         $DLLActionParameters = switch ($DLLAction = $Host.CurrentCulture.TextInfo.ToTitleCase($DLLAction.ToLower()))
         {
-            Register {
+            Register
+            {
                 "/s `"$FilePath`""
             }
-            Unregister {
+            Unregister
+            {
                 "/s /u `"$FilePath`""
             }
         }
@@ -114,7 +116,7 @@ function Invoke-ADTDllFileAction
                 }
                 elseif ($DLLFileBitness -eq '32BIT')
                 {
-                   "$([System.Environment]::SystemDirectory)\regsvr32.exe"
+                    "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                 }
                 else
                 {

@@ -4,7 +4,8 @@
 #
 #---------------------------------------------------------------------------
 
-function Copy-FileToUserProfiles {
+function Copy-FileToUserProfiles
+{
     <#
 .SYNOPSIS
 
@@ -141,10 +142,12 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueFileCopyOnError = $false
     )
 
-    Begin {
+    Begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    Process {
+    Process
+    {
         [Hashtable]$CopyFileSplat = @{
             Path = $Path
             Recurse = $Recurse
@@ -153,7 +156,8 @@ https://psappdeploytoolkit.com
             ContinueFileCopyOnError = $ContinueFileCopyOnError
             UseRobocopy = $UseRobocopy
         }
-        if ($RobocopyAdditionalParams) {
+        if ($RobocopyAdditionalParams)
+        {
             $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
         }
 
@@ -162,17 +166,20 @@ https://psappdeploytoolkit.com
             ExcludeServiceProfiles = $ExcludeServiceProfiles
             ExcludeDefaultUser = $ExcludeDefaultUser
         }
-        if ($ExcludeNTAccount) {
+        if ($ExcludeNTAccount)
+        {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
-        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath) {
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
+        {
             $CopyFileSplat.Destination = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
             Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):"
             Copy-File @CopyFileSplat
         }
     }
-    End {
+    End
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

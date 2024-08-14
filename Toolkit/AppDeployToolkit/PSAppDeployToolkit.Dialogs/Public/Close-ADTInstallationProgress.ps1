@@ -70,15 +70,18 @@ function Close-ADTInstallationProgress
                 {
                     switch ($adtSession.GetDeploymentStatus())
                     {
-                        FastRetry {
+                        FastRetry
+                        {
                             Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                             break
                         }
-                        Error {
+                        Error
+                        {
                             Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                             break
                         }
-                        default {
+                        default
+                        {
                             Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                             break
                         }

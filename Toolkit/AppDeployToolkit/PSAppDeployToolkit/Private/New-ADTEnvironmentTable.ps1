@@ -67,15 +67,15 @@ function New-ADTEnvironmentTable
 
     ## Variables: Domain Membership
     $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem
-    $w32csd = $w32cs.Domain | & {process {if ($_) {return $_}}}
+    $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } }
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
     $variables.Add('envMachineADDomain', [System.String]::Empty)
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
-    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & {process {if ($_) {return $_.ToLower()}}}))
-    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & {process {if ($_) {return $_.ToLower()}}}))
-    $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) {[System.Environment]::UserDomainName.ToUpper()}))
+    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } }))
+    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } }))
+    $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain.Equals($true))
@@ -93,14 +93,14 @@ function New-ADTEnvironmentTable
 
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = [string]$(try
-        {
-            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & {process {if ($_ -and !$_.Contains('\\MicrosoftAccount')) {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}}}
-        }
-        catch
-        {
-            # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
-            & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DCName -ErrorAction Ignore
-        })
+            {
+                [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
+            }
+            catch
+            {
+                # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
+                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DCName -ErrorAction Ignore
+            })
         while ($variables.envLogonServer.StartsWith('\'))
         {
             $variables.envLogonServer = $variables.envLogonServer.Substring(1)
@@ -175,12 +175,13 @@ function New-ADTEnvironmentTable
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
     $variables.Add('IsMultiSessionOS', (Test-ADTIsMultiSessionOS))
-    $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType) {
-        3 { 'Server' }
-        2 { 'Domain Controller' }
-        1 { 'Workstation' }
-        default { 'Unknown' }
-    }))
+    $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType)
+            {
+                3 { 'Server' }
+                2 { 'Domain Controller' }
+                1 { 'Workstation' }
+                default { 'Unknown' }
+            }))
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
@@ -197,57 +198,57 @@ function New-ADTEnvironmentTable
         $variables.envOfficeVars.CDNBaseURL
     }
     $variables.Add('envOfficeChannel', [string]$(switch -regex ($officeChannelProperty)
-    {
-        "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" {"monthly"}
-        "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" {"semi-annual"}
-        "64256afe-f5d9-4f86-8936-8840a6a4f5be" {"monthly targeted"}
-        "b8f9b850-328d-4355-9145-c59439a0c4cf" {"semi-annual targeted"}
-        "55336b82-a18d-4dd6-b5f6-9e5095c314a6" {"monthly enterprise"}
-    }))
+            {
+                "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" { "monthly" }
+                "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" { "semi-annual" }
+                "64256afe-f5d9-4f86-8936-8840a6a4f5be" { "monthly targeted" }
+                "b8f9b850-328d-4355-9145-c59439a0c4cf" { "semi-annual targeted" }
+                "55336b82-a18d-4dd6-b5f6-9e5095c314a6" { "monthly enterprise" }
+            }))
 
     ## Variables: Hardware
     $w32b = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BIOS
     $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
     $variables.Add('envHardwareType', $(if ($w32b.Version -match 'VRTUAL')
-    {
-        'Virtual:Hyper-V'
-    }
-    elseif ($w32b.Version -match 'A M I')
-    {
-        'Virtual:Virtual PC'
-    }
-    elseif ($w32b.Version -like '*Xen*')
-    {
-        'Virtual:Xen'
-    }
-    elseif ($w32b.SerialNumber -like '*VMware*')
-    {
-        'Virtual:VMware'
-    }
-    elseif ($w32b.SerialNumber -like '*Parallels*')
-    {
-        'Virtual:Parallels'
-    }
-    elseif (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*'))
-    {
-        'Virtual:Hyper-V'
-    }
-    elseif ($w32cs.Manufacturer -like '*VMWare*')
-    {
-        'Virtual:VMware'
-    }
-    elseif ($w32cs.Manufacturer -like '*Parallels*')
-    {
-        'Virtual:Parallels'
-    }
-    elseif ($w32cs.Model -like '*Virtual*')
-    {
-        'Virtual'
-    }
-    else
-    {
-        'Physical'
-    }))
+            {
+                'Virtual:Hyper-V'
+            }
+            elseif ($w32b.Version -match 'A M I')
+            {
+                'Virtual:Virtual PC'
+            }
+            elseif ($w32b.Version -like '*Xen*')
+            {
+                'Virtual:Xen'
+            }
+            elseif ($w32b.SerialNumber -like '*VMware*')
+            {
+                'Virtual:VMware'
+            }
+            elseif ($w32b.SerialNumber -like '*Parallels*')
+            {
+                'Virtual:Parallels'
+            }
+            elseif (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*'))
+            {
+                'Virtual:Hyper-V'
+            }
+            elseif ($w32cs.Manufacturer -like '*VMWare*')
+            {
+                'Virtual:VMware'
+            }
+            elseif ($w32cs.Manufacturer -like '*Parallels*')
+            {
+                'Virtual:Parallels'
+            }
+            elseif ($w32cs.Model -like '*Virtual*')
+            {
+                'Virtual'
+            }
+            else
+            {
+                'Physical'
+            }))
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
@@ -257,8 +258,8 @@ function New-ADTEnvironmentTable
     $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion)
     $variables.Add('envPSVersionMajor', $variables.envPSVersion.Major)
     $variables.Add('envPSVersionMinor', $variables.envPSVersion.Minor)
-    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Build')) {$variables.envPSVersionTable.PSVersion.Build}))
-    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Revision')) {$variables.envPSVersionTable.PSVersion.Revision}))
+    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Build')) { $variables.envPSVersionTable.PSVersion.Build }))
+    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Revision')) { $variables.envPSVersionTable.PSVersion.Revision }))
 
     # CLR (.NET) Version used by Windows PowerShell
     if ($variables.envPSVersionTable.ContainsKey('CLRVersion'))
@@ -296,9 +297,9 @@ function New-ADTEnvironmentTable
 
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo())
-    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & {process {$_.NTAccount}}))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & {process {if ($_.IsCurrentSession) {return $_}}}))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & {process {if ($_.IsConsoleSession) {return $_}}}))
+    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { $_.NTAccount } }))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } }))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } }))
     $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
 
     ## Variables: User profile information.

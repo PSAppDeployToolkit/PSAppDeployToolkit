@@ -69,7 +69,7 @@ function Test-ADTPowerPoint
 
                 # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
                 # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
-                if (Get-ADTWindowTitle -GetAllWindowTitles | & {process {if (($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')) {return $_}}} | & $Script:CommandTable.'Select-Object' -First 1)
+                if (Get-ADTWindowTitle -GetAllWindowTitles | & { process { if (($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
                 {
                     Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
                     return ($presenting = $true)
@@ -82,11 +82,13 @@ function Test-ADTPowerPoint
                 Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()))]."
                 switch ($UserNotificationState)
                 {
-                    PresentationMode {
+                    PresentationMode
+                    {
                         Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                         return ($presenting = $true)
                     }
-                    FullScreenOrPresentationModeOrLoginScreen {
+                    FullScreenOrPresentationModeOrLoginScreen
+                    {
                         if ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))
                         {
                             Write-ADTLogEntry -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'

@@ -80,20 +80,20 @@ function Convert-ADTRegistryPath
             try
             {
                 # Convert the registry key hive to the full path, only match if at the beginning of the line.
-                foreach ($hive in ($Script:ADTRegistry.PathReplacements.GetEnumerator() | & {process {if ($Key -match $_.Key) {return $_}}}))
+                foreach ($hive in ($Script:ADTRegistry.PathReplacements.GetEnumerator() | & { process { if ($Key -match $_.Key) { return $_ } } }))
                 {
-                    foreach ($regexMatch in ($Script:ADTRegistry.PathMatches -replace '^',$hive.Key))
+                    foreach ($regexMatch in ($Script:ADTRegistry.PathMatches -replace '^', $hive.Key))
                     {
-                        $Key = $Key -replace $regexMatch,$hive.Value
+                        $Key = $Key -replace $regexMatch, $hive.Value
                     }
                 }
 
                 # Process the WOW6432Node values if applicable.
                 if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
                 {
-                    foreach ($path in ($Script:ADTRegistry.WOW64Replacements.GetEnumerator() | & {process {if ($Key -match $_.Key) {return $_}}}))
+                    foreach ($path in ($Script:ADTRegistry.WOW64Replacements.GetEnumerator() | & { process { if ($Key -match $_.Key) { return $_ } } }))
                     {
-                        $Key = $Key -replace $path.Key,$path.Value
+                        $Key = $Key -replace $path.Key, $path.Value
                     }
                 }
 

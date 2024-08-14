@@ -4,7 +4,8 @@
 #
 #---------------------------------------------------------------------------
 
-function Remove-MSIApplications {
+function Remove-MSIApplications
+{
     <#
 .SYNOPSIS
 
@@ -182,19 +183,24 @@ https://psappdeploytoolkit.com
         [Boolean]$ContinueOnError = $true
     )
 
-    Begin {
+    Begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    Process {
+    Process
+    {
         ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
         [Hashtable]$GetInstalledApplicationSplat = @{ Name = $name }
-        If ($Exact) {
+        If ($Exact)
+        {
             $GetInstalledApplicationSplat.Add( 'Exact', $Exact)
         }
-        ElseIf ($WildCard) {
+        ElseIf ($WildCard)
+        {
             $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard)
         }
-        If ($IncludeUpdatesAndHotfixes) {
+        If ($IncludeUpdatesAndHotfixes)
+        {
             $GetInstalledApplicationSplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
         }
 
@@ -204,54 +210,71 @@ https://psappdeploytoolkit.com
 
         ## Filter the results from Get-ADTInstalledApplication
         [Collections.ArrayList]$removeMSIApplications = & $Script:CommandTable.'New-Object' -TypeName 'System.Collections.ArrayList'
-        If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
-            ForEach ($installedApplication in $installedApplications) {
-                If ([String]::IsNullOrEmpty($installedApplication.ProductCode)) {
+        If (($null -ne $installedApplications) -and ($installedApplications.Count))
+        {
+            ForEach ($installedApplication in $installedApplications)
+            {
+                If ([String]::IsNullOrEmpty($installedApplication.ProductCode))
+                {
                     Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2
                     Continue
                 }
 
                 #  Filter the results from Get-ADTInstalledApplication to only those that should be uninstalled
                 [Boolean]$addAppToRemoveList = $true
-                If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
+                If (($null -ne $FilterApplication) -and ($FilterApplication.Count))
+                {
                     Write-ADTLogEntry -Message 'Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication].'
-                    ForEach ($Filter in $FilterApplication) {
-                        If ($Filter[2] -eq 'RegEx') {
-                            If ($installedApplication.($Filter[0]) -match $Filter[1]) {
+                    ForEach ($Filter in $FilterApplication)
+                    {
+                        If ($Filter[2] -eq 'RegEx')
+                        {
+                            If ($installedApplication.($Filter[0]) -match $Filter[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $true
                                 Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria."
                             }
-                            Else {
+                            Else
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Break
                             }
                         }
-                        ElseIf ($Filter[2] -eq 'Contains') {
-                            If ($installedApplication.($Filter[0]) -match [RegEx]::Escape($Filter[1])) {
+                        ElseIf ($Filter[2] -eq 'Contains')
+                        {
+                            If ($installedApplication.($Filter[0]) -match [RegEx]::Escape($Filter[1]))
+                            {
                                 [Boolean]$addAppToRemoveList = $true
                                 Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria."
                             }
-                            Else {
+                            Else
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Break
                             }
                         }
-                        ElseIf ($Filter[2] -eq 'WildCard') {
-                            If ($installedApplication.($Filter[0]) -like $Filter[1]) {
+                        ElseIf ($Filter[2] -eq 'WildCard')
+                        {
+                            If ($installedApplication.($Filter[0]) -like $Filter[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $true
                                 Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria."
                             }
-                            Else {
+                            Else
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Break
                             }
                         }
-                        ElseIf ($Filter[2] -eq 'Exact') {
-                            If ($installedApplication.($Filter[0]) -eq $Filter[1]) {
+                        ElseIf ($Filter[2] -eq 'Exact')
+                        {
+                            If ($installedApplication.($Filter[0]) -eq $Filter[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $true
                                 Write-ADTLogEntry -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria."
                             }
-                            Else {
+                            Else
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Break
                             }
@@ -260,31 +283,41 @@ https://psappdeploytoolkit.com
                 }
 
                 #  Filter the results from Get-ADTInstalledApplication to remove those that should never be uninstalled
-                If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count)) {
-                    ForEach ($Exclude in $ExcludeFromUninstall) {
-                        If ($Exclude[2] -eq 'RegEx') {
-                            If ($installedApplication.($Exclude[0]) -match $Exclude[1]) {
+                If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count))
+                {
+                    ForEach ($Exclude in $ExcludeFromUninstall)
+                    {
+                        If ($Exclude[2] -eq 'RegEx')
+                        {
+                            If ($installedApplication.($Exclude[0]) -match $Exclude[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
-                        ElseIf ($Exclude[2] -eq 'Contains') {
-                            If ($installedApplication.($Exclude[0]) -match [RegEx]::Escape($Exclude[1])) {
+                        ElseIf ($Exclude[2] -eq 'Contains')
+                        {
+                            If ($installedApplication.($Exclude[0]) -match [RegEx]::Escape($Exclude[1]))
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
-                        ElseIf ($Exclude[2] -eq 'WildCard') {
-                            If ($installedApplication.($Exclude[0]) -like $Exclude[1]) {
+                        ElseIf ($Exclude[2] -eq 'WildCard')
+                        {
+                            If ($installedApplication.($Exclude[0]) -like $Exclude[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria."
                                 Break
                             }
                         }
-                        ElseIf ($Exclude[2] -eq 'Exact') {
-                            If ($installedApplication.($Exclude[0]) -eq $Exclude[1]) {
+                        ElseIf ($Exclude[2] -eq 'Exact')
+                        {
+                            If ($installedApplication.($Exclude[0]) -eq $Exclude[1])
+                            {
                                 [Boolean]$addAppToRemoveList = $false
                                 Write-ADTLogEntry -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria."
                                 Break
@@ -293,7 +326,8 @@ https://psappdeploytoolkit.com
                     }
                 }
 
-                If ($addAppToRemoveList) {
+                If ($addAppToRemoveList)
+                {
                     Write-ADTLogEntry -Message "Adding application to list for removal: [$($installedApplication.DisplayName) $($installedApplication.Version)]."
                     $removeMSIApplications.Add($installedApplication)
                 }
@@ -306,38 +340,49 @@ https://psappdeploytoolkit.com
             Path            = ''
             ContinueOnError = $ContinueOnError
         }
-        If ($Parameters) {
+        If ($Parameters)
+        {
             $ExecuteMSISplat.Add( 'Parameters', $Parameters)
         }
-        ElseIf ($AddParameters) {
+        ElseIf ($AddParameters)
+        {
             $ExecuteMSISplat.Add( 'AddParameters', $AddParameters)
         }
-        If ($LoggingOptions) {
+        If ($LoggingOptions)
+        {
             $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions)
         }
-        If ($LogName) {
+        If ($LogName)
+        {
             $ExecuteMSISplat.Add( 'LogName', $LogName)
         }
-        If ($PassThru) {
+        If ($PassThru)
+        {
             $ExecuteMSISplat.Add( 'PassThru', $PassThru)
         }
-        If ($IncludeUpdatesAndHotfixes) {
+        If ($IncludeUpdatesAndHotfixes)
+        {
             $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
         }
 
-        $ExecuteResults = If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count)) {
-            ForEach ($removeMSIApplication in $removeMSIApplications) {
+        $ExecuteResults = If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count))
+        {
+            ForEach ($removeMSIApplication in $removeMSIApplications)
+            {
                 Write-ADTLogEntry -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]."
                 $ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
                 Start-ADTMsiProcess @ExecuteMSISplat
             }
         }
-        Else {
+        Else
+        {
             Write-ADTLogEntry -Message 'No applications found for removal. Continue...'
         }
     }
-    End {
-        If ($PassThru -and $ExecuteResults) {
+    End
+    {
+        If ($PassThru -and $ExecuteResults)
+        {
             & $Script:CommandTable.'Write-Output' -InputObject ($ExecuteResults)
         }
         Complete-ADTFunction -Cmdlet $PSCmdlet

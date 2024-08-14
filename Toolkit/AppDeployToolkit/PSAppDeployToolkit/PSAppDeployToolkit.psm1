@@ -11,8 +11,8 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
 $CommandTable = [ordered]@{}
 $ModuleManifest = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
-$ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & {process {if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) {$CommandTable.Add($_.Name, $_)}}}
-& $CommandTable.'Get-Command' -FullyQualifiedModule $ModuleManifest.RequiredModules | & {process {$CommandTable.Add($_.Name, $_)}}
+$ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
+& $CommandTable.'Get-Command' -FullyQualifiedModule $ModuleManifest.RequiredModules | & { process { $CommandTable.Add($_.Name, $_) } }
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
 & $CommandTable.'New-Variable' -Name ModuleManifest -Value $ModuleManifest -Option Constant -Force -Confirm:$false
 
@@ -35,92 +35,92 @@ $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & {process {if ($_.P
 & $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
 & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
 & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-$ModuleFiles.FullName | . {process {. $_}}
+$ModuleFiles.FullName | . { process { . $_ } }
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
 & $CommandTable.'Export-ModuleMember' -Function $ModuleManifest.FunctionsToExport
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
-    Callbacks = [pscustomobject]@{
-        Starting = $null
-        Opening = $null
-        Closing = $null
-        Finishing = $null
-    }
-    Sessions = [System.Collections.Generic.List[ADTSession]]::new()
-    TerminalServerMode = $false
-    Environment = $null
-    Language = $null
-    Config = $null
-    Strings = $null
-    LastExitCode = 0
-    Initialised = $false
-})
+        Callbacks = [pscustomobject]@{
+            Starting = $null
+            Opening = $null
+            Closing = $null
+            Finishing = $null
+        }
+        Sessions = [System.Collections.Generic.List[ADTSession]]::new()
+        TerminalServerMode = $false
+        Environment = $null
+        Language = $null
+        Config = $null
+        Strings = $null
+        LastExitCode = 0
+        Initialised = $false
+    })
 
 # Logging constants used within an [ADTSession] object.
 & $CommandTable.'New-Variable' -Name Logging -Option Constant -Value ([ordered]@{
-    Formats = ([ordered]@{
-        CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
-        Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
-    }).AsReadOnly()
-    SeverityNames = [System.Array]::AsReadOnly([System.String[]]@(
-        'Success'
-        'Info'
-        'Warning'
-        'Error'
-    ))
-    SeverityColours = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]@(
-        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Green; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
+        Formats = ([ordered]@{
+                CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
+                Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
+            }).AsReadOnly()
+        SeverityNames = [System.Array]::AsReadOnly([System.String[]]@(
+                'Success'
+                'Info'
+                'Warning'
+                'Error'
+            ))
+        SeverityColours = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]@(
+        ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Green; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
         ([ordered]@{}).AsReadOnly()
-        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Yellow; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
-        ([ordered]@{ForegroundColor = [System.ConsoleColor]::Red; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
-    ))
-}).AsReadOnly()
+        ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Yellow; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
+        ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Red; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
+            ))
+    }).AsReadOnly()
 
 # DialogBox constants used within Show-ADTDialogBox.
 & $CommandTable.'New-Variable' -Name DialogBox -Option Constant -Value ([ordered]@{
-    Buttons = ([ordered]@{
-        OK = 0
-        OKCancel = 1
-        AbortRetryIgnore = 2
-        YesNoCancel = 3
-        YesNo = 4
-        RetryCancel = 5
-        CancelTryAgainContinue = 6
+        Buttons = ([ordered]@{
+                OK = 0
+                OKCancel = 1
+                AbortRetryIgnore = 2
+                YesNoCancel = 3
+                YesNo = 4
+                RetryCancel = 5
+                CancelTryAgainContinue = 6
+            }).AsReadOnly()
+        Icons = ([ordered]@{
+                None = 0
+                Stop = 16
+                Question = 32
+                Exclamation = 48
+                Information = 64
+            }).AsReadOnly()
+        DefaultButtons = ([ordered]@{
+                First = 0
+                Second = 256
+                Third = 512
+            }).AsReadOnly()
     }).AsReadOnly()
-    Icons = ([ordered]@{
-        None = 0
-        Stop = 16
-        Question = 32
-        Exclamation = 48
-        Information = 64
-    }).AsReadOnly()
-    DefaultButtons = ([ordered]@{
-        First = 0
-        Second = 256
-        Third = 512
-    }).AsReadOnly()
-}).AsReadOnly()
 
 # Registry path transformation constants used within Convert-ADTRegistryPath.
 & $CommandTable.'New-Variable' -Name ADTRegistry -Option Constant -Value ([ordered]@{
-    PathMatches = [System.Array]::AsReadOnly([System.String[]]@(
-        ':\\'
-        ':'
-        '\\'
-    ))
-    PathReplacements = ([ordered]@{
-        '^HKLM' = 'HKEY_LOCAL_MACHINE\'
-        '^HKCR' = 'HKEY_CLASSES_ROOT\'
-        '^HKCU' = 'HKEY_CURRENT_USER\'
-        '^HKU' = 'HKEY_USERS\'
-        '^HKCC' = 'HKEY_CURRENT_CONFIG\'
-        '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
+        PathMatches = [System.Array]::AsReadOnly([System.String[]]@(
+                ':\\'
+                ':'
+                '\\'
+            ))
+        PathReplacements = ([ordered]@{
+                '^HKLM' = 'HKEY_LOCAL_MACHINE\'
+                '^HKCR' = 'HKEY_CLASSES_ROOT\'
+                '^HKCU' = 'HKEY_CURRENT_USER\'
+                '^HKU' = 'HKEY_USERS\'
+                '^HKCC' = 'HKEY_CURRENT_CONFIG\'
+                '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
+            }).AsReadOnly()
+        WOW64Replacements = ([ordered]@{
+                '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
+                '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
+                '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
+                '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
+            }).AsReadOnly()
     }).AsReadOnly()
-    WOW64Replacements = ([ordered]@{
-        '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
-        '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
-        '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
-        '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
-    }).AsReadOnly()
-}).AsReadOnly()

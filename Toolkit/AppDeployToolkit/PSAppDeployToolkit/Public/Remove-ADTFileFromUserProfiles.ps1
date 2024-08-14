@@ -97,7 +97,8 @@ function Remove-ADTFileFromUserProfiles
             IncludeServiceProfiles = $IncludeServiceProfiles
             ExcludeDefaultUser = $ExcludeDefaultUser
         }
-        if ($ExcludeNTAccount) {
+        if ($ExcludeNTAccount)
+        {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
@@ -109,7 +110,7 @@ function Remove-ADTFileFromUserProfiles
     {
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
-            $RemoveFileSplat.Path = $pathVar.Value | & {process {[System.IO.Path]::Combine($UserProfilePath, $_)}}
+            $RemoveFileSplat.Path = $pathVar.Value | & { process { [System.IO.Path]::Combine($UserProfilePath, $_) } }
             Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
             try
             {

@@ -39,7 +39,7 @@ function Close-ADTInstallationProgressClassic
         if ($Script:ProgressWindow.Running)
         {
             Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-            $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke({$Script:ProgressWindow.SyncHash.Window.Close()}, [System.Windows.Threading.DispatcherPriority]::Send)
+            $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke({ $Script:ProgressWindow.SyncHash.Window.Close() }, [System.Windows.Threading.DispatcherPriority]::Send)
             while (!$Script:ProgressWindow.Invocation.IsCompleted) {}
         }
         $Script:ProgressWindow.SyncHash.Clear()

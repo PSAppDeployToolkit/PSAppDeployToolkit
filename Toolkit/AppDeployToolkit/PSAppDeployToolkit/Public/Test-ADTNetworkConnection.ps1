@@ -49,7 +49,7 @@ function Test-ADTNetworkConnection
         {
             try
             {
-                if (& $Script:CommandTable.'Get-NetAdapter' -Physical | & {process {if ($_.Status.Equals('Up')) {return $_}}})
+                if (& $Script:CommandTable.'Get-NetAdapter' -Physical | & { process { if ($_.Status.Equals('Up')) { return $_ } } })
                 {
                     Write-ADTLogEntry -Message 'Wired network connection found.'
                     return $true

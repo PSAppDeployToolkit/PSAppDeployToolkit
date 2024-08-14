@@ -127,12 +127,12 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({
-            if (($_ -notmatch (Get-ADTGuidRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
-            }
-            return !!$_
-        })]
+                if (($_ -notmatch (Get-ADTGuidRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
+                }
+                return !!$_
+            })]
         [Alias('FilePath')]
         [System.String]$Path,
 
@@ -237,7 +237,8 @@ function Start-ADTMsiProcess
                                 (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
                             }
                         }
-                        else {
+                        else
+                        {
                             # Out of other options, make the Product Code the name of the log file.
                             $Path
                         }
@@ -288,27 +289,32 @@ function Start-ADTMsiProcess
                 # Build the MSI parameters.
                 switch ($action)
                 {
-                    'Install' {
+                    'Install'
+                    {
                         $option = '/i'
                         $msiLogFile = "$logPath" + '_Install'
                         $msiDefaultParams = $msiInstallDefaultParams
                     }
-                    'Uninstall' {
+                    'Uninstall'
+                    {
                         $option = '/x'
                         $msiLogFile = "$logPath" + '_Uninstall'
                         $msiDefaultParams = $msiUninstallDefaultParams
                     }
-                    'Patch' {
+                    'Patch'
+                    {
                         $option = '/update'
                         $msiLogFile = "$logPath" + '_Patch'
                         $msiDefaultParams = $msiInstallDefaultParams
                     }
-                    'Repair' {
+                    'Repair'
+                    {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
                         $msiLogFile = "$logPath" + '_Repair'
                         $msiDefaultParams = $msiInstallDefaultParams
                     }
-                    'ActiveSetup' {
+                    'ActiveSetup'
+                    {
                         $option = '/fups'
                         $msiLogFile = "$logPath" + '_ActiveSetup'
                         $msiDefaultParams = $null
@@ -395,7 +401,7 @@ function Start-ADTMsiProcess
                     try
                     {
                         [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }
-                        if ($Transforms) {$GetMsiTablePropertySplat.Add('TransformPath', $transforms)}
+                        if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
                         Get-ADTMsiTableProperty @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode -ErrorAction Stop
                     }
                     catch
@@ -465,7 +471,7 @@ function Start-ADTMsiProcess
                 $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
                 {
                     Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-                    [PSADT.Types.ProcessResult]@{ExitCode = 1638; StdOut = [System.String]::Empty; StdErr = [System.String]::Empty}
+                    [PSADT.Types.ProcessResult]@{ ExitCode = 1638; StdOut = [System.String]::Empty; StdErr = [System.String]::Empty }
                 }
                 elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
                 {

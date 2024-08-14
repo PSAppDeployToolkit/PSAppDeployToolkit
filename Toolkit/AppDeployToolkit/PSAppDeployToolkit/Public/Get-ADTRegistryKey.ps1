@@ -185,13 +185,13 @@ function Get-ADTRegistryKey
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $(if ($Value)
-            {
-                "Failed to read registry key [$Key] value [$Value]."
-            }
-            else
-            {
-                "Failed to read registry key [$Key]."
-            })
+                {
+                    "Failed to read registry key [$Key] value [$Value]."
+                }
+                else
+                {
+                    "Failed to read registry key [$Key]."
+                })
         }
     }
 

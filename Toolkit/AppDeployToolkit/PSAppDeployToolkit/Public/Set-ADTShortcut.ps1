@@ -74,12 +74,12 @@ function Set-ADTShortcut
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
+                }
+                return !!$_
+            })]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
@@ -140,10 +140,10 @@ function Set-ADTShortcut
                         {
                             switch ($_)
                             {
-                                {$_.StartsWith('URL=') -and $TargetPath} {"URL=$TargetPath"; break}
-                                {$_.StartsWith('IconIndex=') -and ($null -ne $IconIndex)} {"IconIndex=$IconIndex"; break}
-                                {$_.StartsWith('IconFile=') -and $IconLocation} {"IconFile=$IconLocation"; break}
-                                default {$_; break}
+                                { $_.StartsWith('URL=') -and $TargetPath } { "URL=$TargetPath"; break }
+                                { $_.StartsWith('IconIndex=') -and ($null -ne $IconIndex) } { "IconIndex=$IconIndex"; break }
+                                { $_.StartsWith('IconFile=') -and $IconLocation } { "IconFile=$IconLocation"; break }
+                                default { $_; break }
                             }
                         }
                     }
@@ -177,9 +177,9 @@ function Set-ADTShortcut
                     # Set the WindowStyle based on input.
                     $windowStyleInt = switch ($WindowStyle)
                     {
-                        Normal {1}
-                        Maximized {3}
-                        Minimized {7}
+                        Normal { 1 }
+                        Maximized { 3 }
+                        Minimized { 7 }
                     }
                     If ($null -ne $windowStyleInt)
                     {

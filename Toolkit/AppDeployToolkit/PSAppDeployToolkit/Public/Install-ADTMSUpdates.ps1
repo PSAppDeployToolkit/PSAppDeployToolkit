@@ -85,15 +85,18 @@ function Install-ADTMSUpdates
                         Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
                         switch ($file.Extension)
                         {
-                            '.exe' {
+                            '.exe'
+                            {
                                 # Installation type for executables (i.e., Microsoft Office Updates).
                                 Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                             }
-                            '.msu' {
+                            '.msu'
+                            {
                                 # Installation type for Windows updates using Windows Update Standalone Installer.
                                 Start-ADTProcess -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                             }
-                            '.msp' {
+                            '.msp'
+                            {
                                 # Installation type for Windows Installer Patch
                                 Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
                             }

@@ -60,22 +60,22 @@ function New-ADTMsiTransform
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$MsiPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
-            }
-            return !!$_
-        })]
+                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                }
+                return !!$_
+            })]
         [System.String]$ApplyTransformPath,
 
         [Parameter(Mandatory = $false)]

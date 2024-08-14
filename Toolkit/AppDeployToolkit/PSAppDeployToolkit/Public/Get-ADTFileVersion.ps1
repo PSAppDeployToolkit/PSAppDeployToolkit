@@ -42,12 +42,12 @@ function Get-ADTFileVersion
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The file does not exist or does not have any version info.'))
-            }
-            return !!$_.VersionInfo
-        })]
+                if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The file does not exist or does not have any version info.'))
+                }
+                return !!$_.VersionInfo
+            })]
         [System.IO.FileInfo]$File,
 
         [Parameter(Mandatory = $false)]

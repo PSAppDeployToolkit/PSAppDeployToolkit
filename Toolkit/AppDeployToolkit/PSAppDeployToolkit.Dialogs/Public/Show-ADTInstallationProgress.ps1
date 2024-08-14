@@ -93,29 +93,29 @@ function Show-ADTInstallationProgress
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('WindowTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'WindowTitle', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'WindowTitle', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'WindowSubtitle', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = $false}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'WindowSubtitle', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'StatusMessage', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'StatusMessage', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
-            'StatusMessageDetail', [System.String], $(
-                [System.Management.Automation.ParameterAttribute]@{Mandatory = !$adtSession -and $fluentUi}
-                [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-            )
-        ))
+                'StatusMessageDetail', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and $fluentUi }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary

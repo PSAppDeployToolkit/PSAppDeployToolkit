@@ -51,12 +51,12 @@ function Get-ADTShortcut
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
-            }
-            return !!$_
-        })]
+                if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
+                }
+                return !!$_
+            })]
         [System.String]$Path
     )
 
@@ -74,7 +74,7 @@ function Get-ADTShortcut
             try
             {
                 [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
-                $Output = @{Path = [System.IO.Path]::GetFullPath($Path)}
+                $Output = @{ Path = [System.IO.Path]::GetFullPath($Path) }
             }
             catch
             {
@@ -99,9 +99,9 @@ function Get-ADTShortcut
                         {
                             switch ($_)
                             {
-                                {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null); break}
-                                {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null); break}
-                                {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null); break}
+                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', $null); break }
+                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', $null); break }
+                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('URIconFileL=', $null); break }
                             }
                         }
                     }
@@ -119,10 +119,10 @@ function Get-ADTShortcut
                     $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
                     $Output.WindowStyle = switch ($shortcut.WindowStyle)
                     {
-                        1 {'Normal'}
-                        3 {'Maximized'}
-                        7 {'Minimized'}
-                        default {'Normal'}
+                        1 { 'Normal' }
+                        3 { 'Maximized' }
+                        7 { 'Minimized' }
+                        default { 'Normal' }
                     }
                     return [PSADT.Types.ShortcutLnk]$Output
                 }

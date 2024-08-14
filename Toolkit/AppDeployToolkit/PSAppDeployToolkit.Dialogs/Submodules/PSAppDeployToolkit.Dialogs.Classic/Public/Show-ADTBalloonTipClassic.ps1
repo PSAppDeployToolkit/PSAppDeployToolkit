@@ -100,7 +100,7 @@ function Show-ADTBalloonTipClassic
         Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 
         # Show the dialog and sleep until done.
-        ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [System.Drawing.Icon]$TrayIcon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
+        ([System.Windows.Forms.NotifyIcon]@{ BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [System.Drawing.Icon]$TrayIcon; Visible = $true }).ShowBalloonTip($BalloonTipTime)
         [System.Threading.Thread]::Sleep($BalloonTipTime)
     }
 
