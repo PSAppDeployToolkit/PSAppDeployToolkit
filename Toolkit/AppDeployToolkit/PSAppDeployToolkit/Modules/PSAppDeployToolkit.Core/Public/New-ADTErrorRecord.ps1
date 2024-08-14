@@ -39,7 +39,7 @@
         [System.String]$RecommendedAction
     )
 
-    # Instantiate new ErrorRecord object and populate it.
+    # Instantiate new ErrorRecord object.
     $errRecord = [System.Management.Automation.ErrorRecord]::new($Exception, $ErrorId, $Category, $TargetObject)
 
     # Add in all optional values, if specified.

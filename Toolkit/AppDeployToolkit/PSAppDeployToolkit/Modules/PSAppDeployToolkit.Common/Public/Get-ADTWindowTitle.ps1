@@ -81,15 +81,9 @@
             # Get all window handles for visible windows and loop through the visible ones.
             foreach ($VisibleWindowHandle in [PSADT.UiAutomation]::EnumWindows().Where({$_ -and [PSADT.UiAutomation]::IsWindowVisible($_)}))
             {
-                # Only process handles with window text and an associated running process.
-                if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})))
+                # Only process handles with window text and an associated running process, and only save/return the window and process details which match the search criteria.
+                if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})) -and ($PSCmdlet.ParameterSetName.Equals('SearchWinTitle') -and ($VisibleWindowTitle -notmatch $WindowTitle)))
                 {
-                    # Only save/return the window and process details which match the search criteria.
-                    if ($PSCmdlet.ParameterSetName.Equals('SearchWinTitle') -and ($VisibleWindowTitle -notmatch $WindowTitle))
-                    {
-                        continue
-                    }
-
                     # Build custom object with details about the window and the process.
                     [PSADT.Types.WindowInfo]@{
                         WindowTitle = $VisibleWindowTitle

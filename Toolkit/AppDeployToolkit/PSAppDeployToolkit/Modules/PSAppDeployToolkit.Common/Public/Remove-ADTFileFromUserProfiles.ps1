@@ -74,9 +74,9 @@
     )
 
     begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $RemoveFileSplat = @{
             Recurse = $Recurse
-            ContinueOnError = $ContinueOnError
         }
         $GetUserProfileSplat = @{
             IncludeSystemProfiles = $IncludeSystemProfiles
@@ -86,7 +86,6 @@
         if ($ExcludeNTAccount) {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {

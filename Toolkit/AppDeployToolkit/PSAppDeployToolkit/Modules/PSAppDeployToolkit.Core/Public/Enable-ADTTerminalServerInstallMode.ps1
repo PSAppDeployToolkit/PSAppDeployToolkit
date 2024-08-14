@@ -26,5 +26,24 @@
     param (
     )
 
-    (Get-ADTModuleData).TerminalServerMode = Invoke-TerminalServerModeChange @PSBoundParameters -Mode Install
+    begin {
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+    }
+
+    process {
+        try
+        {
+            Invoke-ADTTerminalServerModeChange -Mode Install
+            (Get-ADTModuleData).TerminalServerMode = $true
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

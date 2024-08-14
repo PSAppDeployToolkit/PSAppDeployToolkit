@@ -97,6 +97,7 @@
                 {
                     Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
                 }
+                break
             }
             'NTAccountToSID' {
                 $msg = "the NT Account [$AccountName] to a SID"
@@ -110,6 +111,7 @@
                 {
                     Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
                 }
+                break
             }
             'WellKnownName' {
                 [String]$ConversionType = if ($WellKnownToNTAccount)
@@ -147,6 +149,7 @@
                 {
                     Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
                 }
+                break
             }
         }
     }

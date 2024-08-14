@@ -60,9 +60,8 @@
     )
 
     begin {
-        # Initialize variables.
-        $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process {

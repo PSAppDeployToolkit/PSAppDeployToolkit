@@ -85,6 +85,7 @@
 
         [Parameter(Mandatory = $true, Position = 1, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName = 'DisableInheritance')]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$User,
 
         [Parameter(Mandatory = $true, Position = 2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName = 'DisableInheritance')]
@@ -158,14 +159,8 @@
         $Acl = Get-Acl -Path $Path
 
         # Apply permissions on each user.
-        foreach ($U in $User)
+        foreach ($U in $User.Trim().Where({$_.Length}))
         {
-            # Trim whitespace and skip if empty.
-            if (($U = $U.Trim()).Length -eq 0)
-            {
-                continue
-            }
-
             # Set Username.
             [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))
             {

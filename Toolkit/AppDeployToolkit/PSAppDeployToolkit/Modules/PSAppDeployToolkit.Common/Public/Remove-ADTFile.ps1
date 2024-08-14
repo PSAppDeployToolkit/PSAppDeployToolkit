@@ -59,7 +59,7 @@
     process {
         foreach ($Item in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
         {
-            # Resolve the specified path, if the path does not exist, display a warning instead of an error
+            # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
             {
                 $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')

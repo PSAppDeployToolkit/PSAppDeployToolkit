@@ -104,42 +104,52 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    # Get the module's state.
-    $adtData = Get-ADTModuleData
-
-    # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
-    if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
-    {
-        $adtData.Sessions.Clear()
+    begin {
+        # Initialise function.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtData = Get-ADTModuleData
     }
 
-    # Initialise the module, instantiate a new ADT session and open it for usage.
-    try
-    {
-        if (!$adtData.Sessions.Count)
+    process {
+        # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
+        if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
         {
-            Initialize-ADTModule
+            $adtData.Sessions.Clear()
         }
-        $adtData.Sessions.Add($PSBoundParameters)
+
+        # Initialise the module, instantiate a new ADT session and open it for usage.
         try
         {
-            $adtData.Sessions[-1].Open()
-            [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
+            if (!$adtData.Sessions.Count)
+            {
+                Initialize-ADTModule
+            }
+            $adtData.Sessions.Add($PSBoundParameters)
+            try
+            {
+                $adtData.Sessions[-1].Open()
+                [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
+            }
+            catch
+            {
+                [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
+                throw
+            }
         }
         catch
         {
-            [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+
+        # Return the most recent session if passing through.
+        if ($PassThru)
+        {
+            return $adtData.Sessions[-1]
         }
     }
-    catch
-    {
-        $PSCmdlet.ThrowTerminatingError($_)
-    }
 
-    # Return the most recent session if passing through.
-    if ($PassThru)
-    {
-        return $adtData.Sessions[-1]
+    end {
+        # Finalise function.
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

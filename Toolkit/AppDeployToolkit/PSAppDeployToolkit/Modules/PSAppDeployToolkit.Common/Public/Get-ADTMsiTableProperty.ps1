@@ -78,15 +78,15 @@
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.String]]$Table,
+        [System.String]$Table,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.Int32]]$TablePropertyNameColumnNum,
+        [System.Int32]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.Int32]]$TablePropertyValueColumnNum,
+        [System.Int32]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
         [ValidateNotNullOrEmpty()]
@@ -95,7 +95,7 @@
 
     begin {
         # Set default values.
-        if ($null -eq $Table)
+        if (!$PSBoundParameters.ContainsKey('Table'))
         {
             $Table = if ([System.IO.Path]::GetExtension($Path) -eq '.msi')
             {
@@ -106,7 +106,7 @@
                 'MsiPatchMetadata'
             }
         }
-        if ($null -eq $TablePropertyNameColumnNum)
+        if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {
             $TablePropertyNameColumnNum = if ([IO.Path]::GetExtension($Path) -eq '.msi')
             {
@@ -117,7 +117,7 @@
                 2
             }
         }
-        if ($null -eq $TablePropertyValueColumnNum)
+        if (!$PSBoundParameters.ContainsKey('TablePropertyValueColumnNum'))
         {
             $TablePropertyValueColumnNum = if ([IO.Path]::GetExtension($Path) -eq '.msi')
             {

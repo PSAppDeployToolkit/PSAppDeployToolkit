@@ -77,6 +77,9 @@
     )
 
     begin {
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
         # Define properties for how the MSI database is opened.
         $msiOpenDatabaseModeReadOnly = 0
         $msiOpenDatabaseModeTransact = 1
@@ -86,9 +89,6 @@
         $msiTransformErrorNone = 0
         $msiTransformValidationNone = 0
         $msiSuppressApplyTransformErrors = 63
-
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process {

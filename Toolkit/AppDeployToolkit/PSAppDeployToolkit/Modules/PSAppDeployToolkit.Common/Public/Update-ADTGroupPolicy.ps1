@@ -46,7 +46,7 @@
                     TargetObject = $gpUpdateResult
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord (New-ADTErrorRecord @naerParams)
+                New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord
             }
         }
     }

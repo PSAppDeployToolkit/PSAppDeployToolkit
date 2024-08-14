@@ -158,4 +158,9 @@
         # Output the error message to the caller.
         $logErrorMessage
     }
+
+    end {
+        # Finalise function.
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }

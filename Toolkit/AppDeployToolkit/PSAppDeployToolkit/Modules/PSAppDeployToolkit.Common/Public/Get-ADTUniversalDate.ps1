@@ -11,9 +11,6 @@
     .PARAMETER DateTime
     Specify the DateTime in the current culture.
 
-    .PARAMETER ContinueOnError
-    Continue if an error is encountered. Default: $false.
-
     .INPUTS
     None. You cannot pipe objects to this function.
 

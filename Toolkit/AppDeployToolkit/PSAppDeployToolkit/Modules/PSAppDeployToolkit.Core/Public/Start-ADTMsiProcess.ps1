@@ -77,9 +77,6 @@
     .PARAMETER RepairFromSource
     Specifies whether we should repair from source. Also rewrites local cache. Default: $false
 
-    .PARAMETER ContinueOnError
-    Continue if an error occurred while trying to start the process. Default: $false.
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -384,9 +381,9 @@
         {
             try
             {
-                [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property'; ContinueOnError = $false }
+                [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }
                 if ($Transforms) {$GetMsiTablePropertySplat.Add('TransformPath', $transforms)}
-                Get-ADTMsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty ProductCode
+                Get-ADTMsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty ProductCode -ErrorAction Stop
             }
             catch
             {

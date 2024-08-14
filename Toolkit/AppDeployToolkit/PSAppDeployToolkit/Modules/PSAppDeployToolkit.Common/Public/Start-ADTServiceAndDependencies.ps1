@@ -62,7 +62,14 @@
     }
 
     process {
-        Invoke-ADTServiceAndDependencyOperation -Operation Start @PSBoundParameters
+        try
+        {
+            Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to start the service [$($Service.Name)]."
+        }
     }
 
     end {

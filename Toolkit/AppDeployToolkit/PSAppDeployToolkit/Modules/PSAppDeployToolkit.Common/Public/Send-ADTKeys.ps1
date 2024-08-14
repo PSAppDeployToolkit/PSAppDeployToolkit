@@ -73,6 +73,8 @@
     )
 
     begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
         function Send-ADTKeysToWindow
         {
             [CmdletBinding()]
@@ -122,7 +124,6 @@
                 Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
             }
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {

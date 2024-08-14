@@ -109,20 +109,20 @@
     }
 
     process {
+        # Make sure .NET's current directory is synced with PowerShell's.
         try
         {
-            # Make sure .NET's current directory is synced with PowerShell's.
-            try
-            {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $FullPath = [System.IO.Path]::GetFullPath($Path)
-            }
-            catch
-            {
-                Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3
-                throw
-            }
+            [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+            $FullPath = [System.IO.Path]::GetFullPath($Path)
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Specified path [$Path] is not valid."
+            return
+        }
 
+        try
+        {
             # Make sure directory is present before continuing.
             if (!($PathDirectory = [System.IO.Path]::GetDirectoryName($FullPath)))
             {

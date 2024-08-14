@@ -62,7 +62,14 @@
     }
 
     process {
-        Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+        try
+        {
+            Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to stop the service [$($Service.Name)]."
+        }
     }
 
     end {

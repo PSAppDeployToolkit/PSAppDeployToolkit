@@ -109,7 +109,7 @@
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false)]

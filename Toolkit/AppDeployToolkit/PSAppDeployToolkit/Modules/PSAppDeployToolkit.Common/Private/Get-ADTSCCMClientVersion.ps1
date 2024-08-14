@@ -31,7 +31,7 @@
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
+        Write-ADTLogEntry -Message "Failed to query the system for the SCCM client version number.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
         throw
     }
     if (!$SCCMClientVersion)

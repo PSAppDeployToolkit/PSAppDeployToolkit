@@ -33,9 +33,8 @@
     )
 
     begin {
-        # KB Number pattern match.
-        $kbPattern = '(?i)kb\d{6,8}'
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $kbPattern = '(?i)kb\d{6,8}'
     }
 
     process {
