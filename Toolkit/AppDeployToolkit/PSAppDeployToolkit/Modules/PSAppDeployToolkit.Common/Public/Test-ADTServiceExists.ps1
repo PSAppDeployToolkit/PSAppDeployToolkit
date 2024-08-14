@@ -50,6 +50,10 @@
         [System.String]$ComputerName = [System.Net.Dns]::GetHostName(),
 
         [Parameter(Mandatory = $false)]
+        [Alias('UseWMI')]
+        [System.Management.Automation.SwitchParameter]$UseCIM,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
@@ -64,10 +68,22 @@
         {
             try
             {
-                # If nothing is returned from Win32_Service, check Win32_BaseService.
-                if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+                # Access via CIM/WMI if specifically asked.
+                if ($UseCIM)
                 {
-                    $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                    # If nothing is returned from Win32_Service, check Win32_BaseService.
+                    if (!($ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_Service -Filter "Name = '$Name'"))
+                    {
+                        $ServiceObject = Get-CimInstance -ComputerName $ComputerName -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                    }
+                }
+                else
+                {
+                    # If the name is empty, it means the provided service is invalid.
+                    if (!($ServiceObject = [System.ServiceProcess.ServiceController]$Name).Name)
+                    {
+                        $ServiceObject = $null
+                    }
                 }
 
                 # Return early if null.

@@ -1392,7 +1392,7 @@ function Test-ServiceExists
 
     try
     {
-        Test-ADTServiceExists @PSBoundParameters
+        Test-ADTServiceExists @PSBoundParameters -UseCIM
     }
     catch
     {
