@@ -72,7 +72,8 @@ function Show-ADTBalloonTipClassic
     # Define internal worker function.
     function New-ADTBalloonTip
     {
-        [CmdletBinding()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [CmdletBinding(SupportsShouldProcess = $false)]
         param
         (
             [Parameter(Mandatory = $true)]

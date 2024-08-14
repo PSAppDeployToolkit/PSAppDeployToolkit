@@ -68,6 +68,7 @@ function Show-ADTWelcomePromptClassic
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProcessObjects', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     param
     (
         [ValidateNotNullOrEmpty()]
@@ -272,7 +273,7 @@ function Show-ADTWelcomePromptClassic
         {
             # Update the runningProcessDescriptions variable for the next time this function runs.
             $listboxCloseApps.Items.Clear()
-            if ($adtSession.ExtensionData.RunningProcessDescriptions = $dynamicRunningProcessDescriptions)
+            if (($adtSession.ExtensionData.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
             {
                 Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($adtSession.ExtensionData.RunningProcessDescriptions -join ',')]..."
                 $listboxCloseApps.Items.AddRange($adtSession.ExtensionData.RunningProcessDescriptions)

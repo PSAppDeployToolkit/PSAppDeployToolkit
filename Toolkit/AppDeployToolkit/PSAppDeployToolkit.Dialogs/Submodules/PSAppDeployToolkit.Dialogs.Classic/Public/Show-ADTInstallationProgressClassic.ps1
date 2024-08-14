@@ -58,6 +58,9 @@ function Show-ADTInstallationProgressClassic
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisableWindowCloseButton', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UpdateWindowLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
     param
     (
@@ -80,18 +83,27 @@ function Show-ADTInstallationProgressClassic
         [System.Management.Automation.SwitchParameter]$Quiet,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoRelocation
+        [System.Management.Automation.SwitchParameter]$NoRelocation,
+
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$UnboundArguments
     )
 
     # Internal worker function.
     function Update-WindowLocation
     {
-        [CmdletBinding()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [CmdletBinding(SupportsShouldProcess = $false)]
         param
         (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
-            [System.Windows.Window]$Window
+            [System.Windows.Window]$Window,
+
+            [Parameter(Mandatory = $false)]
+            [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
+            [System.String]$WindowLocation = 'Default'
         )
 
         # Calculate the position on the screen where the progress dialog should be placed.
@@ -167,10 +179,6 @@ function Show-ADTInstallationProgressClassic
 
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$WindowTitle,
-
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
                 [System.IO.FileInfo]$Icon,
 
                 [Parameter(Mandatory = $true)]
@@ -211,12 +219,7 @@ function Show-ADTInstallationProgressClassic
                 $SyncHash.Error = $_
                 $PSCmdlet.ThrowTerminatingError($_)
             }
-        })
-
-        # Add in local variables, assets, and function delegates.
-        $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument($Xaml).AddArgument($WindowTitle)
-        $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner)
-        $Script:ProgressWindow.PowerShell = $Script:ProgressWindow.PowerShell.AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
+        }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
 
         # Commence invocation.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
@@ -228,7 +231,7 @@ function Show-ADTInstallationProgressClassic
         $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
 
         # Allow the thread to be spun up safely before invoking actions against it.
-        while (!($Script:ProgressWindow.Running = $Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
+        while (!($Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
         {
             if ($Script:ProgressWindow.SyncHash.ContainsKey('Error'))
             {
@@ -246,6 +249,9 @@ function Show-ADTInstallationProgressClassic
                 throw (New-ADTErrorRecord @naerParams)
             }
         }
+
+        # If we're here, the window came up.
+        $Script:ProgressWindow.Running = $true
     }
     else
     {
@@ -254,12 +260,13 @@ function Show-ADTInstallationProgressClassic
             {
                 $Script:ProgressWindow.SyncHash.Window.Title = $WindowTitle
                 $Script:ProgressWindow.SyncHash.Message.Text = $StatusMessage
-                if (!$NoRelocation)
+                if (!$args[0])
                 {
-                    Update-WindowLocation -Window $Script:ProgressWindow.SyncHash.Window
+                    Update-WindowLocation -Window $Script:ProgressWindow.SyncHash.Window -WindowLocation $args[1]
                 }
             },
-            [System.Windows.Threading.DispatcherPriority]::Send
+            [System.Windows.Threading.DispatcherPriority]::Send,
+            ($NoRelocation, $WindowLocation)
         )
         Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Quiet
     }

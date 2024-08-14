@@ -139,18 +139,6 @@ function Show-ADTInstallationProgress
         {
             $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
         }
-        $WindowTitle = $PSBoundParameters.WindowTitle
-        $StatusMessage = $PSBoundParameters.StatusMessage
-        $StatusMessageDetail = if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) {$PSBoundParameters.StatusMessageDetail}
-
-        # Remove fluent dialog parameters if specified.
-        if (!$fluentUi)
-        {
-            $null = $PSBoundParameters.Keys.GetEnumerator().Where({$_ -match '^(WindowSubtitle|StatusMessageDetail)$'}).ForEach({
-                Write-ADTLogEntry -Message "The parameter [$($_)] is only supported by fluent dialogs and has been removed for you." -Severity 2
-                $PSBoundParameters.Remove($_)
-            })
-        }
     }
 
     process

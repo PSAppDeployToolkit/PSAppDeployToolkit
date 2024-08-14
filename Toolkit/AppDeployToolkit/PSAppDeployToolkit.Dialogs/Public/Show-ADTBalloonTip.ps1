@@ -99,7 +99,6 @@ function Show-ADTBalloonTip
         {
             $PSBoundParameters.Add('BalloonTipTitle', $adtSession.GetPropertyValue('InstallTitle'))
         }
-        $BalloonTipTitle = $PSBoundParameters.BalloonTipTitle
     }
 
     process

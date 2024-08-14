@@ -176,8 +176,6 @@ function Show-ADTInstallationPrompt
         {
             $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
         }
-        $Title = $PSBoundParameters.Title
-        $Timeout = $PSBoundParameters.Timeout
     }
 
     process
