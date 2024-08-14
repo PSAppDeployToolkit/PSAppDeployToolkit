@@ -17,29 +17,28 @@ function Close-ADTSession
     begin
     {
         # Initialise function.
-        try
-        {
-            $adtSession = Get-ADTSession
-            $adtData = Get-ADTModuleData
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        # Return early if there's no active session to close.
+        if (!(Test-ADTSessionActive))
+        {
+            return
+        }
+        $adtSession = Get-ADTSession
+        $adtData = Get-ADTModuleData
+
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode'))
         {
             $adtSession.SetExitCode($ExitCode)
         }
 
-        # If we're closing the last session, clean up the environment.
-        $callbackErrors = if ($adtData.Sessions.Count.Equals(1))
-        {
+        # Invoke all callbacks and capture all errors.
+        $callbackErrors = $(
+            # Invoke closing session callbacks.
             foreach ($callback in $($adtData.Callbacks.Closing))
             {
                 try
@@ -51,7 +50,23 @@ function Close-ADTSession
                     $_
                 }
             }
-        }
+
+            # Invoke final callbacks.
+            if ($adtData.Sessions.Count.Equals(1))
+            {
+                foreach ($callback in $($adtData.Callbacks.Finishing))
+                {
+                    try
+                    {
+                        & $callback
+                    }
+                    catch
+                    {
+                        $_
+                    }
+                }
+            }
+        )
 
         # Close out the active session and clean up session state.
         $sessionCloseError = try
@@ -84,10 +99,24 @@ function Close-ADTSession
             }
         }
 
-        # If this wasn't the last session and its closure failed, terminate out.
-        if ($sessionCloseError)
+        # If this wasn't the last session, process any captured errors.
+        try
         {
-            $PSCmdlet.ThrowTerminatingError($sessionCloseError)
+            # If we had callback errors, throw out the first one.
+            foreach ($callbackError in $callbackErrors)
+            {
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $callbackError
+            }
+
+            # If the session closure failed, terminate out.
+            if ($sessionCloseError)
+            {
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $sessionCloseError
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
