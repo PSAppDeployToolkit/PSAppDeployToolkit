@@ -4,7 +4,7 @@
         Date = '05/03/2024'
 
         # Released config version number.
-        Version = '3.10.1'
+        Version = '3.91.0'
     }
 
     Assets = @{
