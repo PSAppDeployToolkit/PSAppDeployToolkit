@@ -14,7 +14,7 @@
         (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
-            [System.String]$ModuleBase
+            [System.String[]]$ModuleBase
         )
 
         # Ensure job runs in strict mode since its in a new scope.
@@ -26,13 +26,27 @@
         # Import the module and store its passthru data so we can access it later.
         $module = Import-Module -Name $ModuleBase -DisableNameChecking -PassThru
 
+        # Initialise everything needed for the console if the Dialogs module isn't loaded.
+        if (!($module.Name -match '\.Dialogs$'))
+        {
+            # Set process DPI awareness before importing anything else.
+            Set-ADTProcessDpiAware
+
+            # Add system types required by the console.
+            Add-Type -AssemblyName System.Drawing, System.Windows.Forms
+
+            # All WinForms-specific initialistion code.
+            [System.Windows.Forms.Application]::EnableVisualStyles()
+            try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {[System.Void]$null}
+        }
+
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
         $helpListBox.ClientSize = [System.Drawing.Size]::new(261, 675)
         $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
         $helpListBox.Location = [System.Drawing.Point]::new(3,0)
         $helpListBox.add_SelectedIndexChanged({$helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim()})
-        [System.Void]$helpListBox.Items.AddRange(((Get-Module -Name "$($module.Name)*").ExportedCommands.Keys | Sort-Object))
+        [System.Void]$helpListBox.Items.AddRange(($module.ExportedCommands.Keys | Sort-Object))
 
         # Build out the form's textbox.
         $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
@@ -58,5 +72,5 @@
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    })} -ModuleBase '$((Get-ADTModuleInfo).ModuleBase)'")"
+    })} -ModuleBase '$((Get-ADTModulePaths) -join "', '")'")"
 }

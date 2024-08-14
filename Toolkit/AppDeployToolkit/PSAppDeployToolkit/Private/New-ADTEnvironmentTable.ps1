@@ -1,12 +1,11 @@
 ﻿function New-ADTEnvironmentTable
 {
     # Perform initial setup.
-    $adtModule = Get-ADTModuleInfo
     $variables = [ordered]@{}
 
     ## Variables: Toolkit Info
-    $variables.Add('appDeployToolkitName', $adtModule.Name)
-    $variables.Add('appDeployMainScriptVersion', $adtModule.Version)
+    $variables.Add('appDeployToolkitName', $MyInvocation.MyCommand.Module.Name)
+    $variables.Add('appDeployMainScriptVersion', $MyInvocation.MyCommand.Module.Version)
 
     ## Variables: Culture
     $variables.Add('culture', $Host.CurrentCulture)

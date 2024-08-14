@@ -1,5 +1,5 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit.Dialogs.Fluent'
+# Module manifest for module 'PSAppDeployToolkit.Dialogs.Classic'
 #
 # Generated on: 2024-06-05
 #
@@ -7,7 +7,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PSAppDeployToolkit.Dialogs.Fluent.psm1'
+RootModule = 'PSAppDeployToolkit.Dialogs.Classic.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -16,7 +16,7 @@ ModuleVersion = '3.91.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'd4f26883-ff0e-4857-8724-3380ea9dbc0b'
+GUID = 'dccc9f7e-9ba2-45e6-8a4b-bb1e1df11fe1'
 
 # Author of this module
 Author = 'PSAppDeployToolkit Team'
@@ -49,12 +49,12 @@ PowerShellVersion = '5.1'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName = 'PSAppDeployToolkit'; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.91.0' }
+)
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @(
-    'lib\ProgressWindow\PSADT.UserInterface.dll'
-)
+# RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
@@ -70,10 +70,13 @@ RequiredAssemblies = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Close-ADTInstallationProgressFluent'
-    'Show-ADTBalloonTipFluent'
-    'Show-ADTInstallationProgressFluent'
-    'Test-ADTInstallationProgressRunningFluent'
+    'Close-ADTInstallationProgressClassic'
+    'Show-ADTBalloonTipClassic'
+    'Show-ADTInstallationProgressClassic'
+    'Show-ADTInstallationPromptClassic'
+    'Show-ADTInstallationRestartPromptClassic'
+    'Show-ADTWelcomePromptClassic'
+    'Test-ADTInstallationProgressRunningClassic'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
