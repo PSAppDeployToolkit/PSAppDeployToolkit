@@ -73,7 +73,9 @@ function Show-ADTInstallationPromptClassic
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'formInstallationPromptStartLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -350,7 +352,7 @@ function Show-ADTInstallationPromptClassic
     }
     $flowLayoutPanel.ResumeLayout()
 
-    ## Form Installation Prompt
+    # Form Installation Prompt.
     $formInstallationPromptStartLocation = $null
     $formInstallationPrompt = [System.Windows.Forms.Form]::new()
     $formInstallationPrompt.SuspendLayout()

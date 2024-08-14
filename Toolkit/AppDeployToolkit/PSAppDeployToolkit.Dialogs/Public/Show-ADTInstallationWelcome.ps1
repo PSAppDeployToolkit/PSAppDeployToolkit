@@ -457,7 +457,7 @@ function Show-ADTInstallationWelcome
                                                 {
                                                     if (!($IsWindowOpen = $AllOpenWindows | Where-Object {$_.WindowHandle -eq $OpenWindow.WindowHandle}))
                                                     {
-                                                        Break
+                                                        break
                                                     }
                                                     [System.Threading.Thread]::Sleep(3000)
                                                 }

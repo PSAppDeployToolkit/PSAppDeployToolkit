@@ -23,16 +23,10 @@ function Show-ADTInstallationRestartPromptClassic
     .PARAMETER CountdownNoHideSeconds
     Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
 
-    .PARAMETER SilentRestart
-    Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $false
-
     .PARAMETER NoCountdown
     Specifies not to show a countdown.
 
     The UI will restore/reposition itself persistently based on the interval value specified in the config file.
-
-    .PARAMETER SilentCountdownSeconds
-    Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
 
     .PARAMETER NotTopMost
     Specifies whether the windows is the topmost window. Default: $false.
@@ -50,7 +44,7 @@ function Show-ADTInstallationRestartPromptClassic
     Show-ADTInstallationRestartPromptClassic -NoCountdown
 
     .EXAMPLE
-    Show-ADTInstallationRestartPromptClassic -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
+    Show-ADTInstallationRestartPromptClassic -Countdownseconds 300
 
     .NOTES
     Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
@@ -60,6 +54,8 @@ function Show-ADTInstallationRestartPromptClassic
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'formRestartPromptStartLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'CountdownNoHideSeconds', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -74,13 +70,6 @@ function Show-ADTInstallationRestartPromptClassic
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownNoHideSeconds = 30,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$SilentCountdownSeconds = 5,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SilentRestart,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown,
@@ -326,7 +315,7 @@ function Show-ADTInstallationRestartPromptClassic
     $flowLayoutPanel.Controls.Add($panelButtons)
     $flowLayoutPanel.ResumeLayout()
 
-    ## Form Restart
+    # Form Restart.
     $formRestartPromptStartLocation = $null
     $formRestart = [System.Windows.Forms.Form]::new()
     $formRestart.SuspendLayout()

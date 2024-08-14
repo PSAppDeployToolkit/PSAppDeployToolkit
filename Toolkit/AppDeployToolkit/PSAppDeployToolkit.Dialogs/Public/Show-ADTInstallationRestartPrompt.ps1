@@ -115,7 +115,6 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
         }
-        $Title = $PSBoundParameters.Title
     }
 
     process

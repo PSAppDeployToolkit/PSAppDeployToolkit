@@ -100,6 +100,13 @@ function Show-ADTInstallationProgressFluent
     # Internal worker functions.
     function Update-ProgressWindowValues
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
+        [CmdletBinding(SupportsShouldProcess = $false)]
+        param
+        (
+        )
+
         # Blanketly update values from incoming parameters.
         $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
         $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
@@ -108,7 +115,8 @@ function Show-ADTInstallationProgressFluent
     }
     function Update-WindowLocation
     {
-        [CmdletBinding()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [CmdletBinding(SupportsShouldProcess = $false)]
         param
         (
             [Parameter(Mandatory = $true)]
@@ -169,7 +177,7 @@ function Show-ADTInstallationProgressFluent
     }
 
     # Write warnings for functionality that is not yet implemented.
-    if ($WindowLocation -ne 'Default')
+    if (($WindowLocation -ne 'Default') -or $NoRelocation)
     {
         Write-ADTLogEntry -Message "The parameter '-WindowLocation' is not yet implemented within this function." -Severity 2
     }

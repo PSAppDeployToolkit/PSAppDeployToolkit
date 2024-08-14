@@ -20,15 +20,6 @@ function Show-ADTBalloonTipFluent
     .PARAMETER BalloonTipTitle
     Title of the balloon tip.
 
-    .PARAMETER BalloonTipIcon
-    Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
-
-    .PARAMETER BalloonTipTime
-    Time in milliseconds to display the balloon tip. Default: 10000.
-
-    .PARAMETER NoWait
-    Create the balloontip asynchronously. Default: $false
-
     .INPUTS
     None. You cannot pipe objects to this function.
 
@@ -46,6 +37,7 @@ function Show-ADTBalloonTipFluent
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
     param
     (
@@ -57,22 +49,16 @@ function Show-ADTBalloonTipFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$BalloonTipTitle,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateSet('Error', 'Info', 'None', 'Warning')]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
-
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
+        [System.Object]$UnboundArguments
     )
 
     # Define internal worker function.
     function New-ADTToastNotification
     {
-        [CmdletBinding()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
+        [CmdletBinding(SupportsShouldProcess = $false)]
         param
         (
             [Parameter(Mandatory = $true)]
