@@ -94,12 +94,29 @@
         ('Name','ProductCode').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
             $PSBoundParameters.$_ = (Set-Variable -Name $_ -Value ((Get-Variable -Name $_ -ValueOnly) | Select-Object -Unique) -PassThru).Value
         })
+
+        # Function to build return object. Can be called in multiple places.
+        function Out-InstalledAppObject
+        {
+            return [pscustomobject]@{
+                UninstallSubkey    = $regKeyApp.PSChildName
+                ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
+                DisplayName        = $appDisplayName
+                DisplayVersion     = $appDisplayVersion
+                UninstallString    = $regKeyApp | Select-Object -ExpandProperty UninstallString -ErrorAction Ignore
+                InstallSource      = $regKeyApp | Select-Object -ExpandProperty InstallSource -ErrorAction Ignore
+                InstallLocation    = $regKeyApp | Select-Object -ExpandProperty InstallLocation -ErrorAction Ignore
+                InstallDate        = $regKeyApp | Select-Object -ExpandProperty InstallDate -ErrorAction Ignore
+                Publisher          = $appPublisher
+                Is64BitApplication = $Is64BitApp
+            }
+        }
     }
     process {
-        # Create a custom object with the desired properties for the installed applications and sanitize property details
+        # Create a custom object with the desired properties for the installed applications and sanitize property details.
         $installedApplication = foreach ($regKeyApp in $regKeyApplication)
         {
-            # Bypass any updates or hotfixes
+            # Bypass any updates or hotfixes.
             if (!$IncludeUpdatesAndHotfixes -and ($regKeyApp.DisplayName -match $updatesHotfixRegex))
             {
                 $updatesSkippedCounter++
@@ -116,59 +133,36 @@
             if ($ProductCode -contains $regKeyApp.PSChildName)
             {
                 Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
-                [pscustomobject]@{
-                    UninstallSubkey    = $regKeyApp.PSChildName
-                    ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
-                    DisplayName        = $appDisplayName
-                    DisplayVersion     = $appDisplayVersion
-                    UninstallString    = $regKeyApp | Select-Object -ExpandProperty UninstallString -ErrorAction Ignore
-                    InstallSource      = $regKeyApp | Select-Object -ExpandProperty InstallSource -ErrorAction Ignore
-                    InstallLocation    = $regKeyApp | Select-Object -ExpandProperty InstallLocation -ErrorAction Ignore
-                    InstallDate        = $regKeyApp | Select-Object -ExpandProperty InstallDate -ErrorAction Ignore
-                    Publisher          = $appPublisher
-                    Is64BitApplication = $Is64BitApp
-                }
+                Out-InstalledAppObject
             }
 
-            ## Verify if there is a match with the application name(s) passed to the script
+            # Verify if there is a match with the application name(s) passed to the script.
             foreach ($application in $Name)
             {
-                $applicationMatched = if ($Exact -and ($regKeyApp.DisplayName -eq $application))
+                if ($Exact -and ($regKeyApp.DisplayName -eq $application))
                 {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]." -PassThru
+                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
+                    Out-InstalledAppObject
                 }
                 elseif ($WildCard -and ($regKeyApp.DisplayName -like $application))
                 {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]." -PassThru
+                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
+                    Out-InstalledAppObject
                 }
                 elseif ($RegEx -and ($regKeyApp.DisplayName -match $application))
                 {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]." -PassThru
+                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
+                    Out-InstalledAppObject
                 }
                 elseif ($regKeyApp.DisplayName -match [System.Text.RegularExpressions.Regex]::Escape($application))
                 {
-                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]." -PassThru
-                }
-
-                if ($applicationMatched)
-                {
-                    [pscustomobject]@{
-                        UninstallSubkey    = $regKeyApp.PSChildName
-                        ProductCode        = $(if ($regKeyApp.PSChildName -match $adtEnv.MSIProductCodeRegExPattern) {$regKeyApp.PSChildName})
-                        DisplayName        = $appDisplayName
-                        DisplayVersion     = $appDisplayVersion
-                        UninstallString    = $regKeyApp.UninstallString
-                        InstallSource      = $regKeyApp.InstallSource
-                        InstallLocation    = $regKeyApp.InstallLocation
-                        InstallDate        = $regKeyApp.InstallDate
-                        Publisher          = $appPublisher
-                        Is64BitApplication = $Is64BitApp
-                    }
+                    Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
+                    Out-InstalledAppObject
                 }
             }
         }
 
-        ## Write to log the number of entries skipped due to them being considered updates
+        # Write to log the number of entries skipped due to them being considered updates.
         if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
         {
             if ($updatesSkippedCounter -eq 1)
