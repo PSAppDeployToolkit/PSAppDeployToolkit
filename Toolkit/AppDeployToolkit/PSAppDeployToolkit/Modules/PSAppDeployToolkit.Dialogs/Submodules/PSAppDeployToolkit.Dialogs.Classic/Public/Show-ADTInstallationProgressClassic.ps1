@@ -53,7 +53,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WindowTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
@@ -80,7 +81,8 @@
     function Update-WindowLocation
     {
         [CmdletBinding()]
-        param (
+        param
+        (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
             [System.Windows.Window]$Window
@@ -162,7 +164,8 @@
         # Set up the PowerShell instance and add the initial scriptblock.
         $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
             [CmdletBinding()]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
                 [System.Xml.XmlDocument]$Xaml,

@@ -61,7 +61,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$AccountName,
@@ -78,11 +79,13 @@
         [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         switch ($PSCmdlet.ParameterSetName)
         {
             'SIDToNTAccount' {
@@ -154,7 +157,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

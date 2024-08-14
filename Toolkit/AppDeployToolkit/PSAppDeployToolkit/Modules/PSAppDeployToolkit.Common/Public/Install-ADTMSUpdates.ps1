@@ -26,18 +26,21 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Directory
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $kbPattern = '(?i)kb\d{6,8}'
     }
 
-    process {
+    process
+    {
         # Get all hotfixes and install if required.
         Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$Directory]."
         foreach ($file in (Get-ChildItem -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')))
@@ -85,7 +88,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

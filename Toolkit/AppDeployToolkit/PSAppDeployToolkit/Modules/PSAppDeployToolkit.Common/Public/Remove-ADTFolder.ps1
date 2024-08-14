@@ -34,7 +34,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.IO.DirectoryInfo]$Path,
@@ -43,12 +44,14 @@
         [System.Management.Automation.SwitchParameter]$DisableRecursion
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         # Return early if the folder doesn't exist.
         if (!($Path | Test-Path -PathType Container))
         {
@@ -116,7 +119,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -1,7 +1,8 @@
 function Invoke-ADTFunctionErrorHandler
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCmdlet]$Cmdlet,
@@ -19,7 +20,8 @@ function Invoke-ADTFunctionErrorHandler
         [System.String]$Prefix
     )
 
-    begin {
+    begin
+    {
         $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
         {
             Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
@@ -30,7 +32,8 @@ function Invoke-ADTFunctionErrorHandler
         }
     }
     
-    process {
+    process
+    {
         if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
         {
             $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name

@@ -1,7 +1,8 @@
 ﻿function Convert-ADTCommandParamsToDynamicParams
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.CommandInfo]$Command

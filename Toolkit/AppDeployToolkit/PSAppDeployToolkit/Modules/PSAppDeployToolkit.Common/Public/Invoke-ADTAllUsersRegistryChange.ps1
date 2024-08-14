@@ -44,7 +44,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock[]]$RegistrySettings,
@@ -54,11 +55,13 @@
         [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         foreach ($UserProfile in $UserProfiles)
         {
             $ManuallyLoadedRegHive = $false
@@ -150,7 +153,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

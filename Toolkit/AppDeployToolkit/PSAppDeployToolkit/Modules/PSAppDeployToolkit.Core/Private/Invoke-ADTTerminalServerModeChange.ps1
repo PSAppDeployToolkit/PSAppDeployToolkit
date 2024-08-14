@@ -20,7 +20,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Install', 'Execute')]
         [System.String]$Mode

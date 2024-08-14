@@ -43,7 +43,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateLength(1, 260)]
         [System.String]$MutexName,
@@ -53,7 +54,8 @@
         [System.TimeSpan]$MutexWaitTime = 10000
     )
 
-    begin {
+    begin
+    {
         # Initialize variables.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
@@ -138,7 +140,8 @@
         return $IsMutexFree
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

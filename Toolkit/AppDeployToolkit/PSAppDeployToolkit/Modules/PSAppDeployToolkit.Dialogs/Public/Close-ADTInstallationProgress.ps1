@@ -28,10 +28,12 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -43,7 +45,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Call the underlying function to close the progress window.
         & (Get-ADTDialogFunction)
 
@@ -65,7 +68,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

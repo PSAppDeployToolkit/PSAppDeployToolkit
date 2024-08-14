@@ -52,19 +52,23 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
         return [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName)
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

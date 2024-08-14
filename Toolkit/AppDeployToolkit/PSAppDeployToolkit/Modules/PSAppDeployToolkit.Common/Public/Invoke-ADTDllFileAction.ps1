@@ -30,7 +30,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (![System.IO.File]::Exists($_) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
@@ -46,7 +47,8 @@
         [System.String]$DLLAction
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
@@ -62,7 +64,8 @@
         }
     }
 
-    process {
+    process
+    {
         try
         {
             # Determine the bitness of the DLL file.
@@ -147,7 +150,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

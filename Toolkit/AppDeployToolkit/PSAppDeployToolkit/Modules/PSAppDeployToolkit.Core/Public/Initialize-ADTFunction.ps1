@@ -1,7 +1,8 @@
 ﻿function Initialize-ADTFunction
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCmdlet]$Cmdlet,
@@ -18,7 +19,8 @@
     function Set-CallerVariable
     {
         [CmdletBinding()]
-        param (
+        param
+        (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
             [System.String]$Name,

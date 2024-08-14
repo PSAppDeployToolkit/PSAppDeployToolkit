@@ -26,18 +26,21 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter the KB Number for the Microsoft Update')]
         [ValidateNotNullOrEmpty()]
         [System.String]$KbNumber
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         try
         {
             # Attempt to get the update via Get-HotFix first as it's cheap.
@@ -74,7 +77,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

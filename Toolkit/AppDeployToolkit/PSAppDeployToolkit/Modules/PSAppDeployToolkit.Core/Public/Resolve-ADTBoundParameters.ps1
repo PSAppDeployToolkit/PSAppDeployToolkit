@@ -35,7 +35,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.IDictionary]$InputObject,
@@ -45,11 +46,13 @@
         [System.String[]]$Exclude
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         # Establish array to hold return string.
         if (!(Test-Path -LiteralPath 'Variable:paramsArr'))
         {
@@ -98,7 +101,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -23,15 +23,18 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         foreach ($target in ('Computer', 'User'))
         {
             Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
@@ -51,7 +54,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

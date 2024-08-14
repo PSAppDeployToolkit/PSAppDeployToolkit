@@ -4,7 +4,8 @@
     function Get-SidTypeAccountName
     {
         [CmdletBinding()]
-        param (
+        param
+        (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
             [Security.Principal.WellKnownSidType]$WellKnownSidType

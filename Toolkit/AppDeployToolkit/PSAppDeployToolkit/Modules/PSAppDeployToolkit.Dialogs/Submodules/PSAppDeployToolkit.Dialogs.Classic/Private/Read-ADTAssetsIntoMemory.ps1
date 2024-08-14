@@ -1,6 +1,7 @@
 ﻿function Read-ADTAssetsIntoMemory
 {
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.Collections.Hashtable]$ADTConfig
     )

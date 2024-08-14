@@ -39,16 +39,19 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         # Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
         # Offline : The system is not using AC power.
         # Online  : The system is using AC power.
@@ -109,7 +112,8 @@
         return $powerStatus.IsUsingACPower
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -33,17 +33,20 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DateTime = (Get-Date -Format $Host.CurrentCulture.DateTimeFormat.UniversalDateTimePattern).ToString()
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
         $DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture)
 
@@ -52,7 +55,8 @@
         return (Get-Date -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

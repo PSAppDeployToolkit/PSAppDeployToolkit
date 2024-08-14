@@ -38,7 +38,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
@@ -51,12 +52,14 @@
         [System.Management.Automation.SwitchParameter]$Recurse
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         foreach ($Item in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
@@ -112,7 +115,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

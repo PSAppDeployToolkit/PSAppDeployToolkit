@@ -50,7 +50,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false, Position = 0)]
         [AllowEmptyString()]
         [ValidateNotNull()]
@@ -72,13 +73,15 @@
         [System.Int32]$WaitSeconds
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         function Send-ADTKeysToWindow
         {
             [CmdletBinding()]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
                 [ValidateNotNullOrEmpty()]
                 [System.IntPtr]$WindowHandle
@@ -126,7 +129,8 @@
         }
     }
 
-    process {
+    process
+    {
         try
         {
             if ($WindowHandle)
@@ -154,7 +158,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

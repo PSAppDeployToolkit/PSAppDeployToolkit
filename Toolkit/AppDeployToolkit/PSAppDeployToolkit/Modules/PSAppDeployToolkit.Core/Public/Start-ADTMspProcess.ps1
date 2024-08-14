@@ -34,7 +34,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
         [ValidateScript({})]
         [ValidateScript({
@@ -52,7 +53,8 @@
         [System.String]$AddParameters
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -64,7 +66,8 @@
         }
     }
 
-    process {
+    process
+    {
         # If the MSP is in the Files directory, set the full path to the MSP.
         $mspFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
         {
@@ -109,7 +112,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

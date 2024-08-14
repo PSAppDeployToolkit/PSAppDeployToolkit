@@ -28,16 +28,19 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $procName = 'POWERPNT'
         $presenting = 'Unknown'
     }
 
-    process {
+    process
+    {
         # Return early if we're not running PowerPoint or we can't interactively check.
         Write-ADTLogEntry -Message 'Checking if PowerPoint is in either fullscreen slideshow mode or presentation mode...'
         if (!($PowerPointProcess = Get-Process -Name $procName -ErrorAction Ignore))
@@ -83,7 +86,8 @@
         return ($presenting = $false)
     }
 
-    end {
+    end
+    {
         Write-ADTLogEntry -Message "PowerPoint is running in fullscreen mode [$presenting]."
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

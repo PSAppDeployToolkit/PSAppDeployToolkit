@@ -1,7 +1,8 @@
 ﻿function Get-ADTStrings
 {
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
     # Return the string database if initialised.

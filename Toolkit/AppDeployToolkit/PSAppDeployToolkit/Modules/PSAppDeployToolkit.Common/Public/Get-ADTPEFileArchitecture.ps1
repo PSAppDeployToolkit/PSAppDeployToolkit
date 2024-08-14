@@ -31,7 +31,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateScript({
             if (![System.IO.File]::Exists($_) -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
@@ -43,14 +44,16 @@
         [System.IO.FileInfo[]]$FilePath
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         [System.Int32]$MACHINE_OFFSET = 4
         [System.Int32]$PE_POINTER_OFFSET = 60
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
     }
 
-    process {
+    process
+    {
         foreach ($Path in $filePath)
         {
             # Read the first 4096 bytes of the file.
@@ -89,7 +92,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -1,7 +1,8 @@
 ﻿function Complete-ADTFunction
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCmdlet]$Cmdlet

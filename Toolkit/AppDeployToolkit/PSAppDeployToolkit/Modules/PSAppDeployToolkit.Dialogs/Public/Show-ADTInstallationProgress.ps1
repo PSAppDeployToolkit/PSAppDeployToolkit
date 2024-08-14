@@ -59,23 +59,28 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    dynamicparam {
+    dynamicparam
+    {
         $Command = Get-ADTDialogFunction
         Convert-ADTCommandParamsToDynamicParams -Command $Command
     }
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         & $Command @PSBoundParameters
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -29,7 +29,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
@@ -44,11 +45,13 @@
         [System.Management.Automation.SwitchParameter]$ProductVersion
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         if ($ProductVersion)
         {
             Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
@@ -58,7 +61,8 @@
         return $File.VersionInfo.FileVersion.Trim()
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

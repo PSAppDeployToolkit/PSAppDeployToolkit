@@ -42,7 +42,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Key,
@@ -58,11 +59,13 @@
         [System.Management.Automation.SwitchParameter]$Logging
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         # Convert the registry key hive to the full path, only match if at the beginning of the line.
         foreach ($hive in $Script:ADTRegistry.PathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
         {
@@ -121,7 +124,8 @@
         return $Key
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

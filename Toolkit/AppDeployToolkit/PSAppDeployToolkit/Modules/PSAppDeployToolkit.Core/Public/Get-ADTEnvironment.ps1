@@ -1,7 +1,8 @@
 ﻿function Get-ADTEnvironment
 {
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
     # Return the environment database if initialised.

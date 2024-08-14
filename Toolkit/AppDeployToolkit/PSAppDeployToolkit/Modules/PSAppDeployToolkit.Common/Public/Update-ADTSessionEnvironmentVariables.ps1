@@ -28,12 +28,14 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables
     )
 
-    begin {
+    begin
+    {
         # Perform initial setup.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -48,7 +50,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
         Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
         Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
@@ -61,7 +64,8 @@
         Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique)))
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -55,7 +55,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownSeconds = 60,
@@ -78,7 +79,8 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    dynamicparam {
+    dynamicparam
+    {
         # Initialise variables.
         if (!($adtSession = try {Get-ADTSession} catch {[System.Void]$null}))
         {
@@ -100,7 +102,8 @@
         return $paramDictionary
     }
 
-    begin {
+    begin
+    {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -115,11 +118,13 @@
         }
     }
 
-    process {
+    process
+    {
         Show-ADTInstallationRestartPromptClassic @PSBoundParameters
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

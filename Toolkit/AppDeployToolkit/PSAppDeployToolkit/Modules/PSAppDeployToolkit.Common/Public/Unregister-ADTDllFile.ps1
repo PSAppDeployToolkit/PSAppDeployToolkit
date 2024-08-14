@@ -30,7 +30,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (![System.IO.File]::Exists($_))
@@ -42,15 +43,18 @@
         [System.String]$FilePath
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Unregister
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

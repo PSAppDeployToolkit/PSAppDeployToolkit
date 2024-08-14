@@ -1,7 +1,8 @@
 ﻿function Get-ADTSession
 {
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
     # Return the most recent session in the database.

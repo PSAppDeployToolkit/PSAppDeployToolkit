@@ -29,7 +29,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (!$_.Name)
@@ -45,12 +46,14 @@
         [System.String]$ComputerName
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         # Get the start mode and adjust it if the automatic type is delayed.
         Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
         if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
@@ -63,7 +66,8 @@
         return $serviceStartMode
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

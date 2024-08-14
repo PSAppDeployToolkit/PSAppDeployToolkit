@@ -1,7 +1,8 @@
 ﻿function New-ADTValidateScriptErrorRecord
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$ParameterName,

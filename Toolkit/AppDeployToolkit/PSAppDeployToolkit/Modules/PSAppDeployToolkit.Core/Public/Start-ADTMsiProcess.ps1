@@ -112,7 +112,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action = 'Install',
@@ -187,7 +188,8 @@
         [System.Management.Automation.SwitchParameter]$RepairFromSource
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -201,7 +203,8 @@
         }
     }
 
-    process {
+    process
+    {
         # If the path matches a product code.
         if ($pathIsProductCode)
         {
@@ -507,7 +510,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

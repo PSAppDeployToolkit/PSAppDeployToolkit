@@ -32,7 +32,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimesRemaining,
@@ -42,7 +43,8 @@
         [System.String]$DeferDeadline
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -54,7 +56,8 @@
         }
     }
 
-    process {
+    process
+    {
         if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
         {
             Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
@@ -67,7 +70,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

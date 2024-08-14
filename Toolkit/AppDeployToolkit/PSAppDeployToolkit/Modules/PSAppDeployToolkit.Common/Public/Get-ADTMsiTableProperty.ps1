@@ -55,7 +55,8 @@
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (!(Test-Path -Path $_ -PathType Leaf))
@@ -93,7 +94,8 @@
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation
     )
 
-    begin {
+    begin
+    {
         # Set default values.
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
@@ -133,7 +135,8 @@
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         try
         {
             if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
@@ -235,7 +238,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

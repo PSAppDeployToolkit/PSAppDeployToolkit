@@ -47,7 +47,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]
         [System.String]$WindowTitle,
@@ -59,11 +60,13 @@
         [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         try
         {
             if ($PSCmdlet.ParameterSetName -eq 'SearchWinTitle')
@@ -101,7 +104,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

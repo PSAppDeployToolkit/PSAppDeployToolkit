@@ -61,7 +61,8 @@ https://psappdeploytoolkit.com
 
 #>
 
-param (
+param
+(
     [ValidateSet('Install', 'Uninstall', 'Repair')]
     [System.String]$DeploymentType = 'Install',
 

@@ -46,7 +46,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
@@ -61,13 +62,15 @@
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $userProfileListRegKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
         $excludedSids = "^($([System.String]::Join('|', $(if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}; 'S-1-5-82'))))"
     }
 
-    process {
+    process
+    {
         # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
         Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
         Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
@@ -103,7 +106,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

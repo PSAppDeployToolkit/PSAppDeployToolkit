@@ -26,7 +26,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateScript({
             if (!$_.TotalSize)
@@ -38,18 +39,21 @@
         [System.IO.DriveInfo]$Drive = $env:SystemDrive
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
         $freeDiskSpace = [System.Math]::Round($Drive.AvailableFreeSpace / 1MB)
         Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
         return $freeDiskSpace
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -32,7 +32,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (![System.IO.File]::Exists($_))
@@ -52,18 +53,21 @@
         [System.String]$Key
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
         $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
         Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
         return $iniValue
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

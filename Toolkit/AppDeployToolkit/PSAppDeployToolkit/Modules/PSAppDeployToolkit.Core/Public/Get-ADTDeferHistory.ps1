@@ -32,10 +32,12 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -47,12 +49,14 @@
         }
     }
 
-    process {
+    process
+    {
         Write-ADTLogEntry -Message 'Getting deferral history...'
         Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

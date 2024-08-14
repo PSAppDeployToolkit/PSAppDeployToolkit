@@ -47,7 +47,8 @@
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Positional')]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Object]$InputObject,
@@ -65,11 +66,13 @@
         [System.Collections.Hashtable]$Parameter
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         switch ($PSCmdlet.ParameterSetName)
         {
             Named {
@@ -83,7 +86,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
