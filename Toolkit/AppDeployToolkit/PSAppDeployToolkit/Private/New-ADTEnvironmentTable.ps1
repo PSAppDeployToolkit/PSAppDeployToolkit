@@ -61,15 +61,15 @@ function New-ADTEnvironmentTable
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
 
     ## Variables: Domain Membership
-    $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem
-    $w32csd = $w32cs.Domain | Where-Object {$_}
+    $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem
+    $w32csd = $w32cs.Domain | & $Script:CommandTable.'Where-Object' {$_}
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
     $variables.Add('envMachineADDomain', [System.String]::Empty)
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
-    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
-    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | Where-Object {$_} | ForEach-Object {$_.ToLower()}))
+    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
+    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
     $variables.Add('envUserDomain', [string]$(try {[System.Environment]::UserDomainName.ToUpper()} catch {[System.Void]$null}))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
@@ -89,12 +89,12 @@ function New-ADTEnvironmentTable
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = [string]$(try
         {
-            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | Where-Object {$_ -and !$_.Contains('\\MicrosoftAccount')} | ForEach-Object {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}
+            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & $Script:CommandTable.'Where-Object' {$_ -and !$_.Contains('\\MicrosoftAccount')} | & $Script:CommandTable.'ForEach-Object' {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}
         }
         catch
         {
             # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
-            Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | Select-Object -ExpandProperty DCName -ErrorAction Ignore
+            & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DCName -ErrorAction Ignore
         })
         while ($variables.envLogonServer.StartsWith('\'))
         {
@@ -155,7 +155,7 @@ function New-ADTEnvironmentTable
     }
 
     ## Variables: Operating System
-    $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem))
+    $variables.Add('envOS', (& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_OperatingSystem))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
     $variables.Add('envOSVersion', [version][System.Diagnostics.FileVersionInfo]::GetVersionInfo([System.IO.Path]::Combine($variables.envSysNativeDirectory, 'ntoskrnl.exe')).ProductVersion)
@@ -178,16 +178,16 @@ function New-ADTEnvironmentTable
     }))
 
     ## Variables: Office C2R version, bitness and channel
-    $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
-    $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
-    $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
+    $variables.Add('envOfficeVars', (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
+    $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty VersionToReport -ErrorAction Ignore))
+    $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty Platform -ErrorAction Ignore))
 
     # Channel needs special handling for group policy values.
-    $officeChannelProperty = if ($variables.envOfficeVars | Select-Object -ExpandProperty UpdateChannel -ErrorAction Ignore)
+    $officeChannelProperty = if ($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty UpdateChannel -ErrorAction Ignore)
     {
         $variables.envOfficeVars.UpdateChannel
     }
-    elseif ($variables.envOfficeVars | Select-Object -ExpandProperty CDNBaseURL -ErrorAction Ignore)
+    elseif ($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty CDNBaseURL -ErrorAction Ignore)
     {
         $variables.envOfficeVars.CDNBaseURL
     }
@@ -201,7 +201,7 @@ function New-ADTEnvironmentTable
     }))
 
     ## Variables: Hardware
-    $w32b = Get-CimInstance -ClassName Win32_BIOS
+    $w32b = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BIOS
     $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
     $variables.Add('envHardwareType', $(if ($w32b.Version -match 'VRTUAL')
     {
@@ -291,15 +291,15 @@ function New-ADTEnvironmentTable
 
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo())
-    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
+    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'ForEach-Object' {$_.NTAccount}))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'Where-Object' {$_.IsCurrentSession}))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'Where-Object' {$_.IsConsoleSession}))
     $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
 
     ## Variables: User profile information.
-    $variables.Add('dirUserProfile', (Split-Path -LiteralPath $variables.envPublic))
+    $variables.Add('dirUserProfile', (& $Script:CommandTable.'Split-Path' -LiteralPath $variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
-    $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
+    $variables.Add('runasUserProfile', (& $Script:CommandTable.'Join-Path' -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
 
     ## Variables: Executables
     $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
@@ -312,8 +312,8 @@ function New-ADTEnvironmentTable
     $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
     # Add in WScript shell variables.
-    $variables.Add('Shell', (New-Object -ComObject 'WScript.Shell'))
-    $variables.Add('ShellApp', (New-Object -ComObject 'Shell.Application'))
+    $variables.Add('Shell', (& $Script:CommandTable.'New-Object' -ComObject 'WScript.Shell'))
+    $variables.Add('ShellApp', (& $Script:CommandTable.'New-Object' -ComObject 'Shell.Application'))
 
     # Return variables for use within the module.
     return $variables.AsReadOnly()

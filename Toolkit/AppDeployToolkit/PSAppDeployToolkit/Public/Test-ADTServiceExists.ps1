@@ -74,9 +74,9 @@ function Test-ADTServiceExists
                 if ($UseCIM)
                 {
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
-                    if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))
+                    if (!($ServiceObject = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_Service -Filter "Name = '$Name'"))
                     {
-                        $ServiceObject = Get-CimInstance -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                        $ServiceObject = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BaseService -Filter "Name = '$Name'"
                     }
                 }
                 else
@@ -105,7 +105,7 @@ function Test-ADTServiceExists
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

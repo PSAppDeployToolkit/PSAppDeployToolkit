@@ -130,12 +130,12 @@ function Send-ADTKeys
                     if ($WaitSeconds)
                     {
                         Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
-                        Start-Sleep -Seconds $WaitSeconds
+                        & $Script:CommandTable.'Start-Sleep' -Seconds $WaitSeconds
                     }
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch
@@ -153,7 +153,7 @@ function Send-ADTKeys
             {
                 if ($WindowHandle)
                 {
-                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {$_.WindowHandle -eq $WindowHandle}))
+                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & $Script:CommandTable.'Where-Object' {$_.WindowHandle -eq $WindowHandle}))
                     {
                         Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return
@@ -172,7 +172,7 @@ function Send-ADTKeys
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

@@ -203,7 +203,7 @@ https://psappdeploytoolkit.com
         Write-ADTLogEntry -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]."
 
         ## Filter the results from Get-ADTInstalledApplication
-        [Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
+        [Collections.ArrayList]$removeMSIApplications = & $Script:CommandTable.'New-Object' -TypeName 'System.Collections.ArrayList'
         If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
             ForEach ($installedApplication in $installedApplications) {
                 If ([String]::IsNullOrEmpty($installedApplication.ProductCode)) {
@@ -338,7 +338,7 @@ https://psappdeploytoolkit.com
     }
     End {
         If ($PassThru -and $ExecuteResults) {
-            Write-Output -InputObject ($ExecuteResults)
+            & $Script:CommandTable.'Write-Output' -InputObject ($ExecuteResults)
         }
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

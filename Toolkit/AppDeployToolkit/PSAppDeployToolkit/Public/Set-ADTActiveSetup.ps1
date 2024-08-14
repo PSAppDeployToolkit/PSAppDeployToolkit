@@ -110,7 +110,7 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
+        [System.String]$Version = ((& $Script:CommandTable.'Get-Date' -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
@@ -162,7 +162,7 @@ function Set-ADTActiveSetup
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
         if ($adtSession)
         {
-            ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({$PSBoundParameters.Add($_, (Set-Variable -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value)})
+            ('Description', 'Key').Where({!$PSBoundParameters.ContainsKey($_)}).ForEach({$PSBoundParameters.Add($_, (& $Script:CommandTable.'Set-Variable' -Name $_ -Value $adtSession.GetPropertyValue('InstallName') -PassThru).Value)})
         }
 
         # Define initial variables.
@@ -377,7 +377,7 @@ function Set-ADTActiveSetup
                     if ($runAsActiveUser)
                     {
                         Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all logged on user registry hives on the system."
-                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | Where-Object {$_.SID -eq $runAsActiveUser.SID}) -RegistrySettings {
+                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & $Script:CommandTable.'Where-Object' {$_.SID -eq $runAsActiveUser.SID}) -RegistrySettings {
                             if (Get-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID)
                             {
                                 Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $_.SID -Recurse
@@ -391,8 +391,8 @@ function Set-ADTActiveSetup
                 $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
                 if ($adtSession)
                 {
-                    $StubExeFile = Join-Path -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
-                    if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
+                    $StubExeFile = & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
+                    if (& $Script:CommandTable.'Test-Path' -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.
                         Copy-File -Path $StubExeFile -Destination $StubExePath -ContinueOnError $false
@@ -400,7 +400,7 @@ function Set-ADTActiveSetup
                 }
 
                 # Check if the $StubExePath file exists.
-                if (!(Test-Path -LiteralPath $StubExePath -PathType Leaf))
+                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $StubExePath -PathType Leaf))
                 {
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Active Setup StubPath file [$ActiveSetupFileName] is missing.")
@@ -513,7 +513,7 @@ function Set-ADTActiveSetup
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

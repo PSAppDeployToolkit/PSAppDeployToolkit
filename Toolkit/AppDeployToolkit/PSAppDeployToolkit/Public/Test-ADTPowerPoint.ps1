@@ -56,7 +56,7 @@ function Test-ADTPowerPoint
             try
             {
                 # Return early if we're not running PowerPoint or we can't interactively check.
-                if (!($PowerPointProcess = Get-Process -Name $procName -ErrorAction Ignore))
+                if (!($PowerPointProcess = & $Script:CommandTable.'Get-Process' -Name $procName -ErrorAction Ignore))
                 {
                     Write-ADTLogEntry -Message 'PowerPoint application is not running.'
                     return ($presenting = $false)
@@ -69,7 +69,7 @@ function Test-ADTPowerPoint
 
                 # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
                 # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
-                if ($PowerPointWindow = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')} | Select-Object -First 1)
+                if ($PowerPointWindow = Get-ADTWindowTitle -GetAllWindowTitles | & $Script:CommandTable.'Where-Object' {($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')} | & $Script:CommandTable.'Select-Object' -First 1)
                 {
                     Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
                     return ($presenting = $true)
@@ -100,7 +100,7 @@ function Test-ADTPowerPoint
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

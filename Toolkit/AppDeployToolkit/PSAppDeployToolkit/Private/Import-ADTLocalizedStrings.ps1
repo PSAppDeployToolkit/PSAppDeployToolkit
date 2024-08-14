@@ -15,5 +15,5 @@ function Import-ADTLocalizedStrings
     )
 
     # Store the chosen language within this session.
-    Import-LocalizedData -BaseDirectory $Script:PSScriptRoot\Strings -FileName strings.psd1 @PSBoundParameters
+    & $Script:CommandTable.'Import-LocalizedData' -BaseDirectory $Script:PSScriptRoot\Strings -FileName strings.psd1 @PSBoundParameters
 }

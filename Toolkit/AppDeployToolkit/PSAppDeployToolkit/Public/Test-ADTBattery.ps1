@@ -115,7 +115,7 @@ function Test-ADTBattery
                 }))
 
                 # Determine if the system is a laptop.
-                $powerStatus.Add('IsLaptop', !$invalidBattery -and ((Get-CimInstance -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$'))
+                $powerStatus.Add('IsLaptop', !$invalidBattery -and ((& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$'))
 
                 # Return the object if we're passing through, otherwise just whether we're on AC.
                 if ($PassThru)
@@ -126,7 +126,7 @@ function Test-ADTBattery
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

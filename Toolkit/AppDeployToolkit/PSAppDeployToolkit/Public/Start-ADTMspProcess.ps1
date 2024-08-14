@@ -83,9 +83,9 @@ function Start-ADTMspProcess
                 {
                     $dirFilesPath
                 }
-                elseif (Test-Path -LiteralPath $Path)
+                elseif (& $Script:CommandTable.'Test-Path' -LiteralPath $Path)
                 {
-                    (Get-Item -LiteralPath $Path).FullName
+                    (& $Script:CommandTable.'Get-Item' -LiteralPath $Path).FullName
                 }
                 else
                 {
@@ -102,7 +102,7 @@ function Start-ADTMspProcess
 
                 # Create a Windows Installer object and open the database in read-only mode.
                 Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
-                [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
+                [__ComObject]$Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
                 [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
 
                 # Get the SummaryInformation from the windows installer database and store all product codes found.
@@ -122,7 +122,7 @@ function Start-ADTMspProcess
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

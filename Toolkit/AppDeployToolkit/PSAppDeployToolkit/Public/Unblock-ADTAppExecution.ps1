@@ -36,7 +36,7 @@ function Unblock-ADTAppExecution
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "PSAppDeployToolkit_*_BlockedApps" -ErrorAction Ignore)
+        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (& $Script:CommandTable.'Get-ScheduledTask' -TaskName "PSAppDeployToolkit_*_BlockedApps" -ErrorAction Ignore)
     )
 
     begin
@@ -58,20 +58,20 @@ function Unblock-ADTAppExecution
             try
             {
                 # Remove Debugger values to unblock processes.
-                Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | Where-Object {$_.Debugger.Contains('Show-ADTBlockedAppDialog')} | ForEach-Object {
+                & $Script:CommandTable.'Get-ItemProperty' -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | & $Script:CommandTable.'Where-Object' {$_.Debugger.Contains('Show-ADTBlockedAppDialog')} | & $Script:CommandTable.'ForEach-Object' {
                     Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
-                    Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger
+                    & $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $_.PSPath -Name Debugger
                 }
 
                 # Remove the scheduled task if it exists.
                 if ($Tasks)
                 {
-                    $Tasks | Unregister-ScheduledTask -Confirm:$false
+                    $Tasks | & $Script:CommandTable.'Unregister-ScheduledTask' -Confirm:$false
                 }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

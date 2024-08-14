@@ -60,13 +60,13 @@ function Remove-ADTContentFromCache
         {
             try
             {
-                Remove-Item -Path $Path -Recurse
-                $adtSession.SetPropertyValue('DirFiles', (Join-Path -Path $parentPath -ChildPath Files))
-                $adtSession.SetPropertyValue('DirSupportFiles', (Join-Path -Path $parentPath -ChildPath SupportFiles))
+                & $Script:CommandTable.'Remove-Item' -Path $Path -Recurse
+                $adtSession.SetPropertyValue('DirFiles', (& $Script:CommandTable.'Join-Path' -Path $parentPath -ChildPath Files))
+                $adtSession.SetPropertyValue('DirSupportFiles', (& $Script:CommandTable.'Join-Path' -Path $parentPath -ChildPath SupportFiles))
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

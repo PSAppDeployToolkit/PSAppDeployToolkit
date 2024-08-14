@@ -18,7 +18,7 @@ function Get-ADTSCCMClientVersion
         }
         throw (New-ADTErrorRecord @naerParams)
     } 
-    if (($svc = Get-Service -Name ccmexec).Status -ne 'Running')
+    if (($svc = & $Script:CommandTable.'Get-Service' -Name ccmexec).Status -ne 'Running')
     {
         $naerParams = @{
             Exception = [System.ApplicationException]::new("SCCM Client Service [ccmexec] exists but it is not in a 'Running' state.")
@@ -33,7 +33,7 @@ function Get-ADTSCCMClientVersion
     # Determine the SCCM Client Version.
     try
     {
-        [System.Version]$SCCMClientVersion = Get-CimInstance -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | Where-Object {$_.Name -eq 'SmsClient'} | Select-Object -ExpandProperty Version
+        [System.Version]$SCCMClientVersion = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | & $Script:CommandTable.'Where-Object' {$_.Name -eq 'SmsClient'} | & $Script:CommandTable.'Select-Object' -ExpandProperty Version
     }
     catch
     {

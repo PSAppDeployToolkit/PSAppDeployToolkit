@@ -91,7 +91,7 @@ function Test-ADTRegistryValue
                 }
 
                 # Test whether value exists or not.
-                if ((Get-Item -LiteralPath $Key -ErrorAction Ignore | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
+                if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
                 {
                     Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does exist."
                     return $true
@@ -101,7 +101,7 @@ function Test-ADTRegistryValue
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

@@ -165,7 +165,7 @@ function Start-ADTProcess
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up initial variables.
-        $funcCaller = (Get-PSCallStack)[1].InvocationInfo.MyCommand
+        $funcCaller = (& $Script:CommandTable.'Get-PSCallStack')[1].InvocationInfo.MyCommand
         $extInvoker = !$funcCaller.Source.StartsWith('PSAppDeployToolkit') -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
         $stdOutBuilder = [System.Text.StringBuilder]::new()
         $stdErrBuilder = [System.Text.StringBuilder]::new()
@@ -200,7 +200,7 @@ function Start-ADTProcess
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                    if (!($fqPath = Get-Item -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
                     {
                         Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
@@ -283,8 +283,8 @@ function Start-ADTProcess
                     {
                         # Add event handler to capture process's standard output redirection.
                         $processEventHandler = {if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) {$Event.MessageData.AppendLine($EventArgs.Data)}}
-                        $stdOutEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
-                        $stdErrEvent = Register-ObjectEvent -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
+                        $stdOutEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
+                        $stdErrEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
                     }
 
                     # Start Process.
@@ -384,12 +384,12 @@ function Start-ADTProcess
                             # Unregister standard output and error event to retrieve process output.
                             if ($stdOutEvent)
                             {
-                                Unregister-Event -SourceIdentifier $stdOutEvent.Name
+                                & $Script:CommandTable.'Unregister-Event' -SourceIdentifier $stdOutEvent.Name
                                 $stdOutEvent = $null
                             }
                             if ($stdErrEvent)
                             {
-                                Unregister-Event -SourceIdentifier $stdErrEvent.Name
+                                & $Script:CommandTable.'Unregister-Event' -SourceIdentifier $stdErrEvent.Name
                                 $stdErrEvent = $null
                             }
                             $stdOut = $stdOutBuilder.ToString() -replace $null
@@ -408,12 +408,12 @@ function Start-ADTProcess
                     {
                         if ($stdOutEvent)
                         {
-                            Unregister-Event -SourceIdentifier $stdOutEvent.Name -ErrorAction Ignore
+                            & $Script:CommandTable.'Unregister-Event' -SourceIdentifier $stdOutEvent.Name -ErrorAction Ignore
                             $stdOutEvent = $null
                         }
                         if ($stdErrEvent)
                         {
-                            Unregister-Event -SourceIdentifier $stdErrEvent.Name -ErrorAction Ignore
+                            & $Script:CommandTable.'Unregister-Event' -SourceIdentifier $stdErrEvent.Name -ErrorAction Ignore
                             $stdErrEvent = $null
                         }
                     }
@@ -425,7 +425,7 @@ function Start-ADTProcess
                     }
 
                     # Re-enable Zone checking.
-                    Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction Ignore
+                    & $Script:CommandTable.'Remove-Item' -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction Ignore
                 }
 
                 if (!$NoWait)
@@ -486,7 +486,7 @@ function Start-ADTProcess
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

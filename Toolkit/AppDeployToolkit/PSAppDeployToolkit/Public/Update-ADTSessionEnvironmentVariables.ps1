@@ -67,18 +67,18 @@ function Update-ADTSessionEnvironmentVariables
             try
             {
                 # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
-                Get-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | ForEach-Object {
+                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | & $Script:CommandTable.'ForEach-Object' {
                     $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
-                        Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
+                        & $Script:CommandTable.'Set-Item' -LiteralPath "Env:$($_.Name)" -Value $_.Value
                     })
                 }
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-                Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | Select-Object -Unique)))
+                & $Script:CommandTable.'Set-Item' -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | & $Script:CommandTable.'Select-Object' -Unique)))
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

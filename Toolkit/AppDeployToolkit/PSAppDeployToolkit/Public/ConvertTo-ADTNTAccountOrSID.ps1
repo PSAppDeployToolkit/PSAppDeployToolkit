@@ -137,7 +137,7 @@ function ConvertTo-ADTNTAccountOrSID
                 {
                     try
                     {
-                        [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
+                        [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
                     }
                     catch
                     {

@@ -62,7 +62,7 @@ function Remove-ADTFolder
     process
     {
         # Return early if the folder doesn't exist.
-        if (!($Path | Test-Path -PathType Container))
+        if (!($Path | & $Script:CommandTable.'Test-Path' -PathType Container))
         {
             Write-ADTLogEntry -Message "Folder [$Path] does not exist."
             return
@@ -76,15 +76,15 @@ function Remove-ADTFolder
                 if (!$DisableRecursion)
                 {
                     Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
-                    Remove-Item -LiteralPath $Path -Force -Recurse
+                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force -Recurse
                     return
                 }
 
                 # Without recursion, we can only send it if the folder has no items as Remove-Item will ask for confirmation without recursion.
                 Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
-                if (!($ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force))
+                if (!($ListOfChildItems = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $Path -Force))
                 {
-                    Remove-Item -LiteralPath $Path -Force
+                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force
                     return
                 }
 
@@ -95,10 +95,10 @@ function Remove-ADTFolder
                     if ($item -is [System.IO.DirectoryInfo])
                     {
                         # Item is a folder. Check if its empty.
-                        if (($item | Get-ChildItem -Force | Measure-Object).Count -eq 0)
+                        if (($item | & $Script:CommandTable.'Get-ChildItem' -Force | & $Script:CommandTable.'Measure-Object').Count -eq 0)
                         {
                             # The folder is empty, delete it
-                            $item | Remove-Item -Force
+                            $item | & $Script:CommandTable.'Remove-Item' -Force
                         }
                         else
                         {
@@ -109,7 +109,7 @@ function Remove-ADTFolder
                     else
                     {
                         # Item is a file. Delete it.
-                        $item | Remove-Item -Force
+                        $item | & $Script:CommandTable.'Remove-Item' -Force
                     }
                 }
                 if ($SubfoldersSkipped)
@@ -126,7 +126,7 @@ function Remove-ADTFolder
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

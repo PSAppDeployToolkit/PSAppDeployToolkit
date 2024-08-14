@@ -65,11 +65,11 @@ function Copy-ADTContentToCache
             {
                 try
                 {
-                    [System.Void](New-Item -Path $Path -ItemType Directory)
+                    [System.Void](& $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory)
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch
@@ -89,13 +89,13 @@ function Copy-ADTContentToCache
         {
             try
             {
-                Copy-File -Path (Join-Path $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
+                Copy-File -Path (& $Script:CommandTable.'Join-Path' $adtSession.GetPropertyValue('scriptParentPath') '*') -Destination $Path -Recurse
                 $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
                 $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

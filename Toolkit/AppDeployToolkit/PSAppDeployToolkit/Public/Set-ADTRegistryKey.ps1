@@ -114,13 +114,13 @@ function Set-ADTRegistryKey
                 }
 
                 # Create registry key if it doesn't exist.
-                if (!(Test-Path -LiteralPath $Key))
+                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                 {
                     Write-ADTLogEntry -Message "Creating registry key [$Key]."
                     if (($Key.Split('/').Count - 1) -eq 0)
                     {
                         # No forward slash found in Key. Use New-Item cmdlet to create registry key.
-                        [System.Void](New-Item -Path $Key -ItemType Registry -Force)
+                        [System.Void](& $Script:CommandTable.'New-Item' -Path $Key -ItemType Registry -Force)
                     }
                     else
                     {
@@ -150,11 +150,11 @@ function Set-ADTRegistryKey
 
                 if ($Name)
                 {
-                    if (!(Get-ItemProperty -LiteralPath $Key -Name $Name -ErrorAction Ignore))
+                    if (!(& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $Key -Name $Name -ErrorAction Ignore))
                     {
                         # Set registry value if it doesn't exist.
                         Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
-                        [System.Void](New-ItemProperty -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
+                        [System.Void](& $Script:CommandTable.'New-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
                     }
                     else
                     {
@@ -163,19 +163,19 @@ function Set-ADTRegistryKey
                         if ($Name -eq '(Default)')
                         {
                             # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
-                            [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
+                            [System.Void]((& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
                         }
                         else
                         {
                             Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
-                            [System.Void](Set-ItemProperty -LiteralPath $Key -Name $Name -Value $Value)
+                            [System.Void](& $Script:CommandTable.'Set-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value)
                         }
                     }
                 }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

@@ -69,7 +69,7 @@ function Remove-ADTFile
 
     process
     {
-        foreach ($Item in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
+        foreach ($Item in (& $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName -ValueOnly))
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
@@ -78,11 +78,11 @@ function Remove-ADTFile
                 {
                     $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
                     {
-                        (Resolve-Path -Path $Item).Path
+                        (& $Script:CommandTable.'Resolve-Path' -Path $Item).Path
                     }
                     else
                     {
-                        (Resolve-Path -LiteralPath $Item).Path
+                        (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Item).Path
                     }
                 }
                 catch [System.Management.Automation.ItemNotFoundException]
@@ -97,7 +97,7 @@ function Remove-ADTFile
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch
@@ -111,7 +111,7 @@ function Remove-ADTFile
             {
                 try
                 {
-                    if (Test-Path -LiteralPath $Item -PathType Container)
+                    if (& $Script:CommandTable.'Test-Path' -LiteralPath $Item -PathType Container)
                     {
                         if (!$Recurse)
                         {
@@ -124,11 +124,11 @@ function Remove-ADTFile
                     {
                         Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
                     }
-                    [System.Void](Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force)
+                    [System.Void](& $Script:CommandTable.'Remove-Item' -LiteralPath $Item -Recurse:$Recurse -Force)
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch

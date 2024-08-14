@@ -79,10 +79,10 @@ function Invoke-ADTAllUsersRegistryChange
                 try
                 {
                     # Set the path to the user's registry hive file.
-                    $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+                    $UserRegistryHiveFile = & $Script:CommandTable.'Join-Path' -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
-                    if (!(Test-Path -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
+                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
                     {
                         # Load the User registry hive if the registry hive file exists.
                         if (![System.IO.File]::Exists($UserRegistryHiveFile))
@@ -119,11 +119,11 @@ function Invoke-ADTAllUsersRegistryChange
 
                     # Invoke changes against registry.
                     Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                    ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
+                    & $Script:CommandTable.'ForEach-Object' -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch
@@ -164,7 +164,7 @@ function Invoke-ADTAllUsersRegistryChange
                         }
                         catch
                         {
-                            Write-Error -ErrorRecord $_
+                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                         }
                     }
                     catch

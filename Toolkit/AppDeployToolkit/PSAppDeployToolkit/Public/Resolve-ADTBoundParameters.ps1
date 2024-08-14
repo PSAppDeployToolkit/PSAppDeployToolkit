@@ -67,7 +67,7 @@ function Resolve-ADTBoundParameters
             try
             {
                 # Establish array to hold return string.
-                if (!(Test-Path -LiteralPath 'Variable:paramsArr'))
+                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath 'Variable:paramsArr'))
                 {
                     $thisFunc = $MyInvocation.MyCommand
                     $paramsArr = [System.Collections.Generic.List[System.String]]::new()
@@ -108,14 +108,14 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Join the array and return as a string to the caller.
-                if ((Get-PSCallStack).Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
+                if ((& $Script:CommandTable.'Get-PSCallStack').Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
                 {
                     return [System.String]::Join(' ', $paramsArr)
                 }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

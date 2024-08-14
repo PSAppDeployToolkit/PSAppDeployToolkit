@@ -116,7 +116,7 @@ function Get-ADTRegistryKey
                 }
 
                 # Check if the registry key exists before continuing.
-                if (!(Test-Path -LiteralPath $Key))
+                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                 {
                     Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
                     return
@@ -132,14 +132,14 @@ function Get-ADTRegistryKey
                 }
 
                 # Get all property values for registry key.
-                $regKeyValue = Get-ItemProperty -LiteralPath $Key
-                $regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty Count
+                $regKeyValue = & $Script:CommandTable.'Get-ItemProperty' -LiteralPath $Key
+                $regKeyValuePropertyCount = $regKeyValue | & $Script:CommandTable.'Measure-Object' | & $Script:CommandTable.'Select-Object' -ExpandProperty Count
 
                 # Select requested property.
                 if ($PSBoundParameters.ContainsKey('Value'))
                 {
                     # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                    if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
+                    if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
                     {
                         Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
                         return
@@ -149,20 +149,20 @@ function Get-ADTRegistryKey
                         # Only useful on 'ExpandString' values.
                         if ($Value -like '(Default)')
                         {
-                            return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                            return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
                         else
                         {
-                            return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                            return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
                     }
                     elseif ($Value -like '(Default)')
                     {
-                        return (Get-Item -LiteralPath $Key).GetValue($null)
+                        return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($null)
                     }
                     else
                     {
-                        return $regKeyValue | Select-Object -ExpandProperty $Value
+                        return $regKeyValue | & $Script:CommandTable.'Select-Object' -ExpandProperty $Value
                     }
                 }
                 elseif ($regKeyValuePropertyCount -eq 0)
@@ -171,7 +171,7 @@ function Get-ADTRegistryKey
                     if ($ReturnEmptyKeyIfExists)
                     {
                         Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
-                        return (Get-Item -LiteralPath $Key -Force)
+                        return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key -Force)
                     }
                     else
                     {
@@ -181,7 +181,7 @@ function Get-ADTRegistryKey
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

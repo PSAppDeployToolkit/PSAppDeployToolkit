@@ -46,7 +46,7 @@ function Get-ADTUniversalDate
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DateTime = (Get-Date -Format $Host.CurrentCulture.DateTimeFormat.UniversalDateTimePattern).ToString()
+        [System.String]$DateTime = (& $Script:CommandTable.'Get-Date' -Format $Host.CurrentCulture.DateTimeFormat.UniversalDateTimePattern).ToString()
     )
 
     begin
@@ -65,11 +65,11 @@ function Get-ADTUniversalDate
 
                 # Convert the date to a universal sortable date time pattern based on the current culture.
                 Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
-                return (Get-Date -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
+                return (& $Script:CommandTable.'Get-Date' -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

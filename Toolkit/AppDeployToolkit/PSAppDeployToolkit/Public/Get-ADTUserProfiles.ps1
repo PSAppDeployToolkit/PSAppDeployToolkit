@@ -86,9 +86,9 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                Get-ItemProperty -Path "$userProfileListRegKey\*" | Where-Object {$_.PSChildName -notmatch $excludedSids} | ForEach-Object {
+                & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & $Script:CommandTable.'Where-Object' {$_.PSChildName -notmatch $excludedSids} | & $Script:CommandTable.'ForEach-Object' {
                     # Return early for accounts that have a null NTAccount.
-                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
+                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
                     {
                         return
                     }
@@ -114,13 +114,13 @@ function Get-ADTUserProfiles
                     [PSADT.Types.UserProfile]@{
                         NTAccount = 'Default User'
                         SID = 'S-1-5-21-Default-User'
-                        ProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
+                        ProfilePath = (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
                     }
                 }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

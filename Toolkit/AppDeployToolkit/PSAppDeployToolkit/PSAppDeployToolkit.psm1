@@ -7,13 +7,21 @@
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version 3
+
+# Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
+$CommandTable = [ordered]@{}
+$ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault}).ForEach({$CommandTable.Add($_.Name, $_)})
+(& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().RequiredModules)).ForEach({$CommandTable.Add($_.Name, $_)})
+& $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
+
+# Ensure module operates under the strictest of conditions.
+& $CommandTable.'Set-StrictMode' -Version 3
 
 # Add system types required by the module.
-Add-Type -AssemblyName System.Windows.Forms, System.ServiceProcess
+& $CommandTable.'Add-Type' -AssemblyName System.Windows.Forms, System.ServiceProcess
 
 # Add the custom types required for the toolkit.
-Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ReferencedAssemblies $(
+& $CommandTable.'Add-Type' -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ReferencedAssemblies $(
     'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
@@ -22,11 +30,11 @@ Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Modul
 )
 
 # Dot-source our imports and perform exports.
-(Get-ChildItem -Path $PSScriptRoot\Classes\*.ps1, $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).FullName.ForEach({. $_})
-Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).BaseName
+(& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\Classes\*.ps1, $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).FullName.ForEach({. $_})
+& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ChildItem' -LiteralPath $PSScriptRoot\Public).BaseName
 
 # Define object for holding all PSADT variables.
-New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
+& $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
     Callbacks = [pscustomobject]@{
         Opening = $null
         Closing = $null
@@ -42,7 +50,7 @@ New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
 })
 
 # Logging constants used within an [ADTSession] object.
-New-Variable -Name Logging -Option Constant -Value ([ordered]@{
+& $CommandTable.'New-Variable' -Name Logging -Option Constant -Value ([ordered]@{
     Formats = ([ordered]@{
         CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
         Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
@@ -62,7 +70,7 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
 }).AsReadOnly()
 
 # DialogBox constants used within Show-ADTDialogBox.
-New-Variable -Name DialogBox -Option Constant -Value ([ordered]@{
+& $CommandTable.'New-Variable' -Name DialogBox -Option Constant -Value ([ordered]@{
     Buttons = ([ordered]@{
         OK = 0
         OKCancel = 1
@@ -87,7 +95,7 @@ New-Variable -Name DialogBox -Option Constant -Value ([ordered]@{
 }).AsReadOnly()
 
 # Registry path transformation constants used within Convert-ADTRegistryPath.
-New-Variable -Name ADTRegistry -Option Constant -Value ([ordered]@{
+& $CommandTable.'New-Variable' -Name ADTRegistry -Option Constant -Value ([ordered]@{
     PathMatches = [System.Array]::AsReadOnly([System.String[]]@(
         ':\\'
         ':'
