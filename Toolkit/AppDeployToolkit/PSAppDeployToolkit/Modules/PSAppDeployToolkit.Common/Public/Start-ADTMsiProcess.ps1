@@ -122,7 +122,7 @@
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({
-            if (($_ -notmatch (Get-ADTEnvironment).MSIProductCodeRegExPattern) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+            if (($_ -notmatch (Get-ADTGuidRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
             {
                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
             }
@@ -191,10 +191,9 @@
     )
 
     begin {
-        $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
         $adtSession = Get-ADTSession
-        $pathIsProductCode = $Path -match $adtEnv.MSIProductCodeRegExPattern
+        $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
         Write-ADTDebugHeader
     }
 
@@ -455,7 +454,7 @@
             # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
             Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
             $ExecuteProcessSplat = @{
-                Path = $adtEnv.exeMsiexec
+                Path = "$([System.Environment]::SystemDirectory)\msiexec.exe"
                 Parameters = $argsMSI
                 WindowStyle = 'Normal'
                 NoExitOnProcessFailure = $NoExitOnProcessFailure

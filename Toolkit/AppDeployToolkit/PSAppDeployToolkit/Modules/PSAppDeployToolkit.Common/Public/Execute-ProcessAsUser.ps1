@@ -91,7 +91,7 @@ https://psappdeploytoolkit.com
     Param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$UserName = (Get-ADTEnvironment).RunAsActiveUser.NTAccount,
+        [String]$UserName = (Get-ADTRunAsActiveUser).NTAccount,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullorEmpty()]
         [String]$Path,

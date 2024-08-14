@@ -184,7 +184,7 @@
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
-    $variables.Add('IsMultiSessionOS', $variables.envOSName -match '^Microsoft Windows \d+ Enterprise (for Virtual Desktops|Enterprise Multi-Session)$')
+    $variables.Add('IsMultiSessionOS', (Test-ADTIsMultiSessionOS))
     $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType) {
         3 { 'Server' }
         2 { 'Domain Controller' }
@@ -294,7 +294,7 @@
     $variables.Add('CurrentProcessSID', $currentProcessToken.User.Value)
     $variables.Add('ProcessNTAccount', $currentProcessToken.Name)
     $variables.Add('ProcessNTAccountSID', $currentProcessToken.User.Value)
-    $variables.Add('IsAdmin', $currentProcessToken.Groups -contains [System.Security.Principal.SecurityIdentifier]'S-1-5-32-544')
+    $variables.Add('IsAdmin', (Test-ADTCallerIsAdmin))
     $variables.Add('IsLocalSystemAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalSystemSid'))
     $variables.Add('IsLocalServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'LocalServiceSid'))
     $variables.Add('IsNetworkServiceAccount', $currentProcessToken.User.IsWellKnown([System.Security.Principal.WellKnownSidType]'NetworkServiceSid'))
@@ -311,20 +311,7 @@
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | ForEach-Object {$_.NTAccount}))
     $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}))
     $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | Where-Object {$_.IsConsoleSession}))
-    $variables.Add('RunAsActiveUser', $(if ($variables.usersLoggedOn)
-    {
-        # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-        # If a console user exists, then that will be the active user session.
-        # If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is either 'Active' or 'Connected' is the active user.
-        if ($variables.IsMultiSessionOS)
-        {
-            $variables.LoggedOnUserSessions | Where-Object {$_.IsCurrentSession}
-        }
-        else
-        {
-            $variables.LoggedOnUserSessions | Where-Object {$_.IsActiveUserSession}
-        }
-    }))
+    $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
 
     ## Variables: Task Scheduler service state.
     $variables.Add('IsTaskSchedulerHealthy', $true)
@@ -358,23 +345,19 @@
     $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
 
     ## Variables: Executables
-    $variables.Add('exeWusa', "$($variables.envWinDir)\System32\wusa.exe") # Installs Standalone Windows Updates
-    $variables.Add('exeMsiexec', "$($variables.envWinDir)\System32\msiexec.exe") # Installs MSI Installers
     $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
 
     ## Variables: RegEx Patterns
-    $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
+    $variables.Add('MSIProductCodeRegExPattern', (Get-ADTGuidRegexPattern))
     $variables.Add('InvalidFileNameCharsRegExPattern', "($([System.String]::Join('|', $variables.invalidFileNameChars.ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
     $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications
-    $variables.Add('regKeyApplications', ('Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))
     $variables.Add('regKeyAppExecution', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options')
-    $variables.Add('regKeyEdgeExtensions', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge')
 
     # Add in WScript shell variables.
     $variables.Add('Shell', (New-Object -ComObject 'WScript.Shell'))

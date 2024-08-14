@@ -121,7 +121,7 @@
                 else
                 {
                     # Forward slash was found in Key. Use REG.exe ADD to create registry key
-                    $RegMode = if ((Get-ADTEnvironment).Is64BitProcess -and !$Wow6432Node)
+                    $RegMode = if ([System.Environment]::Is64BitProcess -and !$Wow6432Node)
                     {
                         '/reg:64'
                     }

@@ -73,7 +73,7 @@
         }
 
         # Process the WOW6432Node values if applicable.
-        if ($Wow6432Node -and (Get-ADTEnvironment).Is64BitProcess)
+        if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
         {
             foreach ($path in $Script:ADTRegistry.WOW64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
             {

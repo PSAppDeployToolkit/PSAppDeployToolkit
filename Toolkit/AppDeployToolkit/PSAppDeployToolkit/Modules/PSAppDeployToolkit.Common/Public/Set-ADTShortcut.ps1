@@ -144,7 +144,7 @@
             else
             {
                 # Open shortcut and set initial properties.
-                $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($Path)
+                $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Path)
                 if ($TargetPath)
                 {
                     $shortcut.TargetPath = $TargetPath

@@ -120,7 +120,7 @@
 
     process {
         # Test elevated permissions.
-        if (!(Get-ADTEnvironment).IsAdmin)
+        if (!(Test-ADTCallerIsAdmin))
         {
             $naerParams = @{
                 Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
