@@ -47,7 +47,7 @@
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ComputerName = [System.Environment]::MachineName,
+        [System.String]$ComputerName = [System.Net.Dns]::GetHostName(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
