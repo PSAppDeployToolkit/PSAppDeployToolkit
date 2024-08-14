@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "جاري التثبيت. يرجى الانتظار..."
+        MessageInstallDetail = ""
         MessageRepair = "جارٍ إصلاح. يرجى الانتظار..."
+        MessageRepairDetail = ""
         MessageUninstall = "جارٍ إزالة التثبيت. يرجى الانتظار..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "تقليل"

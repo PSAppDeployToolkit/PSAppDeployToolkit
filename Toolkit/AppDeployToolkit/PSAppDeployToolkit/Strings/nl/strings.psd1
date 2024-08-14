@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installatie bezig. Even geduld..."
+        MessageInstallDetail = ""
         MessageRepair = "Reparatie bezig. Even geduld..."
+        MessageRepairDetail = ""
         MessageUninstall = "Verwijderen bezig. Even geduld..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimaliseren"

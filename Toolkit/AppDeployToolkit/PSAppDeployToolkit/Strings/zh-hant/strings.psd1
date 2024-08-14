@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "安裝中。請稍等。。。"
+        MessageInstallDetail = ""
         MessageRepair = "修復中。請稍等。。。"
+        MessageRepairDetail = ""
         MessageUninstall = "卸載中。請稍等。。。"
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "最小化"

@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "מבצע התקנה. נא להמתין."
+        MessageInstallDetail = ""
         MessageRepair = "מבצע תיקון. נא להמתין."
+        MessageRepairDetail = ""
         MessageUninstall = "מבצע הסרה. נא להמתין."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "מזער את"

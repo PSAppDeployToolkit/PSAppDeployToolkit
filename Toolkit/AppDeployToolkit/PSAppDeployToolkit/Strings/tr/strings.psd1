@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Kurulum devam ediyor. Lütfen bekleyiniz..."
+        MessageInstallDetail = ""
         MessageRepair = "Onarım devam ediyor. Lütfen bekleyiniz..."
+        MessageRepairDetail = ""
         MessageUninstall = "Kaldırma işlemi devam ediyor. Lütfen bekleyiniz..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Simge durumuna küçült"

@@ -77,11 +77,20 @@
         # Default text displayed in the progress bar for installations.
         MessageInstall = "Installation in progress. Please wait..."
 
+        # Default text displayed in the progress bar for installations.
+        MessageInstallDetail = "This window will close automatically when the installation is complete."
+
         # Default text displayed in the progress bar for repairs.
         MessageRepair = "Repair in progress. Please wait..."
 
+        # Default text displayed in the progress bar for repairs.
+        MessageRepairDetail = "This window will close automatically when the repair is complete."
+
         # Default text displayed in the progress bar for Uninstallations.
         MessageUninstall = "Uninstallation in progress. Please wait..."
+
+        # Default text displayed in the progress bar for Uninstallations.
+        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
     }
 
     RestartPrompt = @{
