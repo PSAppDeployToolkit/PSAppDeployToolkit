@@ -72,7 +72,7 @@ function Get-ADTPendingReboot
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
+        $PendRebootErrorMsg = [System.Collections.Specialized.StringCollection]::new()
         $HostName = [System.Net.Dns]::GetHostName()
     }
 
@@ -105,7 +105,7 @@ function Get-ADTPendingReboot
                     catch
                     {
                         Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                        $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
+                        $null = $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
                     }
                 }
 
@@ -120,7 +120,7 @@ function Get-ADTPendingReboot
                 catch
                 {
                     Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
+                    $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                 }
 
                 # Create a custom object containing pending reboot information for the system.

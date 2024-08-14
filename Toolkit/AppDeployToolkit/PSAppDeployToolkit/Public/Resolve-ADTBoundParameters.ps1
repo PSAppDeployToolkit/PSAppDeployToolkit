@@ -70,7 +70,7 @@ function Resolve-ADTBoundParameters
                 if (!(& $Script:CommandTable.'Test-Path' -LiteralPath 'Variable:paramsArr'))
                 {
                     $thisFunc = $MyInvocation.MyCommand
-                    $paramsArr = [System.Collections.Generic.List[System.String]]::new()
+                    $paramsArr = [System.Collections.Specialized.StringCollection]::new()
                 }
 
                 # Process the piped hashtable.
@@ -99,7 +99,7 @@ function Resolve-ADTBoundParameters
                         {
                             $param.Value
                         }
-                        $paramsArr.Add("-$($param.Key)$(if ($val) {":$val"})")
+                        $null = $paramsArr.Add("-$($param.Key)$(if ($val) {":$val"})")
                     }
                     else
                     {
@@ -110,7 +110,7 @@ function Resolve-ADTBoundParameters
                 # Join the array and return as a string to the caller.
                 if ((& $Script:CommandTable.'Get-PSCallStack').Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
                 {
-                    return [System.String]::Join(' ', $paramsArr)
+                    return ($paramsArr -join ' ')
                 }
             }
             catch

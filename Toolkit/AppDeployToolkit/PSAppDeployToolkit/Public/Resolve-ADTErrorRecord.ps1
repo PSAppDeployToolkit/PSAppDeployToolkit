@@ -156,7 +156,7 @@ function Resolve-ADTErrorRecord
         if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
         {
             # Set up initial variables.
-            $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
+            $innerExceptions = [System.Collections.Specialized.StringCollection]::new()
             $errInnerException = $ErrorRecord.Exception.InnerException
 
             # Get all inner exceptions.
@@ -165,16 +165,16 @@ function Resolve-ADTErrorRecord
                 # Add a divider if we've already added a record.
                 if ($innerExceptions.Count)
                 {
-                    $innerExceptions.Add("`n$('~' * 40)`n")
+                    $null = $innerExceptions.Add("`n$('~' * 40)`n")
                 }
 
                 # Add error record and get next inner exception.
-                $innerExceptions.Add(($errInnerException | & $Script:CommandTable.'Select-Object' -Property ($errInnerException | Get-ErrorPropertyNames) | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String').Trim())
+                $null = $innerExceptions.Add(($errInnerException | & $Script:CommandTable.'Select-Object' -Property ($errInnerException | Get-ErrorPropertyNames) | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String').Trim())
                 $errInnerException = $errInnerException.InnerException
             }
 
             # Output all inner exceptions to the caller.
-            $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join("`n", $innerExceptions)))"
+            $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, ($innerExceptions -join "`n")))"
         }
 
         # Output the error message to the caller.
