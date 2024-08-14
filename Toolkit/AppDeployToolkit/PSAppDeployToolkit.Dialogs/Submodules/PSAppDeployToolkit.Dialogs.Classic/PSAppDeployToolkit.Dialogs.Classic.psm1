@@ -20,8 +20,22 @@ Add-Type -AssemblyName System.Drawing, System.Windows.Forms, PresentationCore, P
 try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {[System.Void]$null}
 
 # Dot-source our imports and perform exports.
-(Get-ChildItem -Path $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).FullName.ForEach({. $_})
-Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).BaseName
+Export-ModuleMember -Function (Get-ChildItem -Path $PSScriptRoot\*\*.ps1).ForEach({
+    # As we declare all functions read-only, attempt removal before dot-sourcing the function again.
+    Remove-Item -LiteralPath "Function:$($_.BaseName)" -Force -ErrorAction Ignore
+
+    # Dot source in the function code.
+    . $_.FullName
+
+    # Mark the dot-sourced function as read-only.
+    Set-Item -LiteralPath "Function:$($_.BaseName)" -Options ReadOnly
+
+    # Echo out the public functions.
+    if ($_.DirectoryName.EndsWith('Public'))
+    {
+        return $_.BaseName
+    }
+})
 
 # WinForms global data.
 New-Variable -Name FormData -Option Constant -Value @{
