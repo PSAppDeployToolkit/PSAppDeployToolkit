@@ -94,7 +94,7 @@ function Get-ADTInstalledApplication
 
         # Enumerate the installed applications from the registry for applications that have the "DisplayName" property.
         $regUninstallPaths = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
-        $regKeyApplication = & $Script:CommandTable.'Get-ItemProperty' -Path $regUninstallPaths | & $Script:CommandTable.'Where-Object' {$_.PSObject.Properties.Name.Contains('DisplayName') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayName)}
+        $regKeyApplication = & $Script:CommandTable.'Get-ItemProperty' -Path $regUninstallPaths | & {process {if ($_.PSObject.Properties.Name.Contains('DisplayName') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayName)) {return $_}}}
 
         # Set up variables needed in main loop.
         $updatesSkippedCounter = 0

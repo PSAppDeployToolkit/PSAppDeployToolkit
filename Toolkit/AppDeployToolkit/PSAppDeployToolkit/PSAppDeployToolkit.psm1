@@ -10,9 +10,11 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
 $CommandTable = [ordered]@{}
-$null = $ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault}).ForEach({$CommandTable.Add($_.Name, $_)})
-$null = (& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().RequiredModules)).ForEach({$CommandTable.Add($_.Name, $_)})
+$ModuleManifest = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+$ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & {process {if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) {$CommandTable.Add($_.Name, $_)}}}
+& $CommandTable.'Get-Command' -FullyQualifiedModule $ModuleManifest.RequiredModules | & {process {$CommandTable.Add($_.Name, $_)}}
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
+& $CommandTable.'New-Variable' -Name ModuleManifest -Value $ModuleManifest -Option Constant -Force -Confirm:$false
 
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
@@ -30,22 +32,12 @@ $null = (& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management
 )
 
 # Dot-source our imports and perform exports.
-& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\Classes\*.ps1, $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).ForEach({
-    # As we declare all functions read-only, attempt removal before dot-sourcing the function again.
-    & $CommandTable.'Remove-Item' -LiteralPath "Function:$($_.BaseName)" -Force -ErrorAction Ignore
-
-    # Dot source in the function code.
-    . $_.FullName
-
-    # Mark the dot-sourced function as read-only.
-    & $CommandTable.'Set-Item' -LiteralPath "Function:$($_.BaseName)" -Options ReadOnly
-
-    # Echo out the public functions.
-    if ($_.DirectoryName.EndsWith('Public'))
-    {
-        return $_.BaseName
-    }
-})
+& $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
+& $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
+& $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+$ModuleFiles.FullName | . {process {. $_}}
+& $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
+& $CommandTable.'Export-ModuleMember' -Function $ModuleManifest.FunctionsToExport
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{

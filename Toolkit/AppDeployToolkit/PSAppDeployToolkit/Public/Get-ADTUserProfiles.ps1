@@ -88,7 +88,7 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                foreach ($profileListing in (& $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & $Script:CommandTable.'Where-Object' {$_.PSChildName -notmatch $excludedSids}))
+                foreach ($profileListing in (& $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & {process {if ($_.PSChildName -notmatch $excludedSids) {return $_}}}))
                 {
                     # Return early for accounts that have a null NTAccount.
                     if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $profileListing.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))

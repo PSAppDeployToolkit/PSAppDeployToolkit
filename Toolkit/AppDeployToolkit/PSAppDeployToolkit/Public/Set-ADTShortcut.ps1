@@ -135,15 +135,18 @@ function Set-ADTShortcut
                 [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
                 if ($extension -eq '.url')
                 {
-                    $URLFile = [System.IO.File]::ReadAllLines($Path).ForEach({
-                        switch ($_)
+                    $URLFile = [System.IO.File]::ReadAllLines($Path) | & {
+                        process
                         {
-                            {$_.StartsWith('URL=') -and $TargetPath} {"URL=$TargetPath"}
-                            {$_.StartsWith('IconIndex=') -and ($null -ne $IconIndex)} {"IconIndex=$IconIndex"}
-                            {$_.StartsWith('IconFile=') -and $IconLocation} {"IconFile=$IconLocation"}
-                            default {$_}
+                            switch ($_)
+                            {
+                                {$_.StartsWith('URL=') -and $TargetPath} {"URL=$TargetPath"; break}
+                                {$_.StartsWith('IconIndex=') -and ($null -ne $IconIndex)} {"IconIndex=$IconIndex"; break}
+                                {$_.StartsWith('IconFile=') -and $IconLocation} {"IconFile=$IconLocation"; break}
+                                default {$_; break}
+                            }
                         }
-                    })
+                    }
                     [System.IO.File]::WriteAllLines($Path, $URLFile, [System.Text.UTF8Encoding]::new($false))
                 }
                 else

@@ -43,6 +43,7 @@ function Resolve-ADTBoundParameters
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exclude', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
@@ -75,7 +76,7 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Process the piped hashtable.
-                foreach ($param in ($InputObject.GetEnumerator() | Where-Object -Property Key -NotIn -Value $Exclude))
+                foreach ($param in ($InputObject.GetEnumerator() | & {process {if ($Exclude -notcontains $_.Key) {return $_}}}))
                 {
                     # Recursively expand child hashtables.
                     if ($param.Value -isnot [System.Collections.IDictionary])
@@ -109,7 +110,7 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Join the array and return as a string to the caller.
-                if ((& $Script:CommandTable.'Get-PSCallStack').Command.Where({$_.Equals($thisFunc.Name)}).Count.Equals(1))
+                if ((& $Script:CommandTable.'Get-PSCallStack' | & {process {if ($_.Command.Equals($thisFunc.Name)) {return $_.Command}}}) -is [System.String])
                 {
                     return ($paramsArr -join ' ')
                 }

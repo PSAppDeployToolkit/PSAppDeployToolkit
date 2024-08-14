@@ -99,7 +99,7 @@ class ADTSession
         }
 
         # Confirm the main system automation params are present.
-        foreach ($param in @('SessionState').Where({!$Parameters.ContainsKey($_)}))
+        foreach ($param in ('SessionState' | & {process {if (!$Parameters.ContainsKey($_)) {return $_}}}))
         {
             $naerParams = @{
                 Exception = [System.ArgumentException]::new('One or more mandatory parameters are missing.', $param)
@@ -114,7 +114,7 @@ class ADTSession
         }
 
         # Confirm the main system automation params aren't null.
-        foreach ($param in @('SessionState').Where({!$Parameters.$_}))
+        foreach ($param in ('SessionState' | & {process {if (!$Parameters.$_) {return $_}}}))
         {
             $naerParams = @{
                 Exception = [System.ArgumentNullException]::new($param, 'One or more mandatory parameters are null.')
@@ -135,7 +135,7 @@ class ADTSession
 
         # Process provided parameters and amend some incoming values.
         $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
-        $null = $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
+        $Parameters.GetEnumerator() | & {process {if ($Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))) {$this.($_.Key) = $_.Value}}}
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
@@ -171,7 +171,7 @@ class ADTSession
         if (!$this.DefaultMsiFile)
         {
             # Get all MSI files and return early if we haven't found anything.
-            if ($this.DefaultMsiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & $Script:CommandTable.'Where-Object' {$_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")} | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
+            if ($this.DefaultMsiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & {process {if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) {return $_}}} | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
             {
                 $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
             }
@@ -220,7 +220,7 @@ class ADTSession
             $msiProps = Get-ADTMsiTableProperty @gmtpParams -ErrorAction Stop
 
             # Generate list of MSI executables for testing later on.
-            if ($this.DefaultMsiExecutablesList = & $Script:CommandTable.'Get-Member' -InputObject $msiProps | & $Script:CommandTable.'Where-Object' {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | & $Script:CommandTable.'ForEach-Object' {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
+            if ($this.DefaultMsiExecutablesList = & $Script:CommandTable.'Get-Member' -InputObject $msiProps | & {process {if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}}}})
             {
                 $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.Name)].")
             }
@@ -297,7 +297,7 @@ class ADTSession
     hidden [System.Void] WriteLogDivider([System.UInt32]$Count)
     {
         # Write divider as requested.
-        $this.WriteLogEntry((1..$Count).ForEach({'*' * 79}))
+        $this.WriteLogEntry((1..$Count | & {process {'*' * 79}}))
     }
 
     hidden [System.Void] WriteLogDivider()
@@ -625,7 +625,7 @@ class ADTSession
         {
             return
         }
-        $null = $this.PSObject.Properties.Name.ForEach({if (($value = $this.CallerVariables.Get($_).Value)) {$this.$_ = $value}})
+        $this.PSObject.Properties.Name | & {process {if (($value = $this.CallerVariables.Get($_).Value)) {$this.$_ = $value}}}
     }
 
     [System.String] GetDeploymentStatus()
@@ -693,7 +693,7 @@ class ADTSession
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.CompatibilityMode)
         {
-            $null = $this.PSObject.Properties.ForEach({$this.CallerVariables.Set($_.Name, $_.Value)})
+            $this.PSObject.Properties | & {process {$this.CallerVariables.Set($_.Name, $_.Value)}}
         }
         $this.Opened = $true
     }
@@ -806,7 +806,7 @@ class ADTSession
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = & $Script:CommandTable.'Get-PSCallStack' | & $Script:CommandTable.'Where-Object' {![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')} | & $Script:CommandTable.'Select-Object' -First 1
+        $caller = & $Script:CommandTable.'Get-PSCallStack' | & {process {if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) {return $_}}} | & $Script:CommandTable.'Select-Object' -First 1
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
@@ -852,7 +852,7 @@ class ADTSession
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
         # If the message is not $null or empty, create the log entry for the different logging methods.
-        foreach ($msg in $Message.Where({![System.String]::IsNullOrWhiteSpace($_)}))
+        foreach ($msg in ($Message | & {process {if (![System.String]::IsNullOrWhiteSpace($_)) {return $_}}}))
         {
             # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)

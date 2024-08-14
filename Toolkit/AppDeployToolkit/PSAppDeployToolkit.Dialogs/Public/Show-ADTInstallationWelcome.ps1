@@ -437,7 +437,7 @@ function Show-ADTInstallationWelcome
                             foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | Where-Object {$_.ParentProcess -eq $runningProcess.ProcessName}) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & {process {if ($_.ParentProcess -eq $runningProcess.ProcessName) {return $_}}}) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
                                 {
                                     foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                                     {
@@ -455,7 +455,7 @@ function Show-ADTInstallationWelcome
                                                 $PromptToSaveStopWatch.Start()
                                                 do
                                                 {
-                                                    if (!($IsWindowOpen = $AllOpenWindows | Where-Object {$_.WindowHandle -eq $OpenWindow.WindowHandle}))
+                                                    if (!($IsWindowOpen = $AllOpenWindows | & {process {if ($_.WindowHandle -eq $OpenWindow.WindowHandle) {return $_}}}))
                                                     {
                                                         break
                                                     }

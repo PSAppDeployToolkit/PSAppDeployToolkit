@@ -43,6 +43,7 @@ function Get-ADTSchedulerTask
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -82,10 +83,13 @@ function Get-ADTSchedulerTask
                 }
 
                 # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
-                if (($schTasks = $exeSchtasksResults | & $Script:CommandTable.'ConvertFrom-Csv' | & $Script:CommandTable.'Where-Object' -Property TaskName -Match -Value '^\\' | & $Script:CommandTable.'Where-Object' -Property TaskName -Match -Value $TaskName))
+                if (($schTasks = $exeSchtasksResults | & $Script:CommandTable.'ConvertFrom-Csv' | & {process {if (($_ -match '^\\') -and ($_ -match $TaskName)) {return $_}}}))
                 {
-                    return $schTasks | & $Script:CommandTable.'Select-Object' -Property $schTasks[0].PSObject.Properties.Name.ForEach({
-                        @{Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'")}
+                    return $schTasks | & $Script:CommandTable.'Select-Object' -Property ($schTasks[0].PSObject.Properties.Name | & {
+                        process
+                        {
+                            @{Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'")}
+                        }
                     })
                 }
             }

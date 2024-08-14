@@ -73,7 +73,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack').Command.Where({![System.String]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '^Write-(Log|ADTLogEntry)$')})[0],
+        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack' | & {process {if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) {return $_.Command}}} | & $Script:CommandTable.'Select-Object' -First 1),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

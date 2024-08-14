@@ -79,24 +79,27 @@ function Get-ADTRunningProcesses
                 {
                     # Get all running processes and append properties.
                     Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
-                    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & $Script:CommandTable.'ForEach-Object' {
-                        $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                            if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
-                            {
-                                # The description of the process provided with the object.
-                                $objDescription
-                            }
-                            elseif ($_.Description)
-                            {
-                                # If the process already has a description field specified, then use it.
-                                $_.Description
-                            }
-                            else
-                            {
-                                # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                                $_.ProcessName
-                            }
-                        )
+                    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & {
+                        process
+                        {
+                            $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
+                                {
+                                    # The description of the process provided with the object.
+                                    $objDescription
+                                }
+                                elseif ($_.Description)
+                                {
+                                    # If the process already has a description field specified, then use it.
+                                    $_.Description
+                                }
+                                else
+                                {
+                                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                                    $_.ProcessName
+                                }
+                            )
+                        }
                     }
 
                     # Return output if there's any.

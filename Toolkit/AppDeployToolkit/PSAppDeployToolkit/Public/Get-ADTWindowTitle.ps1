@@ -94,10 +94,10 @@ function Get-ADTWindowTitle
                 $processes = [System.Diagnostics.Process]::GetProcesses()
 
                 # Get all window handles for visible windows and loop through the visible ones.
-                foreach ($VisibleWindowHandle in [PSADT.UiAutomation]::EnumWindows().Where({$_ -and [PSADT.UiAutomation]::IsWindowVisible($_)}))
+                foreach ($VisibleWindowHandle in ([PSADT.UiAutomation]::EnumWindows() | & {process {if ($_ -and [PSADT.UiAutomation]::IsWindowVisible($_)) {return $_}}}))
                 {
                     # Only process handles with window text and an associated running process, and only save/return the window and process details which match the search criteria.
-                    if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes.Where({$_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)})) -and ($GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle)))
+                    if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes | & {process {if ($_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)) {return $_}}}) -and ($GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle)))
                     {
                         # Build custom object with details about the window and the process.
                         [PSADT.Types.WindowInfo]@{

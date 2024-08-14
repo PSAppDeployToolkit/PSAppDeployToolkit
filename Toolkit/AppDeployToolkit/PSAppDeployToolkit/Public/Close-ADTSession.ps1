@@ -91,7 +91,7 @@ function Close-ADTSession
             # Exit out if this function was called within a script.
             if (!$adtSession.RunspaceOrigin)
             {
-                if ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or (& $Script:CommandTable.'Get-Job' | & $Script:CommandTable.'Where-Object' {$_.State.Equals('Running')})))
+                if ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or (& $Script:CommandTable.'Get-Job' | & {process {if ($_.State.Equals('Running')) {$_}}})))
                 {
                     [System.Environment]::Exit($adtData.LastExitCode)
                 }

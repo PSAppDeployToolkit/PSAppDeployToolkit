@@ -174,7 +174,7 @@ function Set-ADTItemPermission
                 $Acl = & $Script:CommandTable.'Get-Acl' -Path $Path
 
                 # Apply permissions on each user.
-                foreach ($U in $User.Trim().Where({$_.Length}))
+                foreach ($U in $User.Trim() | & {process {if ($_.Length) {return $_}}})
                 {
                     # Set Username.
                     [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))

@@ -67,14 +67,23 @@ function Update-ADTEnvironmentPsProvider
             try
             {
                 # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
-                $null = & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | & $Script:CommandTable.'ForEach-Object' {
-                    $_.PSObject.Properties.Where({$_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$'}).ForEach({
-                        & $Script:CommandTable.'Set-Item' -LiteralPath "Env:$($_.Name)" -Value $_.Value
-                    })
+                $null = & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Registry::HKEY_USERS\$userSid\Environment" | & {
+                    process
+                    {
+                        $_.PSObject.Properties | & {
+                            process
+                            {
+                                if ($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$')
+                                {
+                                    & $Script:CommandTable.'Set-Item' -LiteralPath "Env:$($_.Name)" -Value $_.Value
+                                }
+                            }
+                        }
+                    }
                 }
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-                & $Script:CommandTable.'Set-Item' -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User').ForEach({[System.Environment]::GetEnvironmentVariable('PATH', $_)}).Split(';').Where({$_}) | & $Script:CommandTable.'Select-Object' -Unique)))
+                & $Script:CommandTable.'Set-Item' -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User' | & {process {[System.Environment]::GetEnvironmentVariable('PATH', $_)}}).Split(';') | & {process {if ($_) {return $_}}} | & $Script:CommandTable.'Select-Object' -Unique)))
             }
             catch
             {

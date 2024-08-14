@@ -10,19 +10,10 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Dot-source our imports and perform exports.
-Export-ModuleMember -Function (Get-ChildItem -Path $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).ForEach({
-    # As we declare all functions read-only, attempt removal before dot-sourcing the function again.
-    Remove-Item -LiteralPath "Function:$($_.BaseName)" -Force -ErrorAction Ignore
-
-    # Dot source in the function code.
-    . $_.FullName
-
-    # Mark the dot-sourced function as read-only.
-    Set-Item -LiteralPath "Function:$($_.BaseName)" -Options ReadOnly
-
-    # Echo out the public functions.
-    if ($_.DirectoryName.EndsWith('Public'))
-    {
-        return $_.BaseName
-    }
-})
+New-Variable -Name ModuleManifest -Value ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()) -Option Constant -Force -Confirm:$false
+New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
+New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
+Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+$ModuleFiles.FullName | . {process {. $_}}
+Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
+Export-ModuleMember -Function $ModuleManifest.FunctionsToExport

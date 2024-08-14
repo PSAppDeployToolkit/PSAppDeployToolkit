@@ -76,7 +76,7 @@ function Invoke-ADTServiceAndDependencyOperation
     {
         # Discover all dependent services.
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & $Script:CommandTable.'Where-Object' {$_.Status -ne $status})
+        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & {process {if ($_.Status -ne $status) {return $_}}})
         {
             foreach ($dependent in $dependentServices)
             {
