@@ -92,6 +92,7 @@ FunctionsToExport = @(
     'New-ADTErrorRecord'
     'New-ADTValidateScriptErrorRecord'
     'Open-ADTSession'
+    'Out-ADTPowerShellEncodedCommand'
     'Remove-ADTContentFromCache'
     'Remove-ADTInvalidFileNameChars'
     'Resolve-ADTBoundParameters'

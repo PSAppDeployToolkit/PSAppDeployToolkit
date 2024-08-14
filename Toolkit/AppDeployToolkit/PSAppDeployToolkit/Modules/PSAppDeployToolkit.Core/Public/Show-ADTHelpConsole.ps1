@@ -1,7 +1,15 @@
 ﻿function Show-ADTHelpConsole
 {
     # Run this via a new PowerShell window so it doesn't stall the main thread.
-    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes([System.String]::Join("`n", {
+    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$({
+        [CmdletBinding()]
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.String]$ModuleBase
+        )
+
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
@@ -9,7 +17,7 @@
         Set-StrictMode -Version 3
 
         # Import the module and store its passthru data so we can access it later.
-        $module = Import-Module -Name '<<PSScriptRoot>>' -DisableNameChecking -PassThru
+        $module = Import-Module -Name $ModuleBase -DisableNameChecking -PassThru
 
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
@@ -43,5 +51,5 @@
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    }.ToString().Trim().Replace('<<PSScriptRoot>>', (Get-ADTModuleInfo).ModuleBase).Split("`n").Trim()))))"
+    })} -ModuleBase '$((Get-ADTModuleInfo).ModuleBase)'")"
 }

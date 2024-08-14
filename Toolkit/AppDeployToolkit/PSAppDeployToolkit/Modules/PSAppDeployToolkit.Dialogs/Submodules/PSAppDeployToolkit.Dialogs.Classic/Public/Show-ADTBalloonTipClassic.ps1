@@ -63,18 +63,64 @@
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    # Balloon tip script to run and handle disposal for us. The sleep of 7 seconds is the maximum amount of time a notification will display in Windows 10+.
-    $balloonScript = [System.Management.Automation.ScriptBlock]::Create("Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$((Get-ADTConfig).Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep(7000)")
+    # Define internal worker function.
+    function New-ADTBalloonTip
+    {
+        [CmdletBinding()]
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.String]$BalloonTipText,
+
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.String]$BalloonTipTitle,
+
+            [Parameter(Mandatory = $true)]
+            [ValidateSet('Error', 'Info', 'None', 'Warning')]
+            [System.String]$BalloonTipIcon,
+
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.UInt32]$BalloonTipTime,
+
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.String]$TrayIcon
+        )
+
+        # Ensure script runs in strict mode since this may be called in a new scope.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        Set-StrictMode -Version 3
+
+        # Add in required types.
+        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+
+        # Show the dialog and sleep until done.
+        ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [System.Drawing.Icon]$TrayIcon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
+        [System.Threading.Thread]::Sleep($BalloonTipTime)
+    }
+
+    # Build out parameters for internal worker function.
+    $nabtParams = [ordered]@{
+        BalloonTipText = $BalloonTipText
+        BalloonTipTitle = $BalloonTipTitle
+        BalloonTipIcon = $BalloonTipIcon
+        BalloonTipTime = $BalloonTipTime
+        TrayIcon = (Get-ADTConfig).Assets.Icon
+    }
 
     # Create in separate process if -NoWait is passed.
     if ($NoWait)
     {
         Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $balloonScript" -NoWait -WindowStyle Hidden -CreateNoWindow
+        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
         return
     }
 
     # Create in an asynchronous job so that disposal is managed for us.
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    [System.Void](Start-Job -ScriptBlock $balloonScript)
+    [System.Void](Start-Job -ScriptBlock ${Function:New-ADTBalloonTip} -ArgumentList $($nabtParams.Values)
 }
