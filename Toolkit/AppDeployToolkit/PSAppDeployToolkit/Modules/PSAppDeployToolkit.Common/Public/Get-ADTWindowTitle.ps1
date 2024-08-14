@@ -103,7 +103,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to get requested window title(s).`n$(Resolve-ADTError)" -Severity 3 -DebugMessage:$DisableFunctionLogging
+            Write-ADTLogEntry -Message "Failed to get requested window title(s).`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3 -DebugMessage:$DisableFunctionLogging
         }
     }
 

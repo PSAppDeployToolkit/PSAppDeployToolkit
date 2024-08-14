@@ -174,7 +174,7 @@ function Write-Log
         }
         catch
         {
-            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTError)" -ForegroundColor Red
+            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTError -ErrorRecord $_)" -ForegroundColor Red
             if (!$ContinueOnError)
             {
                 throw
@@ -276,7 +276,7 @@ function Get-FreeDiskSpace
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to retrieve free disk space for drive [$Drive].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -371,7 +371,7 @@ function Get-FileVersion
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to get version info.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -437,7 +437,7 @@ function Update-Desktop
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -471,7 +471,7 @@ function Update-SessionEnvironmentVariables
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1007,7 +1007,7 @@ function Get-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1059,7 +1059,7 @@ function Set-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1172,7 +1172,7 @@ function Get-UniversalDate
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1219,7 +1219,7 @@ function Test-ServiceExists
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError)" -Severity 3
+        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             throw
@@ -1363,7 +1363,23 @@ function Resolve-Error
         $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
         [System.Void]$PSBoundParameters.Remove("Get$_")
     })
-    Resolve-ADTError @PSBoundParameters
+
+    # Remove ErrorRecord from the bound parameters.
+    if ($PSBoundParameters.ContainsKey('ErrorRecord'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ErrorRecord')
+    }
+
+    # If function was called without specifying an error record, then choose the latest error that occurred.
+    if (!$ErrorRecord)
+    {
+        if ($Global:Error.Count -eq 0)
+        {
+            return
+        }
+        $ErrorRecord = $($Global:Error[0].Where({$_ -is [System.Management.Automation.ErrorRecord]}, [System.Management.Automation.WhereOperatorSelectionMode]::First, 1))
+    }
+    $ErrorRecord | Resolve-ADTError @PSBoundParameters
 }
 
 

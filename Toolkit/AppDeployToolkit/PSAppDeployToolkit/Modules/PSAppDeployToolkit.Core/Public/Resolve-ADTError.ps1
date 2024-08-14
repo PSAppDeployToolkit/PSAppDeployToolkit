@@ -53,9 +53,9 @@
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [AllowEmptyCollection()]
-        [System.Object[]]$ErrorRecord,
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -75,15 +75,8 @@
     )
 
     begin {
-        # If function was called without specifying an error record, then choose the latest error that occurred.
-        if (!$ErrorRecord)
-        {
-            if ($Global:Error.Count -eq 0)
-            {
-                return
-            }
-            $ErrorRecord = $Global:Error[0]
-        }
+        # Initialise function.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
@@ -110,62 +103,59 @@
     }
 
     process {
-        foreach ($errRecord in $ErrorRecord)
-        {
-            # Build out error properties.
-            $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject $(
-                # Capture Error Exception here if the caller has selected all property values.
-                if (($($Property) -ne '*') -and !$ExcludeErrorException -and $errRecord.Exception)
-                {
-                    $errRecord.Exception | Select-Object -Property ($errRecord.Exception | Get-ErrorPropertyNames)
-                }
-
-                # Capture Error Record.
-                if (!$ExcludeErrorRecord)
-                {
-                    $errRecord | Select-Object -Property ($errRecord | Get-ErrorPropertyNames)
-                }
-
-                # Error Invocation Information.
-                if (!$ExcludeErrorInvocation -and $errRecord.InvocationInfo)
-                {
-                    $errRecord.InvocationInfo | Select-Object -Property ($errRecord.InvocationInfo | Get-ErrorPropertyNames)
-                }
-
-                # Capture Error Exception here to display using our custom order.
-                if (($($Property) -eq '*') -and !$ExcludeErrorException -and $errRecord.Exception)
-                {
-                    $errRecord.Exception | Select-Object -Property ($errRecord.Exception | Get-ErrorPropertyNames)
-                }
-            ))).Trim())
-
-            # Capture Error Inner Exception(s).
-            if (!$ExcludeErrorInnerException -and $errRecord.Exception -and $errRecord.Exception.InnerException)
+        # Build out error properties.
+        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject $(
+            # Capture Error Exception here if the caller has selected all property values.
+            if (($($Property) -ne '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
             {
-                # Set up initial variables.
-                $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
-                $errInnerException = $errRecord.Exception.InnerException
-
-                # Get all inner exceptions.
-                while ($errInnerException)
-                {
-                    # Add a divider if we've already added a record.
-                    if ($innerExceptions.Count)
-                    {
-                        $innerExceptions.Add("`n$('~' * 40)`n")
-                    }
-
-                    # Add error record and get next inner exception.
-                    $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String).Trim())
-                    $errInnerException = $errInnerException.InnerException
-                }
-
-                # Output all inner exceptions to the caller.
-                $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join("`n", $innerExceptions)))"
+                $ErrorRecord.Exception | Select-Object -Property ($ErrorRecord.Exception | Get-ErrorPropertyNames)
             }
 
-            # Output the error message to the caller.
-            $logErrorMessage
+            # Capture Error Record.
+            if (!$ExcludeErrorRecord)
+            {
+                $ErrorRecord | Select-Object -Property ($ErrorRecord | Get-ErrorPropertyNames)
+            }
+
+            # Error Invocation Information.
+            if (!$ExcludeErrorInvocation -and $ErrorRecord.InvocationInfo)
+            {
+                $ErrorRecord.InvocationInfo | Select-Object -Property ($ErrorRecord.InvocationInfo | Get-ErrorPropertyNames)
+            }
+
+            # Capture Error Exception here to display using our custom order.
+            if (($($Property) -eq '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
+            {
+                $ErrorRecord.Exception | Select-Object -Property ($ErrorRecord.Exception | Get-ErrorPropertyNames)
+            }
+        ))).Trim())
+
+        # Capture Error Inner Exception(s).
+        if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
+        {
+            # Set up initial variables.
+            $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
+            $errInnerException = $ErrorRecord.Exception.InnerException
+
+            # Get all inner exceptions.
+            while ($errInnerException)
+            {
+                # Add a divider if we've already added a record.
+                if ($innerExceptions.Count)
+                {
+                    $innerExceptions.Add("`n$('~' * 40)`n")
+                }
+
+                # Add error record and get next inner exception.
+                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String).Trim())
+                $errInnerException = $errInnerException.InnerException
+            }
+
+            # Output all inner exceptions to the caller.
+            $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join("`n", $innerExceptions)))"
         }
+
+        # Output the error message to the caller.
+        $logErrorMessage
     }
 }

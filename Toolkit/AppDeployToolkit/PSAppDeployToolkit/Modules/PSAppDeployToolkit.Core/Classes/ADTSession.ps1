@@ -235,7 +235,7 @@
         }
         catch
         {
-            $this.WriteLogEntry("Failed to process Zero-Config MSI Deployment.`n$(Resolve-ADTError)")
+            $this.WriteLogEntry("Failed to process Zero-Config MSI Deployment.`n$(Resolve-ADTError -ErrorRecord $_)")
         }
     }
 
@@ -365,7 +365,7 @@
                 }
                 catch
                 {
-                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTError)" -ForegroundColor Red
+                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTError -ErrorRecord $_)" -ForegroundColor Red
                 }
             }
         }
@@ -802,7 +802,7 @@
             }
             catch
             {
-                Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTError)" -ForegroundColor Red
+                Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTError -ErrorRecord $_)" -ForegroundColor Red
             }
         }
     }

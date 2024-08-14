@@ -39,7 +39,7 @@ function Invoke-ADTFunctionErrorHandler
         {
             if (!$ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
             {
-                $Prefix += "`n$(Resolve-ADTError)"
+                $Prefix += "`n$(Resolve-ADTError -ErrorRecord $ErrorRecord)"
             }
             Write-ADTLogEntry -Message $Prefix -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
         }

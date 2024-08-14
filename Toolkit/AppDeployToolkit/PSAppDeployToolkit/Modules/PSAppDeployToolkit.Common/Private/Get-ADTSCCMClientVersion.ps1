@@ -27,25 +27,23 @@
     # Determine the SCCM Client Version.
     try
     {
-        if ([System.Version]$SCCMClientVersion = Get-CimInstance -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | Where-Object {$_.Name -eq 'SmsClient'} | Select-Object -ExpandProperty Version)
-        {
-            Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
-            return $SCCMClientVersion
-        }
-        else
-        {
-            $naerParams = @{
-                Exception = [System.Data.NoNullAllowedException]::new('The query for the SmsClient version returned a null result.')
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'CcmExecVersionNullOrEmpty'
-                RecommendedAction = "Please check the installed version and try again."
-            }
-            Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-        }
+        [System.Version]$SCCMClientVersion = Get-CimInstance -Namespace ROOT\CCM -ClassName CCM_InstalledComponent | Where-Object {$_.Name -eq 'SmsClient'} | Select-Object -ExpandProperty Version
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError)" -Severity 2
+        Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
         throw
     }
+    if (!$SCCMClientVersion)
+    {
+        $naerParams = @{
+            Exception = [System.Data.NoNullAllowedException]::new('The query for the SmsClient version returned a null result.')
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = 'CcmExecVersionNullOrEmpty'
+            RecommendedAction = "Please check the installed version and try again."
+        }
+        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+    }
+    Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
+    return $SCCMClientVersion
 }

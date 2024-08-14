@@ -489,7 +489,7 @@
             }
             else
             {
-                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(Resolve-ADTError)" -Severity 3
+                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
             }
 
             if ($PassThru)

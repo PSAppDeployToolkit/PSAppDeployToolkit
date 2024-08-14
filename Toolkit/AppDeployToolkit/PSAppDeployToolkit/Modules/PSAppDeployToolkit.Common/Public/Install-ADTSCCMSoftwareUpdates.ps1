@@ -77,7 +77,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to find the number of missing software updates.`n$(Resolve-ADTError)" -Severity 2
+                Write-ADTLogEntry -Message "Failed to find the number of missing software updates.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 2
                 throw
             }
 

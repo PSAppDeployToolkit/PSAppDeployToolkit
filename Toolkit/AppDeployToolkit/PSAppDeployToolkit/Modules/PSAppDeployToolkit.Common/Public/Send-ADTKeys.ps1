@@ -119,7 +119,7 @@
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTError)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
             }
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -149,7 +149,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to send keys to specified window.`n$(Resolve-ADTError)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to send keys to specified window.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
         }
     }
 
