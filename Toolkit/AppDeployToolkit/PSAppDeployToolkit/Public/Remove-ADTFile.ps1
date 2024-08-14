@@ -124,7 +124,7 @@ function Remove-ADTFile
                     {
                         Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
                     }
-                    [System.Void](& $Script:CommandTable.'Remove-Item' -LiteralPath $Item -Recurse:$Recurse -Force)
+                    $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Item -Recurse:$Recurse -Force
                 }
                 catch
                 {

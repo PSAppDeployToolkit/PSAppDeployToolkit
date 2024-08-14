@@ -65,7 +65,7 @@ function Copy-ADTContentToCache
             {
                 try
                 {
-                    [System.Void](& $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory)
+                    $null = & $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory
                 }
                 catch
                 {

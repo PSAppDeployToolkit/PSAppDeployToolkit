@@ -169,7 +169,7 @@ function Get-ADTMsiTableProperty
                 {
                     # Open the requested table view from the database.
                     $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
-                    [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
 
                     # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
                     # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx

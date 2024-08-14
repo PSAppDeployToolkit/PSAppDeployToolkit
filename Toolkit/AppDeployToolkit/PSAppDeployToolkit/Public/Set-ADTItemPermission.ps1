@@ -154,7 +154,7 @@ function Set-ADTItemPermission
                 {
                     ($Acl = & $Script:CommandTable.'Get-Acl' -Path $Path).SetAccessRuleProtection($false, $true)
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
-                    [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
+                    $null = & $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl
                     return
                 }
 
@@ -168,7 +168,7 @@ function Set-ADTItemPermission
 
                 # Get object ACLs, disable inheritance but preserve inherited permissions.
                 ($Acl = & $Script:CommandTable.'Get-Acl' -Path $Path).SetAccessRuleProtection($true, $true)
-                [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
+                $null = & $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl
 
                 # Get updated ACLs - without inheritance.
                 $Acl = & $Script:CommandTable.'Get-Acl' -Path $Path
@@ -201,7 +201,7 @@ function Set-ADTItemPermission
                 }
 
                 # Use the prepared ACL.
-                [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
+                $null = & $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl
             }
             catch
             {

@@ -205,7 +205,7 @@ function Show-ADTInstallationProgressClassic
                     & $UpdateWindowLocation.GetNewClosure() -Window $this
                     & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
                 })
-                [System.Void]$SyncHash.Window.ShowDialog()
+                $null = $SyncHash.Window.ShowDialog()
             }
             catch
             {

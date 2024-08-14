@@ -308,7 +308,7 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Executing [$Path]..."
                     }
-                    [System.Void]$process.Start()
+                    $null = $process.Start()
 
                     # Set priority
                     if ($PriorityClass -ne 'Normal')

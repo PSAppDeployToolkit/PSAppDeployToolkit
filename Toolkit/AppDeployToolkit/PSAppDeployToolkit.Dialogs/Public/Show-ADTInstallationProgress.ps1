@@ -148,7 +148,7 @@ function Show-ADTInstallationProgress
         {
             $PSBoundParameters.Keys.GetEnumerator().Where({$_ -match '^(WindowSubtitle|StatusMessageDetail)$'}).ForEach({
                 Write-ADTLogEntry -Message "The parameter [$($_)] is only supported by fluent dialogs and has been removed for you." -Severity 2
-                [System.Void]$PSBoundParameters.Remove($_)
+                $null = $PSBoundParameters.Remove($_)
             })
         }
     }

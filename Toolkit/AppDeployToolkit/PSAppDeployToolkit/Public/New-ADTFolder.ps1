@@ -61,7 +61,7 @@ function New-ADTFolder
             try
             {
                 Write-ADTLogEntry -Message "Creating folder [$Path]."
-                [System.Void](& $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory -Force)
+                $null = & $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory -Force
             }
             catch
             {

@@ -116,31 +116,31 @@ function Write-Log
         if ($AppendToLogFile)
         {
             Write-ADTLogEntry -Message "The parameter '-AppendToLogFile' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('AppendToLogFile')
+            $null = $PSBoundParameters.Remove('AppendToLogFile')
         }
         if ($MaxLogHistory)
         {
             Write-ADTLogEntry -Message "The parameter '-MaxLogHistory' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('MaxLogHistory')
+            $null = $PSBoundParameters.Remove('MaxLogHistory')
         }
         if ($MaxLogFileSizeMB)
         {
             Write-ADTLogEntry -Message "The parameter '-MaxLogFileSizeMB' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('MaxLogFileSizeMB')
+            $null = $PSBoundParameters.Remove('MaxLogFileSizeMB')
         }
         if ($WriteHost)
         {
             Write-ADTLogEntry -Message "The parameter '-WriteHost' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('WriteHost')
+            $null = $PSBoundParameters.Remove('WriteHost')
         }
         if ($LogDebugMessage)
         {
             Write-ADTLogEntry -Message "The parameter '-LogDebugMessage' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('LogDebugMessage')
+            $null = $PSBoundParameters.Remove('LogDebugMessage')
         }
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
-            [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+            $null = $PSBoundParameters.Remove('ContinueOnError')
         }
     }
 
@@ -263,7 +263,7 @@ function Get-FreeDiskSpace
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -377,7 +377,7 @@ function Get-FileVersion
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -424,7 +424,7 @@ function Get-UserProfiles
         {
             $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
         }
-        [System.Void]$PSBoundParameters.Remove("Exclude$_")
+        $null = $PSBoundParameters.Remove("Exclude$_")
     })
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
@@ -538,7 +538,7 @@ function Remove-File
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -622,17 +622,17 @@ function Show-InstallationPrompt
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
     {
-        [System.Void]$PSBoundParameters.Remove('Icon')
+        $null = $PSBoundParameters.Remove('Icon')
     }
     if ($PSBoundParameters.ContainsKey('ExitOnTimeout'))
     {
         $PSBoundParameters.NoExitOnTimeout = !$PSBoundParameters.ExitOnTimeout
-        [System.Void]$PSBoundParameters.Remove('ExitOnTimeout')
+        $null = $PSBoundParameters.Remove('ExitOnTimeout')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
-        [System.Void]$PSBoundParameters.Remove('TopMost')
+        $null = $PSBoundParameters.Remove('TopMost')
     }
 
     # Invoke function with amended parameters.
@@ -676,7 +676,7 @@ function Show-InstallationProgress
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
-        [System.Void]$PSBoundParameters.Remove('TopMost')
+        $null = $PSBoundParameters.Remove('TopMost')
     }
     try
     {
@@ -734,7 +734,7 @@ function Show-DialogBox
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
-        [System.Void]$PSBoundParameters.Remove('TopMost')
+        $null = $PSBoundParameters.Remove('TopMost')
     }
     try
     {
@@ -833,17 +833,17 @@ function Show-InstallationWelcome
             $obj = @{}; $obj.Name, $obj.Description = $_.Split('=')
             return [PSADT.Types.ProcessObject]$obj
         })
-        [System.Void]$PSBoundParameters.Remove('CloseApps')
+        $null = $PSBoundParameters.Remove('CloseApps')
     }
     if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
     {
         $PSBoundParameters.NoMinimizeWindows = !$PSBoundParameters.MinimizeWindows
-        [System.Void]$PSBoundParameters.Remove('MinimizeWindows')
+        $null = $PSBoundParameters.Remove('MinimizeWindows')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
-        [System.Void]$PSBoundParameters.Remove('TopMost')
+        $null = $PSBoundParameters.Remove('TopMost')
     }
 
     # Invoke function with amended parameters.
@@ -926,12 +926,12 @@ function Show-InstallationRestartPrompt
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
         $PSBoundParameters.SilentRestart = !$PSBoundParameters.NoSilentRestart
-        [System.Void]$PSBoundParameters.Remove('NoSilentRestart')
+        $null = $PSBoundParameters.Remove('NoSilentRestart')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
-        [System.Void]$PSBoundParameters.Remove('TopMost')
+        $null = $PSBoundParameters.Remove('TopMost')
     }
     try
     {
@@ -1120,7 +1120,7 @@ function Get-IniValue
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -1179,7 +1179,7 @@ function Set-IniValue
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -1221,7 +1221,7 @@ function New-Folder
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -1278,7 +1278,7 @@ function Update-GroupPolicy
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -1316,7 +1316,7 @@ function Get-UniversalDate
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -1365,11 +1365,11 @@ function Test-ServiceExists
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('ComputerName')
+        $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     try
@@ -1407,7 +1407,7 @@ function Disable-TerminalServerInstallMode
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -1444,7 +1444,7 @@ function Enable-TerminalServerInstallMode
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -1497,7 +1497,7 @@ function Configure-EdgeExtension
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity 2
-    [System.Void]$PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
+    $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
     try
     {
         & "$($PSCmdlet.ParameterSetName)-ADTEdgeExtension" @PSBoundParameters
@@ -1545,13 +1545,13 @@ function Resolve-Error
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
     ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
         $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
-        [System.Void]$PSBoundParameters.Remove("Get$_")
+        $null = $PSBoundParameters.Remove("Get$_")
     })
 
     # Remove ErrorRecord from the bound parameters.
     if ($PSBoundParameters.ContainsKey('ErrorRecord'))
     {
-        [System.Void]$PSBoundParameters.Remove('ErrorRecord')
+        $null = $PSBoundParameters.Remove('ErrorRecord')
     }
 
     # If function was called without specifying an error record, then choose the latest error that occurred.
@@ -1610,18 +1610,18 @@ function Get-ServiceStartMode
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('ComputerName')
+        $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
     $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -1661,10 +1661,10 @@ function Set-ServiceStartMode
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
     $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    $null = $PSBoundParameters.Remove('Name')
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -1762,12 +1762,12 @@ function Execute-Process
     if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
         $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
-        [System.Void]$PSBoundParameters.Remove('ExitOnProcessFailure')
+        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     # Invoke function with amended parameters.
@@ -1879,12 +1879,12 @@ function Execute-MSI
     if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
         $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
-        [System.Void]$PSBoundParameters.Remove('ExitOnProcessFailure')
+        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::SilentlyContinue} else {[System.Management.Automation.ActionPreference]::Stop}
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     # Invoke function with amended parameters.
@@ -2085,7 +2085,7 @@ function Test-MSUpdates
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2171,23 +2171,23 @@ function Start-ServiceAndDependencies
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('ComputerName')
+        $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($SkipServiceExistsTest)
     {
         Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('SkipServiceExistsTest')
+        $null = $PSBoundParameters.Remove('SkipServiceExistsTest')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
     $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -2242,23 +2242,23 @@ function Stop-ServiceAndDependencies
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('ComputerName')
+        $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($SkipServiceExistsTest)
     {
         Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('SkipServiceExistsTest')
+        $null = $PSBoundParameters.Remove('SkipServiceExistsTest')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
     $PSBoundParameters.Service = $Name
-    [System.Void]$PSBoundParameters.Remove('Name')
+    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -2313,7 +2313,7 @@ function Set-RegistryKey
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2365,7 +2365,7 @@ function Remove-RegistryKey
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2430,12 +2430,12 @@ function Remove-FileFromUserProfiles
         {
             $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
         }
-        [System.Void]$PSBoundParameters.Remove("Exclude$_")
+        $null = $PSBoundParameters.Remove("Exclude$_")
     })
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
@@ -2493,7 +2493,7 @@ function Get-RegistryKey
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2562,7 +2562,7 @@ function Get-SchedulerTask
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTSchedulerTask]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2627,7 +2627,7 @@ function Invoke-RegisterOrUnregisterDLL
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTDllFileAction]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2668,7 +2668,7 @@ function Register-DLL
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2709,7 +2709,7 @@ function Unregister-DLL
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2753,7 +2753,7 @@ function Remove-Folder
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2829,11 +2829,11 @@ function Set-ActiveSetup
     if ($PSBoundParameters.ContainsKey('ExecuteForCurrentUser'))
     {
         $PSBoundParameters.NoExecuteForCurrentUser = !$PSBoundParameters.ExecuteForCurrentUser
-        [System.Void]$PSBoundParameters.Remove('ExecuteForCurrentUser')
+        $null = $PSBoundParameters.Remove('ExecuteForCurrentUser')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -2954,7 +2954,7 @@ function New-MsiTransform
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3015,7 +3015,7 @@ function Get-MsiTableProperty
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3056,7 +3056,7 @@ function Invoke-SCCMTask
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3101,7 +3101,7 @@ function Install-SCCMSoftwareUpdates
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3150,7 +3150,7 @@ function Set-MsiProperty
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3211,7 +3211,7 @@ function Get-Shortcut
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3292,11 +3292,11 @@ function Set-Shortcut
     if ($PSBoundParameters.ContainsKey('PathHash'))
     {
         $PSBoundParameters.Path = $PSBoundParameters.PathHash
-        [System.Void]$PSBoundParameters.Remove('PathHash')
+        $null = $PSBoundParameters.Remove('PathHash')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {
@@ -3372,7 +3372,7 @@ function New-Shortcut
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ContinueOnError')
     }
     if (!$ContinueOnError)
     {

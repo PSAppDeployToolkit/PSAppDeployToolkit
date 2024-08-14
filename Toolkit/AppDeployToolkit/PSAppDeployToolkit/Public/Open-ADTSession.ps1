@@ -170,7 +170,7 @@ function Open-ADTSession
                 }
                 catch
                 {
-                    [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
+                    $null = $adtData.Sessions.Remove($adtData.Sessions[-1])
                     throw
                 }
             }

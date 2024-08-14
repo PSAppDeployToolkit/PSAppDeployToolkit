@@ -71,7 +71,7 @@ function Get-ADTPEFileArchitecture
                 {
                     # Read the first 4096 bytes of the file.
                     $stream = [System.IO.FileStream]::new($Path.FullName, 'Open', 'Read')
-                    [System.Void]$stream.Read($data, 0, $data.Count)
+                    $null = $stream.Read($data, 0, $data.Count)
                     $stream.Flush()
                     $stream.Close()
 

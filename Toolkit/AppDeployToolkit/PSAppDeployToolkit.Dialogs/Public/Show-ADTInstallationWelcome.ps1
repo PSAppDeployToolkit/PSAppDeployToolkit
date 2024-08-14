@@ -248,11 +248,11 @@ function Show-ADTInstallationWelcome
                         {
                             try
                             {
-                                [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
+                                $null = [System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
                             }
                             catch
                             {
-                                [System.Void]$null
+                                $null = $null
                             }
                         }
                     }
@@ -444,7 +444,7 @@ function Show-ADTInstallationWelcome
                                         try
                                         {
                                             Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                            [System.Void][PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                            $null = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
                                             if (!$runningProcess.CloseMainWindow())
                                             {
                                                 Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
@@ -517,12 +517,12 @@ function Show-ADTInstallationWelcome
                                 }
                                 catch
                                 {
-                                    [System.Void]$null
+                                    $null = $null
                                 }
                             }
 
                             # Restore minimized windows.
-                            [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
+                            $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                         }
                         elseif ($promptResult -eq 'Defer')
@@ -533,7 +533,7 @@ function Show-ADTInstallationWelcome
                             Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                             # Restore minimized windows.
-                            [System.Void]$adtEnv.ShellApp.UndoMinimizeAll()
+                            $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                         }
                     }

@@ -103,13 +103,13 @@ function Remove-ADTRegistryKey
                     if ($Recurse)
                     {
                         Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
-                        [System.Void](& $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force -Recurse)
+                        $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force -Recurse
                     }
                     elseif (!(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $Key))
                     {
                         # Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
                         Write-ADTLogEntry -Message "Deleting registry key [$Key]."
-                        [System.Void](& $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force)
+                        $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force
                     }
                     else
                     {
@@ -134,11 +134,11 @@ function Remove-ADTRegistryKey
                     if ($Name -eq '(Default)')
                     {
                         # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
-                        [System.Void]((& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').DeleteValue(''))
+                        $null = (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').DeleteValue('')
                     }
                     else
                     {
-                        [System.Void](& $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $Key -Name $Name -Force)
+                        $null = & $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $Key -Name $Name -Force
                     }
                 }
             }

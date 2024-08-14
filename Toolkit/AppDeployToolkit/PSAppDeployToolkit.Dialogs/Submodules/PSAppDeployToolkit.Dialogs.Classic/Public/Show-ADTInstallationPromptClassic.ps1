@@ -388,7 +388,7 @@ function Show-ADTInstallationPromptClassic
         # Minimize all other windows
         if ($MinimizeWindows)
         {
-            [System.Void]$shellApp.MinimizeAll()
+            $null = $shellApp.MinimizeAll()
         }
 
         # Show the Form
@@ -409,7 +409,7 @@ function Show-ADTInstallationPromptClassic
         }
         'Abort' {
             # Restore minimized windows.
-            [System.Void]$shellApp.UndoMinimizeAll()
+            $null = $shellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)
             {
                 Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
