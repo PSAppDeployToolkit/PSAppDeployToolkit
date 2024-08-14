@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.DirectoryServices;
 using System.Security.Principal;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
@@ -89,7 +90,7 @@ namespace PSADT
             public bool IsAppVRebootPending;
             public bool? IsFileRenameRebootPending;
             public string[] PendingFileRenameOperations;
-            public string[] ErrorMsg;
+            public StringCollection ErrorMsg;
         }
 
         public abstract class ShortcutBase

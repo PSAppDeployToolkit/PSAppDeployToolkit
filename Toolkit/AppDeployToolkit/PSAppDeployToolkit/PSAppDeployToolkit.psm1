@@ -25,7 +25,7 @@ $null = (& $CommandTable.'Get-Command' -FullyQualifiedModule ([System.Management
     'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
-        'System.Net.NameResolution', 'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
+        'System.Net.NameResolution', 'System.Collections', 'System.Collections.Specialized', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
     }
 )
 
