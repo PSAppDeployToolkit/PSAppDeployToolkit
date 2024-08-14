@@ -32,20 +32,8 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
-# Set required variables to ensure module functionality.
-$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-$ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version 1
-
-# Import our local module.
-Remove-Module -Name PSAppDeployToolkit* -Force
-Import-Module -Name (Get-ChildItem -Path "$PSScriptRoot\PSAppDeployToolkit*" -Directory).FullName -Force
-
-# Open a new PSADT session, dynamically gathering the required parameters from the stack.
-$sessionProps = @{SessionState = $ExecutionContext.SessionState}
-Get-Variable -Name (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name -ErrorAction Ignore | Where-Object {$_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))} | ForEach-Object {$sessionProps.Add($_.Name, $_.Value)}
-Open-ADTSession @sessionProps
-Remove-Variable -Name sessionProps -Force -Confirm:$false
+# Remove all functions defined in this script from the function provider.
+Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements.Where({$_ -is [System.Management.Automation.Language.FunctionDefinitionAst]}).Name -replace '^','Function:') -Force -ErrorAction Ignore
 
 
 #---------------------------------------------------------------------------
@@ -3399,6 +3387,32 @@ function New-Shortcut
         $PSCmdlet.ThrowTerminatingError($_)
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Module and session code.
+#
+#---------------------------------------------------------------------------
+
+# Set required variables to ensure module functionality.
+$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+$ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+Set-StrictMode -Version 1
+
+# Import our local module.
+Remove-Module -Name PSAppDeployToolkit* -Force
+Import-Module -Name (Get-ChildItem -Path "$PSScriptRoot\PSAppDeployToolkit*" -Directory).FullName -Force
+
+# Open a new PSADT session, dynamically gathering the required parameters from the stack.
+$sessionProps = @{SessionState = $ExecutionContext.SessionState}
+Get-Variable -Name (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name -ErrorAction Ignore | Where-Object {$_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))} | ForEach-Object {$sessionProps.Add($_.Name, $_.Value)}
+Open-ADTSession @sessionProps
+
+# Redefine all functions as read-only and clean up temp variables.
+Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
+Remove-Variable -Name adtWrapperFuncs -Force -Confirm:$false
+Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 
 #---------------------------------------------------------------------------

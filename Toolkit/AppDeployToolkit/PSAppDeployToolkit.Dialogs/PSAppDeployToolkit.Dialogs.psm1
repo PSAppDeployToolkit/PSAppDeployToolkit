@@ -10,5 +10,19 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Dot-source our imports and perform exports.
-(Get-ChildItem -Path $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).FullName.ForEach({. $_})
-Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).BaseName
+Export-ModuleMember -Function (Get-ChildItem -Path $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).ForEach({
+    # As we declare all functions read-only, attempt removal before dot-sourcing the function again.
+    Remove-Item -LiteralPath "Function:$($_.BaseName)" -Force -ErrorAction Ignore
+
+    # Dot source in the function code.
+    . $_.FullName
+
+    # Mark the dot-sourced function as read-only.
+    Set-Item -LiteralPath "Function:$($_.BaseName)" -Options ReadOnly
+
+    # Echo out the public functions.
+    if ($_.DirectoryName.EndsWith('Public'))
+    {
+        return $_.BaseName
+    }
+})

@@ -30,8 +30,22 @@ $ExecutionContext.SessionState.InvokeCommand.GetCmdlets().Where({$_.PSSnapIn -an
 )
 
 # Dot-source our imports and perform exports.
-(& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\Classes\*.ps1, $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).FullName.ForEach({. $_})
-& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ChildItem' -LiteralPath $PSScriptRoot\Public).BaseName
+& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\Classes\*.ps1, $PSScriptRoot\Private\*.ps1, $PSScriptRoot\Public\*.ps1).ForEach({
+    # As we declare all functions read-only, attempt removal before dot-sourcing the function again.
+    & $CommandTable.'Remove-Item' -LiteralPath "Function:$($_.BaseName)" -Force -ErrorAction Ignore
+
+    # Dot source in the function code.
+    . $_.FullName
+
+    # Mark the dot-sourced function as read-only.
+    & $CommandTable.'Set-Item' -LiteralPath "Function:$($_.BaseName)" -Options ReadOnly
+
+    # Echo out the public functions.
+    if ($_.DirectoryName.EndsWith('Public'))
+    {
+        return $_.BaseName
+    }
+})
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
