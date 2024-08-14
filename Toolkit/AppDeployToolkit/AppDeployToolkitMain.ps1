@@ -136,21 +136,6 @@ function Write-Log
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name
 
         # Announce dead parameters.
-        if ($LogType)
-        {
-            Write-ADTLogEntry -Message "The parameter '-LogType' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('LogType')
-        }
-        if ($LogFileDirectory)
-        {
-            Write-ADTLogEntry -Message "The parameter '-LogFileDirectory' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('LogFileDirectory')
-        }
-        if ($LogFileName)
-        {
-            Write-ADTLogEntry -Message "The parameter '-LogFileName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            [System.Void]$PSBoundParameters.Remove('LogFileName')
-        }
         if ($AppendToLogFile)
         {
             Write-ADTLogEntry -Message "The parameter '-AppendToLogFile' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
