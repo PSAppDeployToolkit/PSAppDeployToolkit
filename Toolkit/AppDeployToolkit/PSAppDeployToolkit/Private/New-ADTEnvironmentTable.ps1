@@ -67,14 +67,14 @@ function New-ADTEnvironmentTable
 
     ## Variables: Domain Membership
     $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem
-    $w32csd = $w32cs.Domain | & $Script:CommandTable.'Where-Object' {$_}
+    $w32csd = $w32cs.Domain | & {process {if ($_) {return $_}}}
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
     $variables.Add('envMachineADDomain', [System.String]::Empty)
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
-    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
-    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
+    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & {process {if ($_) {return $_.ToLower()}}}))
+    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & {process {if ($_) {return $_.ToLower()}}}))
     $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) {[System.Environment]::UserDomainName.ToUpper()}))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
@@ -94,7 +94,7 @@ function New-ADTEnvironmentTable
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = [string]$(try
         {
-            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & $Script:CommandTable.'Where-Object' {$_ -and !$_.Contains('\\MicrosoftAccount')} | & $Script:CommandTable.'ForEach-Object' {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}
+            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & {process {if ($_ -and !$_.Contains('\\MicrosoftAccount')) {[System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName}}}
         }
         catch
         {
@@ -296,9 +296,9 @@ function New-ADTEnvironmentTable
 
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo())
-    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'ForEach-Object' {$_.NTAccount}))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'Where-Object' {$_.IsCurrentSession}))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & $Script:CommandTable.'Where-Object' {$_.IsConsoleSession}))
+    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & {process {$_.NTAccount}}))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & {process {if ($_.IsCurrentSession) {return $_}}}))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & {process {if ($_.IsConsoleSession) {return $_}}}))
     $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
 
     ## Variables: User profile information.
@@ -314,7 +314,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', (Get-ADTGuidRegexPattern))
-    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
+    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ' | & {process {[System.Text.RegularExpressions.Regex]::Escape($_)}}))))")
 
     # Add in WScript shell variables.
     $variables.Add('Shell', (& $Script:CommandTable.'New-Object' -ComObject 'WScript.Shell'))

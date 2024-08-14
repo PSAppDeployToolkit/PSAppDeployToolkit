@@ -55,6 +55,8 @@ function Remove-ADTFileFromUserProfiles
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
@@ -98,22 +100,17 @@ function Remove-ADTFileFromUserProfiles
         if ($ExcludeNTAccount) {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
+
+        # Store variable basded on ParameterSetName.
+        $pathVar = Get-Variable -Name $PSCmdlet.ParameterSetName
     }
 
     process
     {
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
-            if ($PSCmdlet.ParameterSetName -eq 'Path')
-            {
-                $RemoveFileSplat.Path = $Path.ForEach({[System.IO.Path]::Combine($UserProfilePath, $_)})
-                Write-ADTLogEntry -Message "Removing path [$Path] from $UserProfilePath`:"
-            }
-            elseif ($PSCmdlet.ParameterSetName -eq 'LiteralPath')
-            {
-                $RemoveFileSplat.LiteralPath = $LiteralPath.ForEach({[System.IO.Path]::Combine($UserProfilePath, $_)})
-                Write-ADTLogEntry -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:"
-            }
+            $RemoveFileSplat.Path = $pathVar.Value | & {process {[System.IO.Path]::Combine($UserProfilePath, $_)}}
+            Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
             try
             {
                 try

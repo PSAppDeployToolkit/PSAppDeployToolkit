@@ -33,7 +33,7 @@ https://psappdeploytoolkit.com
 #---------------------------------------------------------------------------
 
 # Remove all functions defined in this script from the function provider.
-Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements.Where({$_ -is [System.Management.Automation.Language.FunctionDefinitionAst]}).Name -replace '^','Function:') -Force -ErrorAction Ignore
+Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {process {if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) {return "Function:$($_.Name)"}}}) -Force -ErrorAction Ignore
 
 
 #---------------------------------------------------------------------------
@@ -851,10 +851,13 @@ function Show-InstallationWelcome
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('CloseApps'))
     {
-        $PSBoundParameters.ProcessObjects = $CloseApps.Split(',').ForEach({
-            $obj = @{}; $obj.Name, $obj.Description = $_.Split('=')
-            return [PSADT.Types.ProcessObject]$obj
-        })
+        $PSBoundParameters.ProcessObjects = $CloseApps.Split(',') | & {
+            process
+            {
+                $obj = @{}; $obj.Name, $obj.Description = $_.Split('=')
+                return [PSADT.Types.ProcessObject]$obj
+            }
+        }
         $null = $PSBoundParameters.Remove('CloseApps')
     }
     if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
@@ -1586,7 +1589,7 @@ function Resolve-Error
     process
     {
         # Process piped input and collect ErrorRecord objects.
-        foreach ($errRecord in ($ErrorRecord | Where-Object {$_ -is [System.Management.Automation.ErrorRecord]}))
+        foreach ($errRecord in ($ErrorRecord | & {process {if ($_ -is [System.Management.Automation.ErrorRecord]) {return $_}}}))
         {
             $errRecords.Add($errRecord)
         }
@@ -1606,7 +1609,7 @@ function Resolve-Error
                 }
                 elseif ($Global:Error.Count)
                 {
-                    $Global:Error | Where-Object {$_ -is [System.Management.Automation.ErrorRecord]} | Select-Object -First 1 | Resolve-ADTErrorRecord @PSBoundParameters
+                    $Global:Error.Where({$_ -is [System.Management.Automation.ErrorRecord]}, 'First', 1) | Resolve-ADTErrorRecord @PSBoundParameters
                 }
             }
             else
@@ -3480,7 +3483,7 @@ Import-Module -Name (Get-ChildItem -Path "$PSScriptRoot\PSAppDeployToolkit*" -Di
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{SessionState = $ExecutionContext.SessionState}
-Get-Variable -Name (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name -ErrorAction Ignore | Where-Object {$_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))} | ForEach-Object {$sessionProps.Add($_.Name, $_.Value)}
+Get-Variable -Name ((Get-Command -Name Open-ADTSession).Parameters.Values | & {process {if ($_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1') {$_.Name}}}) -ErrorAction Ignore | & {process {if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) {$sessionProps.Add($_.Name, $_.Value)}}}
 Open-ADTSession @sessionProps
 
 # Redefine all functions as read-only and clean up temp variables.

@@ -238,14 +238,14 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, $HKLMVer.GetEnumerator().Where({[System.Char]::IsDigit($_) -or ($_ -eq ',')}))))
+            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & {process {if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) {return $_}}}))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, $HKCUVer.GetEnumerator().Where({[System.Char]::IsDigit($_) -or ($_ -eq ',')}))))
+            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & {process {if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) {return $_}}}))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
@@ -388,7 +388,7 @@ function Set-ADTActiveSetup
                     if ($runAsActiveUser)
                     {
                         Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & $Script:CommandTable.'Where-Object' {$_.SID -eq $runAsActiveUser.SID}) -RegistrySettings {
+                        Invoke-ADTAllUsersRegistryChange -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & {process {if ($_.SID -eq $runAsActiveUser.SID) {return $_}}}) -RegistrySettings {
                             if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
                             {
                                 Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse

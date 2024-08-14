@@ -58,9 +58,15 @@ function Unblock-ADTAppExecution
             try
             {
                 # Remove Debugger values to unblock processes.
-                & $Script:CommandTable.'Get-ItemProperty' -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | & $Script:CommandTable.'Where-Object' {$_.Debugger.Contains('Show-ADTBlockedAppDialog')} | & $Script:CommandTable.'ForEach-Object' {
-                    Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
-                    & $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $_.PSPath -Name Debugger
+                & $Script:CommandTable.'Get-ItemProperty' -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | & {
+                    process
+                    {
+                        if ($_.Debugger.Contains('Show-ADTBlockedAppDialog'))
+                        {
+                            Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
+                            & $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $_.PSPath -Name Debugger
+                        }
+                    }
                 }
 
                 # Remove the scheduled task if it exists.

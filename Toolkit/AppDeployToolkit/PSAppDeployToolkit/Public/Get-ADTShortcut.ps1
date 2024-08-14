@@ -94,14 +94,17 @@ function Get-ADTShortcut
                 # Build out remainder of object.
                 if ($Path -match '\.url$')
                 {
-                    [System.IO.File]::ReadAllLines($Path).ForEach({
-                        switch ($_)
+                    [System.IO.File]::ReadAllLines($Path) | & {
+                        process
                         {
-                            {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null)}
-                            {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null)}
-                            {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null)}
+                            switch ($_)
+                            {
+                                {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null); break}
+                                {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null); break}
+                                {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null); break}
+                            }
                         }
-                    })
+                    }
                     return [PSADT.Types.ShortcutUrl]$Output
                 }
                 else

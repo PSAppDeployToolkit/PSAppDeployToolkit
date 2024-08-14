@@ -6,6 +6,7 @@
 
 function Invoke-ADTSessionCallbackOperation
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Action', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -36,5 +37,5 @@ function Invoke-ADTSessionCallbackOperation
         }
 
         # Perform any required action.
-        $null = $Callback.Where($(if ($Action -eq 'Add') {{!$callbacks.Contains($_)}} else {{$callbacks.Contains($_)}})).ForEach({$callbacks.$Action($_)})
+        $Callback | & {process {if (($Action.Equals('Add') -and !$callbacks.Contains($_)) -or $callbacks.Contains($_)) {$null = $callbacks.$Action($_)}}}
 }

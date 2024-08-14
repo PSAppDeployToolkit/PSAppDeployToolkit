@@ -47,7 +47,7 @@ function Convert-ADTValuesFromRemainingArguments
     # Process input into a dictionary and return it. Assume anything starting with a '-' is a new variable.
     try
     {
-        foreach ($item in $RemainingArguments.Where({$null -ne $_}))
+        foreach ($item in ($RemainingArguments | & {process {if ($null -ne $_) {return $_}}}))
         {
             if (($item -is [System.String]) -and ($item -match '^-'))
             {
