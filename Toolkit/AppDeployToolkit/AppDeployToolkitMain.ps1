@@ -45,7 +45,6 @@ Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Scope Local -Force
 $sessionProps = @{SessionState = $ExecutionContext.SessionState}
 Get-Variable -Name (Get-Command -Name Open-ADTSession).Parameters.Values.Where({$_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1'}).Name -ErrorAction Ignore | Where-Object {$_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))} | ForEach-Object {$sessionProps.Add($_.Name, $_.Value)}
 Open-ADTSession @sessionProps
-if ($sessionProps.ContainsKey('TerminalServerMode')) {Enable-ADTTerminalServerInstallMode}
 Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 

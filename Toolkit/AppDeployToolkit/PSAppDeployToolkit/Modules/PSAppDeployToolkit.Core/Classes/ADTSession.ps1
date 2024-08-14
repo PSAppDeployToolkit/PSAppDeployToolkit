@@ -23,6 +23,7 @@
     [ValidateNotNullOrEmpty()][System.String]$DeploymentType = 'Install'
     [ValidateNotNullOrEmpty()][System.String]$DeployMode = 'Interactive'
     [ValidateNotNullOrEmpty()][System.Boolean]$AllowRebootPassThru
+    [ValidateNotNullOrEmpty()][System.Boolean]$TerminalServerMode
     [ValidateNotNullOrEmpty()][System.Boolean]$DisableLogging
 
     # Deploy-Application.ps1 variables.

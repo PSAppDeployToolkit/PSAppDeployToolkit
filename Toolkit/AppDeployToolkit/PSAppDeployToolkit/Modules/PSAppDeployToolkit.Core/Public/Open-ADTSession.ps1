@@ -19,6 +19,9 @@
         [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [System.Management.Automation.SwitchParameter]$TerminalServerMode,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
@@ -133,6 +136,10 @@
                 try
                 {
                     $adtData.Sessions[-1].Open()
+                    if ($TerminalServerMode -and !$adtData.TerminalServerMode)
+                    {
+                        Enable-ADTTerminalServerInstallMode
+                    }
                     if ($adtData.Sessions.Count.Equals(1))
                     {
                         [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
