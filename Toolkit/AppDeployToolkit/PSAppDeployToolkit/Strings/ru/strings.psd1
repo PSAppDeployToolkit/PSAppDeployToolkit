@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Идет установка. Пожалуйста, подождите..."
+        MessageInstallDetail = ""
         MessageRepair = "Идет исправление. Пожалуйста, подождите..."
+        MessageRepairDetail = ""
         MessageUninstall = "Идет удаление. Пожалуйста, подождите..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Минимизировать"

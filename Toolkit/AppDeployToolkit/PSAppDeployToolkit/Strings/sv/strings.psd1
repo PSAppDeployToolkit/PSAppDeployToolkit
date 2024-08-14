@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installation pågår. Var god vänta..."
+        MessageInstallDetail = ""
         MessageRepair = "Reparation pågår. Var god vänta..."
+        MessageRepairDetail = ""
         MessageUninstall = "Avinstallation pågår. Var god vänta..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimera"

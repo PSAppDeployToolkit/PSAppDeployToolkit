@@ -91,7 +91,7 @@
             # Add in required assemblies.
             if ((Get-Variable -Name PSVersionTable -ValueOnly).PSEdition.Equals('Core'))
             {
-                Add-Type -AssemblyName (Get-ChildItem -Path '$Script:PSScriptRoot\lib\*\*.dll').FullName
+                Add-Type -AssemblyName (Get-ChildItem -Path '$Script:PSScriptRoot\lib\net6.0\*.dll').FullName
             }
             else
             {

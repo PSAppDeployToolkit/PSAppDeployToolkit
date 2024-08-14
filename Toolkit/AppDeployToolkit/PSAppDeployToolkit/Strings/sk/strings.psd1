@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Inštalácia sa vykonáva. Prosím čakajte..."
+        MessageInstallDetail = ""
         MessageRepair = "Vykonáva sa oprava. Prosím čakajte..."
+        MessageRepairDetail = ""
         MessageUninstall = "Prebieha odinštalácia. Prosím čakajte..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimalizovať"

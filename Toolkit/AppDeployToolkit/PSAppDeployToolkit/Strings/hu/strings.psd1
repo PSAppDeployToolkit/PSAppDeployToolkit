@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Telepítés folyamatban. Kérem várjon..."
+        MessageInstallDetail = ""
         MessageRepair = "Javítás folyamatban. Kérem várjon..."
+        MessageRepairDetail = ""
         MessageUninstall = "Eltávolítás folyamatban. Kérem várjon..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimalizál"

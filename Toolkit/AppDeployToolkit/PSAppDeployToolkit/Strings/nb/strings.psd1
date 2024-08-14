@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Programvareinstallasjon pågår. Vennligst vent.."
+        MessageInstallDetail = ""
         MessageRepair = "ProgramvareReparasjon pågår. Vennligst vent.."
+        MessageRepairDetail = ""
         MessageUninstall = "ProgramvareAvinstallasjon pågår. Vennligst vent.."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimere"

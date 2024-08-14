@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installation wird durchgeführt. Bitte warten..."
+        MessageInstallDetail = ""
         MessageRepair = "Reparatur wird durchgeführt. Bitte warten..."
+        MessageRepairDetail = ""
         MessageUninstall = "Deinstallation wird durchgeführt. Bitte warten..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimieren"

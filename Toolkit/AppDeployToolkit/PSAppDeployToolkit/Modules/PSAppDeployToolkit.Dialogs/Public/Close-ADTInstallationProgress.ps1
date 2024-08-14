@@ -35,5 +35,5 @@
         [System.UInt32]$WaitingTime = 5
     )
 
-    Close-ADTClassicInstallationProgress @PSBoundParameters
+    & (Get-ADTDialogFunction) @PSBoundParameters
 }

@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "설치 중입니다. 기다리세요..."
+        MessageInstallDetail = ""
         MessageRepair = "수리 중입니다. 기다리세요..."
+        MessageRepairDetail = ""
         MessageUninstall = "제거 중입니다. 기다리세요..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "최소화"

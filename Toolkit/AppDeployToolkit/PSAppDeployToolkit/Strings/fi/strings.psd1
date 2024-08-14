@@ -34,8 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Asentaa. Odota..."
+        MessageInstallDetail = ""
         MessageRepair = "Korjaus käynnissä. Odota..."
+        MessageRepairDetail = ""
         MessageUninstall = "Ohjelmistoa poistetaan. Odota..."
+        MessageUninstallDetail = ""
     }
     RestartPrompt = @{
         ButtonRestartLater = "Käynnistä uudelleen myöhemmin"
