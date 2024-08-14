@@ -1,4 +1,10 @@
-﻿function Show-ADTInstallationPromptClassic
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Show-ADTInstallationPromptClassic
 {
     <#
 

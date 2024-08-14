@@ -1,4 +1,10 @@
-﻿function Import-ADTLocalizedStrings
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Import-ADTLocalizedStrings
 {
     [CmdletBinding()]
     param

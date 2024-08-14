@@ -1,4 +1,10 @@
-﻿function Initialize-ADTDialogFunction
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Initialize-ADTDialogFunction
 {
     [CmdletBinding()]
     param

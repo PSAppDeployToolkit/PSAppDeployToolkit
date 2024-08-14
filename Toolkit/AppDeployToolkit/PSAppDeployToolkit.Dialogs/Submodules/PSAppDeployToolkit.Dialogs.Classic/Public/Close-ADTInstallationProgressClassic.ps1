@@ -1,4 +1,10 @@
-﻿function Close-ADTInstallationProgressClassic
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Close-ADTInstallationProgressClassic
 {
     <#
 

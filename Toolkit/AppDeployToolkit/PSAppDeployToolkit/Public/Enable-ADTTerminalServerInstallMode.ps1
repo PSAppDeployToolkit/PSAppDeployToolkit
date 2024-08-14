@@ -1,4 +1,10 @@
-﻿function Enable-ADTTerminalServerInstallMode
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Enable-ADTTerminalServerInstallMode
 {
     <#
 

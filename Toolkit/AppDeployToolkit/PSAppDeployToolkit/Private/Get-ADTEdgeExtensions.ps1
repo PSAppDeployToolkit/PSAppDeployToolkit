@@ -1,4 +1,10 @@
-﻿function Get-ADTEdgeExtensions
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Get-ADTEdgeExtensions
 {
     # Check if the ExtensionSettings registry key exists if not create it.
     if (!(Test-ADTRegistryValue -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Value ExtensionSettings))

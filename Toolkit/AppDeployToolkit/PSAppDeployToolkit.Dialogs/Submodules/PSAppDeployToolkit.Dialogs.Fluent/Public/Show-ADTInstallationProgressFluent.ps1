@@ -1,4 +1,10 @@
-﻿function Show-ADTInstallationProgressFluent
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Show-ADTInstallationProgressFluent
 {
     <#
 

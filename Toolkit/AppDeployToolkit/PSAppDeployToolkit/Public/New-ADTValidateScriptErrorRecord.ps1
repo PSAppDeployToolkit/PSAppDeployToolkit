@@ -1,4 +1,10 @@
-﻿function New-ADTValidateScriptErrorRecord
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function New-ADTValidateScriptErrorRecord
 {
     [CmdletBinding()]
     param

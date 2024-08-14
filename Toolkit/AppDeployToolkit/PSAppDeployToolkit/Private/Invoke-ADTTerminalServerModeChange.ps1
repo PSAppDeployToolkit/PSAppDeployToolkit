@@ -1,4 +1,10 @@
-﻿function Invoke-ADTTerminalServerModeChange
+﻿#---------------------------------------------------------------------------
+#
+# 
+#
+#---------------------------------------------------------------------------
+
+function Invoke-ADTTerminalServerModeChange
 {
     <#
 
