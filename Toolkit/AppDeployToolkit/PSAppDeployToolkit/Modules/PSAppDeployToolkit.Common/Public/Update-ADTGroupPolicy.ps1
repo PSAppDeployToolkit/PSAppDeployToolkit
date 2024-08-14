@@ -23,15 +23,14 @@
     #>
 
     [CmdletBinding()]
-    Param (
+    param (
     )
 
     begin {
         # Make this function continue on error.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         if (!$PSBoundParameters.ContainsKey('ErrorAction'))
         {
-            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+            $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Continue
         }
         Write-ADTDebugHeader
     }
@@ -40,14 +39,18 @@
         foreach ($target in ('Computer', 'User'))
         {
             Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
-            [System.Void](cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force")
-            if ($LASTEXITCODE -and ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$'))
+            $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
+            if ($LASTEXITCODE)
             {
                 Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
-                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
-                {
-                    throw $msg
+                $naerParams = @{
+                    Exception = [System.ApplicationException]::new($msg)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'GpUpdateFailure'
+                    TargetObject = $gpUpdateResult
+                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
+                $PSCmdlet.WriteError((New-ADTErrorRecord @naerParams))
             }
         }
     }

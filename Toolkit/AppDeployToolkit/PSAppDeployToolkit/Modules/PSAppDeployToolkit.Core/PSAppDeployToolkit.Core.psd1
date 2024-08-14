@@ -82,6 +82,8 @@ FunctionsToExport = @(
     'Get-ADTStrings'
     'Import-ADTModuleState'
     'Initialize-ADTModule'
+    'New-ADTErrorRecord'
+    'New-ADTValidateScriptErrorRecord'
     'Open-ADTSession'
     'Remove-ADTContentFromCache'
     'Remove-ADTInvalidFileNameChars'

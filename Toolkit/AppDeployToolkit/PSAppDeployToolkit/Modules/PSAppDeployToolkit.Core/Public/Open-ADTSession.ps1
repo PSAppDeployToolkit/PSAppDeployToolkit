@@ -1,5 +1,6 @@
 ﻿function Open-ADTSession
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = "Caller's CmdletBinding Object")]
         [ValidateNotNullOrEmpty()]
@@ -105,7 +106,14 @@
     # Clamp the session count at one, for now.
     if (($adtData = Get-ADT).Sessions.Count -and (($adtData.Sessions.CompatibilityMode -contains $true) -or (Test-ADTNonNativeCaller)))
     {
-        throw [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted for non-native invocations.")
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("Only one PSAppDeployToolkit session is permitted for non-native invocations.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            ErrorId = 'ADTSessionMaximumExceeded'
+            TargetObject = $PSBoundParameters
+            RecommendedAction = "Please use the new PSAppDeployToolkit frontend, which uses native mode to support multiple concurrent sessions."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
     # Instantiate a new ADT session and initialise it.
@@ -117,7 +125,7 @@
     catch
     {
         [System.Void]$adtData.Sessions.Remove($adtData.Sessions[-1])
-        throw
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     # Return the most recent session if passing through.

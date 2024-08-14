@@ -22,6 +22,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Install', 'Execute')]
@@ -30,24 +31,27 @@
 
     begin {
         # Make this function continue on error.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         if (!$PSBoundParameters.ContainsKey('ErrorAction'))
         {
-            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+            $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Continue
         }
         Write-ADTDebugHeader
     }
 
     process {
         Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
-        $terminalServerResult = & "$env:WinDir\System32\change.exe" User /$Mode
-        if (!$LASTEXITCODE.Equals(1) -and ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$'))
+        $terminalServerResult = & "$env:WinDir\System32\change.exe" User /$Mode 2>&1
+        if (!$LASTEXITCODE.Equals(1))
         {
             Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
-            if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
-            {
-                throw $msg
+            $naerParams = @{
+                Exception = [System.ApplicationException]::new($msg)
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'RdsChangeUtilityFailure'
+                TargetObject = $terminalServerResult
+                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
             }
+            $PSCmdlet.WriteError((New-ADTErrorRecord @naerParams))
         }
     }
 

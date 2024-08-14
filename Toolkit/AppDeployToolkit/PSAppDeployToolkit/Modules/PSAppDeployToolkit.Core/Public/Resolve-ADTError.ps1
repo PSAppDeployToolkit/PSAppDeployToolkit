@@ -51,6 +51,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyCollection()]
@@ -87,6 +88,7 @@
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
         {
+            [CmdletBinding()]
             param (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
                 [ValidateNotNullOrEmpty()]

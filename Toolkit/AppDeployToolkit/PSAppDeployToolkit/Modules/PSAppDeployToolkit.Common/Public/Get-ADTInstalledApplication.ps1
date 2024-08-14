@@ -54,16 +54,26 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
+        [Parameter(Mandatory = $false)]
         [ValidatePattern('^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')]
         [System.String[]]$ProductCode,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Exact,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WildCard,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RegEx,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
 

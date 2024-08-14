@@ -58,30 +58,42 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WindowTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WindowSubtitle,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessage = (Get-ADTStrings).Progress."Message$((Get-ADTSession).GetPropertyValue('DeploymentType'))",
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessageDetail = (Get-ADTStrings).Progress."Message$((Get-ADTSession).GetPropertyValue('DeploymentType'))Detail",
 
+        [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [System.String]$WindowLocation = 'Default',
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Quiet,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
     begin {
         function Update-WindowLocation
         {
+            [CmdletBinding()]
             param (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]

@@ -45,12 +45,19 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 

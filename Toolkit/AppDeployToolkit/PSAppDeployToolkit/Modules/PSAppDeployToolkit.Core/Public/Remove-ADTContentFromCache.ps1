@@ -19,7 +19,9 @@
 
     #>
 
+    [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
     )
@@ -47,7 +49,7 @@
         catch
         {
             Write-ADTLogEntry -Message "Failed to remove cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-            throw
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 

@@ -42,6 +42,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateLength(1, 260)]

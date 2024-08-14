@@ -1,5 +1,6 @@
 ﻿function Initialize-ADTModule
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

@@ -30,9 +30,16 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateScript({if ($_.Where({![System.IO.File]::Exists($_) -or (('.exe', '.dll', '.ocx', '.drv', '.sys', '.scr', '.efi', '.cpl', '.fon') -notcontains [System.IO.Path]::GetExtension($_))})) {throw "One or more files either does not exist or has an invalid extension."}; $true})]
+        [ValidateScript({
+            if (![System.IO.File]::Exists($_) -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
+            }
+            return !!$_
+        })]
         [System.IO.FileInfo[]]$FilePath
     )
 

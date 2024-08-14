@@ -25,8 +25,16 @@
 
     #>
 
+    [CmdletBinding()]
     param (
-        [ValidateScript({if (!$_.TotalSize) {throw "The specified drive does not exist or has no media loaded."}; $_.TotalSize})]
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+            if (!$_.TotalSize)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive does not exist or has no media loaded.'))
+            }
+            return !!$_.TotalSize
+        })]
         [System.IO.DriveInfo]$Drive = $env:SystemDrive
     )
 

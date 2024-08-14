@@ -25,6 +25,7 @@
 
     #>
 
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -33,11 +34,15 @@
 
     begin {
         # Make this function continue on error.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
         {
-            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+            $PSBoundParameters.ErrorAction
         }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
 
@@ -54,14 +59,9 @@
         }
         catch
         {
-            if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
-            {
-                Write-ADTLogEntry -Message "Failed to create folder [$Path].`n$(Resolve-ADTError)" -Severity 3
-                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
-                {
-                    throw
-                }
-            }
+            Write-ADTLogEntry -Message "Failed to create folder [$Path].`n$(Resolve-ADTError)" -Severity 3
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
 

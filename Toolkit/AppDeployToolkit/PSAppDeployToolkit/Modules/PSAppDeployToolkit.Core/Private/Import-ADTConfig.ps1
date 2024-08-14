@@ -14,7 +14,14 @@
     # Confirm the config version meets our minimum requirements.
     if ($config.File.Version -lt $adtEnv.appDeployMainScriptMinimumConfigVersion)
     {
-        throw [System.Activities.VersionMismatchException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtEnv.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+        $naerParams = @{
+            Exception = [System.Activities.VersionMismatchException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtEnv.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            ErrorId = 'ConfigFileVersionMismatch'
+            TargetObject = $config
+            RecommendedAction = "Please review the supplied configuration file and try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
     # Process the config and expand out variables.
