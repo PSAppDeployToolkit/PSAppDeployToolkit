@@ -44,6 +44,7 @@ Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock
 
 function Write-Log
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = "There is nothing wrong with Write-Host in PowerShell 5.0+ contexts. Lastly, this code block is only executed during an unexpected issue.")]
     [CmdletBinding()]
     param
     (
@@ -197,6 +198,7 @@ function Exit-Script
 
 function Invoke-HKCURegistrySettingsForAllUsers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -210,7 +212,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryChange]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.RegistrySettings = {$UserProfile = $_}, $PSBoundParameters.RegistrySettings
+    $PSBoundParameters.RegistrySettings = {New-Variable -Name UserProfile -Value $_ -Force}, $PSBoundParameters.RegistrySettings
     try
     {
         Invoke-ADTAllUsersRegistryChange @PSBoundParameters
@@ -237,6 +239,10 @@ function Get-HardwarePlatform
         [System.Boolean]$ContinueOnError = $true
     )
 
+    if (!$ContinueOnError)
+    {
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+    }
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2
     return $envHardwareType
 }
@@ -289,7 +295,9 @@ function Get-FreeDiskSpace
 
 function Remove-InvalidFileNameChars
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -300,13 +308,22 @@ function Remove-InvalidFileNameChars
     begin
     {
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2
+        $names = [System.Collections.Specialized.StringCollection]::new()
+    }
+
+    process
+    {
+        if (![System.String]::IsNullOrWhiteSpace($Name))
+        {
+            $null = $names.Add($Name)
+        }
     }
 
     end
     {
         try
         {
-            $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
+            $names | Remove-ADTInvalidFileNameChars
         }
         catch
         {
@@ -403,6 +420,7 @@ function Get-FileVersion
 
 function Get-UserProfiles
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -447,7 +465,8 @@ function Get-UserProfiles
 
 function Update-Desktop
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [ValidateNotNullOrEmpty()]
@@ -480,6 +499,8 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 
 function Update-SessionEnvironmentVariables
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -515,7 +536,8 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironment
 
 function Remove-File
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -1023,7 +1045,8 @@ function Copy-ContentToCache
 
 function Remove-ContentFromCache
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
@@ -1146,7 +1169,8 @@ function Get-IniValue
 
 function Set-IniValue
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -1205,7 +1229,8 @@ function Set-IniValue
 
 function New-Folder
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -1266,7 +1291,8 @@ function Test-PowerPoint
 
 function Update-GroupPolicy
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -1342,6 +1368,7 @@ function Get-UniversalDate
 
 function Test-ServiceExists
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -1358,7 +1385,7 @@ function Test-ServiceExists
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SwitchParameter]$ContinueOnError = $true
+        [System.Boolean]$ContinueOnError = $true
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity 2
@@ -1469,6 +1496,7 @@ function Enable-TerminalServerInstallMode
 
 function Configure-EdgeExtension
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -1517,6 +1545,7 @@ function Configure-EdgeExtension
 
 function Resolve-Error
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidDefaultValueSwitchParameter', '', Justification = "This compatibility layer has several switches defaulting to True out of necessity for supporting PSAppDeployToolit 3.x Deploy-Application.ps1 scripts.")]
     [CmdletBinding()]
     param
     (
@@ -1541,42 +1570,54 @@ function Resolve-Error
         [System.Management.Automation.SwitchParameter]$GetErrorInnerException = $true
     )
 
-    # Announce overall deprecation and translate bad switches before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
-    $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
-        $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
-        $PSBoundParameters.Remove("Get$_")
-    })
+    begin
+    {
+        # Announce overall deprecation and translate bad switches before executing.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
+        $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({$PSBoundParameters.ContainsKey($_)}).ForEach({
+            $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
+            $PSBoundParameters.Remove("Get$_")
+        })
 
-    # Remove ErrorRecord from the bound parameters.
-    if ($PSBoundParameters.ContainsKey('ErrorRecord'))
-    {
-        $null = $PSBoundParameters.Remove('ErrorRecord')
+        # Set up collector for piped in ErrorRecord objects.
+        $errRecords = [System.Collections.Generic.List[System.Management.Automation.ErrorRecord]]::new()
     }
 
-    # If function was called without specifying an error record, then choose the latest error that occurred.
-    if (!$ErrorRecord)
+    process
     {
-        $ErrorRecord = if (($errRecord = Get-Variable -Name PSItem -Scope 1 -ValueOnly -ErrorAction Ignore) -and ($errRecord -is [System.Management.Automation.ErrorRecord]))
+        # Process piped input and collect ErrorRecord objects.
+        foreach ($errRecord in ($ErrorRecord | Where-Object {$_ -is [System.Management.Automation.ErrorRecord]}))
         {
-            $errRecord
-        }
-        elseif ($Global:Error.Count)
-        {
-            $($Global:Error[0].Where({$_ -is [System.Management.Automation.ErrorRecord]}, [System.Management.Automation.WhereOperatorSelectionMode]::First, 1))
-        }
-        else
-        {
-            return
+            $errRecords.Add($errRecord)
         }
     }
-    try
+
+    end
     {
-        $ErrorRecord | Resolve-ADTErrorRecord @PSBoundParameters
-    }
-    catch
-    {
-        $PSCmdlet.ThrowTerminatingError($_)
+        # Process the collected ErrorRecord objects.
+        try
+        {
+            # If we've collected no ErrorRecord objects, choose the latest error that occurred.
+            if (!$errRecords.Count)
+            {
+                if (($errRecord = Get-Variable -Name PSItem -Scope 1 -ValueOnly -ErrorAction Ignore) -and ($errRecord -is [System.Management.Automation.ErrorRecord]))
+                {
+                    $errRecord | Resolve-ADTErrorRecord @PSBoundParameters
+                }
+                elseif ($Global:Error.Count)
+                {
+                    $Global:Error | Where-Object {$_ -is [System.Management.Automation.ErrorRecord]} | Select-Object -First 1 | Resolve-ADTErrorRecord @PSBoundParameters
+                }
+            }
+            else
+            {
+                $errRecords | Resolve-ADTErrorRecord @PSBoundParameters
+            }
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1642,7 +1683,8 @@ function Get-ServiceStartMode
 
 function Set-ServiceStartMode
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -1689,6 +1731,7 @@ function Set-ServiceStartMode
 
 function Execute-Process
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -1710,11 +1753,9 @@ function Execute-Process
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
@@ -1790,6 +1831,7 @@ function Execute-Process
 
 function Execute-MSI
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -1816,7 +1858,6 @@ function Execute-MSI
         [System.String]$AddParameters,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$SecureParameters,
 
         [Parameter(Mandatory = $false)]
@@ -1907,6 +1948,7 @@ function Execute-MSI
 
 function Execute-MSP
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2006,14 +2048,21 @@ function Test-RegistryValue
         [System.Management.Automation.SwitchParameter]$Wow6432Node
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
-    try
+    begin
     {
-        Test-ADTRegistryValue @PSBoundParameters
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
     }
-    catch
+
+    process
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        try
+        {
+            $Key | Test-ADTRegistryValue @PSBoundParameters
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2069,6 +2118,7 @@ function Convert-RegistryPath
 
 function Test-MSUpdates
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2137,6 +2187,8 @@ function Test-Battery
 
 function Start-ServiceAndDependencies
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2208,6 +2260,8 @@ function Start-ServiceAndDependencies
 
 function Stop-ServiceAndDependencies
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2279,7 +2333,8 @@ function Stop-ServiceAndDependencies
 
 function Set-RegistryKey
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -2338,7 +2393,8 @@ function Set-RegistryKey
 
 function Remove-RegistryKey
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -2390,6 +2446,8 @@ function Remove-RegistryKey
 
 function Remove-FileFromUserProfiles
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2477,11 +2535,9 @@ function Get-RegistryKey
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$DoNotExpandEnvironmentNames,
 
         [Parameter(Mandatory = $false)]
@@ -2518,6 +2574,7 @@ function Get-RegistryKey
 
 function Install-MSUpdates
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2734,7 +2791,8 @@ function Unregister-DLL
 
 function Remove-Folder
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -2778,7 +2836,8 @@ function Remove-Folder
 
 function Set-ActiveSetup
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
@@ -2809,7 +2868,6 @@ function Set-ActiveSetup
         [System.String]$Locale,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Purge')]
@@ -2858,7 +2916,8 @@ function Set-ActiveSetup
 
 function Set-ItemPermission
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
@@ -2926,7 +2985,8 @@ function Set-ItemPermission
 
 function New-MsiTransform
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -3003,7 +3063,6 @@ function Get-MsiTableProperty
         [System.Int32]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation,
 
         [Parameter(Mandatory = $false)]
@@ -3081,6 +3140,7 @@ function Invoke-SCCMTask
 
 function Install-SCCMSoftwareUpdates
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -3126,7 +3186,8 @@ function Install-SCCMSoftwareUpdates
 
 function Set-MsiProperty
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -3175,6 +3236,11 @@ function Set-MsiProperty
 
 function Send-Keys
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
+    param
+    (
+    )
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2
     try
     {
@@ -3236,7 +3302,8 @@ function Get-Shortcut
 
 function Set-Shortcut
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Default')]
@@ -3287,28 +3354,34 @@ function Set-Shortcut
         [System.Boolean]$ContinueOnError = $true
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
-    if ($PSBoundParameters.ContainsKey('PathHash'))
+    begin
     {
-        $PSBoundParameters.Path = $PSBoundParameters.PathHash
-        $null = $PSBoundParameters.Remove('PathHash')
+        # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+        if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+        {
+            $null = $PSBoundParameters.Remove('ContinueOnError')
+        }
+        if (!$ContinueOnError)
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+        }
     }
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+
+    process
     {
-        $null = $PSBoundParameters.Remove('ContinueOnError')
-    }
-    if (!$ContinueOnError)
-    {
-        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
-    }
-    try
-    {
-        Set-ADTShortcut @PSBoundParameters
-    }
-    catch
-    {
-        $PSCmdlet.ThrowTerminatingError($_)
+        try
+        {
+            if ($PathHash)
+            {
+                $Path = $PathHash.Path
+            }
+            $Path | Set-ADTShortcut @PSBoundParameters
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3321,7 +3394,8 @@ function Set-Shortcut
 
 function New-Shortcut
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -3423,6 +3497,7 @@ Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This parameter is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
         # If this script was invoked by another script
