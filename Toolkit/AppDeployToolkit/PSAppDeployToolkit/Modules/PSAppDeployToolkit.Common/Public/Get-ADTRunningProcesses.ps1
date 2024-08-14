@@ -34,7 +34,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowNull()]
         [PSADT.Types.ProcessObject]$InputObject,
 
         [Parameter(Mandatory = $false)]

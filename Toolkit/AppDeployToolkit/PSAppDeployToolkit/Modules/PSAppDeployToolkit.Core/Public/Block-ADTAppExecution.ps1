@@ -3,7 +3,7 @@
     <#
 
     .SYNOPSIS
-    Block the execution of an application(s)
+    Block the execution of an application(s).
 
     .DESCRIPTION
     This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
@@ -17,7 +17,7 @@
             The text of this message can be customized in the XML configuration file.
 
     .PARAMETER ProcessName
-    Name of the process or processes separated by commas
+    Name of the process or processes separated by commas.
 
     .INPUTS
     None. You cannot pipe objects to this function.
@@ -50,8 +50,8 @@
         {
             $adtEnv = Get-ADTEnvironment
             $adtConfig = Get-ADTConfig
-            $adtModule = Get-ADTModuleInfo
             $adtSession = Get-ADTSession
+            $adtModule = Get-ADTModuleInfo
         }
         catch
         {

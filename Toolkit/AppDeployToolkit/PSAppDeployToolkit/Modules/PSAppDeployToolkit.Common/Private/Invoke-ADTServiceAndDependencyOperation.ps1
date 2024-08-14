@@ -64,85 +64,68 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    begin {
-        # Internal worker function.
-        function Invoke-DependentServiceOperation
+    # Internal worker function.
+    function Invoke-DependentServiceOperation
+    {
+        # Discover all dependent services.
+        if ($SkipDependentServices)
         {
-            # Discover all dependent services.
-            if (!$SkipDependentServices)
+            return
+        }
+        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
+        if ($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | Where-Object {$_.Status -ne $status})
+        {
+            foreach ($dependent in $dependentServices)
             {
-                Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-                if ($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | Where-Object {$_.Status -ne $status})
+                Write-ADTLogEntry -Message "$(if ($Operation -eq 'Start') {'Starting'} else {'Stopping'}) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
+                try
                 {
-                    foreach ($dependent in $dependentServices)
-                    {
-                        Write-ADTLogEntry -Message "$(if ($Operation -eq 'Start') {'Starting'} else {'Stopping'}) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
-                        try
-                        {
-                            $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
-                        }
-                        catch
-                        {
-                            Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
-                        }
-                    }
+                    $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
                 }
-                else
+                catch
                 {
-                    Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]."
+                    Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
                 }
             }
         }
-
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-    }
-
-    process {
-        try
+        else
         {
-            # Wait up to 60 seconds if service is in a pending state.
-            if ([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped'}[$Service.Status])
-            {
-                Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
-                $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
-                $Service.Refresh()
-            }
-
-            # Discover if the service is currently running.
-            Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]."
-            if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
-            {
-                # Process all dependent services.
-                Invoke-DependentServiceOperation
-
-                # Stop the parent service.
-                Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-                $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
-            }
-            elseif (($Operation -eq 'Start') -and ($Service.Status -ne 'Running'))
-            {
-                # Start the parent service.
-                Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-                $Service = $Service | Start-Service -PassThru -WarningAction Ignore
-
-                # Process all dependent services.
-                Invoke-DependentServiceOperation
-            }
-
-            # Return the service object if option selected.
-            if ($PassThru)
-            {
-                return $Service
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to $($Operation.ToLower()) the service [$Name]."
+            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]."
         }
     }
 
-    end {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+    # Wait up to 60 seconds if service is in a pending state.
+    if ([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped'}[$Service.Status])
+    {
+        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
+        $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
+        $Service.Refresh()
+    }
+
+    # Discover if the service is currently running.
+    Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]."
+    if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
+    {
+        # Process all dependent services.
+        Invoke-DependentServiceOperation
+
+        # Stop the parent service.
+        Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
+        $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
+    }
+    elseif (($Operation -eq 'Start') -and ($Service.Status -ne 'Running'))
+    {
+        # Start the parent service.
+        Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
+        $Service = $Service | Start-Service -PassThru -WarningAction Ignore
+
+        # Process all dependent services.
+        Invoke-DependentServiceOperation
+    }
+
+    # Return the service object if option selected.
+    if ($PassThru)
+    {
+        return $Service
     }
 }

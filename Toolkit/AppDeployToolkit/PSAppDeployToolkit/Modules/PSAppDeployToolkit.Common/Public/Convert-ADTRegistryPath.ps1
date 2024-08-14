@@ -97,6 +97,7 @@
             elseif ($Logging)
             {
                 Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
+                return
             }
         }
 
@@ -111,15 +112,13 @@
                 RecommendedAction = "Please confirm the supplied value is correct and try again."
             }
             New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+            return
         }
-        else
+        if ($Logging)
         {
-            if ($Logging)
-            {
-                Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
-            }
-            return $Key
+            Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
         }
+        return $Key
     }
 
     end {

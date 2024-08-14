@@ -35,7 +35,7 @@
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.Int32]]$DeferTimesRemaining,
+        [System.Int32]$DeferTimesRemaining,
 
         [Parameter(Mandatory = $false)]
         [AllowEmptyString()]
@@ -44,11 +44,18 @@
 
     begin {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $regKeyDeferHistory = (Get-ADTSession).RegKeyDeferHistory
+        try
+        {
+            $regKeyDeferHistory = (Get-ADTSession).RegKeyDeferHistory
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {
-        if ($null -ne $DeferTimesRemaining)
+        if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
         {
             Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
             Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore

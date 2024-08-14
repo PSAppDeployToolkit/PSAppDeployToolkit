@@ -102,7 +102,7 @@
                 TargetObject = $Parameters
                 TargetName = '[ADTSession]'
                 TargetType = 'Init()'
-                RecommendedAction = "Please review the supplied paramters to this object's constructor and try again."
+                RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
             }
             throw (New-ADTErrorRecord @naerParams)
         }
@@ -117,7 +117,7 @@
                 TargetObject = $Parameters
                 TargetName = '[ADTSession]'
                 TargetType = 'Init()'
-                RecommendedAction = "Please review the supplied paramters to this object's constructor and try again."
+                RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
             }
             throw (New-ADTErrorRecord @naerParams)
         }
@@ -210,8 +210,8 @@
             }
 
             # Read the MSI and get the installation details.
-            $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}; if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
-            $msiProps = Get-ADTMsiTableProperty @gmtpParams
+            $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'}; if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
+            $msiProps = Get-ADTMsiTableProperty @gmtpParams -ErrorAction Stop
 
             # Generate list of MSI executables for testing later on.
             if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})

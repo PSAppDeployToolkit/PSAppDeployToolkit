@@ -1408,6 +1408,8 @@ function Get-ServiceStartMode
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
@@ -1422,7 +1424,7 @@ function Get-ServiceStartMode
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTServiceStartMode
+# Wrapper around Set-ADTServiceStartMode
 #
 #---------------------------------------------------------------------------
 
@@ -1445,6 +1447,8 @@ function Set-ServiceStartMode
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         [System.Void]$PSBoundParameters.Remove('ContinueOnError')
@@ -1469,12 +1473,12 @@ function Execute-Process
     param (
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Parameters,
 
         [Parameter(Mandatory = $false)]
@@ -1485,11 +1489,11 @@ function Execute-Process
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
@@ -1502,11 +1506,11 @@ function Execute-Process
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
@@ -1514,15 +1518,15 @@ function Execute-Process
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$ExitOnProcessFailure = $true,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$UseShellExecute,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError
     )
 
@@ -1675,7 +1679,7 @@ function Execute-MSP
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters
     )
 
@@ -1735,7 +1739,7 @@ function Test-RegistryValue
         $Value,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
@@ -1769,7 +1773,7 @@ function Convert-RegistryPath
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$DisableFunctionLogging = $true
     )
 
@@ -2552,19 +2556,19 @@ function Get-MsiTableProperty
         [System.String]$Table,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Int32]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Int32]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
 

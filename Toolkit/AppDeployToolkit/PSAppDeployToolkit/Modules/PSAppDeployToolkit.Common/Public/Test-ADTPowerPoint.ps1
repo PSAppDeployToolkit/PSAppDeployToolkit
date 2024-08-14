@@ -32,9 +32,9 @@
     )
 
     begin {
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $procName = 'POWERPNT'
         $presenting = 'Unknown'
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process {
@@ -51,44 +51,36 @@
             return
         }
 
-        # PowerPoint's running, perform our checks and balances.
-        try
+        # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
+        # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
+        if ($PowerPointWindow = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')} | Select-Object -First 1)
         {
-            # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
-            # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show"
-            if ($PowerPointWindow = Get-ADTWindowTitle -GetAllWindowTitles | Where-Object {$_.WindowTitle -match '^PowerPoint Slide Show' -or $_.WindowTitle -match '^PowerPoint-'} | Where-Object {$_.ParentProcess -eq $procName} | Select-Object -First 1)
-            {
-                Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
+            Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
+            return ($presenting = $true)
+        }
+        Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
+        Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$(($PowerPointProcessIDs = $PowerPointProcess.Id) -join ', ')]."
+
+        # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
+        # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
+        Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()))]."
+        switch ($UserNotificationState)
+        {
+            PresentationMode {
+                Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                 return ($presenting = $true)
             }
-            Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
-            Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$(($PowerPointProcessIDs = $PowerPointProcess.Id) -join ', ')]."
-
-            # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
-            # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
-            Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()))]."
-            switch ($UserNotificationState)
-            {
-                PresentationMode {
-                    Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
+            FullScreenOrPresentationModeOrLoginScreen {
+                if ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))
+                {
+                    Write-ADTLogEntry -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
                     return ($presenting = $true)
                 }
-                FullScreenOrPresentationModeOrLoginScreen {
-                    if ($PowerPointProcessIDs -contains [PSADT.UIAutomation]::GetWindowThreadProcessID([PSADT.UIAutomation]::GetForeGroundWindow()))
-                    {
-                        Write-ADTLogEntry -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
-                        return ($presenting = $true)
-                    }
-                    Write-ADTLogEntry -Message 'Unable to find a fullscreen foreground window that matches a PowerPoint process ID.'
-                    break
-                }
+                Write-ADTLogEntry -Message 'Unable to find a fullscreen foreground window that matches a PowerPoint process ID.'
+                break
             }
-            return ($presenting = $false)
         }
-        catch
-        {
-            Write-ADTLogEntry -Message "Failed check to see if PowerPoint is running in fullscreen slideshow mode.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
-        }
+        return ($presenting = $false)
     }
 
     end {

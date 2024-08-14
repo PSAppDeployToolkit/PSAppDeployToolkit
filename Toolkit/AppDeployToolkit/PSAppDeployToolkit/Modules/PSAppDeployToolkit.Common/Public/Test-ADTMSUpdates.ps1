@@ -40,7 +40,7 @@
     process {
         try
         {
-            # Attempt to get the update via Get-HotFix first as it's cheaper.
+            # Attempt to get the update via Get-HotFix first as it's cheap.
             Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
             if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
             {
@@ -54,7 +54,8 @@
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via COM object.'
+                    Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
+                    return
                 }
             }
 

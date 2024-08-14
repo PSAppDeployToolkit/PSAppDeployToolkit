@@ -31,8 +31,14 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [ValidateScript({
+            if (!$_.Name)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+            }
+            return !!$_
+        })]
+        [System.ServiceProcess.ServiceController]$Service,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -45,23 +51,16 @@
     }
 
     process {
-        try
+        # Get the start mode and adjust it if the automatic type is delayed.
+        Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
+        if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
         {
-            # Get the start mode and adjust it if the automatic type is delayed.
-            Write-ADTLogEntry -Message "Getting the service [$Name] startup mode."
-            if ((($serviceStartMode = (Get-Service @PSBoundParameters).StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
-            {
-                $serviceStartMode = 'Automatic (Delayed Start)'
-            }
+            $serviceStartMode = 'Automatic (Delayed Start)'
+        }
 
-            # Return startup type to the caller.
-            Write-ADTLogEntry -Message "Service [$Name] startup mode is set to [$serviceStartMode]."
-            return $serviceStartMode
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Prefix "Failed to get the service [$Name] startup mode."
-        }
+        # Return startup type to the caller.
+        Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+        return $serviceStartMode
     }
 
     end {

@@ -61,7 +61,7 @@
 
     process {
         Write-ADTLogEntry -Message 'Getting session information for all logged on users.'
-        return [PSADT.QueryUser]::GetUserSessionInfo("$env:ComputerName")
+        return [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName)
     }
 
     end {

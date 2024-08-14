@@ -52,7 +52,7 @@
         [System.Object]$Value,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]

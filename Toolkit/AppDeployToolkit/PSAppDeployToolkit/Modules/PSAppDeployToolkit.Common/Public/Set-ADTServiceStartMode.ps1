@@ -31,8 +31,14 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [ValidateScript({
+            if (!$_.Name)
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+            }
+            return !!$_
+        })]
+        [System.ServiceProcess.ServiceController]$Service,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
@@ -40,6 +46,9 @@
     )
 
     begin {
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
         # Re-write StartMode to suit sc.exe.
         $StartMode = switch ($StartMode)
         {
@@ -60,15 +69,12 @@
                 break
             }
         }
-
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process {
         # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-        Write-ADTLogEntry -Message "$(($msg = "Setting service [$Name] startup mode to [$StartMode]"))."
-        $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Name start= $ScExeStartMode 2>&1
+        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
+        $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $ScExeStartMode 2>&1
         if ($LASTEXITCODE)
         {
             Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $scResult") -Severity 3
@@ -79,11 +85,11 @@
                 TargetObject = $scResult
                 RecommendedAction = "Please review the result in this error's TargetObject property and try again."
             }
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord (New-ADTErrorRecord @naerParams)
+            New-ADTErrorRecord @naerParams | Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         }
         else
         {
-            Write-ADTLogEntry -Message "Successfully set service [$Name] startup mode to [$StartMode]."
+            Write-ADTLogEntry -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
         }
     }
 

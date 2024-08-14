@@ -48,7 +48,7 @@
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters
     )
 

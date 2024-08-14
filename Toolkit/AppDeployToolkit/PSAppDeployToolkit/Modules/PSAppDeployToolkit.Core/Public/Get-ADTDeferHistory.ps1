@@ -37,11 +37,19 @@
 
     begin {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process {
         Write-ADTLogEntry -Message 'Getting deferral history...'
-        Get-ADTRegistryKey -Key (Get-ADTSession).RegKeyDeferHistory
+        Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
     }
 
     end {

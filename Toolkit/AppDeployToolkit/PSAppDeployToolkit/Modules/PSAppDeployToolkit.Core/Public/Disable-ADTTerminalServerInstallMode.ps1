@@ -26,5 +26,23 @@
     param (
     )
 
-    [System.Void](Invoke-TerminalServerModeChange @PSBoundParameters -Mode Execute)
+    begin {
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+    }
+
+    process {
+        try
+        {
+            Invoke-ADTTerminalServerModeChange -Mode Execute
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+    }
+
+    end {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+    }
 }
