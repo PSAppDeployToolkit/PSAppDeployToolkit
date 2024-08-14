@@ -235,10 +235,10 @@ https://psappdeploytoolkit.com
             Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
 
             If ($IncludeUpdatesAndHotfixes) {
-                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
+                [PSObject]$productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
             }
             Else {
-                [PSObject]$productCodeNameVersion = Get-InstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
+                [PSObject]$productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $path | Select-Object -Property 'Publisher', 'DisplayName', 'DisplayVersion' -First 1 -ErrorAction 'Ignore'
             }
 
             #  Build the log file name
@@ -424,10 +424,10 @@ https://psappdeploytoolkit.com
         ## Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
         [Boolean]$IsMsiInstalled = If ($MSIProductCode -and -not $SkipMSIAlreadyInstalledCheck) {
             If ($IncludeUpdatesAndHotfixes) {
-                !!(Get-InstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes)
+                !!(Get-ADTInstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes)
             }
             Else {
-                !!(Get-InstalledApplication -ProductCode $MSIProductCode)
+                !!(Get-ADTInstalledApplication -ProductCode $MSIProductCode)
             }
         }
         Else {
@@ -588,7 +588,7 @@ https://psappdeploytoolkit.com
         [Hashtable]$SummaryInfoProperty = @{}
         $AllTargetedProductCodes = (Get-ObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(';')
         ForEach ($FormattedProductCode in $AllTargetedProductCodes) {
-            [PSObject]$MSIInstalled = Get-InstalledApplication -ProductCode $FormattedProductCode
+            [PSObject]$MSIInstalled = Get-ADTInstalledApplication -ProductCode $FormattedProductCode
             If ($MSIInstalled) {
                 [Boolean]$IsMSPNeeded = $true
             }
@@ -659,7 +659,7 @@ Adds to the default parameters specified in the XML configuration file. Uninstal
 
 .PARAMETER FilterApplication
 
-Two-dimensional array that contains one or more (property, value, match-type) sets that should be used to filter the list of results returned by Get-InstalledApplication to only those that should be uninstalled.
+Two-dimensional array that contains one or more (property, value, match-type) sets that should be used to filter the list of results returned by Get-ADTInstalledApplication to only those that should be uninstalled.
 Properties that can be filtered upon: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
 
 .PARAMETER ExcludeFromUninstall
@@ -804,7 +804,7 @@ https://psappdeploytoolkit.com
         Write-DebugHeader
     }
     Process {
-        ## Build the hashtable with the options that will be passed to Get-InstalledApplication using splatting
+        ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
         [Hashtable]$GetInstalledApplicationSplat = @{ Name = $name }
         If ($Exact) {
             $GetInstalledApplicationSplat.Add( 'Exact', $Exact)
@@ -816,11 +816,11 @@ https://psappdeploytoolkit.com
             $GetInstalledApplicationSplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
         }
 
-        [PSObject[]]$installedApplications = Get-InstalledApplication @GetInstalledApplicationSplat
+        [PSObject[]]$installedApplications = Get-ADTInstalledApplication @GetInstalledApplicationSplat
 
         Write-ADTLogEntry -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]."
 
-        ## Filter the results from Get-InstalledApplication
+        ## Filter the results from Get-ADTInstalledApplication
         [Collections.ArrayList]$removeMSIApplications = New-Object -TypeName 'System.Collections.ArrayList'
         If (($null -ne $installedApplications) -and ($installedApplications.Count)) {
             ForEach ($installedApplication in $installedApplications) {
@@ -829,7 +829,7 @@ https://psappdeploytoolkit.com
                     Continue
                 }
 
-                #  Filter the results from Get-InstalledApplication to only those that should be uninstalled
+                #  Filter the results from Get-ADTInstalledApplication to only those that should be uninstalled
                 [Boolean]$addAppToRemoveList = $true
                 If (($null -ne $FilterApplication) -and ($FilterApplication.Count)) {
                     Write-ADTLogEntry -Message 'Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication].'
@@ -877,7 +877,7 @@ https://psappdeploytoolkit.com
                     }
                 }
 
-                #  Filter the results from Get-InstalledApplication to remove those that should never be uninstalled
+                #  Filter the results from Get-ADTInstalledApplication to remove those that should never be uninstalled
                 If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count)) {
                     ForEach ($Exclude in $ExcludeFromUninstall) {
                         If ($Exclude[2] -eq 'RegEx') {

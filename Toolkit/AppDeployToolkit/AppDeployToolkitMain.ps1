@@ -314,3 +314,29 @@ function Remove-InvalidFileNameChars
         $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTInstalledApplication
+#
+#---------------------------------------------------------------------------
+
+function Get-InstalledApplication
+{
+    param (
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Name,
+
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProductCode,
+
+        [System.Management.Automation.SwitchParameter]$Exact,
+        [System.Management.Automation.SwitchParameter]$WildCard,
+        [System.Management.Automation.SwitchParameter]$RegEx,
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Get-ADTInstalledApplication] instead." -Severity 2
+    Get-ADTInstalledApplication @PSBoundParameters
+}
