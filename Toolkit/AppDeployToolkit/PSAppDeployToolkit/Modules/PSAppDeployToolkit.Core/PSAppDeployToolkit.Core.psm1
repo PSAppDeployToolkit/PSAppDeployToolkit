@@ -14,7 +14,7 @@ Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Modul
     'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
-        'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
+        'System.Net.NameResolution', 'System.Collections', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
     }
 )
 

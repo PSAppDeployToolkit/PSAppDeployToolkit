@@ -68,7 +68,7 @@
         {
             try
             {
-                return [PSADT.QueryUser]::GetUserSessionInfo([System.Environment]::MachineName)
+                return [PSADT.QueryUser]::GetUserSessionInfo()
             }
             catch
             {

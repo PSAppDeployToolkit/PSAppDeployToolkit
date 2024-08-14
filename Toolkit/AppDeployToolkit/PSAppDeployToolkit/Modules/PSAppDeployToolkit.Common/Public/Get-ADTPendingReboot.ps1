@@ -64,6 +64,7 @@
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
+        $HostName = [System.Net.Dns]::GetHostName()
     }
 
     process
@@ -73,7 +74,7 @@
             try
             {
                 # Get the date/time that the system last booted up.
-                Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$([System.Environment]::MachineName)]."
+                Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$HostName]."
                 $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Math]::Abs([System.Environment]::TickCount))
 
                 # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
@@ -115,7 +116,7 @@
 
                 # Create a custom object containing pending reboot information for the system.
                 [PSADT.Types.RebootInfo]$PendingRebootInfo = @{
-                    ComputerName                 = [System.Environment]::MachineName
+                    ComputerName                 = $HostName
                     LastBootUpTime               = $LastBootUpTime
                     IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending
                     IsCBServicingRebootPending   = $IsCBServicingRebootPending
@@ -126,7 +127,7 @@
                     PendingFileRenameOperations  = $PendingFileRenameOperations
                     ErrorMsg                     = $PendRebootErrorMsg
                 }
-                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$([System.Environment]::MachineName)]:`n$($PendingRebootInfo | Format-List | Out-String)"
+                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String)"
                 return $PendingRebootInfo
             }
             catch

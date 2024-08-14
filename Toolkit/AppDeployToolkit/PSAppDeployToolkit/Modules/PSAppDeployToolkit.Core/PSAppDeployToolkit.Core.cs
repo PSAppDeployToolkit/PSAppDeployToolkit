@@ -2,6 +2,7 @@
 // Version Number:3.91.0
 
 using System;
+using System.Net;
 using System.Text;
 using System.Collections;
 using System.ComponentModel;
@@ -702,9 +703,9 @@ namespace PSADT
             bool _IsUserSession = false;
             int currentSessionID = 0;
             string _NTAccount = String.Empty;
-            if (ServerName == "localhost" || ServerName == String.Empty)
+            if (ServerName.Length.Equals(0) || ServerName == "localhost")
             {
-                ServerName = Environment.MachineName;
+                ServerName = Dns.GetHostName();
             }
             if (ProcessIdToSessionId(GetCurrentProcessId(), ref currentSessionID) == false)
             {
@@ -877,11 +878,16 @@ namespace PSADT
             return data;
         }
 
+        public static TerminalSessionInfo GetSessionInfo(int SessionId)
+        {
+            return GetSessionInfo(String.Empty, SessionId);
+        }
+
         public static TerminalSessionInfo[] GetUserSessionInfo(string ServerName)
         {
-            if (ServerName == "localhost" || ServerName == String.Empty)
+            if (ServerName.Length.Equals(0) || ServerName == "localhost")
             {
-                ServerName = Environment.MachineName;
+                ServerName = Dns.GetHostName();
             }
 
             // Find and get detailed information for all user sessions
@@ -933,6 +939,11 @@ namespace PSADT
             }
 
             return userSessions;
+        }
+
+        public static TerminalSessionInfo[] GetUserSessionInfo()
+        {
+            return GetUserSessionInfo(String.Empty);
         }
     }
 
