@@ -1,6 +1,6 @@
 ﻿#---------------------------------------------------------------------------
 #
-# 
+#
 #
 #---------------------------------------------------------------------------
 
@@ -128,7 +128,7 @@ function Show-ADTWelcomePromptClassic
         # Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone.
         if ($DeferDeadline)
         {
-            $DeferDeadline = (Get-Date -Date ($DeferDeadline -replace 'Z')).ToString()                
+            $DeferDeadline = (Get-Date -Date ($DeferDeadline -replace 'Z')).ToString()
         }
     }
 
@@ -405,7 +405,7 @@ function Show-ADTWelcomePromptClassic
         $labelCustomMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelCustomMessage.Text = $adtStrings.WelcomePrompt.CustomMessage
         $labelCustomMessage.Name = 'LabelCustomMessage'
-        $labelCustomMessage.TabStop = $false        
+        $labelCustomMessage.TabStop = $false
         $labelCustomMessage.AutoSize = $true
         $flowLayoutPanel.Controls.Add($labelCustomMessage)
     }
