@@ -1,7 +1,8 @@
 ﻿function Open-ADTSession
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, HelpMessage = "Caller's SessionState")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SessionState]$SessionState,
@@ -104,13 +105,15 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    begin {
+    begin
+    {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtData = Get-ADTModuleData
     }
 
-    process {
+    process
+    {
         # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
         if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
         {
@@ -148,7 +151,8 @@
         }
     }
 
-    end {
+    end
+    {
         # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

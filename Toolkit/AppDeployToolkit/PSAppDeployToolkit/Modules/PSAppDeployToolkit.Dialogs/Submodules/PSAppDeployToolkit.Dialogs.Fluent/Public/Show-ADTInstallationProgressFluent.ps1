@@ -59,7 +59,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WindowTitle = (Get-ADTSession).GetPropertyValue('InstallTitle'),
@@ -102,7 +103,8 @@
     function Update-WindowLocation
     {
         [CmdletBinding()]
-        param (
+        param
+        (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
             [System.Windows.Window]$Window

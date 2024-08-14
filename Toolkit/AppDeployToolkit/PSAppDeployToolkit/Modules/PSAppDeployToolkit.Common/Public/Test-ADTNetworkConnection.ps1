@@ -23,14 +23,17 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
         if (Get-NetAdapter -Physical | Where-Object {$_.Status.Equals('Up')})
         {
@@ -41,7 +44,8 @@
         return $false
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

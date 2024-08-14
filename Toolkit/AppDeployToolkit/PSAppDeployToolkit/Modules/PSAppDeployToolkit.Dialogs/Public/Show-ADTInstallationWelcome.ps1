@@ -124,7 +124,8 @@
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{Name = "winword"; Description = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
@@ -188,7 +189,8 @@
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -202,7 +204,8 @@
         }
     }
 
-    process {
+    process
+    {
         # If running in NonInteractive mode, force the processes to close silently.
         if ($adtSession.IsNonInteractive())
         {
@@ -542,7 +545,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

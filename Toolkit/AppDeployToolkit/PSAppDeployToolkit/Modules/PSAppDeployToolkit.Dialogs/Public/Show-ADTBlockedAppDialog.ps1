@@ -1,10 +1,12 @@
 ﻿function Show-ADTBlockedAppDialog
 {
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -16,7 +18,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Return early if someone happens to call this in a non-async mode.
         if (!$adtSession.GetPropertyValue('InstallPhase').Equals('Asynchronous'))
         {
@@ -42,7 +45,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -90,7 +90,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
         [ValidateNotNullOrEmpty()]
@@ -144,7 +145,8 @@
         [System.Management.Automation.SwitchParameter]$UseShellExecute
     )
 
-    begin {
+    begin
+    {
         # Initalise function and get required objects.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
@@ -166,7 +168,8 @@
         $returnCode = $null
     }
 
-    process {
+    process
+    {
         try
         {
             # Validate and find the fully qualified path for the $Path variable.
@@ -240,7 +243,8 @@
                 }
             }
 
-            try {
+            try
+            {
                 # Disable Zone checking to prevent warnings when running executables.
                 $env:SEE_MASK_NOZONECHECKS = 1
 
@@ -508,7 +512,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -1,7 +1,8 @@
 ﻿function Disable-ADTWindowCloseButton
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (($null -eq $_) -or $_.Equals([System.IntPtr]::Zero))

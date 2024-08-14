@@ -37,13 +37,15 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProcessName
     )
 
-    begin {
+    begin
+    {
         # Get everything we need before commencing.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
@@ -64,7 +66,8 @@
         $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'"
     }
 
-    process {
+    process
+    {
         # Bypass if no Admin rights.
         if (!$adtEnv.IsAdmin)
         {
@@ -131,7 +134,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

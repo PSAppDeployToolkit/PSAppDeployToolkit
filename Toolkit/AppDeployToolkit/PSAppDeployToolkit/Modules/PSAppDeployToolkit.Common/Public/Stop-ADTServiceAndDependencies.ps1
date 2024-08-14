@@ -35,7 +35,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (!$_.Name)
@@ -57,11 +58,13 @@
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         try
         {
             Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
@@ -72,7 +75,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -49,7 +49,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Text,
@@ -78,7 +79,8 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
@@ -90,7 +92,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Bypass if in silent mode.
         if ($adtSession.IsSilent())
         {
@@ -118,7 +121,8 @@
         return $result
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

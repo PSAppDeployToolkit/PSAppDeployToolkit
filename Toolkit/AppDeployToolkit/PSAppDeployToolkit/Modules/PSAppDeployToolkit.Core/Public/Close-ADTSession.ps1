@@ -1,13 +1,15 @@
 ﻿function Close-ADTSession
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$ExitCode
     )
 
-    begin {
+    begin
+    {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
@@ -21,7 +23,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode'))
         {
@@ -66,7 +69,8 @@
         }
     }
 
-    end {
+    end
+    {
         # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

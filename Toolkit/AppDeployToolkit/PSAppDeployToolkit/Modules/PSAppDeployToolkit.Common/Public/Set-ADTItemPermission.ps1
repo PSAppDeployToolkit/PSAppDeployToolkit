@@ -70,7 +70,8 @@
     #>
 
     [CmdletBinding()]
-    Param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
         [ValidateScript({
@@ -115,11 +116,13 @@
         [System.Management.Automation.SwitchParameter]$EnableInheritance
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         # Test elevated permissions.
         if (!(Test-ADTCallerIsAdmin))
         {
@@ -189,7 +192,8 @@
         [System.Void](Set-Acl -Path $Path -AclObject $Acl)
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

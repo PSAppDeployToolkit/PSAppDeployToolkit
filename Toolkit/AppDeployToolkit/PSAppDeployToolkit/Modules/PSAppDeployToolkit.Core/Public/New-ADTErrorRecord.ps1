@@ -1,7 +1,8 @@
 ﻿function New-ADTErrorRecord
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Exception]$Exception,

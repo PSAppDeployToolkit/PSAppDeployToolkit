@@ -70,7 +70,8 @@ if ((Test-Path -LiteralPath Variable:TerminalServerMode) -and $TerminalServerMod
 function Write-Log
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyCollection()]
         [Alias('Text')]
@@ -131,7 +132,8 @@ function Write-Log
         [System.Boolean]$LogDebugMessage
     )
 
-    begin {
+    begin
+    {
         # Announce overall deprecation.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name
 
@@ -167,7 +169,8 @@ function Write-Log
         }
     }
 
-    process {
+    process
+    {
         try
         {
             Write-ADTLogEntry @PSBoundParameters
@@ -193,7 +196,8 @@ function Write-Log
 function Exit-Script
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.Int32]$ExitCode
     )
@@ -212,7 +216,8 @@ function Exit-Script
 function Invoke-HKCURegistrySettingsForAllUsers
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
         [System.Management.Automation.ScriptBlock]$RegistrySettings,
@@ -237,7 +242,8 @@ function Invoke-HKCURegistrySettingsForAllUsers
 function Get-HardwarePlatform
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
@@ -256,7 +262,8 @@ function Get-HardwarePlatform
 function Get-FreeDiskSpace
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.String]$Drive,
 
@@ -294,17 +301,20 @@ function Get-FreeDiskSpace
 function Remove-InvalidFileNameChars
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyString()]
         [System.String]$Name
     )
 
-    begin {
+    begin
+    {
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2
     }
 
-    end {
+    end
+    {
         $input.Where({$null -ne $_}) | Remove-ADTInvalidFileNameChars
     }
 }
@@ -319,7 +329,8 @@ function Remove-InvalidFileNameChars
 function Get-InstalledApplication
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
@@ -346,7 +357,8 @@ function Get-InstalledApplication
 function Get-FileVersion
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$File,
@@ -389,7 +401,8 @@ function Get-FileVersion
 function Get-UserProfiles
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
 
@@ -425,7 +438,8 @@ function Get-UserProfiles
 function Update-Desktop
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
@@ -457,7 +471,8 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 function Update-SessionEnvironmentVariables
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables,
 
         [ValidateNotNullOrEmpty()]
@@ -491,7 +506,8 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTSessionEnvi
 function Remove-File
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
@@ -531,7 +547,8 @@ function Remove-File
 function Show-InstallationPrompt
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Title,
@@ -619,7 +636,8 @@ function Show-InstallationPrompt
 function Show-InstallationProgress
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessage,
 
@@ -653,7 +671,8 @@ function Show-InstallationProgress
 function Show-DialogBox
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Text,
@@ -703,7 +722,8 @@ function Show-DialogBox
 function Show-InstallationWelcome
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$CloseApps,
@@ -806,7 +826,8 @@ function Show-InstallationWelcome
 function Get-WindowTitle
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]
         [System.String]$WindowTitle,
@@ -832,7 +853,8 @@ function Get-WindowTitle
 function Show-InstallationRestartPrompt
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownSeconds,
 
@@ -876,7 +898,8 @@ function Show-InstallationRestartPrompt
 function Show-BalloonTip
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.String]$BalloonTipText,
@@ -911,7 +934,8 @@ function Show-BalloonTip
 function Copy-ContentToCache
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path
@@ -931,7 +955,8 @@ function Copy-ContentToCache
 function Remove-ContentFromCache
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path
@@ -977,7 +1002,8 @@ function Get-LoggedOnUser
 function Get-IniValue
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
         [System.String]$FilePath,
@@ -1025,7 +1051,8 @@ function Get-IniValue
 function Set-IniValue
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
         [System.String]$FilePath,
@@ -1077,7 +1104,8 @@ function Set-IniValue
 function New-Folder
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,
@@ -1123,7 +1151,8 @@ function Test-PowerPoint
 function Update-GroupPolicy
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
@@ -1152,7 +1181,8 @@ function Update-GroupPolicy
 function Get-UniversalDate
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [ValidateNotNullOrEmpty()]
         [System.String]$DateTime,
 
@@ -1190,7 +1220,8 @@ function Get-UniversalDate
 function Test-ServiceExists
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
@@ -1237,7 +1268,8 @@ function Test-ServiceExists
 function Disable-TerminalServerInstallMode
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
@@ -1266,7 +1298,8 @@ function Disable-TerminalServerInstallMode
 function Enable-TerminalServerInstallMode
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
@@ -1295,7 +1328,8 @@ function Enable-TerminalServerInstallMode
 function Configure-EdgeExtension
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
         [System.Management.Automation.SwitchParameter]$Add,
 
@@ -1335,7 +1369,8 @@ function Configure-EdgeExtension
 function Resolve-Error
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyCollection()]
         [System.Array]$ErrorRecord,
@@ -1392,7 +1427,8 @@ function Resolve-Error
 function Get-ServiceStartMode
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
@@ -1431,7 +1467,8 @@ function Get-ServiceStartMode
 function Set-ServiceStartMode
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
@@ -1470,7 +1507,8 @@ function Set-ServiceStartMode
 function Execute-Process
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
         [ValidateNotNullOrEmpty()]
@@ -1563,7 +1601,8 @@ function Execute-Process
 function Execute-MSI
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action,
@@ -1672,7 +1711,8 @@ function Execute-MSI
 function Execute-MSP
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
         [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
         [Alias('FilePath')]
@@ -1710,7 +1750,8 @@ function Unblock-AppExecution
 function Block-AppExecution
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProcessName
@@ -1729,7 +1770,8 @@ function Block-AppExecution
 function Test-RegistryValue
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         $Key,
@@ -1760,7 +1802,8 @@ function Test-RegistryValue
 function Convert-RegistryPath
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Key,
@@ -1795,7 +1838,8 @@ function Convert-RegistryPath
 function Test-MSUpdates
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter the KB Number for the Microsoft Update')]
         [ValidateNotNullOrEmpty()]
         [System.String]$KbNumber,
@@ -1828,7 +1872,8 @@ function Test-MSUpdates
 function Test-Battery
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
@@ -1847,7 +1892,8 @@ function Test-Battery
 function Start-ServiceAndDependencies
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
@@ -1900,7 +1946,8 @@ function Start-ServiceAndDependencies
 function Stop-ServiceAndDependencies
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
@@ -1953,7 +2000,8 @@ function Stop-ServiceAndDependencies
 function Set-RegistryKey
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Key,
@@ -2004,7 +2052,8 @@ function Set-RegistryKey
 function Remove-RegistryKey
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Key,
@@ -2048,7 +2097,8 @@ function Remove-RegistryKey
 function Remove-FileFromUserProfiles
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
@@ -2108,7 +2158,8 @@ function Remove-FileFromUserProfiles
 function Get-RegistryKey
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Key,
@@ -2160,7 +2211,8 @@ function Get-RegistryKey
 function Install-MSUpdates
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Directory
@@ -2180,7 +2232,8 @@ function Install-MSUpdates
 function Get-SchedulerTask
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$TaskName,
@@ -2226,7 +2279,8 @@ function Get-PendingReboot
 function Invoke-RegisterOrUnregisterDLL
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
@@ -2263,7 +2317,8 @@ function Invoke-RegisterOrUnregisterDLL
 function Register-DLL
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
@@ -2296,7 +2351,8 @@ function Register-DLL
 function Unregister-DLL
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
@@ -2329,7 +2385,8 @@ function Unregister-DLL
 function Remove-Folder
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,
@@ -2365,7 +2422,8 @@ function Remove-Folder
 function Set-ActiveSetup
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
         [System.String]$StubExePath,
@@ -2437,7 +2495,8 @@ function Set-ActiveSetup
 function Set-ItemPermission
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
         [ValidateNotNullOrEmpty()]
@@ -2497,7 +2556,8 @@ function Set-ItemPermission
 function New-MsiTransform
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$MsiPath,
@@ -2542,7 +2602,8 @@ function New-MsiTransform
 function Get-MsiTableProperty
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,
@@ -2595,7 +2656,8 @@ function Get-MsiTableProperty
 function Invoke-SCCMTask
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateSet('HardwareInventory', 'SoftwareInventory', 'HeartbeatDiscovery', 'SoftwareInventoryFileCollection', 'RequestMachinePolicy', 'EvaluateMachinePolicy', 'LocationServicesCleanup', 'SoftwareMeteringReport', 'SourceUpdate', 'PolicyAgentCleanup', 'RequestMachinePolicy2', 'CertificateMaintenance', 'PeerDistributionPointStatus', 'PeerDistributionPointProvisioning', 'ComplianceIntervalEnforcement', 'SoftwareUpdatesAgentAssignmentEvaluation', 'UploadStateMessage', 'StateMessageManager', 'SoftwareUpdatesScan', 'AMTProvisionCycle', 'UpdateStorePolicy', 'StateSystemBulkSend', 'ApplicationManagerPolicyAction', 'PowerManagementStartSummarizer')]
         [System.String]$ScheduleID,
@@ -2628,7 +2690,8 @@ function Invoke-SCCMTask
 function Install-SCCMSoftwareUpdates
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$SoftwareUpdatesScanWaitInSeconds,
@@ -2665,7 +2728,8 @@ function Install-SCCMSoftwareUpdates
 function Set-MsiProperty
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.__ComObject]$DataBase,
@@ -2719,7 +2783,8 @@ function Send-Keys
 function Get-Shortcut
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,
@@ -2752,7 +2817,8 @@ function Get-Shortcut
 function Set-Shortcut
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Default')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,
@@ -2829,7 +2895,8 @@ function Set-Shortcut
 function New-Shortcut
 {
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path,

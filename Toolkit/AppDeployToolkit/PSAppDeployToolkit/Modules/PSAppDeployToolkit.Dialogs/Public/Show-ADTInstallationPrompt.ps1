@@ -68,7 +68,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Message,
@@ -109,7 +110,8 @@
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    dynamicparam {
+    dynamicparam
+    {
         # Throw a terminating error if at least one button isn't specified.
         if (!($PSBoundParameters.Keys -match '^Button'))
         {
@@ -157,7 +159,8 @@
         return $paramDictionary
     }
 
-    begin {
+    begin
+    {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -176,11 +179,13 @@
         }
     }
 
-    process {
+    process
+    {
         Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

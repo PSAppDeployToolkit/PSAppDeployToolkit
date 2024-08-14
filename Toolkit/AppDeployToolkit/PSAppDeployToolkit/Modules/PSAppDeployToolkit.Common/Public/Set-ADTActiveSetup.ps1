@@ -80,7 +80,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
         [ValidateScript({
             if (('.exe', '.vbs', '.cmd', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
@@ -89,7 +90,6 @@
             }
             return !!$_
         })]
-
         [System.String]$StubExePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -119,7 +119,8 @@
         [System.Management.Automation.SwitchParameter]$NoExecuteForCurrentUser
     )
 
-    dynamicparam {
+    dynamicparam
+    {
         # Attempt to get the most recent ADTSession object.
         $adtSession = try {Get-ADTSession} catch {[System.Void]$null}
 
@@ -144,7 +145,8 @@
         return $paramDictionary
     }
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
@@ -164,7 +166,8 @@
         function Test-ADTActiveSetup
         {
             [CmdletBinding()]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
                 [System.String]$HKLMKey,
@@ -241,7 +244,8 @@
             }
 
             # Both entries present, with a Version property. Compare the Versions.
-            try {
+            try
+            {
                 # Convert the version property to Version type and compare.
                 if (([System.Version]$HKLMValidVer.Replace(',','.')) -gt ([System.Version]$HKCUValidVer.Replace(',','.')))
                 {
@@ -256,7 +260,8 @@
                     return $false
                 }
             }
-            catch {
+            catch
+            {
                 # Failed to convert version property to Version type.
                 [System.Void]$null
             }
@@ -308,7 +313,8 @@
         function Set-ADTActiveSetupRegKeys
         {
             [CmdletBinding()]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
                 [System.String]$ActiveSetupRegKey,
@@ -335,7 +341,8 @@
         }
     }
 
-    process {
+    process
+    {
         try
         {
             # Set up the relevant keys, factoring in bitness and architecture.
@@ -499,7 +506,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

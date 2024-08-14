@@ -1,7 +1,8 @@
 ﻿function Get-ADTConfig
 {
     [CmdletBinding()]
-    param (
+    param
+    (
     )
 
     # Return the config database if initialised.

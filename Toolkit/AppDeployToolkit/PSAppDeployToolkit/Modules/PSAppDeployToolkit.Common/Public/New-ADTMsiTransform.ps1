@@ -46,7 +46,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
             if (!(Test-Path -Path $_ -PathType Leaf))
@@ -76,7 +77,8 @@
         [System.Collections.Hashtable]$TransformProperties
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
@@ -91,7 +93,8 @@
         $msiSuppressApplyTransformErrors = 63
     }
 
-    process {
+    process
+    {
         try
         {
             # Discover the parent folder that the MSI file resides in.
@@ -203,7 +206,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

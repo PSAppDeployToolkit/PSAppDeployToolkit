@@ -32,24 +32,28 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$MsiExitCode
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    process {
+    process
+    {
         if (![System.String]::IsNullOrWhiteSpace(($res = [PSADT.Msi]::GetMessageFromMsiExitCode($MsiExitCode).Trim())))
         {
             return $res
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

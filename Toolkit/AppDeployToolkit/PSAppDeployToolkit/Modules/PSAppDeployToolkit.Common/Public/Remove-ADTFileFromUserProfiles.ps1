@@ -47,7 +47,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
@@ -73,7 +74,8 @@
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $RemoveFileSplat = @{
             Recurse = $Recurse
@@ -88,7 +90,8 @@
         }
     }
 
-    process {
+    process
+    {
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
             if ($PSCmdlet.ParameterSetName -eq 'Path')
@@ -105,7 +108,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -55,7 +55,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
@@ -77,7 +78,8 @@
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
 
-    begin {
+    begin
+    {
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($Name)
@@ -122,7 +124,8 @@
             }
         }
     }
-    process {
+    process
+    {
         # Create a custom object with the desired properties for the installed applications and sanitize property details.
         $installedApplication = foreach ($regKeyApp in $regKeyApplication)
         {
@@ -192,7 +195,8 @@
         Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.'
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

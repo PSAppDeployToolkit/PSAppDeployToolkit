@@ -32,7 +32,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [AllowNull()]
         [PSADT.Types.ProcessObject]$InputObject,
@@ -41,11 +42,13 @@
         [System.Management.Automation.SwitchParameter]$DisableLogging
     )
 
-    begin {
+    begin
+    {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
-    end {
+    end
+    {
         # Confirm input isn't null before proceeding.
         if ($processObjects = $input.Where({$null -ne $_}))
         {

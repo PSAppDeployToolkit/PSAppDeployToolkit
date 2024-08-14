@@ -52,7 +52,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
@@ -74,7 +75,8 @@
         [System.Management.Automation.SwitchParameter]$ExcludeErrorInnerException
     )
 
-    begin {
+    begin
+    {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -82,7 +84,8 @@
         filter Get-ErrorPropertyNames
         {
             [CmdletBinding()]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
                 [ValidateNotNullOrEmpty()]
                 [System.Object]$InputObject
@@ -102,7 +105,8 @@
         }
     }
 
-    process {
+    process
+    {
         # Build out error properties.
         $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject $(
             # Capture Error Exception here if the caller has selected all property values.
@@ -159,7 +163,8 @@
         $logErrorMessage
     }
 
-    end {
+    end
+    {
         # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }

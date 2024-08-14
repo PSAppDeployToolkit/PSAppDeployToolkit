@@ -31,7 +31,8 @@
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$SoftwareUpdatesScanWaitInSeconds = 180,
@@ -41,12 +42,14 @@
         [System.TimeSpan]$WaitForPendingUpdatesTimeout = [System.TimeSpan]::FromSeconds(45)
     )
 
-    begin {
+    begin
+    {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
-    process {
+    process
+    {
         try
         {
             # If SCCM 2007 Client or lower, exit function.
@@ -107,7 +110,8 @@
         }
     }
 
-    end {
+    end
+    {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
