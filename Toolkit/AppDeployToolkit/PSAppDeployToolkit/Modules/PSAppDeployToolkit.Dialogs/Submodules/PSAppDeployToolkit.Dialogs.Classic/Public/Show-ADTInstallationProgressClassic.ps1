@@ -140,19 +140,9 @@
         }
     }
 
-    # Return early in silent mode.
-    if (($adtSession = Get-ADTSession).IsSilent())
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message: $StatusMessage" -DebugMessage:$Quiet
-        return
-    }
-
     # Check if the progress thread is running before invoking methods on it.
     if (!$Script:ProgressWindow.Running)
     {
-        # Notify user that the software installation has started.
-        Show-ADTBalloonTipClassic -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
-
         # Load up the XML file.
         $adtConfig = Get-ADTConfig
         $xaml = [System.Xml.XmlDocument]::new()

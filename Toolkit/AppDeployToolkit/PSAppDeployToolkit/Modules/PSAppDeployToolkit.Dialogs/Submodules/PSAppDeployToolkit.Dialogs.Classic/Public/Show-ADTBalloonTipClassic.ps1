@@ -64,32 +64,16 @@
     )
 
     # Initialise variables.
-    $adtEnv = Get-ADTEnvironment
     $adtConfig = Get-ADTConfig
-    $adtSession = Get-ADTSession
-
-    # Skip balloon if in silent mode, disabled in the config or presentation is detected.
-    if ($adtSession.IsSilent() -or !$adtConfig.UI.BalloonNotifications)
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
-        return
-    }
-    if (Test-ADTPowerPoint)
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('deployMode')), Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
-        return
-    }
-
-    # Read all form assets into memory.
-    Read-ADTAssetsIntoMemory
 
     # Create in separate process if -NoWait is passed.
     if ($NoWait)
     {
         Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
-        Start-ADTProcess -Path $adtEnv.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($adtConfig.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
+        Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -AssemblyName System.Windows.Forms, System.Drawing; ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = '$($BalloonTipText.Replace("'","''"))'; BalloonTipTitle = '$($BalloonTipTitle.Replace("'","''"))'; Icon = [System.Drawing.Icon]::new('$($adtConfig.Assets.Icon)'); Visible = `$true}).ShowBalloonTip($BalloonTipTime); [System.Threading.Thread]::Sleep($BalloonTipTime)" -NoWait -WindowStyle Hidden -CreateNoWindow
         return
     }
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    ($Script:FormData.NotifyIcon = [System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = $BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = $Script:FormData.Assets.Icon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
+    Read-ADTAssetsIntoMemory -ADTConfig $adtConfig
+    ([System.Windows.Forms.NotifyIcon]@{BalloonTipIcon = $BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = $Script:FormData.Assets.Icon; Visible = $true}).ShowBalloonTip($BalloonTipTime)
 }
