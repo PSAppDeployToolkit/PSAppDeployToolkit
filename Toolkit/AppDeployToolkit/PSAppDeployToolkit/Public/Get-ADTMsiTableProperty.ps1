@@ -192,7 +192,7 @@ function Get-ADTMsiTableProperty
                     # Get the SummaryInformation from the windows installer database.
                     # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
                     $SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                    return [pscustomobject]@{
+                    return [PSADT.Types.MsiSummaryInfo]@{
                         CodePage = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)
                         Title = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)
                         Subject = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)
