@@ -265,7 +265,7 @@ function Start-ADTMsiProcess
                     # Create the Log directory if it doesn't already exist.
                     if (![System.IO.Directory]::Exists($adtConfig.MSI.LogPath))
                     {
-                        [System.Void][System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
+                        $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
                     }
 
                     # Build the log file path.

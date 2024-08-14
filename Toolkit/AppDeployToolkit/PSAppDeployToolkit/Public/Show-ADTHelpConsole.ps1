@@ -43,7 +43,7 @@ function Show-ADTHelpConsole
 
             # All WinForms-specific initialistion code.
             [System.Windows.Forms.Application]::EnableVisualStyles()
-            try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {[System.Void]$null}
+            try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {$null = $null}
         }
 
         # Build out the form's listbox.
@@ -52,7 +52,7 @@ function Show-ADTHelpConsole
         $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
         $helpListBox.Location = [System.Drawing.Point]::new(3,0)
         $helpListBox.add_SelectedIndexChanged({$helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim()})
-        [System.Void]$helpListBox.Items.AddRange(($module.ExportedCommands.Keys | Sort-Object))
+        $null = $helpListBox.Items.AddRange(($module.ExportedCommands.Keys | Sort-Object))
 
         # Build out the form's textbox.
         $helpTextBox = [System.Windows.Forms.RichTextBox]::new()

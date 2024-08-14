@@ -91,7 +91,7 @@ function Block-ADTAppExecution
                 }
                 try
                 {
-                    [System.Void][System.IO.Directory]::CreateDirectory($tempPath)
+                    $null = [System.IO.Directory]::CreateDirectory($tempPath)
                 }
                 catch
                 {
@@ -128,7 +128,7 @@ function Block-ADTAppExecution
                         Action = & $Script:CommandTable.'New-ScheduledTaskAction' -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
                         Settings = & $Script:CommandTable.'New-ScheduledTaskSettingsSet' -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
-                    [System.Void](& $Script:CommandTable.'New-ScheduledTask' @nstParams | & $Script:CommandTable.'Register-ScheduledTask' -TaskName $taskName)
+                    $null = & $Script:CommandTable.'New-ScheduledTask' @nstParams | & $Script:CommandTable.'Register-ScheduledTask' -TaskName $taskName
                 }
                 catch
                 {

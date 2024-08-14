@@ -128,5 +128,5 @@ function Show-ADTBalloonTipClassic
 
     # Create in an asynchronous job so that disposal is managed for us.
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    [System.Void](Start-Job -ScriptBlock ${Function:New-ADTBalloonTip} -ArgumentList $($nabtParams.Values)
+    $null = Start-Job -ScriptBlock ${Function:New-ADTBalloonTip} -ArgumentList $($nabtParams.Values)
 }

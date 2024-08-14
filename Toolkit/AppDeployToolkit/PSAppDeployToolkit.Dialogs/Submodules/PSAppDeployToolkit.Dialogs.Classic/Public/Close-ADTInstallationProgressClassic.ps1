@@ -49,7 +49,7 @@ function Close-ADTInstallationProgressClassic
     if ($Script:ProgressWindow.Invocation)
     {
         Write-ADTLogEntry -Message "Closing the installation progress dialog's invocation."
-        [System.Void]$Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
+        $null = $Script:ProgressWindow.PowerShell.EndInvoke($Script:ProgressWindow.Invocation)
         $Script:ProgressWindow.Invocation = $null
     }
 

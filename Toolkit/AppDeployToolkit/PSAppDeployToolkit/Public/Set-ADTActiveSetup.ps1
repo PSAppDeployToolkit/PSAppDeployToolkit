@@ -131,7 +131,7 @@ function Set-ADTActiveSetup
     dynamicparam
     {
         # Attempt to get the most recent ADTSession object.
-        $adtSession = try {Get-ADTSession} catch {[System.Void]$null}
+        $adtSession = try {Get-ADTSession} catch {$null = $null}
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -272,7 +272,7 @@ function Set-ADTActiveSetup
             catch
             {
                 # Failed to convert version property to Version type.
-                [System.Void]$null
+                $null = $null
             }
 
             # Check whether the Versions were split into the same number of strings. Split the version by commas.

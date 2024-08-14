@@ -835,7 +835,7 @@ class ADTSession
         }
         elseif (!(& $Script:CommandTable.'Test-Path' -LiteralPath $LogFileDirectory -PathType Container))
         {
-            [System.Void](& $Script:CommandTable.'New-Item' -Path $LogFileDirectory -Type Directory -Force)
+            $null = & $Script:CommandTable.'New-Item' -Path $LogFileDirectory -Type Directory -Force
         }
         if ([System.String]::IsNullOrWhiteSpace($LogFileName))
         {

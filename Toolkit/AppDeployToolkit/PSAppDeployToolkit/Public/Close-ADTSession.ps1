@@ -79,7 +79,7 @@ function Close-ADTSession
         }
         finally
         {
-            [System.Void]$adtData.Sessions.Remove($adtSession)
+            $null = $adtData.Sessions.Remove($adtSession)
         }
 
         # Clean up environment if this was the last session.

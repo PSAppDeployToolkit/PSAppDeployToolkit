@@ -365,7 +365,7 @@ function Show-ADTWelcomePromptClassic
     $listBoxCloseApps.TabIndex = 3
     if ($adtSession.ExtensionData.RunningProcessDescriptions)
     {
-        [System.Void]$listboxCloseApps.Items.AddRange($adtSession.ExtensionData.RunningProcessDescriptions)
+        $null = $listboxCloseApps.Items.AddRange($adtSession.ExtensionData.RunningProcessDescriptions)
     }
 
     # Label Countdown.
@@ -617,7 +617,7 @@ function Show-ADTWelcomePromptClassic
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
-        [System.Void](Get-ADTEnvironment).ShellApp.MinimizeAll()
+        $null = (Get-ADTEnvironment).ShellApp.MinimizeAll()
     }
 
     # Run the form and store the result.

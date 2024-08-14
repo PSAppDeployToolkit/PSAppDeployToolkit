@@ -166,7 +166,7 @@ function New-ADTShortcut
                     try
                     {
                         Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
-                        [System.Void](& $Script:CommandTable.'New-Item' -LiteralPath $PathDirectory -ItemType Directory -Force)
+                        $null = & $Script:CommandTable.'New-Item' -LiteralPath $PathDirectory -ItemType Directory -Force
                     }
                     catch
                     {

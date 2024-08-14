@@ -17,7 +17,7 @@ Add-Type -AssemblyName System.Drawing, System.Windows.Forms, PresentationCore, P
 
 # All WinForms-specific initialistion code.
 [System.Windows.Forms.Application]::EnableVisualStyles()
-try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {[System.Void]$null}
+try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {$null = $null}
 
 # Dot-source our imports and perform exports.
 Export-ModuleMember -Function (Get-ChildItem -Path $PSScriptRoot\*\*.ps1).ForEach({

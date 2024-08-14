@@ -70,7 +70,7 @@ function New-ADTEnvironmentTable
     $variables.Add('MachineDomainController', [System.String]::Empty)
     $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
     $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & $Script:CommandTable.'Where-Object' {$_} | & $Script:CommandTable.'ForEach-Object' {$_.ToLower()}))
-    $variables.Add('envUserDomain', [string]$(try {[System.Environment]::UserDomainName.ToUpper()} catch {[System.Void]$null}))
+    $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) {[System.Environment]::UserDomainName.ToUpper()}))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain.Equals($true))
@@ -107,7 +107,7 @@ function New-ADTEnvironmentTable
         }
         catch
         {
-            [System.Void]$null
+            $null = $null
         }
     }
     else

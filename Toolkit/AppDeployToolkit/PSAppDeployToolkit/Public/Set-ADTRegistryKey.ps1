@@ -120,7 +120,7 @@ function Set-ADTRegistryKey
                     if (($Key.Split('/').Count - 1) -eq 0)
                     {
                         # No forward slash found in Key. Use New-Item cmdlet to create registry key.
-                        [System.Void](& $Script:CommandTable.'New-Item' -Path $Key -ItemType Registry -Force)
+                        $null = & $Script:CommandTable.'New-Item' -Path $Key -ItemType Registry -Force
                     }
                     else
                     {
@@ -154,7 +154,7 @@ function Set-ADTRegistryKey
                     {
                         # Set registry value if it doesn't exist.
                         Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
-                        [System.Void](& $Script:CommandTable.'New-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
+                        $null = & $Script:CommandTable.'New-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type
                     }
                     else
                     {
@@ -163,12 +163,12 @@ function Set-ADTRegistryKey
                         if ($Name -eq '(Default)')
                         {
                             # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
-                            [System.Void]((& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
+                            $null = (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value)
                         }
                         else
                         {
                             Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
-                            [System.Void](& $Script:CommandTable.'Set-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value)
+                            $null = & $Script:CommandTable.'Set-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value
                         }
                     }
                 }
