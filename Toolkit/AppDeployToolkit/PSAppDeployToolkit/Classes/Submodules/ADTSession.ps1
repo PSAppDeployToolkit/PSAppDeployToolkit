@@ -21,8 +21,6 @@ class ADTSession
         BlockExecution = $false
         MsiRebootDetected = $false
         WelcomeTimer = $null
-        NotifyIcon = $null
-        FormInstallationRestartPromptStartPosition = $null
         FormWelcomeStartPosition = $null
         CloseAppsCountdownGlobal = $null
     }
@@ -741,7 +739,7 @@ class ADTSession
 
         # Annouce session success/failure.
         $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.DeploymentTypeName.ToLower()) completed with exit code [$ExitCode].", $logSeverity)
-        Show-BalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
+        Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
 
         # Write out a log divider to indicate the end of logging.
         $this.WriteLogEntry('-' * 79)
@@ -767,20 +765,6 @@ class ADTSession
             catch
             {
                 Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-Error)" -ForegroundColor Red
-            }
-
-        }
-
-        # Clean up potentially locked assets.
-        $null = if ($this.State.NotifyIcon)
-        {
-            try
-            {
-                $this.State.NotifyIcon.Dispose()
-            }
-            catch
-            {
-                $null
             }
         }
     }
