@@ -2,20 +2,19 @@
 {
     # Get the current environment and root module.
     $adtEnv = Get-ADTEnvironment
-    $adtModule = Get-ADTModuleInfo
 
     # Create variables within this scope from the database, it's needed during the config import.
     $adtEnv.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
 
     # Read config file and cast the version into an object.
-    $config = Import-LocalizedData -BaseDirectory "$($adtModule.ModuleBase)\Config" -FileName config.psd1
+    $config = Import-LocalizedData -BaseDirectory $Script:PSScriptRoot\Config -FileName config.psd1
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
-    if ($config.File.Version -lt $adtModule.Version)
+    if ($config.File.Version -lt ($moduleVersion = $MyInvocation.MyCommand.Module.Version))
     {
         $naerParams = @{
-            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtModule.Version)]. Please upgrade the configuration file.")
+            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$moduleVersion]. Please upgrade the configuration file.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'ConfigFileVersionMismatch'
             TargetObject = $config
@@ -39,7 +38,7 @@
     # Expand out asset file paths and test that the files are present.
     foreach ($asset in ('Icon', 'Logo', 'Banner'))
     {
-        $config.Assets.$asset = (Get-Item -LiteralPath "$($adtModule.ModuleBase)\Assets\$($config.Assets.$asset)").FullName
+        $config.Assets.$asset = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
     }
 
     # If we're using fluent dialogs but running in the ISE, force it back to classic.
@@ -70,7 +69,7 @@
     }
 
     # Append the toolkit's name onto the temporary path.
-    $config.Toolkit.TempPath = [System.IO.Path]::Combine($config.Toolkit.TempPath, $adtModule.Name)
+    $config.Toolkit.TempPath = [System.IO.Path]::Combine($config.Toolkit.TempPath, $MyInvocation.MyCommand.Module.Name)
 
     # Finally, return the config for usage within module.
     return $config

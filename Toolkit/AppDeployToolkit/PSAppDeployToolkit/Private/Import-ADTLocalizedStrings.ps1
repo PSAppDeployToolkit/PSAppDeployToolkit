@@ -9,5 +9,5 @@
     )
 
     # Store the chosen language within this session.
-    Import-LocalizedData -BaseDirectory "$((Get-ADTModuleInfo).ModuleBase)\Strings" -FileName strings.psd1 @PSBoundParameters
+    Import-LocalizedData -BaseDirectory $Script:PSScriptRoot\Strings -FileName strings.psd1 @PSBoundParameters
 }

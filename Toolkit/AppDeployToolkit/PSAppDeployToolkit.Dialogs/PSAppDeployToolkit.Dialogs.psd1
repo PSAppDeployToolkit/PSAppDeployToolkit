@@ -1,5 +1,5 @@
 ﻿#
-# Module manifest for module 'PSAppDeployToolkit.Core'
+# Module manifest for module 'PSAppDeployToolkit.Dialogs'
 #
 # Generated on: 2024-06-05
 #
@@ -7,7 +7,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PSAppDeployToolkit.Core.psm1'
+RootModule = 'PSAppDeployToolkit.Dialogs.psm1'
 
 # Version number of this module.
 ModuleVersion = '3.91.0'
@@ -16,7 +16,7 @@ ModuleVersion = '3.91.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = '25cfd99b-6c33-490f-9838-21148c53fca4'
+GUID = 'f47aa77b-ea0f-4a98-9125-85b64f3e9855'
 
 # Author of this module
 Author = 'PSAppDeployToolkit Team'
@@ -49,12 +49,12 @@ PowerShellVersion = '5.1'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-    @{ ModuleName='ScheduledTasks'; GUID='5378ee8e-e349-49bb-83b9-f3d9c396c0a6'; ModuleVersion='1.0.0.0' }
-)
+# RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-# RequiredAssemblies = @()
+RequiredModules = @(
+    @{ ModuleName = 'PSAppDeployToolkit'; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.91.0' }
+)
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
@@ -66,112 +66,21 @@ RequiredModules = @(
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @()
+NestedModules = @(
+    'Submodules\PSAppDeployToolkit.Dialogs.Classic\PSAppDeployToolkit.Dialogs.Classic.psd1'
+    'Submodules\PSAppDeployToolkit.Dialogs.Fluent\PSAppDeployToolkit.Dialogs.Fluent.psd1'
+)
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Add-ADTEdgeExtension'
-    'Add-ADTSessionClosingCallback'
-    'Add-ADTSessionOpeningCallback'
-    'Block-ADTAppExecution'
-    'Close-ADTSession'
-    'Complete-ADTFunction'
-    'Convert-ADTRegistryPath'
-    'ConvertTo-ADTNTAccountOrSID'
-    'Copy-ADTContentToCache'
-    'Copy-File'
-    'Copy-FileToUserProfiles'
-    'Disable-ADTTerminalServerInstallMode'
-    'Enable-ADTTerminalServerInstallMode'
-    'Execute-ProcessAsUser'
-    'Get-ADTConfig'
-    'Get-ADTDeferHistory'
-    'Get-ADTEnvironment'
-    'Get-ADTFileVersion'
-    'Get-ADTFreeDiskSpace'
-    'Get-ADTGuidRegexPattern'
-    'Get-ADTIniValue'
-    'Get-ADTInstalledApplication'
-    'Get-ADTLoggedOnUser'
-    'Get-ADTModuleInfo'
-    'Get-ADTMsiExitCodeMessage'
-    'Get-ADTMsiTableProperty'
-    'Get-ADTObjectProperty'
-    'Get-ADTPEFileArchitecture'
-    'Get-ADTPendingReboot'
-    'Get-ADTPowerShellProcessPath'
-    'Get-ADTRegistryKey'
-    'Get-ADTRunAsActiveUser'
-    'Get-ADTRunningProcesses'
-    'Get-ADTSchedulerTask'
-    'Get-ADTServiceStartMode'
-    'Get-ADTSession'
-    'Get-ADTShortcut'
-    'Get-ADTStrings'
-    'Get-ADTUniversalDate'
-    'Get-ADTUserProfiles'
-    'Get-ADTWindowTitle'
-    'Initialize-ADTFunction'
-    'Initialize-ADTModule'
-    'Install-ADTMSUpdates'
-    'Install-ADTSCCMSoftwareUpdates'
-    'Invoke-ADTAllUsersRegistryChange'
-    'Invoke-ADTDllFileAction'
-    'Invoke-ADTFunctionErrorHandler'
-    'Invoke-ADTObjectMethod'
-    'Invoke-ADTSCCMTask'
-    'New-ADTErrorRecord'
-    'New-ADTFolder'
-    'New-ADTMsiTransform'
-    'New-ADTShortcut'
-    'New-ADTValidateScriptErrorRecord'
-    'Open-ADTSession'
-    'Out-ADTPowerShellEncodedCommand'
-    'Register-ADTDllFile'
-    'Remove-ADTContentFromCache'
-    'Remove-ADTEdgeExtension'
-    'Remove-ADTFile'
-    'Remove-ADTFileFromUserProfiles'
-    'Remove-ADTFolder'
-    'Remove-ADTInvalidFileNameChars'
-    'Remove-ADTRegistryKey'
-    'Remove-ADTSessionClosingCallback'
-    'Remove-ADTSessionOpeningCallback'
-    'Remove-MSIApplications'
-    'Resolve-ADTBoundParameters'
-    'Resolve-ADTErrorRecord'
-    'Send-ADTKeys'
-    'Set-ADTActiveSetup'
-    'Set-ADTDeferHistory'
-    'Set-ADTIniValue'
-    'Set-ADTItemPermission'
-    'Set-ADTMsiProperty'
-    'Set-ADTRegistryKey'
-    'Set-ADTServiceStartMode'
-    'Set-ADTShortcut'
-    'Show-ADTDialogBox'
-    'Show-ADTHelpConsole'
-    'Start-ADTMsiProcess'
-    'Start-ADTMspProcess'
-    'Start-ADTProcess'
-    'Start-ADTServiceAndDependencies'
-    'Stop-ADTServiceAndDependencies'
-    'Test-ADTBattery'
-    'Test-ADTCallerIsAdmin'
-    'Test-ADTIsMutexAvailable'
-    'Test-ADTModuleInitialised'
-    'Test-ADTMSUpdates'
-    'Test-ADTNetworkConnection'
-    'Test-ADTPowerPoint'
-    'Test-ADTRegistryValue'
-    'Test-ADTServiceExists'
-    'Test-ADTSessionActive'
-    'Unblock-ADTAppExecution'
-    'Unregister-ADTDllFile'
-    'Update-ADTDesktop'
-    'Update-ADTGroupPolicy'
-    'Update-ADTSessionEnvironmentVariables'
-    'Write-ADTLogEntry'
+    'Close-ADTInstallationProgress'
+    'Show-ADTBalloonTip'
+    'Show-ADTBlockedAppDialog'
+    'Show-ADTInstallationProgress'
+    'Show-ADTInstallationPrompt'
+    'Show-ADTInstallationRestartPrompt'
+    'Show-ADTInstallationWelcome'
+    'Test-ADTInstallationProgressRunning'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

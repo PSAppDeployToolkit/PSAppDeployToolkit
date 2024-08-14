@@ -52,7 +52,6 @@
             $adtEnv = Get-ADTEnvironment
             $adtConfig = Get-ADTConfig
             $adtSession = Get-ADTSession
-            $adtModule = Get-ADTModuleInfo
         }
         catch
         {
@@ -63,7 +62,7 @@
         # Define path for storing temporary data.
         $tempPath = $adtConfig.Toolkit.TempPath
         $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
-        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$tempPath'"
+        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-Module -Name "$($adtEnv.appDeployToolkitName)*").Name -replace '^',"$tempPath\" -join "', '")'"
     }
 
     process
@@ -94,7 +93,7 @@
                 }
 
                 # Export the current state of the module for the scheduled task.
-                Copy-Item -Path "$($adtModule.ModuleBase)\*" -Destination $tempPath -Exclude thumbs.db -Force -Recurse
+                Copy-Item -Path $Script:PSScriptRoot* -Destination $tempPath -Exclude thumbs.db -Recurse -Force
 
                 # Set contents to be readable for all users (BUILTIN\USERS).
                 try
