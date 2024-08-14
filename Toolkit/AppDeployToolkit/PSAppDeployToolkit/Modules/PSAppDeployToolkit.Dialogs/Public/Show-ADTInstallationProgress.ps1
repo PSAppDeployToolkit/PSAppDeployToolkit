@@ -65,10 +65,9 @@
 
     dynamicparam
     {
-        $Command = Get-ADTDialogFunction
         try
         {
-            Convert-ADTCommandParamsToDynamicParams -Command $Command
+            Convert-ADTCommandParamsToDynamicParams -Command ($Command = Get-ADTDialogFunction)
         }
         catch
         {
@@ -79,6 +78,14 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process
@@ -87,6 +94,17 @@
         {
             try
             {
+                # Return early in silent mode.
+                if ($adtSession.IsSilent())
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$($PSBoundParameters.ContainsKey('Quiet') -and $PSBoundParameters.Quiet)
+                    return
+                }
+
+                # Notify user that the software installation has started.
+                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
+
+                # Call the underlying function to open the progress window.
                 & $Command @PSBoundParameters
             }
             catch

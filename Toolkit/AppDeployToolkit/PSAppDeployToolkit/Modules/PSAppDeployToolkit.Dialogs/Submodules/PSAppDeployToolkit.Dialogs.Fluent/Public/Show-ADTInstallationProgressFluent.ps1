@@ -162,13 +162,6 @@
         }
     }
 
-    # Return early in silent mode.
-    if (($adtSession = Get-ADTSession).IsSilent())
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Status message: $StatusMessage" -DebugMessage:$Quiet
-        return
-    }
-
     # Write warnings for functionality that is not yet implemented.
     if ($WindowLocation -ne 'Default')
     {
@@ -182,9 +175,6 @@
     # Check if the progress thread is running before invoking methods on it.
     if (!$Script:ProgressWindow.Running)
     {
-        # Notify user that the software installation has started.
-        Show-ADTBalloonTipFluent -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStrings).BalloonText.Start)"
-
         # Instantiate a new progress window object and start it up.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         if (!$Script:ProgressWindow.Window)

@@ -64,6 +64,15 @@
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $adtConfig = Get-ADTConfig
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process
@@ -72,6 +81,19 @@
         {
             try
             {
+                # Skip balloon if in silent mode, disabled in the config or presentation is detected.
+                if ($adtSession.IsSilent() -or !$adtConfig.UI.BalloonNotifications)
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('DeployMode')), Config Show Balloon Notifications:$($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    return
+                }
+                if (Test-ADTPowerPoint)
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode:$($adtSession.GetPropertyValue('DeployMode')), Presentation Detected:$true]. BalloonTipText: $BalloonTipText"
+                    return
+                }
+
+                # Call the underlying function to show the balloon tip.
                 & $Command @PSBoundParameters
             }
             catch

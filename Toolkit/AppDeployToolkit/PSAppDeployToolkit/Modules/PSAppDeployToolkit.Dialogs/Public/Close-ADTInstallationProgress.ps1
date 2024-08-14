@@ -51,6 +51,13 @@
         {
             try
             {
+                # Return early if we're silent, a window wouldn't have ever opened.
+                if (!(Test-ADTInstallationProgressRunning) -or $adtSession.IsSilent())
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
+                    return
+                }
+
                 # Call the underlying function to close the progress window.
                 & (Get-ADTDialogFunction)
 

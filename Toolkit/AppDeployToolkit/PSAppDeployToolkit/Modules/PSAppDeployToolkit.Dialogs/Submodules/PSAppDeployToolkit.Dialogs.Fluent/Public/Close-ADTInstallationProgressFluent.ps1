@@ -27,13 +27,6 @@
 
     #>
 
-    # Return early if we're silent, a window wouldn't have ever opened.
-    if (($adtSession = Get-ADTSession).IsSilent())
-    {
-        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]"
-        return
-    }
-
     # Dispose of the window object.
     if ($Script:ProgressWindow.Window)
     {
