@@ -638,11 +638,30 @@
         $this.PSObject.Properties.Name.ForEach({if ($value = $this.CallerVariables.Get($_).Value) {$this.$_ = $value}})
     }
 
+    [System.String] GetDeploymentStatus()
+    {
+        if (($this.ExitCode -eq ($adtConfig = Get-ADTConfig).UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
+        {
+            return 'FastRetry'
+        }
+        elseif ($this.GetPropertyValue('AppRebootCodes').Contains($this.ExitCode))
+        {
+            return 'RestartRequired'
+        }
+        elseif ($this.GetPropertyValue('AppExitCodes').Contains($this.ExitCode))
+        {
+            return 'Complete'
+        }
+        else
+        {
+            return 'Error'
+        }
+    }
+
     hidden [System.Void] Open()
     {
-        # Get the current environment and config.
+        # Get the current environment.
         $adtEnv = Get-ADTEnvironment
-        $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being opened twice.
         if ($this.Opened)
@@ -658,6 +677,9 @@
             }
             throw (New-ADTErrorRecord @naerParams)
         }
+
+        # Get the current config.
+        $adtConfig = Get-ADTConfig
 
         # Initialise PSADT session.
         $this.DetectDefaultMsi($adtEnv)
@@ -689,7 +711,7 @@
         $this.Opened = $true
     }
 
-    hidden [System.Void] Close([System.Nullable[System.Int32]]$ReturnCode)
+    hidden [System.Void] Close()
     {
         # Get the current environment.
         $adtEnv = Get-ADTEnvironment
@@ -713,60 +735,45 @@
         $adtConfig = Get-ADTConfig
         $adtStrings = Get-ADTStrings
 
-        # Update exit code with that from the session if the input is null.
-        if ($null -eq $ReturnCode)
-        {
-            $ReturnCode = $this.ExitCode
-        }
-
         # Process resulting exit code.
-        if ($this.GetPropertyValue('AppExitCodes').Contains($ReturnCode) -or $this.GetPropertyValue('AppRebootCodes').Contains($ReturnCode))
+        switch ($this.GetDeploymentStatus())
         {
-            # Clean up app deferral history.
-            if (Test-Path -LiteralPath $this.RegKeyDeferHistory)
-            {
-                $this.WriteLogEntry('Removing deferral history...')
-                Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
+            FastRetry {
+                # Just advise of the exit code with the appropriate severity.
+                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 2)
+                break
             }
+            Error {
+                # Just advise of the exit code with the appropriate severity.
+                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 3)
+                break
+            }
+            default {
+                # Clean up app deferral history.
+                if (Test-Path -LiteralPath $this.RegKeyDeferHistory)
+                {
+                    $this.WriteLogEntry('Removing deferral history...')
+                    Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
+                }
 
-            # Handle reboot prompts on successful script completion.
-            if ($this.GetPropertyValue('AllowRebootPassThru') -and $this.GetPropertyValue('AppRebootCodes').Contains($ReturnCode))
-            {
-                $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.RestartRequired)"
-                $this.WriteLogEntry('A restart has been flagged as required.')
+                # Handle reboot prompts on successful script completion.
+                if ($_.Equals('RestartRequired') -and $this.GetPropertyValue('AllowRebootPassThru'))
+                {
+                    $this.WriteLogEntry('A restart has been flagged as required.')
+                }
+                else
+                {
+                    $this.ExitCode = 0
+                }
+                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 0)
+                break
             }
-            else
-            {
-                $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.Complete)"
-                $ReturnCode = 0
-            }
-            $balloonIcon = 'Info'
-            $logSeverity = 0
-        }
-        elseif (($ReturnCode -eq $adtConfig.UI.DefaultExitCode) -or ($ReturnCode -eq $adtConfig.UI.DeferExitCode))
-        {
-            $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.FastRetry)"
-            $balloonIcon = 'Warning'
-            $logSeverity = 2
-        }
-        else
-        {
-            $balloonText = "$($this.GetDeploymentTypeName()) $($adtStrings.BalloonText.Error)"
-            $balloonIcon = 'Error'
-            $logSeverity = 3
         }
 
         # Update the module's last tracked exit code.
-        if ($ReturnCode)
+        if ($this.ExitCode)
         {
-            (Get-ADT).LastExitCode = $ReturnCode
-        }
-
-        # Annouce session success/failure.
-        $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$ReturnCode].", $logSeverity)
-        if (Get-Module -Name PSAppDeployToolkit.Dialogs)
-        {
-            Show-ADTBalloonTip -BalloonTipIcon $balloonIcon -BalloonTipText $balloonText -NoWait
+            (Get-ADT).LastExitCode = $this.ExitCode
         }
 
         # Write out a log divider to indicate the end of logging.
