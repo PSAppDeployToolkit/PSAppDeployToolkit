@@ -129,7 +129,7 @@
                             TargetObject = $CreateRegKeyResult
                             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                     }
                 }
             }

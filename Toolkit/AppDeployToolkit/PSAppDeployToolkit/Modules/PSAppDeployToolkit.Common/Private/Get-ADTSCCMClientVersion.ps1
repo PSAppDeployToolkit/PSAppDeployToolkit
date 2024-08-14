@@ -10,7 +10,7 @@
             ErrorId = 'CcmExecServiceMissing'
             RecommendedAction = "Please check the availability of this service and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
     } 
     if (($svc = Get-Service -Name ccmexec).Status -ne 'Running')
     {
@@ -21,7 +21,7 @@
             TargetObject = $svc
             RecommendedAction = "Please check the status of this service and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
     }
 
     # Determine the SCCM Client Version.
@@ -35,12 +35,12 @@
         else
         {
             $naerParams = @{
-                Exception = [System.ApplicationException]::new('Failed to determine the SCCM client version number.')
+                Exception = [System.Data.NoNullAllowedException]::new('The query for the SmsClient version returned a null result.')
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'CcmExecVersionNullOrEmpty'
                 RecommendedAction = "Please check the installed version and try again."
             }
-            throw (New-ADTErrorRecord @naerParams)
+            Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
         }
     }
     catch

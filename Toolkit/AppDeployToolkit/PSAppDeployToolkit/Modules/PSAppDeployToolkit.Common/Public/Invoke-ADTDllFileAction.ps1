@@ -76,7 +76,7 @@
                     TargetObject = $FilePath
                     RecommendedAction = "Please review the supplied DLL FilePath and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
 
             # Get the correct path to regsrv32.exe for the system and DLL file.
@@ -111,7 +111,7 @@
                     TargetObject = $FilePath
                     RecommendedAction = "Please review the supplied DLL FilePath and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
             }
 
             # Register the DLL file and measure the success.
@@ -126,7 +126,7 @@
                         TargetObject = "$FilePath $DLLActionParameters"
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
                 else
                 {
@@ -137,7 +137,7 @@
                         TargetObject = "$FilePath $DLLActionParameters"
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
             }
         }
