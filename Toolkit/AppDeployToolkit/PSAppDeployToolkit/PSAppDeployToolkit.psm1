@@ -105,7 +105,7 @@ Export-ModuleMember -Function @(
     'Get-FileVersion'
     'Get-ADTFreeDiskSpace'
     'Get-IniValue'
-    'Get-InstalledApplication'
+    'Get-ADTInstalledApplication'
     'Get-LoggedOnUser'
     'Get-PendingReboot'
     'Get-RegistryKey'
