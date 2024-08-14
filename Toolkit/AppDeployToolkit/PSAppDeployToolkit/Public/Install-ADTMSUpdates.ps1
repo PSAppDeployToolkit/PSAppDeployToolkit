@@ -52,7 +52,7 @@ function Install-ADTMSUpdates
     {
         # Get all hotfixes and install if required.
         Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$Directory]."
-        foreach ($file in (Get-ChildItem -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')))
+        foreach ($file in (& $Script:CommandTable.'Get-ChildItem' -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')))
         {
             try
             {
@@ -101,7 +101,7 @@ function Install-ADTMSUpdates
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
             catch

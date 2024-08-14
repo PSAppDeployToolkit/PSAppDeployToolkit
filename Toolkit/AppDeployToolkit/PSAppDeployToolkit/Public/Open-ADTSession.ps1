@@ -148,7 +148,7 @@ function Open-ADTSession
                     }
                     if ($adtData.Sessions.Count.Equals(1))
                     {
-                        [System.Void]$ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[0].GetEnumerator().ForEach({New-Variable -Name $_.Key -Value $_.Value -Option ReadOnly -Force})}.Ast.GetScriptBlock(), $adtData.Environment)
+                        $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, {$args[1].GetEnumerator().ForEach({& $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force}, $args[0])}.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
                     }
                 }
                 catch
@@ -159,7 +159,7 @@ function Open-ADTSession
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

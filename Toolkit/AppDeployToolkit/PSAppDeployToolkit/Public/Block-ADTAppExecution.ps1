@@ -68,7 +68,7 @@ function Block-ADTAppExecution
         # Define path for storing temporary data.
         $tempPath = $adtConfig.Toolkit.TempPath
         $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
-        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-Module -Name "$($adtEnv.appDeployToolkitName)*").Name -replace '^',"$tempPath\" -join "', '")'"
+        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Import-Module' -Name '$((& $Script:CommandTable.'Get-Module' -Name "$($adtEnv.appDeployToolkitName)*").Name -replace '^',"$tempPath\" -join "', '")'"
     }
 
     process
@@ -99,7 +99,7 @@ function Block-ADTAppExecution
                 }
 
                 # Export the current state of the module for the scheduled task.
-                Copy-Item -Path $Script:PSScriptRoot* -Destination $tempPath -Exclude thumbs.db -Recurse -Force
+                & $Script:CommandTable.'Copy-Item' -Path $Script:PSScriptRoot* -Destination $tempPath -Exclude thumbs.db -Recurse -Force
 
                 # Set contents to be readable for all users (BUILTIN\USERS).
                 try
@@ -112,7 +112,7 @@ function Block-ADTAppExecution
                 }
 
                 # Clean up any previous state that might be lingering.
-                if ($task = Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
+                if ($task = & $Script:CommandTable.'Get-ScheduledTask' -TaskName $taskName -ErrorAction Ignore)
                 {
                     Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
                     Unblock-ADTAppExecution -Tasks $task
@@ -123,12 +123,12 @@ function Block-ADTAppExecution
                 try
                 {
                     $nstParams = @{
-                        Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
-                        Trigger = New-ScheduledTaskTrigger -AtStartup
-                        Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
-                        Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
+                        Principal = & $Script:CommandTable.'New-ScheduledTaskPrincipal' -Id Author -UserId S-1-5-18
+                        Trigger = & $Script:CommandTable.'New-ScheduledTaskTrigger' -AtStartup
+                        Action = & $Script:CommandTable.'New-ScheduledTaskAction' -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
+                        Settings = & $Script:CommandTable.'New-ScheduledTaskSettingsSet' -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
-                    [System.Void](ScheduledTasks\New-ScheduledTask @nstParams | ScheduledTasks\Register-ScheduledTask -TaskName $taskName)
+                    [System.Void](& $Script:CommandTable.'New-ScheduledTask' @nstParams | & $Script:CommandTable.'Register-ScheduledTask' -TaskName $taskName)
                 }
                 catch
                 {
@@ -140,12 +140,12 @@ function Block-ADTAppExecution
                 foreach ($process in $ProcessName -replace '$', '.exe')
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    Set-ADTRegistryKey -Key (Join-Path -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('installName'))'"
+                    Set-ADTRegistryKey -Key (& $Script:CommandTable.'Join-Path' -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('installName'))'"
                 }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

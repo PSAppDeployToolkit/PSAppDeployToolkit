@@ -220,7 +220,7 @@ function Start-ADTMsiProcess
                 {
                     # Resolve the product code to a publisher, application name, and version.
                     Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
-                    $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+                    $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
                     if (!$LogName)
@@ -258,7 +258,7 @@ function Start-ADTMsiProcess
                 # Build the log file path.
                 $logPath = if ($adtConfig.Toolkit.CompressLogs)
                 {
-                    [String]$logPath = Join-Path -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
+                    [String]$logPath = & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
                 }
                 else
                 {
@@ -269,7 +269,7 @@ function Start-ADTMsiProcess
                     }
 
                     # Build the log file path.
-                    Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $LogName
+                    & $Script:CommandTable.'Join-Path' -Path $adtConfig.MSI.LogPath -ChildPath $LogName
                 }
 
                 # Set the installation parameters.
@@ -325,9 +325,9 @@ function Start-ADTMsiProcess
                 {
                     $dirFilesPath
                 }
-                elseif (Test-Path -LiteralPath $Path)
+                elseif (& $Script:CommandTable.'Test-Path' -LiteralPath $Path)
                 {
-                    (Get-Item -LiteralPath $Path).FullName
+                    (& $Script:CommandTable.'Get-Item' -LiteralPath $Path).FullName
                 }
                 elseif ($pathIsProductCode)
                 {
@@ -358,7 +358,7 @@ function Start-ADTMsiProcess
                     # Fix up any bad file paths.
                     for ($i = 0; $i -lt $Transforms.Length; $i++)
                     {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $Transforms[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
+                        if (($FullPath = & $Script:CommandTable.'Join-Path' -Path (& $Script:CommandTable.'Split-Path' -Path $msiFile -Parent) -ChildPath $Transforms[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
                         {
                             $Transforms[$i] = $FullPath
                         }
@@ -374,7 +374,7 @@ function Start-ADTMsiProcess
                     # Fix up any bad file paths.
                     for ($i = 0; $i -lt $patches.Length; $i++)
                     {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
+                        if (($FullPath = & $Script:CommandTable.'Join-Path' -Path (& $Script:CommandTable.'Split-Path' -Path $msiFile -Parent) -ChildPath $patches[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
                         {
                             $Patches[$i] = $FullPath
                         }
@@ -395,7 +395,7 @@ function Start-ADTMsiProcess
                     {
                         [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }
                         if ($Transforms) {$GetMsiTablePropertySplat.Add('TransformPath', $transforms)}
-                        Get-ADTMsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty ProductCode -ErrorAction Stop
+                        Get-ADTMsiTableProperty @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode -ErrorAction Stop
                     }
                     catch
                     {
@@ -520,7 +520,7 @@ function Start-ADTMsiProcess
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

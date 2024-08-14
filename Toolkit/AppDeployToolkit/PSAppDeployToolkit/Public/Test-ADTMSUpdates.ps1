@@ -56,15 +56,15 @@ function Test-ADTMSUpdates
             try
             {
                 # Attempt to get the update via Get-HotFix first as it's cheap.
-                if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
+                if (!($kbFound = !!(& $Script:CommandTable.'Get-HotFix' -Id $KbNumber -ErrorAction Ignore)))
                 {
-                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
-                    $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
+                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via & $Script:CommandTable.'Get-Hotfix' cmdlet. Trying via COM object.'
+                    $updateSearcher = (& $Script:CommandTable.'New-Object' -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
                     $updateSearcher.IncludePotentiallySupersededUpdates = $false
                     $updateSearcher.Online = $false
                     if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
                     {
-                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | Where-Object {($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)})
+                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & $Script:CommandTable.'Where-Object' {($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)})
                     }
                     else
                     {
@@ -84,7 +84,7 @@ function Test-ADTMSUpdates
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

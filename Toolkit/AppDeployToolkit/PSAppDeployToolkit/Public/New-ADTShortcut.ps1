@@ -126,12 +126,12 @@ function New-ADTShortcut
         {
             try
             {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
                 $FullPath = [System.IO.Path]::GetFullPath($Path)
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch
@@ -161,12 +161,12 @@ function New-ADTShortcut
                         throw (New-ADTErrorRecord @naerParams)
                     }
                 }
-                elseif (!(Test-Path -LiteralPath $PathDirectory -PathType Container))
+                elseif (!(& $Script:CommandTable.'Test-Path' -LiteralPath $PathDirectory -PathType Container))
                 {
                     try
                     {
                         Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
-                        [System.Void](New-Item -LiteralPath $PathDirectory -ItemType Directory -Force)
+                        [System.Void](& $Script:CommandTable.'New-Item' -LiteralPath $PathDirectory -ItemType Directory -Force)
                     }
                     catch
                     {
@@ -176,7 +176,7 @@ function New-ADTShortcut
                 }
 
                 # Remove any pre-existing shortcut first.
-                if (Test-Path -LiteralPath $FullPath -PathType Leaf)
+                if (& $Script:CommandTable.'Test-Path' -LiteralPath $FullPath -PathType Leaf)
                 {
                     Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
                     Remove-ADTFile -LiteralPath $FullPath
@@ -244,7 +244,7 @@ function New-ADTShortcut
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

@@ -80,7 +80,7 @@ function Invoke-ADTServiceAndDependencyOperation
             return
         }
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-        if ($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | Where-Object {$_.Status -ne $status})
+        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & $Script:CommandTable.'Where-Object' {$_.Status -ne $status})
         {
             foreach ($dependent in $dependentServices)
             {
@@ -118,13 +118,13 @@ function Invoke-ADTServiceAndDependencyOperation
 
         # Stop the parent service.
         Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
+        $Service = $Service | & $Script:CommandTable.'Stop-Service' -PassThru -WarningAction Ignore -Force
     }
     elseif (($Operation -eq 'Start') -and ($Service.Status -ne 'Running'))
     {
         # Start the parent service.
         Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | Start-Service -PassThru -WarningAction Ignore
+        $Service = $Service | & $Script:CommandTable.'Start-Service' -PassThru -WarningAction Ignore
 
         # Process all dependent services.
         Invoke-DependentServiceOperation

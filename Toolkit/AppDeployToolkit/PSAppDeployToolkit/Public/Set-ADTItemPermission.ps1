@@ -84,7 +84,7 @@ function Set-ADTItemPermission
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
         [ValidateScript({
-            if (!(Test-Path -Path $_))
+            if (!(& $Script:CommandTable.'Test-Path' -Path $_))
             {
                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
             }
@@ -152,14 +152,14 @@ function Set-ADTItemPermission
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
-                    ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($false, $true)
+                    ($Acl = & $Script:CommandTable.'Get-Acl' -Path $Path).SetAccessRuleProtection($false, $true)
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
-                    [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+                    [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
                     return
                 }
 
                 # Modify variables to remove file incompatible flags if this is a file.
-                if (Test-Path -LiteralPath $Path -PathType Leaf)
+                if (& $Script:CommandTable.'Test-Path' -LiteralPath $Path -PathType Leaf)
                 {
                     $Permission = $Permission -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
                     $Inheritance = [System.Security.AccessControl.InheritanceFlags]::None
@@ -167,11 +167,11 @@ function Set-ADTItemPermission
                 }
 
                 # Get object ACLs, disable inheritance but preserve inherited permissions.
-                ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($true, $true)
-                [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+                ($Acl = & $Script:CommandTable.'Get-Acl' -Path $Path).SetAccessRuleProtection($true, $true)
+                [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
 
                 # Get updated ACLs - without inheritance.
-                $Acl = Get-Acl -Path $Path
+                $Acl = & $Script:CommandTable.'Get-Acl' -Path $Path
 
                 # Apply permissions on each user.
                 foreach ($U in $User.Trim().Where({$_.Length}))
@@ -201,11 +201,11 @@ function Set-ADTItemPermission
                 }
 
                 # Use the prepared ACL.
-                [System.Void](Set-Acl -Path $Path -AclObject $Acl)
+                [System.Void](& $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl)
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

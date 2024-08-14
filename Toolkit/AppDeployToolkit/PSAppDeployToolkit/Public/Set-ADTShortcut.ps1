@@ -132,7 +132,7 @@ function Set-ADTShortcut
             try
             {
                 # Make sure .NET's current directory is synced with PowerShell's.
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
                 if ($extension -eq '.url')
                 {
                     $URLFile = [System.IO.File]::ReadAllLines($Path).ForEach({
@@ -232,7 +232,7 @@ function Set-ADTShortcut
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

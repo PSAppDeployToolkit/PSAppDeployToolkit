@@ -67,9 +67,9 @@ function Get-ADTRunningProcesses
                 {
                     # Get all running processes and append properties.
                     Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
-                    $runningProcesses = Get-Process -Name $processObjects.Name -ErrorAction Ignore | ForEach-Object {
-                        $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                            if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
+                    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & $Script:CommandTable.'ForEach-Object' {
+                        $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                            if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
                             {
                                 # The description of the process provided with the object.
                                 $objDescription
@@ -90,8 +90,8 @@ function Get-ADTRunningProcesses
                     # Return output if there's any.
                     if ($runningProcesses)
                     {
-                        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]." -DebugMessage:$DisableLogging
-                        $runningProcesses | Sort-Object -Property ProcessDescription
+                        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$DisableLogging
+                        $runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription
                     }
                     else
                     {
@@ -101,7 +101,7 @@ function Get-ADTRunningProcesses
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

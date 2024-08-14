@@ -32,7 +32,7 @@ function Invoke-ADTFunctionErrorHandler
     # Recover true ErrorActionPreference the caller may have set and set it here.
     $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
     {
-        Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
+        & $Script:CommandTable.'Get-Variable' -Name OriginalErrorAction -Scope 1 -ValueOnly
     }
     else
     {

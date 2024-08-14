@@ -61,11 +61,11 @@ function New-ADTFolder
             try
             {
                 Write-ADTLogEntry -Message "Creating folder [$Path]."
-                [System.Void](New-Item -Path $Path -ItemType Directory -Force)
+                [System.Void](& $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory -Force)
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

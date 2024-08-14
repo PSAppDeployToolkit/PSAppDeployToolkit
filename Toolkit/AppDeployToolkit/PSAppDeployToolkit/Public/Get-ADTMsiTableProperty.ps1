@@ -68,7 +68,7 @@ function Get-ADTMsiTableProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (!(Test-Path -Path $_ -PathType Leaf))
+            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
             {
                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
             }
@@ -78,7 +78,7 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if (!(Test-Path -Path $_ -PathType Leaf))
+            if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
             {
                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
             }
@@ -141,7 +141,7 @@ function Get-ADTMsiTableProperty
             try
             {
                 # Create a Windows Installer object and define properties for how the MSI database is opened
-                $Installer = New-Object -ComObject WindowsInstaller.Installer
+                $Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
                 $msiOpenDatabaseModeReadOnly = 0
                 $msiSuppressApplyTransformErrors = 63
                 $msiOpenDatabaseModePatchFile = 32
@@ -212,7 +212,7 @@ function Get-ADTMsiTableProperty
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch
@@ -222,7 +222,7 @@ function Get-ADTMsiTableProperty
         finally
         {
             # Release all COM objects to prevent file locks.
-            $null = foreach ($variable in (Get-Variable -Name View, SummaryInformation, Database, Installer -ValueOnly -ErrorAction Ignore))
+            $null = foreach ($variable in (& $Script:CommandTable.'Get-Variable' -Name View, SummaryInformation, Database, Installer -ValueOnly -ErrorAction Ignore))
             {
                 try
                 {

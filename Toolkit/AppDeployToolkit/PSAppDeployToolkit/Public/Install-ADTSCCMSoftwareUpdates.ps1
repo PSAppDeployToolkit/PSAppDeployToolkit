@@ -81,13 +81,13 @@ function Install-ADTSCCMSoftwareUpdates
                 Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'
                 Invoke-ADTSCCMTask -ScheduleId 'SoftwareUpdatesScan'
                 Write-ADTLogEntry -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
-                Start-Sleep -Seconds $SoftwareUpdatesScanWaitInSeconds
+                & $Script:CommandTable.'Start-Sleep' -Seconds $SoftwareUpdatesScanWaitInSeconds
 
                 # Find the number of missing updates.
                 try
                 {
                     Write-ADTLogEntry -Message 'Getting the number of missing updates...'
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
+                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
                 }
                 catch
                 {
@@ -104,20 +104,20 @@ function Install-ADTSCCMSoftwareUpdates
 
                 # Install missing updates.
                 Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $CMInstallMissingUpdates = (Get-CimInstance -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
+                $CMInstallMissingUpdates = (& $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
 
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do
                 {
-                    Start-Sleep -Seconds 60
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
+                    & $Script:CommandTable.'Start-Sleep' -Seconds 60
+                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
                     Write-ADTLogEntry -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
                 }
                 while (($CMInstallPendingUpdates.Count -ne 0) -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

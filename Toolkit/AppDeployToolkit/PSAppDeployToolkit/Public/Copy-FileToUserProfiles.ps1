@@ -166,7 +166,7 @@ https://psappdeploytoolkit.com
         }
 
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath) {
-            $CopyFileSplat.Destination = Join-Path $UserProfilePath $Destination
+            $CopyFileSplat.Destination = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
             Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):"
             Copy-File @CopyFileSplat
         }

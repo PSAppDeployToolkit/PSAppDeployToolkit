@@ -129,13 +129,13 @@ class ADTSession
         }
 
         # Establish start date/time first so we can accurately mark the start of execution.
-        $this.CurrentTime = Get-Date -Date $this.CurrentDateTime -UFormat '%T'
-        $this.CurrentDate = Get-Date -Date $this.CurrentDateTime -UFormat '%d-%m-%Y'
+        $this.CurrentTime = & $Script:CommandTable.'Get-Date' -Date $this.CurrentDateTime -UFormat '%T'
+        $this.CurrentDate = & $Script:CommandTable.'Get-Date' -Date $this.CurrentDateTime -UFormat '%d-%m-%Y'
         $this.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.CurrentDateTime)
 
         # Process provided parameters and amend some incoming values.
-        $Properties = (Get-Member -InputObject $this -MemberType Property -Force).Name
-        $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
+        $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
+        $Parameters.GetEnumerator().Where({$Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))}).ForEach({$this.($_.Key) = $_.Value})
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
@@ -171,11 +171,11 @@ class ADTSession
         if (!$this.DefaultMsiFile)
         {
             # Get all MSI files and return early if we haven't found anything.
-            if ($this.DefaultMsiFile = ($msiFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | Where-Object {$_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")} | Select-Object -ExpandProperty FullName -First 1)
+            if ($this.DefaultMsiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & $Script:CommandTable.'Where-Object' {$_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")} | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
             {
                 $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
             }
-            elseif ($this.DefaultMsiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1)
+            elseif ($this.DefaultMsiFile = $msiFiles | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
             {
                 $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.DefaultMsiFile)")
             }
@@ -208,7 +208,7 @@ class ADTSession
             # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
             if (!$this.DefaultMspFiles)
             {
-                $this.DefaultMspFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msp" | Select-Object -ExpandProperty FullName
+                $this.DefaultMspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName
             }
             if ($this.DefaultMspFiles)
             {
@@ -220,7 +220,7 @@ class ADTSession
             $msiProps = Get-ADTMsiTableProperty @gmtpParams -ErrorAction Stop
 
             # Generate list of MSI executables for testing later on.
-            if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
+            if ($this.DefaultMsiExecutablesList = & $Script:CommandTable.'Get-Member' -InputObject $msiProps | & $Script:CommandTable.'Where-Object' {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | & $Script:CommandTable.'ForEach-Object' {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
             {
                 $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.Name)].")
             }
@@ -309,7 +309,7 @@ class ADTSession
     hidden [System.Void] InitLogging([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Generate log paths from our installation properties.
-        $this.LogTempFolder = Join-Path -Path $ADTEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
+        $this.LogTempFolder = & $Script:CommandTable.'Join-Path' -Path $ADTEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
         if ($ADTConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
@@ -345,29 +345,29 @@ class ADTSession
                     $logFileExtension = [IO.Path]::GetExtension($logFile)
                     $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
                     $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
-                    [String]$ArchiveLogFilePath = Join-Path -Path $this.LogPath -ChildPath $ArchiveLogFileName
+                    [String]$ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
                     # Log message about archiving the log file.
                     $this.WriteLogEntry("Maximum log file size [$($ADTConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
 
                     # Rename the file
-                    Move-Item -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
+                    & $Script:CommandTable.'Move-Item' -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
 
                     # Start new log file and log message about archiving the old log file.
                     $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($ADTConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
 
                     # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
-                    $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
+                    $logFiles = $(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); & $Script:CommandTable.'Get-Item' -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | & $Script:CommandTable.'Sort-Object' -Property LastWriteTime
 
                     # Keep only the max number of log files
                     if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
                     {
-                        $logFiles | Select-Object -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | Remove-Item
+                        $logFiles | & $Script:CommandTable.'Select-Object' -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
                     }
                 }
                 catch
                 {
-                    Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
+                    & $Script:CommandTable.'Write-Host' -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
                 }
             }
         }
@@ -432,7 +432,7 @@ class ADTSession
     hidden [System.Void] LogUserInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Log details for all currently logged in users.
-        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | Format-List | Out-String)", $true)
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')", $true)
 
         # Provide detailed info about current process state.
         if ($ADTEnv.usersLoggedOn)
@@ -738,7 +738,7 @@ class ADTSession
             }
             default {
                 # Clean up app deferral history.
-                if (Test-Path -LiteralPath $this.RegKeyDeferHistory)
+                if (& $Script:CommandTable.'Test-Path' -LiteralPath $this.RegKeyDeferHistory)
                 {
                     $this.WriteLogEntry('Removing deferral history...')
                     Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
@@ -776,20 +776,20 @@ class ADTSession
             try
             {
                 # Get all archive files sorted by last write time
-                $ArchiveFiles = Get-ChildItem -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | Sort-Object LastWriteTime
+                $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
                 $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
 
                 # Keep only the max number of archive files
                 if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
                 {
-                    $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | Remove-Item
+                    $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
                 }
-                Compress-Archive -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+                & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
                 [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
             }
             catch
             {
-                Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
+                & $Script:CommandTable.'Write-Host' -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
             }
         }
     }
@@ -810,7 +810,7 @@ class ADTSession
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = Get-PSCallStack | Where-Object {![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')} | Select-Object -First 1
+        $caller = & $Script:CommandTable.'Get-PSCallStack' | & $Script:CommandTable.'Where-Object' {![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')} | & $Script:CommandTable.'Select-Object' -First 1
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
@@ -833,9 +833,9 @@ class ADTSession
         {
             $LogFileDirectory = $this.LogPath
         }
-        elseif (!(Test-Path -LiteralPath $LogFileDirectory -PathType Container))
+        elseif (!(& $Script:CommandTable.'Test-Path' -LiteralPath $LogFileDirectory -PathType Container))
         {
-            [System.Void](New-Item -Path $LogFileDirectory -Type Directory -Force)
+            [System.Void](& $Script:CommandTable.'New-Item' -Path $LogFileDirectory -Type Directory -Force)
         }
         if ([System.String]::IsNullOrWhiteSpace($LogFileName))
         {
@@ -861,7 +861,7 @@ class ADTSession
             # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)
             {
-                Out-File -InputObject ([System.String]::Format($logLine, $msg)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                & $Script:CommandTable.'Out-File' -InputObject ([System.String]::Format($logLine, $msg)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
 
             # Only write to host if we're configured to do so.
@@ -870,7 +870,7 @@ class ADTSession
                 # Only output using color options if running in a host which supports colors.
                 if ($Global:Host.UI.RawUI.ForegroundColor)
                 {
-                    Write-Host -Object ([System.String]::Format($conLine, $msg)) @whParams
+                    & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $msg)) @whParams
                 }
                 else
                 {

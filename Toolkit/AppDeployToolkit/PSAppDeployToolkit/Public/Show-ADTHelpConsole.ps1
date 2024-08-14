@@ -14,7 +14,7 @@ function Show-ADTHelpConsole
     #>
 
     # Run this via a new PowerShell window so it doesn't stall the main thread.
-    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$({
+    & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$({
         [CmdletBinding()]
         param
         (

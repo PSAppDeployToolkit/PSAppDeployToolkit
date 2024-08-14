@@ -10,10 +10,10 @@ function Import-ADTConfig
     $adtEnv = Get-ADTEnvironment
 
     # Create variables within this scope from the database, it's needed during the config import.
-    $adtEnv.GetEnumerator().ForEach({New-Variable -Name $_.Name -Value $_.Value -Option Constant})
+    $adtEnv.GetEnumerator().ForEach({& $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant})
 
     # Read config file and cast the version into an object.
-    $config = Import-LocalizedData -BaseDirectory $Script:PSScriptRoot\Config -FileName config.psd1
+    $config = & $Script:CommandTable.'Import-LocalizedData' -BaseDirectory $Script:PSScriptRoot\Config -FileName config.psd1
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
@@ -44,7 +44,7 @@ function Import-ADTConfig
     # Expand out asset file paths and test that the files are present.
     foreach ($asset in ('Icon', 'Logo', 'Banner'))
     {
-        $config.Assets.$asset = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
+        $config.Assets.$asset = (& $Script:CommandTable.'Get-Item' -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
     }
 
     # If we're using fluent dialogs but running in the ISE, force it back to classic.

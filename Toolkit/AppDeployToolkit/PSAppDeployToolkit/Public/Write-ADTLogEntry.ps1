@@ -72,7 +72,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source = (Get-PSCallStack).Command.Where({![System.String]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '^Write-(Log|ADTLogEntry)$')})[0],
+        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack').Command.Where({![System.String]::IsNullOrWhiteSpace($_) -and ($_ -notmatch '^Write-(Log|ADTLogEntry)$')})[0],
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -108,7 +108,7 @@ function Write-ADTLogEntry
             }
             elseif (!$DebugMessage)
             {
-                $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
+                $Message -replace '^',"[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
             }
 
             # Return the provided message if PassThru is true.
@@ -119,7 +119,7 @@ function Write-ADTLogEntry
         }
         catch
         {
-            Write-Error -ErrorRecord $_
+            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
         }
     }
     catch
