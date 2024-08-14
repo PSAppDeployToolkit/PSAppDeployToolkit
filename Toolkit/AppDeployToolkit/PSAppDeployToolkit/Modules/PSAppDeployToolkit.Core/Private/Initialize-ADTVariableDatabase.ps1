@@ -25,7 +25,6 @@
 
     ## Variables: Script Info
     $variables.Add('appDeployMainScriptVersion', $adtModule.Version)
-    $variables.Add('appDeployMainScriptMinimumConfigVersion', $adtModule.Version)
 
     ## Variables: Culture
     $variables.Add('culture', $Host.CurrentCulture)
@@ -352,7 +351,6 @@
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', (Get-ADTGuidRegexPattern))
-    $variables.Add('InvalidFileNameCharsRegExPattern', "($([System.String]::Join('|', $variables.invalidFileNameChars.ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
     $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
     ## Variables: Registry Keys

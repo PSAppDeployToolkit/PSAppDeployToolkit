@@ -41,7 +41,7 @@
     }
 
     process {
-        return $Name.Trim() -replace (Get-ADTEnvironment).InvalidFileNameCharsRegExPattern
+        return $Name.Trim() -replace "($([System.String]::Join('|', [System.IO.Path]::GetInvalidFileNameChars().ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))"
     }
 
     end {

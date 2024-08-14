@@ -12,10 +12,10 @@
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
-    if ($config.File.Version -lt $adtEnv.appDeployMainScriptMinimumConfigVersion)
+    if ($config.File.Version -lt $adtModule.Version)
     {
         $naerParams = @{
-            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtEnv.appDeployMainScriptMinimumConfigVersion)]. Please upgrade the configuration file.")
+            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($adtModule.Version)]. Please upgrade the configuration file.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'ConfigFileVersionMismatch'
             TargetObject = $config
