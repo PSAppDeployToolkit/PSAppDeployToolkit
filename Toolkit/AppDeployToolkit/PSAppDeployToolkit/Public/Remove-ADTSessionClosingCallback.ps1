@@ -15,5 +15,12 @@ function Remove-ADTSessionClosingCallback
 	)
 
 	# Send it off to the backend function.
-	Invoke-ADTSessionCallbackOperation -Type Closing -Action Remove @PSBoundParameters
+	try
+	{
+		Invoke-ADTSessionCallbackOperation -Type Closing -Action Remove @PSBoundParameters
+	}
+	catch
+	{
+		$PSCmdlet.ThrowTerminatingError($_)
+	}
 }
