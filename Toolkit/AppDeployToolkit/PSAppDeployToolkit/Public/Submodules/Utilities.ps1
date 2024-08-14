@@ -3094,7 +3094,7 @@ Function Configure-EdgeExtension {
     }
     Catch {
         Write-ADTLogEntry -Message "Failed to configure extension with ID $extensionID. `r`n$(Resolve-Error)" -Severity 3
-        Exit-Script -ExitCode 60001
+        Close-ADTSession -ExitCode 60001
     }
 }
 

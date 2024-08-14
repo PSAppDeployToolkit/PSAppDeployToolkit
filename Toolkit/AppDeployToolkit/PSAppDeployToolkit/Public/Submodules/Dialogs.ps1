@@ -491,7 +491,7 @@ https://psappdeploytoolkit.com
                 # Restore minimized windows
                 $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
                 If ($ExitOnTimeout) {
-                    Exit-Script -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
                 }
                 Else {
                     Write-ADTLogEntry -Message 'UI timed out but `$ExitOnTimeout set to `$false. Continue...' -Source ${CmdletName}
@@ -982,7 +982,7 @@ https://psappdeploytoolkit.com
                 If (-not $Silent) {
                     Show-InstallationPrompt -Message ($Script:ADT.Strings.DiskSpace.Message -f $Script:ADT.CurrentSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, ($freeDiskSpace)) -ButtonRightText 'OK' -Icon 'Error'
                 }
-                Exit-Script -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
             }
             Else {
                 Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.' -Source ${CmdletName}
@@ -1217,7 +1217,7 @@ https://psappdeploytoolkit.com
                     #  Restore minimized windows
                     $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
 
-                    Exit-Script -ExitCode $Script:ADT.Config.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DefaultExitCode
                 }
                 #  Stop the script (user chose to defer)
                 ElseIf ($promptResult -eq 'Defer') {
@@ -1229,7 +1229,7 @@ https://psappdeploytoolkit.com
                     #  Restore minimized windows
                     $null = $Script:ADT.Environment.ShellApp.UndoMinimizeAll()
 
-                    Exit-Script -ExitCode $Script:ADT.Config.UI.DeferExitCode
+                    Close-ADTSession -ExitCode $Script:ADT.Config.UI.DeferExitCode
                 }
             }
         }

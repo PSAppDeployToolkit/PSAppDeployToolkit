@@ -741,7 +741,7 @@ Closes the dialog created by Show-InstallationProgress.
 
 Closes the dialog created by Show-InstallationProgress.
 
-This function is called by the Exit-Script function to close a running instance of the progress dialog if found.
+This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
 .PARAMETER WaitingTime
 
