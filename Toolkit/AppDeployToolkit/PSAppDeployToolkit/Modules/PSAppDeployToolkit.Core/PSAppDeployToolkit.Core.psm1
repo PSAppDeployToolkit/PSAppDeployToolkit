@@ -10,7 +10,7 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Add the custom types required for the toolkit.
-Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ErrorAction Stop -ReferencedAssemblies $(
+Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).cs" -ReferencedAssemblies $(
     'System.DirectoryServices'
     if ($PSVersionTable.PSEdition.Equals('Core'))
     {
@@ -23,7 +23,7 @@ Add-Type -LiteralPath "$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Modul
 Export-ModuleMember -Function (Get-ChildItem -LiteralPath $PSScriptRoot\Public).BaseName
 
 # Define object for holding all PSADT variables.
-New-Variable -Name ADT -Option ReadOnly -Value @{
+New-Variable -Name ADT -Option ReadOnly -Value ([pscustomobject]@{
     Sessions = [System.Collections.Generic.List[ADTSession]]::new()
     TerminalServerMode = $false
     Environment = $null
@@ -32,7 +32,7 @@ New-Variable -Name ADT -Option ReadOnly -Value @{
     Strings = $null
     LastExitCode = 0
     Initialised = $false
-}
+})
 
 # Logging constants used within an [ADTSession] object.
 New-Variable -Name Logging -Option Constant -Value ([ordered]@{
@@ -40,13 +40,13 @@ New-Variable -Name Logging -Option Constant -Value ([ordered]@{
         CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
         Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
     }).AsReadOnly()
-    SeverityNames = [System.Array]::AsReadOnly(@(
+    SeverityNames = [System.Array]::AsReadOnly([System.String[]]@(
         'Success'
         'Info'
         'Warning'
         'Error'
     ))
-    SeverityColours = [System.Array]::AsReadOnly(@(
+    SeverityColours = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]@(
         ([ordered]@{ForegroundColor = [System.ConsoleColor]::Green; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
         ([ordered]@{}).AsReadOnly()
         ([ordered]@{ForegroundColor = [System.ConsoleColor]::Yellow; BackgroundColor = [System.ConsoleColor]::Black}).AsReadOnly()
