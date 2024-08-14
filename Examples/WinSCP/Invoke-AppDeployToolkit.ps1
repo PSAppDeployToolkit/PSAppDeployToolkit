@@ -316,7 +316,6 @@ catch
 
 try
 {
-    if ($TerminalServerMode) {Enable-ADTTerminalServerInstallMode}
     & "$($DeploymentType)-ADTApplication"
     Close-ADTSession
 }
