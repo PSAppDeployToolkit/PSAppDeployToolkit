@@ -15,5 +15,12 @@ function Add-ADTSessionOpeningCallback
 	)
 
 	# Send it off to the backend function.
-	Invoke-ADTSessionCallbackOperation -Type Opening -Action Add @PSBoundParameters
+	try
+	{
+		Invoke-ADTSessionCallbackOperation -Type Opening -Action Add @PSBoundParameters
+	}
+	catch
+	{
+		$PSCmdlet.ThrowTerminatingError($_)
+	}
 }
