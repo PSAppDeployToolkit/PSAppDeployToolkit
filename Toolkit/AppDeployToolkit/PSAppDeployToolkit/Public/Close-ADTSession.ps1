@@ -78,24 +78,28 @@ function Close-ADTSession
             $null = $adtData.Sessions.Remove($adtSession)
         }
 
-        # Clean up environment if this was the last session.
-        if (!$adtData.Sessions.Count)
+        # Return early if this wasn't the last session.
+        if ($adtData.Sessions.Count)
         {
-            # Flag the module as uninitialised upon last session closure.
-            $adtData.Initialised = $false
-
-            # Exit out if this function was called within a script.
-            if (!$adtSession.RunspaceOrigin)
-            {
-                # If a callback failed (such as Close-ADTInstallationProgress), it can halt the exit process.
-                # In such situations, forcibly exit the process via System.Environment to kill the process.
-                if ($Host.Name.Equals('ConsoleHost') -and $callbackErrors)
-                {
-                    [System.Environment]::Exit($adtData.LastExitCode)
-                }
-                exit $adtData.LastExitCode
-            }
+            return
         }
+
+        # Flag the module as uninitialised upon last session closure.
+        $adtData.Initialised = $false
+
+        # Return early if this function was called from the command line.
+        if ($adtSession.RunspaceOrigin)
+        {
+            return
+        }
+
+        # If a callback failed and we're in a proper console, forcibly exit the process.
+        # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
+        if ($Host.Name.Equals('ConsoleHost') -and $callbackErrors)
+        {
+            [System.Environment]::Exit($adtData.LastExitCode)
+        }
+        exit $adtData.LastExitCode
     }
 
     end
