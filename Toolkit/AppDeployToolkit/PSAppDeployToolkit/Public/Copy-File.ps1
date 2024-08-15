@@ -134,10 +134,10 @@ https://psappdeploytoolkit.com
     {
         Foreach ($srcPath in $Path)
         {
-            $UseRobocopyThis = $UseRobocopy
-            If ($UseRobocopyThis)
+            Try
             {
-                Try
+                $UseRobocopyThis = $UseRobocopy
+                If ($UseRobocopyThis)
                 {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     If ($srcPath -match '\*.*\\')
@@ -150,7 +150,6 @@ https://psappdeploytoolkit.com
                     {
                         $UseRobocopyThis = $false
                         Write-ADTLogEntry "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
-
                     }
                     If ($UseRobocopyThis)
                     {
@@ -166,8 +165,9 @@ https://psappdeploytoolkit.com
                             # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $srcPath.TrimEnd('\')).Path
-                            $RobocopyDestination = & $Script:CommandTable.'Join-Path' (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination).Path (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $RobocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            $RobocopyDestination = & $Script:CommandTable.'Join-Path' ((& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                             $RobocopyFile = '*'
                         }
                         Else
@@ -175,8 +175,17 @@ https://psappdeploytoolkit.com
                             # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
                             # Trim ending backslash from paths which can cause problems with Robocopy
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                            $RobocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath (& $Script:CommandTable.'Split-Path' -Path $srcPath -Parent)).Path
-                            $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\')).Path
+                            # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths
+                            $ParentPath = & $Script:CommandTable.'Split-Path' -Path $srcPath -Parent
+                            if ([string]::IsNullOrEmpty($ParentPath))
+                            {
+                                $RobocopySource = $PWD
+                            }
+                            else
+                            {
+                                $RobocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            }
+                            $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                         }
                         If ($Flatten)
@@ -207,7 +216,7 @@ https://psappdeploytoolkit.com
                         If ($Recurse)
                         {
                             # Add /E to Robocopy parameters if it is not already included
-                            if ($RobocopyParams -notmatch '/E(\s|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s|$)')
+                            if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)')
                             {
                                 $RobocopyParams = $RobocopyParams + " /E"
                             }
@@ -216,17 +225,32 @@ https://psappdeploytoolkit.com
                         Else
                         {
                             # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
-                            $RobocopyParams = $RobocopyParams -replace '/E(\s|$)'
-                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s|$)'
+                            $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                             Write-ADTLogEntry -Message "Copying file(s) in path [$srcPath] to destination [$Destination]."
                         }
+
+                        # Older versions of Robocopy do not support /IM, remove if unsupported
+                        if (!((&Robocopy /?) -match '/IM\s'))
+                        {
+                            $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
+                            $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
+                        }
+
+                        If (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $RobocopyDestination -PathType Container))
+                        {
+                            $null = & $Script:CommandTable.'New-Item' -Path $RobocopyDestination -Type 'Directory' -Force -ErrorAction 'Stop'
+                        }
+                        $DestFolderAttributes = (& $Script:CommandTable.'Get-Item' -LiteralPath $RobocopyDestination -Force).Attributes
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-ADTLogEntry -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs"
                         $RobocopyResult = Start-ADTProcess -Path $RobocopyCommand -Parameters $RobocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -IgnoreExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
-                        # Trim the leading whitespace from each line of Robocopy output, ignore the last empty line, and join the lines back together
-                        $RobocopyOutput = ($RobocopyResult.StdOut.Split("`n").TrimStart() | & $Script:CommandTable.'Select-Object' -SkipLast 1) -join "`n"
+                        # Trim the last line plus leading whitespace from each line of Robocopy output
+                        $RobocopyOutput = $RobocopyResult.StdOut.Trim() -Replace '\n\s+', "`n"
                         Write-ADTLogEntry -Message "Robocopy output:`n$RobocopyOutput"
+
+                        & $Script:CommandTable.'Set-ItemProperty' -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
 
                         Switch ($RobocopyResult.ExitCode)
                         {
@@ -242,15 +266,15 @@ https://psappdeploytoolkit.com
                             16
                             {
                                 Write-ADTLogEntry -Message "Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3
-                                If (-not $ContinueOnError)
+                                If (-not $ContinueFileCopyOnError)
                                 {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
                             }
                             default
                             {
-                                Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord)" -Severity 3
-                                If (-not $ContinueOnError)
+                                Write-ADTLogEntry -Message "Robocopy error $($RobocopyResult.ExitCode)." -Severity 3
+                                If (-not $ContinueFileCopyOnError)
                                 {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
@@ -258,18 +282,7 @@ https://psappdeploytoolkit.com
                         }
                     }
                 }
-                Catch
-                {
-                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    If (-not $ContinueOnError)
-                    {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
-                }
-            }
-            If ($UseRobocopyThis -eq $false)
-            {
-                Try
+                If ($UseRobocopyThis -eq $false)
                 {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     If ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType 'Container')))
@@ -334,13 +347,17 @@ https://psappdeploytoolkit.com
                         Write-ADTLogEntry -Message 'File copy completed successfully.'
                     }
                 }
-                Catch
+            }
+            Catch
+            {
+                Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                If (-not $ContinueFileCopyOnError)
                 {
-                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    If (-not $ContinueOnError)
-                    {
-                        Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
-                    }
+                    return
+                }
+                If (-not $ContinueOnError)
+                {
+                    Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                 }
             }
         }
