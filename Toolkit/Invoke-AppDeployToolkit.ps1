@@ -137,15 +137,15 @@ function Install-ADTApplication
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
-        if (($defaultMspFiles = $adtSession.DefaultMspFiles))
+        if ($adtSession.DefaultMspFiles)
         {
-            $defaultMspFiles | ForEach-Object { Start-ADTMsiProcess -Action 'Patch' -Path $_ }
+            $adtSession.DefaultMspFiles | Start-ADTMsiProcess -Action Patch
         }
     }
 
@@ -158,6 +158,7 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Installation tasks here>
+
 
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
@@ -190,10 +191,10 @@ function Uninstall-ADTApplication
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
@@ -233,10 +234,10 @@ function Repair-ADTApplication
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Repair'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
@@ -280,7 +281,7 @@ try
 }
 catch
 {
-    $Host.UI.WriteErrorLine(($_ | Out-String))
+    $Host.UI.WriteErrorLine((Out-String -InputObject $_))
     exit 60008
 }
 
@@ -298,8 +299,7 @@ try
 }
 catch
 {
-    $mainErrorMessage = "$($adtSession.DeployAppScriptFriendlyName) received a terminating error and could not complete its operations.`n`n`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
-    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
+    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode 60001
 }
