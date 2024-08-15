@@ -51,11 +51,6 @@ function Start-ADTMsiProcess
 
     For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
-    .PARAMETER LogName
-    Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-
-    For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
-
     .PARAMETER WorkingDirectory
     Overrides the working directory. The working directory is set to the location of the MSI file.
 
