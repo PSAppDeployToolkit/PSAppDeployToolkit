@@ -140,7 +140,7 @@ function Block-ADTAppExecution
                 foreach ($process in $ProcessName -replace '$', '.exe')
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    Set-ADTRegistryKey -Key (& $Script:CommandTable.'Join-Path' -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('installName'))'"
+                    Set-ADTRegistryKey -Key (& $Script:CommandTable.'Join-Path' -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('installName').Replace("'","''"))'"
                 }
             }
             catch
