@@ -16,8 +16,9 @@ function Close-ADTSession
 
     begin
     {
-        # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Make this function continue on error and ensure the caller doesn't override ErrorAction.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction $ErrorActionPreference
     }
 
     process
@@ -37,9 +38,9 @@ function Close-ADTSession
         }
 
         # Invoke all callbacks and capture all errors.
-        $callbackErrors = $(
-            # Invoke closing session callbacks.
-            foreach ($callback in $($adtData.Callbacks.Closing))
+        $callbackErrors = foreach ($callback in $($adtData.Callbacks.Closing; if ($adtData.Sessions.Count.Equals(1)) {$adtData.Callbacks.Finishing}))
+        {
+            try
             {
                 try
                 {
@@ -47,35 +48,30 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_
+                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                 }
             }
-
-            # Invoke final callbacks.
-            if ($adtData.Sessions.Count.Equals(1))
+            catch
             {
-                foreach ($callback in $($adtData.Callbacks.Finishing))
-                {
-                    try
-                    {
-                        & $callback
-                    }
-                    catch
-                    {
-                        $_
-                    }
-                }
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]." -PassThru
             }
-        )
+        }
 
         # Close out the active session and clean up session state.
-        $sessionCloseError = try
+        try
         {
-            $adtSession.Close()
+            try
+            {
+                $adtSession.Close()
+            }
+            catch
+            {
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+            }
         }
         catch
         {
-            $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
         }
         finally
         {
@@ -91,32 +87,14 @@ function Close-ADTSession
             # Exit out if this function was called within a script.
             if (!$adtSession.RunspaceOrigin)
             {
+                # If a callback failed (such as Close-ADTInstallationProgress), it can halt the exit process.
+                # In such situations, forcibly exit the process via System.Environment to kill the process.
                 if ($Host.Name.Equals('ConsoleHost') -and $callbackErrors)
                 {
                     [System.Environment]::Exit($adtData.LastExitCode)
                 }
                 exit $adtData.LastExitCode
             }
-        }
-
-        # If this wasn't the last session, process any captured errors.
-        try
-        {
-            # If we had callback errors, throw out the first one.
-            foreach ($callbackError in $callbackErrors)
-            {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $callbackError
-            }
-
-            # If the session closure failed, terminate out.
-            if ($sessionCloseError)
-            {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $sessionCloseError
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

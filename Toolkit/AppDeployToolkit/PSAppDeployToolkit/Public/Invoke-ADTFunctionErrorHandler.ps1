@@ -7,6 +7,7 @@
 function Invoke-ADTFunctionErrorHandler
 {
     [CmdletBinding(DefaultParameterSetName = 'None')]
+    [OutputType([System.Management.Automation.ErrorRecord])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -20,6 +21,9 @@ function Invoke-ADTFunctionErrorHandler
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LogMessage')]
         [ValidateNotNullOrEmpty()]
@@ -64,5 +68,11 @@ function Invoke-ADTFunctionErrorHandler
     elseif (!(Test-ADTSessionActive) -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))
     {
         $Cmdlet.WriteError($ErrorRecord)
+    }
+
+    # Return the provided ErrorRecord object if passing it through.
+    if ($PassThru)
+    {
+        return $ErrorRecord
     }
 }
