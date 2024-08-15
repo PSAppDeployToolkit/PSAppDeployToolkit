@@ -147,17 +147,8 @@ function Open-ADTSession
                     # Open the newly instantiated session.
                     $adtData.Sessions[-1].Open()
 
-                    # Invoke first time callbacks.
-                    if ($adtData.Sessions.Count.Equals(1))
-                    {
-                        foreach ($callback in $($adtData.Callbacks.Starting))
-                        {
-                            & $callback
-                        }
-                    }
-
-                    # Invoke new session callbacks.
-                    foreach ($callback in $($adtData.Callbacks.Opening))
+                    # Invoke all callbacks.
+                    foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) {$adtData.Callbacks.Starting}; $adtData.Callbacks.Opening))
                     {
                         & $callback
                     }
