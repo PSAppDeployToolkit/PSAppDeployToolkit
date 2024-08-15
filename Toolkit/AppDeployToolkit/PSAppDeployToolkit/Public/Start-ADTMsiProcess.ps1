@@ -125,7 +125,7 @@ function Start-ADTMsiProcess
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action = 'Install',
 
-        [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({
                 if (($_ -notmatch (Get-ADTGuidRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
                 {
@@ -201,7 +201,7 @@ function Start-ADTMsiProcess
         {
             $adtConfig = Get-ADTConfig
             $adtSession = Get-ADTSession
-            $pathIsProductCode = $Path -match (Get-ADTGuidRegexPattern)
+            $guidRegex = Get-ADTGuidRegexPattern
         }
         catch
         {
@@ -217,7 +217,7 @@ function Start-ADTMsiProcess
             try
             {
                 # If the path matches a product code.
-                if ($pathIsProductCode)
+                if (($pathIsProductCode = $Path -match $guidRegex))
                 {
                     # Resolve the product code to a publisher, application name, and version.
                     Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'

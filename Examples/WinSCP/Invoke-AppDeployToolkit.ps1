@@ -137,21 +137,21 @@ function Install-ADTApplication
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Install'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
-        if (($defaultMspFiles = $adtSession.DefaultMspFiles))
+        if ($adtSession.DefaultMspFiles)
         {
-            $defaultMspFiles | ForEach-Object { Start-ADTMsiProcess -Action 'Patch' -Path $_ }
+            $adtSession.DefaultMspFiles | Start-ADTMsiProcess -Action Patch
         }
     }
 
     ## <Perform Installation tasks here>
-
     Start-ADTMsiProcess -Action Install -Path 'WinSCP-6.3.3.msi'
+
 
     ##*===============================================
     ##* POST-INSTALLATION
@@ -159,16 +159,14 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Installation tasks here>
-
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
-
-    [scriptblock]$HKCURegistrySettings = {
+    Invoke-ADTAllUsersRegistryChange -RegistrySettings {
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
     }
-    Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
+
 
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
@@ -201,17 +199,17 @@ function Uninstall-ADTApplication
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Uninstall'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
 
     ## <Perform Uninstallation tasks here>
-
     Start-ADTMsiProcess -Action Uninstall -Path 'WinSCP-6.3.3.msi'
+
 
     ##*===============================================
     ##* POST-UNINSTALLATION
@@ -245,17 +243,17 @@ function Repair-ADTApplication
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        [Hashtable]$ExecuteDefaultMSISplat = @{ Action = 'Repair'; Path = $adtSession.DefaultMsiFile }
-        if (($defaultMstFile = $adtSession.DefaultMstFile))
+        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
 
     ## <Perform Repair tasks here>
-
     Start-ADTMsiProcess -Action Repair -Path 'WinSCP-6.3.3.msi' -RepairFromSource
+
 
     ##*===============================================
     ##* POST-REPAIR
@@ -263,16 +261,13 @@ function Repair-ADTApplication
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Repair tasks here>
-
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
-
-    [scriptblock]$HKCURegistrySettings = {
+    Invoke-ADTAllUsersRegistryChange -RegistrySettings {
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
         Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
     }
-    Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
 }
 
 
@@ -303,7 +298,7 @@ try
 }
 catch
 {
-    $Host.UI.WriteErrorLine(($_ | Out-String))
+    $Host.UI.WriteErrorLine((Out-String -InputObject $_))
     exit 60008
 }
 
@@ -321,8 +316,7 @@ try
 }
 catch
 {
-    $mainErrorMessage = "$($adtSession.DeployAppScriptFriendlyName) received a terminating error and could not complete its operations.`n`n`n$(Resolve-ADTError -ErrorRecord $_)"
-    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
+    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode 60001
 }
