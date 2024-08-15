@@ -316,6 +316,12 @@ function Start-ADTMsiProcess
                     }
                 }
 
+                # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                if (!(Test-ADTCallerIsAdmin))
+                {
+                    $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
+                }
+
                 # Append ".log" to the MSI logfile path and enclose in quotes.
                 if ([IO.Path]::GetExtension($msiLogFile) -ne '.log')
                 {
