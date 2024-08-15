@@ -315,7 +315,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', (Get-ADTGuidRegexPattern))
-    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ' | & {process {[System.Text.RegularExpressions.Regex]::Escape($_)}}))))")
+    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "[$([regex]::Escape('\/:*?"<>|'))]")
 
     # Add in WScript shell variables.
     $variables.Add('Shell', (& $Script:CommandTable.'New-Object' -ComObject 'WScript.Shell'))
