@@ -324,8 +324,16 @@ class ADTSession
             $this.LogPath = [System.IO.Directory]::CreateDirectory($ADTConfig.Toolkit.LogPath).FullName
         }
 
-        # Generate the log filename to use.
-        $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType).log"
+        # Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+        if (Test-ADTCallerIsAdmin)
+        {
+            $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType).log"
+        }
+        else
+        {
+            $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName)).log"
+        }
+
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
 
         # Check if log file needs to be rotated.
