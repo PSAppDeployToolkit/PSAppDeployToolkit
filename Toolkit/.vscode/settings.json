@@ -16,7 +16,7 @@
     "powershell.codeFormatting.autoCorrectAliases": true,
     "powershell.codeFormatting.ignoreOneLineBlock": true,
     "powershell.codeFormatting.newLineAfterCloseBrace": true,
-    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.preset": "Allman",
     "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
     "powershell.codeFormatting.useConstantStrings": true,
     "powershell.codeFormatting.useCorrectCasing": true,
