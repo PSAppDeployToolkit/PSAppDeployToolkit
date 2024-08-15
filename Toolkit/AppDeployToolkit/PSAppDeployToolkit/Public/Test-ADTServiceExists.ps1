@@ -12,7 +12,7 @@ function Test-ADTServiceExists
     Check to see if a service exists.
 
     .DESCRIPTION
-    Check to see if a service exists (using WMI method because Get-Service will generate ErrorRecord if service doesn't exist).
+    Check to see if a service exists. UseCIM switch can be used in conjunction with PassThru to return WMI objects for PSADT v3.x compatibility, however this method fails in Windows Sandbox.
 
     .PARAMETER Name
     Specify the name of the service.
