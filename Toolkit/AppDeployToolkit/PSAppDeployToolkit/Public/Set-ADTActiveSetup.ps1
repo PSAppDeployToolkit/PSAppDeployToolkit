@@ -93,7 +93,7 @@ function Set-ADTActiveSetup
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
         [ValidateScript({
-                if (('.exe', '.vbs', '.cmd', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
+                if (('.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
                 }
@@ -428,41 +428,64 @@ function Set-ADTActiveSetup
                 {
                     '.exe'
                     {
-                        [String]$CUStubExePath = "$StubExePath"
+                        [String]$CUStubExePath = $StubExePath
                         [String]$CUArguments = $Arguments
-                        [String]$StubPath = "`"$CUStubExePath`""
+                        if ([string]::IsNullOrEmpty($Arguments))
+                        {
+                            [String]$StubPath = "`"$CUStubExePath`""
+                        }
+                        else
+                        {
+                            [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                        }
                     }
-                    '.js'
+                    { $_ -in '.js', '.vbs' }
                     {
-                        [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
-                        [String]$CUArguments = "//nologo `"$StubExePath`""
+                        [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\wscript.exe"
+                        if ([string]::IsNullOrEmpty($Arguments))
+                        {
+                            [String]$CUArguments = "//nologo `"$StubExePath`""
+                        }
+                        else
+                        {
+                            [String]$CUArguments = "//nologo `"$StubExePath`"  $Arguments"
+                        }
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
-                    '.vbs'
-                    {
-                        [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cscript.exe"
-                        [String]$CUArguments = "//nologo `"$StubExePath`""
-                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                    }
-                    '.cmd'
+                    { $_ -in '.cmd', '.bat' }
                     {
                         [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
-                        [String]$CUArguments = "/C `"$StubExePath`""
+                        # Prefix any CMD.exe metacharacters ^ or & with ^ to escape them - parentheses only require escaping when there's no space in the path!
+                        if ($StubExePath.Trim() -match '\s')
+                        {
+                            $StubExePath = $StubExePath -replace '([&^])', '^$1'
+                        }
+                        else
+                        {
+                            $StubExePath = $StubExePath -replace '([()&^])', '^$1'
+                        }
+                        if ([string]::IsNullOrEmpty($Arguments))
+                        {
+                            [String]$CUArguments = "/C `"$StubExePath`""
+                        }
+                        else
+                        {
+                            [String]$CUArguments = "/C `"`"$StubExePath`" $Arguments`""
+                        }
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
                     '.ps1'
                     {
-                        [String]$CUStubExePath = Get-ADTPowerShellProcessPath
-                        [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -Command `"& {& `\`"$StubExePath`\`"}`""
+                        [String]$CUStubExePath = "$PSHOME\powershell.exe"
+                        if ([string]::IsNullOrEmpty($Arguments))
+                        {
+                            [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                        }
+                        else
+                        {
+                            [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                        }
                         [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
-                    }
-                }
-                if ($Arguments)
-                {
-                    $StubPath = "$StubPath $Arguments"
-                    if ($StubExeExt -ne '.exe')
-                    {
-                        $CUArguments = "$CUArguments $Arguments"
                     }
                 }
 

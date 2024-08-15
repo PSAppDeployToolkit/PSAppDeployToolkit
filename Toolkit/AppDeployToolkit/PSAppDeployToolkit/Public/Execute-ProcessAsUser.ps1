@@ -145,7 +145,7 @@ https://psappdeploytoolkit.com
             $executeAsUserTempPath = $TempPath
             If (($TempPath -eq $adtSession.GetLoggedOnUserTempPath()) -and ($RunLevel -eq 'HighestPrivilege'))
             {
-                Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directoy." -Severity 'Warning'
+                Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directory." -Severity 'Warning'
             }
         }
         Else
@@ -155,124 +155,125 @@ https://psappdeploytoolkit.com
     }
     Process
     {
+
+        ## Initialize exit code variable
+        [Int32]$executeProcessAsUserExitCode = 0
+
+        ## Confirm that the username field is not empty
+        If (-not $UserName)
+        {
+            [Int32]$executeProcessAsUserExitCode = 60009
+            Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3
+            If (-not $ContinueOnError)
+            {
+                Throw "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
+            }
+            Return
+        }
+
+        ## Confirm if the toolkit is running with administrator privileges
+        If (($RunLevel -eq 'HighestAvailable') -and (-not $adtEnv.IsAdmin))
+        {
+            [Int32]$executeProcessAsUserExitCode = 60003
+            Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3
+            If (-not $ContinueOnError)
+            {
+                Throw "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
+            }
+            Return
+        }
+
+        ## Check whether the specified Working Directory exists
+        If ($WorkingDirectory -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $WorkingDirectory -PathType 'Container')))
+        {
+            Write-ADTLogEntry -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2
+        }
+
+        ##  Remove the temporary folder
+        If (& $Script:CommandTable.'Test-Path' -LiteralPath $executeAsUserTempPath -PathType 'Container')
+        {
+            Write-ADTLogEntry -Message "Previous [$executeAsUserTempPath] found. Attempting removal."
+            Remove-ADTFolder -Path $executeAsUserTempPath
+        }
+        #  Recreate the temporary folder
         Try
         {
-            ## Initialize exit code variable
-            [Int32]$executeProcessAsUserExitCode = 0
+            Write-ADTLogEntry -Message "Creating [$executeAsUserTempPath]."
+            $null = & $Script:CommandTable.'New-Item' -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
+        }
+        Catch
+        {
+            Write-ADTLogEntry -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Severity 2
+        }
+        #  Copy RunHidden.vbs to temp path
+        Try
+        {
+            Write-ADTLogEntry -Message "Copying [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]."
+            & $Script:CommandTable.'Copy-Item' -LiteralPath "$($Script:PSScriptRoot)\RunHidden.vbs" -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
+        }
+        Catch
+        {
+            Write-ADTLogEntry -Message "Unable to copy [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]." -Severity 2
+        }
+        #  Set user permissions on RunHidden.vbs
+        Try
+        {
+            Set-ADTItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
+        }
+        Catch
+        {
+            Write-ADTLogEntry -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Severity 2
+        }
 
-            ## Confirm that the username field is not empty
-            If (-not $UserName)
+        ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
+        If (((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'powershell*') -or ((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'cmd*'))
+        {
+            If ($SecureParameters)
             {
-                [Int32]$executeProcessAsUserExitCode = 60009
-                Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched." -Severity 3
-                If (-not $ContinueOnError)
-                {
-                    Throw "The function [$($MyInvocation.MyCommand.Name)] has a -UserName parameter that has an empty default value because no logged in users were detected when the toolkit was launched."
-                }
-                Return
+                Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..."
             }
-
-            ## Confirm if the toolkit is running with administrator privileges
-            If (($RunLevel -eq 'HighestAvailable') -and (-not $adtEnv.IsAdmin))
+            Else
             {
-                [Int32]$executeProcessAsUserExitCode = 60003
-                Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'." -Severity 3
-                If (-not $ContinueOnError)
-                {
-                    Throw "The function [$($MyInvocation.MyCommand.Name)] requires the toolkit to be running with Administrator privileges if the [-RunLevel] parameter is set to 'HighestAvailable'."
-                }
-                Return
-            }
-
-            ## Check whether the specified Working Directory exists
-            If ($WorkingDirectory -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $WorkingDirectory -PathType 'Container')))
-            {
-                Write-ADTLogEntry -Message 'The specified working directory does not exist or is not a directory. The scheduled task might not work as expected.' -Severity 2
-            }
-
-            ##  Remove the temporary folder
-            If (& $Script:CommandTable.'Test-Path' -LiteralPath $executeAsUserTempPath -PathType 'Container')
-            {
-                Write-ADTLogEntry -Message "Previous [$executeAsUserTempPath] found. Attempting removal."
-                Remove-ADTFolder -Path $executeAsUserTempPath
-            }
-            #  Recreate the temporary folder
-            Try
-            {
-                Write-ADTLogEntry -Message "Creating [$executeAsUserTempPath]."
-                $null = & $Script:CommandTable.'New-Item' -Path $executeAsUserTempPath -ItemType 'Directory' -ErrorAction 'Stop'
-            }
-            Catch
-            {
-                Write-ADTLogEntry -Message "Unable to create [$executeAsUserTempPath]. Possible attempt to gain elevated rights." -Severity 2
-            }
-            #  Copy RunHidden.vbs to temp path
-            Try
-            {
-                Write-ADTLogEntry -Message "Copying [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]."
-                & $Script:CommandTable.'Copy-Item' -LiteralPath $Script:PSScriptRoot\RunHidden.vbs -Destination $executeAsUserTempPath -Force -ErrorAction 'Stop'
-            }
-            Catch
-            {
-                Write-ADTLogEntry -Message "Unable to copy [$($Script:PSScriptRoot)\RunHidden.vbs] to destination [$executeAsUserTempPath]." -Severity 2
-            }
-            #  Set user permissions on RunHidden.vbs
-            Try
-            {
-                Set-ADTItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
-            }
-            Catch
-            {
-                Write-ADTLogEntry -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Severity 2
+                Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..."
             }
 
-            ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
-            If (((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'powershell*') -or ((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'cmd*'))
+            [String]$NewParameters = "/e:vbscript"
+            If ($executeAsUserTempPath -match ' ')
             {
-                If ($SecureParameters)
-                {
-                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path (Parameters Hidden)] as the logged-on user [$userName] and suppress the console window..."
-                }
-                Else
-                {
-                    Write-ADTLogEntry -Message "Preparing parameters for VBScript that will start [$Path $Parameters] as the logged-on user [$userName] and suppress the console window..."
-                }
-
-                [String]$NewParameters = "/e:vbscript"
-                If ($executeAsUserTempPath -match ' ')
-                {
-                    $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
-                }
-                Else
-                {
-                    $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
-                }
-                If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ')
-                {
-                    $NewParameters = "$($NewParameters) `"$($Path)`""
-                }
-                Else
-                {
-                    $NewParameters = "$NewParameters $Path"
-                }
-
-                $Parameters = "$NewParameters $Parameters"
-                $Path = "$([System.Environment]::SystemDirectory)\wscript.exe"
+                $NewParameters = "$($NewParameters) `"$($executeAsUserTempPath)\RunHidden.vbs`""
             }
-            #  Replace invalid XML characters in parameters with their valid XML equivalent
-            [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
-            [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
-            #  Prepare working directory XML element
-            [String]$WorkingDirectoryInsert = ''
-            If ($WorkingDirectory)
+            Else
             {
-                [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
-                $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+                $NewParameters = "$($NewParameters) $($executeAsUserTempPath)\RunHidden.vbs"
             }
-            [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+            If (($Path -notmatch "^[`'].*[`']$") -and ($Path -notmatch "^[`"].*[`"]$") -and $Path -match ' ')
+            {
+                $NewParameters = "$($NewParameters) `"$($Path)`""
+            }
+            Else
+            {
+                $NewParameters = "$NewParameters $Path"
+            }
 
-            ## Specify the scheduled task configuration in XML format
-            [String]$xmlSchTask = @"
+            # VBScript args do not handle quotes well, so replace all double quotes with placeholder [{quote}] before sending to the script
+            $Parameters = $Parameters.Replace('"', '[{quote}]')
+            $Parameters = "$NewParameters $Parameters"
+            $Path = "$([System.Environment]::SystemDirectory)\wscript.exe"
+        }
+        #  Replace invalid XML characters in parameters with their valid XML equivalent
+        [String]$XmlEscapedPath = [System.Security.SecurityElement]::Escape($Path)
+        [String]$XmlEscapedParameters = [System.Security.SecurityElement]::Escape($Parameters)
+        #  Prepare working directory XML element
+        [String]$WorkingDirectoryInsert = ''
+        If ($WorkingDirectory)
+        {
+            [String]$XmlEscapedWorkingDirectory = [System.Security.SecurityElement]::Escape($WorkingDirectory)
+            $WorkingDirectoryInsert = "`r`n   <WorkingDirectory>$XmlEscapedWorkingDirectory</WorkingDirectory>"
+        }
+        [String]$XmlEscapedUserName = [System.Security.SecurityElement]::Escape($UserName)
+
+        ## Specify the scheduled task configuration in XML format
+        [String]$xmlSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo />
@@ -311,60 +312,63 @@ https://psappdeploytoolkit.com
   </Principals>
 </Task>
 "@
-            ## Export the XML to file
+        ## Export the XML to file
+        Try
+        {
+            ## Build the scheduled task XML name
+            [String]$schTaskNameCount = '001'
+            [String]$schTaskName = "$($("$($adtEnv.appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
+            #  Specify the filename to export the XML to
+            [String]$previousXmlFileName = & $Script:CommandTable.'Get-ChildItem' -Path "$($adtConfig.Toolkit.TempPath)\*" -Attributes '!Directory' -Include '*.xml' | & $Script:CommandTable.'Where-Object' { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | & $Script:CommandTable.'Sort-Object' -Descending -Property 'LastWriteTime' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Name' -First 1
+            If (-not [String]::IsNullOrEmpty($previousXmlFileName))
+            {
+                [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | & $Script:CommandTable.'ForEach-Object' { $_.Substring($_.length - 3, 3) }
+                [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
+            }
+            $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
+            [String]$xmlSchTaskFilePath = "$((Get-ADTConfig).Toolkit.TempPath)\$($schTaskName).xml"
+
+            #  Export the XML file
+            [String]$xmlSchTask | & $Script:CommandTable.'Out-File' -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             Try
             {
-                ## Build the scheduled task XML name
-                [String]$schTaskNameCount = '001'
-                [String]$schTaskName = "$($("$($adtEnv.appDeployToolkitName)-ExecuteAsUser" -replace ' ', '').Trim('_') -replace '[_]+', '_')"
-                #  Specify the filename to export the XML to
-                [String]$previousXmlFileName = & $Script:CommandTable.'Get-ChildItem' -Path "$($adtConfig.Toolkit.TempPath)\*" -Attributes '!Directory' -Include '*.xml' | & $Script:CommandTable.'Where-Object' { $_.Name -match "^$($schTaskName)-\d{3}\.xml$" } | & $Script:CommandTable.'Sort-Object' -Descending -Property 'LastWriteTime' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Name' -First 1
-                If (-not [String]::IsNullOrEmpty($previousXmlFileName))
-                {
-                    [Int32]$xmlFileCount = [IO.Path]::GetFileNameWithoutExtension($previousXmlFileName) | & $Script:CommandTable.'ForEach-Object' { $_.Substring($_.length - 3, 3) }
-                    [String]$schTaskNameCount = '{0:d3}' -f $xmlFileCount++
-                }
-                $schTaskName = "$($schTaskName)-$($schTaskNameCount)"
-                [String]$xmlSchTaskFilePath = "$((Get-ADTConfig).Toolkit.TempPath)\$($schTaskName).xml"
-
-                #  Export the XML file
-                [String]$xmlSchTask | & $Script:CommandTable.'Out-File' -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
-                Try
-                {
-                    Set-ADTItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
-                }
-                Catch
-                {
-                    Write-ADTLogEntry -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Severity 2
-                }
+                Set-ADTItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
             }
             Catch
             {
-                [Int32]$executeProcessAsUserExitCode = 60007
-                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                If (-not $ContinueOnError)
-                {
-                    Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
-                }
-                Return
+                Write-ADTLogEntry -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Severity 2
             }
-
-            ## Create Scheduled Task to run the process with a logged-on user account
-            If ($Parameters)
+        }
+        Catch
+        {
+            [Int32]$executeProcessAsUserExitCode = 60007
+            Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+            If (-not $ContinueOnError)
             {
-                If ($SecureParameters)
-                {
-                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..."
-                }
-                Else
-                {
-                    Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..."
-                }
+                Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
+            }
+            Return
+        }
+
+        ## Create Scheduled Task to run the process with a logged-on user account
+        If ($Parameters)
+        {
+            If ($SecureParameters)
+            {
+                Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path (Parameters Hidden)] as the logged-on user [$userName]..."
             }
             Else
             {
-                Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..."
+                Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path $Parameters] as the logged-on user [$userName]..."
             }
+        }
+        Else
+        {
+            Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..."
+        }
+
+        Try
+        {
             [PSADT.Types.ProcessResult]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0)
             {
@@ -461,6 +465,10 @@ https://psappdeploytoolkit.com
             {
                 & $Script:CommandTable.'Start-Sleep' -Seconds 1
             }
+        }
+        Catch
+        {
+            Throw $_
         }
         Finally
         {
