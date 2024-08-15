@@ -50,7 +50,7 @@
         Title = "Redémarrage Requis"
     }
     WelcomePrompt = @{
-        CountdownMessage = "Le {0} va continuer automatiquement:"
+        CountdownMessage = "L'{0} va continuer automatiquement:"
         CustomMessage = ""
     }
 }
