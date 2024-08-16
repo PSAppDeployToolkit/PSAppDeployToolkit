@@ -33,12 +33,6 @@ function Close-ADTInstallationProgressFluent
 
     #>
 
-    # Return early if a dialog window isn't running.
-    if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
-    {
-        return
-    }
-
     # Hide the dialog and reset the state bool.
     Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
     $Script:Dialogs.Fluent.ProgressWindow.Window.HideDialog()
