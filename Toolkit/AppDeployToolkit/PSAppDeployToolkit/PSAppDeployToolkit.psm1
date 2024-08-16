@@ -102,7 +102,7 @@ $ModuleFiles.FullName | . { process { . $_ } }
         Classic = [pscustomobject]@{
             ProgressWindow = [pscustomobject]@{
                 SyncHash = [System.Collections.Hashtable]::Synchronized(@{})
-                XamlCode = [System.Xml.XmlDocument]::new()
+                XamlCode = $null
                 PowerShell = $null
                 Invocation = $null
                 Running = $false
@@ -214,7 +214,7 @@ $ModuleFiles.FullName | . { process { . $_ } }
     }).AsReadOnly()
 
 # Import the XML code for the classic progress window.
-$Dialogs.Classic.ProgressWindow.XamlCode.Load([System.IO.StringReader]::new(@'
+$Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="Window" Title="" ToolTip="" Padding="0,0,0,0" Margin="0,0,0,0" WindowStartupLocation="Manual" Top="0" Left="0" Topmost="" ResizeMode="NoResize" ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight">
     <Window.Resources>
         <Storyboard x:Key="Storyboard1" RepeatBehavior="Forever">
@@ -256,4 +256,4 @@ $Dialogs.Classic.ProgressWindow.XamlCode.Load([System.IO.StringReader]::new(@'
         </Ellipse>
     </Grid>
 </Window>
-'@))
+'@)
