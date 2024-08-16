@@ -75,11 +75,9 @@ param
 )
 
 
-#---------------------------------------------------------------------------
-#
-# Variable definitions for you to edit.
-#
-#---------------------------------------------------------------------------
+##================================================
+## MARK: Variables
+##================================================
 
 $adtSession = @{
     # App variables.
@@ -106,18 +104,11 @@ $adtSession = @{
     DeployAppScriptParameters = $PSBoundParameters
 }
 
-
-#---------------------------------------------------------------------------
-#
-# Deployment type functions for you to configure.
-#
-#---------------------------------------------------------------------------
-
 function Install-ADTApplication
 {
-    ##*===============================================
-    ##* PRE-INSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Pre-Install
+    ##================================================
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
@@ -129,9 +120,9 @@ function Install-ADTApplication
     ## <Perform Pre-Installation tasks here>
 
 
-    ##*===============================================
-    ##* INSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Install
+    ##================================================
     $adtSession.InstallPhase = $DeploymentType
 
     ## Handle Zero-Config MSI installations.
@@ -153,9 +144,9 @@ function Install-ADTApplication
     Start-ADTMsiProcess -Action Install -Path 'WinSCP-6.3.3.msi'
 
 
-    ##*===============================================
-    ##* POST-INSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Post-Install
+    ##================================================
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Installation tasks here>
@@ -177,9 +168,9 @@ function Install-ADTApplication
 
 function Uninstall-ADTApplication
 {
-    ##*===============================================
-    ##* PRE-UNINSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Pre-Uninstall
+    ##================================================
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
@@ -191,9 +182,9 @@ function Uninstall-ADTApplication
     ## <Perform Pre-Uninstallation tasks here>
 
 
-    ##*===============================================
-    ##* UNINSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Uninstall
+    ##================================================
     $adtSession.InstallPhase = $DeploymentType
 
     ## Handle Zero-Config MSI uninstallations.
@@ -211,9 +202,9 @@ function Uninstall-ADTApplication
     Start-ADTMsiProcess -Action Uninstall -Path 'WinSCP-6.3.3.msi'
 
 
-    ##*===============================================
-    ##* POST-UNINSTALLATION
-    ##*===============================================
+    ##================================================
+    ## MARK: Post-Uninstallation
+    ##================================================
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Uninstallation tasks here>
@@ -221,9 +212,9 @@ function Uninstall-ADTApplication
 
 function Repair-ADTApplication
 {
-    ##*===============================================
-    ##* PRE-REPAIR
-    ##*===============================================
+    ##================================================
+    ## MARK: Pre-Repair
+    ##================================================
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
@@ -235,9 +226,9 @@ function Repair-ADTApplication
     ## <Perform Pre-Repair tasks here>
 
 
-    ##*===============================================
-    ##* REPAIR
-    ##*===============================================
+    ##================================================
+    ## MARK: Repair
+    ##================================================
     $adtSession.InstallPhase = $DeploymentType
 
     ## Handle Zero-Config MSI repairs.
@@ -255,9 +246,9 @@ function Repair-ADTApplication
     Start-ADTMsiProcess -Action Repair -Path 'WinSCP-6.3.3.msi' -RepairFromSource
 
 
-    ##*===============================================
-    ##* POST-REPAIR
-    ##*===============================================
+    ##================================================
+    ## MARK: Post-Repair
+    ##================================================
     $adtSession.InstallPhase = "Post-$($DeploymentType)"
 
     ## <Perform Post-Repair tasks here>
@@ -271,11 +262,9 @@ function Repair-ADTApplication
 }
 
 
-#---------------------------------------------------------------------------
-#
-# Module importation and session initialisation.
-#
-#---------------------------------------------------------------------------
+##================================================
+## MARK: Initialisation
+##================================================
 
 # Set strict error handling across entire operation.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
@@ -303,11 +292,9 @@ catch
 }
 
 
-#---------------------------------------------------------------------------
-#
-# Deployment type invocation (where all the magic happens).
-#
-#---------------------------------------------------------------------------
+##================================================
+## MARK: Invocation
+##================================================
 
 try
 {
