@@ -167,17 +167,17 @@ function Show-ADTInstallationProgressClassic
     }
 
     # Check if the progress thread is running before invoking methods on it.
-    if (!$Script:ProgressWindow.Running)
+    if (!$Script:Dialogs.Classic.ProgressWindow.Running)
     {
         # Load up the XML file.
         $adtConfig = Get-ADTConfig
-        $xaml = $Script:ProgressWindow.XamlCode.PSObject.Copy()
+        $xaml = $Script:Dialogs.Classic.ProgressWindow.XamlCode.PSObject.Copy()
         $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
         $xaml.Window.TopMost = (!$NotTopMost).ToString()
         $xaml.Window.Grid.TextBlock.Text = $StatusMessage
 
         # Set up the PowerShell instance and add the initial scriptblock.
-        $Script:ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
                 [CmdletBinding()]
                 param
                 (
@@ -231,21 +231,21 @@ function Show-ADTInstallationProgressClassic
 
         # Commence invocation.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
-        $Script:ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
-        $Script:ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
-        $Script:ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
-        $Script:ProgressWindow.PowerShell.Runspace.Open()
-        $Script:ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:ProgressWindow.SyncHash)
-        $Script:ProgressWindow.Invocation = $Script:ProgressWindow.PowerShell.BeginInvoke()
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.Open()
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.SessionStateProxy.SetVariable('SyncHash', $Script:Dialogs.Classic.ProgressWindow.SyncHash)
+        $Script:Dialogs.Classic.ProgressWindow.Invocation = $Script:Dialogs.Classic.ProgressWindow.PowerShell.BeginInvoke()
 
         # Allow the thread to be spun up safely before invoking actions against it.
-        while (!($Script:ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:ProgressWindow.SyncHash.Window.IsInitialized -and $Script:ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
+        while (!($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.IsInitialized -and $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
         {
-            if ($Script:ProgressWindow.SyncHash.ContainsKey('Error'))
+            if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Error'))
             {
-                throw $Script:ProgressWindow.SyncHash.Error
+                throw $Script:Dialogs.Classic.ProgressWindow.SyncHash.Error
             }
-            elseif ($Script:ProgressWindow.Invocation.IsCompleted)
+            elseif ($Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
             {
                 $naerParams = @{
                     Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
@@ -259,18 +259,18 @@ function Show-ADTInstallationProgressClassic
         }
 
         # If we're here, the window came up.
-        $Script:ProgressWindow.Running = $true
+        $Script:Dialogs.Classic.ProgressWindow.Running = $true
     }
     else
     {
         # Invoke update events against an established window.
-        $Script:ProgressWindow.SyncHash.Window.Dispatcher.Invoke(
+        $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Dispatcher.Invoke(
             {
-                $Script:ProgressWindow.SyncHash.Window.Title = $WindowTitle
-                $Script:ProgressWindow.SyncHash.Message.Text = $StatusMessage
+                $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Title = $WindowTitle
+                $Script:Dialogs.Classic.ProgressWindow.SyncHash.Message.Text = $StatusMessage
                 if (!$args[0])
                 {
-                    Update-WindowLocation -Window $Script:ProgressWindow.SyncHash.Window -WindowLocation $args[1]
+                    Update-WindowLocation -Window $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window -WindowLocation $args[1]
                 }
             },
             [System.Windows.Threading.DispatcherPriority]::Send,

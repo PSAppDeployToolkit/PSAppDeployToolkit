@@ -237,7 +237,7 @@ function Show-ADTInstallationWelcome
                         try
                         {
                             # Determine the size of the Files folder
-                            $fso = New-Object -ComObject Scripting.FileSystemObject
+                            $fso = & $Script:CommandTable.'New-Object' -ComObject Scripting.FileSystemObject
                             $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptDirectory')).Size / 1MB)
                         }
                         catch
@@ -277,8 +277,8 @@ function Show-ADTInstallationWelcome
 
                     # Get the deferral history from the registry.
                     $deferHistory = Get-ADTDeferHistory
-                    $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
-                    $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
+                    $deferHistoryTimes = $deferHistory | & $Script:CommandTable.'Select-Object' -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
+                    $deferHistoryDeadline = $deferHistory | & $Script:CommandTable.'Select-Object' -ExpandProperty DeferDeadline -ErrorAction Ignore
 
                     # Reset switches.
                     $checkDeferDays = $DeferDays -ne 0
@@ -369,7 +369,7 @@ function Show-ADTInstallationWelcome
                     while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
-                        $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+                        $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
@@ -395,13 +395,13 @@ function Show-ADTInstallationWelcome
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }
                                 if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
-                                [String]$promptResult = Show-ADTWelcomePrompt @promptParams @deferParams
+                                [String]$promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams @deferParams
                             }
                         }
                         elseif ($adtSession.ExtensionData.RunningProcessDescriptions -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
-                            [String]$promptResult = Show-ADTWelcomePrompt @promptParams
+                            [String]$promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams
                         }
                         else
                         {
@@ -432,7 +432,7 @@ function Show-ADTInstallationWelcome
 
                             # Update the process list right before closing, in case it changed.
                             $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -DisableFunctionLogging
-                            $PromptToSaveTimeout = New-TimeSpan -Seconds $adtConfig.UI.PromptToSaveTimeout
+                            $PromptToSaveTimeout = & $Script:CommandTable.'New-TimeSpan' -Seconds $adtConfig.UI.PromptToSaveTimeout
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
                             foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
                             {
@@ -486,7 +486,7 @@ function Show-ADTInstallationWelcome
                                 else
                                 {
                                     Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..."
-                                    Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
+                                    & $Script:CommandTable.'Stop-Process' -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
                                 }
                             }
 
@@ -542,8 +542,8 @@ function Show-ADTInstallationWelcome
                 # Force the processes to close silently, without prompting the user.
                 if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
                 {
-                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
-                    $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
+                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique) -join ',')] without prompting user."
+                    $runningProcesses.ProcessName | & $Script:CommandTable.'Stop-Process' -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
                 }
 
@@ -556,7 +556,7 @@ function Show-ADTInstallationWelcome
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

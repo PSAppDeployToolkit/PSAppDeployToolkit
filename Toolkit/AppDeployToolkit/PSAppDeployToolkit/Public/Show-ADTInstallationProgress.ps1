@@ -59,6 +59,9 @@ function Show-ADTInstallationProgress
     .EXAMPLE
     Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
@@ -86,7 +89,7 @@ function Show-ADTInstallationProgress
         # Initialise the module first if needed.
         $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStringTable
-        $fluentUi = (Get-ADTConfig).UI.DialogStyle -eq 'Fluent'
+        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -112,7 +115,7 @@ function Show-ADTInstallationProgress
             ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'StatusMessageDetail', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and $fluentUi }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent') }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
@@ -135,7 +138,7 @@ function Show-ADTInstallationProgress
         {
             $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
         }
-        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and $fluentUi)
+        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
         {
             $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
         }
@@ -170,7 +173,7 @@ function Show-ADTInstallationProgress
             {
                 # Archive off the curent running state first.
                 $start = Test-ADTInstallationProgressRunning
-                & (Get-ADTDialogFunction) @PSBoundParameters
+                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters
 
                 # If we've opened the window for the first time, add a closing callback.
                 if (!(Test-ADTInstallationProgressRunning).Equals($start))
@@ -180,7 +183,7 @@ function Show-ADTInstallationProgress
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

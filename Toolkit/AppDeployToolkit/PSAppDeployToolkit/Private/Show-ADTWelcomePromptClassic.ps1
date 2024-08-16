@@ -129,7 +129,7 @@ function Show-ADTWelcomePromptClassic
         # Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone.
         if ($DeferDeadline)
         {
-            $DeferDeadline = (Get-Date -Date ($DeferDeadline -replace 'Z')).ToString()
+            $DeferDeadline = (& $Script:CommandTable.'Get-Date' -Date ($DeferDeadline -replace 'Z')).ToString()
         }
     }
 
@@ -161,11 +161,8 @@ function Show-ADTWelcomePromptClassic
         $showCountdown = $true
     }
 
-    # Read all form assets into memory.
-    Read-ADTAssetsIntoMemory
-
     # Set up some default values.
-    $controlSize = [System.Drawing.Size]::new($Script:FormData.Width, 0)
+    $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(130, 24)
 
@@ -265,11 +262,11 @@ function Show-ADTWelcomePromptClassic
     $timerRunningProcesses_Tick = {
         # Grab current list of running processes.
         $dynamicRunningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses -DisableLogging }
-        $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+        $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
         $previousRunningProcessDescriptions = $adtSession.ExtensionData.RunningProcessDescriptions
 
         # Check the previous list against what's currently running.
-        if (Compare-Object -ReferenceObject @($adtSession.ExtensionData.RunningProcessDescriptions | Select-Object) -DifferenceObject @($dynamicRunningProcessDescriptions | Select-Object))
+        if (& $Script:CommandTable.'Compare-Object' -ReferenceObject @($adtSession.ExtensionData.RunningProcessDescriptions | & $Script:CommandTable.'Select-Object') -DifferenceObject @($dynamicRunningProcessDescriptions | & $Script:CommandTable.'Select-Object'))
         {
             # Update the runningProcessDescriptions variable for the next time this function runs.
             $listboxCloseApps.Items.Clear()
@@ -321,10 +318,10 @@ function Show-ADTWelcomePromptClassic
     # Picture Banner.
     $pictureBanner = [System.Windows.Forms.PictureBox]::new()
     $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
-    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, $Script:FormData.BannerHeight)
+    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, $Script:Dialogs.Classic.BannerHeight)
     $pictureBanner.Location = [System.Drawing.Point]::new(0, 0)
     $pictureBanner.Name = 'PictureBanner'
-    $pictureBanner.Image = $Script:FormData.Assets.Banner
+    $pictureBanner.Image = $Script:Dialogs.Classic.Assets.Banner
     $pictureBanner.Margin = $paddingNone
     $pictureBanner.TabStop = $false
 
@@ -334,7 +331,7 @@ function Show-ADTWelcomePromptClassic
     $labelWelcomeMessage.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
     $labelWelcomeMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
     $labelWelcomeMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-    $labelWelcomeMessage.Font = $Script:FormData.Font
+    $labelWelcomeMessage.Font = $Script:Dialogs.Classic.Font
     $labelWelcomeMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelWelcomeMessage.Text = $adtStrings.DeferPrompt.WelcomeMessage
     $labelWelcomeMessage.Name = 'LabelWelcomeMessage'
@@ -347,7 +344,7 @@ function Show-ADTWelcomePromptClassic
     $labelAppName.Margin = [System.Windows.Forms.Padding]::new(0, 5, 0, 5)
     $labelAppName.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
     $labelAppName.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-    $labelAppName.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
+    $labelAppName.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
     $labelAppName.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&')
     $labelAppName.Name = 'LabelAppName'
@@ -359,7 +356,7 @@ function Show-ADTWelcomePromptClassic
     $listBoxCloseApps.MinimumSize = $listBoxCloseApps.ClientSize = $listBoxCloseApps.MaximumSize = [System.Drawing.Size]::new(420, 100)
     $listBoxCloseApps.Margin = [System.Windows.Forms.Padding]::new(15, 0, 15, 0)
     $listBoxCloseApps.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-    $listboxCloseApps.Font = $Script:FormData.Font
+    $listboxCloseApps.Font = $Script:Dialogs.Classic.Font
     $listBoxCloseApps.FormattingEnabled = $true
     $listBoxCloseApps.HorizontalScrollbar = $true
     $listBoxCloseApps.Name = 'ListBoxCloseApps'
@@ -374,7 +371,7 @@ function Show-ADTWelcomePromptClassic
     $labelCountdown.MinimumSize = $labelCountdown.ClientSize = $labelCountdown.MaximumSize = $controlSize
     $labelCountdown.Margin = $paddingNone
     $labelCountdown.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-    $labelCountdown.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
+    $labelCountdown.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
     $labelCountdown.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelCountdown.Text = '00:00:00'
     $labelCountdown.Name = 'LabelCountdown'
@@ -385,7 +382,7 @@ function Show-ADTWelcomePromptClassic
     $flowLayoutPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
     $flowLayoutPanel.SuspendLayout()
     $flowLayoutPanel.MinimumSize = $flowLayoutPanel.ClientSize = $flowLayoutPanel.MaximumSize = $controlSize
-    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:FormData.BannerHeight)
+    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:Dialogs.Classic.BannerHeight)
     $flowLayoutPanel.Margin = $flowLayoutPanel.Padding = $paddingNone
     $flowLayoutPanel.FlowDirection = [System.Windows.Forms.FlowDirection]::TopDown
     $flowLayoutPanel.AutoSize = $true
@@ -402,7 +399,7 @@ function Show-ADTWelcomePromptClassic
         $labelCustomMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
         $labelCustomMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelCustomMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-        $labelCustomMessage.Font = $Script:FormData.Font
+        $labelCustomMessage.Font = $Script:Dialogs.Classic.Font
         $labelCustomMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelCustomMessage.Text = $adtStrings.WelcomePrompt.CustomMessage
         $labelCustomMessage.Name = 'LabelCustomMessage'
@@ -418,7 +415,7 @@ function Show-ADTWelcomePromptClassic
         $labelCloseAppsMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
         $labelCloseAppsMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelCloseAppsMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-        $labelCloseAppsMessage.Font = $Script:FormData.Font
+        $labelCloseAppsMessage.Font = $Script:Dialogs.Classic.Font
         $labelCloseAppsMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelCloseAppsMessage.Text = $adtStrings.ClosePrompt.Message
         $labelCloseAppsMessage.Name = 'LabelCloseAppsMessage'
@@ -436,7 +433,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferExpiryMessage.MinimumSize = $labelDeferExpiryMessage.ClientSize = $labelDeferExpiryMessage.MaximumSize = $controlSize
         $labelDeferExpiryMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
         $labelDeferExpiryMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-        $labelDeferExpiryMessage.Font = $Script:FormData.Font
+        $labelDeferExpiryMessage.Font = $Script:Dialogs.Classic.Font
         $labelDeferExpiryMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelDeferExpiryMessage.Text = $adtStrings.DeferPrompt.ExpiryMessage
         $labelDeferExpiryMessage.Name = 'LabelDeferExpiryMessage'
@@ -449,7 +446,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferDeadline.MinimumSize = $labelDeferDeadline.ClientSize = $labelDeferDeadline.MaximumSize = $controlSize
         $labelDeferDeadline.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
         $labelDeferDeadline.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-        $labelDeferDeadline.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, $Script:FormData.Font.Size, [System.Drawing.FontStyle]::Bold)
+        $labelDeferDeadline.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, $Script:Dialogs.Classic.Font.Size, [System.Drawing.FontStyle]::Bold)
         $labelDeferDeadline.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelDeferDeadline.Name = 'LabelDeferDeadline'
         $labelDeferDeadline.TabStop = $false
@@ -469,7 +466,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferWarningMessage.MinimumSize = $labelDeferWarningMessage.ClientSize = $labelDeferWarningMessage.MaximumSize = $controlSize
         $labelDeferWarningMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
         $labelDeferWarningMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-        $labelDeferWarningMessage.Font = $Script:FormData.Font
+        $labelDeferWarningMessage.Font = $Script:Dialogs.Classic.Font
         $labelDeferWarningMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelDeferWarningMessage.Text = $adtStrings.DeferPrompt.WarningMessage
         $labelDeferWarningMessage.Name = 'LabelDeferWarningMessage'
@@ -485,7 +482,7 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.Margin = $paddingNone
         $labelCountdownMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelCountdownMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-        $labelCountdownMessage.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
+        $labelCountdownMessage.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelCountdownMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelCountdownMessage.Name = 'LabelCountdownMessage'
         $labelCountdownMessage.TabStop = $false
@@ -507,7 +504,7 @@ function Show-ADTWelcomePromptClassic
     # Panel Buttons.
     $panelButtons = [System.Windows.Forms.Panel]::new()
     $panelButtons.SuspendLayout()
-    $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, 39)
+    $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 39)
     $panelButtons.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
     $panelButtons.Padding = $paddingNone
     $panelButtons.AutoSize = $true
@@ -519,7 +516,7 @@ function Show-ADTWelcomePromptClassic
         $buttonCloseApps.Margin = $buttonCloseApps.Padding = $paddingNone
         $buttonCloseApps.Location = [System.Drawing.Point]::new(14, 4)
         $buttonCloseApps.DialogResult = [System.Windows.Forms.DialogResult]::Yes
-        $buttonCloseApps.Font = $Script:FormData.Font
+        $buttonCloseApps.Font = $Script:Dialogs.Classic.Font
         $buttonCloseApps.Name = 'ButtonCloseApps'
         $buttonCloseApps.Text = $adtStrings.ClosePrompt.ButtonClose
         $buttonCloseApps.TabIndex = 1
@@ -535,7 +532,7 @@ function Show-ADTWelcomePromptClassic
         $buttonDefer.Margin = $buttonDefer.Padding = $paddingNone
         $buttonDefer.Location = [System.Drawing.Point]::new($(if (!$showCloseApps) { 14 } else { 160 }), 4)
         $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
-        $buttonDefer.Font = $Script:FormData.Font
+        $buttonDefer.Font = $Script:Dialogs.Classic.Font
         $buttonDefer.Name = 'ButtonDefer'
         $buttonDefer.Text = $adtStrings.ClosePrompt.ButtonDefer
         $buttonDefer.TabIndex = 0
@@ -550,7 +547,7 @@ function Show-ADTWelcomePromptClassic
     $buttonContinue.Margin = $buttonContinue.Padding = $paddingNone
     $buttonContinue.Location = [System.Drawing.Point]::new(306, 4)
     $buttonContinue.DialogResult = [System.Windows.Forms.DialogResult]::OK
-    $buttonContinue.Font = $Script:FormData.Font
+    $buttonContinue.Font = $Script:Dialogs.Classic.Font
     $buttonContinue.Name = 'ButtonContinue'
     $buttonContinue.Text = $adtStrings.ClosePrompt.ButtonContinue
     $buttonContinue.TabIndex = 2
@@ -579,7 +576,7 @@ function Show-ADTWelcomePromptClassic
     $buttonAbort.Margin = $buttonAbort.Padding = $paddingNone
     $buttonAbort.DialogResult = [System.Windows.Forms.DialogResult]::Abort
     $buttonAbort.Name = 'buttonAbort'
-    $buttonAbort.Font = $Script:FormData.Font
+    $buttonAbort.Font = $Script:Dialogs.Classic.Font
     $buttonAbort.BackColor = [System.Drawing.Color]::Transparent
     $buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
     $buttonAbort.FlatAppearance.BorderSize = 0
@@ -595,7 +592,7 @@ function Show-ADTWelcomePromptClassic
     $formWelcome.SuspendLayout()
     $formWelcome.ClientSize = $controlSize
     $formWelcome.Margin = $formWelcome.Padding = $paddingNone
-    $formWelcome.Font = $Script:FormData.Font
+    $formWelcome.Font = $Script:Dialogs.Classic.Font
     $formWelcome.Name = 'WelcomeForm'
     $formWelcome.Text = $adtSession.GetPropertyValue('InstallTitle')
     $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
@@ -607,7 +604,7 @@ function Show-ADTWelcomePromptClassic
     $formWelcome.TopMost = !$NotTopMost
     $formWelcome.TopLevel = $true
     $formWelcome.AutoSize = $true
-    $formWelcome.Icon = $Script:FormData.Assets.Icon
+    $formWelcome.Icon = $Script:Dialogs.Classic.Assets.Icon
     $formWelcome.Controls.Add($pictureBanner)
     $formWelcome.Controls.Add($buttonAbort)
     $formWelcome.Controls.Add($flowLayoutPanel)

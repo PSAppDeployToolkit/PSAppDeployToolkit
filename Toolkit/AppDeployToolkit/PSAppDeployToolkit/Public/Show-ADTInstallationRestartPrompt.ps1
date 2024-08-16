@@ -55,6 +55,9 @@ function Show-ADTInstallationRestartPrompt
     .NOTES
     Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
@@ -129,7 +132,7 @@ function Show-ADTInstallationRestartPrompt
                     if ($SilentRestart)
                     {
                         Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
-                        Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
+                        & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Start-Sleep' -Seconds $SilentCountdownSeconds; & $Script:CommandTable.'Restart-Computer' -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {
@@ -140,7 +143,7 @@ function Show-ADTInstallationRestartPrompt
 
                 # Check if we are already displaying a restart prompt.
                 $restartPromptTitle = (Get-ADTStringTable).RestartPrompt.Title
-                if (Get-Process | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } })
+                if (& $Script:CommandTable.'Get-Process' | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } })
                 {
                     Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return
@@ -159,7 +162,7 @@ function Show-ADTInstallationRestartPrompt
                     }
 
                     # Start another powershell instance silently with function parameters from this function.
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModulePaths) -join "', '")'; `$null = $($MyInvocation.MyCommand.Name) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds)" -WindowStyle Hidden -ErrorAction Ignore
+                    & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$Script:PSScriptRoot'; `$null = $($MyInvocation.MyCommand.Name) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds)" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
@@ -168,7 +171,7 @@ function Show-ADTInstallationRestartPrompt
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

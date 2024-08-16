@@ -38,7 +38,7 @@ function Close-ADTSession
         }
 
         # Invoke all callbacks and capture all errors.
-        $callbackErrors = foreach ($callback in $($adtData.Callbacks.Closing; if ($adtData.Sessions.Count.Equals(1)) {$adtData.Callbacks.Finishing}))
+        $callbackErrors = foreach ($callback in $($adtData.Callbacks.Closing; if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Finishing }))
         {
             try
             {

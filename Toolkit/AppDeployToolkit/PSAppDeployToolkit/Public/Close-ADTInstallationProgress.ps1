@@ -28,6 +28,9 @@ function Close-ADTInstallationProgress
     .NOTES
     This is an internal script function and should typically not be called directly.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
@@ -41,6 +44,7 @@ function Close-ADTInstallationProgress
     begin
     {
         $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -62,8 +66,8 @@ function Close-ADTInstallationProgress
                 }
 
                 # Call the underlying function to close the progress window.
-                & (Get-ADTDialogFunction)
-                Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Close-ADTInstallationProgress'
+                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name)
+                Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
 
                 # Send out the final toast notification.
                 if ($adtSession)
@@ -90,7 +94,7 @@ function Close-ADTInstallationProgress
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

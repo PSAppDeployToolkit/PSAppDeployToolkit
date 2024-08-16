@@ -108,10 +108,10 @@ function Show-ADTInstallationProgressFluent
         )
 
         # Blanketly update values from incoming parameters.
-        $Script:ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-        $Script:ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
-        $Script:ProgressWindow.Window.SetProgressMessage($StatusMessage)
-        $Script:ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessage($StatusMessage)
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
     }
     function Update-WindowLocation
     {
@@ -195,28 +195,28 @@ function Show-ADTInstallationProgressFluent
     }
 
     # Check if the progress thread is running before invoking methods on it.
-    if (!$Script:ProgressWindow.Running)
+    if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
     {
         # Instantiate a new progress window object and start it up.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
-        if (!$Script:ProgressWindow.Window)
+        if (!$Script:Dialogs.Fluent.ProgressWindow.Window)
         {
-            $Script:ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
-            $Script:ProgressWindow.Thread = $Script:ProgressWindow.Window.Start()
+            $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
+            $Script:Dialogs.Fluent.ProgressWindow.Thread = $Script:Dialogs.Fluent.ProgressWindow.Window.Start()
 
             # Allow the thread to be spun up safely before invoking actions against it.
             do
             {
-                $Script:ProgressWindow.Running = $Script:ProgressWindow.Thread -and $Script:ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
+                $Script:Dialogs.Fluent.ProgressWindow.Running = $Script:Dialogs.Fluent.ProgressWindow.Thread -and $Script:Dialogs.Fluent.ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
             }
-            until ($Script:ProgressWindow.Running)
+            until ($Script:Dialogs.Fluent.ProgressWindow.Running)
         }
         else
         {
             # Update an existing object and present the dialog.
             Update-ProgressWindowValues
-            $Script:ProgressWindow.Window.ShowDialog()
-            $Script:ProgressWindow.Running = $true
+            $Script:Dialogs.Fluent.ProgressWindow.Window.ShowDialog()
+            $Script:Dialogs.Fluent.ProgressWindow.Running = $true
         }
     }
     else

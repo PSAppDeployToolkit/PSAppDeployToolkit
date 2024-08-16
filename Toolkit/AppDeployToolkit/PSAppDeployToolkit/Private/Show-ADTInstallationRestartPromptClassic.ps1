@@ -81,14 +81,13 @@ function Show-ADTInstallationRestartPromptClassic
     # Initialise variables.
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
-    Read-ADTAssetsIntoMemory
 
     # Define starting counters.
     $startTime = [System.DateTime]::Now
     $countdownTime = $startTime
 
     # Set up some default values.
-    $controlSize = [System.Drawing.Size]::new($Script:FormData.Width, 0)
+    $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(195, 24)
 
@@ -145,11 +144,11 @@ function Show-ADTInstallationRestartPromptClassic
     }
     $buttonRestartNow_Click = {
         Write-ADTLogEntry -Message 'Forcefully restarting the computer...'
-        Restart-Computer -Force
+        & $Script:CommandTable.'Restart-Computer' -Force
     }
     $timerCountdown_Tick = {
         # Get the time information.
-        [DateTime]$currentTime = Get-Date
+        [DateTime]$currentTime = & $Script:CommandTable.'Get-Date'
         [DateTime]$countdownTime = $startTime.AddSeconds($countdownSeconds)
         [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
 
@@ -205,10 +204,10 @@ function Show-ADTInstallationRestartPromptClassic
     # Picture Banner.
     $pictureBanner = [System.Windows.Forms.PictureBox]::new()
     $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
-    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, $Script:FormData.BannerHeight)
+    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, $Script:Dialogs.Classic.BannerHeight)
     $pictureBanner.Location = [System.Drawing.Point]::new(0, 0)
     $pictureBanner.Name = 'PictureBanner'
-    $pictureBanner.Image = $Script:FormData.Assets.Banner
+    $pictureBanner.Image = $Script:Dialogs.Classic.Assets.Banner
     $pictureBanner.Margin = $paddingNone
     $pictureBanner.TabStop = $false
 
@@ -218,7 +217,7 @@ function Show-ADTInstallationRestartPromptClassic
     $labelMessage.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 5)
     $labelMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
     $labelMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-    $labelMessage.Font = $Script:FormData.Font
+    $labelMessage.Font = $Script:Dialogs.Classic.Font
     $labelMessage.Name = 'LabelMessage'
     $labelMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelMessage.TabStop = $false
@@ -237,7 +236,7 @@ function Show-ADTInstallationRestartPromptClassic
     $labelCountdown.MinimumSize = $labelCountdown.ClientSize = $labelCountdown.MaximumSize = $controlSize
     $labelCountdown.Margin = $paddingNone
     $labelCountdown.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-    $labelCountdown.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
+    $labelCountdown.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 9), [System.Drawing.FontStyle]::Bold)
     $labelCountdown.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelCountdown.Text = '00:00:00'
     $labelCountdown.Name = 'LabelCountdown'
@@ -248,7 +247,7 @@ function Show-ADTInstallationRestartPromptClassic
     $flowLayoutPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
     $flowLayoutPanel.SuspendLayout()
     $flowLayoutPanel.MinimumSize = $flowLayoutPanel.ClientSize = $flowLayoutPanel.MaximumSize = $controlSize
-    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:FormData.BannerHeight)
+    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:Dialogs.Classic.BannerHeight)
     $flowLayoutPanel.Margin = $flowLayoutPanel.Padding = $paddingNone
     $flowLayoutPanel.FlowDirection = [System.Windows.Forms.FlowDirection]::TopDown
     $flowLayoutPanel.AutoSize = $true
@@ -264,7 +263,7 @@ function Show-ADTInstallationRestartPromptClassic
         $labelTimeRemaining.Margin = $paddingNone
         $labelTimeRemaining.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelTimeRemaining.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-        $labelTimeRemaining.Font = [System.Drawing.Font]::new($Script:FormData.Font.Name, ($Script:FormData.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
+        $labelTimeRemaining.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
         $labelTimeRemaining.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
         $labelTimeRemaining.Text = $adtStrings.RestartPrompt.TimeRemaining
         $labelTimeRemaining.Name = 'LabelTimeRemaining'
@@ -277,7 +276,7 @@ function Show-ADTInstallationRestartPromptClassic
     # Button Panel.
     $panelButtons = [System.Windows.Forms.Panel]::new()
     $panelButtons.SuspendLayout()
-    $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, 39)
+    $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 39)
     $panelButtons.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
     $panelButtons.Padding = $paddingNone
     $panelButtons.AutoSize = $true
@@ -288,7 +287,7 @@ function Show-ADTInstallationRestartPromptClassic
     $buttonRestartNow.Location = [System.Drawing.Point]::new(14, 4)
     $buttonRestartNow.Margin = $buttonRestartNow.Padding = $paddingNone
     $buttonRestartNow.Name = 'ButtonRestartNow'
-    $buttonRestartNow.Font = $Script:FormData.Font
+    $buttonRestartNow.Font = $Script:Dialogs.Classic.Font
     $buttonRestartNow.Text = $adtStrings.RestartPrompt.ButtonRestartNow
     $buttonRestartNow.TabIndex = 1
     $buttonRestartNow.AutoSize = $true
@@ -302,7 +301,7 @@ function Show-ADTInstallationRestartPromptClassic
     $buttonRestartLater.Location = [System.Drawing.Point]::new(240, 4)
     $buttonRestartLater.Margin = $buttonRestartLater.Padding = $paddingNone
     $buttonRestartLater.Name = 'ButtonRestartLater'
-    $buttonRestartLater.Font = $Script:FormData.Font
+    $buttonRestartLater.Font = $Script:Dialogs.Classic.Font
     $buttonRestartLater.Text = $adtStrings.RestartPrompt.ButtonRestartLater
     $buttonRestartLater.TabIndex = 0
     $buttonRestartLater.AutoSize = $true
@@ -321,7 +320,7 @@ function Show-ADTInstallationRestartPromptClassic
     $formRestart.SuspendLayout()
     $formRestart.ClientSize = $controlSize
     $formRestart.Margin = $formRestart.Padding = $paddingNone
-    $formRestart.Font = $Script:FormData.Font
+    $formRestart.Font = $Script:Dialogs.Classic.Font
     $formRestart.Name = 'FormRestart'
     $formRestart.Text = $Title
     $formRestart.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
@@ -333,7 +332,7 @@ function Show-ADTInstallationRestartPromptClassic
     $formRestart.TopMost = !$NotTopMost
     $formRestart.TopLevel = $true
     $formRestart.AutoSize = $true
-    $formRestart.Icon = $Script:FormData.Assets.Icon
+    $formRestart.Icon = $Script:Dialogs.Classic.Assets.Icon
     $formRestart.Controls.Add($pictureBanner)
     $formRestart.Controls.Add($flowLayoutPanel)
     $formRestart.add_Load($formRestart_Load)

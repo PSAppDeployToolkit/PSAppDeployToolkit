@@ -18,9 +18,6 @@ function Initialize-ADTFunction
         [System.Management.Automation.SessionState]$SessionState
     )
 
-    # Ensure this function always stops, no matter what.
-    $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-
     # Internal worker function to set variables within the caller's scope.
     function Set-CallerVariable
     {
@@ -47,6 +44,9 @@ function Initialize-ADTFunction
             $SessionState.PSVariable.Set($Name, $Value)
         }
     }
+
+    # Ensure this function always stops, no matter what.
+    $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 
     # Write debug log messages.
     Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage

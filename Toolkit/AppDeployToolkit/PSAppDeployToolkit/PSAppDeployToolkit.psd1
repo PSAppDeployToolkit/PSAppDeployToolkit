@@ -60,7 +60,9 @@
     )
 
     # Assemblies that must be loaded prior to importing this module
-    # RequiredAssemblies = @()
+    RequiredAssemblies = @(
+        'lib\ProgressWindow\PSADT.UserInterface.dll'
+    )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess = @()
@@ -82,6 +84,7 @@
         'Add-ADTSessionOpeningCallback'
         'Add-ADTSessionStartingCallback'
         'Block-ADTAppExecution'
+        'Close-ADTInstallationProgress'
         'Close-ADTSession'
         'Complete-ADTFunction'
         'Convert-ADTRegistryPath'
@@ -101,7 +104,6 @@
         'Get-ADTIniValue'
         'Get-ADTInstalledApplication'
         'Get-ADTLoggedOnUser'
-        'Get-ADTModulePaths'
         'Get-ADTMsiExitCodeMessage'
         'Get-ADTMsiTableProperty'
         'Get-ADTObjectProperty'
@@ -156,12 +158,17 @@
         'Set-ADTIniValue'
         'Set-ADTItemPermission'
         'Set-ADTMsiProperty'
-        'Set-ADTProcessDpiAware'
         'Set-ADTRegistryKey'
         'Set-ADTServiceStartMode'
         'Set-ADTShortcut'
+        'Show-ADTBalloonTip'
+        'Show-ADTBlockedAppDialog'
         'Show-ADTDialogBox'
         'Show-ADTHelpConsole'
+        'Show-ADTInstallationProgress'
+        'Show-ADTInstallationPrompt'
+        'Show-ADTInstallationRestartPrompt'
+        'Show-ADTInstallationWelcome'
         'Start-ADTMsiProcess'
         'Start-ADTMspProcess'
         'Start-ADTProcess'
