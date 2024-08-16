@@ -41,6 +41,9 @@ function Show-ADTBalloonTip
     .NOTES
     For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
@@ -119,11 +122,11 @@ function Show-ADTBalloonTip
                 }
 
                 # Call the underlying function to show the balloon tip.
-                & (Get-ADTDialogFunction) @PSBoundParameters
+                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

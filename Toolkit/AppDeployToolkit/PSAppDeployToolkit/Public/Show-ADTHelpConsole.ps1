@@ -32,20 +32,6 @@ function Show-ADTHelpConsole
         # Import the module and store its passthru data so we can access it later.
         $module = Import-Module -Name $ModuleBase -DisableNameChecking -PassThru
 
-        # Initialise everything needed for the console if the Dialogs module isn't loaded.
-        if (!($module.Name -match '\.Dialogs$'))
-        {
-            # Set process DPI awareness before importing anything else.
-            Set-ADTProcessDpiAware
-
-            # Add system types required by the console.
-            Add-Type -AssemblyName System.Drawing, System.Windows.Forms
-
-            # All WinForms-specific initialistion code.
-            [System.Windows.Forms.Application]::EnableVisualStyles()
-            try {[System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)} catch {$null = $null}
-        }
-
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
         $helpListBox.ClientSize = [System.Drawing.Size]::new(261, 675)
@@ -78,5 +64,5 @@ function Show-ADTHelpConsole
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    })} -ModuleBase '$((Get-ADTModulePaths) -join "', '")'")"
+    })} -ModuleBase '$Script:PSScriptRoot'")"
 }

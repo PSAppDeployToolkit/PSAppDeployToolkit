@@ -49,6 +49,6 @@ function Remove-ADTInvalidFileNameChars
 
     process
     {
-        return ($Name.Trim() -replace "($([System.String]::Join('|', ([System.IO.Path]::GetInvalidFileNameChars() | & {process {[System.Text.RegularExpressions.Regex]::Escape($_)}}))))")
+        return ($Name.Trim() -replace "[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars())))]")
     }
 }

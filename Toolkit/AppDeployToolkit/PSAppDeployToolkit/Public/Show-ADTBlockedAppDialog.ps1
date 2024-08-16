@@ -6,6 +6,13 @@
 
 function Show-ADTBlockedAppDialog
 {
+    <#
+
+    .NOTES
+    This function can be called without an active ADT session.
+
+    #>
+
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
     param
@@ -54,7 +61,7 @@ function Show-ADTBlockedAppDialog
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

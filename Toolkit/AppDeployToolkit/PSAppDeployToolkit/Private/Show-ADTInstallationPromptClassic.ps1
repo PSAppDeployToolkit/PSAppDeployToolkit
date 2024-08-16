@@ -124,11 +124,8 @@ function Show-ADTInstallationPromptClassic
         [System.Collections.Hashtable]$ADTConfig
     )
 
-    # Read all form assets into memory.
-    Read-ADTAssetsIntoMemory -ADTConfig $ADTConfig
-
     # Set up some default values.
-    $controlSize = [System.Drawing.Size]::new($Script:FormData.Width, 0)
+    $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(130, 24)
 
@@ -190,10 +187,10 @@ function Show-ADTInstallationPromptClassic
     # Picture Banner.
     $pictureBanner = [System.Windows.Forms.PictureBox]::new()
     $pictureBanner.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
-    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, $Script:FormData.BannerHeight)
+    $pictureBanner.MinimumSize = $pictureBanner.ClientSize = $pictureBanner.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, $Script:Dialogs.Classic.BannerHeight)
     $pictureBanner.Location = [System.Drawing.Point]::new(0, 0)
     $pictureBanner.Name = 'PictureBanner'
-    $pictureBanner.Image = $Script:FormData.Assets.Banner
+    $pictureBanner.Image = $Script:Dialogs.Classic.Assets.Banner
     $pictureBanner.Margin = $paddingNone
     $pictureBanner.TabStop = $false
 
@@ -203,7 +200,7 @@ function Show-ADTInstallationPromptClassic
     $labelMessage.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 5)
     $labelMessage.Padding = [System.Windows.Forms.Padding]::new(20, 0, 20, 0)
     $labelMessage.Anchor = [System.Windows.Forms.AnchorStyles]::None
-    $labelMessage.Font = $Script:FormData.Font
+    $labelMessage.Font = $Script:Dialogs.Classic.Font
     $labelMessage.Name = 'LabelMessage'
     $labelMessage.Text = $Message
     $labelMessage.TextAlign = [System.Drawing.ContentAlignment]::"Middle$MessageAlignment"
@@ -231,7 +228,7 @@ function Show-ADTInstallationPromptClassic
     $buttonAbort.Margin = $buttonAbort.Padding = $paddingNone
     $buttonAbort.DialogResult = [System.Windows.Forms.DialogResult]::Abort
     $buttonAbort.Name = 'ButtonAbort'
-    $buttonAbort.Font = $Script:FormData.Font
+    $buttonAbort.Font = $Script:Dialogs.Classic.Font
     $buttonAbort.BackColor = [System.Drawing.Color]::Transparent
     $buttonAbort.ForeColor = [System.Drawing.Color]::Transparent
     $buttonAbort.FlatAppearance.BorderSize = 0
@@ -246,7 +243,7 @@ function Show-ADTInstallationPromptClassic
     $flowLayoutPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
     $flowLayoutPanel.SuspendLayout()
     $flowLayoutPanel.MinimumSize = $flowLayoutPanel.ClientSize = $flowLayoutPanel.MaximumSize = $controlSize
-    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:FormData.BannerHeight)
+    $flowLayoutPanel.Location = [System.Drawing.Point]::new(0, $Script:Dialogs.Classic.BannerHeight)
     $flowLayoutPanel.AutoSize = $true
     $flowLayoutPanel.AutoSizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink
     $flowLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
@@ -275,7 +272,7 @@ function Show-ADTInstallationPromptClassic
         # ButtonsPanel.
         $panelButtons = [System.Windows.Forms.Panel]::new()
         $panelButtons.SuspendLayout()
-        $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:FormData.Width, 39)
+        $panelButtons.MinimumSize = $panelButtons.ClientSize = $panelButtons.MaximumSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 39)
         $panelButtons.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
         $panelButtons.AutoSize = $true
         if ($Icon)
@@ -296,7 +293,7 @@ function Show-ADTInstallationPromptClassic
             $buttonLeft.Margin = $buttonLeft.Padding = $paddingNone
             $buttonLeft.Location = [System.Drawing.Point]::new(14, 4)
             $buttonLeft.DialogResult = [System.Windows.Forms.DialogResult]::No
-            $buttonLeft.Font = $Script:FormData.Font
+            $buttonLeft.Font = $Script:Dialogs.Classic.Font
             $buttonLeft.Name = 'ButtonLeft'
             $buttonLeft.Text = $ButtonLeftText
             $buttonLeft.TabIndex = 0
@@ -312,7 +309,7 @@ function Show-ADTInstallationPromptClassic
             $buttonMiddle.Margin = $buttonMiddle.Padding = $paddingNone
             $buttonMiddle.Location = [System.Drawing.Point]::new(160, 4)
             $buttonMiddle.DialogResult = [System.Windows.Forms.DialogResult]::Ignore
-            $buttonMiddle.Font = $Script:FormData.Font
+            $buttonMiddle.Font = $Script:Dialogs.Classic.Font
             $buttonMiddle.Name = 'ButtonMiddle'
             $buttonMiddle.Text = $ButtonMiddleText
             $buttonMiddle.TabIndex = 1
@@ -328,7 +325,7 @@ function Show-ADTInstallationPromptClassic
             $buttonRight.Margin = $buttonRight.Padding = $paddingNone
             $buttonRight.Location = [System.Drawing.Point]::new(306, 4)
             $buttonRight.DialogResult = [System.Windows.Forms.DialogResult]::Yes
-            $buttonRight.Font = $Script:FormData.Font
+            $buttonRight.Font = $Script:Dialogs.Classic.Font
             $buttonRight.Name = 'ButtonRight'
             $buttonRight.Text = $ButtonRightText
             $buttonRight.TabIndex = 2
@@ -352,7 +349,7 @@ function Show-ADTInstallationPromptClassic
     $formInstallationPrompt.SuspendLayout()
     $formInstallationPrompt.ClientSize = $controlSize
     $formInstallationPrompt.Margin = $formInstallationPrompt.Padding = $paddingNone
-    $formInstallationPrompt.Font = $Script:FormData.Font
+    $formInstallationPrompt.Font = $Script:Dialogs.Classic.Font
     $formInstallationPrompt.Name = 'InstallPromptForm'
     $formInstallationPrompt.Text = $Title
     $formInstallationPrompt.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
@@ -364,7 +361,7 @@ function Show-ADTInstallationPromptClassic
     $formInstallationPrompt.TopMost = !$NotTopMost
     $formInstallationPrompt.TopLevel = $true
     $formInstallationPrompt.AutoSize = $true
-    $formInstallationPrompt.Icon = $Script:FormData.Assets.Icon
+    $formInstallationPrompt.Icon = $Script:Dialogs.Classic.Assets.Icon
     $formInstallationPrompt.Controls.Add($pictureBanner)
     $formInstallationPrompt.Controls.Add($buttonAbort)
     $formInstallationPrompt.Controls.Add($flowLayoutPanel)

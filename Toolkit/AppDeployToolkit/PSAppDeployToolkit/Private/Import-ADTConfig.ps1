@@ -47,6 +47,12 @@ function Import-ADTConfig
         $config.Assets.$asset = (& $Script:CommandTable.'Get-Item' -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
     }
 
+    # Grab the bytes of each image asset, store them into a memory stream, then as an image for the form to use.
+    $Script:Dialogs.Classic.Assets.Icon = [System.Drawing.Icon]::new([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Icon)))
+    $Script:Dialogs.Classic.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Logo)))
+    $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Banner)))
+    $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
+
     # If we're using fluent dialogs but running in the ISE, force it back to classic.
     if (!$Host.Name.Equals('ConsoleHost') -and ($config.UI.DialogStyle -eq 'Fluent'))
     {

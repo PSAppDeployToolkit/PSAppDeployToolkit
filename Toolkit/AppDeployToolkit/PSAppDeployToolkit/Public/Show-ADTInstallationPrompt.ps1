@@ -68,6 +68,9 @@ function Show-ADTInstallationPrompt
     .EXAMPLE
     Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
 
+    .NOTES
+    This function can be called without an active ADT session.
+
     .LINK
     https://psappdeploytoolkit.com
 
@@ -194,7 +197,7 @@ function Show-ADTInstallationPrompt
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$((Get-ADTModulePaths) -join "', '")'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
+                    & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$Script:PSScriptRoot'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
@@ -209,7 +212,7 @@ function Show-ADTInstallationPrompt
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
             }
         }
         catch

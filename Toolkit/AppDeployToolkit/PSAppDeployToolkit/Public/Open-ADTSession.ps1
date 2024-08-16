@@ -148,7 +148,7 @@ function Open-ADTSession
                     $adtData.Sessions[-1].Open()
 
                     # Invoke all callbacks.
-                    foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) {$adtData.Callbacks.Starting}; $adtData.Callbacks.Opening))
+                    foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
                     {
                         & $callback
                     }

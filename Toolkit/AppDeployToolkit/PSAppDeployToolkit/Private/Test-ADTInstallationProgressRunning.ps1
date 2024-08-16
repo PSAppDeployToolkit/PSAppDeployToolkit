@@ -4,8 +4,8 @@
 #
 #---------------------------------------------------------------------------
 
-function Test-ADTInstallationProgressRunningClassic
+function Test-ADTInstallationProgressRunning
 {
     # Return the value of the global state's bool.
-    return $Script:ProgressWindow.Running
+    return $Script:Dialogs.((Get-ADTConfig).UI.DialogStyle).ProgressWindow.Running
 }
