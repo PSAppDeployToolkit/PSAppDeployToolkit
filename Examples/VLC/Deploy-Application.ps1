@@ -11,7 +11,7 @@ PSApppDeployToolkit - This script performs the installation or uninstallation of
 
 The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
 
-PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2023 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
+PSApppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -104,7 +104,7 @@ Try {
     }
 
     ##*===============================================
-    ##* VARIABLE DECLARATION
+    #region VARIABLE DECLARATION
     ##*===============================================
     ## Variables: Application
     [String]$appVendor = 'VideoLAN'
@@ -129,8 +129,8 @@ Try {
 
     ## Variables: Script
     [String]$deployAppScriptFriendlyName = 'Deploy Application'
-    [Version]$deployAppScriptVersion = [Version]'3.10.1'
-    [String]$deployAppScriptDate = '03/05/2024'
+    [Version]$deployAppScriptVersion = [Version]'3.10.2'
+    [String]$deployAppScriptDate = '08/13/2024'
     [Hashtable]$deployAppScriptParameters = $PsBoundParameters
 
     ## Variables: Environment
@@ -172,12 +172,12 @@ Try {
     #endregion
     ##* Do not modify section above
     ##*===============================================
-    ##* END VARIABLE DECLARATION
+    #endregion END VARIABLE DECLARATION
     ##*===============================================
 
     If ($deploymentType -ine 'Uninstall' -and $deploymentType -ine 'Repair') {
         ##*===============================================
-        ##* PRE-INSTALLATION
+        ##* MARK: PRE-INSTALLATION
         ##*===============================================
         [String]$installPhase = 'Pre-Installation'
 
@@ -191,7 +191,7 @@ Try {
 
 
         ##*===============================================
-        ##* INSTALLATION
+        ##* MARK: INSTALLATION
         ##*===============================================
         [String]$installPhase = 'Installation'
 
@@ -210,7 +210,7 @@ Try {
         Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
 
         ##*===============================================
-        ##* POST-INSTALLATION
+        ##* MARK: POST-INSTALLATION
         ##*===============================================
         [String]$installPhase = 'Post-Installation'
 
@@ -227,7 +227,7 @@ Try {
     }
     ElseIf ($deploymentType -ieq 'Uninstall') {
         ##*===============================================
-        ##* PRE-UNINSTALLATION
+        ##* MARK: PRE-UNINSTALLATION
         ##*===============================================
         [String]$installPhase = 'Pre-Uninstallation'
 
@@ -241,7 +241,7 @@ Try {
 
 
         ##*===============================================
-        ##* UNINSTALLATION
+        ##* MARK: UNINSTALLATION
         ##*===============================================
         [String]$installPhase = 'Uninstallation'
 
@@ -258,7 +258,7 @@ Try {
         Execute-Process -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ContinueOnError $true
 
         ##*===============================================
-        ##* POST-UNINSTALLATION
+        ##* MARK: POST-UNINSTALLATION
         ##*===============================================
         [String]$installPhase = 'Post-Uninstallation'
 
@@ -268,7 +268,7 @@ Try {
     }
     ElseIf ($deploymentType -ieq 'Repair') {
         ##*===============================================
-        ##* PRE-REPAIR
+        ##* MARK: PRE-REPAIR
         ##*===============================================
         [String]$installPhase = 'Pre-Repair'
 
@@ -281,7 +281,7 @@ Try {
         ## <Perform Pre-Repair tasks here>
 
         ##*===============================================
-        ##* REPAIR
+        ##* MARK: REPAIR
         ##*===============================================
         [String]$installPhase = 'Repair'
 
@@ -298,7 +298,7 @@ Try {
         Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
 
         ##*===============================================
-        ##* POST-REPAIR
+        ##* MARK: POST-REPAIR
         ##*===============================================
         [String]$installPhase = 'Post-Repair'
 
@@ -309,9 +309,6 @@ Try {
         Copy-FileToUserProfiles -Path "$dirSupportFiles\vlc" -Destination 'AppData\Roaming' -Recurse
 
     }
-    ##*===============================================
-    ##* END SCRIPT BODY
-    ##*===============================================
 
     ## Call the Exit-Script function to perform final cleanup operations
     Exit-Script -ExitCode $mainExitCode
