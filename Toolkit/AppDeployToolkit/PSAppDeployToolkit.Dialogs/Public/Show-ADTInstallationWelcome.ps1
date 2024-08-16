@@ -246,13 +246,13 @@ function Show-ADTInstallationWelcome
                         }
                         finally
                         {
-                            try
+                            $null = try
                             {
-                                $null = [System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
+                                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
                             }
                             catch
                             {
-                                $null = $null
+                                $null
                             }
                         }
                     }
@@ -314,7 +314,7 @@ function Show-ADTInstallationWelcome
                         }
                         else
                         {
-                            Get-ADTUniversalDate -DateTime (Get-Date -Date ([System.DateTime]::Now.AddDays($DeferDays)) -Format $adtEnv.culture.DateTimeFormat.UniversalDateTimePattern).ToString()
+                            Get-ADTUniversalDate -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
                         }
                         Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 

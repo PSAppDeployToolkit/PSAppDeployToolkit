@@ -46,7 +46,7 @@ function Get-ADTUniversalDate
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DateTime = (& $Script:CommandTable.'Get-Date' -Format $Host.CurrentCulture.DateTimeFormat.UniversalDateTimePattern).ToString()
+        [System.String]$DateTime = [System.DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
     )
 
     begin
@@ -60,12 +60,9 @@ function Get-ADTUniversalDate
         {
             try
             {
-                # If a universal sortable date time pattern was provided, remove the Z, otherwise it could get converted to a different time zone.
-                $DateTime = [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture)
-
-                # Convert the date to a universal sortable date time pattern based on the current culture.
+                # Remove any tailing Z, otherwise it could get converted to a different time zone. Then, convert the date to a universal sortable date time pattern based on the current culture.
                 Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
-                return (& $Script:CommandTable.'Get-Date' -Date $DateTime -Format $Host.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern).ToString()
+                return [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
             }
             catch
             {
