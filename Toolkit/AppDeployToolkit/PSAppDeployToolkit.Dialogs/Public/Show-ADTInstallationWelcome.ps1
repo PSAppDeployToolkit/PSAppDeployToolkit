@@ -197,7 +197,6 @@ function Show-ADTInstallationWelcome
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         try
         {
             $adtEnv = Get-ADTEnvironment
@@ -208,6 +207,7 @@ function Show-ADTInstallationWelcome
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
