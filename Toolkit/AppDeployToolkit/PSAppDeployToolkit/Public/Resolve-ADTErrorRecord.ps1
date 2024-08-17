@@ -61,6 +61,7 @@ function Resolve-ADTErrorRecord
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -186,7 +187,7 @@ function Resolve-ADTErrorRecord
         }
 
         # Output the error message to the caller.
-        $logErrorMessage
+        return $logErrorMessage
     }
 
     end

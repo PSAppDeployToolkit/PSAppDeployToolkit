@@ -522,7 +522,7 @@ function Start-ADTMsiProcess
                 # Return the results if passing through.
                 if ($PassThru -and $ExecuteResults)
                 {
-                    $ExecuteResults
+                    return $ExecuteResults
                 }
             }
             catch

@@ -135,7 +135,7 @@ class ADTSession
         # Process provided parameters and amend some incoming values.
         $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
         $Parameters.GetEnumerator() | & { process { if ($Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))) { $this.($_.Key) = $_.Value } } }
-        $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
+        $this.DeploymentType = $adtEnv.culture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories before returning.
@@ -311,15 +311,14 @@ class ADTSession
         }
 
         # Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-        if (Test-ADTCallerIsAdmin)
+        $this.LogName = if ($ADTEnv.IsAdmin)
         {
-            $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType).log"
+            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType).log"
         }
         else
         {
-            $this.LogName = "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName)).log"
+            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name $ADTEnv.envUserName).log"
         }
-
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
 
         # Check if log file needs to be rotated.
@@ -334,8 +333,8 @@ class ADTSession
                 try
                 {
                     # Get new log file path.
-                    $logFileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($logFile)
-                    $logFileExtension = [IO.Path]::GetExtension($logFile)
+                    $logFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($logFile)
+                    $logFileExtension = [System.IO.Path]::GetExtension($logFile)
                     $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
                     $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
                     [String]$ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
@@ -414,7 +413,7 @@ class ADTSession
         $this.WriteLogEntry("OS Type is [$($ADTEnv.envOSProductTypeName)]")
         $this.WriteLogEntry("Current Culture is [$($ADTEnv.culture.Name)], language is [$($ADTEnv.currentLanguage)] and UI language is [$($ADTEnv.currentUILanguage)]")
         $this.WriteLogEntry("Hardware Platform is [$($ADTEnv.envHardwareType)]")
-        $this.WriteLogEntry("PowerShell Host is [$($Global:Host.Name)] with version [$($Global:Host.Version)]")
+        $this.WriteLogEntry("PowerShell Host is [$($ADTEnv.envHost.Name)] with version [$($ADTEnv.envHost.Version)]")
         $this.WriteLogEntry("PowerShell Version is [$($ADTEnv.envPSVersion) $($ADTEnv.psArchitecture)]")
         if ($ADTEnv.envCLRVersion)
         {
@@ -646,8 +645,9 @@ class ADTSession
 
     hidden [System.Void] Open()
     {
-        # Get the current environment.
+        # Get the current environment and config.
         $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being opened twice.
         if ($this.Opened)
@@ -663,9 +663,6 @@ class ADTSession
             }
             throw (New-ADTErrorRecord @naerParams)
         }
-
-        # Get the current config.
-        $adtConfig = Get-ADTConfig
 
         # Initialise PSADT session.
         $this.DetectDefaultMsi($adtEnv)
@@ -775,7 +772,7 @@ class ADTSession
         }
 
         # Write out a log divider to indicate the end of logging.
-        $this.WriteLogEntry('-' * 79)
+        $this.WriteLogDivider()
         $this.SetPropertyValue('DisableLogging', $true)
         $this.Closed = $true
 
