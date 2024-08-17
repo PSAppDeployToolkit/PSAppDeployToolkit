@@ -6,37 +6,6 @@
 
 function Show-ADTBalloonTipFluent
 {
-    <#
-
-    .SYNOPSIS
-    Displays a balloon tip notification in the system tray.
-
-    .DESCRIPTION
-    Displays a balloon tip notification in the system tray.
-
-    .PARAMETER BalloonTipText
-    Text of the balloon tip.
-
-    .PARAMETER BalloonTipTitle
-    Title of the balloon tip.
-
-    .INPUTS
-    None. You cannot pipe objects to this function.
-
-    .OUTPUTS
-    System.String. Returns the version of the specified file.
-
-    .EXAMPLE
-    Show-ADTBalloonTipFluent -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
-
-    .EXAMPLE
-    Show-ADTBalloonTipFluent -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
     param

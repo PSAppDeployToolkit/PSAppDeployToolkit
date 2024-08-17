@@ -6,58 +6,6 @@
 
 function Show-ADTInstallationProgressClassic
 {
-    <#
-
-    .SYNOPSIS
-    Displays a progress dialog in a separate thread with an updateable custom message.
-
-    .DESCRIPTION
-    Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
-
-    The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
-
-    .PARAMETER WindowTitle
-    The title of the window to be displayed. The default is the derived value from $InstallTitle.
-
-    .PARAMETER StatusMessage
-    The status message to be displayed. The default status message is taken from the configuration file.
-
-    .PARAMETER WindowLocation
-    The location of the progress window. Default: center of the screen.
-
-    .PARAMETER NotTopMost
-    Specifies whether the progress window shouldn't be topmost. Default: $false.
-
-    .PARAMETER Quiet
-    Specifies whether to not log the success of updating the progress message. Default: $false.
-
-    .PARAMETER NoRelocation
-    Specifies whether to not reposition the window upon updating the message. Default: $false.
-
-    .INPUTS
-    None. You cannot pipe objects to this function.
-
-    .OUTPUTS
-    None. This function does not generate any output.
-
-    .EXAMPLE
-    # Use the default status message from the configuration file.
-    Show-ADTInstallationProgressClassic
-
-    .EXAMPLE
-    Show-ADTInstallationProgressClassic -StatusMessage 'Installation in Progress...'
-
-    .EXAMPLE
-    Show-ADTInstallationProgressClassic -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
-
-    .EXAMPLE
-    Show-ADTInstallationProgressClassic -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisableWindowCloseButton', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UpdateWindowLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
