@@ -64,11 +64,7 @@ function Block-ADTAppExecution
             $PSCmdlet.ThrowTerminatingError($_)
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Define path for storing temporary data.
-        $tempPath = $adtConfig.Toolkit.TempPath
         $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
-        $pwshArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Import-Module' -Name '$((& $Script:CommandTable.'Get-Module' -Name "$($adtEnv.appDeployToolkitName)*").Name -replace '^',"$tempPath\" -join "', '")'"
     }
 
     process
@@ -84,33 +80,6 @@ function Block-ADTAppExecution
         {
             try
             {
-                # Reset any previous instance of the temp folder.
-                if ([System.IO.Directory]::Exists($tempPath))
-                {
-                    Remove-ADTFolder -Path $tempPath
-                }
-                try
-                {
-                    $null = [System.IO.Directory]::CreateDirectory($tempPath)
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Unable to create [$tempPath]. Possible attempt to gain elevated rights."
-                }
-
-                # Export the current state of the module for the scheduled task.
-                & $Script:CommandTable.'Copy-Item' -Path $Script:PSScriptRoot* -Destination $tempPath -Exclude thumbs.db -Recurse -Force
-
-                # Set contents to be readable for all users (BUILTIN\USERS).
-                try
-                {
-                    Set-ADTItemPermission -Path $tempPath -User (ConvertTo-ADTNTAccountOrSID -SID S-1-5-32-545) -Permission Read -Inheritance ObjectInherit, ContainerInherit
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to set read permissions on path [$tempPath]. The function might not be able to work correctly." -Severity 2
-                }
-
                 # Clean up any previous state that might be lingering.
                 if ($task = & $Script:CommandTable.'Get-ScheduledTask' -TaskName $taskName -ErrorAction Ignore)
                 {
@@ -125,7 +94,7 @@ function Block-ADTAppExecution
                     $nstParams = @{
                         Principal = & $Script:CommandTable.'New-ScheduledTaskPrincipal' -Id Author -UserId S-1-5-18
                         Trigger = & $Script:CommandTable.'New-ScheduledTaskTrigger' -AtStartup
-                        Action = & $Script:CommandTable.'New-ScheduledTaskAction' -Execute $adtEnv.envPSProcessPath -Argument "$pwshArgs; Unblock-ADTAppExecution"
+                        Action = & $Script:CommandTable.'New-ScheduledTaskAction' -Execute $adtEnv.envPSProcessPath -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:Unblock-ADTAppExecutionInternal}} -TaskName '$($taskName.Replace("'", "''"))'")"
                         Settings = & $Script:CommandTable.'New-ScheduledTaskSettingsSet' -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
                     $null = & $Script:CommandTable.'New-ScheduledTask' @nstParams | & $Script:CommandTable.'Register-ScheduledTask' -TaskName $taskName
@@ -137,10 +106,10 @@ function Block-ADTAppExecution
                 }
 
                 # Enumerate each process and set the debugger value to block application execution.
-                foreach ($process in $ProcessName -replace '$', '.exe')
+                foreach ($process in ($ProcessName -replace '$', '.exe'))
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    Set-ADTRegistryKey -Key (& $Script:CommandTable.'Join-Path' -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('installName').Replace("'","''"))'"
+                    Set-ADTRegistryKey -Key (& $Script:CommandTable.'Join-Path' -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & Import-Module -Name '$Script:PSScriptRoot'; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('InstallName').Replace("'","''"))'"
                 }
             }
             catch
