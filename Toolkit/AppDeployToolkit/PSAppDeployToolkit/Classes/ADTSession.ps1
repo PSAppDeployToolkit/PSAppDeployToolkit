@@ -696,6 +696,12 @@ class ADTSession
         $this.TestDefaultMsi()
         $this.TestAdminRequired($adtEnv, $adtConfig)
 
+        # If terminal server mode was specified, change the installation mode to support it.
+        if ($this.TerminalServerMode)
+        {
+            Enable-ADTTerminalServerInstallMode
+        }
+
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
         $this.InstallPhase = 'Execution'
 

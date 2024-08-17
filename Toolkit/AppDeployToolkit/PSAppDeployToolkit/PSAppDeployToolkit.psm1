@@ -82,10 +82,10 @@ $ModuleFiles.FullName | . { process { . $_ } }
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
         Callbacks = [pscustomobject]@{
-            Starting = $null
-            Opening = $null
-            Closing = $null
-            Finishing = $null
+            Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+            Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+            Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+            Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
         }
         Sessions = [System.Collections.Generic.List[ADTSession]]::new()
         TerminalServerMode = $false

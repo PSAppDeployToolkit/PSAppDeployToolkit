@@ -24,7 +24,7 @@ function Invoke-ADTSessionCallbackOperation
     )
 
     # Cache the global callbacks.
-    if (!($callbacks = (Get-ADTModuleData).Callbacks.$Type))
+    if (!(Test-ADTModuleInitialised))
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
@@ -36,6 +36,7 @@ function Invoke-ADTSessionCallbackOperation
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Perform any required action.
+    # Cache the global callbacks and perform any required action.
+    $callbacks = (Get-ADTModuleData).Callbacks.$Type
     $Callback | & { process { if (($Action.Equals('Add') -and !$callbacks.Contains($_)) -or $callbacks.Contains($_)) { $null = $callbacks.$Action($_) } } }
 }
