@@ -174,8 +174,12 @@ function Get-ADTRegistryKey
                     else
                     {
                         Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
+                        return
                     }
                 }
+
+                # Return the populated registry key to the caller.
+                return $regKeyValue
             }
             catch
             {
