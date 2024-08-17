@@ -159,10 +159,12 @@ class ADTSession
             # Get all MSI files and return early if we haven't found anything.
             if ($this.DefaultMsiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
             {
+                $this.WriteLogDivider(2)
                 $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
             }
             elseif ($this.DefaultMsiFile = $msiFiles | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
             {
+                $this.WriteLogDivider(2)
                 $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.DefaultMsiFile)")
             }
             else
@@ -202,20 +204,17 @@ class ADTSession
             }
 
             # Read the MSI and get the installation details.
-            $gmtpParams = @{ Path = $this.DefaultMsiFile; Table = 'File' }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-            $msiProps = Get-ADTMsiTableProperty @gmtpParams -ErrorAction Stop
+            $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
+            $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
 
             # Generate list of MSI executables for testing later on.
-            if ($this.DefaultMsiExecutablesList = & $Script:CommandTable.'Get-Member' -InputObject $msiProps | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) } } } })
+            if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
             {
-                $this.WriteLogEntry("MSI Executable List [$($this.DefaultMsiExecutablesList.Name)].")
+                $this.WriteLogEntry("MSI Executable List [$(($this.DefaultMsiExecutablesList = $msiProcs).Name)].")
             }
 
-            # Change table and get properties from it.
-            $gmtpParams.set_Item('Table', 'Property')
-            $msiProps = Get-ADTMsiTableProperty @gmtpParams
-
             # Update our app variables with new values.
+            $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
             $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
             $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
             $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
