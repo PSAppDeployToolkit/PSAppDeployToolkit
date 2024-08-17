@@ -6,43 +6,6 @@
 
 function Show-ADTBalloonTipClassic
 {
-    <#
-
-    .SYNOPSIS
-    Displays a balloon tip notification in the system tray.
-
-    .DESCRIPTION
-    Displays a balloon tip notification in the system tray.
-
-    .PARAMETER BalloonTipText
-    Text of the balloon tip.
-
-    .PARAMETER BalloonTipTitle
-    Title of the balloon tip.
-
-    .PARAMETER BalloonTipIcon
-    Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
-
-    .PARAMETER BalloonTipTime
-    Time in milliseconds to display the balloon tip. Default: 10000.
-
-    .INPUTS
-    None. You cannot pipe objects to this function.
-
-    .OUTPUTS
-    System.String. Returns the version of the specified file.
-
-    .EXAMPLE
-    Show-ADTBalloonTipClassic -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
-
-    .EXAMPLE
-    Show-ADTBalloonTipClassic -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [CmdletBinding()]
     param
     (

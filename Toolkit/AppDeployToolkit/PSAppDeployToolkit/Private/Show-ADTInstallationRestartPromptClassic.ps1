@@ -6,54 +6,6 @@
 
 function Show-ADTInstallationRestartPromptClassic
 {
-    <#
-
-    .SYNOPSIS
-    Displays a restart prompt with a countdown to a forced restart.
-
-    .DESCRIPTION
-    Displays a restart prompt with a countdown to a forced restart.
-
-    .PARAMETER Title
-    Title of the prompt. Default: the application installation name.
-
-    .PARAMETER CountdownSeconds
-    Specifies the number of seconds to countdown before the system restart. Default: 60
-
-    .PARAMETER CountdownNoHideSeconds
-    Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
-
-    .PARAMETER NoCountdown
-    Specifies not to show a countdown.
-
-    The UI will restore/reposition itself persistently based on the interval value specified in the config file.
-
-    .PARAMETER NotTopMost
-    Specifies whether the windows is the topmost window. Default: $false.
-
-    .INPUTS
-    None. You cannot pipe objects to this function.
-
-    .OUTPUTS
-    System.String. Returns the version of the specified file.
-
-    .EXAMPLE
-    Show-ADTInstallationRestartPromptClassic -CountdownSeconds 600 -CountdownNoHideSeconds 60
-
-    .EXAMPLE
-    Show-ADTInstallationRestartPromptClassic -NoCountdown
-
-    .EXAMPLE
-    Show-ADTInstallationRestartPromptClassic -Countdownseconds 300
-
-    .NOTES
-    Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'formRestartPromptStartLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'CountdownNoHideSeconds', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
