@@ -62,21 +62,21 @@ function Initialize-ADTFunction
     # Amend the caller's $ErrorActionPreference to archive off their provided value so we can always stop on a dime.
     # For the caller-provided values, we deliberately use a string value to escape issues when 'Ignore' is passed.
     # https://github.com/PowerShell/PowerShell/issues/1759#issuecomment-442916350
-    Set-CallerVariable -Name OriginalErrorAction -Value $(if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('ErrorAction'))
-        {
-            # Caller's value directly against the function.
-            $Cmdlet.MyInvocation.BoundParameters.ErrorAction.ToString()
-        }
-        elseif ($PSBoundParameters.ContainsKey('ErrorAction'))
-        {
-            # A function's own specified override.
-            $PSBoundParameters.ErrorAction.ToString()
-        }
-        else
-        {
-            # The module's default ErrorActionPreference.
-            $Script:ErrorActionPreference
-        })
+    if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('ErrorAction'))
+    {
+        # Caller's value directly against the function.
+        Set-CallerVariable -Name OriginalErrorAction -Value $Cmdlet.MyInvocation.BoundParameters.ErrorAction.ToString()
+    }
+    elseif ($PSBoundParameters.ContainsKey('ErrorAction'))
+    {
+        # A function's own specified override.
+        Set-CallerVariable -Name OriginalErrorAction -Value $PSBoundParameters.ErrorAction.ToString()
+    }
+    else
+    {
+        # The module's default ErrorActionPreference.
+        Set-CallerVariable -Name OriginalErrorAction -Value $Script:ErrorActionPreference
+    }
     Set-CallerVariable -Name ErrorActionPreference -Value $Script:ErrorActionPreference
 
     # Handle the caller's -Verbose parameter, which doesn't always work between them and the module barrier.

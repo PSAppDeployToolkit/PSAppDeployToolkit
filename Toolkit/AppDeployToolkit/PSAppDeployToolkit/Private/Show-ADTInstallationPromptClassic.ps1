@@ -346,7 +346,10 @@ function Show-ADTInstallationPromptClassic
             $null = $shellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)
             {
-                Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
+                if (Test-ADTSessionActive)
+                {
+                    Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
+                }
             }
             else
             {

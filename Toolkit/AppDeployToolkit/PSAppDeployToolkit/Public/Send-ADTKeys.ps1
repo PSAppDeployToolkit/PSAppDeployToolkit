@@ -61,7 +61,7 @@ function Send-ADTKeys
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'WindowTitle')]
@@ -171,18 +171,6 @@ function Send-ADTKeys
         {
             try
             {
-                # Throw an error if no WindowTitle parameters are passed.
-                if ($PSBoundParameters.ParameterSetName.Equals('None'))
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new('Please specify a WindowTitle or WindowHandle, or specify that all WindowTitles should be parsed.')
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                        ErrorId = 'ParameterSpecificationError'
-                        RecommendedAction = 'Please specify a WindowTitle or WindowHandle, or specify that all WindowTitles should be parsed.'
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-
                 # Process the specified input.
                 if ($WindowHandle)
                 {
