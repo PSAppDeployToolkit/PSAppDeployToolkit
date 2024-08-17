@@ -47,6 +47,9 @@ function Initialize-ADTModule
                 $adtData.Strings = Import-ADTStringTable -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
+
+                # Mark the environment table as read-only before finishing.
+                $adtData.Environment = $adtData.Environment.AsReadOnly()
                 $adtData.Initialised = $true
             }
             catch
