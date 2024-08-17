@@ -143,14 +143,14 @@ https://psappdeploytoolkit.com
         If (-not [String]::IsNullOrEmpty($TempPath))
         {
             $executeAsUserTempPath = $TempPath
-            If (($TempPath -eq $adtSession.GetLoggedOnUserTempPath()) -and ($RunLevel -eq 'HighestPrivilege'))
+            If (($TempPath -match [regex]::Escape($adtEnv.loggedOnUserTempPath)) -and ($RunLevel -eq 'HighestPrivilege'))
             {
                 Write-ADTLogEntry -Message "WARNING: Using [$($MyInvocation.MyCommand.Name)] with a user writable directory using the 'HighestPrivilege' creates a security vulnerability. Please use -RunLevel 'LeastPrivilege' when using a user writable directory." -Severity 'Warning'
             }
         }
         Else
         {
-            [String]$executeAsUserTempPath = $adtSession.GetLoggedOnUserTempPath()
+            [String]$executeAsUserTempPath = [System.IO.Path]::Combine($adtConfig.Toolkit.TempPath, 'ExecuteAsUser')
         }
     }
     Process

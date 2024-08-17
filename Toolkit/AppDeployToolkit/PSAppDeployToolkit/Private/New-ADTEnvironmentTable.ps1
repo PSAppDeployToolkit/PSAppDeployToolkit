@@ -306,9 +306,10 @@ function New-ADTEnvironmentTable
     $variables.Add('dirUserProfile', (& $Script:CommandTable.'Split-Path' -LiteralPath $variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
     $variables.Add('runasUserProfile', (& $Script:CommandTable.'Join-Path' -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
+    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
 
     ## Variables: Executables
-    $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe") # Manages Scheduled Tasks
+    $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe")
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
@@ -322,5 +323,5 @@ function New-ADTEnvironmentTable
     $variables.Add('ShellApp', (& $Script:CommandTable.'New-Object' -ComObject 'Shell.Application'))
 
     # Return variables for use within the module.
-    return $variables.AsReadOnly()
+    return $variables
 }

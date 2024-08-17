@@ -14,7 +14,6 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
-    hidden [ValidateNotNullOrEmpty()][System.String]$LoggedOnUserTempPath
     hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeNonInteractive
@@ -139,23 +138,10 @@ class ADTSession
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
-        # Establish script directories.
+        # Establish script directories before returning.
         $this.ScriptDirectory = if ($rootLocation = $Parameters.SessionState.PSVariable.GetValue('PSScriptRoot', $null)) { $rootLocation } else { $PWD.Path }
         $this.DirFiles = "$($this.ScriptDirectory)\Files"
         $this.DirSupportFiles = "$($this.ScriptDirectory)\SupportFiles"
-
-        # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
-        # This needs to be performed within the session code as we need the config up before we can process this, but the config depends on the environment being up first.
-        if (($null -ne $adtEnv.RunAsActiveUser.NTAccount) -and [System.IO.Directory]::Exists($adtEnv.runasUserProfile))
-        {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$($adtEnv.runasUserProfile)\ExecuteAsUser").FullName
-        }
-        else
-        {
-            $this.LoggedOnUserTempPath = [System.IO.Directory]::CreateDirectory("$((Get-ADTConfig).Toolkit.TempPath)\ExecuteAsUser").FullName
-        }
-
-        # Reflect that we've completed instantiation.
         $this.Instantiated = $true
     }
 
@@ -924,11 +910,6 @@ class ADTSession
     [PSADT.Types.ProcessObject[]] GetDefaultMsiExecutablesList()
     {
         return $this.DefaultMsiExecutablesList
-    }
-
-    [System.String] GetLoggedOnUserTempPath()
-    {
-        return $this.LoggedOnUserTempPath
     }
 
     [System.String] GetDeploymentTypeName()
