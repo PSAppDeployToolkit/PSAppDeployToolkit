@@ -20,12 +20,23 @@ function New-ADTValidateScriptErrorRecord
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ExceptionMessage
+        [System.String]$ExceptionMessage,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Exception]$InnerException
     )
 
     # Build out new ErrorRecord and return it.
     $naerParams = @{
-        Exception = [System.ArgumentException]::new($ExceptionMessage, $ParameterName)
+        Exception = if ($InnerException)
+        {
+            [System.ArgumentException]::new($ExceptionMessage, $ParameterName, $InnerException)
+        }
+        else
+        {
+            [System.ArgumentException]::new($ExceptionMessage, $ParameterName)
+        }
         Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
         ErrorId = "Invalid$($ParameterName)ParameterValue"
         TargetObject = $ProvidedValue
