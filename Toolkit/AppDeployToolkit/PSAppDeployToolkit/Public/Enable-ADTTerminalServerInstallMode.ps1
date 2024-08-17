@@ -45,7 +45,7 @@ function Enable-ADTTerminalServerInstallMode
 
     process
     {
-        if ($adtData.TerminalServerMode -or ((Test-ADTSessionActive) -and !(Get-ADTSession).TerminalServerMode))
+        if ($adtData.TerminalServerMode)
         {
             return
         }
@@ -55,6 +55,7 @@ function Enable-ADTTerminalServerInstallMode
             try
             {
                 Invoke-ADTTerminalServerModeChange -Mode Install
+                Add-ADTSessionClosingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Disable-ADTTerminalServerInstallMode'
                 $adtData.TerminalServerMode = $true
             }
             catch
