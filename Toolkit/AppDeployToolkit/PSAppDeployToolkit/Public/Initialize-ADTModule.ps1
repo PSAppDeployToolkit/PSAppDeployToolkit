@@ -13,6 +13,18 @@ function Initialize-ADTModule
 
     begin
     {
+        # Ensure this function isn't being called mid-flight.
+        if (Test-ADTSessionActive)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("This function cannot be called while there is an active ADTSession in progress.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'InitWithActiveSessionError'
+                TargetObject = Get-ADTSession
+                RecommendedAction = "Please attempt module re-initialisation once the active ADTSession(s) have been closed."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtData = Get-ADTModuleData
     }
