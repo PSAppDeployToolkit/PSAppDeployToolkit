@@ -167,15 +167,12 @@ function Get-ADTMsiTableProperty
                 if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
                 {
                     # Open the requested table view from the database.
+                    $TableProperties = [ordered]@{}
                     $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
 
                     # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
                     # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                    if (!(Invoke-ADTObjectMethod -InputObject $View -MethodName Execute))
-                    {
-                        return
-                    }
-                    $TableProperties = [ordered]@{}
                     while (($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch))
                     {
                         $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
