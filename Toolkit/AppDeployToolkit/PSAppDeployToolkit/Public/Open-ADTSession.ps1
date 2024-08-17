@@ -119,6 +119,8 @@ function Open-ADTSession
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtData = Get-ADTModuleData
+        $adtSession = $null
+        $errRecord = $null
     }
 
     process
@@ -139,13 +141,13 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule
                 }
-                $adtData.Sessions.Add($PSBoundParameters)
+                $adtData.Sessions.Add(($adtSession = [ADTSession]::new($PSBoundParameters)))
 
                 # Process the instantiated session.
                 try
                 {
                     # Open the newly instantiated session.
-                    $adtData.Sessions[-1].Open()
+                    $adtSession.Open()
 
                     # Invoke all callbacks.
                     foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
@@ -161,7 +163,6 @@ function Open-ADTSession
                 }
                 catch
                 {
-                    $null = $adtData.Sessions.Remove($adtData.Sessions[-1])
                     throw
                 }
             }
@@ -172,13 +173,20 @@ function Open-ADTSession
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            $errRecord = Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while opening new ADTSession object." -PassThru
+        }
+        finally
+        {
+            if ($adtSession -and $errRecord)
+            {
+                Close-ADTSession -ExitCode 60008
+            }
         }
 
         # Return the most recent session if passing through.
         if ($PassThru)
         {
-            return $adtData.Sessions[-1]
+            return $adtSession
         }
     }
 

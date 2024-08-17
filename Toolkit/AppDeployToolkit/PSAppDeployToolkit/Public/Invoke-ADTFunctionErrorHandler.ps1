@@ -59,6 +59,12 @@ function Invoke-ADTFunctionErrorHandler
         Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
     }
 
+    # Return the provided ErrorRecord object if passing it through. This has to happen before we write the error.
+    if ($PassThru)
+    {
+        return $ErrorRecord
+    }
+
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
     # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
     if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
@@ -68,11 +74,5 @@ function Invoke-ADTFunctionErrorHandler
     elseif (!(Test-ADTSessionActive) -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))
     {
         $Cmdlet.WriteError($ErrorRecord)
-    }
-
-    # Return the provided ErrorRecord object if passing it through.
-    if ($PassThru)
-    {
-        return $ErrorRecord
     }
 }
