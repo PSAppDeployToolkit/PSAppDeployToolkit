@@ -721,25 +721,34 @@ class ADTSession
             throw (New-ADTErrorRecord @naerParams)
         }
 
+        # Change the install phase in preparation for closing out.
+        $this.InstallPhase = 'Finalization'
+
+        # Store app/deployment details string. If we're exiting before properties are set, use a generic string.
+        if ([System.String]::IsNullOrWhiteSpace(($deployString = "$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower())".Trim())))
+        {
+            $deployString = "$($adtEnv.appDeployToolkitName) deployment"
+        }
+
         # Process resulting exit code.
         switch ($this.GetDeploymentStatus())
         {
             FastRetry
             {
                 # Just advise of the exit code with the appropriate severity.
-                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 2)
+                $this.WriteLogEntry("$deployString completed with exit code [$($this.ExitCode)].", 2)
                 break
             }
             Error
             {
                 # Just advise of the exit code with the appropriate severity.
-                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 3)
+                $this.WriteLogEntry("$deployString completed with exit code [$($this.ExitCode)].", 3)
                 break
             }
             default
             {
                 # Clean up app deferral history.
-                if (& $Script:CommandTable.'Test-Path' -LiteralPath $this.RegKeyDeferHistory)
+                if ($this.RegKeyDeferHistory -and (& $Script:CommandTable.'Test-Path' -LiteralPath $this.RegKeyDeferHistory))
                 {
                     $this.WriteLogEntry('Removing deferral history...')
                     Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
@@ -754,7 +763,7 @@ class ADTSession
                 {
                     $this.ExitCode = 0
                 }
-                $this.WriteLogEntry("$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower()) completed with exit code [$($this.ExitCode)].", 0)
+                $this.WriteLogEntry("$deployString completed with exit code [$($this.ExitCode)].", 0)
                 break
             }
         }
