@@ -42,6 +42,7 @@ function Unblock-ADTAppExecution
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $uaaeiParams = @{}; if ($Tasks) {$uaaeiParams.Add('Tasks', $Tasks)}
     }
 
     process
@@ -53,27 +54,12 @@ function Unblock-ADTAppExecution
             return
         }
 
+        # Clean up blocked apps using our backend worker.
         try
         {
             try
             {
-                # Remove Debugger values to unblock processes.
-                & $Script:CommandTable.'Get-ItemProperty' -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -ErrorAction Ignore | & {
-                    process
-                    {
-                        if ($_.Debugger.Contains('Show-ADTBlockedAppDialog'))
-                        {
-                            Write-ADTLogEntry -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
-                            & $Script:CommandTable.'Remove-ItemProperty' -LiteralPath $_.PSPath -Name Debugger
-                        }
-                    }
-                }
-
-                # Remove the scheduled task if it exists.
-                if ($Tasks)
-                {
-                    $Tasks | & $Script:CommandTable.'Unregister-ScheduledTask' -Confirm:$false
-                }
+                Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
             }
             catch
             {
