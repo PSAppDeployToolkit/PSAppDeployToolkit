@@ -217,55 +217,48 @@ class ADTSession
             $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.DefaultMsiFile)].")
         }
 
-        try
+        # Discover if there is a zero-config MST file.
+        if ([System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
         {
-            # Discover if there is a zero-config MST file.
-            if ([System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
+            if ([System.IO.File]::Exists(($mstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst'))))
             {
-                if ([System.IO.File]::Exists(($mstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst'))))
-                {
-                    $this.DefaultMstFile = $mstFile
-                }
+                $this.DefaultMstFile = $mstFile
             }
-            if (![System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
-            {
-                $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
-            }
-
-            # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-            if (!$this.DefaultMspFiles)
-            {
-                if (($mspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName))
-                {
-                    $this.DefaultMspFiles = $mspFiles
-                }
-            }
-            if ($this.DefaultMspFiles)
-            {
-                $this.WriteLogEntry("Discovered Zero-Config MSP installation file(s) [$($this.DefaultMspFiles -join ',')].")
-            }
-
-            # Read the MSI and get the installation details.
-            $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-            $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
-
-            # Generate list of MSI executables for testing later on.
-            if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
-            {
-                $this.WriteLogEntry("MSI Executable List [$(($this.DefaultMsiExecutablesList = $msiProcs).Name)].")
-            }
-
-            # Update our app variables with new values.
-            $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
-            $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
-            $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
-            $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
-            $this.UseDefaultMsi = $true
         }
-        catch
+        if (![System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
         {
-            $this.WriteLogEntry("Failed to process Zero-Config MSI Deployment.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)")
+            $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
         }
+
+        # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
+        if (!$this.DefaultMspFiles)
+        {
+            if (($mspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName))
+            {
+                $this.DefaultMspFiles = $mspFiles
+            }
+        }
+        if ($this.DefaultMspFiles)
+        {
+            $this.WriteLogEntry("Discovered Zero-Config MSP installation file(s) [$($this.DefaultMspFiles -join ',')].")
+        }
+
+        # Read the MSI and get the installation details.
+        $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
+
+        # Generate list of MSI executables for testing later on.
+        if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
+        {
+            $this.WriteLogEntry("MSI Executable List [$(($this.DefaultMsiExecutablesList = $msiProcs).Name)].")
+        }
+
+        # Update our app variables with new values.
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
+        $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
+        $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
+        $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
+        $this.UseDefaultMsi = $true
     }
 
     hidden [System.Void] SetAppProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
