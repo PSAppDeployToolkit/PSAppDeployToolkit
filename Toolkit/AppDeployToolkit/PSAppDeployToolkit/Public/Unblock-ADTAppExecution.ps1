@@ -42,7 +42,7 @@ function Unblock-ADTAppExecution
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $uaaeiParams = @{}; if ($Tasks) {$uaaeiParams.Add('Tasks', $Tasks)}
+        $uaaeiParams = @{}; if ($Tasks) { $uaaeiParams.Add('Tasks', $Tasks) }
     }
 
     process

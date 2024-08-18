@@ -48,6 +48,7 @@ function Test-ADTBattery
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.Types.BatteryInfo])]
     param
     (
         [Parameter(Mandatory = $false)]

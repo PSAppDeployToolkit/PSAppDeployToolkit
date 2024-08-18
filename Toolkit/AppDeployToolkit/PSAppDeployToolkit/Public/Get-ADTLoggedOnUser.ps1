@@ -61,6 +61,7 @@ function Get-ADTLoggedOnUser
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.QueryUser+TerminalSessionInfo[]])]
     param
     (
     )

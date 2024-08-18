@@ -83,8 +83,7 @@ function Import-ADTConfig
     # Append the toolkit's name onto the temporary path.
     $config.Toolkit.TempPath = [System.IO.Path]::Combine($config.Toolkit.TempPath, $adtEnv.appDeployToolkitName)
 
-    # Set up the user temp path. When running in system context we can derive the native "C:\Users" base path from the Public environment variable.
-    # This needs to be performed here as we need the config up before we can process this, but the config depends on the environment being up first.
+    # Set up the user temp path. This needs to be performed here as we need the config available, but the config depends on the environment being up first.
     $adtEnv.loggedOnUserTempPath = if (($null -eq $adtEnv.RunAsActiveUser.NTAccount) -or ![System.IO.Directory]::Exists($adtEnv.runasUserProfile))
     {
         $config.Toolkit.TempPath
