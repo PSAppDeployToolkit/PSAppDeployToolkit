@@ -127,7 +127,7 @@ function Write-ADTLogEntry
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write message [$Message] to the log file [$($adtSession.GetPropertyValue('LogName'))]."
         }
     }
 }
