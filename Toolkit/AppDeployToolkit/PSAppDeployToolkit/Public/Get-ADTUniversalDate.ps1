@@ -71,7 +71,7 @@ function Get-ADTUniversalDate
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Host.CurrentCulture.Name)]."
         }
     }
 

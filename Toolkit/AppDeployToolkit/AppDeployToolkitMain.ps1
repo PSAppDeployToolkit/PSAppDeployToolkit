@@ -153,7 +153,6 @@ function Write-Log
         }
         catch
         {
-            Write-Host -Object "[$([System.DateTime]::Now.ToString('O'))] [$($this.GetPropertyValue('InstallPhase'))] [$($MyInvocation.MyCommand.Name)] :: Failed to write message [$Message] to the log file [$($this.GetPropertyValue('LogName'))].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
             if (!$ContinueOnError)
             {
                 $PSCmdlet.ThrowTerminatingError($_)
@@ -239,10 +238,6 @@ function Get-HardwarePlatform
         [System.Boolean]$ContinueOnError = $true
     )
 
-    if (!$ContinueOnError)
-    {
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-    }
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2
     return $envHardwareType
 }
@@ -476,11 +471,10 @@ function Update-Desktop
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2
     try
     {
-        Get-ADTDesktop
+        Update-ADTDesktop
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the Desktop and the Windows Explorer environment process block.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -517,7 +511,6 @@ function Update-SessionEnvironmentVariables
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to refresh the environment variables for this PowerShell session.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1160,7 +1153,6 @@ function Get-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to read INI file key value.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1220,7 +1212,6 @@ function Set-IniValue
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to write INI file key value.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1359,7 +1350,6 @@ function Get-UniversalDate
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -1413,7 +1403,6 @@ function Test-ServiceExists
     }
     catch
     {
-        Write-ADTLogEntry -Message "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($culture.Name)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
         if (!$ContinueOnError)
         {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -2255,7 +2244,10 @@ function Start-ServiceAndDependencies
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2328,7 +2320,10 @@ function Stop-ServiceAndDependencies
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2511,7 +2506,10 @@ function Remove-FileFromUserProfiles
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
