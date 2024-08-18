@@ -35,7 +35,7 @@ function Unblock-ADTAppExecutionInternal
     )
 
     # Remove Debugger values to unblock processes.
-    Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -Verbose:$false -ErrorAction Ignore | & {
+    Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -Verbose:$false -ErrorAction Ignore | & {
         process
         {
             if ($_.Debugger.Contains('Show-ADTBlockedAppDialog'))

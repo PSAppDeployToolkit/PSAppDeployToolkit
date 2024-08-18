@@ -9,9 +9,8 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
-$CommandTable = [ordered]@{}
 $ModuleManifest = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\$($MyInvocation.MyCommand.ScriptBlock.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
-$ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
+$CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
 & $CommandTable.'Get-Command' -FullyQualifiedModule $ModuleManifest.RequiredModules | & { process { $CommandTable.Add($_.Name, $_) } }
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
 & $CommandTable.'New-Variable' -Name ModuleManifest -Value $ModuleManifest -Option Constant -Force -Confirm:$false
@@ -73,7 +72,7 @@ catch
 
 # Dot-source our imports and perform exports.
 & $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
-& $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Function:')
+& $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Microsoft.PowerShell.Core\Function::')
 & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
 $ModuleFiles.FullName | . { process { . $_ } }
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
@@ -128,20 +127,20 @@ $ModuleFiles.FullName | . { process { . $_ } }
 # Define dialog function dispatcher between classic/fluent dialogs.
 & $CommandTable.'New-Variable' -Name DialogDispatcher -Option Constant -Value ([ordered]@{
         Classic = ([ordered]@{
-                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Function:Close-ADTInstallationProgressClassic
-                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTBalloonTipClassic
-                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationProgressClassic
-                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationPromptClassic
-                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTWelcomePromptClassic
+                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressClassic
+                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipClassic
+                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressClassic
+                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
+                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
+                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
             }).AsReadOnly()
         Fluent = ([ordered]@{
-                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Function:Close-ADTInstallationProgressFluent
-                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTBalloonTipFluent
-                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationProgressFluent
-                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationPromptClassic
-                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Function:Show-ADTWelcomePromptClassic
+                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressFluent
+                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipFluent
+                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressFluent
+                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
+                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
+                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
             }).AsReadOnly()
     }).AsReadOnly()
 

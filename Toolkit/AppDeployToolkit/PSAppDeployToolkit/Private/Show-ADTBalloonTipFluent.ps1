@@ -73,14 +73,14 @@ function Show-ADTBalloonTipFluent
 
         # Configure the notification centre.
         $regPath = 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings'
-        Remove-Item -LiteralPath "Registry::$regPath\$ToolkitName" -Force -Confirm:$false -ErrorAction Ignore
+        Remove-Item -LiteralPath "Microsoft.PowerShell.Core\Registry::$regPath\$ToolkitName" -Force -Confirm:$false -ErrorAction Ignore
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'ShowInActionCenter', 1, [Microsoft.Win32.RegistryValueKind]::DWord)
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'Enabled', 1, [Microsoft.Win32.RegistryValueKind]::DWord)
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'SoundFile', [System.String]::Empty, [Microsoft.Win32.RegistryValueKind]::String)
 
         # Configure the toast notification.
         $regPath = 'HKEY_CURRENT_USER\Software\Classes\AppUserModelId'
-        Remove-Item -LiteralPath "Registry::$regPath\$ToolkitName" -Force -Confirm:$false -ErrorAction Ignore
+        Remove-Item -LiteralPath "Microsoft.PowerShell.Core\Registry::$regPath\$ToolkitName" -Force -Confirm:$false -ErrorAction Ignore
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'DisplayName', $ToastName, [Microsoft.Win32.RegistryValueKind]::String)
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'ShowInSettings', 0, [Microsoft.Win32.RegistryValueKind]::DWord)
         [Microsoft.Win32.Registry]::SetValue("$regPath\$ToolkitName", 'IconUri', $ToastLogo, [Microsoft.Win32.RegistryValueKind]::ExpandString)

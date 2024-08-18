@@ -108,7 +108,7 @@ function Set-ADTMsiProperty
         {
             $null = try
             {
-                if (Test-Item -LiteralPath Variable:View)
+                if (Test-Item -LiteralPath Microsoft.PowerShell.Core\Variable::View)
                 {
                     Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
                     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
