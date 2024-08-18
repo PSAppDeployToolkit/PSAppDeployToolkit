@@ -11,7 +11,7 @@ function Dismount-ADTWimFile
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(& $Script:CommandTable.'Get-WindowsImage' -Mounted | & $Script:CommandTable.'Where-Object' -Property Path -EQ -Value ($_ -replace '\\$')))
+                if (!(Test-ADTMountedWimPath -Path $_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path is not a WIM mount point.'))
                 }
