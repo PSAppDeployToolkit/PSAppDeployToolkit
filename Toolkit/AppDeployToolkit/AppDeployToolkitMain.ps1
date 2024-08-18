@@ -3041,66 +3041,6 @@ function New-MsiTransform
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTMsiTableProperty
-#
-#---------------------------------------------------------------------------
-
-function Get-MsiTableProperty
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Path,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String[]]$TransformPath,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Table,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32]$TablePropertyNameColumnNum,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32]$TablePropertyValueColumnNum,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
-        [System.Management.Automation.SwitchParameter]$GetSummaryInformation,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
-    )
-
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity 2
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
-    {
-        $null = $PSBoundParameters.Remove('ContinueOnError')
-    }
-    if (!$ContinueOnError)
-    {
-        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
-    }
-    try
-    {
-        Get-ADTMsiTableProperty @PSBoundParameters
-    }
-    catch
-    {
-        $PSCmdlet.ThrowTerminatingError($_)
-    }
-}
-
-
-#---------------------------------------------------------------------------
-#
 # Wrapper around Invoke-ADTSCCMTask
 #
 #---------------------------------------------------------------------------
