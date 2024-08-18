@@ -907,25 +907,13 @@ class ADTSession
         # If the message is not $null or empty, create the log entry for the different logging methods.
         foreach ($msg in ($Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } }))
         {
-            # Write the log entry to the log file if logging is not currently disabled.
             if ($canLog)
             {
                 & $Script:CommandTable.'Out-File' -InputObject ([System.String]::Format($logLine, $msg)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
-
-            # Only write to host if we're configured to do so.
             if ($adtConfig.Toolkit.LogWriteToHost)
             {
-                # Only output using color options if running in a host which supports colors.
-                if ($Global:Host.UI.RawUI.ForegroundColor)
-                {
-                    & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $msg)) @whParams
-                }
-                else
-                {
-                    # If executing "powershell.exe -File <filename>.ps1 > log.txt", send everything straight to stdout so that they are included in the text log.
-                    [System.Console]::WriteLine([System.String]::Format($conLine, $msg))
-                }
+                & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $msg)) @whParams
             }
         }
     }
