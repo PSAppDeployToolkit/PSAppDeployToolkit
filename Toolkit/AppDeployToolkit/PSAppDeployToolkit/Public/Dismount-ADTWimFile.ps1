@@ -81,6 +81,7 @@ function Dismount-ADTWimFile
                     $null = & $Script:CommandTable.'Dismount-WindowsImage' -Path $Path -Discard
                 }
                 Write-ADTLogEntry -Message "Successfully dismounted WIM file."
+                Remove-Item -LiteralPath $Path -Force -Confirm:$false
             }
             catch
             {
