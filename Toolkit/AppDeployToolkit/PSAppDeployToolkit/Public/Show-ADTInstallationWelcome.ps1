@@ -246,7 +246,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
-                if ($adtSession.GetPropertyValue('UseDefaultMsi'))
+                if (($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
                 {
                     $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
                 }
