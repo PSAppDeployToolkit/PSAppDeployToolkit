@@ -292,5 +292,5 @@ catch
 }
 finally
 {
-    #Remove-Module -Name PSAppDeployToolkit* -Force
+    Remove-Module -Name PSAppDeployToolkit* -Force
 }
