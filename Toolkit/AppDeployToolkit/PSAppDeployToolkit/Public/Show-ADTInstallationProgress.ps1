@@ -156,13 +156,16 @@ function Show-ADTInstallationProgress
             }
 
             # Notify user that the software installation has started.
-            try
+            if (!(Test-ADTInstallationProgressRunning))
             {
-                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
-            }
-            catch
-            {
-                $PSCmdlet.ThrowTerminatingError($_)
+                try
+                {
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
+                }
+                catch
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
             }
         }
 
