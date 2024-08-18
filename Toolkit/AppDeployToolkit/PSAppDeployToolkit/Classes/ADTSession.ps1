@@ -11,8 +11,10 @@ class ADTSession
 
     # Internal variables that aren't for public access.
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
-    hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
+    hidden [AllowEmptyCollection()][System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]]$MountedWimFiles = [System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]]::new()
+    hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
     hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
@@ -59,9 +61,9 @@ class ADTSession
     [ValidateNotNullOrEmpty()][System.String]$ScriptDirectory
     [ValidateNotNullOrEmpty()][System.String]$DirFiles
     [ValidateNotNullOrEmpty()][System.String]$DirSupportFiles
-    [AllowEmptyString()][System.String]$DefaultMsiFile
-    [AllowEmptyString()][System.String]$DefaultMstFile
-    [AllowEmptyCollection()][System.String[]]$DefaultMspFiles
+    [ValidateNotNullOrEmpty()][System.String]$DefaultMsiFile
+    [ValidateNotNullOrEmpty()][System.String]$DefaultMstFile
+    [ValidateNotNullOrEmpty()][System.String[]]$DefaultMspFiles
     [ValidateNotNullOrEmpty()][System.Boolean]$UseDefaultMsi
     [ValidateNotNullOrEmpty()][System.String]$LogTempFolder
     [ValidateNotNullOrEmpty()][System.String]$LogName
@@ -145,9 +147,47 @@ class ADTSession
         $this.Instantiated = $true
     }
 
+    hidden [System.Void] WriteZeroConfigDivider()
+    {
+        # Print an extra divider when we process a Zero-Config setup before the main logging starts.
+        if (!$this.ZeroConfigInitiated)
+        {
+            $this.WriteLogDivider(2)
+            $this.ZeroConfigInitiated = $true
+        }
+    }
+
+    hidden [System.Void] DetectDefaultWimFile()
+    {
+        # If the default Deploy-Application.ps1 hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
+        if (![System.String]::IsNullOrWhiteSpace($this.AppName))
+        {
+            return
+        }
+
+        # If there's already a mounted WIM file, return early.
+        if ($this.MountedWimFiles.Count)
+        {
+            return
+        }
+
+        # Find the first WIM file in the Files folder and use that as our install.
+        if (!($wimFile = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.wim" -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+        {
+            return
+        }
+
+        # Mount the WIM file and reset DirFiles to the mount point.
+        $this.WriteZeroConfigDivider()
+        $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
+        Mount-ADTWimFile -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 6>&1
+        $this.WriteLogEntry("Successfully mounted WIM file to [$($this.DirFiles)].")
+        $this.WriteLogEntry("Using [$($this.DirFiles)] as the base DirFiles directory.")
+    }
+
     hidden [System.Void] DetectDefaultMsi([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
     {
-        # If the default Deploy-Application.ps1 hasn't been modified, and the main script was not called by a referring script, check for MSI / MST and modify the install accordingly.
+        # If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly.
         if (![System.String]::IsNullOrWhiteSpace($this.AppName))
         {
             return
@@ -157,15 +197,15 @@ class ADTSession
         if (!$this.DefaultMsiFile)
         {
             # Get all MSI files and return early if we haven't found anything.
-            if ($this.DefaultMsiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
+            if (($msiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
             {
-                $this.WriteLogDivider(2)
-                $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $($this.DefaultMsiFile)")
+                $this.WriteZeroConfigDivider()
+                $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $(($this.DefaultMsiFile = $msiFile))")
             }
-            elseif ($this.DefaultMsiFile = $msiFiles | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1)
+            elseif (($msiFile = $msiFiles | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
             {
-                $this.WriteLogDivider(2)
-                $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $($this.DefaultMsiFile)")
+                $this.WriteZeroConfigDivider()
+                $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $(($this.DefaultMsiFile = $msiFile))")
             }
             else
             {
@@ -179,24 +219,26 @@ class ADTSession
 
         try
         {
-            # Discover if there is a zero-config MST file
+            # Discover if there is a zero-config MST file.
             if ([System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
             {
-                $this.DefaultMstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst')
+                if ([System.IO.File]::Exists(($mstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst'))))
+                {
+                    $this.DefaultMstFile = $mstFile
+                }
             }
-            if ([System.IO.File]::Exists($this.DefaultMstFile))
+            if ([System.IO.File]::Exists(($mstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst'))))
             {
                 $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
-            }
-            else
-            {
-                $this.DefaultMstFile = [System.String]::Empty
             }
 
             # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
             if (!$this.DefaultMspFiles)
             {
-                $this.DefaultMspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName
+                if (($mspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName))
+                {
+                    $this.DefaultMspFiles = $mspFiles
+                }
             }
             if ($this.DefaultMspFiles)
             {
@@ -664,6 +706,7 @@ class ADTSession
         }
 
         # Initialise PSADT session.
+        $this.DetectDefaultWimFile()
         $this.DetectDefaultMsi($adtEnv)
         $this.SetAppProperties($adtEnv)
         $this.SetInstallProperties($adtEnv, $adtConfig)
@@ -768,6 +811,13 @@ class ADTSession
         if ($this.ExitCode)
         {
             (Get-ADTModuleData).LastExitCode = $this.ExitCode
+        }
+
+        # Unmount any stored WIM file entries.
+        for ($i = ($this.MountedWimFiles.Count - 1); $i -ge 0; $i--)
+        {
+            Dismount-ADTWimFile -Path $this.MountedWimFiles[$i].Path
+            $this.MountedWimFiles.RemoveAt($i)
         }
 
         # Write out a log divider to indicate the end of logging.

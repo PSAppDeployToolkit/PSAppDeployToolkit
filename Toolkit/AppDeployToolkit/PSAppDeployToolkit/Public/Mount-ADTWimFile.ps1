@@ -50,7 +50,7 @@ function Mount-ADTWimFile
             $PSBoundParameters.Remove('PassThru')
             $PSBoundParameters.Remove('Force')
             $PSBoundParameters.Remove('Path')
-            & $Script:CommandTable.'Get-WindowsImage' @PSBoundParameters -ImagePath $ImagePath
+            & $Script:CommandTable.'Get-WindowsImage' @PSBoundParameters
         }
         catch
         {
@@ -77,12 +77,20 @@ function Mount-ADTWimFile
                 if (![System.IO.Directory]::Exists($Path))
                 {
                     Write-ADTLogEntry -Message "Creating path [$Path] as it does not exist."
-                    $Path = [System.IO.Directory]::CreateDirectory($Path)
+                    $Path = [System.IO.Directory]::CreateDirectory($Path).FullName
                 }
 
-                # Mount the WIM file and return the result if we're passing through.
+                # Mount the WIM file.
                 $res = & $Script:CommandTable.'Mount-WindowsImage' @PSBoundParameters -Path $Path -ReadOnly -CheckIntegrity
                 Write-ADTLogEntry -Message "Successfully mounted WIM file [$ImagePath]."
+
+                # Store the result within the user's ADTSession if there's an active one.
+                if (Test-ADTSessionActive)
+                {
+                    (Get-ADTSession).MountedWimFiles.Add($res)
+                }
+
+                # Return the result if we're passing through.
                 if ($PassThru)
                 {
                     return $res
