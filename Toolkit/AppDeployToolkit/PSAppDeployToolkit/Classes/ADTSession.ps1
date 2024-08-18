@@ -393,7 +393,7 @@ class ADTSession
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Host' -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.InstallPhase) :: Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
+                    $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
                 }
             }
         }
@@ -838,7 +838,7 @@ class ADTSession
             }
             catch
             {
-                & $Script:CommandTable.'Write-Host' -Object "[$([System.DateTime]::Now.ToString('O'))] $($this.GetPropertyValue('InstallPhase')) :: Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -ForegroundColor Red
+                $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
             }
         }
     }
@@ -897,7 +897,7 @@ class ADTSession
             [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
         )
 
-        # Store the colours we'll use against Write-Host.
+        # Generate all the variables we'll need for the log operation.
         $whParams = $Script:Logging.SeverityColours[$Severity]
         $logLine = $logFormats[$LogType -ieq 'CMTrace']
         $conLine = $logFormats[0]
@@ -923,7 +923,7 @@ class ADTSession
                 }
                 else
                 {
-                    # If executing "powershell.exe -File <filename>.ps1 > log.txt", then all the Write-Host calls are sent to stdout so that they are included in the text log.
+                    # If executing "powershell.exe -File <filename>.ps1 > log.txt", send everything straight to stdout so that they are included in the text log.
                     [System.Console]::WriteLine([System.String]::Format($conLine, $msg))
                 }
             }
