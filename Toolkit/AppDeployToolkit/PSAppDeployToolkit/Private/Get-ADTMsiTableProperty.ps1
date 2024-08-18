@@ -64,6 +64,7 @@ function Get-ADTMsiTableProperty
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
+    [OutputType([PSADT.Types.MsiSummaryInfo])]
     param
     (
         [Parameter(Mandatory = $true)]

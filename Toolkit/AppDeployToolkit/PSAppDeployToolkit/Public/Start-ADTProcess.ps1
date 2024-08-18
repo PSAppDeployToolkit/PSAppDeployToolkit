@@ -469,7 +469,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        if ($MsiExitCodeMessage = if ($Path -match 'msiexec') { [PSADT.Msi]::GetMessageFromMsiExitCode($returnCode).Trim() })
+                        if (($MsiExitCodeMessage = if ($Path -match 'msiexec') { [PSADT.Msi]::GetMessageFromMsiExitCode($returnCode).Trim() }))
                         {
                             Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                         }

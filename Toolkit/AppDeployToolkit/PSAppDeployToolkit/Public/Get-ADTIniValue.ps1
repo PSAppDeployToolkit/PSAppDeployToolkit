@@ -41,6 +41,7 @@ function Get-ADTIniValue
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]
