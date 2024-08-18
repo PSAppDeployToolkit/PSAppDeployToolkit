@@ -87,7 +87,7 @@ function Mount-ADTWimFile
                 # Store the result within the user's ADTSession if there's an active one.
                 if (Test-ADTSessionActive)
                 {
-                    (Get-ADTSession).MountedWimFiles.Add($res)
+                    (Get-ADTSession).GetMountedWimFiles().Add($res)
                 }
 
                 # Return the result if we're passing through.

@@ -955,6 +955,11 @@ class ADTSession
         $this.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $null, $null, $null)
     }
 
+    [System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]] GetMountedWimFiles()
+    {
+        return $this.MountedWimFiles
+    }
+
     [PSADT.Types.ProcessObject[]] GetDefaultMsiExecutablesList()
     {
         return $this.DefaultMsiExecutablesList
