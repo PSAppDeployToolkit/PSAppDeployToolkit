@@ -64,7 +64,7 @@ function Remove-ADTEdgeExtension
 
                 # If the deploymentmode is Remove, remove the extension from the list.
                 $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-                $null = Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | & $Script:CommandTable.'ConvertTo-Json' -Compress)
+                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | & $Script:CommandTable.'ConvertTo-Json' -Compress)
             }
             catch
             {

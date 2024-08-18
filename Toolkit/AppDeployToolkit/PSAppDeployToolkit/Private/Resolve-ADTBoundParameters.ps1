@@ -69,7 +69,7 @@ function Resolve-ADTBoundParameters
             try
             {
                 # Establish array to hold return string.
-                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath 'Variable:paramsArr'))
+                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::paramsArr))
                 {
                     $thisFunc = $MyInvocation.MyCommand
                     $paramsArr = [System.Collections.Specialized.StringCollection]::new()

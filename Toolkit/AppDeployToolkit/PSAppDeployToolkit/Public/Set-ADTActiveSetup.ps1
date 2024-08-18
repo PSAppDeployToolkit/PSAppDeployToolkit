@@ -370,13 +370,13 @@ function Set-ADTActiveSetup
                 # Set up the relevant keys, factoring in bitness and architecture.
                 if ($Wow6432Node -and [System.Environment]::Is64BitOperatingSystem)
                 {
-                    $HKLMRegKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
-                    $HKCURegKey = "Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKLMRegKey = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKCURegKey = "Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                 }
                 else
                 {
-                    $HKLMRegKey = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
-                    $HKCURegKey = "Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKLMRegKey = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\$Key"
+                    $HKCURegKey = "Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Active Setup\Installed Components\$Key"
                 }
 
                 # Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system.

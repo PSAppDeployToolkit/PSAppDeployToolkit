@@ -14,7 +14,7 @@ function Convert-ADTRegistryPath
     .DESCRIPTION
     Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
-    Converts registry key hives to their full paths. Example: HKLM is converted to "Registry::HKEY_LOCAL_MACHINE".
+    Converts registry key hives to their full paths. Example: HKLM is converted to "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE".
 
     .PARAMETER Key
     Path to the registry key to convert (can be a registry hive or fully qualified path)
@@ -98,17 +98,17 @@ function Convert-ADTRegistryPath
                 }
 
                 # Append the PowerShell provider to the registry key path.
-                if ($Key -notmatch '^Registry::')
+                if ($Key -notmatch '^Microsoft\.PowerShell\.Core\\Registry::')
                 {
-                    $Key = "Registry::$key"
+                    $Key = "Microsoft.PowerShell.Core\Registry::$key"
                 }
 
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    if ($Key -match '^Registry::HKEY_CURRENT_USER\\')
+                    if ($Key -match '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\')
                     {
-                        $Key = $Key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
+                        $Key = $Key -replace '^Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
                     }
                     elseif ($Logging)
                     {
@@ -118,7 +118,7 @@ function Convert-ADTRegistryPath
                 }
 
                 # Check for expected key string format.
-                if ($Key -notmatch '^Registry::HKEY_(LOCAL_MACHINE|CLASSES_ROOT|CURRENT_USER|USERS|CURRENT_CONFIG|PERFORMANCE_DATA)')
+                if ($Key -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_(LOCAL_MACHINE|CLASSES_ROOT|CURRENT_USER|USERS|CURRENT_CONFIG|PERFORMANCE_DATA)')
                 {
                     $naerParams = @{
                         Exception = [System.ArgumentException]::new("Unable to detect target registry hive in string [$Key].")

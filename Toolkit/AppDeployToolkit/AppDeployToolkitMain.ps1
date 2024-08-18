@@ -33,7 +33,7 @@ https://psappdeploytoolkit.com
 #---------------------------------------------------------------------------
 
 # Remove all functions defined in this script from the function provider.
-Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Function:$($_.Name)" } } }) -Force -ErrorAction Ignore
+Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } }) -Force -ErrorAction Ignore
 
 
 #---------------------------------------------------------------------------

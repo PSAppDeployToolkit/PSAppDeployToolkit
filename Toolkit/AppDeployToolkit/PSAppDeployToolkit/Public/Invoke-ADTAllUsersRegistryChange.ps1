@@ -82,7 +82,7 @@ function Invoke-ADTAllUsersRegistryChange
                     $UserRegistryHiveFile = & $Script:CommandTable.'Join-Path' -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
-                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath "Registry::HKEY_USERS\$($UserProfile.SID)"))
+                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))
                     {
                         # Load the User registry hive if the registry hive file exists.
                         if (![System.IO.File]::Exists($UserRegistryHiveFile))

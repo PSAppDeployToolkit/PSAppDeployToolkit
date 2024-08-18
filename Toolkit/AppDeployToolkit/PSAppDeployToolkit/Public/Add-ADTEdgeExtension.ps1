@@ -80,7 +80,7 @@ function Add-ADTEdgeExtension
                 $additionalExtension = @{ installation_mode = $InstallationMode; update_url = $UpdateUrl }; if ($MinimumVersionRequired) { $additionalExtension.Add('minimum_version_required', $MinimumVersionRequired) }
 
                 # Add the additional extension to the current values, then re-write the definition in the registry.
-                $null = Set-ADTRegistryKey -Key Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | & $Script:CommandTable.'Add-Member' -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | & $Script:CommandTable.'ConvertTo-Json' -Compress)
+                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | & $Script:CommandTable.'Add-Member' -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | & $Script:CommandTable.'ConvertTo-Json' -Compress)
             }
             catch
             {

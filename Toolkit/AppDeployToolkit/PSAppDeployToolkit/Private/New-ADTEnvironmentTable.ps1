@@ -99,7 +99,7 @@ function New-ADTEnvironmentTable
             catch
             {
                 # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
-                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DCName -ErrorAction Ignore
+                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DCName -ErrorAction Ignore
             })
         while ($variables.envLogonServer.StartsWith('\'))
         {
@@ -184,7 +184,7 @@ function New-ADTEnvironmentTable
             }))
 
     ## Variables: Office C2R version, bitness and channel
-    $variables.Add('envOfficeVars', (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
+    $variables.Add('envOfficeVars', (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
     $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty VersionToReport -ErrorAction Ignore))
     $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | & $Script:CommandTable.'Select-Object' -ExpandProperty Platform -ErrorAction Ignore))
 
