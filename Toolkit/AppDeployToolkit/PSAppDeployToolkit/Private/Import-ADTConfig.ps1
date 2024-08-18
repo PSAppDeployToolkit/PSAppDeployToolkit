@@ -53,12 +53,6 @@ function Import-ADTConfig
     $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Banner)))
     $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
 
-    # If we're using fluent dialogs but running in the ISE, force it back to classic.
-    if (!$Host.Name.Equals('ConsoleHost') -and ($config.UI.DialogStyle -eq 'Fluent'))
-    {
-        $config.UI.DialogStyle = 'Classic'
-    }
-
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)
     {
