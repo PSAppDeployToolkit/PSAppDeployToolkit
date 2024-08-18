@@ -136,34 +136,24 @@ function Open-ADTSession
         {
             try
             {
-                # Initialise the module before instantiating the first session.
+                # Initialise the module before opening the first session.
                 if (!$adtData.Sessions.Count)
                 {
                     Initialize-ADTModule
                 }
                 $adtData.Sessions.Add(($adtSession = [ADTSession]::new($PSBoundParameters)))
+                $adtSession.Open()
 
-                # Process the instantiated session.
-                try
+                # Invoke all callbacks.
+                foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
                 {
-                    # Open the newly instantiated session.
-                    $adtSession.Open()
-
-                    # Invoke all callbacks.
-                    foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
-                    {
-                        & $callback
-                    }
-
-                    # Export the environment table to variables within the caller's scope.
-                    if ($adtData.Sessions.Count.Equals(1))
-                    {
-                        $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
-                    }
+                    & $callback
                 }
-                catch
+
+                # Export the environment table to variables within the caller's scope.
+                if ($adtData.Sessions.Count.Equals(1))
                 {
-                    throw
+                    $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
                 }
             }
             catch
