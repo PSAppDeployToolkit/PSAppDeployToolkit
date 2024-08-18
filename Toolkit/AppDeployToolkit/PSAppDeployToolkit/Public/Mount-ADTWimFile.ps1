@@ -70,6 +70,7 @@ function Mount-ADTWimFile
                 # If we're using the force, forcibly remove the existing directory.
                 if ([System.IO.Directory]::Exists($Path) -and $Force)
                 {
+                    Write-ADTLogEntry -Message "Removing pre-existing path [$Path] as [-Force] was provided."
                     Remove-Item -LiteralPath $Path -Force -Confirm:$false
                 }
 
