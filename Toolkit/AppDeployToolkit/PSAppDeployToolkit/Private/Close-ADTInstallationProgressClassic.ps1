@@ -9,7 +9,7 @@ function Close-ADTInstallationProgressClassic
     # Process the WPF window if it exists.
     if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window'))
     {
-        if ($Script:Dialogs.Classic.ProgressWindow.Running)
+        if (!$Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
         {
             Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
             $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Dispatcher.Invoke({ $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Close() }, [System.Windows.Threading.DispatcherPriority]::Send)
