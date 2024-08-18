@@ -194,7 +194,7 @@ class ADTSession
         }
 
         # Find the first MSI file in the Files folder and use that as our install.
-        if (!$this.DefaultMsiFile)
+        if ([System.String]::IsNullOrWhiteSpace($this.DefaultMsiFile))
         {
             # Get all MSI files and return early if we haven't found anything.
             if (($msiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
@@ -227,7 +227,7 @@ class ADTSession
                     $this.DefaultMstFile = $mstFile
                 }
             }
-            if ([System.IO.File]::Exists(($mstFile = [System.IO.Path]::ChangeExtension($this.DefaultMsiFile, 'mst'))))
+            if (![System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
             {
                 $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
             }
