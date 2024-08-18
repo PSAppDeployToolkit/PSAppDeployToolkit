@@ -51,7 +51,7 @@ function Show-ADTInstallationProgressClassic
 
             [Parameter(Mandatory = $false)]
             [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-            [System.String]$WindowLocation = 'Default'
+            [System.String]$Location = 'Default'
         )
 
         # Calculate the position on the screen where the progress dialog should be placed.
@@ -59,7 +59,7 @@ function Show-ADTInstallationProgressClassic
         [System.Double]$screenCenterHeight = [System.Windows.SystemParameters]::WorkArea.Height - $Window.ActualHeight
 
         # Set the start position of the Window based on the screen size.
-        switch ($WindowLocation)
+        switch ($Location)
         {
             'TopLeft'
             {
@@ -143,6 +143,10 @@ function Show-ADTInstallationProgressClassic
                     [System.IO.FileInfo]$Banner,
 
                     [Parameter(Mandatory = $true)]
+                    [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
+                    [System.String]$WindowLocation,
+
+                    [Parameter(Mandatory = $true)]
                     [ValidateNotNullOrEmpty()]
                     [System.Management.Automation.ScriptBlock]$UpdateWindowLocation,
 
@@ -166,7 +170,7 @@ function Show-ADTInstallationProgressClassic
                     $SyncHash.Window.add_MouseLeftButtonDown({ $this.DragMove() })
                     $SyncHash.Window.add_Loaded({
                             # Relocate the window and disable the X button.
-                            & $UpdateWindowLocation.GetNewClosure() -Window $this
+                            & $UpdateWindowLocation.GetNewClosure() -Window $this -Location $WindowLocation
                             & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
                         })
                     $null = $SyncHash.Window.ShowDialog()
@@ -176,7 +180,7 @@ function Show-ADTInstallationProgressClassic
                     $SyncHash.Error = $_
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
-            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
+            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:Disable-ADTWindowCloseButton})
 
         # Commence invocation.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
@@ -219,7 +223,7 @@ function Show-ADTInstallationProgressClassic
                 $Script:Dialogs.Classic.ProgressWindow.SyncHash.Message.Text = $StatusMessage
                 if (!$args[0])
                 {
-                    Update-WindowLocation -Window $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window -WindowLocation $args[1]
+                    Update-WindowLocation -Window $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window -Location $args[1]
                 }
             },
             [System.Windows.Threading.DispatcherPriority]::Send,
