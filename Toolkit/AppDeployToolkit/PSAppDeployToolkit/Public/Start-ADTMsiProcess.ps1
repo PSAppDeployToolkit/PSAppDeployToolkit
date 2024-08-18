@@ -269,7 +269,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Set the installation parameters.
-                if ($adtSession.IsSilent())
+                if ($adtSession.IsNonInteractive())
                 {
                     $msiInstallDefaultParams = $adtConfig.MSI.SilentParams
                     $msiUninstallDefaultParams = $adtConfig.MSI.SilentParams
