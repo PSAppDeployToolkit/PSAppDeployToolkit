@@ -7,10 +7,48 @@
 function Show-ADTBlockedAppDialog
 {
     <#
+    .SYNOPSIS
+        Displays a dialog to inform the user about a blocked application.
+
+    .DESCRIPTION
+        Displays a dialog to inform the user that an application is blocked. This function ensures that only one instance of the blocked application dialog is shown at a time by using a mutex. If another instance of the dialog is already open, the function exits without displaying a new dialog.
+
+    .PARAMETER Title
+        The title of the blocked application dialog.
+
+        Mandatory: True
+
+    .PARAMETER UnboundArguments
+        Captures any additional arguments passed to the function.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any piped input.
+
+    .OUTPUTS
+        None
+
+        This function does not return any output.
+
+    .EXAMPLE
+        # Example 1
+        Show-ADTBlockedAppDialog -Title 'Blocked Application'
+
+        Displays a dialog with the title 'Blocked Application' to inform the user about a blocked application.
 
     .NOTES
-    This function can be called without an active ADT session.
+        This function can be called without an active ADT session.
 
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
@@ -22,7 +60,6 @@ function Show-ADTBlockedAppDialog
         [System.String]$Title,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
-        [ValidateNotNullOrEmpty()]
         [System.Object]$UnboundArguments
     )
 
