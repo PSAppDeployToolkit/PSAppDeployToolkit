@@ -7,31 +7,43 @@
 function Get-ADTFreeDiskSpace
 {
     <#
-
     .SYNOPSIS
-    Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+        Retrieves the free disk space in MB on a particular drive (defaults to system drive).
 
     .DESCRIPTION
-    Retrieves the free disk space in MB on a particular drive (defaults to system drive)
+        The Get-ADTFreeDiskSpace function retrieves the free disk space in MB on a specified drive. If no drive is specified, it defaults to the system drive. This function is useful for monitoring disk space availability.
 
     .PARAMETER Drive
-    Drive to check free disk space on
+        The drive to check free disk space on.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    System.Double. Returns the free disk space in MB
+        System.Double
+
+        Returns the free disk space in MB.
 
     .EXAMPLE
-    Get-ADTFreeDiskSpace -Drive 'C:'
+        # Example 1
+        Get-ADTFreeDiskSpace -Drive 'C:'
+
+        This example retrieves the free disk space on the C: drive.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
