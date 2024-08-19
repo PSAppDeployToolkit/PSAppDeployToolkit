@@ -11,10 +11,16 @@ function Test-ADTMountedWimPath
     [OutputType([System.Boolean])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ImagePath')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ImagePath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Path
     )
 
-    return !!(& $Script:CommandTable.'Get-WindowsImage' -Mounted | & { process { if ($_.Path -eq $Path) { return $_ } } })
+    # Get the caller's provided input via the ParameterSetName so we can filter on its name and value.
+    $parameter = & $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName
+    return !!(& $Script:CommandTable.'Get-WindowsImage' -Mounted | & { process { if ($_.($parameter.Name) -eq $parameter.Value) { return $_ } } })
 }
