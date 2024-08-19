@@ -7,10 +7,85 @@
 function New-ADTErrorRecord
 {
     <#
+    .SYNOPSIS
+        Creates a new ErrorRecord object.
+
+    .DESCRIPTION
+        This function creates a new ErrorRecord object with the specified exception, error category, and optional parameters. It allows for detailed error information to be captured and returned to the caller, who can then throw the error.
+
+    .PARAMETER Exception
+        The exception object that caused the error.
+
+        Mandatory: True
+
+    .PARAMETER Category
+        The category of the error.
+
+        Mandatory: True
+
+    .PARAMETER ErrorId
+        The identifier for the error. Default is 'NotSpecified'.
+
+        Mandatory: False
+
+    .PARAMETER TargetObject
+        The target object that the error is related to.
+
+        Mandatory: False
+
+    .PARAMETER TargetName
+        The name of the target that the error is related to.
+
+        Mandatory: False
+
+    .PARAMETER TargetType
+        The type of the target that the error is related to.
+
+        Mandatory: False
+
+    .PARAMETER Activity
+        The activity that was being performed when the error occurred.
+
+        Mandatory: False
+
+    .PARAMETER Reason
+        The reason for the error.
+
+        Mandatory: False
+
+    .PARAMETER RecommendedAction
+        The recommended action to resolve the error.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        System.Management.Automation.ErrorRecord
+
+        This function returns an ErrorRecord object.
+
+    .EXAMPLE
+        # Example 1
+        $exception = [System.Exception]::new("An error occurred.")
+        $category = [System.Management.Automation.ErrorCategory]::NotSpecified
+        New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"
+
+        Creates a new ErrorRecord object with the specified parameters.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
 
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
