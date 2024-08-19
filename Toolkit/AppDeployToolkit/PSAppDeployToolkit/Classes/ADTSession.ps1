@@ -809,7 +809,8 @@ class ADTSession
         # Unmount any stored WIM file entries.
         if ($this.MountedWimFiles.Count)
         {
-            Dismount-ADTWimFile -ImagePath $this.MountedWimFiles
+            $this.MountedWimFiles.Reverse(); Dismount-ADTWimFile -ImagePath $this.MountedWimFiles
+            $this.MountedWimFiles.Clear()
         }
 
         # Write out a log divider to indicate the end of logging.
