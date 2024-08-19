@@ -7,36 +7,49 @@
 function Install-ADTSCCMSoftwareUpdates
 {
     <#
-
     .SYNOPSIS
-    Scans for outstanding SCCM updates to be installed and installs the pending updates.
+        Scans for outstanding SCCM updates to be installed and installs the pending updates.
 
     .DESCRIPTION
-    Scans for outstanding SCCM updates to be installed and installs the pending updates.
-
-    Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
+        Scans for outstanding SCCM updates to be installed and installs the pending updates.
+        Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
 
     .PARAMETER SoftwareUpdatesScanWaitInSeconds
-    The amount of time to wait in seconds for the software updates scan to complete. Default is: 180 seconds.
+        The amount of time to wait in seconds for the software updates scan to complete. Default is: 180 seconds.
+
+        Mandatory: False
 
     .PARAMETER WaitForPendingUpdatesTimeout
-    The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
+        The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any objects.
 
     .EXAMPLE
-    Install-ADTSCCMSoftwareUpdates
+        # Example 1
+        Install-ADTSCCMSoftwareUpdates
+
+        Scans for outstanding SCCM updates and installs the pending updates with default wait times.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
@@ -49,7 +62,7 @@ function Install-ADTSCCMSoftwareUpdates
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$WaitForPendingUpdatesTimeout = [System.TimeSpan]::FromSeconds(45)
+        [System.TimeSpan]$WaitForPendingUpdatesTimeout = [System.TimeSpan]::FromMinutes(45)
     )
 
     begin
