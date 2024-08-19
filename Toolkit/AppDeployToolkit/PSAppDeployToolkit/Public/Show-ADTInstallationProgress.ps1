@@ -7,64 +7,98 @@
 function Show-ADTInstallationProgress
 {
     <#
-
     .SYNOPSIS
-    Displays a progress dialog in a separate thread with an updateable custom message.
+        Displays a progress dialog in a separate thread with an updateable custom message.
 
     .DESCRIPTION
-    Create a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
+        Creates a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
 
-    The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
+        The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
 
     .PARAMETER WindowTitle
-    The title of the window to be displayed. The default is the derived value from $InstallTitle.
+        The title of the window to be displayed. The default is the derived value from $InstallTitle.
+
+        Mandatory: False
 
     .PARAMETER WindowSubtitle
-    The subtitle of the window to be displayed with a fluent progress window. The default is null.
+        The subtitle of the window to be displayed with a fluent progress window. The default is null.
+
+        Mandatory: False
 
     .PARAMETER StatusMessage
-    The status message to be displayed. The default status message is taken from the configuration file.
+        The status message to be displayed. The default status message is taken from the configuration file.
+
+        Mandatory: False
 
     .PARAMETER StatusMessageDetail
-    The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.
+        The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.
+
+        Mandatory: False
 
     .PARAMETER WindowLocation
-    The location of the progress window. Default: center of the screen.
+        The location of the progress window. Default: center of the screen.
+
+        Mandatory: False
 
     .PARAMETER NotTopMost
-    Specifies whether the progress window shouldn't be topmost. Default: $false.
+        Specifies whether the progress window shouldn't be topmost. Default: $false.
+
+        Mandatory: False
 
     .PARAMETER Quiet
-    Specifies whether to not log the success of updating the progress message. Default: $false.
+        Specifies whether to not log the success of updating the progress message. Default: $false.
+
+        Mandatory: False
 
     .PARAMETER NoRelocation
-    Specifies whether to not reposition the window upon updating the message. Default: $false.
+        Specifies whether to not reposition the window upon updating the message. Default: $false.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    # Use the default status message from the XML configuration file.
-    Show-ADTInstallationProgress
+        # Example 1
+        Show-ADTInstallationProgress
+
+        Uses the default status message from the XML configuration file.
 
     .EXAMPLE
-    Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
+        # Example 2
+        Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
+
+        Displays a progress dialog with the status message 'Installation in Progress...'.
 
     .EXAMPLE
-    Show-ADTInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
+        # Example 3
+        Show-ADTInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
+
+        Displays a progress dialog with a multiline status message.
 
     .EXAMPLE
-    Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -TopMost $false
+        # Example 4
+        Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -NotTopMost
+
+        Displays a progress dialog with the status message 'Installation in Progress...', positioned at the bottom right of the screen, and not set as topmost.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
