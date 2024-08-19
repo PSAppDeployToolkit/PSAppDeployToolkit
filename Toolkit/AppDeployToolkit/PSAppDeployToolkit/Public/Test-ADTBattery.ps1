@@ -7,44 +7,64 @@
 function Test-ADTBattery
 {
     <#
-
     .SYNOPSIS
-    Tests whether the local machine is running on AC power or not.
+        Tests whether the local machine is running on AC power or not.
 
     .DESCRIPTION
-    Tests whether the local machine is running on AC power and returns true/false. For detailed information, use -PassThru option.
+        Tests whether the local machine is running on AC power and returns true/false. For detailed information, use the -PassThru option to get a hashtable containing various battery and power status properties.
 
     .PARAMETER PassThru
-    Outputs a hashtable containing the following properties:
+        Outputs a hashtable containing the following properties:
+        - IsLaptop
+        - IsUsingACPower
+        - ACPowerLineStatus
+        - BatteryChargeStatus
+        - BatteryLifePercent
+        - BatteryLifeRemaining
+        - BatteryFullLifetime
 
-    IsLaptop, IsUsingACPower, ACPowerLineStatus, BatteryChargeStatus, BatteryLifePercent, BatteryLifeRemaining, BatteryFullLifetime
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    PSADT.Types.BatteryInfo. Returns a hashtable containing the following properties:
-    - IsLaptop
-    - IsUsingACPower
-    - ACPowerLineStatus
-    - BatteryChargeStatus
-    - BatteryLifePercent
-    - BatteryLifeRemaining
-    - BatteryFullLifetime
+        PSADT.Types.BatteryInfo
+
+        Returns a hashtable containing the following properties:
+        - IsLaptop
+        - IsUsingACPower
+        - ACPowerLineStatus
+        - BatteryChargeStatus
+        - BatteryLifePercent
+        - BatteryLifeRemaining
+        - BatteryFullLifetime
 
     .EXAMPLE
-    Test-ADTBattery
+        # Example 1
+        Test-ADTBattery
+
+        Checks if the local machine is running on AC power and returns true or false.
 
     .EXAMPLE
-    # Determine if the current system is a laptop or not.
-    (Test-ADTBattery -PassThru).IsLaptop
+        # Example 2
+        # Determine if the current system is a laptop or not.
+        (Test-ADTBattery -PassThru).IsLaptop
+
+        Returns true if the current system is a laptop, otherwise false.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
