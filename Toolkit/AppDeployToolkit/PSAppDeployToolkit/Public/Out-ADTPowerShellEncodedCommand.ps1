@@ -7,10 +7,44 @@
 function Out-ADTPowerShellEncodedCommand
 {
     <#
+    .SYNOPSIS
+        Encodes a PowerShell command into a Base64 string.
+
+    .DESCRIPTION
+        This function takes a PowerShell command as input and encodes it into a Base64 string. This is useful for passing commands to PowerShell through mechanisms that require encoded input.
+
+    .PARAMETER Command
+        The PowerShell command to be encoded.
+
+        Mandatory: True
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        System.String
+
+        This function returns the encoded Base64 string representation of the input command.
+
+    .EXAMPLE
+        # Example 1
+        $command = "Get-Process"
+        Out-ADTPowerShellEncodedCommand -Command $command
+
+        Encodes the "Get-Process" command into a Base64 string.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
 
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
