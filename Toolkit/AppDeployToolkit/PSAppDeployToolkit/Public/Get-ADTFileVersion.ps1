@@ -7,34 +7,53 @@
 function Get-ADTFileVersion
 {
     <#
-
     .SYNOPSIS
-    Gets the version of the specified file
+        Gets the version of the specified file.
 
     .DESCRIPTION
-    Gets the version of the specified file
+        The Get-ADTFileVersion function retrieves the version information of the specified file. By default, it returns the FileVersion, but it can also return the ProductVersion if the -ProductVersion switch is specified.
 
     .PARAMETER File
-    Path of the file
+        The path of the file.
+
+        Mandatory: True
 
     .PARAMETER ProductVersion
-    Switch that makes the command return ProductVersion instead of FileVersion
+        Switch that makes the command return ProductVersion instead of FileVersion.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    System.String. Returns the version of the specified file.
+        System.String
+
+        Returns the version of the specified file.
 
     .EXAMPLE
-    Get-ADTFileVersion -File "$envProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
+        # Example 1
+        Get-ADTFileVersion -File "$env:ProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
+
+        This example retrieves the FileVersion of the specified Adobe Reader executable.
+
+        # Example 2
+        Get-ADTFileVersion -File "$env:ProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe" -ProductVersion
+
+        This example retrieves the ProductVersion of the specified Adobe Reader executable.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
