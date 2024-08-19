@@ -7,39 +7,54 @@
 function Get-ADTIniValue
 {
     <#
-
     .SYNOPSIS
-    Parses an INI file and returns the value of the specified section and key.
+        Parses an INI file and returns the value of the specified section and key.
 
     .DESCRIPTION
-    Parses an INI file and returns the value of the specified section and key.
+        The Get-ADTIniValue function parses an INI file and returns the value of the specified section and key. This function is useful for retrieving configuration settings stored in INI files.
 
     .PARAMETER FilePath
-    Path to the INI file.
+        Path to the INI file.
+
+        Mandatory: True
 
     .PARAMETER Section
-    Section within the INI file.
+        Section within the INI file.
+
+        Mandatory: True
 
     .PARAMETER Key
-    Key within the section of the INI file.
+        Key within the section of the INI file.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    System.String. Returns the value of the specified section and key.
+        System.String
+
+        Returns the value of the specified section and key.
 
     .EXAMPLE
-    Get-ADTIniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
+        # Example 1
+        Get-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
+
+        This example retrieves the value of the 'KeyFileName' key in the 'Notes' section of the specified INI file.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     [OutputType([System.String])]
     param
