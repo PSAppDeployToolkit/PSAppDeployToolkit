@@ -4,39 +4,53 @@
 #
 #---------------------------------------------------------------------------
 
-function Set-ADTServiceStartMode
-{
-    <#
-
+<#
     .SYNOPSIS
-    Set the service startup mode.
+        Set the service startup mode.
 
     .DESCRIPTION
-    Set the service startup mode.
+        Set the service startup mode. This function allows you to configure the startup mode of a specified service. The startup modes available are: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, and System.
 
-    .PARAMETER Name
-    Specify the name of the service.
+    .PARAMETER Service
+        Specify the name of the service.
+
+        Mandatory: True
 
     .PARAMETER StartMode
-    Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
+        Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    Set-ADTServiceStartMode -Name 'wuauserv' -StartMode 'Automatic (Delayed Start)'
+        # Example 1
+        Set-ADTServiceStartMode -Service 'wuauserv' -StartMode 'Automatic (Delayed Start)'
+
+        Sets the 'wuauserv' service to start automatically with a delayed start.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com
+#>
 
-    #>
-
+function Set-ADTServiceStartMode
+{
     [CmdletBinding()]
     param
     (
@@ -63,26 +77,10 @@ function Set-ADTServiceStartMode
         # Re-write StartMode to suit sc.exe.
         $StartMode = switch ($StartMode)
         {
-            'Automatic'
-            {
-                'Auto'
-                break
-            }
-            'Automatic (Delayed Start)'
-            {
-                'Delayed-Auto'
-                break
-            }
-            'Manual'
-            {
-                'Demand'
-                break
-            }
-            default
-            {
-                $_
-                break
-            }
+            'Automatic' { 'Auto'; break }
+            'Automatic (Delayed Start)' { 'Delayed-Auto'; break }
+            'Manual' { 'Demand'; break }
+            default { $_; break }
         }
     }
 
@@ -94,7 +92,7 @@ function Set-ADTServiceStartMode
             try
             {
                 # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-                $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $ScExeStartMode 2>&1
+                $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
                 if ($LASTEXITCODE)
                 {
                     Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $scResult") -Severity 3
