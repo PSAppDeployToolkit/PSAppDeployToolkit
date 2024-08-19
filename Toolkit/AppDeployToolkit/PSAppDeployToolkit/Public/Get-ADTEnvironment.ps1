@@ -16,10 +16,10 @@ function Get-ADTEnvironment
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Hashtable
+        System.Collections.Hashtable
 
         Returns the environment data as a hashtable.
 

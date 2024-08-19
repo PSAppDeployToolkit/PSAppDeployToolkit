@@ -50,7 +50,7 @@ function Copy-FileToUserProfiles
         Exclude the Default User. Default is: $false.
 
     .INPUTS
-        String[]
+        System.String[]
 
         You can pipe in string values for $Path.
 
@@ -64,15 +64,17 @@ function Copy-FileToUserProfiles
 
         Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
+    .EXAMPLE
         Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
+    .EXAMPLE
         Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 
         Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
 
-
+    .EXAMPLE
         Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 
         Copy an entire folder to C:\Users\<UserName> for each user.

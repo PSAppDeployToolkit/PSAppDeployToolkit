@@ -45,9 +45,7 @@ function Test-ADTRegistryValue
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        To test if a registry key exists, use the Test-Path function like so:
-
-        Test-Path -Path $Key -PathType 'Container'
+        To test if a registry key exists, use the Test-Path function like so: Test-Path -LiteralPath $Key -PathType 'Container'
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

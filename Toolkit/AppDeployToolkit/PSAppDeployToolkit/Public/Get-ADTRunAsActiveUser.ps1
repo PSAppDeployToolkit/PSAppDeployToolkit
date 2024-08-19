@@ -17,7 +17,7 @@ function Get-ADTRunAsActiveUser
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         PSADT.Types.UserSessionInfo
@@ -40,6 +40,7 @@ function Get-ADTRunAsActiveUser
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

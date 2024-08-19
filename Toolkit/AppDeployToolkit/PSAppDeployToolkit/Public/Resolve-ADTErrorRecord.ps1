@@ -34,9 +34,9 @@ function Resolve-ADTErrorRecord
         Exclude error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
 
     .INPUTS
-        System.Array
+        System.Management.Automation.ErrorRecord
 
-        Accepts an array of error records.
+        Accepts one or more ErrorRecord objects via the pipeline.
 
     .OUTPUTS
         System.String
@@ -59,7 +59,6 @@ function Resolve-ADTErrorRecord
         Enumerates only the InnerException property of the last error record.
 
     .EXAMPLE
-
         Resolve-ADTErrorRecord -ExcludeErrorInvocation
 
         Enumerates the details of the last error record, excluding the invocation information.

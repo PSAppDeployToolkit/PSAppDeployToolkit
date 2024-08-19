@@ -17,9 +17,9 @@ function Add-ADTSessionOpeningCallback
         The callback command(s) to be executed when the ADT session is opening.
 
     .INPUTS
-        System.Management.Automation.CommandInfo[]
+        None
 
-        The callback command(s) to be executed when the ADT session is opening.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -42,6 +42,7 @@ function Add-ADTSessionOpeningCallback
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

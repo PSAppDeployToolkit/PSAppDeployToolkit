@@ -16,7 +16,7 @@ function Get-ADTPowerShellProcessPath
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -39,5 +39,6 @@ function Get-ADTPowerShellProcessPath
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     return "$PSHOME\$(if ($PSVersionTable.PSEdition.Equals('Core')) {'pwsh.exe'} else {'powershell.exe'})"
 }

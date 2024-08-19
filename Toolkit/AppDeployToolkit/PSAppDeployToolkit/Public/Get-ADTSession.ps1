@@ -16,10 +16,10 @@ function Get-ADTSession
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.Session
+        ADTSession
 
         Returns the most recent session object from the ADT module data.
 
@@ -40,8 +40,8 @@ function Get-ADTSession
 
     .LINK
         https://psappdeploytoolkit.com
-
     #>
+
     [CmdletBinding()]
     param
     (

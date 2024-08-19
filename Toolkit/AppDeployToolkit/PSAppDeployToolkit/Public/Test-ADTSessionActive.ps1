@@ -16,7 +16,7 @@ function Test-ADTSessionActive
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.Boolean

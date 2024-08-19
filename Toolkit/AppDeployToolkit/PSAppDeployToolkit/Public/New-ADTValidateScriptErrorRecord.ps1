@@ -28,7 +28,7 @@ function New-ADTValidateScriptErrorRecord
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.Management.Automation.ErrorRecord

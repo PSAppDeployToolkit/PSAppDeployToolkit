@@ -21,6 +21,10 @@ function Start-ADTMspProcess
     .PARAMETER AddParameters
         Additional parameters.
 
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None

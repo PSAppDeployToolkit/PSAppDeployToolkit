@@ -25,7 +25,7 @@ function Get-ADTIniValue
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -48,6 +48,7 @@ function Get-ADTIniValue
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     [OutputType([System.String])]
     param

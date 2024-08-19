@@ -25,7 +25,7 @@ function Remove-ADTFile
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None

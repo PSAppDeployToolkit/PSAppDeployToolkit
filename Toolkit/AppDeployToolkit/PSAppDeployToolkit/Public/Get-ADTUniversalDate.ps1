@@ -47,6 +47,7 @@ function Get-ADTUniversalDate
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

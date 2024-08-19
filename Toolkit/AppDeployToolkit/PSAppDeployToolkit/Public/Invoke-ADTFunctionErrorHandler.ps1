@@ -25,13 +25,8 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER PassThru
         If specified, the function will return the error record.
 
-
-        Mandatory: True (when using the 'LogMessage' parameter set)
-
     .PARAMETER DisableErrorResolving
         If specified, the function will not append the resolved error record to the log message.
-
-        Mandatory: False (when using the 'LogMessage' parameter set)
 
     .INPUTS
         None

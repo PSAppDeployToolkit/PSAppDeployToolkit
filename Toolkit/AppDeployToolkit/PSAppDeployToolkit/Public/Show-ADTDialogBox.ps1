@@ -21,15 +21,24 @@ function Show-ADTDialogBox
     .PARAMETER Title
         Title of the message dialog box.
 
-        The Default button that is selected. Options: First, Second, Third. Default: First.
-        Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information. Default: None.
+    .PARAMETER DefaultButton
+        The Default button that is selected. Options: First, Second, Third.
 
-        Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
+    .PARAMETER Icon
+        Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information.
 
+    .PARAMETER NotTopMost
+        Specifies whether the message box shouldn't be a system modal message box that appears in a topmost window.
 
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.String
 
         Returns the text of the button that was clicked.
-
 
     .EXAMPLE
         Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false

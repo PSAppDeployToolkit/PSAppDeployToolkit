@@ -17,9 +17,9 @@ function Add-ADTSessionClosingCallback
         The callback command(s) to be executed when the ADT session is closing.
 
     .INPUTS
-        System.Management.Automation.CommandInfo[]
+        None
 
-        The callback command(s) to be executed when the ADT session is closing.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None

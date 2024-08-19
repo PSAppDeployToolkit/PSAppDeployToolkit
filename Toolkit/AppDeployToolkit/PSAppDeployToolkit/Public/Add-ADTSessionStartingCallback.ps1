@@ -19,7 +19,7 @@ function Add-ADTSessionStartingCallback
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -42,6 +42,7 @@ function Add-ADTSessionStartingCallback
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

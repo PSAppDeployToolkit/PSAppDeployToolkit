@@ -53,6 +53,7 @@ function Get-ADTShortcut
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     [OutputType([PSADT.Types.ShortcutUrl])]
     [OutputType([PSADT.Types.ShortcutLnk])]

@@ -16,33 +16,48 @@ function Show-ADTInstallationPrompt
     .PARAMETER Title
         Title of the prompt. Default: the application installation name.
 
-
     .PARAMETER MessageAlignment
         Alignment of the message text. Options: Left, Center, Right. Default: Center.
 
     .PARAMETER ButtonLeftText
         Show a button on the left of the prompt with the specified text.
+
+    .PARAMETER ButtonRightText
         Show a button on the right of the prompt with the specified text.
 
     .PARAMETER ButtonMiddleText
+        Show a button in the middle of the prompt with the specified text.
+
     .PARAMETER Icon
         Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None.
 
+    .PARAMETER NoWait
+        Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
 
     .PARAMETER PersistPrompt
         Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
-        Specifies whether to minimize other windows when displaying prompt. Default: $false.
+
+    .PARAMETER MinimizeWindows
+        Specifies whether to minimize other windows when displaying prompt.
 
     .PARAMETER Timeout
-    .PARAMETER NoExitOnTimeout
-        Specifies whether to not exit the script if the UI times out. Default: $false.
+        Specifies how long, in seconds, to show the message prompt before aborting.
 
+    .PARAMETER NoExitOnTimeout
+        Specifies whether to not exit the script if the UI times out.
+
+    .PARAMETER NotTopMost
+        Specifies whether the prompt shouldn't be topmost, above all other windows.
 
     .INPUTS
         None
 
+        You cannot pipe objects to this function.
+
     .OUTPUTS
         None
+
+        This function does not generate any output.
 
     .EXAMPLE
         Show-ADTInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'

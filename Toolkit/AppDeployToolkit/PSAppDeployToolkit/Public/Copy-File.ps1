@@ -14,45 +14,36 @@ function Copy-File
         Copies files and directories from a source to a destination. This function supports recursive copying, overwriting existing files, and returning the copied items.
 
     .PARAMETER Path
-
         Path of the file to copy. Multiple paths can be specified.
 
     .PARAMETER Destination
-
         Destination Path of the file to copy.
 
     .PARAMETER Recurse
-
         Copy files in subdirectories.
 
     .PARAMETER Flatten
-
         Flattens the files into the root destination directory.
 
     .PARAMETER ContinueOnError
-
         Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
 
     .PARAMETER ContinueFileCopyOnError
-
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 
     .PARAMETER UseRobocopy
-
         Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
     .PARAMETER RobocopyParams
-
         Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
     .PARAMETER RobocopyAdditionalParams
-
         Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None

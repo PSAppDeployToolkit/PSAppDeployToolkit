@@ -4,11 +4,11 @@
 PSAppDeployToolkit - This script performs the installation or uninstallation of an application(s).
 
 .DESCRIPTION
-- The script is provided as a template to perform an install or uninstall of an application(s).
-- The script either performs an "Install" deployment type or an "Uninstall" deployment type.
+- The script is provided as a template to perform an install, uninstall, or repair of an application(s).
+- The script either performs an "Install", "Uninstall", or "Repair" deployment type.
 - The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 
-The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
+The script imports the PSAppDeployToolkit module which contains the logic and functions required to install or uninstall an application.
 
 PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
@@ -33,13 +33,13 @@ Changes to "user install mode" and back to "user execute mode" for installing/un
 Disables logging to file for the script. Default is: $false.
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeployMode 'Silent'; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -AllowRebootPassThru; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeploymentType 'Uninstall'; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
 Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
@@ -52,8 +52,8 @@ None. This script does not generate any output.
 
 .NOTES
 Toolkit Exit Code Ranges:
-- 60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
-- 69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
+- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+- 69000 - 69999: Recommended for user customized exit codes in Invoke-AppDeployToolkit.ps1
 - 70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
 
 .LINK
