@@ -7,52 +7,79 @@
 function Remove-ADTFileFromUserProfiles
 {
     <#
-
     .SYNOPSIS
-    Removes one or more items from each user profile on the system.
+        Removes one or more items from each user profile on the system.
 
     .DESCRIPTION
-    Removes one or more items from each user profile on the system.
+        This function removes one or more items from each user profile on the system. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the Recurse parameter is specified. Additionally, it allows excluding specific NT accounts, system profiles, service profiles, and the default user profile.
 
     .PARAMETER Path
-    Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+        Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+
+        Mandatory: True
 
     .PARAMETER LiteralPath
-    Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+        Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+
+        Mandatory: True
 
     .PARAMETER Recurse
-    Deletes the files in the specified location(s) and in all child items of the location(s).
+        Deletes the files in the specified location(s) and in all child items of the location(s).
+
+        Mandatory: False
 
     .PARAMETER ExcludeNTAccount
-    Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+        Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
-    .PARAMETER ExcludeSystemProfiles
-    Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
-
-    .PARAMETER ExcludeServiceProfiles
-    Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+        Mandatory: False
 
     .PARAMETER ExcludeDefaultUser
-    Exclude the Default User. Default is: $false.
+        Exclude the Default User. Default is: $false.
+
+        Mandatory: False
+
+    .PARAMETER IncludeSystemProfiles
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
+
+        Mandatory: False
+
+    .PARAMETER IncludeServiceProfiles
+        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Remove-ADTFileFromUserProfiles -Path "AppData\Roaming\MyApp\config.txt"
+        # Example 1
+        Remove-ADTFileFromUserProfiles -Path "AppData\Roaming\MyApp\config.txt"
+
+        Removes the specified file from each user profile on the system.
 
     .EXAMPLE
-    Remove-ADTFileFromUserProfiles -Path "AppData\Local\MyApp" -Recurse
+        # Example 2
+        Remove-ADTFileFromUserProfiles -Path "AppData\Local\MyApp" -Recurse
+
+        Removes the specified folder and all its contents recursively from each user profile on the system.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
@@ -102,7 +129,7 @@ function Remove-ADTFileFromUserProfiles
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
-        # Store variable basded on ParameterSetName.
+        # Store variable based on ParameterSetName.
         $pathVar = Get-Variable -Name $PSCmdlet.ParameterSetName
     }
 
