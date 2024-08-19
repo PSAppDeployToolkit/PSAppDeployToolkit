@@ -7,61 +7,90 @@
 function New-ADTShortcut
 {
     <#
-
     .SYNOPSIS
-    Creates a new .lnk or .url type shortcut
+        Creates a new .lnk or .url type shortcut.
 
     .DESCRIPTION
-    Creates a new shortcut .lnk or .url file, with configurable options
+        Creates a new shortcut .lnk or .url file, with configurable options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
 
     .PARAMETER Path
-    Path to save the shortcut
+        Path to save the shortcut.
+
+        Mandatory: True
 
     .PARAMETER TargetPath
-    Target path or URL that the shortcut launches
+        Target path or URL that the shortcut launches.
+
+        Mandatory: True
 
     .PARAMETER Arguments
-    Arguments to be passed to the target path
+        Arguments to be passed to the target path.
+
+        Mandatory: False
 
     .PARAMETER IconLocation
-    Location of the icon used for the shortcut
+        Location of the icon used for the shortcut.
+
+        Mandatory: False
 
     .PARAMETER IconIndex
-    The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+        The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+
+        Mandatory: False
 
     .PARAMETER Description
-    Description of the shortcut
+        Description of the shortcut.
+
+        Mandatory: False
 
     .PARAMETER WorkingDirectory
-    Working Directory to be used for the target path
+        Working Directory to be used for the target path.
+
+        Mandatory: False
 
     .PARAMETER WindowStyle
-    Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
+        Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
+
+        Mandatory: False
 
     .PARAMETER RunAsAdmin
-    Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
+        Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
+
+        Mandatory: False
 
     .PARAMETER Hotkey
-    Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
+        Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any output.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    New-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+        # Example 1
+        New-ADTShortcut -Path "$env:ProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$env:WinDir\System32\notepad.exe" -IconLocation "$env:WinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$env:HomeDrive\$env:HomePath"
+
+        Creates a new shortcut for Notepad with the specified parameters.
 
     .NOTES
-    Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
+        Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
