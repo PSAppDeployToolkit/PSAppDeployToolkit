@@ -7,49 +7,59 @@
 function Invoke-ADTAllUsersRegistryChange
 {
     <#
-
     .SYNOPSIS
-    Set current user registry settings for all current users and any new users in the future.
+        Set current user registry settings for all current users and any new users in the future.
 
     .DESCRIPTION
-    Set HKCU registry settings for all current and future users by loading their NTUSER.dat registry hive file, and making the modifications.
+        Set HKCU registry settings for all current and future users by loading their NTUSER.dat registry hive file, and making the modifications.
 
-    This function will modify HKCU settings for all users even when executed under the SYSTEM account.
+        This function will modify HKCU settings for all users even when executed under the SYSTEM account.
 
-    To ensure new users in the future get the registry edits, the Default User registry hive used to provision the registry for new users is modified.
+        To ensure new users in the future get the registry edits, the Default User registry hive used to provision the registry for new users is modified.
 
-    This function can be used as an alternative to using ActiveSetup for registry settings.
+        This function can be used as an alternative to using ActiveSetup for registry settings.
 
-    The advantage of using this function over ActiveSetup is that a user does not have to log off and log back on before the changes take effect.
+        The advantage of using this function over ActiveSetup is that a user does not have to log off and log back on before the changes take effect.
 
     .PARAMETER RegistrySettings
-    Script block which contains HKCU registry settings which should be modified for all users on the system.
+        Script block which contains HKCU registry settings which should be modified for all users on the system.
+
+        Mandatory: True
 
     .PARAMETER UserProfiles
-    Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
+        Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    ```powershell
-    [ScriptBlock]$HKCURegistrySettings = {
-        Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
-        Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
-    }
+        # Example 1
+        [ScriptBlock]$HKCURegistrySettings = {
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+        }
 
-    Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
-    ```
+        Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -57,11 +67,11 @@ function Invoke-ADTAllUsersRegistryChange
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock[]]$RegistrySettings,
+        [ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
+        [Array]$UserProfiles = @()
     )
 
     begin
