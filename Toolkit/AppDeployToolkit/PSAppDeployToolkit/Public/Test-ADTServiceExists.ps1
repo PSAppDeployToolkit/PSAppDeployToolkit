@@ -7,44 +7,64 @@
 function Test-ADTServiceExists
 {
     <#
-
     .SYNOPSIS
-    Check to see if a service exists.
+        Check to see if a service exists.
 
     .DESCRIPTION
-    Check to see if a service exists. UseCIM switch can be used in conjunction with PassThru to return WMI objects for PSADT v3.x compatibility, however this method fails in Windows Sandbox.
+        Check to see if a service exists. The UseCIM switch can be used in conjunction with PassThru to return WMI objects for PSADT v3.x compatibility, however, this method fails in Windows Sandbox.
 
     .PARAMETER Name
-    Specify the name of the service.
+        Specify the name of the service.
 
-    Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
+        Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
+
+        Mandatory: True
+
+    .PARAMETER UseCIM
+        Use CIM/WMI to check for the service. This is useful for compatibility with PSADT v3.x.
+
+        Mandatory: False
 
     .PARAMETER PassThru
-    Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
+        Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        System.Boolean
+
+        Returns $true if the service exists, otherwise returns $false.
 
     .EXAMPLE
-    Test-ADTServiceExists -Name 'wuauserv'
+        # Example 1
+        Test-ADTServiceExists -Name 'wuauserv'
+
+        Checks if the service 'wuauserv' exists.
 
     .EXAMPLE
-    Test-ADTServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
+        # Example 2
+        Test-ADTServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
 
-    Check if a service exists and then delete it by using the -PassThru parameter.
+        Checks if a service exists and then deletes it by using the -PassThru parameter.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
