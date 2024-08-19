@@ -7,31 +7,51 @@
 function Copy-ADTContentToCache
 {
     <#
-
     .SYNOPSIS
-    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
+        Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
 
     .DESCRIPTION
-    Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
+        Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
+        This function is useful in environments where an Endpoint Management solution does not provide a managed cache for source files, such as Intune.
+        It is important to clean up the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
     .PARAMETER Path
-    The path to the software cache folder.
+        The path to the software cache folder.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Copy-ADTContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
+        # Example 1
+        Copy-ADTContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
+
+        This example copies the toolkit content to the specified cache folder.
 
     .NOTES
-    This function is provided as a template to copy the toolkit content to a cache folder on the local machine and set the $dirFiles directory to the cache path.
+        An active ADT session is required to use this function.
 
-    This can be used in the absence of an Endpoint Management solution that provides a managed cache for source files, e.g. Intune is lacking this functionality whereas ConfigMgr includes this functionality.
+        This can be used in the absence of an Endpoint Management solution that provides a managed cache for source files, e.g. Intune is lacking this functionality whereas ConfigMgr includes this functionality.
 
-    Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
+        Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
-    This can be done using [Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$installName" -Recurse -ErrorAction Ignore]
+        This can be done using [Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$installName" -Recurse -ErrorAction Ignore]
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
