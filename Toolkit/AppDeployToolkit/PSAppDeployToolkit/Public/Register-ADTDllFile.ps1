@@ -7,35 +7,43 @@
 function Register-ADTDllFile
 {
     <#
-
     .SYNOPSIS
-    Register a DLL file.
+        Register a DLL file.
 
     .DESCRIPTION
-    Register a DLL file using regsvr32.exe.
+        This function registers a DLL file using regsvr32.exe. It ensures that the specified DLL file exists before attempting to register it. If the file does not exist, it throws an error.
 
     .PARAMETER FilePath
-    Path to the DLL file.
+        Path to the DLL file.
 
-    .PARAMETER DLLAction
-    Specify whether to register the DLL.
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    None. This function does not return objects.
+        None
+
+        This function does not return objects.
 
     .EXAMPLE
-    # Register DLL file.
-    Register-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+        # Example 1
+        Register-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+
+        Registers the specified DLL file.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
