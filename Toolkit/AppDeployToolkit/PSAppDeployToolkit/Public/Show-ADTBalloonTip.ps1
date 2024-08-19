@@ -7,46 +7,66 @@
 function Show-ADTBalloonTip
 {
     <#
-
     .SYNOPSIS
-    Displays a balloon tip notification in the system tray.
+        Displays a balloon tip notification in the system tray.
 
     .DESCRIPTION
-    Displays a balloon tip notification in the system tray.
+        Displays a balloon tip notification in the system tray. This function can be used to show notifications to the user with customizable text, title, icon, and display duration. For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
     .PARAMETER BalloonTipText
-    Text of the balloon tip.
+        Text of the balloon tip.
+
+        Mandatory: True
 
     .PARAMETER BalloonTipTitle
-    Title of the balloon tip.
+        Title of the balloon tip.
+
+        Mandatory: False
 
     .PARAMETER BalloonTipIcon
-    Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
+        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
+
+        Mandatory: False
 
     .PARAMETER BalloonTipTime
-    Time in milliseconds to display the balloon tip. Default: 10000.
+        Time in milliseconds to display the balloon tip. Default: 10000.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.String. Returns the version of the specified file.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    Show-ADTBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
+        # Example 1
+        Show-ADTBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
+
+        Displays a balloon tip with the text 'Installation Started' and the title 'Application Name'.
 
     .EXAMPLE
-    Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
+        # Example 2
+        Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
+
+        Displays a balloon tip with the info icon, the text 'Installation Started', the title 'Application Name', and a display duration of 1000 milliseconds.
 
     .NOTES
-    For Windows 10 OS and above a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
+        For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
