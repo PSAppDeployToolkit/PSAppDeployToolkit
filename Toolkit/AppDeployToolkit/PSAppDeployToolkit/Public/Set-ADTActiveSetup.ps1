@@ -7,7 +7,6 @@
 function Set-ADTActiveSetup
 {
     <#
-
     .SYNOPSIS
     Creates an Active Setup entry in the registry to execute a file for each user upon login.
 
@@ -85,7 +84,6 @@ function Set-ADTActiveSetup
 
     .LINK
     https://psappdeploytoolkit.com
-
     #>
 
     [CmdletBinding()]
