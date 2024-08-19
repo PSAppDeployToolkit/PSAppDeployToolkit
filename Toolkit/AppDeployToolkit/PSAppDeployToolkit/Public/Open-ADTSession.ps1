@@ -97,16 +97,15 @@ function Open-ADTSession
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Object
+        ADTSession
 
         This function returns the session object if -PassThru is specified.
 
     .EXAMPLE
-        $sessionState = Get-SessionState
-        Open-ADTSession -SessionState $sessionState -DeploymentType "Install" -DeployMode "Interactive"
+        Open-ADTSession -SessionState $ExecutionContext.SessionState -DeploymentType "Install" -DeployMode "Interactive"
 
         Opens a new ADT session with the specified parameters.
 

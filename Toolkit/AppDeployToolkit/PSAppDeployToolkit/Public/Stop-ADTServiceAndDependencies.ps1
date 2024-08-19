@@ -28,7 +28,7 @@ function Stop-ADTServiceAndDependencies
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.ServiceProcess.ServiceController

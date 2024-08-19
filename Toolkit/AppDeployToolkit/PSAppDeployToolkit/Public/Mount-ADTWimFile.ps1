@@ -28,9 +28,14 @@ function Mount-ADTWimFile
     .PARAMETER Force
         Forces the removal of the existing directory if it is not empty.
 
+    .INPUTS
         None
 
+        You cannot pipe objects to this function.
+
     .OUTPUTS
+        Microsoft.Dism.Commands.ImageObject
+
         Returns the mounted image details if the PassThru parameter is specified.
 
     .EXAMPLE

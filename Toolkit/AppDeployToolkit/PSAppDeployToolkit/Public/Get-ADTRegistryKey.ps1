@@ -37,7 +37,7 @@ function Get-ADTRegistryKey
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -60,13 +60,11 @@ function Get-ADTRegistryKey
         This example retrieves the 'Version' value data for the specified registry key.
 
     .EXAMPLE
-
         Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
 
         This example retrieves the 'Path' value data without expanding environment variables.
 
     .EXAMPLE
-
         Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
 
         This example retrieves the default value data for the specified registry key.
@@ -82,6 +80,7 @@ function Get-ADTRegistryKey
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

@@ -34,7 +34,7 @@ function Get-ADTInstalledApplication
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         PSADT.Types.InstalledApplication
@@ -55,6 +55,7 @@ function Get-ADTInstalledApplication
 
         This example retrieves information about installed applications with the name 'Adobe Flash'.
 
+    .EXAMPLE
         Get-ADTInstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
         This example retrieves information about the installed application with the specified product code.
@@ -70,6 +71,7 @@ function Get-ADTInstalledApplication
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

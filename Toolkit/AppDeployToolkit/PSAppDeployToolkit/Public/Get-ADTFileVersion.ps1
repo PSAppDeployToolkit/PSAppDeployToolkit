@@ -22,7 +22,7 @@ function Get-ADTFileVersion
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -34,6 +34,7 @@ function Get-ADTFileVersion
 
         This example retrieves the FileVersion of the specified Adobe Reader executable.
 
+    .EXAMPLE
         Get-ADTFileVersion -File "$env:ProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe" -ProductVersion
 
         This example retrieves the ProductVersion of the specified Adobe Reader executable.

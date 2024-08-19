@@ -38,12 +38,10 @@ function Invoke-ADTAllUsersRegistryChange
         This function does not generate any output.
 
     .EXAMPLE
-        [ScriptBlock]$HKCURegistrySettings = {
+        Invoke-ADTAllUsersRegistryChange -RegistrySettings {
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
         }
-
-        Invoke-ADTAllUsersRegistryChange -RegistrySettings $HKCURegistrySettings
 
     .NOTES
         An active ADT session is NOT required to use this function.

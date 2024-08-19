@@ -80,12 +80,12 @@ function Start-ADTMsiProcess
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.PSObject
+        PSADT.Types.ProcessResult
 
-        Returns a PSObject with the results of the installation.
+        Returns a PSObject with the results of the installation if -PassThru is specified.
         - ExitCode
         - StdOut
         - StdErr
@@ -106,27 +106,25 @@ function Start-ADTMsiProcess
         Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
 
     .EXAMPLE
-
         Start-ADTMsiProcess -Action 'Uninstall' -Path '{26923b43-4d38-484f-9b9e-de460746276c}'
 
         Uninstall an MSI using a product code.
 
     .EXAMPLE
-
         Start-ADTMsiProcess -Action 'Patch' -Path 'Adobe_Reader_11.0.3_EN.msp'
 
         Install an MSP.
 
     .NOTES
-    An active ADT session is NOT required to use this function.
+        An active ADT session is NOT required to use this function.
 
-    Tags: psadt
-    Website: https://psappdeploytoolkit.com
-    Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
-    License: https://opensource.org/license/lgpl-3-0
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]

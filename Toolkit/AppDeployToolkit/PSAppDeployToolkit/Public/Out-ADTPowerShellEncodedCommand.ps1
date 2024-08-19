@@ -19,7 +19,7 @@ function Out-ADTPowerShellEncodedCommand
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -27,8 +27,7 @@ function Out-ADTPowerShellEncodedCommand
         This function returns the encoded Base64 string representation of the input command.
 
     .EXAMPLE
-        $command = "Get-Process"
-        Out-ADTPowerShellEncodedCommand -Command $command
+        Out-ADTPowerShellEncodedCommand -Command 'Get-Process'
 
         Encodes the "Get-Process" command into a Base64 string.
 

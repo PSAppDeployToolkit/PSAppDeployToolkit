@@ -30,9 +30,9 @@ function Add-ADTEdgeExtension
         The minimum version of the extension required for installation.
 
     .INPUTS
-        System.String
+        None
 
-        The function takes the extension ID, update URL, installation mode, and optionally the minimum version required.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -55,6 +55,7 @@ function Add-ADTEdgeExtension
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

@@ -19,7 +19,7 @@ function Close-ADTSession
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -31,6 +31,7 @@ function Close-ADTSession
 
         This example closes the active ADT session without setting an exit code.
 
+    .EXAMPLE
         Close-ADTSession -ExitCode 0
 
         This example closes the active ADT session and sets the exit code to 0.

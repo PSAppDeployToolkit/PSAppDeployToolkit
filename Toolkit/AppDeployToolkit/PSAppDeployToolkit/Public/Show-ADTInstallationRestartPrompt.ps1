@@ -16,22 +16,48 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER Title
         Title of the prompt. Default: the application installation name.
 
-        Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
-        Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $false
+    .PARAMETER CountdownSeconds
+        Specifies the number of seconds to display the restart prompt. Default: 60
 
+    .PARAMETER CountdownNoHideSeconds
+        Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
+
+    .PARAMETER SilentCountdownSeconds
         Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
 
+    .PARAMETER SilentRestart
+        Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
 
+    .PARAMETER NoCountdown
+        Specifies whether the user should receive a prompt to immediately restart their workstation.
+
+    .PARAMETER NotTopMost
+        Specifies whether the prompt shouldn't be topmost, above all other windows.
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
-        Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+
+        This function does not generate any output.
 
     .EXAMPLE
+        Show-ADTInstallationRestartPromptClassic -NoCountdown
+
         Displays a restart prompt without a countdown.
 
     .EXAMPLE
-        Displays a restart prompt with a 300-second countdown and triggers a silent restart with a 10-second countdown in silent mode.
+        Show-ADTInstallationRestartPromptClassic -Countdownseconds 300
+
+        Displays a restart prompt with a 300-second countdown.
+
+    .EXAMPLE
+        Displays a restart prompt with a 600-second countdown and triggers a silent restart with a 60-second countdown in silent mode.
+
+        Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
 
     .NOTES
         Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
@@ -50,15 +76,15 @@ function Show-ADTInstallationRestartPrompt
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownSeconds = 60,
+        [System.UInt32]$CountdownSeconds = 60,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownNoHideSeconds = 30,
+        [System.UInt32]$CountdownNoHideSeconds = 30,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$SilentCountdownSeconds = 5,
+        [System.UInt32]$SilentCountdownSeconds = 5,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SilentRestart,

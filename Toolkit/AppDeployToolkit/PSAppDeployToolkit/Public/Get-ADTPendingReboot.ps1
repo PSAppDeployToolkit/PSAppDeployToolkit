@@ -21,7 +21,7 @@ function Get-ADTPendingReboot
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         PSADT.Types.RebootInfo
@@ -42,6 +42,7 @@ function Get-ADTPendingReboot
 
         This example retrieves the pending reboot status on the local computer and returns a custom object with detailed information.
 
+    .EXAMPLE
         (Get-ADTPendingReboot).IsSystemRebootPending
 
         This example returns a boolean value determining whether or not there is a pending reboot operation.
@@ -59,6 +60,7 @@ function Get-ADTPendingReboot
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     [OutputType([PSADT.Types.RebootInfo])]
     param

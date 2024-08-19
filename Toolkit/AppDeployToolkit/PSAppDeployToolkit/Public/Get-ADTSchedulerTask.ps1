@@ -20,7 +20,7 @@ function Get-ADTSchedulerTask
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.PSObject
@@ -53,6 +53,7 @@ function Get-ADTSchedulerTask
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param

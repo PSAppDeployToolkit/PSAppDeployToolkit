@@ -19,6 +19,10 @@ function Show-ADTBlockedAppDialog
     .PARAMETER UnboundArguments
         Captures any additional arguments passed to the function.
 
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -51,6 +55,7 @@ function Show-ADTBlockedAppDialog
         [System.String]$Title,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.Object]$UnboundArguments
     )
 

@@ -32,7 +32,7 @@ function Convert-ADTRegistryPath
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -60,6 +60,7 @@ function Convert-ADTRegistryPath
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

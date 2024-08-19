@@ -16,10 +16,10 @@ function Get-ADTConfig
     .INPUTS
         None
 
-        This function does not take any pipeline input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Hashtable
+        System.Collections.Hashtable
 
         Returns the configuration data as a hashtable.
 

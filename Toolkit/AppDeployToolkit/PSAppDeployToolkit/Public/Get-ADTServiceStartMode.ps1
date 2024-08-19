@@ -19,7 +19,7 @@ function Get-ADTServiceStartMode
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         System.String
@@ -42,6 +42,7 @@ function Get-ADTServiceStartMode
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     param
     (

@@ -42,7 +42,7 @@ function Show-ADTInstallationProgress
     .INPUTS
         None
 
-        This function does not take any piped input.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
@@ -65,7 +65,6 @@ function Show-ADTInstallationProgress
         Displays a progress dialog with a multiline status message.
 
     .EXAMPLE
-
         Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -NotTopMost
 
         Displays a progress dialog with the status message 'Installation in Progress...', positioned at the bottom right of the screen, and not set as topmost.

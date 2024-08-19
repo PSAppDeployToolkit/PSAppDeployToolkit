@@ -17,20 +17,38 @@ function Set-ADTShortcut
         Path to the shortcut to be changed.
 
     .PARAMETER TargetPath
-        Changes target path or URL that the shortcut launches.
+        Sets target path or URL that the shortcut launches.
 
-        Changes location of the icon used for the shortcut.
-        Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+    .PARAMETER Arguments
+        Sets the arguments used against the target path.
 
-        Changes working directory to be used for the target path.
+    .PARAMETER IconLocation
+        Sets location of the icon used for the shortcut.
 
+    .PARAMETER IconIndex
+        Sets the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 
-        Changes the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
+    .PARAMETER Description
+        Sets the description of the shortcut as can be seen in the shortcut's properties.
+
+    .PARAMETER WorkingDirectory
+        Sets working directory to be used for the target path.
+
+    .PARAMETER WindowStyle
+        Sets the shortcut's window style to be minimised, maximised, etc.
+
+    .PARAMETER HotKey
+        Sets the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
     .INPUTS
-    .OUTPUTS
-        This function does not generate any output.
+        None
 
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        None
+
+        This function does not generate any output.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -40,9 +58,13 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com
     #>
 
+    [CmdletBinding()]
+    param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [ValidateScript({
+                if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
+                {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
                 }
                 return !!$_

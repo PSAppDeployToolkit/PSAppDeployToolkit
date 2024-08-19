@@ -17,9 +17,9 @@ function Complete-ADTFunction
         The PSCmdlet object representing the cmdlet being completed.
 
     .INPUTS
-        System.Management.Automation.PSCmdlet
+        None
 
-        The PSCmdlet object representing the cmdlet being completed.
+        You cannot pipe objects to this function.
 
     .OUTPUTS
         None
