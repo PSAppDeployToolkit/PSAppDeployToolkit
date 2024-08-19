@@ -18,8 +18,6 @@ function Invoke-ADTSCCMTask
 
         Options: HardwareInventory, SoftwareInventory, HeartbeatDiscovery, SoftwareInventoryFileCollection, RequestMachinePolicy, EvaluateMachinePolicy, LocationServicesCleanup, SoftwareMeteringReport, SourceUpdate, PolicyAgentCleanup, RequestMachinePolicy2, CertificateMaintenance, PeerDistributionPointStatus, PeerDistributionPointProvisioning, ComplianceIntervalEnforcement, SoftwareUpdatesAgentAssignmentEvaluation, UploadStateMessage, StateMessageManager, SoftwareUpdatesScan, AMTProvisionCycle, UpdateStorePolicy, StateSystemBulkSend, ApplicationManagerPolicyAction, PowerManagementStartSummarizer
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -31,13 +29,11 @@ function Invoke-ADTSCCMTask
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Invoke-ADTSCCMTask -ScheduleId 'SoftwareUpdatesScan'
 
         Triggers the 'SoftwareUpdatesScan' schedule task in SCCM.
 
     .EXAMPLE
-        # Example 2
         Invoke-ADTSCCMTask -ScheduleId 'HardwareInventory'
 
         Triggers the 'HardwareInventory' schedule task in SCCM.

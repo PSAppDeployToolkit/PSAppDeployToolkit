@@ -24,7 +24,6 @@ function Show-ADTHelpConsole
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Show-ADTHelpConsole
 
         Opens a new PowerShell window displaying the help console for the ADT module.

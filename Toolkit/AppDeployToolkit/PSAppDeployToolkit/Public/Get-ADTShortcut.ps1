@@ -16,8 +16,6 @@ function Get-ADTShortcut
     .PARAMETER Path
         Path to the shortcut to get information from.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -38,7 +36,6 @@ function Get-ADTShortcut
         - RunAsAdmin
 
     .EXAMPLE
-        # Example 1
         Get-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
 
         Retrieves information from the specified .lnk shortcut.

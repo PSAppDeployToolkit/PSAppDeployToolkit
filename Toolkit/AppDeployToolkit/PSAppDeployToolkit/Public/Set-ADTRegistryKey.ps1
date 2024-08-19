@@ -16,36 +16,24 @@ function Set-ADTRegistryKey
     .PARAMETER Key
         The registry key path.
 
-        Mandatory: True
-
     .PARAMETER Name
         The value name.
 
-        Mandatory: False
-
     .PARAMETER Value
         The value data.
-
-        Mandatory: False
 
     .PARAMETER Type
         The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
 
         DWord should be specified as a decimal.
 
-        Mandatory: False
-
     .PARAMETER Wow6432Node
         Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
-
-        Mandatory: False
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -58,31 +46,28 @@ function Set-ADTRegistryKey
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Set-ADTRegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
 
         Creates or sets the 'Debugger' value in the specified registry key.
 
     .EXAMPLE
-        # Example 2
         Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'DWord' -Value '1'
 
         Creates or sets a DWord value in the specified registry key.
 
     .EXAMPLE
-        # Example 3
         Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
 
         Creates or sets a String value in the specified registry key.
 
     .EXAMPLE
-        # Example 4
+
         Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
 
         Creates or sets a Binary value in the specified registry key.
 
     .EXAMPLE
-        # Example 5
+
         Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
 
         Creates or sets the default value in the specified registry key.

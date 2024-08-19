@@ -24,7 +24,6 @@ function Test-ADTModuleInitialised
         Returns $true if the ADT module is initialized, otherwise $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTModuleInitialised
 
         Checks if the ADT module is initialized and returns true or false.

@@ -16,24 +16,16 @@ function Remove-ADTRegistryKey
     .PARAMETER Key
         Path of the registry key to delete.
 
-        Mandatory: True
-
     .PARAMETER Name
         Name of the registry value to delete.
 
-        Mandatory: False
-
     .PARAMETER Recurse
         Delete registry key recursively.
-
-        Mandatory: False
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -46,19 +38,16 @@ function Remove-ADTRegistryKey
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTRegistryKey -Key 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
 
         Deletes the specified registry key.
 
     .EXAMPLE
-        # Example 2
         Remove-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
 
         Deletes the specified registry value.
 
     .EXAMPLE
-        # Example 3
         Remove-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
         Deletes the default registry value in the specified key.

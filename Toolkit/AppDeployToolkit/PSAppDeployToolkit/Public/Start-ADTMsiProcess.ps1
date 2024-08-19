@@ -24,94 +24,58 @@ function Start-ADTMsiProcess
     .PARAMETER Action
         Specifies the action to be performed. Available options: Install, Uninstall, Patch, Repair, ActiveSetup.
 
-        Mandatory: True
-
     .PARAMETER Path
         The file path to the MSI/MSP or the product code of the installed MSI.
-
-        Mandatory: True
 
     .PARAMETER Transforms
         The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
 
-        Mandatory: False
-
     .PARAMETER Patches
         The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
-
-        Mandatory: False
 
     .PARAMETER Parameters
         Overrides the default parameters specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
 
-        Mandatory: False
-
     .PARAMETER AddParameters
         Adds additional parameters to the default set specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
-
-        Mandatory: False
 
     .PARAMETER SecureParameters
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
 
-        Mandatory: False
-
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the XML configuration file.
-
-        Mandatory: False
 
     .PARAMETER LogName
         Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
-        Mandatory: False
-
     .PARAMETER WorkingDirectory
         Overrides the working directory. The working directory is set to the location of the MSI file.
-
-        Mandatory: False
 
     .PARAMETER SkipMSIAlreadyInstalledCheck
         Skips the check to determine if the MSI is already installed on the system. Default is: $false.
 
-        Mandatory: False
-
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
-
-        Mandatory: False
 
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
-        Mandatory: False
-
     .PARAMETER PassThru
         Returns ExitCode, STDOut, and STDErr output from the process.
-
-        Mandatory: False
 
     .PARAMETER IgnoreExitCodes
         List the exit codes to ignore or * to ignore all exit codes.
 
-        Mandatory: False
-
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
-
-        Mandatory: False
 
     .PARAMETER ExitOnProcessFailure
         Specifies whether the function should call Close-ADTSession when the process returns an exit code that is considered an error/failure. Default: $true
 
-        Mandatory: False
-
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache. Default: $false
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -127,31 +91,28 @@ function Start-ADTMsiProcess
         - StdErr
 
     .EXAMPLE
-        # Example 1
         Start-ADTMsiProcess -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 
         Install an MSI.
 
     .EXAMPLE
-        # Example 2
         Start-ADTMsiProcess -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transform 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -Parameters '/QN'
 
         Install an MSI, applying a transform and overriding the default MSI toolkit parameters.
 
     .EXAMPLE
-        # Example 3
         [PSObject]$ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
 
         Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
 
     .EXAMPLE
-        # Example 4
+
         Start-ADTMsiProcess -Action 'Uninstall' -Path '{26923b43-4d38-484f-9b9e-de460746276c}'
 
         Uninstall an MSI using a product code.
 
     .EXAMPLE
-        # Example 5
+
         Start-ADTMsiProcess -Action 'Patch' -Path 'Adobe_Reader_11.0.3_EN.msp'
 
         Install an MSP.

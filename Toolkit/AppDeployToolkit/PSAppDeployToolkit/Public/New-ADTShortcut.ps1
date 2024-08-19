@@ -16,52 +16,32 @@ function New-ADTShortcut
     .PARAMETER Path
         Path to save the shortcut.
 
-        Mandatory: True
-
     .PARAMETER TargetPath
         Target path or URL that the shortcut launches.
-
-        Mandatory: True
 
     .PARAMETER Arguments
         Arguments to be passed to the target path.
 
-        Mandatory: False
-
     .PARAMETER IconLocation
         Location of the icon used for the shortcut.
-
-        Mandatory: False
 
     .PARAMETER IconIndex
         The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 
-        Mandatory: False
-
     .PARAMETER Description
         Description of the shortcut.
-
-        Mandatory: False
 
     .PARAMETER WorkingDirectory
         Working Directory to be used for the target path.
 
-        Mandatory: False
-
     .PARAMETER WindowStyle
         Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
-
-        Mandatory: False
 
     .PARAMETER RunAsAdmin
         Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
 
-        Mandatory: False
-
     .PARAMETER Hotkey
         Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -74,7 +54,6 @@ function New-ADTShortcut
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         New-ADTShortcut -Path "$env:ProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$env:WinDir\System32\notepad.exe" -IconLocation "$env:WinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$env:HomeDrive\$env:HomePath"
 
         Creates a new shortcut for Notepad with the specified parameters.

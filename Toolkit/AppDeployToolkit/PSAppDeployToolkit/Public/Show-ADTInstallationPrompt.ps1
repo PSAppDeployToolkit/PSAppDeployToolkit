@@ -16,95 +16,42 @@ function Show-ADTInstallationPrompt
     .PARAMETER Title
         Title of the prompt. Default: the application installation name.
 
-        Mandatory: False
-
-    .PARAMETER Message
-        Message text to be included in the prompt.
-
-        Mandatory: True
 
     .PARAMETER MessageAlignment
         Alignment of the message text. Options: Left, Center, Right. Default: Center.
 
-        Mandatory: False
-
     .PARAMETER ButtonLeftText
         Show a button on the left of the prompt with the specified text.
-
-        Mandatory: False
-
-    .PARAMETER ButtonRightText
         Show a button on the right of the prompt with the specified text.
 
-        Mandatory: False
-
     .PARAMETER ButtonMiddleText
-        Show a button in the middle of the prompt with the specified text.
-
-        Mandatory: False
-
     .PARAMETER Icon
         Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None.
 
-        Mandatory: False
-
-    .PARAMETER NoWait
-        Specifies whether to show the prompt asynchronously (i.e. allow the script to continue without waiting for a response). Default: $false.
-
-        Mandatory: False
 
     .PARAMETER PersistPrompt
         Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
-
-        Mandatory: False
-
-    .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt. Default: $false.
 
-        Mandatory: False
-
     .PARAMETER Timeout
-        Specifies the time period in seconds after which the prompt should timeout. Default: UI timeout value set in the config XML file.
-
-        Mandatory: False
-
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out. Default: $false.
 
-        Mandatory: False
-
-    .PARAMETER NotTopMost
-        Specifies whether the progress window shouldn't be topmost. Default: $false.
-
-        Mandatory: False
 
     .INPUTS
         None
 
-        This function does not take any piped input.
-
     .OUTPUTS
         None
 
-        This function does not generate any output.
-
     .EXAMPLE
-        # Example 1
         Show-ADTInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonRightText 'Yes' -ButtonLeftText 'No'
 
-        Displays a prompt asking if the user wants to proceed with the installation, with 'Yes' and 'No' buttons.
-
     .EXAMPLE
-        # Example 2
         Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 
-        Displays a prompt with a custom title and three buttons: 'Good', 'Bad', and 'Indifferent'.
-
     .EXAMPLE
-        # Example 3
         Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
-
-        Displays a prompt with an information icon and does not wait for user input before continuing the script.
 
     .NOTES
         An active ADT session is NOT required to use this function.

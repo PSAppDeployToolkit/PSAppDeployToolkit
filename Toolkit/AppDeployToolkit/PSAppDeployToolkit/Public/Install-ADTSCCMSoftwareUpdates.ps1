@@ -17,12 +17,8 @@ function Install-ADTSCCMSoftwareUpdates
     .PARAMETER SoftwareUpdatesScanWaitInSeconds
         The amount of time to wait in seconds for the software updates scan to complete. Default is: 180 seconds.
 
-        Mandatory: False
-
     .PARAMETER WaitForPendingUpdatesTimeout
         The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -35,7 +31,6 @@ function Install-ADTSCCMSoftwareUpdates
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Install-ADTSCCMSoftwareUpdates
 
         Scans for outstanding SCCM updates and installs the pending updates with default wait times.

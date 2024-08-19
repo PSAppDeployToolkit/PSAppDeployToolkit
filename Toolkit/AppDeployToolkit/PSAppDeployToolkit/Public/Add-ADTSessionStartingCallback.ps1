@@ -16,12 +16,10 @@ function Add-ADTSessionStartingCallback
     .PARAMETER Callback
         The callback command(s) to be executed when the ADT session is starting.
 
-        Mandatory: True
-
     .INPUTS
-        System.Management.Automation.CommandInfo[]
+        None
 
-        The callback command(s) to be executed when the ADT session is starting.
+        This function does not take any pipeline input.
 
     .OUTPUTS
         None
@@ -29,7 +27,6 @@ function Add-ADTSessionStartingCallback
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Add-ADTSessionStartingCallback -Callback $myCallback
 
         This example adds the specified callback to be executed when the ADT session is starting.

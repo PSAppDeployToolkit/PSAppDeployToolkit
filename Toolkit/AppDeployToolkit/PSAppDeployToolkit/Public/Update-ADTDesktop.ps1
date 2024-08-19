@@ -24,7 +24,6 @@ function Update-ADTDesktop
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Update-ADTDesktop
 
         Refreshes the Windows Explorer Shell, reloading the desktop icons and environment variables.

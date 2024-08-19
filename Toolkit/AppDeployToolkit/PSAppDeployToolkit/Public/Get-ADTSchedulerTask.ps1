@@ -17,8 +17,6 @@ function Get-ADTSchedulerTask
     .PARAMETER TaskName
         Specify the name of the scheduled task to retrieve details for. Uses regex match to find scheduled task.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -30,19 +28,16 @@ function Get-ADTSchedulerTask
         This function returns a PSObject with all scheduled task properties.
 
     .EXAMPLE
-        # Example 1
         Get-ADTSchedulerTask
 
         This example retrieves a list of all scheduled task properties.
 
     .EXAMPLE
-        # Example 2
         Get-ADTSchedulerTask | Out-GridView
 
         This example displays a grid view of all scheduled task properties.
 
     .EXAMPLE
-        # Example 3
         Get-ADTSchedulerTask | Select-Object -Property TaskName
 
         This example displays a list of all scheduled task names.

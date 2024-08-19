@@ -17,55 +17,37 @@ function Copy-File
 
         Path of the file to copy. Multiple paths can be specified.
 
-        Mandatory: True
-
     .PARAMETER Destination
 
         Destination Path of the file to copy.
-
-        Mandatory: True
 
     .PARAMETER Recurse
 
         Copy files in subdirectories.
 
-        Mandatory: False
-
     .PARAMETER Flatten
 
         Flattens the files into the root destination directory.
-
-        Mandatory: False
 
     .PARAMETER ContinueOnError
 
         Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
 
-        Mandatory: False
-
     .PARAMETER ContinueFileCopyOnError
 
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
-
-        Mandatory: False
 
     .PARAMETER UseRobocopy
 
         Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
-        Mandatory: False
-
     .PARAMETER RobocopyParams
 
         Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
-        Mandatory: False
-
     .PARAMETER RobocopyAdditionalParams
 
         Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -78,19 +60,16 @@ function Copy-File
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt'
 
         Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination'.
 
     .EXAMPLE
-        # Example 2
         Copy-File -Path 'C:\Path\Folder' -Destination 'D:\Destination\Folder' -Recurse
 
         Recursively copies the folder 'Folder' from 'C:\Path' to 'D:\Destination'.
 
     .EXAMPLE
-        # Example 3
         Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt' -Force
 
         Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination', overwriting the destination file if it exists.

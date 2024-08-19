@@ -24,7 +24,6 @@ function Update-ADTGroupPolicy
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Update-ADTGroupPolicy
 
         Performs a gpupdate command to refresh Group Policies on the local machine.

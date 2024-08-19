@@ -24,7 +24,6 @@ function Get-ADTEnvironment
         Returns the environment data as a hashtable.
 
     .EXAMPLE
-        # Example 1
         $environment = Get-ADTEnvironment
 
         This example retrieves the environment data for the ADT module and stores it in the $environment variable.

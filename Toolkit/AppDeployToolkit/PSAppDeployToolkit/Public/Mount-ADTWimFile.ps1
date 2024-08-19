@@ -16,57 +16,34 @@ function Mount-ADTWimFile
     .PARAMETER ImagePath
         Path to the WIM file to be mounted.
 
-        Mandatory: True
-
     .PARAMETER Path
         Directory where the WIM file will be mounted. The directory must be empty and not have a pre-existing WIM mounted.
-
-        Mandatory: True
 
     .PARAMETER Index
         Index of the image within the WIM file to be mounted.
 
-        Mandatory: True
-
     .PARAMETER Name
         Name of the image within the WIM file to be mounted.
-
-        Mandatory: True
 
     .PARAMETER Force
         Forces the removal of the existing directory if it is not empty.
 
-        Mandatory: False
-
-    .PARAMETER PassThru
-        Returns the mounted image details.
-
-        Mandatory: False
-
-    .INPUTS
         None
 
-        This function does not take any piped input.
-
     .OUTPUTS
-        Microsoft.Dism.ImageInfo
-
         Returns the mounted image details if the PassThru parameter is specified.
 
     .EXAMPLE
-        # Example 1
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Index 1
 
         Mounts the first image in the 'install.wim' file to the 'C:\Mount' directory.
 
     .EXAMPLE
-        # Example 2
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Name 'Windows 10 Pro'
 
         Mounts the image named 'Windows 10 Pro' in the 'install.wim' file to the 'C:\Mount' directory.
 
     .EXAMPLE
-        # Example 3
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Index 1 -Force
 
         Mounts the first image in the 'install.wim' file to the 'C:\Mount' directory, forcefully removing the existing directory if it is not empty.

@@ -18,17 +18,9 @@ function Start-ADTMspProcess
     .PARAMETER Path
         Path to the MSP file.
 
-        Mandatory: True
-
     .PARAMETER AddParameters
         Additional parameters.
 
-        Mandatory: False
-
-    .INPUTS
-        None
-
-        This function does not take any piped input.
 
     .OUTPUTS
         None
@@ -36,13 +28,11 @@ function Start-ADTMspProcess
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
 
         Executes the specified MSP file for Adobe Reader 11.0.3.
 
     .EXAMPLE
-        # Example 2
         Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
 
         Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.

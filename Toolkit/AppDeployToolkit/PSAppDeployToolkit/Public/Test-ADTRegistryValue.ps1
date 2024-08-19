@@ -16,24 +16,16 @@ function Test-ADTRegistryValue
     .PARAMETER Key
         Path of the registry key.
 
-        Mandatory: True
-
     .PARAMETER Value
         Specify the registry key value to check the existence of.
-
-        Mandatory: True
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-        Mandatory: False
-
     .PARAMETER Wow6432Node
         Specify this switch to check the 32-bit registry (Wow6432Node) on 64-bit systems.
-
-        Mandatory: False
 
     .INPUTS
         System.String
@@ -46,7 +38,6 @@ function Test-ADTRegistryValue
         Returns $true if the registry value exists, $false if it does not.
 
     .EXAMPLE
-        # Example 1
         Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
 
         Checks if the registry value 'PendingFileRenameOperations' exists under the specified key.

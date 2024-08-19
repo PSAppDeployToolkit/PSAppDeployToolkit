@@ -16,47 +16,29 @@ function New-ADTErrorRecord
     .PARAMETER Exception
         The exception object that caused the error.
 
-        Mandatory: True
-
     .PARAMETER Category
         The category of the error.
-
-        Mandatory: True
 
     .PARAMETER ErrorId
         The identifier for the error. Default is 'NotSpecified'.
 
-        Mandatory: False
-
     .PARAMETER TargetObject
         The target object that the error is related to.
-
-        Mandatory: False
 
     .PARAMETER TargetName
         The name of the target that the error is related to.
 
-        Mandatory: False
-
     .PARAMETER TargetType
         The type of the target that the error is related to.
-
-        Mandatory: False
 
     .PARAMETER Activity
         The activity that was being performed when the error occurred.
 
-        Mandatory: False
-
     .PARAMETER Reason
         The reason for the error.
 
-        Mandatory: False
-
     .PARAMETER RecommendedAction
         The recommended action to resolve the error.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -69,7 +51,6 @@ function New-ADTErrorRecord
         This function returns an ErrorRecord object.
 
     .EXAMPLE
-        # Example 1
         $exception = [System.Exception]::new("An error occurred.")
         $category = [System.Management.Automation.ErrorCategory]::NotSpecified
         New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"

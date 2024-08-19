@@ -25,17 +25,11 @@ function Get-ADTWindowTitle
     .PARAMETER WindowTitle
         The title of the application window to search for using regex matching.
 
-        Mandatory: True
-
     .PARAMETER GetAllWindowTitles
         Get titles for all open windows on the system.
 
-        Mandatory: True
-
     .PARAMETER DisableFunctionLogging
         Disables logging messages to the script log file.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -53,19 +47,16 @@ function Get-ADTWindowTitle
         - ParentProcessId
 
     .EXAMPLE
-        # Example 1
         Get-ADTWindowTitle -WindowTitle 'Microsoft Word'
 
         Gets details for each window that has the words "Microsoft Word" in the title.
 
     .EXAMPLE
-        # Example 2
         Get-ADTWindowTitle -GetAllWindowTitles
 
         Gets details for all windows with a title.
 
     .EXAMPLE
-        # Example 3
         Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
 
         Get details for all windows belonging to Microsoft Word process with name "WINWORD".

@@ -24,8 +24,6 @@ function Block-ADTAppExecution
     .PARAMETER ProcessName
         Name of the process or processes separated by commas.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -37,7 +35,6 @@ function Block-ADTAppExecution
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Block-ADTAppExecution -ProcessName ('winword','excel')
 
         This example blocks the execution of Microsoft Word and Excel.

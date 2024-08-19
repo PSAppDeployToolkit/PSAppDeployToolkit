@@ -16,8 +16,6 @@ function Complete-ADTFunction
     .PARAMETER Cmdlet
         The PSCmdlet object representing the cmdlet being completed.
 
-        Mandatory: True
-
     .INPUTS
         System.Management.Automation.PSCmdlet
 
@@ -29,7 +27,6 @@ function Complete-ADTFunction
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Complete-ADTFunction -Cmdlet $PSCmdlet
 
         This example completes the execution of the current ADT function.

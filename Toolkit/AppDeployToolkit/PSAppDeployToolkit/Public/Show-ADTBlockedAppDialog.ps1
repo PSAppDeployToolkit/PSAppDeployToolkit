@@ -16,17 +16,9 @@ function Show-ADTBlockedAppDialog
     .PARAMETER Title
         The title of the blocked application dialog.
 
-        Mandatory: True
-
     .PARAMETER UnboundArguments
         Captures any additional arguments passed to the function.
 
-        Mandatory: False
-
-    .INPUTS
-        None
-
-        This function does not take any piped input.
 
     .OUTPUTS
         None
@@ -34,7 +26,6 @@ function Show-ADTBlockedAppDialog
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Show-ADTBlockedAppDialog -Title 'Blocked Application'
 
         Displays a dialog with the title 'Blocked Application' to inform the user about a blocked application.

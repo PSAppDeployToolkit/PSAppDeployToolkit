@@ -17,8 +17,6 @@ function Update-ADTEnvironmentPsProvider
     .PARAMETER LoadLoggedOnUserEnvironmentVariables
         If script is running in SYSTEM context, this option allows loading environment variables from the active console user. If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -30,7 +28,6 @@ function Update-ADTEnvironmentPsProvider
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Update-ADTEnvironmentPsProvider
 
         Refreshes the current PowerShell session with all environment variable settings.

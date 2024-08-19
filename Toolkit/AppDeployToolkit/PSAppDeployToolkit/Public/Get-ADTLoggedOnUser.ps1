@@ -44,7 +44,6 @@ function Get-ADTLoggedOnUser
         - ClientBuildNumber
 
     .EXAMPLE
-        # Example 1
         Get-ADTLoggedOnUser
 
         This example retrieves session details for all local and RDP logged on users.

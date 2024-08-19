@@ -24,7 +24,6 @@ function Get-ADTConfig
         Returns the configuration data as a hashtable.
 
     .EXAMPLE
-        # Example 1
         $config = Get-ADTConfig
 
         This example retrieves the configuration data for the ADT module and stores it in the $config variable.

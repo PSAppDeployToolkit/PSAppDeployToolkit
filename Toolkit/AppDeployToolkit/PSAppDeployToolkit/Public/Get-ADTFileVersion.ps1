@@ -16,12 +16,8 @@ function Get-ADTFileVersion
     .PARAMETER File
         The path of the file.
 
-        Mandatory: True
-
     .PARAMETER ProductVersion
         Switch that makes the command return ProductVersion instead of FileVersion.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -34,12 +30,10 @@ function Get-ADTFileVersion
         Returns the version of the specified file.
 
     .EXAMPLE
-        # Example 1
         Get-ADTFileVersion -File "$env:ProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe"
 
         This example retrieves the FileVersion of the specified Adobe Reader executable.
 
-        # Example 2
         Get-ADTFileVersion -File "$env:ProgramFilesX86\Adobe\Reader 11.0\Reader\AcroRd32.exe" -ProductVersion
 
         This example retrieves the ProductVersion of the specified Adobe Reader executable.

@@ -24,7 +24,6 @@ function Initialize-ADTModule
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Initialize-ADTModule
 
         Initializes the ADT module with the default settings and configurations.

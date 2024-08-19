@@ -24,7 +24,6 @@ function Get-ADTPowerShellProcessPath
         Returns the path to the PowerShell executable as a string.
 
     .EXAMPLE
-        # Example 1
         Get-ADTPowerShellProcessPath
 
         This example retrieves the path to the PowerShell executable for the current session.

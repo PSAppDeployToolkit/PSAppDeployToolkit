@@ -16,22 +16,14 @@ function Set-ADTIniValue
     .PARAMETER FilePath
         Path to the INI file.
 
-        Mandatory: True
-
     .PARAMETER Section
         Section within the INI file.
-
-        Mandatory: True
 
     .PARAMETER Key
         Key within the section of the INI file.
 
-        Mandatory: True
-
     .PARAMETER Value
         Value for the key within the section of the INI file. To remove a value, set this variable to $null.
-
-        Mandatory: True
 
     .INPUTS
         None
@@ -44,7 +36,6 @@ function Set-ADTIniValue
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Set-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
 
         Sets the 'KeyFileName' key in the 'Notes' section of the 'notes.ini' file to 'MyFile.ID'.

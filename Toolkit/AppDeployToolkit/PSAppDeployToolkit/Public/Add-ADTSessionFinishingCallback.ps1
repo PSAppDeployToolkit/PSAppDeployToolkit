@@ -16,12 +16,10 @@ function Add-ADTSessionFinishingCallback
     .PARAMETER Callback
         The callback command(s) to be executed when the ADT session is finishing.
 
-        Mandatory: True
-
     .INPUTS
-        System.Management.Automation.CommandInfo[]
+        None
 
-        The callback command(s) to be executed when the ADT session is finishing.
+        This function does not take any pipeline input.
 
     .OUTPUTS
         None
@@ -29,7 +27,6 @@ function Add-ADTSessionFinishingCallback
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Add-ADTSessionFinishingCallback -Callback $myCallback
 
         This example adds the specified callback to be executed when the ADT session is finishing.

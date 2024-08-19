@@ -16,32 +16,20 @@ function Get-ADTInstalledApplication
     .PARAMETER Name
         The name of the application to retrieve information for. Performs a contains match on the application display name by default.
 
-        Mandatory: False
-
     .PARAMETER Exact
         Specifies that the named application must be matched using the exact name.
-
-        Mandatory: False
 
     .PARAMETER WildCard
         Specifies that the named application must be matched using a wildcard search.
 
-        Mandatory: False
-
     .PARAMETER RegEx
         Specifies that the named application must be matched using a regular expression search.
-
-        Mandatory: False
 
     .PARAMETER ProductCode
         The product code of the application to retrieve information for.
 
-        Mandatory: False
-
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -63,12 +51,10 @@ function Get-ADTInstalledApplication
         - Architecture
 
     .EXAMPLE
-        # Example 1
         Get-ADTInstalledApplication -Name 'Adobe Flash'
 
         This example retrieves information about installed applications with the name 'Adobe Flash'.
 
-        # Example 2
         Get-ADTInstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
         This example retrieves information about the installed application with the specified product code.

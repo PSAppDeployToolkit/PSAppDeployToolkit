@@ -18,17 +18,11 @@ function Test-ADTServiceExists
 
         Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
 
-        Mandatory: True
-
     .PARAMETER UseCIM
         Use CIM/WMI to check for the service. This is useful for compatibility with PSADT v3.x.
 
-        Mandatory: False
-
     .PARAMETER PassThru
         Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -41,13 +35,11 @@ function Test-ADTServiceExists
         Returns $true if the service exists, otherwise returns $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTServiceExists -Name 'wuauserv'
 
         Checks if the service 'wuauserv' exists.
 
     .EXAMPLE
-        # Example 2
         Test-ADTServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
 
         Checks if a service exists and then deletes it by using the -PassThru parameter.

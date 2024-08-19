@@ -25,7 +25,6 @@ function Get-ADTRunAsActiveUser
         Returns a custom object containing the user session information.
 
     .EXAMPLE
-        # Example 1
         Get-ADTRunAsActiveUser
 
         This example retrieves the active user session information.

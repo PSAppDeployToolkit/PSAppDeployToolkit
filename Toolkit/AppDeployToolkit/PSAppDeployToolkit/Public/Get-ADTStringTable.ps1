@@ -24,7 +24,6 @@ function Get-ADTStringTable
         Returns a hashtable containing the string database.
 
     .EXAMPLE
-        # Example 1
         Get-ADTStringTable
 
         This example retrieves the string database from the ADT module.

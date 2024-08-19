@@ -16,8 +16,6 @@ function Add-ADTSessionOpeningCallback
     .PARAMETER Callback
         The callback command(s) to be executed when the ADT session is opening.
 
-        Mandatory: True
-
     .INPUTS
         System.Management.Automation.CommandInfo[]
 
@@ -29,7 +27,6 @@ function Add-ADTSessionOpeningCallback
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Add-ADTSessionOpeningCallback -Callback $myCallback
 
         This example adds the specified callback to be executed when the ADT session is opening.

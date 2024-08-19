@@ -16,8 +16,6 @@ function Add-ADTSessionClosingCallback
     .PARAMETER Callback
         The callback command(s) to be executed when the ADT session is closing.
 
-        Mandatory: True
-
     .INPUTS
         System.Management.Automation.CommandInfo[]
 
@@ -29,7 +27,6 @@ function Add-ADTSessionClosingCallback
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Add-ADTSessionClosingCallback -Callback $myCallback
 
         This example adds the specified callback to be executed when the ADT session is closing.

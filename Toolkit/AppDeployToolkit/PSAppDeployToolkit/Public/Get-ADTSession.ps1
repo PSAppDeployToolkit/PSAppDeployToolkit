@@ -24,7 +24,6 @@ function Get-ADTSession
         Returns the most recent session object from the ADT module data.
 
     .EXAMPLE
-        # Example 1
         Get-ADTSession
 
         This example retrieves the most recent ADT session.

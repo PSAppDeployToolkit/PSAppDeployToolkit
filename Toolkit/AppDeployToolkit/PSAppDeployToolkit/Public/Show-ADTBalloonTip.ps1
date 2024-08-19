@@ -16,22 +16,14 @@ function Show-ADTBalloonTip
     .PARAMETER BalloonTipText
         Text of the balloon tip.
 
-        Mandatory: True
-
     .PARAMETER BalloonTipTitle
         Title of the balloon tip.
-
-        Mandatory: False
 
     .PARAMETER BalloonTipIcon
         Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 
-        Mandatory: False
-
     .PARAMETER BalloonTipTime
         Time in milliseconds to display the balloon tip. Default: 10000.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -44,13 +36,11 @@ function Show-ADTBalloonTip
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Show-ADTBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 
         Displays a balloon tip with the text 'Installation Started' and the title 'Application Name'.
 
     .EXAMPLE
-        # Example 2
         Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
 
         Displays a balloon tip with the info icon, the text 'Installation Started', the title 'Application Name', and a display duration of 1000 milliseconds.
