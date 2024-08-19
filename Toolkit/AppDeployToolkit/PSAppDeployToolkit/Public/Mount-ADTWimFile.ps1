@@ -70,12 +70,34 @@ function Mount-ADTWimFile
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Index')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
+                }
+                if ([System.Uri]::new($_).IsUnc)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified path cannot be a network share.'))
+                }
+                if (Test-ADTMountedWimPath -ImagePath $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image is already mounted.'))
+                }
+                return !!$_
+            })]
         [System.IO.FileInfo]$ImagePath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Index')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
+                }
+                if ([System.Uri]::new($_).IsUnc)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path cannot be a network share.'))
+                }
                 if (Test-ADTMountedWimPath -Path $_)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path has a pre-existing WIM mounted.'))
