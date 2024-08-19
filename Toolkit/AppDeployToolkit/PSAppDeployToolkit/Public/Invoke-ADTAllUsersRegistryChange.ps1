@@ -67,11 +67,11 @@ function Invoke-ADTAllUsersRegistryChange
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [ScriptBlock]$RegistrySettings,
+        [System.Management.Automation.ScriptBlock[]]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Array]$UserProfiles = @()
+        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
     )
 
     begin

@@ -4,7 +4,9 @@
 #
 #---------------------------------------------------------------------------
 
-<#
+function Remove-ADTSessionClosingCallback
+{
+    <#
     .SYNOPSIS
         Removes a callback function from the ADT session closing event.
 
@@ -44,8 +46,6 @@
         https://psappdeploytoolkit.com
 #>
 
-function Remove-ADTSessionClosingCallback
-{
     [CmdletBinding()]
     param
     (

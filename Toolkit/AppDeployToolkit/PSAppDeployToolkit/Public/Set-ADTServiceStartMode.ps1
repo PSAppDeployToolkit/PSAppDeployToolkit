@@ -4,7 +4,9 @@
 #
 #---------------------------------------------------------------------------
 
-<#
+function Set-ADTServiceStartMode
+{
+    <#
     .SYNOPSIS
         Set the service startup mode.
 
@@ -47,10 +49,8 @@
 
     .LINK
         https://psappdeploytoolkit.com
-#>
+    #>
 
-function Set-ADTServiceStartMode
-{
     [CmdletBinding()]
     param
     (
