@@ -12,7 +12,7 @@ class ADTSession
     # Internal variables that aren't for public access.
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
-    hidden [AllowEmptyCollection()][System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]]$MountedWimFiles = [System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]]::new()
+    hidden [AllowEmptyCollection()][System.Collections.Generic.List[System.IO.FileInfo]]$MountedWimFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
@@ -807,10 +807,9 @@ class ADTSession
         }
 
         # Unmount any stored WIM file entries.
-        for ($i = ($this.MountedWimFiles.Count - 1); $i -ge 0; $i--)
+        if ($this.MountedWimFiles.Count)
         {
-            Dismount-ADTWimFile -Path $this.MountedWimFiles[$i].Path
-            $this.MountedWimFiles.RemoveAt($i)
+            Dismount-ADTWimFile -ImagePath $this.MountedWimFiles
         }
 
         # Write out a log divider to indicate the end of logging.
@@ -943,7 +942,7 @@ class ADTSession
         $this.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $null, $null, $null)
     }
 
-    [System.Collections.Generic.List[Microsoft.Dism.Commands.ImageObject]] GetMountedWimFiles()
+    [System.Collections.Generic.List[System.IO.FileInfo]] GetMountedWimFiles()
     {
         return $this.MountedWimFiles
     }

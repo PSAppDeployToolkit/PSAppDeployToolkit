@@ -79,10 +79,6 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified path cannot be a network share.'))
                 }
-                if (Test-ADTMountedWimPath -ImagePath $_)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image is already mounted.'))
-                }
                 return !!$_
             })]
         [System.IO.FileInfo]$ImagePath,
@@ -98,7 +94,7 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path cannot be a network share.'))
                 }
-                if (Test-ADTMountedWimPath -Path $_)
+                if (Get-ADTMountedWimFile -Path $_)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path has a pre-existing WIM mounted.'))
                 }
@@ -152,6 +148,12 @@ function Mount-ADTWimFile
         {
             try
             {
+                # Provide a warning if this WIM file is already mounted.
+                if (($wimFile = Get-ADTMountedWimFile -ImagePath $ImagePath))
+                {
+                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity 2
+                }
+
                 # If we're using the force, forcibly remove the existing directory.
                 if ([System.IO.Directory]::Exists($Path) -and $Force)
                 {
@@ -173,7 +175,7 @@ function Mount-ADTWimFile
                 # Store the result within the user's ADTSession if there's an active one.
                 if (Test-ADTSessionActive)
                 {
-                    (Get-ADTSession).GetMountedWimFiles().Add($res)
+                    (Get-ADTSession).GetMountedWimFiles().Add($ImagePath)
                 }
 
                 # Return the result if we're passing through.

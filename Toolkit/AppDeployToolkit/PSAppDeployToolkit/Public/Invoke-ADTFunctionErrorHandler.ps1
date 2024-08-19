@@ -87,8 +87,13 @@ function Invoke-ADTFunctionErrorHandler
         [System.Management.Automation.SwitchParameter]$DisableErrorResolving
     )
 
-    # Recover true ErrorActionPreference the caller may have set and set it here.
-    $ErrorActionPreference = if ($SessionState.Equals($ExecutionContext.SessionState))
+    # Recover true ErrorActionPreference the caller may have set,
+    # unless an ErrorAction was specifically provided to this function.
+    $ErrorActionPreference = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+    {
+        $PSBoundParameters.ErrorAction
+    }
+    elseif ($SessionState.Equals($ExecutionContext.SessionState))
     {
         & $Script:CommandTable.'Get-Variable' -Name OriginalErrorAction -Scope 1 -ValueOnly
     }
