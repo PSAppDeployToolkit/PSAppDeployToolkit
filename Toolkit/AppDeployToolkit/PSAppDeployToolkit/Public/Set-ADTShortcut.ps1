@@ -7,66 +7,90 @@
 function Set-ADTShortcut
 {
     <#
-
     .SYNOPSIS
-    Modifies a .lnk or .url type shortcut
+        Modifies a .lnk or .url type shortcut.
 
     .DESCRIPTION
-    Modifies a shortcut - .lnk or .url file, with configurable options.
-
-    Only specify the parameters that you want to change.
+        Modifies a shortcut - .lnk or .url file, with configurable options. Only specify the parameters that you want to change.
 
     .PARAMETER Path
-    Path to the shortcut to be changed
+        Path to the shortcut to be changed.
 
-    .PARAMETER PathHash
-    Hashtable of parameters to be changed
+        Mandatory: True
 
     .PARAMETER TargetPath
-    Changes target path or URL that the shortcut launches
+        Changes target path or URL that the shortcut launches.
+
+        Mandatory: False
 
     .PARAMETER Arguments
-    Changes Arguments to be passed to the target path
+        Changes arguments to be passed to the target path.
+
+        Mandatory: False
 
     .PARAMETER IconLocation
-    Changes location of the icon used for the shortcut
+        Changes location of the icon used for the shortcut.
+
+        Mandatory: False
 
     .PARAMETER IconIndex
-    Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+        Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+
+        Mandatory: False
 
     .PARAMETER Description
-    Changes description of the shortcut
+        Changes description of the shortcut.
+
+        Mandatory: False
 
     .PARAMETER WorkingDirectory
-    Changes Working Directory to be used for the target path
+        Changes working directory to be used for the target path.
+
+        Mandatory: False
 
     .PARAMETER WindowStyle
-    Changes the Windows style of the application. Options: Normal, Maximized, Minimized, DontChange. Default is: DontChange.
+        Changes the Windows style of the application. Options: Normal, Maximized, Minimized, DontChange. Default is: DontChange.
+
+        Mandatory: False
 
     .PARAMETER RunAsAdmin
-    Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut. If not specified, the flag will not be changed.
+        Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut. If not specified, the flag will not be changed.
+
+        Mandatory: False
 
     .PARAMETER Hotkey
-    Changes the Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
+        Changes the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
+
+        Mandatory: False
 
     .INPUTS
-    PSOjbect. Path to the shortcut to be changed or a hashtable of parameters to be changed.
+        System.PSObject
+
+        Path to the shortcut to be changed or a hashtable of parameters to be changed.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Set-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
+        # Example 1
+        Set-ADTShortcut -Path "$env:ProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$env:WinDir\System32\notepad.exe" -IconLocation "$env:WinDir\System32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$env:HomeDrive\$env:HomePath"
+
+        Modifies the specified shortcut to launch Notepad with the specified icon and description.
 
     .NOTES
-    Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
+        Url shortcuts only support TargetPath, IconLocation, and IconIndex. Other parameters are ignored.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
