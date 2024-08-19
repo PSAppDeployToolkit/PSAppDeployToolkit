@@ -7,57 +7,88 @@
 function Resolve-ADTErrorRecord
 {
     <#
-
     .SYNOPSIS
-    Enumerate error record details.
+        Enumerates error record details.
 
     .DESCRIPTION
-    Enumerate an error record, or a collection of error record, properties. By default, the details for the last error will be enumerated.
+        Enumerates an error record, or a collection of error record properties. By default, the details for the last error will be enumerated. This function can filter and display specific properties of the error record, and can exclude certain parts of the error details.
 
     .PARAMETER ErrorRecord
-    The error record to resolve. The default error record is the latest one: $global:Error(0). This parameter will also accept an array of error records.
+        The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
+
+        Mandatory: True
 
     .PARAMETER Property
-    The list of properties to display from the error record. Use "*" to display all properties.
+        The list of properties to display from the error record. Use "*" to display all properties.
 
-    Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
+        Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
+
+        Mandatory: False
 
     .PARAMETER ExcludeErrorRecord
-    Exclude error record details as represented by $_.
+        Exclude error record details as represented by $_.
+
+        Mandatory: False
 
     .PARAMETER ExcludeErrorInvocation
-    Exclude error record invocation information as represented by $_.InvocationInfo.
+        Exclude error record invocation information as represented by $_.InvocationInfo.
+
+        Mandatory: False
 
     .PARAMETER ExcludeErrorException
-    Exclude error record exception details as represented by $_.Exception.
+        Exclude error record exception details as represented by $_.Exception.
+
+        Mandatory: False
 
     .PARAMETER ExcludeErrorInnerException
-    Exclude error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+        Exclude error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+
+        Mandatory: False
 
     .INPUTS
-    System.Array. Accepts an array of error records.
+        System.Array
+
+        Accepts an array of error records.
 
     .OUTPUTS
-    System.String. Displays the error record details.
+        System.String
+
+        Displays the error record details.
 
     .EXAMPLE
-    Resolve-ADTErrorRecord
+        # Example 1
+        Resolve-ADTErrorRecord
+
+        Enumerates the details of the last error record.
 
     .EXAMPLE
-    Resolve-ADTErrorRecord -Property *
+        # Example 2
+        Resolve-ADTErrorRecord -Property *
+
+        Enumerates all properties of the last error record.
 
     .EXAMPLE
-    Resolve-ADTErrorRecord -Property InnerException
+        # Example 3
+        Resolve-ADTErrorRecord -Property InnerException
+
+        Enumerates only the InnerException property of the last error record.
 
     .EXAMPLE
-    Resolve-ADTErrorRecord -GetErrorInvocation:$false
+        # Example 4
+        Resolve-ADTErrorRecord -ExcludeErrorInvocation
+
+        Enumerates the details of the last error record, excluding the invocation information.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
