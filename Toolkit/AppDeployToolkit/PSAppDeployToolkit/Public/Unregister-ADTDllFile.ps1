@@ -7,35 +7,43 @@
 function Unregister-ADTDllFile
 {
     <#
-
     .SYNOPSIS
-    Unregister a DLL file.
+        Unregister a DLL file.
 
     .DESCRIPTION
-    Unregister a DLL file using regsvr32.exe.
+        Unregister a DLL file using regsvr32.exe. This function takes the path to the DLL file and attempts to unregister it using the regsvr32.exe utility.
 
     .PARAMETER FilePath
-    Path to the DLL file.
+        Path to the DLL file.
 
-    .PARAMETER DLLAction
-    Specify whether to register the DLL.
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return objects.
+        None
+
+        This function does not return objects.
 
     .EXAMPLE
-    # Unregister DLL file.
-    Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+        # Example 1
+        Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+
+        Unregisters the specified DLL file.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
