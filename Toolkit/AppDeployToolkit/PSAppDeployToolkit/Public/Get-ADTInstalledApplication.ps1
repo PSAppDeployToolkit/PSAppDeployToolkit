@@ -7,62 +7,83 @@
 function Get-ADTInstalledApplication
 {
     <#
-
     .SYNOPSIS
-    Retrieves information about installed applications.
+        Retrieves information about installed applications.
 
     .DESCRIPTION
-    Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both.
-
-    Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
+        Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both. Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 
     .PARAMETER Name
-    The name of the application to retrieve information for. Performs a contains match on the application display name by default.
+        The name of the application to retrieve information for. Performs a contains match on the application display name by default.
+
+        Mandatory: False
 
     .PARAMETER Exact
-    Specifies that the named application must be matched using the exact name.
+        Specifies that the named application must be matched using the exact name.
+
+        Mandatory: False
 
     .PARAMETER WildCard
-    Specifies that the named application must be matched using a wildcard search.
+        Specifies that the named application must be matched using a wildcard search.
+
+        Mandatory: False
 
     .PARAMETER RegEx
-    Specifies that the named application must be matched using a regular expression search.
+        Specifies that the named application must be matched using a regular expression search.
+
+        Mandatory: False
 
     .PARAMETER ProductCode
-    The product code of the application to retrieve information for.
+        The product code of the application to retrieve information for.
+
+        Mandatory: False
 
     .PARAMETER IncludeUpdatesAndHotfixes
-    Include matches against updates and hotfixes in results.
+        Include matches against updates and hotfixes in results.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    PSADT.Types.InstalledApplication. Returns a custom type with information about an installed application:
-    - Publisher
-    - DisplayName
-    - DisplayVersion
-    - ProductCode
-    - UninstallString
-    - InstallSource
-    - InstallLocation
-    - InstallDate
-    - Architecture
+        PSADT.Types.InstalledApplication
+
+        Returns a custom type with information about an installed application:
+        - Publisher
+        - DisplayName
+        - DisplayVersion
+        - ProductCode
+        - UninstallString
+        - InstallSource
+        - InstallLocation
+        - InstallDate
+        - Architecture
 
     .EXAMPLE
-    Get-ADTInstalledApplication -Name 'Adobe Flash'
+        # Example 1
+        Get-ADTInstalledApplication -Name 'Adobe Flash'
 
-    .EXAMPLE
-    Get-ADTInstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        This example retrieves information about installed applications with the name 'Adobe Flash'.
+
+        # Example 2
+        Get-ADTInstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+
+        This example retrieves information about the installed application with the specified product code.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     param
     (
