@@ -7,75 +7,100 @@
 function Set-ADTItemPermission
 {
     <#
-
     .SYNOPSIS
-    Allow you to easily change permissions on files or folders
+        Allows you to easily change permissions on files or folders.
 
     .DESCRIPTION
-    Allow you to easily change permissions on files or folders for a given user or group.
-
-    You can add, remove or replace permissions, set inheritance and propagation.
+        Allows you to easily change permissions on files or folders for a given user or group. You can add, remove or replace permissions, set inheritance and propagation.
 
     .PARAMETER Path
-    Path to the folder or file you want to modify (ex: C:\Temp)
+        Path to the folder or file you want to modify (ex: C:\Temp)
+
+        Mandatory: True
 
     .PARAMETER User
-    One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
+
+        Mandatory: True
 
     .PARAMETER Permission
-    Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
+        Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
 
-    Permission DeleteSubdirectoriesAndFiles does not apply to files.
+        Permission DeleteSubdirectoriesAndFiles does not apply to files.
+
+        Mandatory: True
 
     .PARAMETER PermissionType
-    Sets Access Control Type of the permissions. Allowed options: Allow, Deny   Default: Allow
+        Sets Access Control Type of the permissions. Allowed options: Allow, Deny
+
+        Mandatory: False
 
     .PARAMETER Inheritance
-    Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None  Default: None
+        Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None
 
-    None - The permission entry is not inherited by child objects, ObjectInherit - The permission entry is inherited by child leaf objects. ContainerInherit - The permission entry is inherited by child container objects.
+        None - The permission entry is not inherited by child objects, ObjectInherit - The permission entry is inherited by child leaf objects. ContainerInherit - The permission entry is inherited by child container objects.
+
+        Mandatory: False
 
     .PARAMETER Propagation
-    Sets how to propagate inheritance. Does not apply to files. Allowed options: None, InheritOnly, NoPropagateInherit  Default: None
+        Sets how to propagate inheritance. Does not apply to files. Allowed options: None, InheritOnly, NoPropagateInherit
 
-    None - Specifies that no inheritance flags are set. NoPropagateInherit - Specifies that the permission entry is not propagated to child objects. InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+        None - Specifies that no inheritance flags are set. NoPropagateInherit - Specifies that the permission entry is not propagated to child objects. InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+
+        Mandatory: False
 
     .PARAMETER Method
-    Specifies which method will be used to apply the permissions. Allowed options: Add, Set, Reset.
+        Specifies which method will be used to apply the permissions. Allowed options: Add, Set, Reset.
 
-    Add - adds permissions rules but it does not remove previous permissions, Set - overwrites matching permission rules with new ones, Reset - removes matching permissions rules and then adds permission rules, Remove - Removes matching permission rules, RemoveSpecific - Removes specific permissions, RemoveAll - Removes all permission rules for specified user/s
-    Default: Add
+        Add - adds permissions rules but it does not remove previous permissions, Set - overwrites matching permission rules with new ones, Reset - removes matching permissions rules and then adds permission rules, Remove - Removes matching permission rules, RemoveSpecific - Removes specific permissions, RemoveAll - Removes all permission rules for specified user/s
+
+        Mandatory: False
 
     .PARAMETER EnableInheritance
-    Enables inheritance on the files/folders.
+        Enables inheritance on the files/folders.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    # Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
-    Set-ADTItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Utilisateurs' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+        # Example 1
+        Set-ADTItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Users' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+
+        Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
 
     .EXAMPLE
-    # Will grant Read permissions to 'John' on 'C:\Temp\pic.png'
-    Set-ADTItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
+        # Example 2
+        Set-ADTItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
+
+        Will grant Read permissions to 'John' on 'C:\Temp\pic.png'.
 
     .EXAMPLE
-    # Will remove all permissions to 'John' on 'C:\Temp\Private'
-    Set-ADTItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
+        # Example 3
+        Set-ADTItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
+
+        Will remove all permissions to 'John' on 'C:\Temp\Private'.
 
     .NOTES
-    Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
