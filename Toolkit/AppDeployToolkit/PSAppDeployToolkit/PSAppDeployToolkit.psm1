@@ -127,20 +127,20 @@ $ModuleFiles.FullName | . { process { . $_ } }
 # Define dialog function dispatcher between classic/fluent dialogs.
 & $CommandTable.'New-Variable' -Name DialogDispatcher -Option Constant -Value ([ordered]@{
         Classic = ([ordered]@{
-                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressClassic
-                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipClassic
-                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressClassic
-                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
+                'Close-ADTInstallationProgress'     = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressClassic
+                'Show-ADTBalloonTip'                = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipClassic
+                'Show-ADTInstallationProgress'      = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressClassic
+                'Show-ADTInstallationPrompt'        = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
                 'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
+                'Show-ADTInstallationWelcome'       = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
             }).AsReadOnly()
         Fluent = ([ordered]@{
-                'Close-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressFluent
-                'Show-ADTBalloonTip' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipFluent
-                'Show-ADTInstallationProgress' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressFluent
-                'Show-ADTInstallationPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
+                'Close-ADTInstallationProgress'     = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressFluent
+                'Show-ADTBalloonTip'                = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipFluent
+                'Show-ADTInstallationProgress'      = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressFluent
+                'Show-ADTInstallationPrompt'        = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
                 'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
+                'Show-ADTInstallationWelcome'       = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
             }).AsReadOnly()
     }).AsReadOnly()
 
