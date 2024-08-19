@@ -7,28 +7,38 @@
 function Update-ADTGroupPolicy
 {
     <#
-
     .SYNOPSIS
-    Performs a gpupdate command to refresh Group Policies on the local machine.
+        Performs a gpupdate command to refresh Group Policies on the local machine.
 
     .DESCRIPTION
-    Performs a gpupdate command to refresh Group Policies on the local machine.
+        This function performs a gpupdate command to refresh Group Policies on the local machine. It updates both Computer and User policies by forcing a refresh using the gpupdate.exe utility.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any objects.
 
     .EXAMPLE
-    Update-ADTGroupPolicy
+        # Example 1
+        Update-ADTGroupPolicy
+
+        Performs a gpupdate command to refresh Group Policies on the local machine.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
