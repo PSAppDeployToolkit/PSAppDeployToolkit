@@ -7,32 +7,49 @@
 function Remove-ADTEdgeExtension
 {
     <#
-
     .SYNOPSIS
-    Removes an extension for Microsoft Edge using the ExtensionSettings policy
+        Removes an extension for Microsoft Edge using the ExtensionSettings policy.
 
     .DESCRIPTION
-    This function removes an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide.
+        This function removes an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide.
 
-    This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
+        This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
 
-    This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+        This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
 
     .PARAMETER ExtensionID
-    The ID of the extension to remove.
+        The ID of the extension to remove.
+
+        Mandatory: True
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        None
+
+        This function does not return objects.
 
     .EXAMPLE
-    Remove-ADTEdgeExtension -Remove -ExtensionID "extensionID"
+        # Example 1
+        Remove-ADTEdgeExtension -ExtensionID "extensionID"
+
+        Removes the specified extension from Microsoft Edge.
 
     .NOTES
-    This function is provided as a template to remove an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        This function is provided as a template to remove an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
