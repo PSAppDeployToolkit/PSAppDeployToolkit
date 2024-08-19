@@ -7,65 +7,96 @@
 function Get-ADTRegistryKey
 {
     <#
-
     .SYNOPSIS
-    Retrieves value names and value data for a specified registry key or optionally, a specific value.
+        Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
     .DESCRIPTION
-    Retrieves value names and value data for a specified registry key or optionally, a specific value.
-
-    If the registry key does not exist or contain any values, the function will return $null by default. To test for existence of a registry key path, use built-in Test-Path cmdlet.
+        Retrieves value names and value data for a specified registry key or optionally, a specific value.
+        If the registry key does not exist or contain any values, the function will return $null by default.
+        To test for existence of a registry key path, use built-in Test-Path cmdlet.
 
     .PARAMETER Key
-    Path of the registry key.
+        Path of the registry key.
+
+        Mandatory: True
 
     .PARAMETER Value
-    Value to retrieve (optional).
+        Value to retrieve (optional).
+
+        Mandatory: False
 
     .PARAMETER Wow6432Node
-    Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+
+        Mandatory: False
 
     .PARAMETER SID
-    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+        The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+        Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+        Mandatory: False
 
     .PARAMETER ReturnEmptyKeyIfExists
-    Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
+        Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
+
+        Mandatory: False
 
     .PARAMETER DoNotExpandEnvironmentNames
-    Return unexpanded REG_EXPAND_SZ values. Default is: $false.
+        Return unexpanded REG_EXPAND_SZ values. Default is: $false.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    System.String. Returns the value of the registry key or value.
+        System.String
+
+        Returns the value of the registry key or value.
 
     .EXAMPLE
-    Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        # Example 1
+        Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+
+        This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
+        # Example 2
+        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
+
+        This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-    Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
+        # Example 3
+        Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
+
+        This example retrieves the 'Version' value data for the specified registry key.
 
     .EXAMPLE
-    # Return %ProgramFiles%\Java instead of C:\Program Files\Java
-    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
+        # Example 4
+        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
+
+        This example retrieves the 'Path' value data without expanding environment variables.
 
     .EXAMPLE
-    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
+        # Example 5
+        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
+
+        This example retrieves the default value data for the specified registry key.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     param
     (
