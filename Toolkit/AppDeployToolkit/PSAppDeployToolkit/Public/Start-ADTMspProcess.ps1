@@ -7,36 +7,56 @@
 function Start-ADTMspProcess
 {
     <#
-
     .SYNOPSIS
-    Executes an MSP file using the same logic as Start-ADTMsiProcess.
+        Executes an MSP file using the same logic as Start-ADTMsiProcess.
 
     .DESCRIPTION
-    Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
+        Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
 
-    Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
+        Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
 
     .PARAMETER Path
-    Path to the msp file
+        Path to the MSP file.
+
+        Mandatory: True
 
     .PARAMETER AddParameters
-    Additional parameters
+        Additional parameters.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
+        # Example 1
+        Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
+
+        Executes the specified MSP file for Adobe Reader 11.0.3.
 
     .EXAMPLE
-    Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
+        # Example 2
+        Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
+
+        Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -44,7 +64,6 @@ function Start-ADTMspProcess
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
-        [ValidateScript({})]
         [ValidateScript({
                 if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
                 {
