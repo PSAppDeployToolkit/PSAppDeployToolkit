@@ -7,40 +7,58 @@
 function Stop-ADTServiceAndDependencies
 {
     <#
-
     .SYNOPSIS
-    Stop Windows service and its dependencies.
+        Stop a Windows service and its dependencies.
 
     .DESCRIPTION
-    Stop Windows service and its dependencies.
+        This function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Service
-    Specify the name of the service.
+        Specify the name of the service.
+
+        Mandatory: True
 
     .PARAMETER SkipDependentServices
-    Choose to skip checking for and stopping dependent services. Default is: $false.
+        Choose to skip checking for and stopping dependent services. Default is: $false.
+
+        Mandatory: False
 
     .PARAMETER PendingStatusWait
-    The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
+        The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
+
+        Mandatory: False
 
     .PARAMETER PassThru
-    Return the System.ServiceProcess.ServiceController service object.
+        Return the System.ServiceProcess.ServiceController service object.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    System.ServiceProcess.ServiceController. Returns the service object.
+        System.ServiceProcess.ServiceController
+
+        Returns the service object.
 
     .EXAMPLE
-    Stop-ADTServiceAndDependencies -Service 'wuauserv'
+        # Example 1
+        Stop-ADTServiceAndDependencies -Service 'wuauserv'
+
+        Stops the Windows Update service and its dependencies.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
