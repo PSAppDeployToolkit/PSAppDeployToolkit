@@ -6,6 +6,64 @@
 
 function New-ADTValidateScriptErrorRecord
 {
+    <#
+    .SYNOPSIS
+        Creates a new ErrorRecord for script validation errors.
+
+    .DESCRIPTION
+        This function creates a new ErrorRecord object for script validation errors. It takes the parameter name, provided value, exception message, and an optional inner exception to build a detailed error record. This helps in identifying and handling invalid parameter values in scripts.
+
+    .PARAMETER ParameterName
+        The name of the parameter that caused the validation error.
+
+        Mandatory: True
+
+    .PARAMETER ProvidedValue
+        The value provided for the parameter that caused the validation error.
+
+        Mandatory: True
+
+    .PARAMETER ExceptionMessage
+        The message describing the validation error.
+
+        Mandatory: True
+
+    .PARAMETER InnerException
+        An optional inner exception that provides more details about the validation error.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        System.Management.Automation.ErrorRecord
+
+        This function returns an ErrorRecord object.
+
+    .EXAMPLE
+        # Example 1
+        $paramName = "FilePath"
+        $providedValue = "C:\InvalidPath"
+        $exceptionMessage = "The specified path does not exist."
+        New-ADTValidateScriptErrorRecord -ParameterName $paramName -ProvidedValue $providedValue -ExceptionMessage $exceptionMessage
+
+        Creates a new ErrorRecord for a validation error with the specified parameters.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
     [CmdletBinding()]
     param
