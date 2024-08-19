@@ -7,31 +7,43 @@
 function Test-ADTMSUpdates
 {
     <#
-
     .SYNOPSIS
-    Test whether a Microsoft Windows update is installed.
+        Test whether a Microsoft Windows update is installed.
 
     .DESCRIPTION
-    Test whether a Microsoft Windows update is installed.
+        This function checks if a specified Microsoft Windows update, identified by its KB number, is installed on the local machine. It first attempts to find the update using the Get-HotFix cmdlet and, if unsuccessful, uses a COM object to search the update history.
 
     .PARAMETER KbNumber
-    KBNumber of the update.
+        KBNumber of the update.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Boolean. Returns $true if the update is installed, otherwise returns $false.
+        System.Boolean
+
+        Returns $true if the update is installed, otherwise returns $false.
 
     .EXAMPLE
-    Test-ADTMSUpdates -KBNumber 'KB2549864'
+        # Example 1
+        Test-ADTMSUpdates -KBNumber 'KB2549864'
+
+        Checks if the Microsoft Update 'KB2549864' is installed and returns true or false.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
