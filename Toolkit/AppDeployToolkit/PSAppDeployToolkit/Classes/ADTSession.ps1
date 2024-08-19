@@ -255,7 +255,7 @@ class ADTSession
 
         # Update our app variables with new values.
         $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
-        $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
+        $this.WriteLogEntry("App Vendor [$($msiProps.Manufacturer)].")
         $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
         $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
         $this.UseDefaultMsi = $true
