@@ -7,28 +7,38 @@
 function Disable-ADTTerminalServerInstallMode
 {
     <#
-
     .SYNOPSIS
-    Changes to user install mode for Remote Desktop Session Host/Citrix servers.
+        Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 
     .DESCRIPTION
-    Changes to user install mode for Remote Desktop Session Host/Citrix servers.
+        The Disable-ADTTerminalServerInstallMode function changes the server mode to user install mode for Remote Desktop Session Host/Citrix servers. This is useful for ensuring that applications are installed in a way that is compatible with multi-user environments.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any objects.
 
     .EXAMPLE
-    Disable-TerminalServerInstallMode
+        # Example 1
+        Disable-ADTTerminalServerInstallMode
+
+        This example changes the server mode to user install mode for Remote Desktop Session Host/Citrix servers.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
