@@ -7,57 +7,80 @@
 function Send-ADTKeys
 {
     <#
-
     .SYNOPSIS
-    Send a sequence of keys to one or more application windows.
+        Send a sequence of keys to one or more application windows.
 
     .DESCRIPTION
-    Send a sequence of keys to one or more application window. If window title searched for returns more than one window, then all of them will receive the sent keys.
+        Send a sequence of keys to one or more application windows. If the window title searched for returns more than one window, then all of them will receive the sent keys.
 
-    Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+        Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER WindowTitle
-    The title of the application window to search for using regex matching.
+        The title of the application window to search for using regex matching.
+
+        Mandatory: True
 
     .PARAMETER GetAllWindowTitles
-    Get titles for all open windows on the system.
+        Get titles for all open windows on the system.
+
+        Mandatory: True
 
     .PARAMETER WindowHandle
-    Send keys to a specific window where the Window Handle is already known.
+        Send keys to a specific window where the Window Handle is already known.
+
+        Mandatory: True
 
     .PARAMETER Keys
-    The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+        The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+
+        Mandatory: True
 
     .PARAMETER WaitSeconds
-    An optional number of seconds to wait after the sending of the keys.
+        An optional number of seconds to wait after the sending of the keys.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any objects.
 
     .EXAMPLE
-    # Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
-    Send-ADTKeys -WindowTitle 'foobar - Notepad' -Key 'Hello world'
+        # Example 1
+        Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world'
+
+        Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
 
     .EXAMPLE
-    # Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
-    Send-ADTKeys -WindowTitle 'foobar - Notepad' -Key 'Hello world' -WaitSeconds 5
+        # Example 2
+        Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' -WaitSeconds 5
+
+        Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
 
     .EXAMPLE
-    # Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.
-    Send-ADTKeys -WindowHandle ([IntPtr]17368294) -Key 'Hello World'
+        # Example 3
+        Send-ADTKeys -WindowHandle ([IntPtr]17368294) -Keys 'Hello World'
+
+        Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+        http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
@@ -183,7 +206,7 @@ function Send-ADTKeys
                 }
                 else
                 {
-                    if (!($AllWindows = if ($GetAllWindowTitles) { Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles } else { Get-ADTWindowTitle -WindowTitle $WindowTitle }))
+                    if (!($AllWindows = if ($GetAllWindowTitles) { Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles } else { Get-ADTWindowTitle -WindowTitle $WindowTitle } ))
                     {
                         Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
                         return
