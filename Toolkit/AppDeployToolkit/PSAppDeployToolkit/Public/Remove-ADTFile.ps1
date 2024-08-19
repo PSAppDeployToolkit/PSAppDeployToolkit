@@ -7,43 +7,61 @@
 function Remove-ADTFile
 {
     <#
-
     .SYNOPSIS
-    Removes one or more items from a given path on the filesystem.
+        Removes one or more items from a given path on the filesystem.
 
     .DESCRIPTION
-    Removes one or more items from a given path on the filesystem.
+        This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the Recurse parameter is specified.
 
     .PARAMETER Path
-    Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+        Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+
+        Mandatory: True
 
     .PARAMETER LiteralPath
-    Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+        Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+
+        Mandatory: True
 
     .PARAMETER Recurse
-    Deletes the files in the specified location(s) and in all child items of the location(s).
+        Deletes the files in the specified location(s) and in all child items of the location(s).
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Remove-ADTFile -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
+        # Example 1
+        Remove-ADTFile -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
+
+        Removes the specified file.
 
     .EXAMPLE
-    Remove-ADTFile -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
+        # Example 2
+        Remove-ADTFile -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
+
+        Removes the specified folder and all its contents recursively.
 
     .NOTES
-    This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
+        This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
