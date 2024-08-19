@@ -7,39 +7,54 @@
 function Remove-ADTFolder
 {
     <#
-
     .SYNOPSIS
-    Remove folder and files if they exist.
+        Remove folder and files if they exist.
 
     .DESCRIPTION
-    Remove folder and all files with or without recursion in a given path.
+        This function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the DisableRecursion parameter is not specified.
 
     .PARAMETER Path
-    Path to the folder to remove.
+        Path to the folder to remove.
+
+        Mandatory: True
 
     .PARAMETER DisableRecursion
-    Disables recursion while deleting.
+        Disables recursion while deleting.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    # Delete all files and subfolders in the Windows\Downloads Program Files folder.
-    Remove-ADTFolder -Path "$envWinDir\Downloaded Program Files"
+        # Example 1
+        Remove-ADTFolder -Path "$envWinDir\Downloaded Program Files"
+
+        Deletes all files and subfolders in the Windows\Downloads Program Files folder.
 
     .EXAMPLE
-    # Delete all files in the Temp\MyAppCache folder but does not delete any subfolders.
-    Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
+        # Example 2
+        Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
+
+        Deletes all files in the Temp\MyAppCache folder but does not delete any subfolders.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
