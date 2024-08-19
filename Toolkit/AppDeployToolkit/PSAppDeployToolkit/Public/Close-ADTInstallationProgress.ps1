@@ -7,30 +7,38 @@
 function Close-ADTInstallationProgress
 {
     <#
-
     .SYNOPSIS
-    Closes the dialog created by Show-ADTInstallationProgress.
+        Closes the dialog created by Show-ADTInstallationProgress.
 
     .DESCRIPTION
-    Closes the dialog created by Show-ADTInstallationProgress.
-
-    This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
+        Closes the dialog created by Show-ADTInstallationProgress. This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Close-ADTInstallationProgress
+        # Example 1
+        Close-ADTInstallationProgress
+
+        This example closes the dialog created by Show-ADTInstallationProgress.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
