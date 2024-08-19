@@ -7,35 +7,54 @@
 function Invoke-ADTDllFileAction
 {
     <#
-
     .SYNOPSIS
-    Register or unregister a DLL file.
+        Register or unregister a DLL file.
 
     .DESCRIPTION
-    Register or unregister a DLL file using regsvr32.exe.
+        Register or unregister a DLL file using regsvr32.exe. This function determines the bitness of the DLL file and uses the appropriate version of regsvr32.exe to perform the action. It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
 
     .PARAMETER FilePath
-    Path to the DLL file.
+        Path to the DLL file.
+
+        Mandatory: True
 
     .PARAMETER DLLAction
-    Specify whether to register or unregister the DLL.
+        Specify whether to register or unregister the DLL.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return objects.
+        None
+
+        This function does not return objects.
 
     .EXAMPLE
-    # Register DLL file.
-    Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
+        # Example 1
+        Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
+
+        Registers the specified DLL file.
+
+    .EXAMPLE
+        # Example 2
+        Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
+
+        Unregisters the specified DLL file.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -51,7 +70,7 @@ function Invoke-ADTDllFileAction
             })]
         [System.String]$FilePath,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet('Register', 'Unregister')]
         [System.String]$DLLAction
     )
