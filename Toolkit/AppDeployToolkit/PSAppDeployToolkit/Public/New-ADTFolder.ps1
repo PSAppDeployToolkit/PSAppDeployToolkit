@@ -7,31 +7,43 @@
 function New-ADTFolder
 {
     <#
-
     .SYNOPSIS
-    Create a new folder.
+        Create a new folder.
 
     .DESCRIPTION
-    Create a new folder if it does not exist.
+        Create a new folder if it does not exist. This function checks if the specified path already exists and creates the folder if it does not. It logs the creation process and handles any errors that may occur during the folder creation.
 
     .PARAMETER Path
-    Path to the new folder to create.
+        Path to the new folder to create.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    New-ADTFolder -Path "$envWinDir\System32"
+        # Example 1
+        New-ADTFolder -Path "$env:WinDir\System32"
+
+        Creates a new folder at the specified path if it does not already exist.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
