@@ -7,42 +7,57 @@
 function Get-ADTSchedulerTask
 {
     <#
-
     .SYNOPSIS
-    Retrieve all details for scheduled tasks on the local computer.
+        Retrieve all details for scheduled tasks on the local computer.
 
     .DESCRIPTION
-    Retrieve all details for scheduled tasks on the local computer using schtasks.exe. All property names have spaces and colons removed.
+        Retrieve all details for scheduled tasks on the local computer using schtasks.exe. All property names have spaces and colons removed.
+        This function is deprecated. Please migrate your scripts to use the built-in Get-ScheduledTask Cmdlet.
 
     .PARAMETER TaskName
-    Specify the name of the scheduled task to retrieve details for. Uses regex match to find scheduled task.
+        Specify the name of the scheduled task to retrieve details for. Uses regex match to find scheduled task.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any pipeline input.
 
     .OUTPUTS
-    PSObject. This function returns a PSObject with all scheduled task properties.
+        System.PSObject
+
+        This function returns a PSObject with all scheduled task properties.
 
     .EXAMPLE
-    # To display a list of all scheduled task properties.
-    Get-ADTSchedulerTask
+        # Example 1
+        Get-ADTSchedulerTask
+
+        This example retrieves a list of all scheduled task properties.
 
     .EXAMPLE
-    # Display a grid view of all scheduled task properties.
-    Get-ADTSchedulerTask | Out-GridView
+        # Example 2
+        Get-ADTSchedulerTask | Out-GridView
+
+        This example displays a grid view of all scheduled task properties.
 
     .EXAMPLE
-    # Display a list of all scheduled task names.
-    Get-ADTSchedulerTask | Select-Object -Property TaskName
+        # Example 3
+        Get-ADTSchedulerTask | Select-Object -Property TaskName
+
+        This example displays a list of all scheduled task names.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
