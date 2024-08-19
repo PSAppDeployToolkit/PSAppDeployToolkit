@@ -7,52 +7,81 @@
 function Get-ADTWindowTitle
 {
     <#
-
     .SYNOPSIS
-    Search for an open window title and return details about the window.
+        Search for an open window title and return details about the window.
 
     .DESCRIPTION
-    Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
+        Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
 
-    Returns the following properties for each window: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
+        Returns the following properties for each window:
+        - WindowTitle
+        - WindowHandle
+        - ParentProcess
+        - ParentProcessMainWindowHandle
+        - ParentProcessId
 
-    Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+        Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER WindowTitle
-    The title of the application window to search for using regex matching.
+        The title of the application window to search for using regex matching.
+
+        Mandatory: True
 
     .PARAMETER GetAllWindowTitles
-    Get titles for all open windows on the system.
+        Get titles for all open windows on the system.
+
+        Mandatory: True
 
     .PARAMETER DisableFunctionLogging
-    Disables logging messages to the script log file.
+        Disables logging messages to the script log file.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    PSADT.Types.WindowInfo. Returns a PSADT.Types.WindowInfo object with the following properties: WindowTitle, WindowHandle, ParentProcess, ParentProcessMainWindowHandle, ParentProcessId.
+        PSADT.Types.WindowInfo
+
+        Returns a PSADT.Types.WindowInfo object with the following properties:
+        - WindowTitle
+        - WindowHandle
+        - ParentProcess
+        - ParentProcessMainWindowHandle
+        - ParentProcessId
 
     .EXAMPLE
-    # Gets details for each window that has the words "Microsoft Word" in the title.
-    Get-ADTWindowTitle -WindowTitle 'Microsoft Word'
+        # Example 1
+        Get-ADTWindowTitle -WindowTitle 'Microsoft Word'
+
+        Gets details for each window that has the words "Microsoft Word" in the title.
 
     .EXAMPLE
+        # Example 2
+        Get-ADTWindowTitle -GetAllWindowTitles
 
-    # Gets details for all windows with a title.
-    Get-ADTWindowTitle -GetAllWindowTitles
+        Gets details for all windows with a title.
 
     .EXAMPLE
+        # Example 3
+        Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
 
-    # Get details for all windows belonging to Microsoft Word process with name "WINWORD".
-    Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
+        Get details for all windows belonging to Microsoft Word process with name "WINWORD".
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
