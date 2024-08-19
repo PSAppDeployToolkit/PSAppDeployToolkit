@@ -7,7 +7,6 @@
 function Start-ADTProcess
 {
     <#
-
     .SYNOPSIS
     Execute a process with optional arguments, working directory, window style.
 
@@ -92,7 +91,6 @@ function Start-ADTProcess
 
     .LINK
     https://psappdeploytoolkit.com
-
     #>
 
     [CmdletBinding()]
