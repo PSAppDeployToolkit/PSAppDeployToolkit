@@ -6,6 +6,51 @@
 
 function Initialize-ADTFunction
 {
+    <#
+    .SYNOPSIS
+        Initializes the ADT function environment.
+
+    .DESCRIPTION
+        Initializes the ADT function environment by setting up necessary variables and logging function start details. It ensures that the function always stops on errors and handles verbose logging.
+
+    .PARAMETER Cmdlet
+        The cmdlet that is being initialized.
+
+        Mandatory: True
+
+    .PARAMETER SessionState
+        The session state of the cmdlet.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any piped input.
+
+    .OUTPUTS
+        None
+
+        This function does not return any output.
+
+    .EXAMPLE
+        # Example 1
+        Initialize-ADTFunction -Cmdlet $PSCmdlet
+
+        Initializes the ADT function environment for the given cmdlet.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
