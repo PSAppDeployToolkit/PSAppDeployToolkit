@@ -6,6 +6,41 @@
 
 function Get-ADTConfig
 {
+    <#
+    .SYNOPSIS
+        Retrieves the configuration data for the ADT module.
+
+    .DESCRIPTION
+        The Get-ADTConfig function retrieves the configuration data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the configuration data. If the module is not initialized, it throws an error.
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        System.Hashtable
+
+        Returns the configuration data as a hashtable.
+
+    .EXAMPLE
+        # Example 1
+        $config = Get-ADTConfig
+
+        This example retrieves the configuration data for the ADT module and stores it in the $config variable.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
