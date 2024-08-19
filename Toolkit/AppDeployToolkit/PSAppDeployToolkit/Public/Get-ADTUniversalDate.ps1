@@ -7,40 +7,50 @@
 function Get-ADTUniversalDate
 {
     <#
-
     .SYNOPSIS
-    Returns the date/time for the local culture in a universal sortable date time pattern.
+        Returns the date/time for the local culture in a universal sortable date time pattern.
 
     .DESCRIPTION
-    Converts the current datetime or a datetime string for the current culture into a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z
+        Converts the current datetime or a datetime string for the current culture into a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z.
 
     .PARAMETER DateTime
-    Specify the DateTime in the current culture.
+        Specify the DateTime in the current culture.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.String. Returns the date/time for the local culture in a universal sortable date time pattern.
+        System.String
+
+        Returns the date/time for the local culture in a universal sortable date time pattern.
 
     .EXAMPLE
-    Get-ADTUniversalDate
+        # Example 1
+        Get-ADTUniversalDate
 
-    Returns the current date in a universal sortable date time pattern.
+        Returns the current date in a universal sortable date time pattern.
 
     .EXAMPLE
-    Get-ADTUniversalDate -DateTime '25/08/2013'
+        # Example 2
+        Get-ADTUniversalDate -DateTime '25/08/2013'
 
-    Returns the date for the current culture in a universal sortable date time pattern.
+        Returns the date for the current culture in a universal sortable date time pattern.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     param
     (
