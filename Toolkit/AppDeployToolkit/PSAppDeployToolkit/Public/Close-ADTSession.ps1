@@ -6,6 +6,51 @@
 
 function Close-ADTSession
 {
+    <#
+    .SYNOPSIS
+        Closes the active ADT session.
+
+    .DESCRIPTION
+        The Close-ADTSession function closes the active ADT session, updates the session's exit code if provided, invokes all registered callbacks, and cleans up the session state. If this is the last session, it flags the module as uninitialized and exits the process with the last exit code.
+
+    .PARAMETER ExitCode
+        The exit code to set for the session.
+
+        Mandatory: False
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        None
+
+        This function does not generate any output.
+
+    .EXAMPLE
+        # Example 1
+        Close-ADTSession
+
+        This example closes the active ADT session without setting an exit code.
+
+        # Example 2
+        Close-ADTSession -ExitCode 0
+
+        This example closes the active ADT session and sets the exit code to 0.
+
+    .NOTES
+        An active ADT session is required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
