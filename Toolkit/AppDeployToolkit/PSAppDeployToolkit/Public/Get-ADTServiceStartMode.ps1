@@ -7,33 +7,44 @@
 function Get-ADTServiceStartMode
 {
     <#
-
     .SYNOPSIS
-    Get the service startup mode.
+        Retrieves the startup mode of a specified service.
 
     .DESCRIPTION
-    Get the service startup mode.
+        Retrieves the startup mode of a specified service. This function checks the service's start type and adjusts the result if the service is set to 'Automatic (Delayed Start)'.
 
-    .PARAMETER Name
-    Specify the name of the service.
+    .PARAMETER Service
+        Specify the service object to retrieve the startup mode for.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    System.ServiceProcess.ServiceController. Returns the service object.
+        System.String
+
+        Returns the startup mode of the specified service.
 
     .EXAMPLE
-    Get-ADTServiceStartMode -Name 'wuauserv'
+        # Example 1
+        Get-ADTServiceStartMode -Service (Get-Service -Name 'wuauserv')
+
+        Retrieves the startup mode of the 'wuauserv' service.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     param
     (
@@ -62,7 +73,7 @@ function Get-ADTServiceStartMode
             try
             {
                 # Get the start mode and adjust it if the automatic type is delayed.
-                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((& $Script:CommandTable.'Get-ItemProperty' -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((& $Script:CommandTable.'Get-ItemProperty' -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
                 {
                     $serviceStartMode = 'Automatic (Delayed Start)'
                 }
