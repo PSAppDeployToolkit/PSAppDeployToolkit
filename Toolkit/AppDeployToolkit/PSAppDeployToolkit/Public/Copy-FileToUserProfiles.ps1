@@ -7,104 +7,115 @@
 function Copy-FileToUserProfiles
 {
     <#
-.SYNOPSIS
+    .SYNOPSIS
+        Copy one or more items to each user profile on the system.
 
-Copy one or more items to a each user profile on the system.
+    .DESCRIPTION
+        The Copy-FileToUserProfiles function copies one or more items to each user profile on the system. It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
 
-.DESCRIPTION
+    .PARAMETER Path
+        The path of the file or folder to copy.
 
-Copy one or more items to a each user profile on the system.
+        Mandatory: True
 
-.PARAMETER Path
+    .PARAMETER Destination
+        The path of the destination folder to append to the root of the user profile.
 
-The path of the file or folder to copy.
+        Mandatory: False
 
-.PARAMETER Destination
+    .PARAMETER Recurse
+        Copy files in subdirectories.
 
-The path of the destination folder to append to the root of the user profile.
+        Mandatory: False
 
-.PARAMETER Recurse
+    .PARAMETER Flatten
+        Flattens the files into the root destination directory.
 
-Copy files in subdirectories.
+        Mandatory: False
 
-.PARAMETER Flatten
+    .PARAMETER ContinueOnError
+        Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
 
-Flattens the files into the root destination directory.
+        Mandatory: False
 
-.PARAMETER ContinueOnError
+    .PARAMETER ContinueFileCopyOnError
+        Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 
-Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
+        Mandatory: False
 
-.PARAMETER ContinueFileCopyOnError
+    .PARAMETER UseRobocopy
+        Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true.
 
-Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
+        Mandatory: False
 
-.PARAMETER UseRobocopy
+    .PARAMETER RobocopyAdditionalParams
+        Additional parameters to pass to Robocopy. Default is: $null.
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true
+        Mandatory: False
 
-.PARAMETER RobocopyAdditionalParams
+    .PARAMETER ExcludeNTAccount
+        Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
-Additional parameters to pass to Robocopy. Default is: $null
+        Mandatory: False
 
-.PARAMETER ExcludeNTAccount
+    .PARAMETER ExcludeSystemProfiles
+        Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
 
-Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+        Mandatory: False
 
-.PARAMETER ExcludeSystemProfiles
+    .PARAMETER ExcludeServiceProfiles
+        Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
 
-Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+        Mandatory: False
 
-.PARAMETER ExcludeServiceProfiles
+    .PARAMETER ExcludeDefaultUser
+        Exclude the Default User. Default is: $false.
 
-Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+        Mandatory: False
 
-.PARAMETER ExcludeDefaultUser
+    .INPUTS
+        String[]
 
-Exclude the Default User. Default is: $false.
+        You can pipe in string values for $Path.
 
-.INPUTS
+    .OUTPUTS
+        None
 
-You can pipe in string values for $Path.
+        This function does not generate any output.
 
-.OUTPUTS
+    .EXAMPLE
+        # Example 1
+        Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
 
-None
+        Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
-This function does not generate any output.
+        # Example 2
+        Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 
-.EXAMPLE
+        Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
-Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
+        # Example 3
+        Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 
-Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
+        Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
 
-.EXAMPLE
+        # Example 4
+        Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 
-Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
+        Copy an entire folder to C:\Users\<UserName> for each user.
 
-Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
+    .NOTES
+        An active ADT session is NOT required to use this function.
 
-.EXAMPLE
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
-Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
 
-Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
-
-.EXAMPLE
-
-Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
-
-Copy an entire folder to C:\Users\<UserName> for each user.
-
-.NOTES
-
-This function can be called without an active ADT session.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     Param (
