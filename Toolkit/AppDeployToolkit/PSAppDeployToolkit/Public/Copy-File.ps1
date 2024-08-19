@@ -7,80 +7,106 @@
 function Copy-File
 {
     <#
-.SYNOPSIS
+    .SYNOPSIS
+        Copies files and directories from a source to a destination.
 
-Copy a file or group of files to a destination path.
+    .DESCRIPTION
+        Copies files and directories from a source to a destination. This function supports recursive copying, overwriting existing files, and returning the copied items.
 
-.DESCRIPTION
+    .PARAMETER Path
 
-Copy a file or group of files to a destination path.
+        Path of the file to copy. Multiple paths can be specified.
 
-.PARAMETER Path
+        Mandatory: True
 
-Path of the file to copy. Multiple paths can be specified
+    .PARAMETER Destination
 
-.PARAMETER Destination
+        Destination Path of the file to copy.
 
-Destination Path of the file to copy.
+        Mandatory: True
 
-.PARAMETER Recurse
+    .PARAMETER Recurse
 
-Copy files in subdirectories.
+        Copy files in subdirectories.
 
-.PARAMETER Flatten
+        Mandatory: False
 
-Flattens the files into the root destination directory.
+    .PARAMETER Flatten
 
-.PARAMETER ContinueOnError
+        Flattens the files into the root destination directory.
 
-Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
+        Mandatory: False
 
-.PARAMETER ContinueFileCopyOnError
+    .PARAMETER ContinueOnError
 
-Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
+        Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
 
-.PARAMETER UseRobocopy
+        Mandatory: False
 
-Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
+    .PARAMETER ContinueFileCopyOnError
 
-.PARAMETER RobocopyParams
+        Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 
-Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Mandatory: False
 
-.PARAMETER RobocopyAdditionalParams
+    .PARAMETER UseRobocopy
 
-Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Supports * in file names, but not folders, in source paths. Default is configured in the AppDeployToolkitConfig.xml file: $true
 
-.INPUTS
+        Mandatory: False
 
-None
+    .PARAMETER RobocopyParams
 
-You cannot pipe objects to this function.
+        Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
-.OUTPUTS
+        Mandatory: False
 
-None
+    .PARAMETER RobocopyAdditionalParams
 
-This function does not generate any output.
+        Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
-.EXAMPLE
+        Mandatory: False
 
-Copy-File -Path "$dirSupportFiles\MyApp.ini" -Destination "$envWinDir\MyApp.ini"
+    .INPUTS
+        None
 
-.EXAMPLE
+        This function does not take any piped input.
 
-Copy-File -Path "$dirSupportFiles\*.*" -Destination "$envTemp\tempfiles"
+    .OUTPUTS
+        None
 
-Copy all of the files in a folder to a destination folder.
+        This function does not generate any output.
 
-.NOTES
+    .EXAMPLE
+        # Example 1
+        Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt'
 
-This function can be called without an active ADT session.
+        Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination'.
 
-.LINK
+    .EXAMPLE
+        # Example 2
+        Copy-File -Path 'C:\Path\Folder' -Destination 'D:\Destination\Folder' -Recurse
 
-https://psappdeploytoolkit.com
-#>
+        Recursively copies the folder 'Folder' from 'C:\Path' to 'D:\Destination'.
+
+    .EXAMPLE
+        # Example 3
+        Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt' -Force
+
+        Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination', overwriting the destination file if it exists.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $true, Position = 0)]
