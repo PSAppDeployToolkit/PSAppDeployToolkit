@@ -7,40 +7,58 @@
 function Set-ADTIniValue
 {
     <#
-
     .SYNOPSIS
-    Opens an INI file and sets the value of the specified section and key.
+        Opens an INI file and sets the value of the specified section and key.
 
     .DESCRIPTION
-    Opens an INI file and sets the value of the specified section and key.
+        Opens an INI file and sets the value of the specified section and key. If the value is set to $null, the key will be removed from the section.
 
     .PARAMETER FilePath
-    Path to the INI file.
+        Path to the INI file.
+
+        Mandatory: True
 
     .PARAMETER Section
-    Section within the INI file.
+        Section within the INI file.
+
+        Mandatory: True
 
     .PARAMETER Key
-    Key within the section of the INI file.
+        Key within the section of the INI file.
+
+        Mandatory: True
 
     .PARAMETER Value
-    Value for the key within the section of the INI file. To remove a value, set this variable to $null.
+        Value for the key within the section of the INI file. To remove a value, set this variable to $null.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    None. This function does not return any output.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    Set-ADTIniValue -FilePath "$envProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
+        # Example 1
+        Set-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
+
+        Sets the 'KeyFileName' key in the 'Notes' section of the 'notes.ini' file to 'MyFile.ID'.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
