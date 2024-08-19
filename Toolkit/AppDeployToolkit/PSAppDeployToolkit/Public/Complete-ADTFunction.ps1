@@ -6,6 +6,46 @@
 
 function Complete-ADTFunction
 {
+    <#
+    .SYNOPSIS
+        Completes the execution of an ADT function.
+
+    .DESCRIPTION
+        The Complete-ADTFunction function finalizes the execution of an ADT function by writing a debug log message and restoring the original global verbosity if it was archived off.
+
+    .PARAMETER Cmdlet
+        The PSCmdlet object representing the cmdlet being completed.
+
+        Mandatory: True
+
+    .INPUTS
+        System.Management.Automation.PSCmdlet
+
+        The PSCmdlet object representing the cmdlet being completed.
+
+    .OUTPUTS
+        None
+
+        This function does not generate any output.
+
+    .EXAMPLE
+        # Example 1
+        Complete-ADTFunction -Cmdlet $PSCmdlet
+
+        This example completes the execution of the current ADT function.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
