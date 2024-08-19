@@ -1,53 +1,70 @@
-﻿#---------------------------------------------------------------------------
+﻿function Test-ADTRegistryValue
+#---------------------------------------------------------------------------
 #
 #
 #
 #---------------------------------------------------------------------------
 
-function Test-ADTRegistryValue
 {
     <#
-
     .SYNOPSIS
-    Test if a registry value exists.
+        Test if a registry value exists.
 
     .DESCRIPTION
-    Checks a registry key path to see if it has a value with a given name. Can correctly handle cases where a value simply has an empty or null value.
+        Checks a registry key path to see if it has a value with a given name. Can correctly handle cases where a value simply has an empty or null value.
 
     .PARAMETER Key
-    Path of the registry key.
+        Path of the registry key.
+
+        Mandatory: True
 
     .PARAMETER Value
-    Specify the registry key value to check the existence of.
+        Specify the registry key value to check the existence of.
+
+        Mandatory: True
 
     .PARAMETER SID
-    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+        The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+        Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+
+        Mandatory: False
 
     .PARAMETER Wow6432Node
-    Specify this switch to check the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to check the 32-bit registry (Wow6432Node) on 64-bit systems.
+
+        Mandatory: False
 
     .INPUTS
-    System.String. Accepts a string value for the registry key path.
+        System.String
+
+        Accepts a string value for the registry key path.
 
     .OUTPUTS
-    System.String. Returns $true if the registry value exists, $false if it does not.
+        System.Boolean
+
+        Returns $true if the registry value exists, $false if it does not.
 
     .EXAMPLE
-    Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
+        # Example 1
+        Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
+
+        Checks if the registry value 'PendingFileRenameOperations' exists under the specified key.
 
     .NOTES
-    To test if registry key exists, use Test-Path function like so:
+        An active ADT session is NOT required to use this function.
 
-    Test-Path -Path $Key -PathType 'Container'
+        To test if a registry key exists, use the Test-Path function like so:
 
-    .NOTES
-    This function can be called without an active ADT session.
+        Test-Path -Path $Key -PathType 'Container'
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
