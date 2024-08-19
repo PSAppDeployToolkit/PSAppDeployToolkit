@@ -16,69 +16,24 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER Title
         Title of the prompt. Default: the application installation name.
 
-        Mandatory: False
-
-    .PARAMETER CountdownSeconds
-        Specifies the number of seconds to countdown before the system restart. Default: 60
-
-        Mandatory: False
-
-    .PARAMETER CountdownNoHideSeconds
         Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
-
-        Mandatory: False
-
-    .PARAMETER SilentRestart
         Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $false
 
-        Mandatory: False
-
-    .PARAMETER NoCountdown
-        Specifies not to show a countdown.
-
-        Mandatory: False
-
-    .PARAMETER SilentCountdownSeconds
         Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
 
-        Mandatory: False
 
-    .PARAMETER NotTopMost
-        Specifies whether the windows is the topmost window. Default: $false.
-
-        Mandatory: False
-
-    .INPUTS
-        None
-
-        This function does not take any piped input.
 
     .OUTPUTS
         None
-
-        This function does not generate any output.
-
-    .EXAMPLE
-        # Example 1
         Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
 
-        Displays a restart prompt with a 600-second countdown and 60 seconds where the window cannot be hidden.
-
     .EXAMPLE
-        # Example 2
-        Show-ADTInstallationRestartPrompt -NoCountdown
-
         Displays a restart prompt without a countdown.
 
     .EXAMPLE
-        # Example 3
-        Show-ADTInstallationRestartPrompt -CountdownSeconds 300 -SilentRestart -SilentCountdownSeconds 10
-
         Displays a restart prompt with a 300-second countdown and triggers a silent restart with a 10-second countdown in silent mode.
 
     .NOTES
-        An active ADT session is NOT required to use this function.
-
         Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
 
         Tags: psadt

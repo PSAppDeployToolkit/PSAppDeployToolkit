@@ -16,8 +16,6 @@ function Close-ADTSession
     .PARAMETER ExitCode
         The exit code to set for the session.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -29,12 +27,10 @@ function Close-ADTSession
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Close-ADTSession
 
         This example closes the active ADT session without setting an exit code.
 
-        # Example 2
         Close-ADTSession -ExitCode 0
 
         This example closes the active ADT session and sets the exit code to 0.

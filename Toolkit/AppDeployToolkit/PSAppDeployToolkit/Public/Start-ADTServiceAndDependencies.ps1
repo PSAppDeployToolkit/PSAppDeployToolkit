@@ -16,22 +16,14 @@ function Start-ADTServiceAndDependencies
     .PARAMETER Service
         Specify the name of the service.
 
-        Mandatory: True
-
     .PARAMETER SkipDependentServices
         Choose to skip checking for and starting dependent services. Default is: $false.
-
-        Mandatory: False
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
-        Mandatory: False
-
     .PARAMETER PassThru
         Return the System.ServiceProcess.ServiceController service object.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -44,7 +36,6 @@ function Start-ADTServiceAndDependencies
         Returns the service object.
 
     .EXAMPLE
-        # Example 1
         Start-ADTServiceAndDependencies -Service 'wuauserv'
 
         Starts the Windows Update service and its dependencies.

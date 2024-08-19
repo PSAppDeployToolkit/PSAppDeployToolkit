@@ -20,8 +20,6 @@ function Remove-ADTEdgeExtension
     .PARAMETER ExtensionID
         The ID of the extension to remove.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -33,7 +31,6 @@ function Remove-ADTEdgeExtension
         This function does not return objects.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTEdgeExtension -ExtensionID "extensionID"
 
         Removes the specified extension from Microsoft Edge.

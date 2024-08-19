@@ -24,7 +24,6 @@ function Close-ADTInstallationProgress
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Close-ADTInstallationProgress
 
         This example closes the dialog created by Show-ADTInstallationProgress.

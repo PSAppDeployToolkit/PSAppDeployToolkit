@@ -16,8 +16,6 @@ function Get-ADTServiceStartMode
     .PARAMETER Service
         Specify the service object to retrieve the startup mode for.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Get-ADTServiceStartMode
         Returns the startup mode of the specified service.
 
     .EXAMPLE
-        # Example 1
         Get-ADTServiceStartMode -Service (Get-Service -Name 'wuauserv')
 
         Retrieves the startup mode of the 'wuauserv' service.

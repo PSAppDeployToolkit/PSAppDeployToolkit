@@ -16,22 +16,14 @@ function Stop-ADTServiceAndDependencies
     .PARAMETER Service
         Specify the name of the service.
 
-        Mandatory: True
-
     .PARAMETER SkipDependentServices
         Choose to skip checking for and stopping dependent services. Default is: $false.
-
-        Mandatory: False
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
-        Mandatory: False
-
     .PARAMETER PassThru
         Return the System.ServiceProcess.ServiceController service object.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -44,7 +36,6 @@ function Stop-ADTServiceAndDependencies
         Returns the service object.
 
     .EXAMPLE
-        # Example 1
         Stop-ADTServiceAndDependencies -Service 'wuauserv'
 
         Stops the Windows Update service and its dependencies.

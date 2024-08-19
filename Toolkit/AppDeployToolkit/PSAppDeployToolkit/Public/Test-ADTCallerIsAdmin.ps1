@@ -24,7 +24,6 @@ function Test-ADTCallerIsAdmin
         Returns $true if the current user is an administrator, otherwise $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTCallerIsAdmin
 
         Checks if the current user has administrative privileges and returns true or false.

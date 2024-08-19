@@ -16,12 +16,8 @@ function Initialize-ADTFunction
     .PARAMETER Cmdlet
         The cmdlet that is being initialized.
 
-        Mandatory: True
-
     .PARAMETER SessionState
         The session state of the cmdlet.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -34,7 +30,6 @@ function Initialize-ADTFunction
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Initialize-ADTFunction -Cmdlet $PSCmdlet
 
         Initializes the ADT function environment for the given cmdlet.

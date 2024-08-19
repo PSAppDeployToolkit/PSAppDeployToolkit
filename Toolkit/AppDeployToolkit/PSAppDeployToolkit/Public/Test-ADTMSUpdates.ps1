@@ -16,8 +16,6 @@ function Test-ADTMSUpdates
     .PARAMETER KbNumber
         KBNumber of the update.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Test-ADTMSUpdates
         Returns $true if the update is installed, otherwise returns $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTMSUpdates -KBNumber 'KB2549864'
 
         Checks if the Microsoft Update 'KB2549864' is installed and returns true or false.

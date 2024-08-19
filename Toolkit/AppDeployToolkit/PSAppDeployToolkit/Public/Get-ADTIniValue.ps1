@@ -16,17 +16,11 @@ function Get-ADTIniValue
     .PARAMETER FilePath
         Path to the INI file.
 
-        Mandatory: True
-
     .PARAMETER Section
         Section within the INI file.
 
-        Mandatory: True
-
     .PARAMETER Key
         Key within the section of the INI file.
-
-        Mandatory: True
 
     .INPUTS
         None
@@ -39,7 +33,6 @@ function Get-ADTIniValue
         Returns the value of the specified section and key.
 
     .EXAMPLE
-        # Example 1
         Get-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 
         This example retrieves the value of the 'KeyFileName' key in the 'Notes' section of the specified INI file.

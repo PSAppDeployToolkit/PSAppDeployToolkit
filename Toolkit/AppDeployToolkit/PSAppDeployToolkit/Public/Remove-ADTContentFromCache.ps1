@@ -16,8 +16,6 @@ function Remove-ADTContentFromCache
     .PARAMETER Path
         The path to the software cache folder.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Remove-ADTContentFromCache
         This function does not return objects.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTContentFromCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
 
         Removes the toolkit content from the specified cache folder.

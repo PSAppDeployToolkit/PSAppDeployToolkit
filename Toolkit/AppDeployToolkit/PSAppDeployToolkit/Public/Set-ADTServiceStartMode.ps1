@@ -16,12 +16,8 @@ function Set-ADTServiceStartMode
     .PARAMETER Service
         Specify the name of the service.
 
-        Mandatory: True
-
     .PARAMETER StartMode
         Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
-
-        Mandatory: True
 
     .INPUTS
         None
@@ -34,7 +30,6 @@ function Set-ADTServiceStartMode
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Set-ADTServiceStartMode -Service 'wuauserv' -StartMode 'Automatic (Delayed Start)'
 
         Sets the 'wuauserv' service to start automatically with a delayed start.

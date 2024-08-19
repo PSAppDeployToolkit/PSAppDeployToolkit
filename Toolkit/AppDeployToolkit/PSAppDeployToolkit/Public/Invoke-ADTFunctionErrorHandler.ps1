@@ -16,25 +16,15 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER Cmdlet
         The cmdlet that is calling this function.
 
-        Mandatory: True
-
     .PARAMETER SessionState
         The session state of the calling cmdlet.
-
-        Mandatory: True
 
     .PARAMETER ErrorRecord
         The error record to handle.
 
-        Mandatory: True
-
     .PARAMETER PassThru
         If specified, the function will return the error record.
 
-        Mandatory: False
-
-    .PARAMETER LogMessage
-        A custom log message to be written along with the error.
 
         Mandatory: True (when using the 'LogMessage' parameter set)
 
@@ -54,13 +44,11 @@ function Invoke-ADTFunctionErrorHandler
         Returns the error record if PassThru is specified.
 
     .EXAMPLE
-        # Example 1
         Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
 
         Handles the error within the calling cmdlet and logs it.
 
     .EXAMPLE
-        # Example 2
         Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "An error occurred" -DisableErrorResolving
 
         Handles the error within the calling cmdlet, logs a custom message without resolving the error record, and logs it.

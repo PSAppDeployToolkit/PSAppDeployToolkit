@@ -16,34 +16,22 @@ function Resolve-ADTErrorRecord
     .PARAMETER ErrorRecord
         The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
 
-        Mandatory: True
-
     .PARAMETER Property
         The list of properties to display from the error record. Use "*" to display all properties.
 
         Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
 
-        Mandatory: False
-
     .PARAMETER ExcludeErrorRecord
         Exclude error record details as represented by $_.
-
-        Mandatory: False
 
     .PARAMETER ExcludeErrorInvocation
         Exclude error record invocation information as represented by $_.InvocationInfo.
 
-        Mandatory: False
-
     .PARAMETER ExcludeErrorException
         Exclude error record exception details as represented by $_.Exception.
 
-        Mandatory: False
-
     .PARAMETER ExcludeErrorInnerException
         Exclude error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
-
-        Mandatory: False
 
     .INPUTS
         System.Array
@@ -56,25 +44,22 @@ function Resolve-ADTErrorRecord
         Displays the error record details.
 
     .EXAMPLE
-        # Example 1
         Resolve-ADTErrorRecord
 
         Enumerates the details of the last error record.
 
     .EXAMPLE
-        # Example 2
         Resolve-ADTErrorRecord -Property *
 
         Enumerates all properties of the last error record.
 
     .EXAMPLE
-        # Example 3
         Resolve-ADTErrorRecord -Property InnerException
 
         Enumerates only the InnerException property of the last error record.
 
     .EXAMPLE
-        # Example 4
+
         Resolve-ADTErrorRecord -ExcludeErrorInvocation
 
         Enumerates the details of the last error record, excluding the invocation information.

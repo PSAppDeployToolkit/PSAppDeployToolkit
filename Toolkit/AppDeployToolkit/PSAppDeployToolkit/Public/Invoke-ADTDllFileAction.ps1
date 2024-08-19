@@ -16,12 +16,8 @@ function Invoke-ADTDllFileAction
     .PARAMETER FilePath
         Path to the DLL file.
 
-        Mandatory: True
-
     .PARAMETER DLLAction
         Specify whether to register or unregister the DLL.
-
-        Mandatory: True
 
     .INPUTS
         None
@@ -34,13 +30,11 @@ function Invoke-ADTDllFileAction
         This function does not return objects.
 
     .EXAMPLE
-        # Example 1
         Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
 
         Registers the specified DLL file.
 
     .EXAMPLE
-        # Example 2
         Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
 
         Unregisters the specified DLL file.

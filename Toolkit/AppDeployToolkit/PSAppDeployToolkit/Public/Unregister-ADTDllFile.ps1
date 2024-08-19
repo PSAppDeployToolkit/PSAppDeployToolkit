@@ -16,8 +16,6 @@ function Unregister-ADTDllFile
     .PARAMETER FilePath
         Path to the DLL file.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Unregister-ADTDllFile
         This function does not return objects.
 
     .EXAMPLE
-        # Example 1
         Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
         Unregisters the specified DLL file.

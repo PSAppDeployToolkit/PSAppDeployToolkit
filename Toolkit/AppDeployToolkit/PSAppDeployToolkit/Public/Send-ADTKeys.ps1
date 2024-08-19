@@ -18,27 +18,17 @@ function Send-ADTKeys
     .PARAMETER WindowTitle
         The title of the application window to search for using regex matching.
 
-        Mandatory: True
-
     .PARAMETER GetAllWindowTitles
         Get titles for all open windows on the system.
-
-        Mandatory: True
 
     .PARAMETER WindowHandle
         Send keys to a specific window where the Window Handle is already known.
 
-        Mandatory: True
-
     .PARAMETER Keys
         The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 
-        Mandatory: True
-
     .PARAMETER WaitSeconds
         An optional number of seconds to wait after the sending of the keys.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -51,19 +41,16 @@ function Send-ADTKeys
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world'
 
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
 
     .EXAMPLE
-        # Example 2
         Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' -WaitSeconds 5
 
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
 
     .EXAMPLE
-        # Example 3
         Send-ADTKeys -WindowHandle ([IntPtr]17368294) -Keys 'Hello World'
 
         Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.

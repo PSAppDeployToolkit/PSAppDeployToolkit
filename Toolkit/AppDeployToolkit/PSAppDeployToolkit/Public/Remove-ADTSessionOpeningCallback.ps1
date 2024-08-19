@@ -16,12 +16,10 @@ function Remove-ADTSessionOpeningCallback
     .PARAMETER Callback
         The callback function to remove from the ADT session opening event.
 
-        Mandatory: True
-
     .INPUTS
-        System.Management.Automation.CommandInfo[]
+        None
 
-        An array of CommandInfo objects representing the callback functions to be removed.
+        This function does not take any pipeline input.
 
     .OUTPUTS
         None
@@ -29,7 +27,6 @@ function Remove-ADTSessionOpeningCallback
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTSessionOpeningCallback -Callback (Get-Command -Name 'MyCallbackFunction')
 
         Removes the specified callback function from the ADT session opening event.

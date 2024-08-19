@@ -18,42 +18,26 @@ function Show-ADTInstallationProgress
     .PARAMETER WindowTitle
         The title of the window to be displayed. The default is the derived value from $InstallTitle.
 
-        Mandatory: False
-
     .PARAMETER WindowSubtitle
         The subtitle of the window to be displayed with a fluent progress window. The default is null.
-
-        Mandatory: False
 
     .PARAMETER StatusMessage
         The status message to be displayed. The default status message is taken from the configuration file.
 
-        Mandatory: False
-
     .PARAMETER StatusMessageDetail
         The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.
-
-        Mandatory: False
 
     .PARAMETER WindowLocation
         The location of the progress window. Default: center of the screen.
 
-        Mandatory: False
-
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost. Default: $false.
-
-        Mandatory: False
 
     .PARAMETER Quiet
         Specifies whether to not log the success of updating the progress message. Default: $false.
 
-        Mandatory: False
-
     .PARAMETER NoRelocation
         Specifies whether to not reposition the window upon updating the message. Default: $false.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -66,25 +50,22 @@ function Show-ADTInstallationProgress
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Show-ADTInstallationProgress
 
         Uses the default status message from the XML configuration file.
 
     .EXAMPLE
-        # Example 2
         Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
 
         Displays a progress dialog with the status message 'Installation in Progress...'.
 
     .EXAMPLE
-        # Example 3
         Show-ADTInstallationProgress -StatusMessage "Installation in Progress...`nThe installation may take 20 minutes to complete."
 
         Displays a progress dialog with a multiline status message.
 
     .EXAMPLE
-        # Example 4
+
         Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...' -WindowLocation 'BottomRight' -NotTopMost
 
         Displays a progress dialog with the status message 'Installation in Progress...', positioned at the bottom right of the screen, and not set as topmost.

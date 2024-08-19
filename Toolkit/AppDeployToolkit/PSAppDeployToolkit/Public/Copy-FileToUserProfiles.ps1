@@ -16,62 +16,38 @@ function Copy-FileToUserProfiles
     .PARAMETER Path
         The path of the file or folder to copy.
 
-        Mandatory: True
-
     .PARAMETER Destination
         The path of the destination folder to append to the root of the user profile.
-
-        Mandatory: False
 
     .PARAMETER Recurse
         Copy files in subdirectories.
 
-        Mandatory: False
-
     .PARAMETER Flatten
         Flattens the files into the root destination directory.
-
-        Mandatory: False
 
     .PARAMETER ContinueOnError
         Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
 
-        Mandatory: False
-
     .PARAMETER ContinueFileCopyOnError
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
-
-        Mandatory: False
 
     .PARAMETER UseRobocopy
         Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true.
 
-        Mandatory: False
-
     .PARAMETER RobocopyAdditionalParams
         Additional parameters to pass to Robocopy. Default is: $null.
-
-        Mandatory: False
 
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
-        Mandatory: False
-
     .PARAMETER ExcludeSystemProfiles
         Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
-
-        Mandatory: False
 
     .PARAMETER ExcludeServiceProfiles
         Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
 
-        Mandatory: False
-
     .PARAMETER ExcludeDefaultUser
         Exclude the Default User. Default is: $false.
-
-        Mandatory: False
 
     .INPUTS
         String[]
@@ -84,22 +60,19 @@ function Copy-FileToUserProfiles
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
-        # Example 2
         Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
-        # Example 3
         Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 
         Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
 
-        # Example 4
+
         Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 
         Copy an entire folder to C:\Users\<UserName> for each user.

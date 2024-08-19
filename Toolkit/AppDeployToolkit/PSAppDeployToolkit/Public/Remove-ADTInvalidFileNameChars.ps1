@@ -16,8 +16,6 @@ function Remove-ADTInvalidFileNameChars
     .PARAMETER Name
         Text to remove invalid filename characters from.
 
-        Mandatory: True
-
     .INPUTS
         System.String
 
@@ -29,7 +27,6 @@ function Remove-ADTInvalidFileNameChars
         Returns the input string with the invalid characters removed.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTInvalidFileNameChars -Name "Filename/\1"
 
         Removes invalid filename characters from the string "Filename/\1".

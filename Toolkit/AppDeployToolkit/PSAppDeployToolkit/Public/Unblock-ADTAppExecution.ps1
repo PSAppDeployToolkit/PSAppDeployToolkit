@@ -16,8 +16,6 @@ function Unblock-ADTAppExecution
     .PARAMETER Tasks
         Specify the scheduled tasks to unblock.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Unblock-ADTAppExecution
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Unblock-ADTAppExecution
 
         Unblocks the execution of applications that were previously blocked by Block-ADTAppExecution.

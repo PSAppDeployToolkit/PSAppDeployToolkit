@@ -16,8 +16,6 @@ function Register-ADTDllFile
     .PARAMETER FilePath
         Path to the DLL file.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Register-ADTDllFile
         This function does not return objects.
 
     .EXAMPLE
-        # Example 1
         Register-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
         Registers the specified DLL file.

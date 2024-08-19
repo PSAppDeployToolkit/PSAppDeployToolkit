@@ -16,8 +16,6 @@ function Get-ADTUniversalDate
     .PARAMETER DateTime
         Specify the DateTime in the current culture.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -29,13 +27,11 @@ function Get-ADTUniversalDate
         Returns the date/time for the local culture in a universal sortable date time pattern.
 
     .EXAMPLE
-        # Example 1
         Get-ADTUniversalDate
 
         Returns the current date in a universal sortable date time pattern.
 
     .EXAMPLE
-        # Example 2
         Get-ADTUniversalDate -DateTime '25/08/2013'
 
         Returns the date for the current culture in a universal sortable date time pattern.

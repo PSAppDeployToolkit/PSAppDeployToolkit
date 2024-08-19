@@ -24,12 +24,8 @@ function Invoke-ADTAllUsersRegistryChange
     .PARAMETER RegistrySettings
         Script block which contains HKCU registry settings which should be modified for all users on the system.
 
-        Mandatory: True
-
     .PARAMETER UserProfiles
         Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -42,7 +38,6 @@ function Invoke-ADTAllUsersRegistryChange
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         [ScriptBlock]$HKCURegistrySettings = {
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID

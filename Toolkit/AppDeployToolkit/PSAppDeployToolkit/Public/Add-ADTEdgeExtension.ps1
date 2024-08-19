@@ -20,22 +20,14 @@ function Add-ADTEdgeExtension
     .PARAMETER ExtensionID
         The ID of the extension to add.
 
-        Mandatory: True
-
     .PARAMETER UpdateUrl
         The update URL of the extension. This is the URL where the extension will check for updates.
-
-        Mandatory: True
 
     .PARAMETER InstallationMode
         The installation mode of the extension. Allowed values: blocked, allowed, removed, force_installed, normal_installed.
 
-        Mandatory: True
-
     .PARAMETER MinimumVersionRequired
         The minimum version of the extension required for installation.
-
-        Mandatory: False
 
     .INPUTS
         System.String
@@ -48,7 +40,6 @@ function Add-ADTEdgeExtension
         This function does not return any output.
 
     .EXAMPLE
-        # Example 1
         Add-ADTEdgeExtension -ExtensionID "extensionID" -InstallationMode "force_installed" -UpdateUrl "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
 
         This example adds the specified extension to be force installed in Microsoft Edge.

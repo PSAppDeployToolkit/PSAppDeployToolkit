@@ -16,8 +16,6 @@ function New-ADTFolder
     .PARAMETER Path
         Path to the new folder to create.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function New-ADTFolder
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         New-ADTFolder -Path "$env:WinDir\System32"
 
         Creates a new folder at the specified path if it does not already exist.

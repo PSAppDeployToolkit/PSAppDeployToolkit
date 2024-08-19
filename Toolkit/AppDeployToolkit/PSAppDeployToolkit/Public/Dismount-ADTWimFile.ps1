@@ -16,8 +16,6 @@ function Dismount-ADTWimFile
     .PARAMETER Path
         The path to the WIM mount point.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Dismount-ADTWimFile
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Dismount-ADTWimFile -Path 'C:\Mount\WIM'
 
         This example dismounts the WIM file from the specified mount point and discards all changes.

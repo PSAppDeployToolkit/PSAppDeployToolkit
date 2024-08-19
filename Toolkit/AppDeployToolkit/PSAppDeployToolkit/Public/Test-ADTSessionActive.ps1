@@ -24,7 +24,6 @@ function Test-ADTSessionActive
         Returns $true if there is at least one active session, otherwise $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTSessionActive
 
         Checks if there is an active ADT session and returns true or false.

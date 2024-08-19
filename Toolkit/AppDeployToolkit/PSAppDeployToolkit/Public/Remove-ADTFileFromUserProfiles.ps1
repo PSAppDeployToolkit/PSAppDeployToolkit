@@ -16,37 +16,23 @@ function Remove-ADTFileFromUserProfiles
     .PARAMETER Path
         Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
 
-        Mandatory: True
-
     .PARAMETER LiteralPath
         Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
-
-        Mandatory: True
 
     .PARAMETER Recurse
         Deletes the files in the specified location(s) and in all child items of the location(s).
 
-        Mandatory: False
-
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
-
-        Mandatory: False
 
     .PARAMETER ExcludeDefaultUser
         Exclude the Default User. Default is: $false.
 
-        Mandatory: False
-
     .PARAMETER IncludeSystemProfiles
         Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
 
-        Mandatory: False
-
     .PARAMETER IncludeServiceProfiles
         Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -59,13 +45,11 @@ function Remove-ADTFileFromUserProfiles
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTFileFromUserProfiles -Path "AppData\Roaming\MyApp\config.txt"
 
         Removes the specified file from each user profile on the system.
 
     .EXAMPLE
-        # Example 2
         Remove-ADTFileFromUserProfiles -Path "AppData\Local\MyApp" -Recurse
 
         Removes the specified folder and all its contents recursively from each user profile on the system.

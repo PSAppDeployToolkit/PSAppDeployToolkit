@@ -24,7 +24,6 @@ function Test-ADTNetworkConnection
         Returns $true if a wired network connection is detected, otherwise returns $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTNetworkConnection
 
         Checks if there is an active wired network connection and returns true or false.

@@ -18,8 +18,6 @@ function Copy-ADTContentToCache
     .PARAMETER Path
         The path to the software cache folder.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -31,7 +29,6 @@ function Copy-ADTContentToCache
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Copy-ADTContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
 
         This example copies the toolkit content to the specified cache folder.

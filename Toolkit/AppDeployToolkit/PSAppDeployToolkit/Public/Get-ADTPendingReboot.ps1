@@ -38,12 +38,10 @@ function Get-ADTPendingReboot
         - ErrorMsg
 
     .EXAMPLE
-        # Example 1
         Get-ADTPendingReboot
 
         This example retrieves the pending reboot status on the local computer and returns a custom object with detailed information.
 
-        # Example 2
         (Get-ADTPendingReboot).IsSystemRebootPending
 
         This example returns a boolean value determining whether or not there is a pending reboot operation.

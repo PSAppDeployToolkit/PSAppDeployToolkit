@@ -17,22 +17,14 @@ function Get-ADTUserProfiles
     .PARAMETER ExcludeNTAccount
         Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
-        Mandatory: False
-
     .PARAMETER IncludeSystemProfiles
         Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
-
-        Mandatory: False
 
     .PARAMETER IncludeServiceProfiles
         Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
 
-        Mandatory: False
-
     .PARAMETER ExcludeDefaultUser
         Exclude the Default User. Default is: $false.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -48,19 +40,16 @@ function Get-ADTUserProfiles
         - ProfilePath
 
     .EXAMPLE
-        # Example 1
         Get-ADTUserProfiles
 
         Return the following properties for each user profile on the system: NTAccount, SID, ProfilePath.
 
     .EXAMPLE
-        # Example 2
         Get-ADTUserProfiles -ExcludeNTAccount CONTOSO\Robot,CONTOSO\ntadmin
 
         Return the following properties for each user profile on the system, except for 'Robot' and 'ntadmin': NTAccount, SID, ProfilePath.
 
     .EXAMPLE
-        # Example 3
         [string[]]$ProfilePaths = Get-ADTUserProfiles | Select-Object -ExpandProperty ProfilePath
 
         Return the user profile path for each user on the system. This information can then be used to make modifications under the user profile on the filesystem.

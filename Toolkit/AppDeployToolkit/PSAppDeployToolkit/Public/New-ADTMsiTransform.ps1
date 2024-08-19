@@ -16,12 +16,8 @@ function New-ADTMsiTransform
     .PARAMETER MsiPath
         Specify the path to an MSI file.
 
-        Mandatory: True
-
     .PARAMETER ApplyTransformPath
         Specify the path to a transform which should be applied to the MSI database before any new properties are created or modified.
-
-        Mandatory: False
 
     .PARAMETER NewTransformPath
         Specify the path where the new transform file with the desired properties will be created. If a transform file of the same name already exists, it will be deleted before a new one is created.
@@ -30,14 +26,10 @@ function New-ADTMsiTransform
         a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
         b) If only -MsiPath was specified, then <MsiPath>.mst
 
-        Mandatory: False
-
     .PARAMETER TransformProperties
         Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
 
         Example hashtable: [Hashtable]$TransformProperties = @{ 'ALLUSERS' = '1' }
-
-        Mandatory: True
 
     .INPUTS
         None
@@ -50,7 +42,6 @@ function New-ADTMsiTransform
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         New-ADTMsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties @{
             'ALLUSERS' = '1'
             'AgreeToLicense' = 'Yes'

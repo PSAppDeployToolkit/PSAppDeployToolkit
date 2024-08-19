@@ -16,17 +16,11 @@ function Remove-ADTFile
     .PARAMETER Path
         Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
 
-        Mandatory: True
-
     .PARAMETER LiteralPath
         Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
-        Mandatory: True
-
     .PARAMETER Recurse
         Deletes the files in the specified location(s) and in all child items of the location(s).
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -39,13 +33,11 @@ function Remove-ADTFile
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTFile -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
 
         Removes the specified file.
 
     .EXAMPLE
-        # Example 2
         Remove-ADTFile -LiteralPath 'C:\Windows\Downloaded Program Files' -Recurse
 
         Removes the specified folder and all its contents recursively.

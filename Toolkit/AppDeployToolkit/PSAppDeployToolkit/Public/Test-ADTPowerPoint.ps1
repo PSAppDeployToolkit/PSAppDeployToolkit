@@ -24,7 +24,6 @@ function Test-ADTPowerPoint
         Returns $true if PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise returns $false.
 
     .EXAMPLE
-        # Example 1
         Test-ADTPowerPoint
 
         Checks if PowerPoint is running in either fullscreen slideshow mode or presentation mode and returns true or false.

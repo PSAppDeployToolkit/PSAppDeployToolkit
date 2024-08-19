@@ -24,7 +24,6 @@ function Disable-ADTTerminalServerInstallMode
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Disable-ADTTerminalServerInstallMode
 
         This example changes the server mode to user install mode for Remote Desktop Session Host/Citrix servers.

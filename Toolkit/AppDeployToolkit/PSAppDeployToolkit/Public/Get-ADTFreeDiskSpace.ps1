@@ -16,8 +16,6 @@ function Get-ADTFreeDiskSpace
     .PARAMETER Drive
         The drive to check free disk space on.
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Get-ADTFreeDiskSpace
         Returns the free disk space in MB.
 
     .EXAMPLE
-        # Example 1
         Get-ADTFreeDiskSpace -Drive 'C:'
 
         This example retrieves the free disk space on the C: drive.

@@ -23,8 +23,6 @@ function Test-ADTBattery
         - BatteryLifeRemaining
         - BatteryFullLifetime
 
-        Mandatory: False
-
     .INPUTS
         None
 
@@ -43,13 +41,11 @@ function Test-ADTBattery
         - BatteryFullLifetime
 
     .EXAMPLE
-        # Example 1
         Test-ADTBattery
 
         Checks if the local machine is running on AC power and returns true or false.
 
     .EXAMPLE
-        # Example 2
         # Determine if the current system is a laptop or not.
         (Test-ADTBattery -PassThru).IsLaptop
 

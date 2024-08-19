@@ -16,90 +16,33 @@ function Set-ADTShortcut
     .PARAMETER Path
         Path to the shortcut to be changed.
 
-        Mandatory: True
-
     .PARAMETER TargetPath
         Changes target path or URL that the shortcut launches.
 
-        Mandatory: False
-
-    .PARAMETER Arguments
-        Changes arguments to be passed to the target path.
-
-        Mandatory: False
-
-    .PARAMETER IconLocation
         Changes location of the icon used for the shortcut.
-
-        Mandatory: False
-
-    .PARAMETER IconIndex
         Change the index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 
-        Mandatory: False
-
-    .PARAMETER Description
-        Changes description of the shortcut.
-
-        Mandatory: False
-
-    .PARAMETER WorkingDirectory
         Changes working directory to be used for the target path.
 
-        Mandatory: False
 
-    .PARAMETER WindowStyle
-        Changes the Windows style of the application. Options: Normal, Maximized, Minimized, DontChange. Default is: DontChange.
-
-        Mandatory: False
-
-    .PARAMETER RunAsAdmin
-        Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut. If not specified, the flag will not be changed.
-
-        Mandatory: False
-
-    .PARAMETER Hotkey
         Changes the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
-        Mandatory: False
-
     .INPUTS
-        System.PSObject
-
-        Path to the shortcut to be changed or a hashtable of parameters to be changed.
-
     .OUTPUTS
-        None
-
         This function does not generate any output.
 
-    .EXAMPLE
-        # Example 1
-        Set-ADTShortcut -Path "$env:ProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$env:WinDir\System32\notepad.exe" -IconLocation "$env:WinDir\System32\notepad.exe" -IconIndex 0 -Description 'Notepad' -WorkingDirectory "$env:HomeDrive\$env:HomePath"
-
-        Modifies the specified shortcut to launch Notepad with the specified icon and description.
 
     .NOTES
-        Url shortcuts only support TargetPath, IconLocation, and IconIndex. Other parameters are ignored.
-
         An active ADT session is NOT required to use this function.
-
-        Tags: psadt
         Website: https://psappdeploytoolkit.com
         Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
         License: https://opensource.org/license/lgpl-3-0
-
-    .LINK
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
-    param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [ValidateScript({
-                if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
-                {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
                 }
                 return !!$_

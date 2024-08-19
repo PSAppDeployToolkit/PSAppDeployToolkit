@@ -16,8 +16,6 @@ function Out-ADTPowerShellEncodedCommand
     .PARAMETER Command
         The PowerShell command to be encoded.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Out-ADTPowerShellEncodedCommand
         This function returns the encoded Base64 string representation of the input command.
 
     .EXAMPLE
-        # Example 1
         $command = "Get-Process"
         Out-ADTPowerShellEncodedCommand -Command $command
 

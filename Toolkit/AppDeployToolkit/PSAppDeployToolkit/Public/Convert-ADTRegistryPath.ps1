@@ -18,24 +18,16 @@ function Convert-ADTRegistryPath
     .PARAMETER Key
         Path to the registry key to convert (can be a registry hive or fully qualified path)
 
-        Mandatory: True
-
     .PARAMETER Wow6432Node
         Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
-
-        Mandatory: False
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-        Mandatory: False
-
     .PARAMETER Logging
         Enables logging of this function. Default: $false
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -48,13 +40,11 @@ function Convert-ADTRegistryPath
         Returns the converted registry key path.
 
     .EXAMPLE
-        # Example 1
         Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
         Converts the specified registry key path to a format compatible with PowerShell cmdlets.
 
     .EXAMPLE
-        # Example 2
         Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
         Converts the specified registry key path to a format compatible with PowerShell cmdlets.

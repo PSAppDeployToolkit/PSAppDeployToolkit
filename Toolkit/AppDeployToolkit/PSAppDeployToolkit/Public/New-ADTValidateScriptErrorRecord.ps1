@@ -16,22 +16,14 @@ function New-ADTValidateScriptErrorRecord
     .PARAMETER ParameterName
         The name of the parameter that caused the validation error.
 
-        Mandatory: True
-
     .PARAMETER ProvidedValue
         The value provided for the parameter that caused the validation error.
-
-        Mandatory: True
 
     .PARAMETER ExceptionMessage
         The message describing the validation error.
 
-        Mandatory: True
-
     .PARAMETER InnerException
         An optional inner exception that provides more details about the validation error.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -44,7 +36,6 @@ function New-ADTValidateScriptErrorRecord
         This function returns an ErrorRecord object.
 
     .EXAMPLE
-        # Example 1
         $paramName = "FilePath"
         $providedValue = "C:\InvalidPath"
         $exceptionMessage = "The specified path does not exist."

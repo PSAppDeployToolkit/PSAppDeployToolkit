@@ -18,33 +18,21 @@ function Get-ADTRegistryKey
     .PARAMETER Key
         Path of the registry key.
 
-        Mandatory: True
-
     .PARAMETER Value
         Value to retrieve (optional).
 
-        Mandatory: False
-
     .PARAMETER Wow6432Node
         Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
-
-        Mandatory: False
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-        Mandatory: False
-
     .PARAMETER ReturnEmptyKeyIfExists
         Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
 
-        Mandatory: False
-
     .PARAMETER DoNotExpandEnvironmentNames
         Return unexpanded REG_EXPAND_SZ values. Default is: $false.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -57,31 +45,28 @@ function Get-ADTRegistryKey
         Returns the value of the registry key or value.
 
     .EXAMPLE
-        # Example 1
         Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
         This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-        # Example 2
         Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
 
         This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-        # Example 3
         Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
 
         This example retrieves the 'Version' value data for the specified registry key.
 
     .EXAMPLE
-        # Example 4
+
         Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
 
         This example retrieves the 'Path' value data without expanding environment variables.
 
     .EXAMPLE
-        # Example 5
+
         Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
 
         This example retrieves the default value data for the specified registry key.

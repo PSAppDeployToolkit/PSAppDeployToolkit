@@ -16,12 +16,8 @@ function Remove-ADTFolder
     .PARAMETER Path
         Path to the folder to remove.
 
-        Mandatory: True
-
     .PARAMETER DisableRecursion
         Disables recursion while deleting.
-
-        Mandatory: False
 
     .INPUTS
         None
@@ -34,13 +30,11 @@ function Remove-ADTFolder
         This function does not generate any output.
 
     .EXAMPLE
-        # Example 1
         Remove-ADTFolder -Path "$envWinDir\Downloaded Program Files"
 
         Deletes all files and subfolders in the Windows\Downloads Program Files folder.
 
     .EXAMPLE
-        # Example 2
         Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
 
         Deletes all files in the Temp\MyAppCache folder but does not delete any subfolders.

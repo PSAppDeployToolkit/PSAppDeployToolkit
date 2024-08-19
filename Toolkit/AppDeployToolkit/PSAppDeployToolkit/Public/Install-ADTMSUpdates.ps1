@@ -16,8 +16,6 @@ function Install-ADTMSUpdates
     .PARAMETER Directory
         Directory containing the updates.
 
-        Mandatory: True
-
     .INPUTS
         None
 
@@ -29,7 +27,6 @@ function Install-ADTMSUpdates
         This function does not return any objects.
 
     .EXAMPLE
-        # Example 1
         Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
 
         Installs all Microsoft Updates found in the specified directory.
