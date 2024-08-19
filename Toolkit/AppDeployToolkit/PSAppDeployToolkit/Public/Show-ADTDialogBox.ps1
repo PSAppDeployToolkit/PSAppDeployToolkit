@@ -7,54 +7,81 @@
 function Show-ADTDialogBox
 {
     <#
-
     .SYNOPSIS
-    Display a custom dialog box with optional title, buttons, icon and timeout.
-
-    Show-ADTInstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
+        Display a custom dialog box with optional title, buttons, icon, and timeout.
 
     .DESCRIPTION
-    Display a custom dialog box with optional title, buttons, icon and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None
+        Display a custom dialog box with optional title, buttons, icon, and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None. 
+
+        Show-ADTInstallationPrompt is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 
     .PARAMETER Text
-    Text in the message dialog box
+        Text in the message dialog box.
+
+        Mandatory: True
 
     .PARAMETER Title
-    Title of the message dialog box
+        Title of the message dialog box.
+
+        Mandatory: False
 
     .PARAMETER Buttons
-    Buttons to be included on the dialog box. Options: OK, OKCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel, CancelTryAgainContinue. Default: OK.
+        Buttons to be included on the dialog box. Options: OK, OKCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel, CancelTryAgainContinue. Default: OK.
+
+        Mandatory: False
 
     .PARAMETER DefaultButton
-    The Default button that is selected. Options: First, Second, Third. Default: First.
+        The Default button that is selected. Options: First, Second, Third. Default: First.
+
+        Mandatory: False
 
     .PARAMETER Icon
-    Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information. Default: None
+        Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information. Default: None.
+
+        Mandatory: False
 
     .PARAMETER Timeout
-    Timeout period in seconds before automatically closing the dialog box with the return message "Timeout". Default: UI timeout value set in the config XML file.
+        Timeout period in seconds before automatically closing the dialog box with the return message "Timeout". Default: UI timeout value set in the config XML file.
+
+        Mandatory: False
 
     .PARAMETER TopMost
-    Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
+        Specifies whether the message box is a system modal message box and appears in a topmost window. Default: $true.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    System.String. Returns the text of the button that was clicked.
+        System.String
+
+        Returns the text of the button that was clicked.
 
     .EXAMPLE
-    Show-ADTDialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
+        # Example 1
+        Show-ADTDialogBox -Title 'Installed Complete' -Text 'Installation has completed. Please click OK and restart your computer.' -Icon 'Information'
+
+        Displays a dialog box with the title 'Installed Complete', the text 'Installation has completed. Please click OK and restart your computer.', and the 'Information' icon.
 
     .EXAMPLE
-    Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
+        # Example 2
+        Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
+
+        Displays a dialog box with the title 'Installation Notice', the text 'Installation will take approximately 30 minutes. Do you wish to proceed?', 'OKCancel' buttons, the 'Exclamation' icon, a timeout of 600 seconds, and not set as topmost.
 
     .NOTES
-    This function can be called without an active ADT session.
+        This function can be called without an active ADT session.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
