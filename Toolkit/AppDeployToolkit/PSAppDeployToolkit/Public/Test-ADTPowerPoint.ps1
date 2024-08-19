@@ -7,33 +7,42 @@
 function Test-ADTPowerPoint
 {
     <#
-
     .SYNOPSIS
-    Tests whether PowerPoint is running in either fullscreen slideshow mode or presentation mode.
+        Tests whether PowerPoint is running in either fullscreen slideshow mode or presentation mode.
 
     .DESCRIPTION
-    Tests whether someone is presenting using PowerPoint in either fullscreen slideshow mode or presentation mode.
+        Tests whether someone is presenting using PowerPoint in either fullscreen slideshow mode or presentation mode. This function checks if the PowerPoint process has a window with a title that begins with "PowerPoint Slide Show" or "PowerPoint-" for non-English language systems. There is a possibility of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show". If the previous detection method does not detect PowerPoint in fullscreen mode, it checks if PowerPoint is in Presentation Mode (only works on Windows Vista or higher).
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Boolean. Returns $true if PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise returns $false.
+        System.Boolean
+
+        Returns $true if PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise returns $false.
 
     .EXAMPLE
-    Test-ADTPowerPoint
+        # Example 1
+        Test-ADTPowerPoint
+
+        Checks if PowerPoint is running in either fullscreen slideshow mode or presentation mode and returns true or false.
 
     .NOTES
-    This function can only execute detection logic if the process is in interactive mode.
+        An active ADT session is NOT required to use this function.
 
-    There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
+        This function can only execute detection logic if the process is in interactive mode.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        There is a possibility of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
