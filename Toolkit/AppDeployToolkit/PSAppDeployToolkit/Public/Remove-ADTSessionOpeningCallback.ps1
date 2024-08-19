@@ -4,7 +4,9 @@
 #
 #---------------------------------------------------------------------------
 
-<#
+function Remove-ADTSessionOpeningCallback
+{
+    <#
     .SYNOPSIS
         Removes a callback function from the ADT session opening event.
 
@@ -42,10 +44,8 @@
 
     .LINK
         https://psappdeploytoolkit.com
-#>
+    #>
 
-function Remove-ADTSessionOpeningCallback
-{
     [CmdletBinding()]
     param
     (

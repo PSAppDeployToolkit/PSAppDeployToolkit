@@ -6,59 +6,59 @@
 
 function Remove-ADTInvalidFileNameChars
 {
-	<#
-	.SYNOPSIS
-		Remove invalid characters from the supplied string.
+    <#
+    .SYNOPSIS
+        Remove invalid characters from the supplied string.
 
-	.DESCRIPTION
-		This function removes invalid characters from the supplied string and returns a valid filename as a string. It ensures that the resulting string does not contain any characters that are not allowed in filenames. This function should not be used for entire paths as '\' is not a valid filename character.
+    .DESCRIPTION
+        This function removes invalid characters from the supplied string and returns a valid filename as a string. It ensures that the resulting string does not contain any characters that are not allowed in filenames. This function should not be used for entire paths as '\' is not a valid filename character.
 
-	.PARAMETER Name
-		Text to remove invalid filename characters from.
+    .PARAMETER Name
+        Text to remove invalid filename characters from.
 
-		Mandatory: True
+        Mandatory: True
 
-	.INPUTS
-		System.String
+    .INPUTS
+        System.String
 
-		A string containing invalid filename characters.
+        A string containing invalid filename characters.
 
-	.OUTPUTS
-		System.String
+    .OUTPUTS
+        System.String
 
-		Returns the input string with the invalid characters removed.
+        Returns the input string with the invalid characters removed.
 
-	.EXAMPLE
-		# Example 1
-		Remove-ADTInvalidFileNameChars -Name "Filename/\1"
+    .EXAMPLE
+        # Example 1
+        Remove-ADTInvalidFileNameChars -Name "Filename/\1"
 
-		Removes invalid filename characters from the string "Filename/\1".
+        Removes invalid filename characters from the string "Filename/\1".
 
-	.NOTES
-		An active ADT session is NOT required to use this function.
+    .NOTES
+        An active ADT session is NOT required to use this function.
 
-		This function always returns a string; however, it can be empty if the name only contains invalid characters. Do not use this command for an entire path as '\' is not a valid filename character.
+        This function always returns a string; however, it can be empty if the name only contains invalid characters. Do not use this command for an entire path as '\' is not a valid filename character.
 
-		Tags: psadt
-		Website: https://psappdeploytoolkit.com
-		Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
-		License: https://opensource.org/license/lgpl-3-0
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
-	.LINK
-		https://psappdeploytoolkit.com
-	#>
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
-	[CmdletBinding()]
-	param
-	(
-		[Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-		[AllowEmptyString()]
-		[System.String]$Name
-	)
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [AllowEmptyString()]
+        [System.String]$Name
+    )
 
-	process
-	{
-		return ($Name.Trim() -replace "[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars())))]")
-	}
+    process
+    {
+        return ($Name.Trim() -replace "[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars())))]")
+    }
 }
