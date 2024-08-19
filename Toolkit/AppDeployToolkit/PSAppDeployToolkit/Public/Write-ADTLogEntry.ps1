@@ -7,56 +7,90 @@
 function Write-ADTLogEntry
 {
     <#
-
     .SYNOPSIS
-    Write messages to a log file in CMTrace.exe compatible format or Legacy text file format.
+        Write messages to a log file in CMTrace.exe compatible format or Legacy text file format.
 
     .DESCRIPTION
-    Write messages to a log file in CMTrace.exe compatible format or Legacy text file format and optionally display in the console.
+        Write messages to a log file in CMTrace.exe compatible format or Legacy text file format and optionally display in the console. This function supports different severity levels and can be used to log debug messages if required.
 
     .PARAMETER Message
-    The message to write to the log file or output to the console.
+        The message to write to the log file or output to the console.
+
+        Mandatory: True
 
     .PARAMETER Severity
-    Defines message type. When writing to console or CMTrace.exe log format, it allows highlighting of message type.
-    Options: 0 = Success (highlighted in green), 1 = Information (default), 2 = Warning (highlighted in yellow), 3 = Error (highlighted in red)
+        Defines message type. When writing to console or CMTrace.exe log format, it allows highlighting of message type.
+        Options: 0 = Success (highlighted in green), 1 = Information (default), 2 = Warning (highlighted in yellow), 3 = Error (highlighted in red)
+
+        Mandatory: False
 
     .PARAMETER Source
-    The source of the message being logged.
+        The source of the message being logged.
+
+        Mandatory: False
 
     .PARAMETER ScriptSection
-    The heading for the portion of the script that is being executed. Default is: $installPhase.
+        The heading for the portion of the script that is being executed. Default is: $installPhase.
+
+        Mandatory: False
 
     .PARAMETER LogType
-    Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
+        Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
+
+        Mandatory: False
 
     .PARAMETER LogFileDirectory
-    Set the directory where the log file will be saved.
+        Set the directory where the log file will be saved.
+
+        Mandatory: False
 
     .PARAMETER LogFileName
-    Set the name of the log file.
+        Set the name of the log file.
+
+        Mandatory: False
 
     .PARAMETER PassThru
-    Return the message that was passed to the function.
+        Return the message that was passed to the function.
+
+        Mandatory: False
 
     .PARAMETER DebugMessage
-    Specifies that the message is a debug message. Debug messages only get logged if -LogDebugMessage is set to $true.
+        Specifies that the message is a debug message. Debug messages only get logged if -LogDebugMessage is set to $true.
+
+        Mandatory: False
 
     .INPUTS
-    System.String. The message to write to the log file or output to the console.
+        System.String
+
+        The message to write to the log file or output to the console.
 
     .OUTPUTS
-    System.String[]. This function returns the provided output if -PassThru is specified.
+        System.String[]
+
+        This function returns the provided output if -PassThru is specified.
 
     .EXAMPLE
-    Write-ADTLogEntry -Message "Installing patch MS15-031" -Source 'Add-Patch'
+        # Example 1
+        Write-ADTLogEntry -Message "Installing patch MS15-031" -Source 'Add-Patch'
+
+        Writes a log entry indicating that patch MS15-031 is being installed.
 
     .EXAMPLE
-    Write-ADTLogEntry -Message "Script is running on Windows 8" -Source 'Test-ValidOS'
+        # Example 2
+        Write-ADTLogEntry -Message "Script is running on Windows 11" -Source 'Test-ValidOS'
+
+        Writes a log entry indicating that the script is running on Windows 11.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
