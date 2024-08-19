@@ -108,7 +108,7 @@ function Get-ADTInstalledApplication
         # Set up variables needed in main loop.
         $updatesSkippedCounter = 0
         $msiProductCodeRegex = '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$'
-        $wow6432PSPathRegex = '^Microsoft\.PowerShell\.Core\\Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'
+        $wow6432PSPathRegex = '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'
         $updatesHotfixRegex = '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'
         $stringControlChars = '[^\p{L}\p{Nd}\p{Z}\p{P}]'
 
