@@ -6,6 +6,46 @@
 
 function Dismount-ADTWimFile
 {
+    <#
+    .SYNOPSIS
+        Dismounts a WIM file from the specified mount point.
+
+    .DESCRIPTION
+        The Dismount-ADTWimFile function dismounts a WIM file from the specified mount point and discards all changes. This function ensures that the specified path is a valid WIM mount point before attempting to dismount.
+
+    .PARAMETER Path
+        The path to the WIM mount point.
+
+        Mandatory: True
+
+    .INPUTS
+        None
+
+        This function does not take any pipeline input.
+
+    .OUTPUTS
+        None
+
+        This function does not return any objects.
+
+    .EXAMPLE
+        # Example 1
+        Dismount-ADTWimFile -Path 'C:\Mount\WIM'
+
+        This example dismounts the WIM file from the specified mount point and discards all changes.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
@@ -90,7 +130,7 @@ function Dismount-ADTWimFile
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attemping to mount WIM file.'
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attempting to dismount WIM file.'
         }
     }
 
