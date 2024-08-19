@@ -7,31 +7,43 @@
 function Install-ADTMSUpdates
 {
     <#
-
     .SYNOPSIS
-    Install all Microsoft Updates in a given directory.
+        Install all Microsoft Updates in a given directory.
 
     .DESCRIPTION
-    Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory).
+        Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory). The function will check if the update is already installed and skip it if it is. It handles older redistributables and different types of updates appropriately.
 
     .PARAMETER Directory
-    Directory containing the updates.
+        Directory containing the updates.
+
+        Mandatory: True
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return any objects.
+        None
+
+        This function does not return any objects.
 
     .EXAMPLE
-    Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
+        # Example 1
+        Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
+
+        Installs all Microsoft Updates found in the specified directory.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
