@@ -13,6 +13,9 @@ function Dismount-ADTWimFile
     .DESCRIPTION
         The Dismount-ADTWimFile function dismounts a WIM file from the specified mount point and discards all changes. This function ensures that the specified path is a valid WIM mount point before attempting to dismount.
 
+    .PARAMETER ImagePath
+        The path to the WIM file.
+
     .PARAMETER Path
         The path to the WIM mount point.
 
@@ -25,6 +28,11 @@ function Dismount-ADTWimFile
         None
 
         This function does not return any objects.
+
+    .EXAMPLE
+        Dismount-ADTWimFile -ImagePath 'C:\Path\To\File.wim'
+
+        This example dismounts the WIM file from all its mount points and discards all changes.
 
     .EXAMPLE
         Dismount-ADTWimFile -Path 'C:\Mount\WIM'
