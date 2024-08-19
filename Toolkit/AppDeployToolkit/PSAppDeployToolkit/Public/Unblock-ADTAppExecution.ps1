@@ -7,28 +7,45 @@
 function Unblock-ADTAppExecution
 {
     <#
-
     .SYNOPSIS
-    Unblocks the execution of applications performed by the Block-ADTAppExecution function
+        Unblocks the execution of applications performed by the Block-ADTAppExecution function.
 
     .DESCRIPTION
-    This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps
+        This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps. It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
+
+    .PARAMETER Tasks
+        Specify the scheduled tasks to unblock.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Unblock-ADTAppExecution
+        # Example 1
+        Unblock-ADTAppExecution
+
+        Unblocks the execution of applications that were previously blocked by Block-ADTAppExecution.
 
     .NOTES
-    It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
+        An active ADT session is NOT required to use this function.
+
+        It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
