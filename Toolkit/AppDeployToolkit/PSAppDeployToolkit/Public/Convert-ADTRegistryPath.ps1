@@ -7,49 +7,69 @@
 function Convert-ADTRegistryPath
 {
     <#
-
     .SYNOPSIS
-    Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
+        Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
     .DESCRIPTION
-    Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
+        Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
-    Converts registry key hives to their full paths. Example: HKLM is converted to "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE".
+        Converts registry key hives to their full paths. Example: HKLM is converted to "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE".
 
     .PARAMETER Key
-    Path to the registry key to convert (can be a registry hive or fully qualified path)
+        Path to the registry key to convert (can be a registry hive or fully qualified path)
+
+        Mandatory: True
 
     .PARAMETER Wow6432Node
-    Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
+        Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
+
+        Mandatory: False
 
     .PARAMETER SID
-    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+        The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+        Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-    .PARAMETER DisableFunctionLogging
-    Disables logging of this function. Default: $true
+        Mandatory: False
+
+    .PARAMETER Logging
+        Enables logging of this function. Default: $false
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    System.String. Returns the converted registry key path.
+        System.String
+
+        Returns the converted registry key path.
 
     .EXAMPLE
-    Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        # Example 1
+        Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+
+        Converts the specified registry key path to a format compatible with PowerShell cmdlets.
 
     .EXAMPLE
-    Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        # Example 2
+        Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+
+        Converts the specified registry key path to a format compatible with PowerShell cmdlets.
 
     .NOTES
-    This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
-
     [CmdletBinding()]
     param
     (
