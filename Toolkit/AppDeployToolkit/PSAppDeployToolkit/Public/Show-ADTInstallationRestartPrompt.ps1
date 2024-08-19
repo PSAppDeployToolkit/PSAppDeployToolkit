@@ -7,60 +7,87 @@
 function Show-ADTInstallationRestartPrompt
 {
     <#
-
     .SYNOPSIS
-    Displays a restart prompt with a countdown to a forced restart.
+        Displays a restart prompt with a countdown to a forced restart.
 
     .DESCRIPTION
-    Displays a restart prompt with a countdown to a forced restart.
+        Displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
 
     .PARAMETER Title
-    Title of the prompt. Default: the application installation name.
+        Title of the prompt. Default: the application installation name.
+
+        Mandatory: False
 
     .PARAMETER CountdownSeconds
-    Specifies the number of seconds to countdown before the system restart. Default: 60
+        Specifies the number of seconds to countdown before the system restart. Default: 60
+
+        Mandatory: False
 
     .PARAMETER CountdownNoHideSeconds
-    Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
+        Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
+
+        Mandatory: False
 
     .PARAMETER SilentRestart
-    Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $false
+        Specifies whether the restart should be triggered when Deploy mode is silent or very silent. Default: $false
+
+        Mandatory: False
 
     .PARAMETER NoCountdown
-    Specifies not to show a countdown.
+        Specifies not to show a countdown.
 
-    The UI will restore/reposition itself persistently based on the interval value specified in the config file.
+        Mandatory: False
 
     .PARAMETER SilentCountdownSeconds
-    Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+
+        Mandatory: False
 
     .PARAMETER NotTopMost
-    Specifies whether the windows is the topmost window. Default: $false.
+        Specifies whether the windows is the topmost window. Default: $false.
+
+        Mandatory: False
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        This function does not take any piped input.
 
     .OUTPUTS
-    System.String. Returns the version of the specified file.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+        # Example 1
+        Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+
+        Displays a restart prompt with a 600-second countdown and 60 seconds where the window cannot be hidden.
 
     .EXAMPLE
-    Show-ADTInstallationRestartPrompt -NoCountdown
+        # Example 2
+        Show-ADTInstallationRestartPrompt -NoCountdown
+
+        Displays a restart prompt without a countdown.
 
     .EXAMPLE
-    Show-ADTInstallationRestartPrompt -Countdownseconds 300 -NoSilentRestart $false -SilentCountdownSeconds 10
+        # Example 3
+        Show-ADTInstallationRestartPrompt -CountdownSeconds 300 -SilentRestart -SilentCountdownSeconds 10
+
+        Displays a restart prompt with a 300-second countdown and triggers a silent restart with a 10-second countdown in silent mode.
 
     .NOTES
-    Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    This function can be called without an active ADT session.
+        Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
