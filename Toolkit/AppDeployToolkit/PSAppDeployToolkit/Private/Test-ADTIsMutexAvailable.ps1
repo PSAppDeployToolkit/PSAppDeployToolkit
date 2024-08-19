@@ -61,7 +61,7 @@ function Test-ADTIsMutexAvailable
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$MutexWaitTime = 10000
+        [System.TimeSpan]$MutexWaitTime = [System.TimeSpan]::FromMilliseconds(1)
     )
 
     begin
