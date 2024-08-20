@@ -3372,7 +3372,7 @@ Set-StrictMode -Version 1
 
 # Import our local module.
 Remove-Module -Name PSAppDeployToolkit* -Force
-Import-Module -Name $PSScriptRoot\PSAppDeployToolkit -Force
+Import-Module -Name $PSScriptRoot\..\..\..\PSAppDeployToolkit -Force
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
