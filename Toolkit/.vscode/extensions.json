@@ -1,6 +1,0 @@
-// PSAppDeployToolkit default extension recommendations
-{
-    "recommendations": [
-        "ms-vscode.PowerShell"
-    ]
-}
