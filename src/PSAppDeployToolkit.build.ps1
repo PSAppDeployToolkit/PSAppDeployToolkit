@@ -436,8 +436,8 @@ Add-BuildTask CreateHelpComplete -After CreateExternalHelp {
 Add-BuildTask UpdateCBH -After AssetCopy {
     $ExternalHelp = @"
 <#
-.EXTERNALHELP $($ModuleName)-help.xml
-#>
+    .EXTERNALHELP $($ModuleName)-help.xml
+    #>
 "@
 
     $CBHPattern = "(?ms)(\<#.*\.SYNOPSIS.*?#>)"
