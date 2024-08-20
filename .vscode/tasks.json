@@ -1,0 +1,269 @@
+// Portions of this file were generated using New-VSCodeTask.ps1
+// Modify the build script or tasks-merge.json and recreate.
+// https://code.visualstudio.com/docs/editor/tasks
+// Available variables which can be used inside of strings.
+// https://code.visualstudio.com/docs/editor/variables-reference#_predefined-variables
+// ${workspaceFolder}: path of the folder opened in VS Code
+// ${workspaceFolderBasename} - name of the folder opened in VS Code without any slashes (/)
+// ${file}: current opened file
+// ${fileWorkspaceFolder} - current opened file's workspace folder
+// ${relativeFile}: the current opened file relative to workspaceFolder
+// ${relativeFileDirname}: current opened file's dirname relative to workspaceFolder
+// ${fileBasename}: current opened file's basename
+// ${fileBasenameNoExtension} - current opened file's basename with no file extension
+// ${fileDirname}: current opened file's dirname
+// ${fileExtname}: current opened file's extension
+// ${cwd}: the current working directory of the spawned process
+// ${lineNumber} - current selected line number in the active file
+// ${selectedText} - current selected text in the active file
+// ${execPath} - path to the running VS Code executable
+// ${defaultBuildTask} - name of the default build task
+// ${pathSeparator} - character used by the operating system to separate components in file paths
+{
+    "version": "2.0.0",
+    "windows": {
+        "options": {
+            "shell": {
+                // "executable": "powershell.exe",
+                "executable": "pwsh.exe",
+                "args": [
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "linux": {
+        "options": {
+            "shell": {
+                "executable": "/usr/bin/pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "osx": {
+        "options": {
+            "shell": {
+                "executable": "/usr/local/bin/pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "tasks": [
+        {
+            "label": ".",
+            "type": "shell",
+            "command": "$PSVersionTable;Invoke-Build -Task . -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "TestLocal",
+            "type": "shell",
+            "command": "Invoke-Build -Task TestLocal -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "HelpLocal",
+            "type": "shell",
+            "command": "Invoke-Build -Task HelpLocal -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "Invoke-Build -Task Clean -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "ValidateRequirements",
+            "type": "shell",
+            "command": "Invoke-Build -Task ValidateRequirements -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "Analyze",
+            "type": "shell",
+            "problemMatcher": "$msCompile",
+            "command": "Invoke-Build -Task Analyze -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "AnalyzeTests",
+            "type": "shell",
+            "command": "Invoke-Build -Task AnalyzeTests -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "FormattingCheck",
+            "type": "shell",
+            "command": "Invoke-Build -Task FormattingCheck -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "Test",
+            "type": "shell",
+            "command": "Invoke-Build -Task Test -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "DevCC",
+            "type": "shell",
+            "command": "Invoke-Build -Task DevCC -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "Invoke-Build -Task Build -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
+        },
+        {
+            "label": "BuildNoIntegration",
+            "type": "shell",
+            "command": "Invoke-Build -Task BuildNoIntegration -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "build"
+        },
+        {
+            "label": "IntegrationTest",
+            "type": "shell",
+            "command": "Invoke-Build -Task IntegrationTest -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1'",
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "PesterTest",
+            "type": "shell",
+            "command": "Invoke-Pester '${workspaceFolder}/src/Tests/Unit' -Output Detailed",
+            "problemMatcher": "$pester",
+            "group": "test"
+        },
+        {
+            "label": "Pester-Single-Coverage",
+            "type": "shell",
+            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';$pesterConfig = New-PesterConfiguration;$pesterConfig.run.Path = '${workspaceFolder}/src/Tests/Unit/*/${input:functionName}.Tests.ps1';$pesterConfig.CodeCoverage.Enabled = $true;$pesterConfig.CodeCoverage.Path = '${workspaceFolder}/src/${workspaceFolderBasename}/*/${input:functionName}.ps1';Invoke-Pester -Configuration $pesterConfig",
+            "problemMatcher": "$pester",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "Pester-Single-Detailed",
+            "type": "shell",
+            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';Invoke-Pester '${workspaceFolder}/src/Tests/Unit/*/${input:functionName}.Tests.ps1' -Output Detailed",
+            "problemMatcher": "$pester",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "DevCC-Single",
+            "type": "shell",
+            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';$pesterConfig = New-PesterConfiguration;$pesterConfig.run.Path = '${workspaceFolder}/src/Tests/Unit/*/${input:functionName}.Tests.ps1';$pesterConfig.CodeCoverage.Enabled = $true;$pesterConfig.CodeCoverage.Path = '${workspaceFolder}/src/${workspaceFolderBasename}/*/${input:functionName}.ps1';$pesterConfig.CodeCoverage.OutputPath = '${workspaceFolder}/cov.xml';$pesterConfig.CodeCoverage.OutputFormat = 'CoverageGutters';Invoke-Pester -Configuration $pesterConfig",
+            "problemMatcher": "$pester",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        },
+        {
+            "label": "Integration-Single-Detailed",
+            "type": "shell",
+            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';Invoke-Pester '${workspaceFolder}/src/Tests/Integration/*/${input:functionName}.Tests.ps1' -Output Detailed",
+            "problemMatcher": "$pester",
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "test"
+        }
+    ],
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "functionName",
+            "description": "Name of PowerShell function you want to test"
+        }
+    ]
+}
