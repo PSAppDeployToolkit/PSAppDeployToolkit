@@ -139,7 +139,7 @@ Add-BuildTask TestModuleManifest -Before ImportModuleManifest {
 Add-BuildTask ImportModuleManifest {
     Write-Build White '      Attempting to load the project module.'
     try {
-        Import-Module $script:ModuleManifestFile -Force -PassThru -ErrorAction Stop
+        Import-Module $script:ModuleManifestFile -Force -ErrorAction Stop
     }
     catch {
         throw 'Unable to load the project module'
