@@ -452,7 +452,7 @@ Add-BuildTask UpdateCBH -After AssetCopy {
 # Synopsis: Copies module assets to Artifacts folder
 Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
-    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:ArtifactsPath -Exclude *.psd1, *.psm1 -Recurse -ErrorAction Stop
+    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:ArtifactsPath -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
@@ -469,7 +469,11 @@ Add-BuildTask Build {
     #$private = "$script:ModuleSourcePath\Private"
     $scriptContent = [System.Text.StringBuilder]::new()
     #$powerShellScripts = Get-ChildItem -Path $script:ModuleSourcePath -Filter '*.ps1' -Recurse
-    $powerShellScripts = Get-ChildItem -Path $script:ArtifactsPath -Recurse | Where-Object { $_.Name -match '^*.ps1$' }
+    $powerShellScripts = $(
+        Get-ChildItem -Path $script:ArtifactsPath\ImportsFirst.ps1
+        Get-ChildItem -Path $script:ArtifactsPath\Private\*.ps1, $script:ArtifactsPath\Public\*.ps1 -Recurse
+        Get-ChildItem -Path $script:ArtifactsPath\ImportsLast.ps1
+    )
     foreach ($script in $powerShellScripts) {
         $null = $scriptContent.Append((Get-Content -Path $script.FullName -Raw))
         $null = $scriptContent.AppendLine('')
@@ -486,8 +490,11 @@ Add-BuildTask Build {
     if (Test-Path "$script:ArtifactsPath\Private") {
         Remove-Item "$script:ArtifactsPath\Private" -Recurse -Force -ErrorAction Stop
     }
-    if (Test-Path "$script:ArtifactsPath\Imports.ps1") {
-        Remove-Item "$script:ArtifactsPath\Imports.ps1" -Force -ErrorAction SilentlyContinue
+    if (Test-Path "$script:ArtifactsPath\ImportsFirst.ps1") {
+        Remove-Item "$script:ArtifactsPath\ImportsFirst.ps1" -Force -ErrorAction SilentlyContinue
+    }
+    if (Test-Path "$script:ArtifactsPath\ImportsLast.ps1") {
+        Remove-Item "$script:ArtifactsPath\ImportsLast.ps1" -Force -ErrorAction SilentlyContinue
     }
 
     if (Test-Path "$script:ArtifactsPath\docs") {
