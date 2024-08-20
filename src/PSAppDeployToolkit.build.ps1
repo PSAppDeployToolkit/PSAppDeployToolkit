@@ -213,7 +213,7 @@ Add-BuildTask FormattingCheck {
 
     $scriptAnalyzerParams = @{
         Setting     = 'CodeFormattingAllman'
-        ExcludeRule = 'PSUseConsistentWhitespace'
+        ExcludeRule = 'PSUseConsistentWhitespace', 'PSAlignAssignmentStatement'
         Recurse     = $true
         Verbose     = $false
     }
