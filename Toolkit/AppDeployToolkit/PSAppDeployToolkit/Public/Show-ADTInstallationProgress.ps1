@@ -15,18 +15,6 @@ function Show-ADTInstallationProgress
 
         The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
 
-    .PARAMETER WindowTitle
-        The title of the window to be displayed. The default is the derived value from $InstallTitle.
-
-    .PARAMETER WindowSubtitle
-        The subtitle of the window to be displayed with a fluent progress window. The default is null.
-
-    .PARAMETER StatusMessage
-        The status message to be displayed. The default status message is taken from the configuration file.
-
-    .PARAMETER StatusMessageDetail
-        The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.
-
     .PARAMETER WindowLocation
         The location of the progress window. Default: center of the screen.
 
@@ -111,25 +99,25 @@ function Show-ADTInstallationProgress
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('WindowTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'WindowTitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The title of the window to be displayed. The default is the derived value from $InstallTitle.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'WindowSubtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is null.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'StatusMessage', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The status message to be displayed. The default status message is taken from the configuration file.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'StatusMessageDetail', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent') }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))

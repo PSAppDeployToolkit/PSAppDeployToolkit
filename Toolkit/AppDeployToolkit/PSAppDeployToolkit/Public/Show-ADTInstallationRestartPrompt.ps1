@@ -13,9 +13,6 @@ function Show-ADTInstallationRestartPrompt
     .DESCRIPTION
         Displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
 
-    .PARAMETER Title
-        Title of the prompt. Default: the application installation name.
-
     .PARAMETER CountdownSeconds
         Specifies the number of seconds to display the restart prompt. Default: 60
 
@@ -107,7 +104,7 @@ function Show-ADTInstallationRestartPrompt
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt. Default: the application installation name.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))

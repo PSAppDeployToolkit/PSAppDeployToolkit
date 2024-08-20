@@ -37,6 +37,9 @@ function Set-ADTShortcut
     .PARAMETER WindowStyle
         Sets the shortcut's window style to be minimised, maximised, etc.
 
+    .PARAMETER RunAsAdmin
+        Sets the shortcut to require elevated permissions to run.
+
     .PARAMETER HotKey
         Sets the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
@@ -49,6 +52,11 @@ function Set-ADTShortcut
         None
 
         This function does not generate any output.
+
+    .EXAMPLE
+        Set-ADTShortcut -Path "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
+
+        Creates a shortcut on the All Users desktop named 'Application', targeted to '$envProgramFiles\Application\application.exe'.
 
     .NOTES
         An active ADT session is NOT required to use this function.

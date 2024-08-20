@@ -206,16 +206,16 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            # Tags = @()
+            Tags = 'psappdeploytoolkit', 'adt', 'psadt', 'appdeployment', 'appdeploy', 'deployment', 'toolkit'
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://psappdeploytoolkit.com/docs/license'
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://psappdeploytoolkit.com'
 
             # A URL to an icon representing this module.
-            # IconUri = ''
+            IconUri = 'https://psappdeploytoolkit.com/documentation/assets/logo.ico'
 
             # ReleaseNotes of this module
             # ReleaseNotes = ''
@@ -225,7 +225,7 @@
     } # End of PrivateData hashtable
 
     # HelpInfo URI of this module
-    # HelpInfoURI = ''
+    HelpInfoURI = 'https://psappdeploytoolkit.com/docs'
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
     # DefaultCommandPrefix = ''

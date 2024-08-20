@@ -89,35 +89,43 @@ function Show-ADTInstallationWelcome
     None. This function does not return objects.
 
     .EXAMPLE
-    # Prompt the user to close Internet Explorer, Word and Excel.
-    Show-ADTInstallationWelcome -CloseApps 'iexplore,winword,excel'
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+
+    Prompt the user to close Internet Explorer, Word and Excel.
 
     .EXAMPLE
-    # Close Word and Excel without prompting the user.
-    Show-ADTInstallationWelcome -CloseApps 'winword,excel' -Silent
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
+
+    Close Word and Excel without prompting the user.
 
     .EXAMPLE
-    # Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
-    Show-ADTInstallationWelcome -CloseApps 'winword,excel' -BlockExecution
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
+
+    Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
     .EXAMPLE
-    # Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
-    Show-ADTInstallationWelcome -CloseApps 'winword=Microsoft Office Word,excel=Microsoft Office Excel' -CloseAppsCountdown 600
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseAppsCountdown 600
+
+    Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 
     .EXAMPLE
-    # Prompt the user to close Word, MSAccess and Excel.
-    # By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
-    Show-ADTInstallationWelcome -CloseApps 'winword,msaccess,excel' -PersistPrompt
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
+
+    Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
-    # Allow the user to defer the installation until the deadline is reached.
     Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
 
+    Allow the user to defer the installation until the deadline is reached.
+
     .EXAMPLE
-    # Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
-    # Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
-    # When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
-    Show-ADTInstallationWelcome -CloseApps 'winword,excel' -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+
+    Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+
+    Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
+    
+    When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
     .NOTES
     The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
@@ -248,7 +256,7 @@ function Show-ADTInstallationWelcome
                 # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
                 if (($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
                 {
-                    $ProcessObjects = $($ProcessObjects; $adtSession.GetDefaultMsiExecutablesList())
+                    $ProcessObjects = $($ProcessObjects; $msiExecutables)
                 }
 
                 # Check disk space requirements if specified

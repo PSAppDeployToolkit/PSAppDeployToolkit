@@ -54,11 +54,6 @@ Include matches against updates and hotfixes in results.
 
 Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
 
-.PARAMETER private:LogName
-
-Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
-For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
-
 .PARAMETER LogName
 
 Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
@@ -145,6 +140,7 @@ This function can be called without an active ADT session..
 
 https://psappdeploytoolkit.com
 #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "Silenced to make the build system work. This function is yet to be refactored.")]
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $true)]
@@ -173,8 +169,7 @@ https://psappdeploytoolkit.com
         [ValidateNotNullorEmpty()]
         [String]$LoggingOptions,
         [Parameter(Mandatory = $false)]
-        [Alias('LogName')]
-        [String]$private:LogName,
+        [String]$LogName,
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
         [Switch]$PassThru = $false,

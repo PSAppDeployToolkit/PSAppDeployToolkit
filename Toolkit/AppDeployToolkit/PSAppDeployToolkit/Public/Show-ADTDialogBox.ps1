@@ -18,8 +18,8 @@ function Show-ADTDialogBox
     .PARAMETER Text
         Text in the message dialog box.
 
-    .PARAMETER Title
-        Title of the message dialog box.
+    .PARAMETER Buttons
+        The button(s) to display on the dialog box.
 
     .PARAMETER DefaultButton
         The Default button that is selected. Options: First, Second, Third.
@@ -98,13 +98,13 @@ function Show-ADTDialogBox
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the message dialog box.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
