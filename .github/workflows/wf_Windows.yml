@@ -1,0 +1,61 @@
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/software-installed-on-github-hosted-runners
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
+# https://github.com/actions/upload-artifact#where-does-the-upload-go
+name: PSAppDeployToolkit-Windows-PowerShell
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+jobs:
+  test:
+    name: Run Tests
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+    - name: Display the path
+      shell: powershell
+      run: echo ${env:PATH}
+    - name: Version Display
+      shell: powershell
+      run: $PSVersionTable
+    # uncomment below to explore what modules/variables/env variables are available in the build image
+    # - name: Modules and Variables Display
+    #   shell: powershell
+    #   run: Get-Module -ListAvailable; (Get-Variable).GetEnumerator() | Sort-Object Name | Out-String; (Get-ChildItem env:*).GetEnumerator() | Sort-Object Name | Out-String
+    - name: NuGet Latest
+      shell: powershell
+      run: Install-PackageProvider -Name "NuGet" -Confirm:$false -Force -Verbose
+    - name: PowerShellGet Latest
+      shell: powershell
+      run: Install-Module -Name PowerShellGet -Repository PSGallery -Force
+    - name: Bootstrap
+      shell: powershell
+      run: ./actions_bootstrap.ps1
+    - name: Test and Build
+      shell: powershell
+      run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
+    - name: Upload pester results
+      uses: actions/upload-artifact@v3
+      with:
+        name: pester-results
+        path: .\src\Artifacts\testOutput
+        if-no-files-found: warn
+    - name: Upload zip module archive build
+      uses: actions/upload-artifact@v3
+      with:
+        name: zip-archive
+        path: .\src\Archive
+        if-no-files-found: warn
+

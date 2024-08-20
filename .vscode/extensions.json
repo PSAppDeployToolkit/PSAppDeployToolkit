@@ -1,6 +1,10 @@
 // PSAppDeployToolkit default extension recommendations
 {
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
     "recommendations": [
-        "ms-vscode.PowerShell"
+        "ms-vscode.PowerShell",
+        "ryanluker.vscode-coverage-gutters",
+        "DavidAnson.vscode-markdownlint"
     ]
 }
