@@ -474,12 +474,12 @@ Add-BuildTask Build {
         Get-ChildItem -Path $script:ArtifactsPath\Private\*.ps1, $script:ArtifactsPath\Public\*.ps1 -Recurse
         Get-ChildItem -Path $script:ArtifactsPath\ImportsLast.ps1
     )
-    foreach ($script in $powerShellScripts) {
-        $null = $scriptContent.Append((Get-Content -Path $script.FullName -Raw))
-        $null = $scriptContent.AppendLine('')
-        $null = $scriptContent.AppendLine('')
+    $scriptContent = foreach ($script in $powerShellScripts) {
+        [System.IO.File]::ReadAllText($script.FullName).Trim()
+        [System.String]::Empty
+        [System.String]::Empty
     }
-    $scriptContent.ToString() | Out-File -FilePath $script:BuildModuleRootFile -Encoding utf8 -Force
+    [System.IO.File]::WriteAllLines($script:BuildModuleRootFile, $scriptContent)
     Write-Build Gray '        ...Module creation complete.'
 
     Write-Build Gray '        Cleaning up leftover artifacts...'
