@@ -22,6 +22,9 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER ErrorRecord
         The error record to handle.
 
+    .PARAMETER LogMessage
+        The error message to write to the active ADTSession's log file.
+
     .PARAMETER PassThru
         If specified, the function will return the error record.
 

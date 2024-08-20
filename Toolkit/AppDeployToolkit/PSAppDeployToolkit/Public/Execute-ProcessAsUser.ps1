@@ -94,6 +94,7 @@ Execute process using 'LeastPrivilege' under a user account by using the default
 
 https://psappdeploytoolkit.com
 #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "Silenced to get the module build system going. This function is yet to be refactored.")]
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $false)]
@@ -132,7 +133,6 @@ https://psappdeploytoolkit.com
         {
             $adtEnv = Get-ADTEnvironment
             $adtConfig = Get-ADTConfig
-            $adtSession = Get-ADTSession
         }
         catch
         {
@@ -440,24 +440,25 @@ https://psappdeploytoolkit.com
                     }
                     Finally
                     {
-                        Try
+                        $null = Try
                         {
-                            $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($ScheduleService)
+                            [Runtime.Interopservices.Marshal]::ReleaseComObject($ScheduleService)
                         }
                         Catch
                         {
+                            $null
                         }
                     }
                 }
                 #Windows Task Scheduler 1.0
                 Else
                 {
-                    While ((($exeSchTasksResult = & $adtEnv.exeSchTasks /query /TN $schTaskName /V /FO CSV) | & $Script:CommandTable.'ConvertFrom-Csv' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Status' -First 1) -eq 'Running')
+                    While ((& $adtEnv.exeSchTasks /query /TN $schTaskName /V /FO CSV | & $Script:CommandTable.'ConvertFrom-Csv' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Status' -First 1) -eq 'Running')
                     {
                         & $Script:CommandTable.'Start-Sleep' -Seconds 5
                     }
                     #  Get the exit code from the process launched by the scheduled task
-                    [Int32]$executeProcessAsUserExitCode = ($exeSchTasksResultResult = & $($adtEnv.exeSchTasks) /query /TN $schTaskName /V /FO CSV) | & $Script:CommandTable.'ConvertFrom-Csv' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Last Result' -First 1
+                    [Int32]$executeProcessAsUserExitCode = & $adtEnv.exeSchTasks /query /TN $schTaskName /V /FO CSV | & $Script:CommandTable.'ConvertFrom-Csv' | & $Script:CommandTable.'Select-Object' -ExpandProperty 'Last Result' -First 1
                 }
                 Write-ADTLogEntry -Message "Exit code from process launched by scheduled task [$executeProcessAsUserExitCode]."
             }

@@ -16,9 +16,6 @@ function Show-ADTBalloonTip
     .PARAMETER BalloonTipText
         Text of the balloon tip.
 
-    .PARAMETER BalloonTipTitle
-        Title of the balloon tip.
-
     .PARAMETER BalloonTipIcon
         Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 
@@ -87,7 +84,7 @@ function Show-ADTBalloonTip
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('BalloonTipTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'BalloonTipTitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the balloon tip.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))

@@ -28,6 +28,9 @@ function Mount-ADTWimFile
     .PARAMETER Force
         Forces the removal of the existing directory if it is not empty.
 
+    .PARAMETER PassThru
+        If specified, the function will return the results from `Mount-WindowsImage`.
+
     .INPUTS
         None
 

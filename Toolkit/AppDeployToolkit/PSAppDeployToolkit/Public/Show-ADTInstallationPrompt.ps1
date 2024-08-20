@@ -13,8 +13,8 @@ function Show-ADTInstallationPrompt
     .DESCRIPTION
         Displays a custom installation prompt with the toolkit branding and optional buttons. Any combination of Left, Middle, or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified. The prompt can also display a system icon and be configured to persist, minimize other windows, or timeout after a specified period.
 
-    .PARAMETER Title
-        Title of the prompt. Default: the application installation name.
+    .PARAMETER Message
+        The message text to be displayed on the prompt.
 
     .PARAMETER MessageAlignment
         Alignment of the message text. Options: Left, Center, Right. Default: Center.
@@ -39,9 +39,6 @@ function Show-ADTInstallationPrompt
 
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
-
-    .PARAMETER Timeout
-        Specifies how long, in seconds, to show the message prompt before aborting.
 
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out.
@@ -148,13 +145,13 @@ function Show-ADTInstallationPrompt
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt. Default: the application installation name.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {

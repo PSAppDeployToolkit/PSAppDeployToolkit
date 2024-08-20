@@ -71,8 +71,8 @@ function Start-ADTMsiProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 
-    .PARAMETER ExitOnProcessFailure
-        Specifies whether the function should call Close-ADTSession when the process returns an exit code that is considered an error/failure. Default: $true
+    .PARAMETER NoExitOnProcessFailure
+        Specifies whether the function shouldn't call Close-ADTSession when the process returns an exit code that is considered an error/failure.
 
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache. Default: $false

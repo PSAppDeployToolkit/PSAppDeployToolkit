@@ -6,6 +6,11 @@
 
 function Get-ADTProcessHandles
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
+    param
+    (
+    )
+
     # Get CSV data from the binary and confirm success.
     $exeHandle = "$Script:PSScriptRoot\bin\$([System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))\handle\handle.exe"
     $exeHandleResults = & $exeHandle -nobanner -v
