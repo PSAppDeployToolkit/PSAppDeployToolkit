@@ -119,7 +119,7 @@ function Convert-ADTRegistryPath
                 {
                     if ($Key -match '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\')
                     {
-                        $Key = $Key -replace '^Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
+                        $Key = $Key -replace '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
                     }
                     elseif ($Logging)
                     {
