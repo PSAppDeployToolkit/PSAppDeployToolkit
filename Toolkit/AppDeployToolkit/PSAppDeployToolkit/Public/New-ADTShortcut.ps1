@@ -227,7 +227,7 @@ function New-ADTShortcut
                     }
                     if ($IconLocation)
                     {
-                        $shortcut.IconLocation = $IconLocation + ",$(if ($null -eq $IconIndex) {0} else {$IconIndex})"
+                        $shortcut.IconLocation = $IconLocation + ",$IconIndex"
                     }
                     $shortcut.WindowStyle = switch ($WindowStyle)
                     {

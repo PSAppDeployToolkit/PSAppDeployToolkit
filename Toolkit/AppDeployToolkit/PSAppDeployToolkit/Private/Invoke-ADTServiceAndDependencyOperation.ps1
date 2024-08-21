@@ -80,7 +80,7 @@ function Invoke-ADTServiceAndDependencyOperation
         {
             foreach ($dependent in $dependentServices)
             {
-                Write-ADTLogEntry -Message "$(if ($Operation -eq 'Start') {'Starting'} else {'Stopping'}) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
+                Write-ADTLogEntry -Message "$(('Starting', 'Stopping')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
                 try
                 {
                     $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore

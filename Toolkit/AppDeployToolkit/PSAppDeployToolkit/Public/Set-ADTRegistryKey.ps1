@@ -198,14 +198,7 @@ function Set-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $(if ($Name)
-                {
-                    "Failed to $RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name]."
-                }
-                else
-                {
-                    "Failed to set registry key [$Key]."
-                })
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "$RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
         }
     }
 

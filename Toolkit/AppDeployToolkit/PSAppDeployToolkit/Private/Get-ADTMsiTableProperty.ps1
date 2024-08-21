@@ -108,7 +108,7 @@ function Get-ADTMsiTableProperty
         # Set default values.
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
-            $PSBoundParameters.Add('Table', $(if ([System.IO.Path]::GetExtension($Path) -eq '.msi') { 'Property' } else { 'MsiPatchMetadata' }))
+            $PSBoundParameters.Add('Table', ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($Path) -eq '.msi'])
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {

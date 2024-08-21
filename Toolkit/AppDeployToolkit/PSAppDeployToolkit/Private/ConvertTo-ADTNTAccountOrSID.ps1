@@ -133,7 +133,7 @@ function ConvertTo-ADTNTAccountOrSID
             }
             'WellKnownName'
             {
-                $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(if ($WellKnownToNTAccount) {'NTAccount'} else {'SID'})"
+                $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"
                 Write-ADTLogEntry -Message "Converting $msg."
 
                 # Get the SID for the root domain.
