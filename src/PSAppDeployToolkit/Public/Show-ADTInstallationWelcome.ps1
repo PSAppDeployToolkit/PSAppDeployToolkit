@@ -124,7 +124,7 @@ function Show-ADTInstallationWelcome
     Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
     Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
-    
+
     When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
     .NOTES
