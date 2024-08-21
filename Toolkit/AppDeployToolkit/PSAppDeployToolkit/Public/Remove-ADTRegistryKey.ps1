@@ -166,14 +166,7 @@ function Remove-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $(if ($Name)
-                {
-                    "Failed to delete registry value [$Key] [$Name]."
-                }
-                else
-                {
-                    "Failed to delete registry key [$Key]."
-                })
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete registry $(("key [$Key]", "value [$Key] [$Name]")[!!$Name])."
         }
     }
 

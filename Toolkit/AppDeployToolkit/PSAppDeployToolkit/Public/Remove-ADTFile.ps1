@@ -56,6 +56,8 @@ function Remove-ADTFile
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -79,7 +81,7 @@ function Remove-ADTFile
 
     process
     {
-        foreach ($Item in $(if ($PSCmdlet.ParameterSetName -eq 'Path') { $Path } else { $LiteralPath }))
+        foreach ($Item in $PSBoundParameters[$PSCmdlet.ParameterSetName])
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
