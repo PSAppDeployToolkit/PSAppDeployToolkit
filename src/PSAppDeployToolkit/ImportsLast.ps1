@@ -1,8 +1,8 @@
-#---------------------------------------------------------------------------
+﻿#-----------------------------------------------------------------------------
 #
-# Module constants and finalisation of function definitions.
+# MARK: Module Constants and Function Exports
 #
-#---------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 # Set all functions as read-only and define module exports.
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
