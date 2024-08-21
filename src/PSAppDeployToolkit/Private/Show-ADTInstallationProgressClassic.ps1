@@ -35,9 +35,9 @@ function Show-ADTInstallationProgressClassic
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation,
 
-        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$UnboundArguments
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     # Internal worker function.
