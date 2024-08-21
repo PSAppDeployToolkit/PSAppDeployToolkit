@@ -54,9 +54,9 @@ function Show-ADTBlockedAppDialog
         [ValidateNotNullOrEmpty()]
         [System.String]$Title,
 
-        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$UnboundArguments
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     begin

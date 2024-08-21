@@ -58,9 +58,9 @@ function Invoke-ADTCommandWithRetries
         [ValidateRange(1, 60)]
         [System.UInt32]$SleepSeconds = 5,
 
-        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$Parameters
+        [System.Collections.Generic.List[System.Object]]$Parameters
     )
 
     # Attempt to get command from our lookup table.

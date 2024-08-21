@@ -18,9 +18,9 @@ function Show-ADTBalloonTipFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$BalloonTipTitle,
 
-        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$UnboundArguments
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     # Define internal worker function.
