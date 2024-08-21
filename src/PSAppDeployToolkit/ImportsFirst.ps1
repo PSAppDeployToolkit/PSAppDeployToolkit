@@ -1,8 +1,8 @@
-#---------------------------------------------------------------------------
+﻿#-----------------------------------------------------------------------------
 #
-# Initial module setup to ensure expected functionality.
+# MARK: Module Initialisation Code
 #
-#---------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
