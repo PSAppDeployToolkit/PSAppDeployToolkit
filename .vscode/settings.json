@@ -1,5 +1,16 @@
 // PSAppDeployToolkit default settings to ensure consistent code formatting and file encoding
 {
+    //-------- Indentation configuration --------
+    "editor.detectIndentation": true,
+    "editor.formatOnPaste": true,
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4,
+
+    //-------- Files configuration --------
+    "files.autoGuessEncoding": true,
+    "files.encoding": "utf8bom",
+    "files.insertFinalNewline": true,
+
     // When enabled, will trim trailing whitespace when you save a file.
     "files.trimTrailingWhitespace": true,
     // specifies the location of the explicitly ScriptAnalyzer settings file
