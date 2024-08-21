@@ -124,7 +124,7 @@ function Invoke-ADTFunctionErrorHandler
     # Return the provided ErrorRecord object if passing it through. This has to happen before we write the error.
     if ($PassThru)
     {
-        return $ErrorRecord
+        $PSCmdlet.WriteObject($ErrorRecord)
     }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
