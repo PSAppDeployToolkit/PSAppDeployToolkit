@@ -114,34 +114,20 @@ function Write-ADTLogEntry
 
     process
     {
-        try
+        # If we don't have an active session, write the message to the verbose stream (4).
+        if ($adtSession = if (Test-ADTSessionActive) { Get-ADTSession })
         {
-            try
-            {
-                # If we don't have an active session, write the message to the verbose stream (4).
-                if ($adtSession = if (Test-ADTSessionActive) { Get-ADTSession })
-                {
-                    $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
-                }
-                elseif (!$DebugMessage)
-                {
-                    $Message -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
-                }
-
-                # Return the provided message if PassThru is true.
-                if ($PassThru)
-                {
-                    return $Message
-                }
-            }
-            catch
-            {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
-            }
+            $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
         }
-        catch
+        elseif (!$DebugMessage)
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write message [$Message] to the log file [$($adtSession.GetPropertyValue('LogName'))]."
+            $Message -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
+        }
+
+        # Return the provided message if PassThru is true.
+        if ($PassThru)
+        {
+            return $Message
         }
     }
 }
