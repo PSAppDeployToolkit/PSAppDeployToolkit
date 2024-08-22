@@ -907,15 +907,21 @@ class ADTSession
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
         # If the message is not $null or empty, create the log entry for the different logging methods.
-        foreach ($msg in ($Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } }))
-        {
-            if ($canLog)
+        $Message | & {
+            process
             {
-                & $Script:CommandTable.'Out-File' -InputObject ([System.String]::Format($logLine, $msg)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
-            }
-            if ($adtConfig.Toolkit.LogWriteToHost)
-            {
-                & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $msg)) @whParams
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    return
+                }
+                if ($canLog)
+                {
+                    & $Script:CommandTable.'Out-File' -InputObject ([System.String]::Format($logLine, $_)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                }
+                if ($adtConfig.Toolkit.LogWriteToHost)
+                {
+                    & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $_)) @whParams
+                }
             }
         }
     }
