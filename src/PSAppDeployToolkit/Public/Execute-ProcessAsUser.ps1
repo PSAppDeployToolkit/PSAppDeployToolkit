@@ -469,7 +469,7 @@ https://psappdeploytoolkit.com
         }
         Catch
         {
-            Throw $_
+            throw
         }
         Finally
         {
