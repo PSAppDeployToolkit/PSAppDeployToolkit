@@ -87,7 +87,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source = (& $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) { return $_.Command } } } | & $Script:CommandTable.'Select-Object' -First 1),
+        [System.String]$Source,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -121,6 +121,10 @@ function Write-ADTLogEntry
         }
         elseif (!$DebugMessage)
         {
+            if ([System.String]::IsNullOrWhiteSpace($Source))
+            {
+                $Source = & $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) { return $_.Command } } } | & $Script:CommandTable.'Select-Object' -First 1
+            }
             $Message -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
         }
 
