@@ -80,7 +80,7 @@ function Get-ADTSchedulerTask
             try
             {
                 # Get CSV data from the binary and confirm success.
-                $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV
+                $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV 2>&1
                 if ($Global:LastExitCode -ne 0)
                 {
                     $naerParams = @{
