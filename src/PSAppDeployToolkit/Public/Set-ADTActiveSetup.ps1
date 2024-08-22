@@ -474,7 +474,7 @@ function Set-ADTActiveSetup
                     }
                     '.ps1'
                     {
-                        $CUStubExePath = "$PSHOME\powershell.exe"
+                        $CUStubExePath = Get-ADTPowerShellProcessPath
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
                             "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
