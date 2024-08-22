@@ -73,26 +73,29 @@ function Close-ADTInstallationProgress
                 & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name)
                 Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
 
-                # Send out the final toast notification.
-                if ($adtSession)
+                # We only send balloon tips when a session is active.
+                if (!$adtSession)
                 {
-                    switch ($adtSession.GetDeploymentStatus())
+                    return
+                }
+
+                # Send out the final toast notification.
+                switch ($adtSession.GetDeploymentStatus())
+                {
+                    FastRetry
                     {
-                        FastRetry
-                        {
-                            Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
-                            break
-                        }
-                        Error
-                        {
-                            Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
-                            break
-                        }
-                        default
-                        {
-                            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
-                            break
-                        }
+                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        break
+                    }
+                    Error
+                    {
+                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        break
+                    }
+                    default
+                    {
+                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        break
                     }
                 }
             }

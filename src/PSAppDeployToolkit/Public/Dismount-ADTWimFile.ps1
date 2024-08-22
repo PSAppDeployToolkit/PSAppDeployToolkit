@@ -107,20 +107,24 @@ function Dismount-ADTWimFile
                         # Close all open file handles.
                         foreach ($handle in $pathHandles)
                         {
+                            # Close handle using handle.exe. An exit code of 0 is considered successful.
                             Write-ADTLogEntry -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
                             $handleResult = & $exeHandle -nobanner -c $handle.Handle -p $handle.PID -y
-                            if (!$LASTEXITCODE.Equals(0))
+                            if ($LASTEXITCODE.Equals(0))
                             {
-                                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $handleResult") -Severity 3
-                                $naerParams = @{
-                                    Exception = [System.ApplicationException]::new($msg)
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                    ErrorId = 'HandleClosureFailure'
-                                    TargetObject = $handleResult
-                                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                                }
-                                throw (New-ADTErrorRecord @naerParams)
+                                continue
                             }
+
+                            # If we're here, we had a bad exit code.
+                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $handleResult") -Severity 3
+                            $naerParams = @{
+                                Exception = [System.ApplicationException]::new($msg)
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'HandleClosureFailure'
+                                TargetObject = $handleResult
+                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
                         }
 
                         # Attempt the dismount again.

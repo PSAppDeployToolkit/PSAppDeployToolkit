@@ -165,27 +165,7 @@ function Get-ADTMsiTableProperty
                 }
 
                 # Get either the requested windows database table information or summary information.
-                if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
-                {
-                    # Open the requested table view from the database.
-                    $TableProperties = [ordered]@{}
-                    $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
-                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
-
-                    # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
-                    # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                    while (($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch))
-                    {
-                        $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
-                    }
-
-                    # Return the accumulated results. We can't use a custom object for this as we have no idea what's going to be in the properties of a given MSI.
-                    if ($TableProperties.Count)
-                    {
-                        return [pscustomobject]$TableProperties
-                    }
-                }
-                else
+                if ($GetSummaryInformation)
                 {
                     # Get the SummaryInformation from the windows installer database.
                     # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
@@ -209,6 +189,24 @@ function Get-ADTMsiTableProperty
                         CreatingApplication = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)
                         Security = Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19)
                     }
+                }
+
+                # Open the requested table view from the database.
+                $TableProperties = [ordered]@{}
+                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
+                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+
+                # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
+                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+                while (($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch))
+                {
+                    $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
+                }
+
+                # Return the accumulated results. We can't use a custom object for this as we have no idea what's going to be in the properties of a given MSI.
+                if ($TableProperties.Count)
+                {
+                    return [pscustomobject]$TableProperties
                 }
             }
             catch
