@@ -93,15 +93,15 @@ function Write-ADTLogEntry
         [ValidateNotNullOrEmpty()]
         [System.String]$ScriptSection,
 
-        [Parameter(Mandatory = $false, Position = 4)]
+        [Parameter(Mandatory = $false)]
         [ValidateSet('CMTrace', 'Legacy')]
         [System.String]$LogType,
 
-        [Parameter(Mandatory = $false, Position = 5)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogFileDirectory,
 
-        [Parameter(Mandatory = $false, Position = 6)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogFileName,
 
