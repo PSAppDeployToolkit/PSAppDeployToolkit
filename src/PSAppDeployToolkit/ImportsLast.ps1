@@ -80,17 +80,32 @@
                 CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
                 Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
             }).AsReadOnly()
-        SeverityNames = [System.Array]::AsReadOnly([System.String[]]$(
-                'Success'
-                'Info'
-                'Warning'
-                'Error'
-            ))
-        SeverityColours = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]$(
-                ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Green; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
-                ([ordered]@{}).AsReadOnly()
-                ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Yellow; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
-                ([ordered]@{ ForegroundColor = [System.ConsoleColor]::Red; BackgroundColor = [System.ConsoleColor]::Black }).AsReadOnly()
+        Severities = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]$(
+                ([ordered]@{
+                    Name = 'Success'
+                    Colours = ([ordered]@{
+                            ForegroundColor = [System.ConsoleColor]::Green
+                            BackgroundColor = [System.ConsoleColor]::Black
+                        }).AsReadOnly()
+                }).AsReadOnly()
+                ([ordered]@{
+                    Name = 'Info'
+                    Colours = ([ordered]@{}).AsReadOnly()
+                }).AsReadOnly()
+                ([ordered]@{
+                    Name = 'Warning'
+                    Colours = ([ordered]@{
+                            ForegroundColor = [System.ConsoleColor]::Yellow
+                            BackgroundColor = [System.ConsoleColor]::Black
+                        }).AsReadOnly()
+                }).AsReadOnly()
+                ([ordered]@{
+                    Name = 'Error'
+                    Colours = ([ordered]@{
+                            ForegroundColor = [System.ConsoleColor]::Red
+                            BackgroundColor = [System.ConsoleColor]::Black
+                        }).AsReadOnly()
+                }).AsReadOnly()
             ))
     }).AsReadOnly()
 
