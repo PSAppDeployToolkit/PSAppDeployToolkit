@@ -226,7 +226,7 @@ https://psappdeploytoolkit.com
         }
 
         ## If powershell.exe or cmd.exe is being launched, then create a VBScript to launch the shell so that we can suppress the console window that flashes otherwise
-        If (((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'powershell*') -or ((& $Script:CommandTable.'Split-Path' -Path $Path -Leaf) -ilike 'cmd*'))
+        If ([System.IO.Path]::GetFileNameWithoutExtension($Path) -match '^(powershell|pwsh|cmd)$')
         {
             If ($SecureParameters)
             {
