@@ -101,7 +101,7 @@ function ConvertTo-ADTNTAccountOrSID
     {
         switch ($PSCmdlet.ParameterSetName)
         {
-            'SIDToNTAccount'
+            SIDToNTAccount
             {
                 $msg = "the SID [$SID] to an NT Account name"
                 Write-ADTLogEntry -Message "Converting $msg."
@@ -116,7 +116,7 @@ function ConvertTo-ADTNTAccountOrSID
                 }
                 break
             }
-            'NTAccountToSID'
+            NTAccountToSID
             {
                 $msg = "the NT Account [$AccountName] to a SID"
                 Write-ADTLogEntry -Message "Converting $msg."
@@ -131,7 +131,7 @@ function ConvertTo-ADTNTAccountOrSID
                 }
                 break
             }
-            'WellKnownName'
+            WellKnownName
             {
                 $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"
                 Write-ADTLogEntry -Message "Converting $msg."

@@ -84,13 +84,10 @@ function Show-ADTBlockedAppDialog
                 # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
                 if ((Test-ADTIsMutexAvailable -MutexName $showBlockedAppDialogMutexName) -and $showBlockedAppDialogMutex.WaitOne(1))
                 {
-                    Show-ADTInstallationPrompt -Title $Title -Message (Get-ADTStringTable).BlockExecution.Message -Icon Warning -ButtonRightText OK
-                }
-                else
-                {
-                    # If attempt to acquire an exclusive lock on the mutex failed, then exit script as another blocked app dialog window is already open.
                     Write-ADTLogEntry -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2
+                    return
                 }
+                Show-ADTInstallationPrompt -Title $Title -Message (Get-ADTStringTable).BlockExecution.Message -Icon Warning -ButtonRightText OK
             }
             catch
             {

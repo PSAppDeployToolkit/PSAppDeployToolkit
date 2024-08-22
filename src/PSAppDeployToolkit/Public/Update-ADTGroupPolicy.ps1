@@ -53,26 +53,31 @@ function Update-ADTGroupPolicy
 
     process
     {
+        # Handle each target separately so we can report on it.
         foreach ($target in ('Computer', 'User'))
         {
             try
             {
                 try
                 {
+                    # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
                     Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
                     $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
-                    if ($LASTEXITCODE)
+                    if (!$LASTEXITCODE)
                     {
-                        Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new($msg)
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'GpUpdateFailure'
-                            TargetObject = $gpUpdateResult
-                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
+                        return
                     }
+
+                    # If we're here, we had a bad exit code.
+                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new($msg)
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'GpUpdateFailure'
+                        TargetObject = $gpUpdateResult
+                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 catch
                 {

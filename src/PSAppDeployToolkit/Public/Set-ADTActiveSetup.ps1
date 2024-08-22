@@ -184,12 +184,12 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$UserSID
+                [System.String]$SID
             )
 
-            $HKCUProps = if ($UserSID)
+            $HKCUProps = if ($SID)
             {
-                Get-ADTRegistryKey -Key $HKCUKey -SID $UserSID
+                Get-ADTRegistryKey -Key $HKCUKey -SID $SID
             }
             else
             {
@@ -346,7 +346,7 @@ function Set-ADTActiveSetup
             Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
             Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version @srkParams
             Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
-            if (![System.String]::IsNullOrWhitespace($Locale))
+            if (![System.String]::IsNullOrWhiteSpace($Locale))
             {
                 Set-ADTRegistryKey -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
             }
@@ -426,64 +426,64 @@ function Set-ADTActiveSetup
                 {
                     '.exe'
                     {
-                        [String]$CUStubExePath = $StubExePath
-                        [String]$CUArguments = $Arguments
-                        if ([string]::IsNullOrEmpty($Arguments))
+                        $CUStubExePath = $StubExePath
+                        $CUArguments = $Arguments
+                        $StubPath = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            [String]$StubPath = "`"$CUStubExePath`""
+                            "`"$CUStubExePath`""
                         }
                         else
                         {
-                            [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                            "`"$CUStubExePath`" $CUArguments"
                         }
                     }
                     { $_ -in '.js', '.vbs' }
                     {
-                        [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\wscript.exe"
-                        if ([string]::IsNullOrEmpty($Arguments))
+                        $CUStubExePath = "$([System.Environment]::SystemDirectory)\wscript.exe"
+                        $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            [String]$CUArguments = "//nologo `"$StubExePath`""
+                            "//nologo `"$StubExePath`""
                         }
                         else
                         {
-                            [String]$CUArguments = "//nologo `"$StubExePath`"  $Arguments"
+                            "//nologo `"$StubExePath`"  $Arguments"
                         }
-                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                        $StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
                     { $_ -in '.cmd', '.bat' }
                     {
-                        [String]$CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
+                        $CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
                         # Prefix any CMD.exe metacharacters ^ or & with ^ to escape them - parentheses only require escaping when there's no space in the path!
-                        if ($StubExePath.Trim() -match '\s')
+                        $StubExePath = if ($StubExePath.Trim() -match '\s')
                         {
-                            $StubExePath = $StubExePath -replace '([&^])', '^$1'
+                            $StubExePath -replace '([&^])', '^$1'
                         }
                         else
                         {
-                            $StubExePath = $StubExePath -replace '([()&^])', '^$1'
+                            $StubExePath -replace '([()&^])', '^$1'
                         }
-                        if ([string]::IsNullOrEmpty($Arguments))
+                        $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            [String]$CUArguments = "/C `"$StubExePath`""
+                            "/C `"$StubExePath`""
                         }
                         else
                         {
-                            [String]$CUArguments = "/C `"`"$StubExePath`" $Arguments`""
+                            "/C `"`"$StubExePath`" $Arguments`""
                         }
-                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                        $StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
                     '.ps1'
                     {
-                        [String]$CUStubExePath = "$PSHOME\powershell.exe"
-                        if ([string]::IsNullOrEmpty($Arguments))
+                        $CUStubExePath = "$PSHOME\powershell.exe"
+                        $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                            "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
                         }
                         else
                         {
-                            [String]$CUArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                            "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
                         }
-                        [String]$StubPath = "`"$CUStubExePath`" $CUArguments"
+                        $StubPath = "`"$CUStubExePath`" $CUArguments"
                     }
                 }
 
@@ -513,7 +513,7 @@ function Set-ADTActiveSetup
                     }
 
                     # Skip if Active Setup reg key is present and Version is equal or higher
-                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -UserSID $runAsActiveUser.SID))
+                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -SID $runAsActiveUser.SID))
                     {
                         Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
                         return

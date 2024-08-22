@@ -213,6 +213,7 @@ class ADTSession
         }
         else
         {
+            $this.WriteZeroConfigDivider()
             $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$($this.DefaultMsiFile)].")
         }
 
@@ -528,40 +529,39 @@ class ADTSession
 
     hidden [System.Void] PerformSystemAccountTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # If script is running in session zero.
-        if ($ADTEnv.SessionZero)
+        # Return early if we're not in session 0.
+        if (!$ADTEnv.SessionZero)
         {
-            # If the script was launched with deployment mode set to NonInteractive, then continue
-            if ($this.DeployMode -eq 'NonInteractive')
+            $this.WriteLogEntry('Session 0 not detected.')
+            return
+        }
+
+        # If the script was launched with deployment mode set to NonInteractive, then continue
+        if ($this.DeployMode -eq 'NonInteractive')
+        {
+            $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.DeployMode)].")
+        }
+        elseif ($ADTConfig.Toolkit.SessionDetection)
+        {
+            # If the process is not able to display a UI, enable NonInteractive mode
+            if (!$ADTEnv.IsProcessUserInteractive)
             {
-                $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.DeployMode)].")
+                $this.DeployMode = 'NonInteractive'
+                $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.DeployMode)].")
             }
-            elseif ($ADTConfig.Toolkit.SessionDetection)
+            elseif (!$ADTEnv.usersLoggedOn)
             {
-                # If the process is not able to display a UI, enable NonInteractive mode
-                if (!$ADTEnv.IsProcessUserInteractive)
-                {
-                    $this.DeployMode = 'NonInteractive'
-                    $this.WriteLogEntry("Session 0 detected, process not running in user interactive mode; deployment mode set to [$($this.DeployMode)].")
-                }
-                elseif (!$ADTEnv.usersLoggedOn)
-                {
-                    $this.DeployMode = 'NonInteractive'
-                    $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.DeployMode)].")
-                }
-                else
-                {
-                    $this.WriteLogEntry('Session 0 detected, process running in user interactive mode, user(s) logged in.')
-                }
+                $this.DeployMode = 'NonInteractive'
+                $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.DeployMode)].")
             }
             else
             {
-                $this.WriteLogEntry("Session 0 detected but toolkit configured to not adjust deployment mode.")
+                $this.WriteLogEntry('Session 0 detected, process running in user interactive mode, user(s) logged in.')
             }
         }
         else
         {
-            $this.WriteLogEntry('Session 0 not detected.')
+            $this.WriteLogEntry("Session 0 detected but toolkit is configured to not adjust deployment mode.")
         }
     }
 
@@ -817,28 +817,31 @@ class ADTSession
         $this.SetPropertyValue('DisableLogging', $true)
         $this.Closed = $true
 
-        # Archive the log files to zip format and then delete the temporary logs folder.
-        if ($adtConfig.Toolkit.CompressLogs)
+        # Return early if we're not archiving log files.
+        if (!$adtConfig.Toolkit.CompressLogs)
         {
-            $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
-            try
-            {
-                # Get all archive files sorted by last write time
-                $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
-                $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
+            return
+        }
 
-                # Keep only the max number of archive files
-                if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
-                {
-                    $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
-                }
-                & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
-                [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
-            }
-            catch
+        # Archive the log files to zip format and then delete the temporary logs folder.
+        $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
+        try
+        {
+            # Get all archive files sorted by last write time
+            $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
+            $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
+
+            # Keep only the max number of archive files
+            if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
             {
-                $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
+                $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
             }
+            & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+            [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
+        }
+        catch
+        {
+            $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
         }
     }
 

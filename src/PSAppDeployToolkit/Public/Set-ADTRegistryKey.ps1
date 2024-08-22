@@ -66,7 +66,6 @@ function Set-ADTRegistryKey
         Creates or sets a Binary value in the specified registry key.
 
     .EXAMPLE
-
         Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
 
         Creates or sets the default value in the specified registry key.

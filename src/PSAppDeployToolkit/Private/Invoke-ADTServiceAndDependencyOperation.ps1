@@ -76,24 +76,24 @@ function Invoke-ADTServiceAndDependencyOperation
     {
         # Discover all dependent services.
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-        if ($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } })
-        {
-            foreach ($dependent in $dependentServices)
-            {
-                Write-ADTLogEntry -Message "$(('Starting', 'Stopping')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
-                try
-                {
-                    $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
-                }
-            }
-        }
-        else
+        if (!($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
         {
             Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]."
+            return
+        }
+
+        # Action each found dependent service.
+        foreach ($dependent in $dependentServices)
+        {
+            Write-ADTLogEntry -Message "$(('Starting', 'Stopping')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
+            try
+            {
+                $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
+            }
+            catch
+            {
+                Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
+            }
         }
     }
 
