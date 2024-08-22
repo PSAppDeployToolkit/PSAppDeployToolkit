@@ -895,7 +895,6 @@ class ADTSession
 
         # Cache all data pertaining to current severity.
         $sevData = $Script:Logging.Severities[$Severity]
-        $whParams = $sevData.Colours
 
         # Store log string to format with message.
         $logFormats = @{
@@ -903,29 +902,17 @@ class ADTSession
             CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
         }
 
-        # Generate all the variables we'll need for the log operation.
-        $logLine = $logFormats.$LogType
-        $conLine = $logFormats.Legacy
-        $outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName)
-        $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
-
-        # If the message is not $null or empty, create the log entry for the different logging methods.
-        $Message | & {
-            process
-            {
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    return
-                }
-                if ($canLog)
-                {
-                    & $Script:CommandTable.'Out-File' -InputObject ([System.String]::Format($logLine, $_)) -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
-                }
-                if ($adtConfig.Toolkit.LogWriteToHost)
-                {
-                    & $Script:CommandTable.'Write-Host' -Object ([System.String]::Format($conLine, $_)) @whParams
-                }
-            }
+        # Write out all non-null messages to disk or host if configured/permitted to do so.
+        if (![System.String]::IsNullOrWhiteSpace(($outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName))) -and !$this.GetPropertyValue('DisableLogging'))
+        {
+            $logLine = $logFormats.$LogType
+            $Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { [System.String]::Format($logLine, $_) } } } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+        }
+        if ($adtConfig.Toolkit.LogWriteToHost)
+        {
+            $conLine = $logFormats.Legacy
+            $colours = $sevData.Colours
+            $Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { [System.String]::Format($conLine, $_) } } } | & $Script:CommandTable.'Write-Host' @colours
         }
     }
 
