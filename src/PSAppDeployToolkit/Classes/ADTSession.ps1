@@ -893,16 +893,19 @@ class ADTSession
             $LogFileName = $this.GetPropertyValue('LogName')
         }
 
+        # Cache all data pertaining to current severity.
+        $sevData = $Script:Logging.Severities[$Severity]
+        $whParams = $sevData.Colours
+
         # Store log string to format with message.
-        $logFormats = @(
-            [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $Script:Logging.SeverityNames[$Severity])
-            [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
-        )
+        $logFormats = @{
+            Legacy = [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $sevData.Name)
+            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
+        }
 
         # Generate all the variables we'll need for the log operation.
-        $whParams = $Script:Logging.SeverityColours[$Severity]
-        $logLine = $logFormats[$LogType -ieq 'CMTrace']
-        $conLine = $logFormats[0]
+        $logLine = $logFormats.$LogType
+        $conLine = $logFormats.Legacy
         $outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName)
         $canLog = !$this.GetPropertyValue('DisableLogging') -and ![System.String]::IsNullOrWhiteSpace($outFile)
 
