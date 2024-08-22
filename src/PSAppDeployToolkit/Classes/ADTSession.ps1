@@ -646,16 +646,6 @@ class ADTSession
         }
     }
 
-    [System.Void] SyncPropertyValues()
-    {
-        # This is ran ahead of an async operation for compatibility mode operations to ensure the module has the current state.
-        if (!$this.CompatibilityMode -or !$this.Opened)
-        {
-            return
-        }
-        $this.PSObject.Properties.Name | & { process { if (($value = $this.CallerVariables.Get($_).Value)) { $this.$_ = $value } } }
-    }
-
     [System.String] GetDeploymentStatus()
     {
         if (($this.ExitCode -eq ($adtConfig = Get-ADTConfig).UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
