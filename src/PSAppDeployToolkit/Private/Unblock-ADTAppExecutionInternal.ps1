@@ -51,11 +51,13 @@ function Unblock-ADTAppExecutionInternal
     {
         TaskName
         {
+            Write-Verbose -Message "Deleting Scheduled Task [$TaskName]."
             Get-ScheduledTask -TaskName $TaskName -Verbose:$false -ErrorAction Ignore | Unregister-ScheduledTask -Confirm:$false -Verbose:$false
             break
         }
         Tasks
         {
+            Write-Verbose -Message "Deleting Scheduled Tasks ['$($Tasks.TaskName -join "', '")']."
             $Tasks | Unregister-ScheduledTask -Confirm:$false -Verbose:$false
             break
         }
