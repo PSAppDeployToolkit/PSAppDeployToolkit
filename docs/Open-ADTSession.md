@@ -17,11 +17,11 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
  [[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
  [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>] [[-AppScriptVersion] <Version>]
- [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>] [[-DefaultMsiFile] <String>]
- [[-DefaultMstFile] <String>] [[-DefaultMspFiles] <String[]>] [[-InstallName] <String>]
- [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
- [[-DeployAppScriptDate] <String>] [[-DeployAppScriptParameters] <IDictionary>] [-PassThru]
- [<CommonParameters>]
+ [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
+ [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
+ [[-DeployAppScriptDate] <String>] [[-DeployAppScriptParameters] <IDictionary>] [[-DirFiles] <String>]
+ [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+ [[-DefaultMspFiles] <String[]>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -311,54 +311,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DefaultMsiFile
-Deploy-Application.ps1 Parameter.
-Specifies the default MSI file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 15
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultMstFile
-Deploy-Application.ps1 Parameter.
-Specifies the default MST file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 16
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultMspFiles
-Deploy-Application.ps1 Parameter.
-Specifies the default MSP files.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 17
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -InstallName
 Deploy-Application.ps1 Parameter.
 Specifies the install name.
@@ -369,7 +321,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 18
+Position: 15
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -385,7 +337,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 19
+Position: 16
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -401,7 +353,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 20
+Position: 17
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -417,7 +369,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 21
+Position: 18
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -433,7 +385,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 22
+Position: 19
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -449,7 +401,87 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
+Position: 20
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DirFiles
+Deploy-Application.ps1 Parameter.
+Specifies the path to Files.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 21
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DirSupportFiles
+Deploy-Application.ps1 Parameter.
+Specifies the path to SupportFiles.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 22
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultMsiFile
+Deploy-Application.ps1 Parameter.
+Specifies the default MSI file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: 23
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultMstFile
+Deploy-Application.ps1 Parameter.
+Specifies the default MST file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 24
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultMspFiles
+Deploy-Application.ps1 Parameter.
+Specifies the default MSP files.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 25
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
