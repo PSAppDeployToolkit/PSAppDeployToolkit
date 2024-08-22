@@ -141,9 +141,8 @@ class ADTSession
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories before returning.
-        $this.ScriptDirectory = if ($rootLocation = $Parameters.SessionState.PSVariable.GetValue('PSScriptRoot', $null)) { $rootLocation } else { $PWD.Path }
-        $this.DirFiles = "$($this.ScriptDirectory)\Files"
-        $this.DirSupportFiles = "$($this.ScriptDirectory)\SupportFiles"
+        $this.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($rootLocation = $this.CallerVariables.GetValue('PSScriptRoot', $null)))) { $rootLocation } else { $PWD.Path }
+        'DirFiles', 'DirSupportFiles' | & { process { if ([System.String]::IsNullOrWhiteSpace($this.$_)) { $this.$_ = "$($this.ScriptDirectory)\$($_ -replace '^Dir')" } } }
         $this.Instantiated = $true
     }
 

@@ -64,15 +64,6 @@ function Open-ADTSession
     .PARAMETER AppScriptAuthor
         Deploy-Application.ps1 Parameter. Specifies the application script author.
 
-    .PARAMETER DefaultMsiFile
-        Deploy-Application.ps1 Parameter. Specifies the default MSI file.
-
-    .PARAMETER DefaultMstFile
-        Deploy-Application.ps1 Parameter. Specifies the default MST file.
-
-    .PARAMETER DefaultMspFiles
-        Deploy-Application.ps1 Parameter. Specifies the default MSP files.
-
     .PARAMETER InstallName
         Deploy-Application.ps1 Parameter. Specifies the install name.
 
@@ -90,6 +81,21 @@ function Open-ADTSession
 
     .PARAMETER DeployAppScriptParameters
         Deploy-Application.ps1 Parameter. Specifies the parameters for the deploy application script.
+
+    .PARAMETER DirFiles
+        Deploy-Application.ps1 Parameter. Specifies the path to Files.
+
+    .PARAMETER DirSupportFiles
+        Deploy-Application.ps1 Parameter. Specifies the path to SupportFiles.
+
+    .PARAMETER DefaultMsiFile
+        Deploy-Application.ps1 Parameter. Specifies the default MSI file.
+
+    .PARAMETER DefaultMstFile
+        Deploy-Application.ps1 Parameter. Specifies the default MST file.
+
+    .PARAMETER DefaultMspFiles
+        Deploy-Application.ps1 Parameter. Specifies the default MSP files.
 
     .PARAMETER PassThru
         Deploy-Application.ps1 Parameter. Passes the session object through the pipeline.
@@ -190,18 +196,6 @@ function Open-ADTSession
         [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMsiFile,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMstFile,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.String[]]$DefaultMspFiles,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [AllowEmptyString()]
         [System.String]$InstallName,
 
@@ -224,6 +218,26 @@ function Open-ADTSession
         [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
         [AllowEmptyCollection()]
         [System.Collections.IDictionary]$DeployAppScriptParameters,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DirFiles,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DirSupportFiles,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultMsiFile,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultMstFile,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$DefaultMspFiles,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
