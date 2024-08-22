@@ -622,13 +622,13 @@ class ADTSession
     {
         # This getter exists as once the object is opened, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.CompatibilityMode -and $this.Opened)
+        if (!$this.CompatibilityMode -or !$this.Opened)
         {
-            return $this.CallerVariables.Get($Name).Value
+            return $this.$Name
         }
         else
         {
-            return $this.$Name
+            return $this.CallerVariables.Get($Name).Value
         }
     }
 
@@ -636,13 +636,13 @@ class ADTSession
     {
         # This getter exists as once the object is opened, we need to read the variable from the caller's scope.
         # We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-        if ($this.CompatibilityMode -and $this.Opened)
+        if (!$this.CompatibilityMode -or !$this.Opened)
         {
-            $this.CallerVariables.Set($Name, $Value)
+            $this.$Name = $Value
         }
         else
         {
-            $this.$Name = $Value
+            $this.CallerVariables.Set($Name, $Value)
         }
     }
 
