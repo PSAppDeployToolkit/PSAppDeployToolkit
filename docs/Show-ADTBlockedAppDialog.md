@@ -13,7 +13,8 @@ Displays a dialog to inform the user about a blocked application.
 ## SYNTAX
 
 ```
-Show-ADTBlockedAppDialog [-Title] <String> [[-UnboundArguments] <Object>] [<CommonParameters>]
+Show-ADTBlockedAppDialog [-Title] <String>
+ [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,7 +52,7 @@ Accept wildcard characters: False
 Captures any additional arguments passed to the function.
 
 ```yaml
-Type: Object
+Type: System.Collections.Generic.List`1[System.Object]
 Parameter Sets: (All)
 Aliases:
 

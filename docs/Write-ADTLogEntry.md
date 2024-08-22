@@ -13,7 +13,7 @@ Write messages to a log file in CMTrace.exe compatible format or Legacy text fil
 ## SYNTAX
 
 ```
-Write-ADTLogEntry -Message <String[]> [-Severity <UInt32>] [-Source <String>] [-ScriptSection <String>]
+Write-ADTLogEntry [-Message] <String[]> [[-Severity] <UInt32>] [[-Source] <String>] [[-ScriptSection] <String>]
  [[-LogType] <String>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>] [-PassThru] [-DebugMessage]
  [<CommonParameters>]
 ```
@@ -49,7 +49,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
@@ -66,7 +66,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,8 +81,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: (& $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^Write-(Log|ADTLogEntry)$')) { return $_.Command } } } | & $Script:CommandTable.'Select-Object' -First 1)
+Position: 3
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -97,7 +97,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
