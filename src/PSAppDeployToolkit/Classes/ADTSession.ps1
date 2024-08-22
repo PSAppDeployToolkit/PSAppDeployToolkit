@@ -179,7 +179,7 @@ class ADTSession
         # Mount the WIM file and reset DirFiles to the mount point.
         $this.WriteZeroConfigDivider()
         $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
-        Mount-ADTWimFile -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 6>$null
+        Mount-ADTWimFile -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 -InformationAction Ignore
         $this.WriteLogEntry("Successfully mounted WIM file to [$($this.DirFiles)].")
         $this.WriteLogEntry("Using [$($this.DirFiles)] as the base DirFiles directory.")
     }
@@ -245,7 +245,7 @@ class ADTSession
 
         # Read the MSI and get the installation details.
         $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File -InformationAction Ignore
 
         # Generate list of MSI executables for testing later on.
         if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
@@ -254,7 +254,7 @@ class ADTSession
         }
 
         # Update our app variables with new values.
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property -InformationAction Ignore
         $this.WriteLogEntry("App Vendor [$($msiProps.Manufacturer)].")
         $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
         $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
