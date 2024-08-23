@@ -418,7 +418,7 @@ class ADTSession
         {
             $this.WriteLogEntry("[$($this.InstallName)] script author is [$($this.AppScriptAuthor)]")
         }
-        if ($this.DeployAppScriptFriendlyName)
+        if ($this.DeployAppScriptFriendlyName -and $this.DeployAppScriptVersion)
         {
             $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)]")
         }
