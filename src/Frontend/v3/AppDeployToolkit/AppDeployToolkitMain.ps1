@@ -523,6 +523,73 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironment
 
 #---------------------------------------------------------------------------
 #
+# Wrapper around Copy-ADTFile
+#
+#---------------------------------------------------------------------------
+
+function Copy-File
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullorEmpty()]
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$Destination,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Flatten,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueFileCopyOnError = $false,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$RobocopyAdditionalParams
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $null = $PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    try
+    {
+        Copy-ADTFile @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # Wrapper around Remove-ADTFile
 #
 #---------------------------------------------------------------------------
@@ -562,6 +629,95 @@ function Remove-File
     try
     {
         Remove-ADTFile @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Copy-ADTFileToUserProfiles
+#
+#---------------------------------------------------------------------------
+
+function Copy-FileToUserProfiles
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [System.String]$Destination,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Flatten,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$RobocopyAdditionalParams = $null,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ExcludeNTAccount,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeSystemProfiles = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeServiceProfiles = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueFileCopyOnError = $false
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ExcludeSystemProfiles'))
+    {
+        $PSBoundParameters.IncludeSystemProfiles = !$PSBoundParameters.ExcludeSystemProfiles
+        $null = $PSBoundParameters.Remove('ExcludeSystemProfiles')
+
+    }
+    if ($PSBoundParameters.ContainsKey('ExcludeServiceProfiles'))
+    {
+        $PSBoundParameters.IncludeServiceProfiles = !$PSBoundParameters.ExcludeServiceProfiles
+        $null = $PSBoundParameters.Remove('ExcludeServiceProfiles')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $null = $PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    try
+    {
+        Copy-ADTFileToUserProfiles @PSBoundParameters
     }
     catch
     {
