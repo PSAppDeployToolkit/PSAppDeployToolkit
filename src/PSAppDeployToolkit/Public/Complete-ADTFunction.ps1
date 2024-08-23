@@ -51,12 +51,7 @@ function Complete-ADTFunction
         [System.Management.Automation.PSCmdlet]$Cmdlet
     )
 
-    # Write debug log messages.
+    # Write debug log messages and restore original global verbosity if a value was archived off.
     Write-ADTLogEntry -Message 'Function End' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
-
-    # Restore original global verbosity if a value was archived off.
-    if ($null -ne ($OriginalVerbosity = $Cmdlet.SessionState.PSVariable.GetValue('OriginalVerbosity', $null)))
-    {
-        $Global:VerbosePreference = $OriginalVerbosity
-    }
+    Undo-ADTGlobalVerbosePreferenceChange -Cmdlet $Cmdlet
 }
