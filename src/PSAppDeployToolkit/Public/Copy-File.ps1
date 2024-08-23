@@ -132,6 +132,7 @@ function Copy-File
         {
             Try
             {
+                $FileCopyError = $null
                 $UseRobocopyThis = $UseRobocopy
                 If ($UseRobocopyThis)
                 {
