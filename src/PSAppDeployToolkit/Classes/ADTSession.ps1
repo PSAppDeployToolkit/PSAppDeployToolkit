@@ -27,8 +27,8 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
 
     # Deploy-Application.ps1 parameters.
-    [ValidateNotNullOrEmpty()][System.String]$DeploymentType = 'Install'
-    [ValidateNotNullOrEmpty()][System.String]$DeployMode = 'Interactive'
+    [ValidateSet('Install', 'Uninstall', 'Repair')][System.String]$DeploymentType = 'Install'
+    [ValidateSet('Interactive', 'NonInteractive', 'Silent')][System.String]$DeployMode = 'Interactive'
     [ValidateNotNullOrEmpty()][System.Boolean]$AllowRebootPassThru
     [ValidateNotNullOrEmpty()][System.Boolean]$TerminalServerMode
     [ValidateNotNullOrEmpty()][System.Boolean]$DisableLogging
