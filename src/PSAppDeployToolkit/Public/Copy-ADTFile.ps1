@@ -303,7 +303,7 @@ function Copy-ADTFile
                         if ($ContinueFileCopyOnError)
                         {
                             $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
-                                & $Script:CommandTable.'Copy-Item' -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
+                                & $Script:CommandTable.'Copy-Item' -Path ($_.FullName) -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                             }
                         }
                         else
@@ -318,7 +318,7 @@ function Copy-ADTFile
                         Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
                         if ($ContinueFileCopyOnError)
                         {
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
+                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                         else
                         {
@@ -330,7 +330,7 @@ function Copy-ADTFile
                         Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
                         if ($ContinueFileCopyOnError)
                         {
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -ErrorAction 'Ignore' -ErrorVariable 'FileCopyError'
+                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -ErrorAction 'SilentlyContinue' -ErrorVariable 'FileCopyError'
                         }
                         else
                         {
