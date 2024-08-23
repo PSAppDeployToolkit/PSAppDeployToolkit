@@ -14,9 +14,9 @@ Copy one or more items to each user profile on the system.
 
 ```
 Copy-FileToUserProfiles [-Path] <String[]> [[-Destination] <String>] [-Recurse] [-Flatten]
- [-UseRobocopy <Boolean>] [-RobocopyAdditionalParams <String>] [-ExcludeNTAccount <String[]>]
- [-ExcludeSystemProfiles <Boolean>] [-ExcludeServiceProfiles <Boolean>] [-ExcludeDefaultUser]
- [-ContinueOnError <Boolean>] [-ContinueFileCopyOnError <Boolean>] [<CommonParameters>]
+ [-UseRobocopy <Switch>] [-RobocopyAdditionalParams <String>] [-ExcludeNTAccount <String[]>]
+ [-IncludeSystemProfiles <Switch>] [-IncludeServiceProfiles <Switch>] [-ExcludeDefaultUser]
+ [-ContinueFileCopyOnError <Switch>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -117,9 +117,8 @@ Accept wildcard characters: False
 
 ### -UseRobocopy
 Use Robocopy to copy files rather than native PowerShell method.
-Robocopy overcomes the 260 character limit.
-Only applies if $Path is specified as a folder.
-Default is configured in the AppDeployToolkitConfig.xml file: $true.
+Supports * in file names, but not folders, in source paths.
+Default is configured in config.psd1.
 
 ```yaml
 Type: Boolean
@@ -164,12 +163,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExcludeSystemProfiles
-Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
-Default is: $true.
+### -IncludeSystemProfiles
+Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -180,12 +178,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExcludeServiceProfiles
-Exclude service profiles where NTAccount begins with NT SERVICE.
-Default is: $true.
+### -IncludeServiceProfiles
+Include service profiles where NTAccount begins with NT SERVICE.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -198,7 +195,6 @@ Accept wildcard characters: False
 
 ### -ExcludeDefaultUser
 Exclude the Default User.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter

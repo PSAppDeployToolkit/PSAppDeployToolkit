@@ -13,9 +13,8 @@ Copies files and directories from a source to a destination.
 ## SYNTAX
 
 ```
-Copy-File [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueOnError <Boolean>]
- [-ContinueFileCopyOnError <Boolean>] [-UseRobocopy <Boolean>] [-RobocopyParams <String>]
- [-RobocopyAdditionalParams <String>] [<CommonParameters>]
+Copy-File [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError <Switch>]
+[-UseRobocopy <Switch>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -108,30 +107,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ContinueOnError
-Continue if an error is encountered.
-This will continue the deployment script, but will not continue copying files if an error is encountered.
-Default is: $true.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: True
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ContinueFileCopyOnError
 Continue copying files if an error is encountered.
 This will continue the deployment script and will warn about files that failed to be copied.
 Default is: $false.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -144,12 +126,11 @@ Accept wildcard characters: False
 
 ### -UseRobocopy
 Use Robocopy to copy files rather than native PowerShell method.
-Robocopy overcomes the 260 character limit.
 Supports * in file names, but not folders, in source paths.
-Default is configured in the AppDeployToolkitConfig.xml file: $true
+Default is configured in config.psd1.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
