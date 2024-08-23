@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Copy-FileToUserProfiles
+function Copy-ADTFileToUserProfiles
 {
     <#
     .SYNOPSIS
@@ -25,14 +25,11 @@ function Copy-FileToUserProfiles
     .PARAMETER Flatten
         Flattens the files into the root destination directory.
 
-    .PARAMETER ContinueOnError
-        Continue if an error is encountered. This will continue the deployment script, but will not continue copying files if an error is encountered. Default is: $true.
-
     .PARAMETER ContinueFileCopyOnError
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 
     .PARAMETER UseRobocopy
-        Use Robocopy to copy files rather than native PowerShell method. Robocopy overcomes the 260 character limit. Only applies if $Path is specified as a folder. Default is configured in the AppDeployToolkitConfig.xml file: $true.
+        Use Robocopy to copy files rather than native PowerShell method. Supports * in file names, but not folders, in source paths. Default is configured in config.psd1.
 
     .PARAMETER RobocopyAdditionalParams
         Additional parameters to pass to Robocopy. Default is: $null.
@@ -40,11 +37,11 @@ function Copy-FileToUserProfiles
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
-    .PARAMETER ExcludeSystemProfiles
-        Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+    .PARAMETER IncludeSystemProfiles
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
 
-    .PARAMETER ExcludeServiceProfiles
-        Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+    .PARAMETER IncludeServiceProfiles
+        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
 
     .PARAMETER ExcludeDefaultUser
         Exclude the Default User. Default is: $false.
@@ -93,63 +90,81 @@ function Copy-FileToUserProfiles
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
         [String[]]$Path,
+
         [Parameter(Mandatory = $false, Position = 2)]
         [String]$Destination,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Recurse = $false,
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Flatten,
+        [System.Management.Automation.SwitchParameter]$Flatten,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [String]$RobocopyParams = $null,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String]$RobocopyAdditionalParams = $null,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [String[]]$ExcludeNTAccount,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeSystemProfiles = $true,
+        [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeServiceProfiles = $true,
+        [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Switch]$ExcludeDefaultUser = $false,
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueFileCopyOnError = $false
+        [System.Management.Automation.SwitchParameter]$ContinueFileCopyOnError
     )
 
-    Begin
+    begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    Process
+    process
     {
         [Hashtable]$CopyFileSplat = @{
             Path = $Path
             Recurse = $Recurse
             Flatten = $Flatten
-            ContinueOnError = $ContinueOnError
             ContinueFileCopyOnError = $ContinueFileCopyOnError
             UseRobocopy = $UseRobocopy
+            RobocopyAdditionalParams = $RobocopyAdditionalParams
         }
-        if ($RobocopyAdditionalParams)
+
+        # Only add this if supplied, so we can use the defaults specified in Copy-ADTFile rather than repeating them here
+        if ($PSBoundParameters.ContainsKey('RobocopyParams'))
         {
-            $CopyFileSplat.RobocopyAdditionalParams = $RobocopyAdditionalParams
+            $CopyFileSplat.RobocopyParams = $PSBoundParameters.RobocopyParams
+        }
+
+        if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $CopyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
         }
 
         [Hashtable]$GetUserProfileSplat = @{
-            ExcludeSystemProfiles = $ExcludeSystemProfiles
-            ExcludeServiceProfiles = $ExcludeServiceProfiles
+            IncludeSystemProfiles = $IncludeSystemProfiles
+            IncludeServiceProfiles = $IncludeServiceProfiles
             ExcludeDefaultUser = $ExcludeDefaultUser
         }
         if ($ExcludeNTAccount)
@@ -161,10 +176,10 @@ function Copy-FileToUserProfiles
         {
             $CopyFileSplat.Destination = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
             Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):"
-            Copy-File @CopyFileSplat
+            Copy-ADTFile @CopyFileSplat
         }
     }
-    End
+    end
     {
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
