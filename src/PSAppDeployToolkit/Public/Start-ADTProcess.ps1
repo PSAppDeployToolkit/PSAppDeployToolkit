@@ -321,7 +321,7 @@ function Start-ADTProcess
                     else
                     {
                         # Add event handler to capture process's standard output redirection.
-                        $processEventHandler = { if ([System.String]::IsNullOrWhiteSpace($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
+                        $processEventHandler = { if (![System.String]::IsNullOrWhiteSpace($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
                         $stdOutEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
                         $stdErrEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
                     }
