@@ -7,6 +7,7 @@
 function Start-ADTProcess
 {
     <#
+
     .SYNOPSIS
     Execute a process with optional arguments, working directory, window style.
 
@@ -47,6 +48,12 @@ function Start-ADTProcess
     .PARAMETER MsiExecWaitTime
     Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 
+    .PARAMETER SuccessCodes
+    List of exit codes to be considered successful. Defaults to values set during ADTSession initialisation, otherwise: 0
+
+    .PARAMETER RebootCodes
+    List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialisation, otherwise: 1641, 3010
+
     .PARAMETER IgnoreExitCodes
     List the exit codes to ignore or * to ignore all exit codes.
 
@@ -72,16 +79,19 @@ function Start-ADTProcess
     Start-ADTProcess -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle 'Hidden'
 
     .EXAMPLE
-    # If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
     Start-ADTProcess -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
 
-    .EXAMPLE
-    # Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
-    Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
+    If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
     .EXAMPLE
-    # Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
+    Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
+
+    Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
+
+    .EXAMPLE
     Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
+
+    Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
     .INPUTS
     None. You cannot pipe objects to this function.
@@ -91,6 +101,7 @@ function Start-ADTProcess
 
     .LINK
     https://psappdeploytoolkit.com
+
     #>
 
     [CmdletBinding()]
@@ -133,7 +144,15 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
+        [System.UInt32]$MsiExecWaitTime,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$SuccessCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$RebootCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -153,15 +172,36 @@ function Start-ADTProcess
     begin
     {
         # Initalise function and get required objects.
-        try
-        {
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+        {
+            $MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime
+        }
+        if (!$PSBoundParameters.ContainsKey('SuccessCodes'))
+        {
+            $SuccessCodes = if ($adtSession)
+            {
+                $adtSession.GetPropertyValue('AppExitCodes')
+            }
+            else
+            {
+                0
+            }
+        }
+        if (!$PSBoundParameters.ContainsKey('RebootCodes'))
+        {
+            $RebootCodes = if ($adtSession)
+            {
+                $adtSession.GetPropertyValue('AppRebootCodes')
+            }
+            else
+            {
+                1641, 3010
+            }
+        }
 
         # Set up initial variables.
         $funcCaller = (& $Script:CommandTable.'Get-PSCallStack')[1].InvocationInfo.MyCommand
@@ -199,7 +239,7 @@ function Start-ADTProcess
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                    if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$($adtSession.GetPropertyValue('DirFiles'));$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+                    if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$(if ($adtSession) { "$($adtSession.GetPropertyValue('DirFiles'));" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
                     {
                         Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
@@ -372,7 +412,7 @@ function Start-ADTProcess
                         $returnCode = $process.ExitCode
 
                         # Update the session's last exit code with the value if externally called.
-                        if ($extInvoker)
+                        if ($adtSession -and $extInvoker)
                         {
                             $adtSession.SetExitCode($returnCode)
                         }
@@ -445,7 +485,7 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
                     }
-                    elseif ($adtSession.GetPropertyValue('AppRebootCodes').Contains($returnCode))
+                    elseif ($RebootCodes.Contains($returnCode))
                     {
                         Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     }
@@ -461,7 +501,7 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                     }
-                    elseif ($adtSession.GetPropertyValue('AppExitCodes').Contains($returnCode))
+                    elseif ($SuccessCodes.Contains($returnCode))
                     {
                         Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                     }
@@ -476,7 +516,7 @@ function Start-ADTProcess
                             Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
                         }
 
-                        if (!$NoExitOnProcessFailure)
+                        if ($adtSession -and !$NoExitOnProcessFailure)
                         {
                             Close-ADTSession -ExitCode $returnCode
                         }
@@ -494,7 +534,7 @@ function Start-ADTProcess
             {
                 $returnCode = 60002
             }
-            if ($extInvoker)
+            if ($adtSession -and $extInvoker)
             {
                 $adtSession.SetExitCode($returnCode)
             }
@@ -517,7 +557,7 @@ function Start-ADTProcess
                 }
             }
 
-            if (!$NoExitOnProcessFailure)
+            if ($adtSession -and !$NoExitOnProcessFailure)
             {
                 Close-ADTSession -ExitCode $returnCode
             }
