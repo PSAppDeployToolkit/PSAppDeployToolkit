@@ -321,7 +321,7 @@ function Start-ADTProcess
                     else
                     {
                         # Add event handler to capture process's standard output redirection.
-                        $processEventHandler = { if (![System.String]::IsNullOrWhiteSpace($EventArgs.Data)) { $Event.MessageData.AppendLine($EventArgs.Data) } }
+                        $processEventHandler = { $Event.MessageData.AppendLine($(if (![System.String]::IsNullOrWhiteSpace($EventArgs.Data)) { $EventArgs.Data })) }
                         $stdOutEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName OutputDataReceived -MessageData $stdOutBuilder
                         $stdErrEvent = & $Script:CommandTable.'Register-ObjectEvent' -InputObject $process -Action $processEventHandler -EventName ErrorDataReceived -MessageData $stdErrBuilder
                     }
@@ -431,8 +431,8 @@ function Start-ADTProcess
                                 & $Script:CommandTable.'Unregister-Event' -SourceIdentifier $stdErrEvent.Name
                                 $stdErrEvent = $null
                             }
-                            $stdOut = $stdOutBuilder.ToString() -replace $null
-                            $stdErr = $stdErrBuilder.ToString() -replace $null
+                            $stdOut = $stdOutBuilder.ToString().Trim()
+                            $stdErr = $stdErrBuilder.ToString().Trim()
                             if (![System.String]::IsNullOrWhiteSpace($stdErr))
                             {
                                 Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
@@ -475,8 +475,8 @@ function Start-ADTProcess
                         Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
                         $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
                             ExitCode = $returnCode
-                            StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
-                            StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
+                            StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
+                            StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
                         })
                     }
 
@@ -552,8 +552,8 @@ function Start-ADTProcess
             {
                 $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
                     ExitCode = $returnCode
-                    StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
-                    StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
+                    StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
+                    StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
                 })
             }
 
