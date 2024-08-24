@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Initialize-ADTDialogFunction
+# MARK: Initialize-ADTModuleIfUnitialized
 #
 #-----------------------------------------------------------------------------
 
-function Initialize-ADTDialogFunction
+function Initialize-ADTModuleIfUnitialized
 {
     [CmdletBinding()]
     param

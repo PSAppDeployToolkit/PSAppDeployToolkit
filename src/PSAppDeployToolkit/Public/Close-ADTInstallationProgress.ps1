@@ -47,7 +47,7 @@ function Close-ADTInstallationProgress
 
     begin
     {
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }

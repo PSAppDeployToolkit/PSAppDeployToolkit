@@ -75,7 +75,7 @@ function Show-ADTBalloonTip
     dynamicparam
     {
         # Initialise the module first if needed.
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
