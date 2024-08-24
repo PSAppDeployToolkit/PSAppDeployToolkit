@@ -379,11 +379,11 @@ function Start-ADTProcess
                             if (!$process.HasExited)
                             {
                                 Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
-                                [PSADT.Types.ProcessInfo]@{
+                                $PSCmdlet.WriteObject([PSADT.Types.ProcessInfo]@{
                                     Id = $process.Id
                                     Handle = $process.Handle
                                     ProcessName = $process.ProcessName
-                                }
+                                })
                             }
                             else
                             {
@@ -473,11 +473,11 @@ function Start-ADTProcess
                     if ($PassThru)
                     {
                         Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                        [PSADT.Types.ProcessResult]@{
+                        $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
                             ExitCode = $returnCode
                             StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
                             StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
-                        }
+                        })
                     }
 
                     # Check to see whether we should ignore exit codes.
@@ -550,11 +550,11 @@ function Start-ADTProcess
 
             if ($PassThru)
             {
-                [PSADT.Types.ProcessResult]@{
+                $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
                     ExitCode = $returnCode
                     StdOut = if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut } else { [System.String]::Empty }
                     StdErr = if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr } else { [System.String]::Empty }
-                }
+                })
             }
 
             if ($adtSession -and !$NoExitOnProcessFailure)
