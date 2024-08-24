@@ -15,8 +15,9 @@ Execute a process with optional arguments, working directory, window style.
 ```
 Start-ADTProcess [-Path] <String> [[-Parameters] <String[]>] [-SecureParameters]
  [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
- [-WaitForMsiExec] [[-MsiExecWaitTime] <Int32>] [[-IgnoreExitCodes] <String[]>]
- [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-UseShellExecute] [<CommonParameters>]
+ [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessCodes] <Int32[]>] [[-RebootCodes] <Int32[]>]
+ [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
+ [-UseShellExecute] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -38,24 +39,24 @@ Start-ADTProcess -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle '
 
 ### EXAMPLE 3
 ```
-# If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
+Start-ADTProcess -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
 ```
 
-Start-ADTProcess -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
+If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
 ### EXAMPLE 4
 ```
-# Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
+Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
 ```
 
-Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2\`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log\`""
+Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 
 ### EXAMPLE 5
 ```
-# Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
+Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 ```
 
-Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v\`"ALLUSERS=1 /qn /L* \\\`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log\`"\`""
+Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
 ## PARAMETERS
 
@@ -219,13 +220,45 @@ Specify the length of time in seconds to wait for the msiexec engine to become a
 Default: 600 seconds (10 minutes).
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: 5
-Default value: (Get-ADTConfig).MSI.MutexWaitTime
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SuccessCodes
+List of exit codes to be considered successful.
+Defaults to values set during ADTSession initialisation, otherwise: 0
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RebootCodes
+List of exit codes to indicate a reboot is required.
+Defaults to values set during ADTSession initialisation, otherwise: 1641, 3010
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -239,7 +272,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: 8
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -257,7 +290,7 @@ Aliases:
 Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
-Position: 7
+Position: 9
 Default value: Normal
 Accept pipeline input: False
 Accept wildcard characters: False
