@@ -440,6 +440,10 @@ function Start-ADTProcess
                         }
                     }
                 }
+                catch
+                {
+                    throw
+                }
                 finally
                 {
                     # Make sure the standard output and error event is unregistered.
