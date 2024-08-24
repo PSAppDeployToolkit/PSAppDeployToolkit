@@ -136,7 +136,7 @@ function Show-ADTInstallationPrompt
         }
 
         # Initialise variables.
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.

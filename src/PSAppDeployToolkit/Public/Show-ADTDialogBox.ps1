@@ -79,7 +79,7 @@ function Show-ADTDialogBox
     dynamicparam
     {
         # Initialise the module if there's no session and it hasn't been previously initialised.
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.

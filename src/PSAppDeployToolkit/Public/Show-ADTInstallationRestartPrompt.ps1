@@ -96,7 +96,7 @@ function Show-ADTInstallationRestartPrompt
     dynamicparam
     {
         # Initialise variables.
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()

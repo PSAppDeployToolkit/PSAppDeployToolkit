@@ -89,7 +89,7 @@ function Show-ADTInstallationProgress
     dynamicparam
     {
         # Initialise the module first if needed.
-        $adtSession = Initialize-ADTDialogFunction -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
 
