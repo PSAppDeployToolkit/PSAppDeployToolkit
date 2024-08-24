@@ -380,10 +380,10 @@ function Start-ADTProcess
                             {
                                 Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
                                 $PSCmdlet.WriteObject([PSADT.Types.ProcessInfo]@{
-                                    Id = $process.Id
-                                    Handle = $process.Handle
-                                    ProcessName = $process.ProcessName
-                                })
+                                        Id = $process.Id
+                                        Handle = $process.Handle
+                                        ProcessName = $process.ProcessName
+                                    })
                             }
                             else
                             {
@@ -474,10 +474,10 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
                         $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
-                            ExitCode = $returnCode
-                            StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
-                            StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                        })
+                                ExitCode = $returnCode
+                                StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
+                                StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                            })
                     }
 
                     # Check to see whether we should ignore exit codes.
@@ -551,10 +551,10 @@ function Start-ADTProcess
             if ($PassThru)
             {
                 $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
-                    ExitCode = $returnCode
-                    StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
-                    StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                })
+                        ExitCode = $returnCode
+                        StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
+                        StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                    })
             }
 
             if ($adtSession -and !$NoExitOnProcessFailure)
