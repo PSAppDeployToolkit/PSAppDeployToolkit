@@ -207,15 +207,7 @@ function Start-ADTMsiProcess
 
     begin
     {
-        try
-        {
-            $adtConfig = Get-ADTConfig
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet; $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -267,9 +259,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Build the log file path.
-                $logPath = if ($adtConfig.Toolkit.CompressLogs)
+                $logPath = if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
                 {
-                    [String]$logPath = & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
+                    & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
                 }
                 else
                 {
@@ -284,7 +276,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Set the installation parameters.
-                if ($adtSession.IsNonInteractive())
+                if ($adtSession -and $adtSession.IsNonInteractive())
                 {
                     $msiInstallDefaultParams = $adtConfig.MSI.SilentParams
                     $msiUninstallDefaultParams = $adtConfig.MSI.SilentParams
@@ -343,7 +335,7 @@ function Start-ADTMsiProcess
                 }
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                [String]$msiFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
                 {
                     $dirFilesPath
                 }

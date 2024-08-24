@@ -75,14 +75,7 @@ function Start-ADTMspProcess
 
     begin
     {
-        try
-        {
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -93,7 +86,7 @@ function Start-ADTMspProcess
             try
             {
                 # If the MSP is in the Files directory, set the full path to the MSP.
-                $mspFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+                $mspFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
                 {
                     $dirFilesPath
                 }
@@ -124,9 +117,9 @@ function Start-ADTMspProcess
                 $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
                 # Free our COM objects.
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
+                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
+                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Database)
+                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Installer)
 
                 # If the application is installed, patch it.
                 if ($AllTargetedProductCodes)
