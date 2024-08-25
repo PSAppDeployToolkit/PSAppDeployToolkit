@@ -108,19 +108,16 @@ function Get-ADTMsiTableProperty
         # Set default values.
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
-            $PSBoundParameters.Add('Table', ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($Path) -eq '.msi'])
+            $Table = ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($Path) -eq '.msi']
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {
-            $PSBoundParameters.Add('TablePropertyNameColumnNum', 2 - ([System.IO.Path]::GetExtension($Path) -eq '.msi'))
+            $TablePropertyNameColumnNum = 2 - ([System.IO.Path]::GetExtension($Path) -eq '.msi')
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyValueColumnNum'))
         {
-            $PSBoundParameters.Add('TablePropertyValueColumnNum', 3 - ([System.IO.Path]::GetExtension($Path) -eq '.msi'))
+            $TablePropertyValueColumnNum = 3 - ([System.IO.Path]::GetExtension($Path) -eq '.msi')
         }
-        $Table = $PSBoundParameters.Table
-        $TablePropertyNameColumnNum = $PSBoundParameters.TablePropertyNameColumnNum
-        $TablePropertyValueColumnNum = $PSBoundParameters.TablePropertyValueColumnNum
 
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue

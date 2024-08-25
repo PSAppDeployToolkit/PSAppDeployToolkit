@@ -115,16 +115,22 @@ function Show-ADTDialogBox
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('Title'))
+        $Title = if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+            $adtSession.GetPropertyValue('InstallTitle')
         }
-        if (!$PSBoundParameters.ContainsKey('Timeout'))
+        else
         {
-            $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
+            $PSBoundParameters.Title
         }
-        $Title = $PSBoundParameters.Title
-        $Timeout = $PSBoundParameters.Timeout
+        $Timeout = if (!$PSBoundParameters.ContainsKey('Timeout'))
+        {
+            $adtConfig.UI.DefaultTimeout
+        }
+        else
+        {
+            $PSBoundParameters.Timeout
+        }
     }
 
     process

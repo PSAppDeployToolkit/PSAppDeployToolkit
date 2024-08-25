@@ -132,17 +132,20 @@ function Show-ADTInstallationProgress
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('WindowTitle'))
+        if ($adtSession)
         {
-            $PSBoundParameters.Add('WindowTitle', $adtSession.GetPropertyValue('InstallTitle'))
-        }
-        if (!$PSBoundParameters.ContainsKey('StatusMessage'))
-        {
-            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
-        }
-        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
-        {
-            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
+            if (!$PSBoundParameters.ContainsKey('WindowTitle'))
+            {
+                $PSBoundParameters.Add('WindowTitle', $adtSession.GetPropertyValue('InstallTitle'))
+            }
+            if (!$PSBoundParameters.ContainsKey('StatusMessage'))
+            {
+                $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
+            }
+            if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
+            {
+                $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
+            }
         }
     }
 
