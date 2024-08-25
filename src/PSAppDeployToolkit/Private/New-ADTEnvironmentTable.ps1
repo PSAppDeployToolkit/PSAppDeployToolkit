@@ -66,7 +66,7 @@ function New-ADTEnvironmentTable
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
 
     ## Variables: Domain Membership
-    $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem
+    $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem -Verbose:$false
     $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } }
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
@@ -160,7 +160,7 @@ function New-ADTEnvironmentTable
     }
 
     ## Variables: Operating System
-    $variables.Add('envOS', (& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_OperatingSystem))
+    $variables.Add('envOS', (& $Script:CommandTable.'Get-CimInstance' -ClassName Win32_OperatingSystem -Verbose:$false))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
     $variables.Add('envOSVersion', [version][System.Diagnostics.FileVersionInfo]::GetVersionInfo([System.IO.Path]::Combine($variables.envSysNativeDirectory, 'ntoskrnl.exe')).ProductVersion)
@@ -207,7 +207,7 @@ function New-ADTEnvironmentTable
             }))
 
     ## Variables: Hardware
-    $w32b = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BIOS
+    $w32b = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BIOS -Verbose:$false
     $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
     $variables.Add('envHardwareType', $(if ($w32b.Version -match 'VRTUAL')
             {
@@ -290,9 +290,9 @@ function New-ADTEnvironmentTable
     $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NetworkServiceSid))
     $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
     $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
-    $variables.Add('LocalSystemNTAccount', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost).Value)
-    $variables.Add('LocalUsersGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost).Value)
-    $variables.Add('LocalAdministratorsGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost).Value)
+    $variables.Add('LocalSystemNTAccount', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost -Verbose:$false).Value)
+    $variables.Add('LocalUsersGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost -Verbose:$false).Value)
+    $variables.Add('LocalAdministratorsGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost -Verbose:$false).Value)
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
