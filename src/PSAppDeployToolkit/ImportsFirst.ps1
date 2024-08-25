@@ -4,6 +4,10 @@
 #
 #-----------------------------------------------------------------------------
 
+# Clock when the module import starts so we can track it.
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ModuleImportStart', Justification = "This variable is used within ImportsLast.ps1 and therefore cannot be seen here.")]
+$ModuleImportStart = [System.DateTime]::Now
+
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
