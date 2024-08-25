@@ -167,7 +167,7 @@ function New-ADTMsiTransform
 
                 # Reopen the temporary copy of the MSI database in read only mode.
                 Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
-                $null = [System.Runtime.Interopservices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
+                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
                 $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
 
                 # Delete the new transform file path if it already exists.
@@ -210,7 +210,7 @@ function New-ADTMsiTransform
             {
                 try
                 {
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($variable)
+                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($variable)
                 }
                 catch
                 {

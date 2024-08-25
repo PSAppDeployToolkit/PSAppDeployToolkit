@@ -80,7 +80,7 @@ function Set-ADTMsiProperty
                 # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
                 $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
                 $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
-                $null = [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
+                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
 
                 # Set the MSI property.
                 $View = if ($Record)
@@ -111,7 +111,7 @@ function Set-ADTMsiProperty
                 if (Test-Item -LiteralPath Microsoft.PowerShell.Core\Variable::View)
                 {
                     Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
+                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
                 }
             }
             catch

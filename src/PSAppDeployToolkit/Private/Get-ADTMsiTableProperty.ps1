@@ -222,7 +222,7 @@ function Get-ADTMsiTableProperty
             {
                 try
                 {
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($variable)
+                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($variable)
                 }
                 catch
                 {

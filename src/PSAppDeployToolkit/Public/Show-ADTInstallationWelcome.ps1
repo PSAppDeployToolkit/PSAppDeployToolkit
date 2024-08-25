@@ -279,7 +279,7 @@ function Show-ADTInstallationWelcome
                         {
                             $null = try
                             {
-                                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($fso)
+                                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($fso)
                             }
                             catch
                             {
