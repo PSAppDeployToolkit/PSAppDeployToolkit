@@ -84,6 +84,7 @@ function Get-ADTLoggedOnUser
     .LINK
         https://psappdeploytoolkit.com
     #>
+
     [CmdletBinding()]
     [OutputType([PSADT.QueryUser+TerminalSessionInfo[]])]
     param
