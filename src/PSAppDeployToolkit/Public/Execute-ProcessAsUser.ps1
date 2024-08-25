@@ -442,7 +442,7 @@ https://psappdeploytoolkit.com
                     {
                         $null = Try
                         {
-                            [Runtime.Interopservices.Marshal]::ReleaseComObject($ScheduleService)
+                            [Runtime.InteropServices.Marshal]::ReleaseComObject($ScheduleService)
                         }
                         Catch
                         {
