@@ -5,7 +5,7 @@
     #________________________________________
     #Severity
     #Specify Severity when you want to limit generated diagnostic records to a specific subset: [ Error | Warning | Information ]
-    Severity            = @('Error', 'Warning')
+    #Severity            = @('Error', 'Warning')
     #________________________________________
     #CustomRulePath
     #Specify CustomRulePath when you have a large set of custom rules you'd like to reference
