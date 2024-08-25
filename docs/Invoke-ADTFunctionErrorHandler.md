@@ -15,13 +15,13 @@ Handles errors within ADT functions by logging and optionally passing through th
 ### None (Default)
 ```
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [-PassThru] [<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ### LogMessage
 ```
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [-PassThru] -LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
+ -LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -93,21 +93,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-If specified, the function will return the error record.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -LogMessage
 The error message to write to the active ADTSession's log file.
 
@@ -148,8 +133,8 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Management.Automation.ErrorRecord
-### Returns the error record if PassThru is specified.
+### None
+### This function does not return any output.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
