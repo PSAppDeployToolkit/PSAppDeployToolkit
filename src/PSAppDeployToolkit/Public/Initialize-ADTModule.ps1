@@ -70,6 +70,7 @@ function Initialize-ADTModule
             try
             {
                 # Initialise the module's global state.
+                $ModuleInitStart = [System.DateTime]::Now
                 $adtData.Callbacks.Starting.Clear()
                 $adtData.Callbacks.Opening.Clear()
                 $adtData.Callbacks.Closing.Clear()
@@ -84,6 +85,7 @@ function Initialize-ADTModule
 
                 # Mark the environment table as read-only before finishing.
                 $adtData.Environment = $adtData.Environment.AsReadOnly()
+                $adtData.Durations.ModuleInit = [System.DateTime]::Now - $ModuleInitStart
                 $adtData.Initialised = $true
             }
             catch

@@ -16,6 +16,10 @@
             Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
             Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
         }
+        Durations = [pscustomobject]@{
+            ModuleImport = $null
+            ModuleInit = $null
+        }
         Sessions = [System.Collections.Generic.List[ADTSession]]::new()
         TerminalServerMode = $false
         Environment = $null
@@ -201,3 +205,7 @@ $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
     </Grid>
 </Window>
 '@)
+
+# Determine how long the import took.
+$ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart
+& $CommandTable.'Remove-Variable' -Name ModuleImportStart -Force -Confirm:$false

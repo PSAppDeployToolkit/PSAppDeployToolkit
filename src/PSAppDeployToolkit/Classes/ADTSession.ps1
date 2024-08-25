@@ -403,7 +403,7 @@ class ADTSession
         $this.WriteLogEntry("[$($this.InstallName)] setup started.")
     }
 
-    hidden [System.Void] LogScriptInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
+    hidden [System.Void] LogScriptInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv)
     {
         # Announce provided deployment script info.
         if ($this.AppScriptVersion)
@@ -427,6 +427,8 @@ class ADTSession
             $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | Resolve-ADTBoundParameters)]")
         }
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)]")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module initialised in [$($ADTData.Durations.ModuleInit.TotalSeconds)] seconds.")
 
         # Announce session instantiation mode.
         if ($this.CompatibilityMode)
@@ -455,7 +457,7 @@ class ADTSession
         }
     }
 
-    hidden [System.Void] LogUserInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
+    hidden [System.Void] LogUserInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Log details for all currently logged in users.
         $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')", $true)
@@ -511,7 +513,7 @@ class ADTSession
         {
             $this.WriteLogEntry("The config file was configured to override the detected primary UI language with the following UI language: [$($ADTConfig.UI.LanguageOverride)].")
         }
-        $this.WriteLogEntry("The following UI messages were imported from the config file: [$((Get-ADTModuleData).Language)].")
+        $this.WriteLogEntry("The following UI messages were imported from the config file: [$($ADTData.Language)].")
     }
 
     hidden [System.Void] PerformSCCMTests([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
@@ -669,6 +671,7 @@ class ADTSession
     hidden [System.Void] Open()
     {
         # Get the current environment and config.
+        $adtData = Get-ADTModuleData
         $adtEnv = Get-ADTEnvironment
         $adtConfig = Get-ADTConfig
 
@@ -693,10 +696,10 @@ class ADTSession
         $this.SetAppProperties($adtEnv)
         $this.SetInstallProperties($adtEnv, $adtConfig)
         $this.InitLogging($adtEnv, $adtConfig)
-        $this.LogScriptInfo($adtEnv)
+        $this.LogScriptInfo($adtData, $adtEnv)
         $this.LogSystemInfo($adtEnv)
         $this.WriteLogDivider()
-        $this.LogUserInfo($adtEnv, $adtConfig)
+        $this.LogUserInfo($adtData, $adtEnv, $adtConfig)
         $this.PerformSCCMTests($adtEnv)
         $this.PerformSystemAccountTests($adtEnv, $adtConfig)
         $this.SetDeploymentProperties()

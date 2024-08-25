@@ -3393,7 +3393,7 @@ Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This parameter is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This variable is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
         # If this script was invoked by another script
