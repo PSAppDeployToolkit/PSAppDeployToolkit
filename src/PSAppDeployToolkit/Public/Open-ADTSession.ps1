@@ -292,7 +292,8 @@ function Open-ADTSession
         }
         catch
         {
-            $errRecord = Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while opening new ADTSession object." -PassThru
+            $errRecord = $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while opening new ADTSession object."
         }
         finally
         {

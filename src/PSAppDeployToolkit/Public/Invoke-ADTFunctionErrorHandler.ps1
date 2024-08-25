@@ -25,9 +25,6 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER LogMessage
         The error message to write to the active ADTSession's log file.
 
-    .PARAMETER PassThru
-        If specified, the function will return the error record.
-
     .PARAMETER DisableErrorResolving
         If specified, the function will not append the resolved error record to the log message.
 
@@ -37,9 +34,9 @@ function Invoke-ADTFunctionErrorHandler
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Management.Automation.ErrorRecord
+        None
 
-        Returns the error record if PassThru is specified.
+        This function does not return any output.
 
     .EXAMPLE
         Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
@@ -79,9 +76,6 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PassThru,
-
         [Parameter(Mandatory = $true, ParameterSetName = 'LogMessage')]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogMessage,
@@ -119,12 +113,6 @@ function Invoke-ADTFunctionErrorHandler
             $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
         }
         Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
-    }
-
-    # Return the provided ErrorRecord object if passing it through. This has to happen before we write the error.
-    if ($PassThru)
-    {
-        $PSCmdlet.WriteObject($ErrorRecord)
     }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
