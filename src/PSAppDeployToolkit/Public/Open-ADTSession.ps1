@@ -254,8 +254,8 @@ function Open-ADTSession
 
     process
     {
-        # If this function is being called AppDeployToolkitMain.ps1 or the console, clear all previous sessions and go for full re-initialisation.
-        if ((Test-ADTNonNativeCaller) -or ($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)))
+        # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialisation.
+        if (($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)) -or (Test-ADTNonNativeCaller))
         {
             $adtData.Sessions.Clear()
         }
@@ -266,7 +266,7 @@ function Open-ADTSession
             try
             {
                 # Initialise the module before opening the first session.
-                if (!$adtData.Sessions.Count)
+                if (($firstSession = !$adtData.Sessions.Count))
                 {
                     Initialize-ADTModule
                 }
@@ -274,13 +274,13 @@ function Open-ADTSession
                 $adtSession.Open()
 
                 # Invoke all callbacks.
-                foreach ($callback in $(if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
+                foreach ($callback in $(if ($firstSession) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
                 {
                     & $callback
                 }
 
                 # Export the environment table to variables within the caller's scope.
-                if ($adtData.Sessions.Count.Equals(1))
+                if ($firstSession)
                 {
                     $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
                 }
