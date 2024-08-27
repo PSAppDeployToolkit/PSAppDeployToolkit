@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Deterministic>true</Deterministic>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+		<Nullable>enable</Nullable>
+		<AssemblyName>PsadtExec</AssemblyName>
+		<RootNamespace>PSADT</RootNamespace>
+		<Authors>PSADT</Authors>
+		<Company>PSADT</Company>
+		<Description>A utility for launching and managing processes across different user sessions in Windows environments.</Description>
+		<Copyright>Copyright PSADT © 2023</Copyright>
+		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<Title>PsadtExec</Title>
+		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
+		<!--RuntimeIdentifier>win-x64</RuntimeIdentifier-->
+		<SelfContained>false</SelfContained>
+		<PublishSingleFile>false</PublishSingleFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<PublishTrimmed>false</PublishTrimmed>
+		<Platforms>AnyCPU</Platforms>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="PsadtExec.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+		<PackageReference Include="System.DirectoryServices" Version="8.0.0" />
+	</ItemGroup>
+
+</Project>
