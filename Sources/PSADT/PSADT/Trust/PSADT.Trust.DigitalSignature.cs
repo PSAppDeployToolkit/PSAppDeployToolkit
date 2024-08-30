@@ -25,7 +25,7 @@ namespace PSADT.Trust
         /// <param name="filePath">The file path of the file to verify.</param>
         /// <returns>A tuple containing the results of the Authenticode and Catalog signature checks.</returns>
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is null or empty.</exception>
-        public (bool isAuthenticodeSigned, bool isCatalogSigned) Verify(string filePath)
+        public SignatureVerification Verify(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException("File path must be provided", nameof(filePath));
@@ -33,7 +33,7 @@ namespace PSADT.Trust
             bool isAuthenticodeSigned = _authenticode.Verify(filePath);
             bool isCatalogSigned = _catalog.Verify(filePath);
 
-            return (isAuthenticodeSigned, isCatalogSigned);
+            return new SignatureVerification(isAuthenticodeSigned, isCatalogSigned);
         }
 
         /// <summary>
