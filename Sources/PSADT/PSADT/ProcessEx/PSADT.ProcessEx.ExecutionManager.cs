@@ -4,7 +4,6 @@ using PSADT.ConsoleEx;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.ProcessEx
 {
@@ -26,7 +25,7 @@ namespace PSADT.ProcessEx
         /// </summary>
         /// <param name="sessionInfo">The session information for the process.</param>
         /// <returns>A new ManagedProcess object.</returns>
-        public ManagedProcess CreateNewProcessInfoObject(SessionDetails sessionInfo)
+        public ManagedProcess InitializeManagedProcess(SessionDetails sessionInfo)
         {
             var newProcess = new ManagedProcess(sessionInfo);
             _processes.Add(newProcess);

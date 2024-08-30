@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
 namespace PSADT.PInvoke
@@ -70,7 +70,46 @@ namespace PSADT.PInvoke
         /// <see cref="NativeMethods.CloseHandle"/> method to close the handle.
         /// </remarks>
         protected override bool ReleaseHandle() => NativeMethods.CloseHandle(handle);
+
+        /// <summary>
+        /// Tries to create a <see cref="SafeAccessToken"/> from an <see cref="IntPtr"/> handle.
+        /// </summary>
+        /// <param name="ptr">The pointer to the token handle.</param>
+        /// <param name="handle">The resulting <see cref="SafeAccessToken"/> if successful.</param>
+        /// <returns><c>true</c> if the handle was valid and successfully wrapped; otherwise, <c>false</c>.</returns>
+        public static bool TryCreate(IntPtr ptr, out SafeAccessToken handle)
+        {
+            try
+            {
+                handle = new SafeAccessToken(ptr);
+                return true;
+            }
+            catch
+            {
+                handle = Null; // Return a null SafeAccessToken in case of failure
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Implicit conversion to <see cref="SafeAccessTokenHandle"/>.
+        /// </summary>
+        /// <param name="safeAccessToken">The <see cref="SafeAccessToken"/> instance to convert.</param>
+        public static implicit operator SafeAccessTokenHandle(SafeAccessToken safeAccessToken)
+        {
+            return new SafeAccessTokenHandle(safeAccessToken.DangerousGetHandle());
+        }
+
+        /// <summary>
+        /// Converts the <see cref="SafeAccessToken"/> to a <see cref="SafeAccessTokenHandle"/>.
+        /// </summary>
+        /// <returns>A new instance of <see cref="SafeAccessTokenHandle"/> that wraps the same handle.</returns>
+        public SafeAccessTokenHandle ToSafeAccessTokenHandle()
+        {
+            return new SafeAccessTokenHandle(this.DangerousGetHandle());
+        }
     }
+
 
     /// <summary>
     /// Represents a safe handle for an environment block.
@@ -299,6 +338,48 @@ namespace PSADT.PInvoke
             }
 
             return array;
+        }
+    }
+
+    /// <summary>
+    /// Represents a safe handle for a Catalog Admin context.
+    /// </summary>
+    public sealed class SafeCatAdminHandle : SafeHandleZeroOrMinusOneIsInvalid
+    {
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool CryptCATAdminReleaseContext(IntPtr hCatAdmin, uint dwFlags);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SafeCatAdminHandle"/> class.
+        /// </summary>
+        public SafeCatAdminHandle() : base(true) { }
+
+        /// <summary>
+        /// Releases the catalog admin context handle.
+        /// </summary>
+        /// <returns>True if the handle was released successfully; otherwise, false.</returns>
+        protected override bool ReleaseHandle()
+        {
+            return CryptCATAdminReleaseContext(handle, 0);
+        }
+    }
+
+    /// <summary>
+    /// SafeHandle implementation for handling unmanaged memory allocations.
+    /// </summary>
+    public sealed class SafeHGlobalHandle : SafeHandle
+    {
+        public SafeHGlobalHandle(IntPtr handle) : base(IntPtr.Zero, true)
+        {
+            SetHandle(handle);
+        }
+
+        public override bool IsInvalid => handle == IntPtr.Zero;
+
+        protected override bool ReleaseHandle()
+        {
+            Marshal.FreeHGlobal(handle);
+            return true;
         }
     }
 }

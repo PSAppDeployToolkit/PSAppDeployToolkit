@@ -99,6 +99,11 @@ namespace PSADT.ProcessEx
         public bool Debug { get; set; }
 
         /// <summary>
+        /// Indicates whether the process is a GUI application.
+        /// </summary>
+        public bool IsGuiApplication { get; set; }
+
+        /// <summary>
         /// Choose whether to redirect the process output.
         /// </summary>
         public bool RedirectOutput { get; set; } = true;

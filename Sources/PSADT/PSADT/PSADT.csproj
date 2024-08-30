@@ -1,26 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+<!--https://devblogs.microsoft.com/powershell/depending-on-the-right-powershell-nuget-package-in-your-net-project/-->
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+		<RootNamespace>PSADT</RootNamespace>
+		<AssemblyName>PsadtExec</AssemblyName>
+		<NoWarn>$(NoWarn);CA1416</NoWarn>
+
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
+		<InformationalVersion>1.0.0-beta0</InformationalVersion>
+		<Authors>PSADT</Authors>
+		<Company>PSADT</Company>
+		<Description>A utility for launching and managing processes across multiple user sessions in Windows environments.</Description>
+		<Copyright>Copyright PSADT © 2023</Copyright>
+		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
+		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
+		
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TargetFrameworks>net461;net6.0</TargetFrameworks>
+		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<LangVersion>latest</LangVersion>
 		<Deterministic>true</Deterministic>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 		<Nullable>enable</Nullable>
-		<AssemblyName>PsadtExec</AssemblyName>
-		<RootNamespace>PSADT</RootNamespace>
-		<Authors>PSADT</Authors>
-		<Company>PSADT</Company>
-		<Description>A utility for launching and managing processes across different user sessions in Windows environments.</Description>
-		<Copyright>Copyright PSADT © 2023</Copyright>
-		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
+		
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
-		<Title>PsadtExec</Title>
-		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
-		<!--RuntimeIdentifier>win-x64</RuntimeIdentifier-->
+		
 		<SelfContained>false</SelfContained>
 		<PublishSingleFile>false</PublishSingleFile>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
@@ -41,9 +49,12 @@
 		<Content Include="PsadtExec.ico" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-		<PackageReference Include="System.DirectoryServices" Version="8.0.0" />
+	<ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+		<PackageReference Include="PowerShellStandard.Library" version="5.1.0" />
+		<PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="System.Management.Automation" Version="7.2.18" />
+	</ItemGroup>
 </Project>

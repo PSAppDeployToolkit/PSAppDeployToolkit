@@ -739,22 +739,25 @@ namespace PSADT.WTSSession
             }
         }
 
-        public static WindowsIdentity GetWindowsIdentity(in SafeAccessToken token, [Optional] out WindowsPrincipal windowsPrincipal)
+        public static bool TryGetWindowsIdentity(in SafeAccessToken token, out WindowsIdentity? windowsIdentity, out WindowsPrincipal? windowsPrincipal)
         {
+            windowsIdentity = null;
+            windowsPrincipal = null;
+
             try
             {
-                WindowsIdentity windowsIdentity = new WindowsIdentity(token.DangerousGetHandle());
+                windowsIdentity = new WindowsIdentity(token.DangerousGetHandle());
                 ConsoleHelper.DebugWrite("WindowsIdentity created successfully from token.", MessageType.Debug);
 
                 windowsPrincipal = new WindowsPrincipal(windowsIdentity);
                 ConsoleHelper.DebugWrite("WindowsPrincipal created successfully from WindowsIdentity.", MessageType.Debug);
 
-                return windowsIdentity;
+                return true;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get WindowsIdentity from token.", MessageType.Error, ex);
-                throw;
+                ConsoleHelper.DebugWrite("Failed to get WindowsIdentity or WindowsPrincipal from token.", MessageType.Error, ex);
+                return false;
             }
         }
 
@@ -1017,9 +1020,14 @@ namespace PSADT.WTSSession
                     return false;
 
                 // Check if the token to be checked contains local admin SID.
-                using (GetWindowsIdentity(hLinkedToken, out WindowsPrincipal userPrincipal))
+                using (hLinkedToken)
                 {
-                    return userPrincipal.IsInRole(WindowsBuiltInRole.Administrator);
+                    if (!TryGetWindowsIdentity(hLinkedToken, out _, out WindowsPrincipal? userPrincipal))
+                    {
+                        return false;
+                    }
+                    
+                    return userPrincipal!.IsInRole(WindowsBuiltInRole.Administrator);
                 }
             }
             catch (Exception ex)
