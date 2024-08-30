@@ -29,6 +29,19 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
+    # Confirm the specified dialog type is valid.
+    if (!$Script:DialogDispatcher.Contains($config.UI.DialogStyle))
+    {
+        $naerParams = @{
+            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not supported. Valid styles are ['$($Script:DialogDispatcher.Keys -join "', '")'].")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            ErrorId = 'DialogStyleNotSupported'
+            TargetObject = $config
+            RecommendedAction = "Please review the supplied configuration file and try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
     # Process the config and expand out variables.
     foreach ($section in $($config.Keys))
     {
