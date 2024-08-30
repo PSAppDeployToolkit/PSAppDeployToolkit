@@ -66,6 +66,8 @@ function Get-ADTUserProfiles
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeServiceProfiles', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ExcludeNTAccount', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     [OutputType([PSADT.Types.UserProfile])]
@@ -100,25 +102,33 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                foreach ($profileListing in (& $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & { process { if ($_.PSChildName -notmatch $excludedSids) { return $_ } } }))
-                {
-                    # Return early for accounts that have a null NTAccount.
-                    if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $profileListing.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
+                & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & {
+                    process
                     {
-                        return
-                    }
+                        # Retuyrn early if the SID is to be excluded.
+                        if ($_.PSChildName -notmatch $excludedSids)
+                        {
+                            return $_
+                        }
 
-                    # Exclude early for excluded accounts.
-                    if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
-                    {
-                        return
-                    }
+                        # Return early for accounts that have a null NTAccount.
+                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
+                        {
+                            return
+                        }
 
-                    # Write out the object to the pipeline.
-                    [PSADT.Types.UserProfile]@{
-                        NTAccount = $ntAccount
-                        SID = $profileListing.PSChildName
-                        ProfilePath = $profileListing.ProfileImagePath
+                        # Exclude early for excluded accounts.
+                        if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
+                        {
+                            return
+                        }
+
+                        # Write out the object to the pipeline.
+                        $PSCmdlet.WriteObject([PSADT.Types.UserProfile]@{
+                                NTAccount = $ntAccount
+                                SID = $_.PSChildName
+                                ProfilePath = $_.ProfileImagePath
+                            })
                     }
                 }
 
@@ -126,11 +136,11 @@ function Get-ADTUserProfiles
                 # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
                 if (!$ExcludeDefaultUser)
                 {
-                    [PSADT.Types.UserProfile]@{
-                        NTAccount = 'Default User'
-                        SID = 'S-1-5-21-Default-User'
-                        ProfilePath = (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
-                    }
+                    $PSCmdlet.WriteObject([PSADT.Types.UserProfile]@{
+                            NTAccount = 'Default User'
+                            SID = 'S-1-5-21-Default-User'
+                            ProfilePath = (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
+                        })
                 }
             }
             catch
