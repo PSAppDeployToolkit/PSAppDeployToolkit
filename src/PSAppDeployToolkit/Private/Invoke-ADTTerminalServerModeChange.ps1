@@ -50,5 +50,5 @@ function Invoke-ADTTerminalServerModeChange
         TargetObject = $terminalServerResult
         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
     }
-    throw (New-ADTErrorRecord @naerParams)
+    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
 }
