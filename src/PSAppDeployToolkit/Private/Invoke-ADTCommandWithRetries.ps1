@@ -105,5 +105,5 @@ function Invoke-ADTCommandWithRetries
     }
 
     # If we're here, we failed too many times. Throw the captured ErrorRecord.
-    throw $errorRecord
+    $PSCmdlet.ThrowTerminatingError($errorRecord)
 }

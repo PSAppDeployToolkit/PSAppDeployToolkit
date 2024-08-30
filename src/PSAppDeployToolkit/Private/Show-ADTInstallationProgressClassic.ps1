@@ -198,7 +198,7 @@ function Show-ADTInstallationProgressClassic
         {
             if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Error'))
             {
-                throw $Script:Dialogs.Classic.ProgressWindow.SyncHash.Error
+                $PSCmdlet.ThrowTerminatingError($Script:Dialogs.Classic.ProgressWindow.SyncHash.Error)
             }
             elseif ($Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
             {
@@ -209,7 +209,7 @@ function Show-ADTInstallationProgressClassic
                     TargetObject = $(if ($SyncHash.ContainsKey('Window')) { $SyncHash.Window })
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
-                throw (New-ADTErrorRecord @naerParams)
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
         }
 
