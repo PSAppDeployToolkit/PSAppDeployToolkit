@@ -1,45 +1,44 @@
-PSADT/
-├── Account/
-│   └── PSADT.Account.AccountHelper.cs
-├── WTSSession/
-│   ├── PSADT.WTSSession.ExtendedSessionInfo.cs
-│   ├── PSADT.WTSSession.SessionHelper.cs
-│   └── PSADT.WTSSession.SessionInfo.cs
-├── UserProfile/
-│   ├── PSADT.UserProfile.Profile.cs
-│   └── PSADT.UserProfile.ProfileHelper.cs
+﻿PSADT/
 ├── PInvoke/
-│   ├── PSADT.PInvoke.NativeMethods.cs
-│   ├── PSADT.PInvoke.NativeMethods.Enums.cs
 │   ├── PSADT.PInvoke.NativeMethods.SafeHandles.cs
-│   └── PSADT.PInvoke.NativeMethods.Structs.cs
+│   ├── PSADT.PInvoke.NativeMethods.Structs.cs
+│   ├── PSADT.PInvoke.NativeMethods.cs
+│   └── PSADT.PInvoke.NativeMethods.Enums.cs
 ├── PE/
 │   └── PSADT.PE.ExecutableType.cs
 ├── PathEx/
 │   └── PSADT.PathEx.PathHelper.cs
+├── WTSSession/
+│   ├── PSADT.WTSSession.SessionInfo.cs
+│   ├── PSADT.WTSSession.SessionHelper.cs
+│   └── PSADT.WTSSession.ExtendedSessionInfo.cs
+├── UserProfile/
+│   ├── PSADT.UserProfile.ProfileHelper.cs
+│   └── PSADT.UserProfile.Profile.cs
 ├── ProcessEx/
-│   ├── PSADT.ProcessEx.Enums.cs
-│   ├── PSADT.ProcessEx.ExecutionDetails.cs
-│   ├── PSADT.ProcessEx.ExecutionManager.cs
-│   ├── PSADT.ProcessEx.ExecutionResult.cs
-│   ├── PSADT.ProcessEx.LaunchOptions.cs
 │   ├── PSADT.ProcessEx.ManagedProcess.cs
+│   ├── PSADT.ProcessEx.LaunchOptions.cs
+│   ├── PSADT.ProcessEx.StartProcess.cs
 │   ├── PSADT.ProcessEx.SessionDetails.cs
-│   └── PSADT.ProcessEx.StartProcess.cs
-├── ConsoleEx/
-│   ├── PSADT.ConsoleEx.ConsoleHelper.cs
-│   └── PSADT.ConsoleEx.Enums.cs
+│   ├── PSADT.ProcessEx.ExecutionDetails.cs
+│   ├── PSADT.ProcessEx.Enums.cs
+│   ├── PSADT.ProcessEx.ExecutionResult.cs
+│   └── PSADT.ProcessEx.ExecutionManager.cs
 ├── CommandLine/
-│   ├── PSADT.CommandLine.Arguments.cs
-│   └── PSADT.CommandLine.OptionMapping.cs
+│   ├── PSADT.CommandLine.OptionMapping.cs
+│   └── PSADT.CommandLine.Arguments.cs
+├── Account/
+│   └── PSADT.Account.AccountHelper.cs
 ├── OperatingSystem/
-│   ├── PSADT.OperatingSystem.Enums.cs
+│   ├── PSADT.OperatingSystem.OSVersionInfo.cs
 │   ├── PSADT.OperatingSystem.OSHelper.cs
-│   └── PSADT.OperatingSystem.OSVersionInfo.cs
+│   └── PSADT.OperatingSystem.Enums.cs
+├── ConsoleEx/
+│   ├── PSADT.ConsoleEx.Enums.cs
+│   └── PSADT.ConsoleEx.ConsoleHelper.cs
+├── PSADT.Structure.txt
 ├── PsadtExec.ico
-├── AssemblyInfo.cs
+├── readme.md
 ├── PSADT.BuildAndPublish.ps1
 ├── PSADT.csproj
-├── PSADT.Program.cs
-├── PSADT.Structure.txt
-└── readme.md
+└── PSADT.Program.cs

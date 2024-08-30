@@ -254,6 +254,41 @@ namespace PSADT.PInvoke
         public bool TokenIsElevated;
     }
 
+    /// <summary>
+    /// The TOKEN_PRIVILEGES structure contains information about a set of privileges for an access token.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TOKEN_PRIVILEGES
+    {
+        public uint PrivilegeCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
+        public LUID_AND_ATTRIBUTES[] Privileges;
+    }
+
+    /// <summary>
+    /// Represents a 64-bit signed integer. This type is declared in ntdef.h as follows:
+    /// typedef struct _LUID {
+    ///   DWORD LowPart;
+    ///   LONG  HighPart;
+    /// } LUID, *PLUID;
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct LUID
+    {
+        public uint LowPart;
+        public int HighPart;
+    }
+
+    /// <summary>
+    /// The LUID_AND_ATTRIBUTES structure represents a locally unique identifier (LUID) and its attributes.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct LUID_AND_ATTRIBUTES
+    {
+        public LUID Luid;
+        public uint Attributes;
+    }
+
     #endregion
 
     #region winsta.dll
@@ -305,7 +340,7 @@ namespace PSADT.PInvoke
 
     #endregion
 
-    #region PInvoke: shell32.dll
+    #region shell32.dll
 
     /// <summary>Contains information about a file object.</summary>
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -338,6 +373,51 @@ namespace PSADT.PInvoke
         /// <summary>Gets the size of this structure.</summary>
         /// <value>The structure size in bytes.</value>
         public static int Size => Marshal.SizeOf(typeof(SHFILEINFO));
+    }
+
+    #endregion
+
+    #region wintrust.dll
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WinTrustFileInfo
+    {
+        public uint cbStruct;
+        public SafeHGlobalHandle pcwszFilePath; // Updated to use SafeHandle
+        public IntPtr hFile;
+        public IntPtr pgKnownSubject;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WinTrustData
+    {
+        public uint cbStruct;
+        public IntPtr pPolicyCallbackData;
+        public IntPtr pSIPClientData;
+        public uint dwUIChoice;
+        public uint fdwRevocationChecks;
+        public uint dwUnionChoice;
+        public SafeHGlobalHandle pFile; // Updated to use SafeHandle
+        public uint dwStateAction;
+        public IntPtr hWVTStateData;
+        public IntPtr pwszURLReference;
+        public uint dwProvFlags;
+        public uint dwUIContext;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CRYPTCATMEMBER
+    {
+        public uint cbStruct;
+        public IntPtr pwszReferenceTag;
+        public IntPtr pwszFileName;
+        public Guid gSubjectType;
+        public uint fdwMemberFlags;
+        public IntPtr pIndirectData;
+        public uint dwCertVersion;
+        public uint dwReserved1;
+        public uint dwReserved2;
+        public uint dwReserved3;
     }
 
     #endregion

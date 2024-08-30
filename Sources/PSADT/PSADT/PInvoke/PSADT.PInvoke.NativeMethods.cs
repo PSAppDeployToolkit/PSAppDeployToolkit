@@ -5,6 +5,7 @@ using System.Security;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+using System.Collections.Generic;
 
 /// Native Method Declarations from:
 /// https://github.com/dahall/Vanara
@@ -28,6 +29,18 @@ namespace PSADT.PInvoke
         /// </summary>
         public const int ERROR_NOT_FOUND = 1168;
 
+        public const int ERROR_NOT_ALL_ASSIGNED = 1300;
+
+        public const uint SE_PRIVILEGE_ENABLED = 0x00000002;
+
+        public const uint TOKEN_DUPLICATE = 0x0002;
+
+        public const uint TOKEN_QUERY = 0x0008;
+
+        public const uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
+
+        public const uint SANDBOX_INERT = 0x2;
+
         #endregion
 
         #region Fields: shlwapi.dll
@@ -39,6 +52,28 @@ namespace PSADT.PInvoke
         #region Fields: kernel32.dll
 
         public const uint ATTACH_PARENT_PROCESS = 0xFFFFFFFF;
+
+        public const uint GENERIC_READ = 0x80000000;
+
+        public const uint OPEN_EXISTING = 3;
+
+        public const uint PIPE_ACCESS_DUPLEX = 0x00000003;
+
+        public const uint PIPE_TYPE_MESSAGE = 0x00000004;
+
+        public const uint PIPE_READMODE_MESSAGE = 0x00000002;
+
+        public const uint PIPE_WAIT = 0x00000000;
+
+        public const uint PIPE_UNLIMITED_INSTANCES = 255;
+
+        #endregion
+
+        #region Fields: wintrust.dll
+
+        public static readonly Guid WINTRUST_ACTION_GENERIC_VERIFY_V2 = new Guid("00AAC56B-CD44-11d0-8CC2-00C04FC295EE");
+
+        public const uint DRIVER_ACTION_VERIFY = 0x00000001;
 
         #endregion
 
@@ -177,6 +212,77 @@ namespace PSADT.PInvoke
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetProductInfo(uint dwOSMajorVersion, uint dwOSMinorVersion, uint dwSpMajorVersion, uint dwSpMinorVersion, out PRODUCT_TYPE pdwReturnedProductType);
+
+        /// <summary>
+        /// Creates a handle for the specified file with read-only access.
+        /// </summary>
+        /// <param name="filePath">The file path of the file to open.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> for the opened file.</returns>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern SafeFileHandle CreateFile(
+            string lpFileName,
+            uint dwDesiredAccess,
+            uint dwShareMode,
+            IntPtr lpSecurityAttributes,
+            uint dwCreationDisposition,
+            uint dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        /// <summary>
+        /// Creates an instance of a named pipe and returns a handle for subsequent pipe operations.
+        /// </summary>
+        /// <param name="lpName">The unique pipe name.</param>
+        /// <param name="dwOpenMode">The open mode.</param>
+        /// <param name="dwPipeMode">The pipe mode.</param>
+        /// <param name="nMaxInstances">The maximum number of instances that can be created for this pipe.</param>
+        /// <param name="nOutBufferSize">The number of bytes to reserve for the output buffer.</param>
+        /// <param name="nInBufferSize">The number of bytes to reserve for the input buffer.</param>
+        /// <param name="nDefaultTimeOut">The default time-out value, in milliseconds.</param>
+        /// <param name="lpSecurityAttributes">A pointer to a SECURITY_ATTRIBUTES structure.</param>
+        /// <returns>If the function succeeds, the return value is a handle to the server end of a named pipe instance.</returns>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern SafePipeHandle CreateNamedPipe(
+            string lpName,
+            uint dwOpenMode,
+            uint dwPipeMode,
+            uint nMaxInstances,
+            uint nOutBufferSize,
+            uint nInBufferSize,
+            uint nDefaultTimeOut,
+            IntPtr lpSecurityAttributes);
+
+        /// <summary>
+        /// Enables a named pipe server process to wait for a client process to connect to an instance of a named pipe.
+        /// </summary>
+        /// <param name="hNamedPipe">A handle to the server end of a named pipe instance.</param>
+        /// <param name="lpOverlapped">A pointer to an OVERLAPPED structure.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ConnectNamedPipe(SafePipeHandle hNamedPipe, IntPtr lpOverlapped);
+
+        /// <summary>
+        /// <para>Retrieves the client process identifier for the specified named pipe.</para>
+        /// </summary>
+        /// <param name="Pipe">
+        /// <para>A handle to an instance of a named pipe. This handle must be created by the CreateNamedPipe function.</para>
+        /// </param>
+        /// <param name="ClientProcessId">
+        /// <para>The process identifier.</para>
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is nonzero.</para>
+        /// <para>If the function fails, the return value is zero. To get extended error information, call the GetLastError function.</para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <c>Windows 10, version 1709:</c> Pipes are only supported within an app-container; ie, from one UWP process to another UWP
+        /// process that's part of the same app. Also, named pipes must use the syntax "\.\pipe\LOCAL" for the pipe name.
+        /// </para>
+        /// </remarks>
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetNamedPipeClientProcessId(IntPtr Pipe, out uint ClientProcessId);
 
         #endregion
 
@@ -391,6 +497,83 @@ namespace PSADT.PInvoke
             TOKEN_TYPE TokenType,
             out SafeAccessToken phNewToken);
 
+        /// <summary>
+        /// Enables the server side of a named pipe to impersonate the client side.
+        /// </summary>
+        /// <param name="hNamedPipe">A handle to a named pipe.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ImpersonateNamedPipeClient(SafePipeHandle hNamedPipe);
+
+        /// <summary>
+        /// Terminates the impersonation of a client application.
+        /// </summary>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool RevertToSelf();
+
+        /// <summary>
+        /// Retrieves the locally unique identifier (LUID) used on a specified system to locally represent the specified privilege name.
+        /// </summary>
+        /// <param name="lpSystemName">A pointer to a null-terminated string that specifies the name of the system on which the privilege name is retrieved.</param>
+        /// <param name="lpName">A pointer to a null-terminated string that specifies the name of the privilege.</param>
+        /// <param name="lpLuid">A pointer to a variable that receives the LUID by which the privilege is known on the system specified by the lpSystemName parameter.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool LookupPrivilegeValue(
+            string? lpSystemName,
+            string lpName,
+            out LUID lpLuid);
+
+        /// <summary>
+        /// Enables or disables privileges in the specified access token.
+        /// </summary>
+        /// <param name="TokenHandle">A handle to the access token that contains the privileges to be modified.</param>
+        /// <param name="DisableAllPrivileges">Specifies whether the function disables all of the token's privileges.</param>
+        /// <param name="NewState">A pointer to a TOKEN_PRIVILEGES structure that specifies an array of privileges and their attributes.</param>
+        /// <param name="BufferLength">Specifies the size, in bytes, of the buffer pointed to by the PreviousState parameter.</param>
+        /// <param name="PreviousState">A pointer to a buffer that the function fills with a TOKEN_PRIVILEGES structure that contains the previous state of any privileges that the function modifies.</param>
+        /// <param name="ReturnLength">A pointer to a variable that receives the required size, in bytes, of the buffer pointed to by the PreviousState parameter.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AdjustTokenPrivileges(
+            IntPtr TokenHandle,
+            [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
+            ref TOKEN_PRIVILEGES NewState,
+            uint BufferLength,
+            IntPtr PreviousState,
+            IntPtr ReturnLength);
+
+        /// <summary>
+        /// Creates a new token that is a restricted version of an existing token.
+        /// </summary>
+        /// <param name="ExistingTokenHandle">A handle to an access token opened with TOKEN_DUPLICATE access.</param>
+        /// <param name="Flags">A set of bit flags that specify options for the new token.</param>
+        /// <param name="DisableSidCount">The number of entries in the SidsToDisable array.</param>
+        /// <param name="SidsToDisable">An array of pointers to structures that identify the security identifiers (SIDs) to disable in the new token.</param>
+        /// <param name="DeletePrivilegeCount">The number of entries in the PrivilegesToDelete array.</param>
+        /// <param name="PrivilegesToDelete">An array of pointers to structures that identify the privileges to delete in the new token.</param>
+        /// <param name="RestrictedSidCount">The number of entries in the SidsToRestrict array.</param>
+        /// <param name="SidsToRestrict">An array of pointers to structures that identify the SIDs for which to apply access restrictions in the new token.</param>
+        /// <param name="NewTokenHandle">A pointer to a variable that receives a handle to the new restricted token.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool CreateRestrictedToken(
+            IntPtr ExistingTokenHandle,
+            uint Flags,
+            uint DisableSidCount,
+            IntPtr SidsToDisable,
+            uint DeletePrivilegeCount,
+            IntPtr PrivilegesToDelete,
+            uint RestrictedSidCount,
+            IntPtr SidsToRestrict,
+            out SafeAccessToken NewTokenHandle);
+
         #endregion
 
         #region PInvoke: userenv.dll
@@ -460,6 +643,28 @@ namespace PSADT.PInvoke
         /// </returns>
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SHGetFileInfo(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, SHGFI uFlags);
+
+        #endregion
+
+        #region PInvoke: wintrust.dll
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, ref WinTrustData pWVTData);
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CryptCATAdminAcquireContext(ref SafeCatAdminHandle phCatAdmin, ref Guid pgSubsystem, uint dwFlags);
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CryptCATAdminReleaseContext(IntPtr hCatAdmin, uint dwFlags);
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CryptCATAdminCalcHashFromFileHandle(SafeFileHandle hFile, ref uint pcbHash, [Out] byte[]? pbHash, uint dwFlags);
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr CryptCATAdminEnumCatalogFromHash(SafeCatAdminHandle hCatAdmin, [MarshalAs(UnmanagedType.LPArray)] byte[] pbHash, uint cbHash, uint dwFlags, IntPtr phPrevCatInfo);
+
+        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CryptCATCatalogInfoFromContext(IntPtr hCatInfo, IntPtr psCatInfo, uint dwFlags);
 
         #endregion
     }

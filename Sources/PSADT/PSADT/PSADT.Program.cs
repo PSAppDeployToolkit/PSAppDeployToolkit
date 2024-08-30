@@ -5,6 +5,7 @@ using PSADT.ConsoleEx;
 using PSADT.ProcessEx;
 using PSADT.CommandLine;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace PSADT
 {
@@ -22,6 +23,11 @@ namespace PSADT
         {
             try
             {
+#if !CoreCLR
+                // Make sure the .NET Framework version supports .NET Standard 2.0
+                NETStandardSupport.CheckNetFxVersion();
+#endif
+
                 ConsoleHelper.IsHelpMode = args.Any(arg => new[] { "-Help", "--Help", "-?", "--?" }.Contains(arg, StringComparer.OrdinalIgnoreCase));
                 if (ConsoleHelper.IsHelpMode)
                 {
@@ -111,4 +117,33 @@ namespace PSADT
             Console.WriteLine("  PsadtExec.exe -f myapp.exe --newconsole");
         }
     }
+
+#if !CoreCLR
+    internal static class NETStandardSupport
+    {
+        private const int Net461Version = 394254;
+        /// <summary>
+        /// Checks to see if the .NET Framework version supports .NET Standard 2.0
+        /// </summary>
+        public static void CheckNetFxVersion()
+        {
+            ConsoleHelper.DebugWrite($"Checking that .NET Framework version is at least 4.6.1.", MessageType.Debug);
+            using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Net Framework Setup\NDP\v4\Full"))
+            {
+                object? netFxValue = key?.GetValue("Release");
+                if (netFxValue == null || netFxValue is not int netFxVersion)
+                {
+                    return;
+                }
+
+                ConsoleHelper.DebugWrite($".NET registry version [{netFxVersion}]", MessageType.Debug);
+
+                if (netFxVersion < Net461Version)
+                {
+                    ConsoleHelper.DebugWrite($".NET Framework version {netFxVersion} lower than .NET 4.6.1. This runtime is not supported and you may experience errors. Please update your .NET runtime version.", MessageType.Warning);
+                }
+            }
+        }
+    }
+#endif
 }

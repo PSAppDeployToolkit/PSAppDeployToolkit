@@ -24,15 +24,15 @@ namespace PSADT.ProcessEx
     /// </summary>
     public class StartProcess : IDisposable
     {
-        private readonly ExecutionManager _processManager;
+        private readonly ExecutionManager _executionManager;
         private bool _disposed;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="StartProcess"/> class.
         /// </summary>
         public StartProcess()
         {
-            _processManager = new ExecutionManager();
+            _executionManager = new ExecutionManager();
         }
 
         /// <summary>
@@ -85,28 +85,28 @@ namespace PSADT.ProcessEx
             }
             finally
             {
-                _processManager.Clear();
+                _executionManager.Clear();
             }
         }
 
         private async Task<int> WaitForProcessesAsync(LaunchOptions options)
         {
             TimeSpan timeout = TimeSpan.FromSeconds(options.ConsoleTimeoutInSeconds);
-            using var cts = new CancellationTokenSource(timeout);
+            using var waitForProcessCancellationTokenSource = new CancellationTokenSource(timeout);
 
             try
             {
-                ExecutionResult exitInfo = await _processManager.WaitForAllProcessExitsAsync(options.WaitOption,
-                                                                                             timeout,
-                                                                                             cts.Token);
+                ExecutionResult exitInfo = await _executionManager.WaitForAllProcessExitsAsync(options.WaitOption,
+                                                                                               timeout,
+                                                                                               waitForProcessCancellationTokenSource.Token);
 
                 if (exitInfo.HasTimedOut)
                 {
                     ConsoleHelper.DebugWrite("Timeout reached. Stopping redirection monitors and terminating processes.", MessageType.Debug);
-                    await _processManager.StopAllRedirectionMonitorsAsync(options.TerminateOnTimeout);
+                    await _executionManager.StopAllRedirectionMonitorsAsync(options.TerminateOnTimeout);
                 }
 
-                await _processManager.WaitForAllRedirectionMonitorsAsync();
+                await _executionManager.WaitForAllRedirectionMonitorsAsync();
 
                 if (options.Debug && exitInfo.ExitedProcessInfo != null)
                 {
@@ -204,32 +204,33 @@ namespace PSADT.ProcessEx
 
             try
             {
-                ManagedProcess processInfo = _processManager.CreateNewProcessInfoObject(new SessionDetails(options.SessionId.Value, options.Username));
+                ManagedProcess managedProcess = _executionManager.InitializeManagedProcess(new SessionDetails(options.SessionId.Value, options.Username));
+                managedProcess.IsGuiApplication = ExecutableType.IsGuiApplication(options.FilePath);
+                options.IsGuiApplication = managedProcess.IsGuiApplication;
+
                 ProcessStartInfo startInfo = CreateProcessStartInfo(options);
 
-                processInfo.RedirectStandardOutput = startInfo.RedirectStandardOutput;
-                processInfo.RedirectStandardError = startInfo.RedirectStandardError;
-                processInfo.MergeStdErrAndStdOut = options.MergeStdErrAndStdOut;
+                managedProcess.RedirectStandardOutput = startInfo.RedirectStandardOutput;
+                managedProcess.RedirectStandardError = startInfo.RedirectStandardError;
+                managedProcess.MergeStdErrAndStdOut = options.MergeStdErrAndStdOut;
 
-                bool isGuiApplication = ExecutableType.IsGuiApplication(startInfo.FileName);
-                processInfo.IsGuiApplication = isGuiApplication;
-
-                processInfo.Process = await StartProcessInSessionAsync(
+                managedProcess.Process = await StartProcessInSessionAsync(
                     options.SessionId.Value,
                     startInfo,
                     options.CreateProcessCreationFlags(),
                     options.UseLinkedAdminToken,
-                    options.InheritEnvironmentVariables ?? false
+                    options.InheritEnvironmentVariables ?? false,
+                    options.IsGuiApplication
                 );
 
-                if (processInfo.Process == null)
+                if (managedProcess.Process == null)
                 {
                     throw new InvalidOperationException($"Failed to start process in session [{options.SessionId.Value}].");
                 }
 
-                ConsoleHelper.DebugWrite($"Started process [{processInfo.Process.ProcessName}] with process id [{processInfo.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
+                ConsoleHelper.DebugWrite($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
 
-                ConfigureOutputRedirection(processInfo, options);
+                //managedProcess.ConfigureOutputRedirection(options);
             }
             catch (Exception ex)
             {
@@ -258,26 +259,30 @@ namespace PSADT.ProcessEx
 
                 ConsoleHelper.DebugWrite($"Executing process in current session with id [{options.SessionId.Value}].", MessageType.Info);
 
-                ManagedProcess processInfo = _processManager.CreateNewProcessInfoObject(new SessionDetails(options.SessionId.Value, options.Username));
+                ManagedProcess managedProcess = _executionManager.InitializeManagedProcess(new SessionDetails(options.SessionId.Value, options.Username));
+                managedProcess.IsGuiApplication = ExecutableType.IsGuiApplication(options.FilePath);
+                options.IsGuiApplication = managedProcess.IsGuiApplication;
+
                 ProcessStartInfo startInfo = CreateProcessStartInfo(options);
 
-                bool isGuiApplication = ExecutableType.IsGuiApplication(startInfo.FileName);
-                processInfo.IsGuiApplication = isGuiApplication;
+                managedProcess.RedirectStandardOutput = startInfo.RedirectStandardOutput;
+                managedProcess.RedirectStandardError = startInfo.RedirectStandardError;
+                managedProcess.MergeStdErrAndStdOut = options.MergeStdErrAndStdOut;
 
-                processInfo.Process = await StartProcessAsync(startInfo);
+                managedProcess.Process = await StartProcessAsync(startInfo, options.IsGuiApplication);
 
-                if (processInfo.Process == null)
+                if (managedProcess.Process == null)
                 {
                     throw new InvalidOperationException($"Failed to start process in current session with id [{options.SessionId.Value}].");
                 }
 
-                ConsoleHelper.DebugWrite($"Started process [{processInfo.Process.ProcessName}] with process id [{processInfo.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
+                ConsoleHelper.DebugWrite($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
 
-                ConfigureOutputRedirection(processInfo, options);
+                //managedProcess.ConfigureOutputRedirection(options);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error executing process in current session: {ex.Message}.", MessageType.Error, ex);
+                ConsoleHelper.DebugWrite($"Error executing process in current session: {ex.Message}", MessageType.Error, ex);
                 throw;
             }
         }
@@ -291,8 +296,6 @@ namespace PSADT.ProcessEx
         {
             try
             {
-                var isGuiApplication = ExecutableType.IsGuiApplication(options.FilePath);
-
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = options.FilePath,
@@ -300,8 +303,8 @@ namespace PSADT.ProcessEx
                     WorkingDirectory = options.WorkingDirectory ?? Path.GetDirectoryName(Environment.CurrentDirectory),
                     UseShellExecute = false,
                     CreateNoWindow = options.HideWindow,
-                    RedirectStandardOutput = options.RedirectOutput && !isGuiApplication,
-                    RedirectStandardError = options.RedirectOutput && !options.MergeStdErrAndStdOut && !isGuiApplication
+                    RedirectStandardOutput = options.RedirectOutput && !options.IsGuiApplication,
+                    RedirectStandardError = options.RedirectOutput && !options.MergeStdErrAndStdOut && !options.IsGuiApplication
                 };
 
                 // Add additional environment variables
@@ -331,112 +334,6 @@ namespace PSADT.ProcessEx
             catch (Exception ex)
             {
                 ConsoleHelper.DebugWrite($"Error creating ProcessStartInfo: {ex.Message}", MessageType.Error, ex);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Sets up output redirection for the process.
-        /// </summary>
-        /// <param name="processInfo">The ManagedProcess containing the process to set up redirection for.</param>
-        /// <param name="options">The launch options containing redirection settings.</param>
-        private static void ConfigureOutputRedirection(ManagedProcess processInfo, LaunchOptions options)
-        {
-            if (!options.RedirectOutput || processInfo.Process == null)
-                return;
-
-            try
-            {
-                if (!processInfo.RedirectStandardOutput && !processInfo.RedirectStandardError)
-                {
-                    ConsoleHelper.DebugWrite("Process does not support output redirection. This is likely a GUI application.", MessageType.Info);
-                    return;
-                }
-
-                string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-                string baseFileName = $"S_{processInfo.SessionInfo.SessionId}_P_{processInfo.Process.Id}_{timestamp}";
-
-                if (!string.IsNullOrEmpty(options.OutputDirectory))
-                {
-                    string stdoutFile = Path.Combine(options.OutputDirectory, $"{baseFileName}_stdout.txt");
-                    string stderrFile = Path.Combine(options.OutputDirectory, $"{baseFileName}_stderr.txt");
-
-                    if (processInfo.RedirectStandardOutput)
-                    {
-                        processInfo.StandardOutputRedirectionTask = RedirectToFileAsync(processInfo.Process.StandardOutput, stdoutFile);
-                    }
-                    if (processInfo.RedirectStandardError && !processInfo.MergeStdErrAndStdOut)
-                    {
-                        processInfo.StandardErrorRedirectionTask = RedirectToFileAsync(processInfo.Process.StandardError, stderrFile);
-                    }
-
-                    ConsoleHelper.DebugWrite($"Configured output redirection to files: stdout={stdoutFile}, stderr={stderrFile}", MessageType.Debug);
-                }
-                else
-                {
-                    if (processInfo.RedirectStandardOutput)
-                    {
-                        processInfo.StandardOutputRedirectionTask = RedirectToConsoleAsync(processInfo.Process.StandardOutput, Console.Out);
-                    }
-                    if (processInfo.RedirectStandardError && !processInfo.MergeStdErrAndStdOut)
-                    {
-                        processInfo.StandardErrorRedirectionTask = RedirectToConsoleAsync(processInfo.Process.StandardError, Console.Error);
-                    }
-
-                    ConsoleHelper.DebugWrite("Configured output redirection to console", MessageType.Debug);
-                }
-            }
-            catch (Exception ex)
-            {
-                ConsoleHelper.DebugWrite($"Error configuring output redirection: {ex.Message}", MessageType.Error, ex);
-            }
-        }
-
-        private static async Task RedirectToFileAsync(StreamReader reader, string filePath)
-        {
-            try
-            {
-                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
-                using var writer = new StreamWriter(fileStream);
-                await RedirectStreamAsync(reader, writer);
-                ConsoleHelper.DebugWrite($"Completed redirection to file [{filePath}].", MessageType.Debug);
-            }
-            catch (Exception ex)
-            {
-                ConsoleHelper.DebugWrite($"Error redirecting to file [{filePath}]: {ex.Message}.", MessageType.Error, ex);
-                throw;
-            }
-        }
-
-        private static Task RedirectToConsoleAsync(StreamReader reader, TextWriter writer)
-        {
-            try
-            {
-                return RedirectStreamAsync(reader, writer);
-            }
-            catch (Exception ex)
-            {
-                ConsoleHelper.DebugWrite($"Error redirecting to console: {ex.Message}.", MessageType.Error, ex);
-                throw;
-            }
-        }
-
-        private static async Task RedirectStreamAsync(StreamReader reader, TextWriter writer)
-        {
-            char[] buffer = new char[4096];
-            int bytesRead;
-
-            try
-            {
-                while ((bytesRead = await reader.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                {
-                    await writer.WriteAsync(buffer, 0, bytesRead);
-                    await writer.FlushAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                ConsoleHelper.DebugWrite($"Failed to redirect stream: {ex.Message}.", MessageType.Error, ex);
                 throw;
             }
         }
@@ -479,7 +376,8 @@ namespace PSADT.ProcessEx
             ProcessStartInfo startInfo,
             CREATE_PROCESS processCreationFlags,
             bool useLinkedAdminToken,
-            bool inheritEnvironment)
+            bool inheritEnvironment,
+            bool isGuiApplication)
         {
             SafeAccessToken primaryToken = SafeAccessToken.Invalid;
             SafeAccessToken tokenToUse = SafeAccessToken.Invalid;
@@ -514,8 +412,6 @@ namespace PSADT.ProcessEx
                     var startupInfo = new STARTUPINFO();
                     startupInfo.cb = Marshal.SizeOf(startupInfo);
                     startupInfo.lpDesktop = @"WinSta0\Default";
-
-                    bool isGuiApplication = ExecutableType.IsGuiApplication(startInfo.FileName);
 
                     if (startInfo.RedirectStandardOutput || startInfo.RedirectStandardError)
                     {
@@ -637,7 +533,7 @@ namespace PSADT.ProcessEx
         /// ConsoleHelper.DebugWrite($"ProcessEx started with ID {process.Id}");
         /// </code>
         /// </example>
-        private static async Task<Process> StartProcessAsync(ProcessStartInfo startInfo)
+        private static async Task<Process> StartProcessAsync(ProcessStartInfo startInfo, bool isGuiApplication)
         {
             var process = new Process
             {
@@ -653,8 +549,6 @@ namespace PSADT.ProcessEx
                 {
                     throw new InvalidOperationException("Process.Start() returned false.");
                 }
-
-                bool isGuiApplication = ExecutableType.IsGuiApplication(startInfo.FileName);
 
                 // Only wait for input idle if it's a GUI application
                 if (isGuiApplication)
@@ -701,7 +595,7 @@ namespace PSADT.ProcessEx
             {
                 if (disposing)
                 {
-                    _processManager.Dispose();
+                    _executionManager.Dispose();
                 }
                 _disposed = true;
             }

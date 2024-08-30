@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.DirectoryServices;
+///using System.DirectoryServices;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
 
@@ -12,7 +12,7 @@ namespace PSADT.Account
         /// Retrieves the Security Identifier (SID) of the built-in administrator account on the local machine.
         /// </summary>
         /// <returns>The <see cref="SecurityIdentifier"/> representing the built-in administrator account.</returns>
-        public static SecurityIdentifier? GetBuiltInAdministratorAccountSid()
+        /*public static SecurityIdentifier? GetBuiltInAdministratorAccountSid()
         {
             SecurityIdentifier? builtInAdministratorAccountSid = null;
 
@@ -83,7 +83,7 @@ namespace PSADT.Account
         {
             var sid = GetBuiltInAdministratorAccountSid();
             return sid?.AccountDomainSid;
-        }
+        }*/
 
         /// <summary>
         /// Parses the base SID from a given SID.
