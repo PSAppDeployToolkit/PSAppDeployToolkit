@@ -183,9 +183,37 @@ namespace PSADT.PathEx
         /// </summary>
         /// <param name="path">The path string to process.</param>
         /// <returns>The path string without the trailing backslash.</returns>
-        private static string RemoveTrailingSlash(string path)
+        public static string RemoveTrailingSlash(string path)
         {
             return path.TrimEnd('\\');
+        }
+
+        /// <summary>
+        /// Replaces the first occurrence of a specified string within another string,
+        /// performing the search using the specified string comparison option.
+        /// </summary>
+        /// <param name="input">The input string in which to perform the replacement.</param>
+        /// <param name="oldValue">The string to be replaced.</param>
+        /// <param name="newValue">The string that replaces the <paramref name="oldValue"/>.</param>
+        /// <param name="comparisonType">The string comparison option to use for the search. Default is 'OrdinalIgnoreCase'.</param>
+        /// <returns>
+        /// A new string that is equivalent to the input string but with the first occurrence
+        /// of the <paramref name="oldValue"/> replaced by the <paramref name="newValue"/>.
+        /// If <paramref name="oldValue"/> is not found, the original <paramref name="input"/> string is returned.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="input"/>, <paramref name="oldValue"/>, or <paramref name="newValue"/> is <c>null</c>.</exception>
+        public static string Replace(string input, string oldValue, string newValue, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+        {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+            if (oldValue == null) throw new ArgumentNullException(nameof(oldValue));
+            if (newValue == null) throw new ArgumentNullException(nameof(newValue));
+
+            int index = input.IndexOf(oldValue, comparisonType);
+            if (index >= 0)
+            {
+                input = input.Remove(index, oldValue.Length).Insert(index, newValue);
+            }
+            return input;
         }
 
         /// <summary>

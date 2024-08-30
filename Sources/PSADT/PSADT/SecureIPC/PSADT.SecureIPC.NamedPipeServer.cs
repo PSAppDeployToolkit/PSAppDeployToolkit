@@ -223,10 +223,10 @@ namespace PSADT.SecureIPC
                     ?? throw new SecureNamedPipeException("Failed to resolve executable path so that we could validate the client process is a PowerShell host.");
 
                 var result = verifier.Verify(filePath);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.isAuthenticodeSigned ? "" : "not")} [AuthenticodeSigned].", MessageType.Debug);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.isCatalogSigned ? "" : "not")} [CatalogSigned].", MessageType.Debug);
+                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsAuthenticodeSigned ? "" : "not")} [AuthenticodeSigned].", MessageType.Debug);
+                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsCatalogSigned ? "" : "not")} [CatalogSigned].", MessageType.Debug);
 
-                if (!result.isAuthenticodeSigned && !result.isCatalogSigned)
+                if (!result.IsAuthenticodeSigned && !result.IsCatalogSigned)
                 {
                     throw new SecureNamedPipeException("Only PowerShell processes with a verified authenticode or catalog signature are allowed to connect.");
                 }

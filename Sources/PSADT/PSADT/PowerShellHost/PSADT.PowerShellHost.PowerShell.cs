@@ -169,12 +169,23 @@ namespace PSADT.PowerShellHost
                 cts.CancelAfter(context.Options.Timeout.Value);
                 using (cts.Token.Register(() => powershell.Stop()))
                 {
+#if !CoreCLR
+                    IAsyncResult asyncResult = powershell.BeginInvoke<PSObject, PSObject>(null, output, null, null, null);
+                    await Task.Factory.FromAsync(asyncResult, ar => powershell.EndInvoke(ar)).ConfigureAwait(false);
+
+#else
                     await powershell.InvokeAsync<PSObject, PSObject>(null, output, null, null, null).ConfigureAwait(false);
+#endif
                 }
             }
             else
             {
+#if !CoreCLR
+                IAsyncResult asyncResult = powershell.BeginInvoke<PSObject, PSObject>(null, output, null, null, null);
+                await Task.Factory.FromAsync(asyncResult, ar => powershell.EndInvoke(ar)).ConfigureAwait(false);
+#else
                 await powershell.InvokeAsync<PSObject, PSObject>(null, output, null, null, null).ConfigureAwait(false);
+#endif
             }
 
             return output;
@@ -299,7 +310,7 @@ namespace PSADT.PowerShellHost
             {
                 foreach (var module in options.ModulesToImport)
                 {
-                    iss.ImportPSModule(module);
+                    iss.ImportPSModule(new[] { module });
                 }
             }
 
@@ -422,13 +433,13 @@ namespace PSADT.PowerShellHost
                 case PSArchitecture.X64:
                     if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
                     {
-                        psFilePath = psFilePath.Replace(@"\SysWOW64\", @"\Sysnative\", StringComparison.OrdinalIgnoreCase);
+                        psFilePath = PathHelper.Replace(psFilePath, @"\SysWOW64\", @"\Sysnative\");
                     }
                     break;
                 case PSArchitecture.X86:
                     if (Environment.Is64BitOperatingSystem && Environment.Is64BitProcess)
                     {
-                        psFilePath = psFilePath.Replace(@"\System32\", @"\SysWOW64\", StringComparison.OrdinalIgnoreCase);
+                        psFilePath = PathHelper.Replace(psFilePath, @"\System32\", @"\SysWOW64\");
                     }
                     break;
                 case PSArchitecture.CurrentProcess:
