@@ -90,8 +90,17 @@ function Get-ADTUserProfiles
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $userProfileListRegKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
-        $excludedSids = "^($([System.String]::Join('|', $(if (!$IncludeSystemProfiles) {'S-1-5-18', 'S-1-5-19', 'S-1-5-20'}; 'S-1-5-82'))))"
+        $excludedSids = "^($([System.String]::Join('|', $(
+            if (!$IncludeSystemProfiles)
+            {
+                'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
+            }
+            if (!$IncludeServiceProfiles)
+            {
+                'S-1-5-80'
+            }
+            'S-1-5-82'
+        ))))"
     }
 
     process
@@ -102,7 +111,7 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & {
+                & $Script:CommandTable.'Get-ItemProperty' -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*" | & {
                     process
                     {
                         # Return early if the SID is to be excluded.
@@ -118,7 +127,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early for excluded accounts.
-                        if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
+                        if ($ExcludeNTAccount -contains $ntAccount)
                         {
                             return
                         }
