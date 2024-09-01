@@ -105,10 +105,10 @@ function Get-ADTUserProfiles
                 & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & {
                     process
                     {
-                        # Retuyrn early if the SID is to be excluded.
-                        if ($_.PSChildName -notmatch $excludedSids)
+                        # Return early if the SID is to be excluded.
+                        if ($_.PSChildName -match $excludedSids)
                         {
-                            return $_
+                            return
                         }
 
                         # Return early for accounts that have a null NTAccount.
@@ -117,7 +117,7 @@ function Get-ADTUserProfiles
                             return
                         }
 
-                        # Exclude early for excluded accounts.
+                        # Return early for excluded accounts.
                         if (($ExcludeNTAccount -contains $ntAccount) -or (!$IncludeServiceProfiles -and $ntAccount.StartsWith('NT SERVICE\')))
                         {
                             return
