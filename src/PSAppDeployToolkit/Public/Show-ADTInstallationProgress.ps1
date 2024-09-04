@@ -92,6 +92,7 @@ function Show-ADTInstallationProgress
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
+        $errRecord = $null
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -189,8 +190,14 @@ function Show-ADTInstallationProgress
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-            Close-ADTInstallationProgress
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_)
+        }
+        finally
+        {
+            if ($errRecord)
+            {
+                Close-ADTInstallationProgress
+            }
         }
     }
 
