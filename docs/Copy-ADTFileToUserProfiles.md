@@ -132,6 +132,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -RobocopyParams
+Override the default Robocopy parameters.
+Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -RobocopyAdditionalParams
 Additional parameters to pass to Robocopy.
 Default is: $null.
