@@ -94,7 +94,7 @@
         TempPathNoAdminRights = '$envTemp'
 
         # Specify if Robocopy should be used with the Copy-File function.
-        UseRobocopy = $true
+        UseRobocopy = $false
     }
 
     UI = @{
