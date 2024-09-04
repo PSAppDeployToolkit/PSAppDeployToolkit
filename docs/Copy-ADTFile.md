@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Copy-File
+# Copy-ADTFile
 
 ## SYNOPSIS
 Copies files and directories from a source to a destination.
@@ -13,7 +13,7 @@ Copies files and directories from a source to a destination.
 ## SYNTAX
 
 ```
-Copy-File [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError <Switch>]
+Copy-ADTFile [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError <Switch>]
 [-UseRobocopy <Switch>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
 ```
 
@@ -25,21 +25,21 @@ This function supports recursive copying, overwriting existing files, and return
 
 ### EXAMPLE 1
 ```
-Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt'
+Copy-ADTFile -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt'
 ```
 
 Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination'.
 
 ### EXAMPLE 2
 ```
-Copy-File -Path 'C:\Path\Folder' -Destination 'D:\Destination\Folder' -Recurse
+Copy-ADTFile -Path 'C:\Path\Folder' -Destination 'D:\Destination\Folder' -Recurse
 ```
 
 Recursively copies the folder 'Folder' from 'C:\Path' to 'D:\Destination'.
 
 ### EXAMPLE 3
 ```
-Copy-File -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt' -Force
+Copy-ADTFile -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt' -Force
 ```
 
 Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination', overwriting the destination file if it exists.
