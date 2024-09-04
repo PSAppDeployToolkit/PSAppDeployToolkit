@@ -95,6 +95,7 @@ function Get-ADTUserProfiles
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $userProfileListRegKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
         $excludedSids = "^S-1-5-($([System.String]::Join('|', $(
             if (!$IncludeSystemProfiles)
             {
@@ -121,7 +122,7 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                & $Script:CommandTable.'Get-ItemProperty' -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*" | & {
+                & $Script:CommandTable.'Get-ItemProperty' -Path "$userProfileListRegKey\*" | & {
                     process
                     {
                         # Return early if the SID is to be excluded.
