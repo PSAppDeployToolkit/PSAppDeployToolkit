@@ -1,6 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Copy-File
+# MARK: Copy-ADTFile
 #
 #-----------------------------------------------------------------------------
 
@@ -203,12 +203,12 @@ function Copy-ADTFile
                                 $CopyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
                             }
                             # Copy all files from the root source folder
-                            Copy-File @CopyFileSplat
+                            Copy-ADTFile @CopyFileSplat
                             # Copy all files from subfolders
                             & $Script:CommandTable.'Get-ChildItem' -Path $RobocopySource -Directory -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
-                                # Append file name to subfolder path and repeat Copy-File
+                                # Append file name to subfolder path and repeat Copy-ADTFile
                                 $CopyFileSplat.Path = & $Script:CommandTable.'Join-Path' $_.FullName $RobocopyFile
-                                Copy-File @CopyFileSplat
+                                Copy-ADTFile @CopyFileSplat
                             }
                             # Skip to next $SrcPath in $Path since we have handed off all copy tasks to separate executions of the function
                             continue
