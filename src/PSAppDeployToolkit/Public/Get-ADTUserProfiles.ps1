@@ -83,22 +83,30 @@ function Get-ADTUserProfiles
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeIISAppPoolProfiles,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $excludedSids = "^($([System.String]::Join('|', $(
+        $excludedSids = "^S-1-5-($([System.String]::Join('|', $(
             if (!$IncludeSystemProfiles)
             {
-                'S-1-5-18', 'S-1-5-19', 'S-1-5-20'
+                18  # System (or LocalSystem)
+                19  # NT Authority (LocalService)
+                20  # Network Service
             }
             if (!$IncludeServiceProfiles)
             {
-                'S-1-5-80'
+                80  # NT Service
             }
-            'S-1-5-82'
+            if (!$IncludeIISAppPoolProfiles)
+            {
+                82  # IIS AppPool
+            }
         ))))"
     }
 
