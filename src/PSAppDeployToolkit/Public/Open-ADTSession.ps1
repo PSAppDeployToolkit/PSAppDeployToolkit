@@ -17,88 +17,88 @@ function Open-ADTSession
         Caller's SessionState.
 
     .PARAMETER DeploymentType
-        Deploy-Application.ps1 Parameter. Specifies the type of deployment: Install, Uninstall, or Repair.
+        Specifies the type of deployment: Install, Uninstall, or Repair.
 
     .PARAMETER DeployMode
-        Deploy-Application.ps1 Parameter. Specifies the deployment mode: Interactive, NonInteractive, or Silent.
+        Specifies the deployment mode: Interactive, NonInteractive, or Silent.
 
     .PARAMETER AllowRebootPassThru
-        Deploy-Application.ps1 Parameter. Allows reboot pass-through.
+        Allows reboot pass-through.
 
     .PARAMETER TerminalServerMode
-        Deploy-Application.ps1 Parameter. Enables Terminal Server mode.
+        Enables Terminal Server mode.
 
     .PARAMETER DisableLogging
-        Deploy-Application.ps1 Parameter. Disables logging for the session.
+        Disables logging for the session.
 
     .PARAMETER AppVendor
-        Deploy-Application.ps1 Parameter. Specifies the application vendor.
+        Specifies the application vendor.
 
     .PARAMETER AppName
-        Deploy-Application.ps1 Parameter. Specifies the application name.
+        Specifies the application name.
 
     .PARAMETER AppVersion
-        Deploy-Application.ps1 Parameter. Specifies the application version.
+        Specifies the application version.
 
     .PARAMETER AppArch
-        Deploy-Application.ps1 Parameter. Specifies the application architecture.
+        Specifies the application architecture.
 
     .PARAMETER AppLang
-        Deploy-Application.ps1 Parameter. Specifies the application language.
+        Specifies the application language.
 
     .PARAMETER AppRevision
-        Deploy-Application.ps1 Parameter. Specifies the application revision.
+        Specifies the application revision.
 
     .PARAMETER AppExitCodes
-        Deploy-Application.ps1 Parameter. Specifies the application exit codes.
+        Specifies the application exit codes.
 
     .PARAMETER AppRebootCodes
-        Deploy-Application.ps1 Parameter. Specifies the application reboot codes.
+        Specifies the application reboot codes.
 
     .PARAMETER AppScriptVersion
-        Deploy-Application.ps1 Parameter. Specifies the application script version.
+        Specifies the application script version.
 
     .PARAMETER AppScriptDate
-        Deploy-Application.ps1 Parameter. Specifies the application script date.
+        Specifies the application script date.
 
     .PARAMETER AppScriptAuthor
-        Deploy-Application.ps1 Parameter. Specifies the application script author.
+        Specifies the application script author.
 
     .PARAMETER InstallName
-        Deploy-Application.ps1 Parameter. Specifies the install name.
+        Specifies the install name.
 
     .PARAMETER InstallTitle
-        Deploy-Application.ps1 Parameter. Specifies the install title.
+        Specifies the install title.
 
     .PARAMETER DeployAppScriptFriendlyName
-        Deploy-Application.ps1 Parameter. Specifies the friendly name of the deploy application script.
+        Specifies the friendly name of the deploy application script.
 
     .PARAMETER DeployAppScriptVersion
-        Deploy-Application.ps1 Parameter. Specifies the version of the deploy application script.
+        Specifies the version of the deploy application script.
 
     .PARAMETER DeployAppScriptDate
-        Deploy-Application.ps1 Parameter. Specifies the date of the deploy application script.
+        Specifies the date of the deploy application script.
 
     .PARAMETER DeployAppScriptParameters
-        Deploy-Application.ps1 Parameter. Specifies the parameters for the deploy application script.
+        Specifies the parameters for the deploy application script.
 
     .PARAMETER DirFiles
-        Deploy-Application.ps1 Parameter. Specifies the path to Files.
+        Specifies the path to Files.
 
     .PARAMETER DirSupportFiles
-        Deploy-Application.ps1 Parameter. Specifies the path to SupportFiles.
+        Specifies the path to SupportFiles.
 
     .PARAMETER DefaultMsiFile
-        Deploy-Application.ps1 Parameter. Specifies the default MSI file.
+        Specifies the default MSI file.
 
     .PARAMETER DefaultMstFile
-        Deploy-Application.ps1 Parameter. Specifies the default MST file.
+        Specifies the default MST file.
 
     .PARAMETER DefaultMspFiles
-        Deploy-Application.ps1 Parameter. Specifies the default MSP files.
+        Specifies the default MSP files.
 
     .PARAMETER PassThru
-        Deploy-Application.ps1 Parameter. Passes the session object through the pipeline.
+        Passes the session object through the pipeline.
 
     .INPUTS
         None
@@ -130,112 +130,112 @@ function Open-ADTSession
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = "Caller's SessionState")]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SessionState]$SessionState,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateSet('Install', 'Uninstall', 'Repair')]
         [System.String]$DeploymentType,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateSet('Interactive', 'NonInteractive', 'Silent')]
         [System.String]$DeployMode,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$TerminalServerMode,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Parameter')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppVendor,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppName,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppVersion,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppArch,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppLang,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$AppRevision,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppExitCodes,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppRebootCodes,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.Version]$AppScriptVersion,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$AppScriptDate,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$AppScriptAuthor,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$InstallName,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyString()]
         [System.String]$InstallTitle,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeployAppScriptFriendlyName,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.Version]$DeployAppScriptVersion,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeployAppScriptDate,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyCollection()]
         [System.Collections.IDictionary]$DeployAppScriptParameters,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppRebootCodes,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DirFiles,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DirSupportFiles,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DefaultMsiFile,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DefaultMstFile,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Deploy-Application.ps1 Variable')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$DefaultMspFiles,
 

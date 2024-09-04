@@ -3376,7 +3376,7 @@ Import-Module -Name $PSScriptRoot\..\..\..\PSAppDeployToolkit -Force
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
-Get-Variable -Name ((Get-Command -Name Open-ADTSession -FullyQualifiedModule @{ ModuleName = 'PSAppDeployToolkit'; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.91.0' }).Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Deploy-Application\.ps1') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
+Get-Variable -Name ((Get-Command -Name Open-ADTSession -FullyQualifiedModule @{ ModuleName = 'PSAppDeployToolkit'; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.91.0' }).Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
 Open-ADTSession @sessionProps
 
 # Redefine all functions as read-only and clean up temp variables.
