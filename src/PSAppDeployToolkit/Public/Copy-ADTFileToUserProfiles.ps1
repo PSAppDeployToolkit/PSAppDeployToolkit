@@ -105,7 +105,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+        [System.Management.Automation.SwitchParameter]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
