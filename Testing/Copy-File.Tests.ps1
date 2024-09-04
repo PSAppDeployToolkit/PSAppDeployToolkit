@@ -1,8 +1,8 @@
 BeforeAll {
 	try {
 		$DeployMode = 'NonInteractive'
-		$null = . "$PSScriptRoot\..\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
-		Mock Write-Host {}
+		$null = . "$PSScriptRoot\..\src\Frontend\v3\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
+		#Mock Write-Host {}
 		$DebugPreference = 'Continue'
 	} catch {
 		# Error may be thrown if dot-sourcing main without elevation, but elevation is not required for these tests.
@@ -44,9 +44,9 @@ Describe 'Copy-File'-ForEach @(
 		}
 	}
 	AfterEach {
-		$DestinationFiles = (Get-ChildItem -Path $DestinationPath -Recurse -Force).FullName
-		if ($DestinationFiles.Count -gt 0) {
-			$DebugMessage = $DestinationFiles -join "`n"
+		$DestinationFiles = Get-ChildItem -Path $DestinationPath -Recurse -Force
+		if ($DestinationFiles) {
+			$DebugMessage = $DestinationFiles.FullName -join "`n"
 			Write-Debug "Destination files:`n$DebugMessage"
 		} else {
 			Write-Debug 'No files in destination.'
