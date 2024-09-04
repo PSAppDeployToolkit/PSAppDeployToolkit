@@ -18,13 +18,16 @@ function Get-ADTUserProfiles
         Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
     .PARAMETER IncludeSystemProfiles
-        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
 
     .PARAMETER IncludeServiceProfiles
-        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
+        Include service (NT SERVICE) profiles.
+
+    .PARAMETER IncludeIISAppPoolProfiles
+        Include IIS AppPool profiles. Excluded by default as they don't parse well.
 
     .PARAMETER ExcludeDefaultUser
-        Exclude the Default User. Default is: $false.
+        Exclude the Default User.
 
     .INPUTS
         None
