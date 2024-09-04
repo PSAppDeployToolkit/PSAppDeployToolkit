@@ -241,7 +241,9 @@ function Copy-ADTFile
                         {
                             $null = & $Script:CommandTable.'New-Item' -Path $RobocopyDestination -Type 'Directory' -Force -ErrorAction 'Stop'
                         }
-                        $DestFolderAttributes = (& $Script:CommandTable.'Get-Item' -LiteralPath $RobocopyDestination -Force).Attributes
+
+                        # Backup destination folder attributes in case known Robocopy bug overwrites them
+                        $DestFolderAttributes = [System.IO.File]::GetAttributes($RobocopyDestination)
 
                         $RobocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$RobocopySource`" `"$RobocopyDestination`" `"$RobocopyFile`""
                         Write-ADTLogEntry -Message "Executing Robocopy command: $RobocopyCommand $RobocopyArgs"
@@ -250,7 +252,15 @@ function Copy-ADTFile
                         $RobocopyOutput = $RobocopyResult.StdOut.Trim() -Replace '\n\s+', "`n"
                         Write-ADTLogEntry -Message "Robocopy output:`n$RobocopyOutput"
 
-                        & $Script:CommandTable.'Set-ItemProperty' -LiteralPath $RobocopyDestination -Name Attributes -Value ($DestFolderAttributes -band (-bnot [System.IO.FileAttributes]::Directory))
+                        # Restore folder attributes in case Robocopy overwrote them
+                        try
+                        {
+                            [System.IO.File]::SetAttributes($RobocopyDestination, $DestFolderAttributes)
+                        }
+                        catch
+                        {
+                            Write-ADTLogEntry -Message "Failed to apply attributes $DestFolderAttributes destination folder $RobocopyDestination : $($_.Exception.Message)" -Severity 2
+                        }
 
                         switch ($RobocopyResult.ExitCode)
                         {
