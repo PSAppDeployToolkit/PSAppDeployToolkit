@@ -90,9 +90,7 @@ function Show-ADTInstallationProgress
     {
         # Initialise the module first if needed.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
-        $errRecord = $null
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -131,6 +129,8 @@ function Show-ADTInstallationProgress
     {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtStrings = Get-ADTStringTable
+        $errRecord = $null
 
         # Set up defaults if not specified.
         if ($adtSession)
