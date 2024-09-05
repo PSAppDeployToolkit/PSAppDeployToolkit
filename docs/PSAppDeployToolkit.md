@@ -44,10 +44,10 @@ Converts the specified registry key path to a format that is compatible with bui
 ### [Copy-ADTContentToCache](Copy-ADTContentToCache.md)
 Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
 
-### [Copy-File](Copy-File.md)
+### [Copy-ADTFile](Copy-ADTFile.md)
 Copies files and directories from a source to a destination.
 
-### [Copy-FileToUserProfiles](Copy-FileToUserProfiles.md)
+### [Copy-ADTFileToUserProfiles](Copy-ADTFileToUserProfiles.md)
 Copy one or more items to each user profile on the system.
 
 ### [Disable-ADTTerminalServerInstallMode](Disable-ADTTerminalServerInstallMode.md)

@@ -14,41 +14,40 @@ Copy one or more items to each user profile on the system.
 
 ```
 Copy-ADTFileToUserProfiles [-Path] <String[]> [[-Destination] <String>] [-Recurse] [-Flatten]
- [-UseRobocopy <Switch>] [-RobocopyAdditionalParams <String>] [-ExcludeNTAccount <String[]>]
- [-IncludeSystemProfiles <Switch>] [-IncludeServiceProfiles <Switch>] [-ExcludeDefaultUser]
- [-ContinueFileCopyOnError <Switch>] [<CommonParameters>]
+ [-FileCopyMode <String>] [-ExcludeNTAccount <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
+ [-ExcludeDefaultUser] [-ContinueFileCopyOnError] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-The Copy-ADTFileToUserProfiles function copies one or more items to each user profile on the system.
+The Copy-FileToUserProfiles function copies one or more items to each user profile on the system.
 It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
+Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
 ```
 
 Copy a single file to C:\Users\\\<UserName\>\AppData\Roaming\MyApp for each user.
 
 ### EXAMPLE 2
 ```
-Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
+Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 ```
 
 Copy two files to C:\Users\\\<UserName\>\AppData\Roaming\MyApp for each user.
 
 ### EXAMPLE 3
 ```
-Copy-ADTFileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 ```
 
 Copy an entire folder to C:\Users\\\<UserName\>\AppData\Local for each user.
 
 ### EXAMPLE 4
 ```
-Copy-ADTFileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
+Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 ```
 
 Copy an entire folder to C:\Users\\\<UserName\> for each user.
@@ -115,26 +114,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseRobocopy
-Use Robocopy to copy files rather than native PowerShell method.
-Supports * in file names, but not folders, in source paths.
+### -FileCopyMode
+Select from 'Native' or 'Robocopy'.
 Default is configured in config.psd1.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: (Get-ADTConfig).Toolkit.UseRobocopy
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RobocopyParams
-Override the default Robocopy parameters.
-Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+Note that Robocopy supports * in file names, but not folders, in source paths.
 
 ```yaml
 Type: String
@@ -143,23 +126,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RobocopyAdditionalParams
-Additional parameters to pass to Robocopy.
-Default is: $null.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
+Default value: (Get-ADTConfig).Toolkit.FileCopyMode
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -181,36 +148,7 @@ Accept wildcard characters: False
 
 ### -IncludeSystemProfiles
 Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: True
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeServiceProfiles
-Include service profiles where NTAccount begins with NT SERVICE.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: True
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExcludeDefaultUser
-Exclude the Default User.
+Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -224,19 +162,34 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ContinueOnError
-Continue if an error is encountered.
-This will continue the deployment script, but will not continue copying files if an error is encountered.
-Default is: $true.
+### -IncludeServiceProfiles
+Include service profiles where NTAccount begins with NT SERVICE.
+Default is: $false.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: True
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExcludeDefaultUser
+Exclude the Default User.
+Default is: $false.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -247,7 +200,7 @@ This will continue the deployment script and will warn about files that failed t
 Default is: $false.
 
 ```yaml
-Type: Boolean
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
