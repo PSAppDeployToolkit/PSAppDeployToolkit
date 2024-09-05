@@ -59,8 +59,8 @@ function Close-ADTSession
     begin
     {
         # Make this function continue on error and ensure the caller doesn't override ErrorAction.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction $ErrorActionPreference
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -95,8 +95,7 @@ function Close-ADTSession
             }
             catch
             {
-                $_
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
+                $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
             }
         }
 
