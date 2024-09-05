@@ -93,8 +93,8 @@
         # Same as TempPath but used when RequireAdmin is False.
         TempPathNoAdminRights = '$envTemp'
 
-        # Specify if Robocopy should be used with the Copy-File function.
-        UseRobocopy = $false
+        # Choose from either 'Native' for native PowerShell file copy via Copy-Item, or 'Robocopy' to use robocopy.exe.
+        FileCopyMode = 'Native'
     }
 
     UI = @{

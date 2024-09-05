@@ -94,14 +94,32 @@ function Copy-ADTFile
         [System.Management.Automation.SwitchParameter]$ContinueFileCopyOnError,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+        [ValidateSet('Native', 'Robocopy')]
+        [System.String]$FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
 
-        [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
-
-        [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyAdditionalParams
     )
+
+    dynamicparam
+    {
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        if ($FileCopyMode -eq 'Robocopy')
+        {
+            # Define the RobocopyParams parameter
+            $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
+                ))
+
+            # Define the RobocopyAdditionalParams parameter
+            $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
+                ))
+        }
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
 
     begin
     {
@@ -109,11 +127,22 @@ function Copy-ADTFile
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Check if Robocopy is on the system
-        if ($UseRobocopy)
+        if ($FileCopyMode -eq 'Robocopy')
         {
             if (& $Script:CommandTable.'Test-Path' -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)
             {
+                $UseRobocopy = $true
                 $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams')) {
+                    $PSBoundParameters.RobocopyParams
+                } else {
+                    '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1'
+                }
+                $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams')) {
+                    $PSBoundParameters.RobocopyAdditionalParams
+                } else {
+                    $null
+                }
             }
             else
             {
@@ -194,7 +223,7 @@ function Copy-ADTFile
                                 Recurse                  = $false # Disable recursion as this will create subfolders in the destination
                                 Flatten                  = $false # Disable flattening to prevent infinite loops
                                 ContinueFileCopyOnError  = $ContinueFileCopyOnError
-                                UseRobocopy              = $UseRobocopy
+                                FileCopyMode             = $FileCopyMode
                                 RobocopyParams           = $RobocopyParams
                                 RobocopyAdditionalParams = $RobocopyAdditionalParams
                             }
