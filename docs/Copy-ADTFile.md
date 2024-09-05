@@ -13,8 +13,8 @@ Copies files and directories from a source to a destination.
 ## SYNTAX
 
 ```
-Copy-ADTFile [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError <Switch>]
-[-UseRobocopy <Switch>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
+Copy-ADTFile [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError]
+ [-FileCopyMode <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -124,26 +124,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseRobocopy
-Use Robocopy to copy files rather than native PowerShell method.
-Supports * in file names, but not folders, in source paths.
+### -FileCopyMode
+Select from 'Native' or 'Robocopy'.
 Default is configured in config.psd1.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: (Get-ADTConfig).Toolkit.UseRobocopy
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RobocopyParams
-Override the default Robocopy parameters.
-Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+Note that Robocopy supports * in file names, but not folders, in source paths.
 
 ```yaml
 Type: String
@@ -152,23 +136,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RobocopyAdditionalParams
-Append to the default Robocopy parameters.
-Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
+Default value: (Get-ADTConfig).Toolkit.FileCopyMode
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
