@@ -557,7 +557,7 @@ function Copy-File
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+        [System.Boolean]$UseRobocopy,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -576,6 +576,30 @@ function Copy-File
     if (!$ContinueOnError)
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+
+    if (!$UseRobocopy)
+    {
+        if ($PSBoundParameters.ContainsKey('RobocopyParams'))
+        {
+            $null = $PSBoundParameters.Remove('RobocopyParams')
+        }
+        if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
+        {
+            $null = $PSBoundParameters.Remove('RobocopyAdditionalParams')
+        }
+    }
+    if ($PSBoundParameters.ContainsKey('UseRobocopy'))
+    {
+        if ($PSBoundParameters.UseRobocopy)
+        {
+            $null = $PSBoundParameters.Add('FileCopyMode', 'Robocopy')
+        }
+        else
+        {
+            $null = $PSBoundParameters.Add('FileCopyMode', 'Native')
+        }
+        $null = $PSBoundParameters.Remove('UseRobocopy')
     }
     try
     {
