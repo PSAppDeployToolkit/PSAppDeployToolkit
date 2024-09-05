@@ -28,14 +28,14 @@ function Copy-ADTFile
     .PARAMETER ContinueFileCopyOnError
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
 
-    .PARAMETER UseRobocopy
-        Use Robocopy to copy files rather than native PowerShell method. Supports * in file names, but not folders, in source paths. Default is configured in config.psd1.
+    .PARAMETER FileCopyMode
+        Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
     .PARAMETER RobocopyParams
-        Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
     .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Append to the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
     .INPUTS
         None
