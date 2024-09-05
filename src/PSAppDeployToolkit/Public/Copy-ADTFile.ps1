@@ -108,7 +108,7 @@ function Copy-ADTFile
         {
             # Define the RobocopyParams parameter
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
+                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
                 ))
 
             # Define the RobocopyAdditionalParams parameter
@@ -132,14 +132,20 @@ function Copy-ADTFile
             if (& $Script:CommandTable.'Test-Path' -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
                 $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
-                $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams')) {
+                $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams'))
+                {
                     $PSBoundParameters.RobocopyParams
-                } else {
+                }
+                else
+                {
                     '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1'
                 }
-                $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams')) {
+                $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
+                {
                     $PSBoundParameters.RobocopyAdditionalParams
-                } else {
+                }
+                else
+                {
                     $null
                 }
             }
