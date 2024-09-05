@@ -14,7 +14,7 @@ Get the User Profile Path, User Account SID, and the User Account Name for all u
 
 ```
 Get-ADTUserProfiles [[-ExcludeNTAccount] <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
- [-ExcludeDefaultUser] [<CommonParameters>]
+ [-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -64,7 +64,6 @@ Accept wildcard characters: False
 
 ### -IncludeSystemProfiles
 Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -79,8 +78,23 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeServiceProfiles
-Include service profiles where NTAccount begins with NT SERVICE.
-Default is: $false.
+Include service (NT SERVICE) profiles.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeIISAppPoolProfiles
+Include IIS AppPool profiles.
+Excluded by default as they don't parse well.
 
 ```yaml
 Type: SwitchParameter
@@ -96,7 +110,6 @@ Accept wildcard characters: False
 
 ### -ExcludeDefaultUser
 Exclude the Default User.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter

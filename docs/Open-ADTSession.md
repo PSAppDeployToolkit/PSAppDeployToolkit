@@ -16,11 +16,11 @@ Opens a new ADT session.
 Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-DeployMode] <String>]
  [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
  [[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
- [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>] [[-AppScriptVersion] <Version>]
- [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
- [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
- [[-DeployAppScriptDate] <String>] [[-DeployAppScriptParameters] <IDictionary>] [[-DirFiles] <String>]
- [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+ [[-AppScriptVersion] <Version>] [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>]
+ [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
+ [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <String>]
+ [[-DeployAppScriptParameters] <IDictionary>] [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>]
+ [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-PassThru] [<CommonParameters>]
 ```
 
@@ -56,7 +56,6 @@ Accept wildcard characters: False
 ```
 
 ### -DeploymentType
-Deploy-Application.ps1 Parameter.
 Specifies the type of deployment: Install, Uninstall, or Repair.
 
 ```yaml
@@ -72,7 +71,6 @@ Accept wildcard characters: False
 ```
 
 ### -DeployMode
-Deploy-Application.ps1 Parameter.
 Specifies the deployment mode: Interactive, NonInteractive, or Silent.
 
 ```yaml
@@ -88,7 +86,6 @@ Accept wildcard characters: False
 ```
 
 ### -AllowRebootPassThru
-Deploy-Application.ps1 Parameter.
 Allows reboot pass-through.
 
 ```yaml
@@ -104,7 +101,6 @@ Accept wildcard characters: False
 ```
 
 ### -TerminalServerMode
-Deploy-Application.ps1 Parameter.
 Enables Terminal Server mode.
 
 ```yaml
@@ -120,7 +116,6 @@ Accept wildcard characters: False
 ```
 
 ### -DisableLogging
-Deploy-Application.ps1 Parameter.
 Disables logging for the session.
 
 ```yaml
@@ -136,7 +131,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppVendor
-Deploy-Application.ps1 Parameter.
 Specifies the application vendor.
 
 ```yaml
@@ -152,7 +146,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppName
-Deploy-Application.ps1 Parameter.
 Specifies the application name.
 
 ```yaml
@@ -168,7 +161,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppVersion
-Deploy-Application.ps1 Parameter.
 Specifies the application version.
 
 ```yaml
@@ -184,7 +176,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppArch
-Deploy-Application.ps1 Parameter.
 Specifies the application architecture.
 
 ```yaml
@@ -200,7 +191,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppLang
-Deploy-Application.ps1 Parameter.
 Specifies the application language.
 
 ```yaml
@@ -216,7 +206,6 @@ Accept wildcard characters: False
 ```
 
 ### -AppRevision
-Deploy-Application.ps1 Parameter.
 Specifies the application revision.
 
 ```yaml
@@ -231,12 +220,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppExitCodes
-Deploy-Application.ps1 Parameter.
-Specifies the application exit codes.
+### -AppScriptVersion
+Specifies the application script version.
 
 ```yaml
-Type: Int32[]
+Type: Version
 Parameter Sets: (All)
 Aliases:
 
@@ -247,12 +235,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppRebootCodes
-Deploy-Application.ps1 Parameter.
-Specifies the application reboot codes.
+### -AppScriptDate
+Specifies the application script date.
 
 ```yaml
-Type: Int32[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -263,12 +250,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppScriptVersion
-Deploy-Application.ps1 Parameter.
-Specifies the application script version.
+### -AppScriptAuthor
+Specifies the application script author.
 
 ```yaml
-Type: Version
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -279,9 +265,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppScriptDate
-Deploy-Application.ps1 Parameter.
-Specifies the application script date.
+### -InstallName
+Specifies the install name.
 
 ```yaml
 Type: String
@@ -295,9 +280,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppScriptAuthor
-Deploy-Application.ps1 Parameter.
-Specifies the application script author.
+### -InstallTitle
+Specifies the install title.
 
 ```yaml
 Type: String
@@ -311,9 +295,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InstallName
-Deploy-Application.ps1 Parameter.
-Specifies the install name.
+### -DeployAppScriptFriendlyName
+Specifies the friendly name of the deploy application script.
 
 ```yaml
 Type: String
@@ -327,12 +310,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InstallTitle
-Deploy-Application.ps1 Parameter.
-Specifies the install title.
+### -DeployAppScriptVersion
+Specifies the version of the deploy application script.
 
 ```yaml
-Type: String
+Type: Version
 Parameter Sets: (All)
 Aliases:
 
@@ -343,9 +325,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployAppScriptFriendlyName
-Deploy-Application.ps1 Parameter.
-Specifies the friendly name of the deploy application script.
+### -DeployAppScriptDate
+Specifies the date of the deploy application script.
 
 ```yaml
 Type: String
@@ -359,12 +340,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployAppScriptVersion
-Deploy-Application.ps1 Parameter.
-Specifies the version of the deploy application script.
+### -DeployAppScriptParameters
+Specifies the parameters for the deploy application script.
 
 ```yaml
-Type: Version
+Type: IDictionary
 Parameter Sets: (All)
 Aliases:
 
@@ -375,12 +355,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployAppScriptDate
-Deploy-Application.ps1 Parameter.
-Specifies the date of the deploy application script.
+### -AppExitCodes
+Specifies the application exit codes.
 
 ```yaml
-Type: String
+Type: Int32[]
 Parameter Sets: (All)
 Aliases:
 
@@ -391,12 +370,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployAppScriptParameters
-Deploy-Application.ps1 Parameter.
-Specifies the parameters for the deploy application script.
+### -AppRebootCodes
+Specifies the application reboot codes.
 
 ```yaml
-Type: IDictionary
+Type: Int32[]
 Parameter Sets: (All)
 Aliases:
 
@@ -408,7 +386,6 @@ Accept wildcard characters: False
 ```
 
 ### -DirFiles
-Deploy-Application.ps1 Parameter.
 Specifies the path to Files.
 
 ```yaml
@@ -424,7 +401,6 @@ Accept wildcard characters: False
 ```
 
 ### -DirSupportFiles
-Deploy-Application.ps1 Parameter.
 Specifies the path to SupportFiles.
 
 ```yaml
@@ -440,7 +416,6 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultMsiFile
-Deploy-Application.ps1 Parameter.
 Specifies the default MSI file.
 
 ```yaml
@@ -456,7 +431,6 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultMstFile
-Deploy-Application.ps1 Parameter.
 Specifies the default MST file.
 
 ```yaml
@@ -472,7 +446,6 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultMspFiles
-Deploy-Application.ps1 Parameter.
 Specifies the default MSP files.
 
 ```yaml
@@ -488,7 +461,6 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-Deploy-Application.ps1 Parameter.
 Passes the session object through the pipeline.
 
 ```yaml

@@ -51,10 +51,10 @@ Set-ADTActiveSetup -StubExePath "$envWinDir\regedit.exe" -Arguments "/S `"%Syste
 
 ### EXAMPLE 3
 ```
-# Delete "ProgramUserConfig" active setup entry from all registry hives.
+Set-ADTActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
 ```
 
-Set-ADTActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
+Delete "ProgramUserConfig" active setup entry from all registry hives.
 
 ## PARAMETERS
 
@@ -203,10 +203,12 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 
 ## INPUTS
 
-### None. You cannot pipe objects to this function.
+### None
+### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Boolean. Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
+### System.Boolean
+### Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
 ## NOTES
 This function can be called without an active ADT session.
 
