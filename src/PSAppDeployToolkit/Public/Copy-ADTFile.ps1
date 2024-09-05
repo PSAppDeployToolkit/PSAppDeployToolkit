@@ -77,11 +77,11 @@ function Copy-ADTFile
     [CmdletBinding(SupportsShouldProcess = $false)]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
