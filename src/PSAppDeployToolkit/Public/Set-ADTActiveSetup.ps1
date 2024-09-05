@@ -8,82 +8,80 @@ function Set-ADTActiveSetup
 {
     <#
     .SYNOPSIS
-    Creates an Active Setup entry in the registry to execute a file for each user upon login.
+        Creates an Active Setup entry in the registry to execute a file for each user upon login.
 
     .DESCRIPTION
-    Active Setup allows handling of per-user changes registry/file changes upon login.
+        Active Setup allows handling of per-user changes registry/file changes upon login.
 
-    A registry key is created in the HKLM registry hive which gets replicated to the HKCU hive when a user logs in.
+        A registry key is created in the HKLM registry hive which gets replicated to the HKCU hive when a user logs in.
 
-    If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
+        If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
 
-    This Function:
-        - Creates the registry entries in HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$installName.
-        - Creates StubPath value depending on the file extension of the $StubExePath parameter.
-        - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
-        - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-        - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
+        This Function:
+            - Creates the registry entries in HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$installName.
+            - Creates StubPath value depending on the file extension of the $StubExePath parameter.
+            - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
+            - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
+            - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 
     .PARAMETER StubExePath
-    Use this parameter to specify the destination path of the file that will be executed upon user login.
+        Use this parameter to specify the destination path of the file that will be executed upon user login.
 
-    Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specificed in this parameter.
+        Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specificed in this parameter.
 
     .PARAMETER Arguments
-    Arguments to pass to the file being executed.
-
-    .PARAMETER Description
-    Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Default is: $installName.
-
-    .PARAMETER Key
-    Name of the registry key for the Active Setup entry. Default is: $installName.
+        Arguments to pass to the file being executed.
 
     .PARAMETER Wow6432Node
-    Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. Default is: $false.
+        Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. Default is: $false.
 
     .PARAMETER Version
-    Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
+        Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
 
-    Note:
-        - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
-        - In Windows 10, Scripts and EXEs might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
+        Note:
+            - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
+            - In Windows 10, Scripts and EXEs might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
 
     .PARAMETER Locale
-    Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
+        Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
 
     .PARAMETER PurgeActiveSetupKey
-    Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry. Function returns after purging.
+        Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry. Function returns after purging.
 
     .PARAMETER DisableActiveSetup
-    Disables the Active Setup entry so that the StubPath file will not be executed. This also enables -NoExecuteForCurrentUser.
+        Disables the Active Setup entry so that the StubPath file will not be executed. This also enables -NoExecuteForCurrentUser.
 
     .PARAMETER NoExecuteForCurrentUser
-    Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
+        Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Boolean. Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
+        System.Boolean
+        Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
 
     .EXAMPLE
-    Set-ADTActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
+        Set-ADTActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
 
     .EXAMPLE
-    Set-ADTActiveSetup -StubExePath "$envWinDir\regedit.exe" -Arguments "/S `"%SystemDrive%\Program Files (x86)\PS App Deploy\PSAppDeployHKCUSettings.reg`"" -Description 'PS App Deploy Config' -Key 'PS_App_Deploy_Config'
+        Set-ADTActiveSetup -StubExePath "$envWinDir\regedit.exe" -Arguments "/S `"%SystemDrive%\Program Files (x86)\PS App Deploy\PSAppDeployHKCUSettings.reg`"" -Description 'PS App Deploy Config' -Key 'PS_App_Deploy_Config'
 
     .EXAMPLE
-    # Delete "ProgramUserConfig" active setup entry from all registry hives.
-    Set-ADTActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
+        Set-ADTActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
+
+        Delete "ProgramUserConfig" active setup entry from all registry hives.
 
     .NOTES
-    Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
+        Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
     .NOTES
-    This function can be called without an active ADT session.
+        This function can be called without an active ADT session.
 
     .LINK
-    https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
@@ -127,7 +125,10 @@ function Set-ADTActiveSetup
     dynamicparam
     {
         # Attempt to get the most recent ADTSession object.
-        $adtSession = try { Get-ADTSession } catch { $null = $null }
+        $adtSession = if (Test-ADTSessionActive)
+        {
+            Get-ADTSession
+        }
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -135,13 +136,13 @@ function Set-ADTActiveSetup
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Description', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; ParameterSetName = 'Create' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to active session InstallName.'; ParameterSetName = 'Create' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Key', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Name of the registry key for the Active Setup entry. Defaults to active session InstallName.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
