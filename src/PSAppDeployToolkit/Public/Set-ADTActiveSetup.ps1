@@ -61,6 +61,7 @@ function Set-ADTActiveSetup
 
     .OUTPUTS
         System.Boolean
+
         Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
 
     .EXAMPLE
@@ -75,10 +76,14 @@ function Set-ADTActiveSetup
         Delete "ProgramUserConfig" active setup entry from all registry hives.
 
     .NOTES
+        An active ADT session is NOT required to use this function.
+
         Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
-    .NOTES
-        This function can be called without an active ADT session.
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
         https://psappdeploytoolkit.com
