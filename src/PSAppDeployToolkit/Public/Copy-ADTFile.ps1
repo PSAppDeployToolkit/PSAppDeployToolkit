@@ -203,13 +203,13 @@ function Copy-ADTFile
                             # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
                             # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths
                             $ParentPath = & $Script:CommandTable.'Split-Path' -Path $srcPath -Parent
-                            if ([System.String]::IsNullOrWhitespace($ParentPath))
+                            $RobocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                             {
-                                $RobocopySource = $PWD
+                                $PWD
                             }
                             else
                             {
-                                $RobocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                               (& $Script:CommandTable.'Resolve-Path' -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             }
                             $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
