@@ -108,12 +108,12 @@ function Copy-ADTFile
         {
             # Define the RobocopyParams parameter
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
+                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
                 ))
 
             # Define the RobocopyAdditionalParams parameter
             $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }#; ParameterSetName = 'Robocopy' }
+                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
                 ))
         }
 
