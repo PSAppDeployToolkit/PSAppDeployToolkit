@@ -209,9 +209,9 @@ function Copy-ADTFile
                             }
                             else
                             {
-                               (& $Script:CommandTable.'Resolve-Path' -LiteralPath $ParentPath -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                               (& $Script:CommandTable.'Resolve-Path' -LiteralPath $ParentPath).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             }
-                            $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\') -ErrorAction Stop).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            $RobocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                             $RobocopyFile = (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                         }
                         if ($Flatten)
