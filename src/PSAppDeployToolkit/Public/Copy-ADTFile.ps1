@@ -131,7 +131,6 @@ function Copy-ADTFile
         {
             if (& $Script:CommandTable.'Test-Path' -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)
             {
-                $UseRobocopy = $true
                 $RobocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
                 $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams')) {
                     $PSBoundParameters.RobocopyParams
@@ -146,15 +145,12 @@ function Copy-ADTFile
             }
             else
             {
-                $UseRobocopy = $false
+                $FileCopyMode = 'Native'
                 Write-ADTLogEntry "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2
             }
         }
-        else
-        {
-            $UseRobocopy = $false
-        }
     }
+
     process
     {
         foreach ($srcPath in $Path)
@@ -162,24 +158,23 @@ function Copy-ADTFile
             try
             {
                 $FileCopyError = $null
-                $UseRobocopyThis = $UseRobocopy
-                if ($UseRobocopyThis)
+                $FileCopyModeThis = $FileCopyMode
+                if ($FileCopyModeThis -eq 'Robocopy')
                 {
                     # Disable Robocopy if $Path has a folder containing a * wildcard
                     if ($srcPath -match '\*.*\\')
                     {
-                        $UseRobocopyThis = $false
+                        $FileCopyModeThis = 'Native'
                         Write-ADTLogEntry "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
                     }
                     # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config
                     if ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
                     {
-                        $UseRobocopyThis = $false
+                        $FileCopyModeThis = 'Native'
                         Write-ADTLogEntry "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
                     }
-                    if ($UseRobocopyThis)
+                    if ($FileCopyModeThis -eq 'Robocopy')
                     {
-
                         # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                         if (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
                         {
@@ -321,7 +316,7 @@ function Copy-ADTFile
                         }
                     }
                 }
-                if ($UseRobocopyThis -eq $false)
+                if ($FileCopyModeThis -eq 'Native')
                 {
                     # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
                     if ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType 'Container')))
