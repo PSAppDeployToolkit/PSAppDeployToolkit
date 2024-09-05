@@ -210,7 +210,14 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### System.Boolean
 ### Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
 ## NOTES
-This function can be called without an active ADT session.
+An active ADT session is NOT required to use this function.
+
+Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
