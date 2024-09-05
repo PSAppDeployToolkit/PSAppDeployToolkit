@@ -129,9 +129,9 @@ function Copy-ADTFile
         # Check if Robocopy is on the system
         if ($FileCopyMode -eq 'Robocopy')
         {
-            if (& $Script:CommandTable.'Test-Path' -Path "$env:SystemRoot\System32\Robocopy.exe" -PathType Leaf)
+            if (& $Script:CommandTable.'Test-Path' -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
-                $robocopyCommand = "$env:SystemRoot\System32\Robocopy.exe"
+                $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
                 $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams')) {
                     $PSBoundParameters.RobocopyParams
                 } else {
