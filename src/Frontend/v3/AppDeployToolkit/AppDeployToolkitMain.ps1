@@ -433,7 +433,7 @@ function Get-UserProfiles
 
     # Translate parameters.
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
-            if (!$PSBoundParameters["Exclude$_"])
+            if (!$PSBoundParameters."Exclude$_")
             {
                 $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
             }
@@ -1760,7 +1760,7 @@ function Resolve-Error
         # Announce overall deprecation and translate bad switches before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
         $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
-                $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters["Get$_"])
+                $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters."Get$_")
                 $PSBoundParameters.Remove("Get$_")
             })
 
@@ -2675,7 +2675,7 @@ function Remove-FileFromUserProfiles
 
     # Translate parameters.
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
-            if (!$PSBoundParameters["Exclude$_"])
+            if (!$PSBoundParameters."Exclude$_")
             {
                 $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
             }
