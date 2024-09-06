@@ -155,19 +155,19 @@ function Copy-ADTFileToUserProfiles
 
     begin
     {
+        # Initalise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-    process
-    {
-        [Hashtable]$CopyFileSplat = @{
-            Path = $Path
+
+        # Define default params for Copy-ADTFile.
+        $CopyFileSplat = @{
             Recurse = $Recurse
             Flatten = $Flatten
             ContinueFileCopyOnError = $ContinueFileCopyOnError
-            FileCopyMode = $FileCopyMode
         }
-
-        # Only add these if supplied
+        if ($PSBoundParameters.ContainsKey('FileCopyMode'))
+        {
+            $CopyFileSplat.FileCopyMode = $PSBoundParameters.FileCopyMode
+        }
         if ($PSBoundParameters.ContainsKey('RobocopyParams'))
         {
             $CopyFileSplat.RobocopyParams = $PSBoundParameters.RobocopyParams
@@ -176,13 +176,13 @@ function Copy-ADTFileToUserProfiles
         {
             $CopyFileSplat.RobocopyAdditionalParams = $PSBoundParameters.RobocopyAdditionalParams
         }
-
         if ($PSBoundParameters.ContainsKey('ErrorAction'))
         {
             $CopyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
         }
 
-        [Hashtable]$GetUserProfileSplat = @{
+        # Define default params for Get-ADTUserProfiles.
+        $GetUserProfileSplat = @{
             IncludeSystemProfiles = $IncludeSystemProfiles
             IncludeServiceProfiles = $IncludeServiceProfiles
             ExcludeDefaultUser = $ExcludeDefaultUser
@@ -192,15 +192,27 @@ function Copy-ADTFileToUserProfiles
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
 
-        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
-        {
-            $CopyFileSplat.Destination = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
-            Write-ADTLogEntry -Message "Copying path [$Path] to $($CopyFileSplat.Destination):"
-            Copy-ADTFile @CopyFileSplat
-        }
+        # Collector for all provided paths.
+        $sourcePaths = [System.Collections.Specialized.StringCollection]::new()
     }
+
+    process
+    {
+        # Add all source paths to the collection.
+        $sourcePaths.AddRange($Path)
+    }
+
     end
     {
+        # Copy all paths to the specified destination.
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
+        {
+            $dest = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
+            Write-ADTLogEntry -Message "Copying path [$Path] to $($dest):"
+            Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
+        }
+
+        # Finalise function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
