@@ -950,7 +950,7 @@ function Show-DialogBox
 
 function Show-InstallationWelcome
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -995,7 +995,7 @@ function Show-InstallationWelcome
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
 
         [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
