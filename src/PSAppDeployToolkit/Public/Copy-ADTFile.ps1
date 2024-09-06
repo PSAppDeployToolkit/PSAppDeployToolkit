@@ -35,7 +35,7 @@ function Copy-ADTFile
         Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
     .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Append to the default Robocopy parameters when FileCopyMode = Robocopy.
 
     .INPUTS
         None
@@ -108,12 +108,12 @@ function Copy-ADTFile
         {
             # Define the RobocopyParams parameter
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default value is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
                 ))
 
             # Define the RobocopyAdditionalParams parameter
             $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
                 ))
         }
 
