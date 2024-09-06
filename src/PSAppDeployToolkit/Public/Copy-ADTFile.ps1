@@ -276,7 +276,7 @@ function Copy-ADTFile
 
                         $robocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$robocopySource`" `"$robocopyDestination`" `"$robocopyFile`""
                         Write-ADTLogEntry -Message "Executing Robocopy command: $robocopyCommand $robocopyArgs"
-                        $robocopyResult = Start-ADTProcess -Path $robocopyCommand -Parameters $robocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -IgnoreExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
+                        $robocopyResult = Start-ADTProcess -Path $robocopyCommand -Parameters $robocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -SuccessCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
                         # Trim the last line plus leading whitespace from each line of Robocopy output
                         $robocopyOutput = $robocopyResult.StdOut.Trim() -Replace '\n\s+', "`n"
                         Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
