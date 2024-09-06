@@ -687,11 +687,11 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$UseRobocopy = (Get-ADTConfig).Toolkit.UseRobocopy,
+        [System.Boolean]$UseRobocopy,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$RobocopyAdditionalParams = $null,
+        [System.String]$RobocopyAdditionalParams,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -715,21 +715,29 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueFileCopyOnError = $false
+        [System.Boolean]$ContinueFileCopyOnError
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
-    if ($PSBoundParameters.ContainsKey('ExcludeSystemProfiles'))
+    $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
+            if (!$PSBoundParameters."Exclude$_")
+            {
+                $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+            }
+            $PSBoundParameters.Remove("Exclude$_")
+        })
+    if ($PSBoundParameters.ContainsKey('UseRobocopy'))
     {
-        $PSBoundParameters.IncludeSystemProfiles = !$PSBoundParameters.ExcludeSystemProfiles
-        $null = $PSBoundParameters.Remove('ExcludeSystemProfiles')
-
-    }
-    if ($PSBoundParameters.ContainsKey('ExcludeServiceProfiles'))
-    {
-        $PSBoundParameters.IncludeServiceProfiles = !$PSBoundParameters.ExcludeServiceProfiles
-        $null = $PSBoundParameters.Remove('ExcludeServiceProfiles')
+        $PSBoundParameters.FileCopyMode = if ($PSBoundParameters.UseRobocopy)
+        {
+            'Robocopy'
+        }
+        else
+        {
+            'Native'
+        }
+        $null = $PSBoundParameters.Remove('UseRobocopy')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
