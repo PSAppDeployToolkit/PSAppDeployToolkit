@@ -174,7 +174,7 @@ function Copy-ADTFile
                         Write-ADTLogEntry "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
                     }
                     # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config
-                    if ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
+                    elseif ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
                     {
                         $fileCopyModeThis = 'Native'
                         Write-ADTLogEntry "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
