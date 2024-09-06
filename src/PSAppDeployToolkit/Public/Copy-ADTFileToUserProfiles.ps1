@@ -31,12 +31,6 @@ function Copy-ADTFileToUserProfiles
     .PARAMETER FileCopyMode
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
-    .PARAMETER RobocopyParams
-        Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-
-    .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
@@ -108,7 +102,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode,
+        [System.String]$FileCopyMode,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -136,16 +130,22 @@ function Copy-ADTFileToUserProfiles
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
-        if ($FileCopyMode -eq 'Robocopy')
+        if ($PSBoundParameters.ContainsKey('FileCopyMode') -and ($PSBoundParameters.FileCopyMode -eq 'Robocopy'))
         {
-            # Define the RobocopyParams parameter
+            # Define the RobocopyParams parameter.
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    'RobocopyParams', [System.String], $(
+                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
+                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
+                    )
                 ))
 
-            # Define the RobocopyAdditionalParams parameter
+            # Define the RobocopyAdditionalParams parameter.
             $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
+                    'RobocopyAdditionalParams', [System.String], $(
+                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
+                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
+                    )
                 ))
         }
 
