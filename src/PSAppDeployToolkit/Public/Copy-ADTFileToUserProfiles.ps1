@@ -1,6 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Copy-FileToUserProfiles
+# MARK: Copy-ADTFileToUserProfiles
 #
 #-----------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ function Copy-ADTFileToUserProfiles
         Copy one or more items to each user profile on the system.
 
     .DESCRIPTION
-        The Copy-FileToUserProfiles function copies one or more items to each user profile on the system. It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
+        The Copy-ADTFileToUserProfiles function copies one or more items to each user profile on the system. It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
 
     .PARAMETER Path
         The path of the file or folder to copy.
@@ -54,22 +54,22 @@ function Copy-ADTFileToUserProfiles
         This function does not generate any output.
 
     .EXAMPLE
-        Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
+        Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
     .EXAMPLE
-        Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
+        Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
     .EXAMPLE
-        Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+        Copy-ADTFileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 
         Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
 
     .EXAMPLE
-        Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
+        Copy-ADTFileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 
         Copy an entire folder to C:\Users\<UserName> for each user.
 
@@ -89,10 +89,12 @@ function Copy-ADTFileToUserProfiles
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
-        [String[]]$Path,
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Path,
 
-        [Parameter(Mandatory = $false, Position = 2)]
-        [String]$Destination,
+        [Parameter(Mandatory = $true, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
@@ -106,7 +108,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String[]]$ExcludeNTAccount,
+        [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
