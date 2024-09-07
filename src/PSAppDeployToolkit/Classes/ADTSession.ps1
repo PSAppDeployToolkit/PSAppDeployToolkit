@@ -79,54 +79,62 @@ class ADTSession
     }
 
     # Private methods.
-    hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
+    hidden [System.Void] TestClassState([System.String]$State)
     {
-        # Get the current environment.
-        $adtEnv = Get-ADTEnvironment
-
-        # Ensure this session isn't being re-instantiated.
-        if ($this.Instantiated)
+        # Throw if the specified state is true.
+        if ($this.$State)
         {
             $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The current $($adtEnv.appDeployToolkitName) session has already been instantiated.")
+                Exception = [System.InvalidOperationException]::new("The current $($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) session has already been $($State.ToLower()).")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                ErrorId = 'ADTSessionAlreadyInstantiated'
+                ErrorId = "ADTSessionAlready$State"
                 TargetObject = $this
                 TargetName = '[ADTSession]'
-                TargetType = 'Init()'
-                RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being instantiated twice."
+                TargetType = $State
+                RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being $($State.ToLower()) twice."
             }
             throw (New-ADTErrorRecord @naerParams)
         }
+    }
+
+    hidden [System.Void] Init([System.Collections.IDictionary]$Parameters)
+    {
+        # Ensure this session isn't being re-instantiated.
+        $this.TestClassState('Instantiated')
+        $this.TestClassState('Opened')
+        $this.TestClassState('Closed')
 
         # Confirm the main system automation params are present.
-        foreach ($param in ('SessionState' | & { process { if (!$Parameters.ContainsKey($_)) { return $_ } } }))
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentException]::new('One or more mandatory parameters are missing.', $param)
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'MandatoryParameterMissing'
-                TargetObject = $Parameters
-                TargetName = '[ADTSession]'
-                TargetType = 'Init()'
-                RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
+        'SessionState' | & {
+            process
+            {
+                if (!$Parameters.ContainsKey($_))
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new('One or more mandatory parameters are missing.', $_)
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = 'MandatoryParameterMissing'
+                        TargetObject = $Parameters
+                        TargetName = '[ADTSession]'
+                        TargetType = 'Init()'
+                        RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+                if (!$Parameters.$_)
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentNullException]::new($_, 'One or more mandatory parameters are null.')
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                        ErrorId = 'MandatoryParameterNullOrEmpty'
+                        TargetObject = $Parameters
+                        TargetName = '[ADTSession]'
+                        TargetType = 'Init()'
+                        RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
             }
-            throw (New-ADTErrorRecord @naerParams)
-        }
-
-        # Confirm the main system automation params aren't null.
-        foreach ($param in ('SessionState' | & { process { if (!$Parameters.$_) { return $_ } } }))
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentNullException]::new($param, 'One or more mandatory parameters are null.')
-                Category = [System.Management.Automation.ErrorCategory]::InvalidData
-                ErrorId = 'MandatoryParameterNullOrEmpty'
-                TargetObject = $Parameters
-                TargetName = '[ADTSession]'
-                TargetType = 'Init()'
-                RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
-            }
-            throw (New-ADTErrorRecord @naerParams)
         }
 
         # Establish start date/time first so we can accurately mark the start of execution.
@@ -137,7 +145,7 @@ class ADTSession
         # Process provided parameters and amend some incoming values.
         $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
         $Parameters.GetEnumerator() | & { process { if ($Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))) { $this.($_.Key) = $_.Value } } }
-        $this.DeploymentType = $adtEnv.culture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
+        $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories before returning.
@@ -701,19 +709,8 @@ class ADTSession
         $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being opened twice.
-        if ($this.Opened)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The current $($adtEnv.appDeployToolkitName) session has already been opened.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                ErrorId = 'ADTSessionAlreadyOpened'
-                TargetObject = $this
-                TargetName = '[ADTSession]'
-                TargetType = 'Open()'
-                RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being opened again."
-            }
-            throw (New-ADTErrorRecord @naerParams)
-        }
+        $this.TestClassState('Opened')
+        $this.TestClassState('Closed')
 
         # Initialise PSADT session.
         $this.DetectDefaultWimFile()
@@ -751,32 +748,14 @@ class ADTSession
 
     hidden [System.Void] Close()
     {
-        # Get the current environment and config.
-        $adtEnv = Get-ADTEnvironment
-        $adtConfig = Get-ADTConfig
-
         # Ensure this session isn't being closed twice.
-        if ($this.Closed)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The current $($adtEnv.appDeployToolkitName) session has already been closed.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                ErrorId = 'ADTSessionAlreadyClosed'
-                TargetObject = $this
-                TargetName = '[ADTSession]'
-                TargetType = 'Close()'
-                RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being closed again."
-            }
-            throw (New-ADTErrorRecord @naerParams)
-        }
-
-        # Change the install phase in preparation for closing out.
+        $this.TestClassState('Closed')
         $this.InstallPhase = 'Finalization'
 
         # Store app/deployment details string. If we're exiting before properties are set, use a generic string.
         if ([System.String]::IsNullOrWhiteSpace(($deployString = "$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower())".Trim())))
         {
-            $deployString = "$($adtEnv.appDeployToolkitName) deployment"
+            $deployString = "$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) deployment"
         }
 
         # Process resulting exit code.
@@ -836,7 +815,7 @@ class ADTSession
         $this.Closed = $true
 
         # Return early if we're not archiving log files.
-        if (!$adtConfig.Toolkit.CompressLogs)
+        if (!($adtConfig = Get-ADTConfig).Toolkit.CompressLogs)
         {
             return
         }
