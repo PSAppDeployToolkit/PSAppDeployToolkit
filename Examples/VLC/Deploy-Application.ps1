@@ -206,7 +206,7 @@ Try {
 
         ## <Perform Installation tasks here>
 
-        Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
+        Execute-Process -Path "vlc-$($appVersion)-win64.exe" -Parameters '/L=1033 /S'
 
         ##*===============================================
         ##* MARK: POST-INSTALLATION
@@ -294,7 +294,7 @@ Try {
         ## <Perform Repair tasks here>
 
         Execute-Process -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ContinueOnError $true -ExitOnProcessFailure $false
-        Execute-Process -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
+        Execute-Process -Path "vlc-$($appVersion)-win64.exe" -Parameters '/L=1033 /S'
 
         ##*===============================================
         ##* MARK: POST-REPAIR

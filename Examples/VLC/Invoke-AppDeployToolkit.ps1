@@ -141,7 +141,7 @@ function Install-ADTApplication
     }
 
     ## <Perform Installation tasks here>
-    Start-ADTProcess -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
+    Start-ADTProcess -Path "vlc-$($adtSession.AppVersion)-win64.exe" -Parameters '/L=1033 /S'
 
 
     ##================================================
@@ -237,7 +237,7 @@ function Repair-ADTApplication
 
     ## <Perform Repair tasks here>
     Start-ADTProcess -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ErrorAction Continue
-    Start-ADTProcess -Path 'vlc-3.0.21-win64.exe' -Parameters '/L=1033 /S'
+    Start-ADTProcess -Path "vlc-$($adtSession.AppVersion)-win64.exe" -Parameters '/L=1033 /S'
 
 
     ##================================================
