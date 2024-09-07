@@ -259,7 +259,7 @@ class ADTSession
 
         # Read the MSI and get the installation details.
         $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File -InformationAction Ignore
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
 
         # Generate list of MSI executables for testing later on.
         if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
@@ -268,7 +268,7 @@ class ADTSession
         }
 
         # Update our app variables with new values.
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property -InformationAction Ignore
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
         $this.WriteLogEntry("App Vendor [$($msiProps.Manufacturer)].")
         $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
         $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
