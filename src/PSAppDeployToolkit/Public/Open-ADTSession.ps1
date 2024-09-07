@@ -82,11 +82,8 @@ function Open-ADTSession
     .PARAMETER DeployAppScriptParameters
         Specifies the parameters for the deploy application script.
 
-    .PARAMETER DirFiles
-        Specifies the path to Files.
-
-    .PARAMETER DirSupportFiles
-        Specifies the path to SupportFiles.
+    .PARAMETER ScriptDirectory
+        Specifies the base path for Files and SupportFiles.
 
     .PARAMETER DefaultMsiFile
         Specifies the default MSI file.
@@ -221,11 +218,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DirFiles,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$DirSupportFiles,
+        [System.String]$ScriptDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

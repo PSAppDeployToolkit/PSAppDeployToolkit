@@ -141,22 +141,33 @@ class ADTSession
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories before returning.
-        $this.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($rootLocation = $this.CallerVariables.GetValue('PSScriptRoot', $null))))
+        if ([System.String]::IsNullOrWhiteSpace($this.ScriptDirectory))
         {
-            if ($this.CompatibilityMode)
+            $this.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $this.CallerVariables.GetValue('PSScriptRoot', $null))))
             {
-                [System.IO.Directory]::GetParent($rootLocation).FullName
+                if ($this.CompatibilityMode)
+                {
+                    [System.IO.Directory]::GetParent($scriptRoot).FullName
+                }
+                else
+                {
+                    $scriptRoot
+                }
             }
             else
             {
-                $rootLocation
+                $PWD.Path
             }
         }
-        else
-        {
-            $PWD.Path
+        'DirFiles', 'DirSupportFiles' | & {
+            process
+            {
+                if ([System.String]::IsNullOrWhiteSpace($this.$_) -and [System.IO.Directory]::Exists(($dir = "$($this.ScriptDirectory)\$($_ -replace '^Dir')")))
+                {
+                    $this.$_ = $dir
+                }
+            }
         }
-        'DirFiles', 'DirSupportFiles' | & { process { if ([System.String]::IsNullOrWhiteSpace($this.$_)) { $this.$_ = "$($this.ScriptDirectory)\$($_ -replace '^Dir')" } } }
         $this.Instantiated = $true
     }
 

@@ -3585,7 +3585,7 @@ if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExt
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This variable is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
-        # If this script was invoked by another script
+        # If this script was invoked by another script.
         Split-Path -Path $invokingScript -Parent
     }
     else
