@@ -45,8 +45,8 @@ function Start-ADTMsiProcess
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the XML configuration file.
 
-    .PARAMETER LogName
-        Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+    .PARAMETER LogFileName
+        Overrides the default log file name. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
@@ -172,7 +172,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LogName,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -225,9 +225,9 @@ function Start-ADTMsiProcess
                     $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
-                    if (!$LogName)
+                    if (!$LogFileName)
                     {
-                        $LogName = if ($productCodeNameVersion)
+                        $LogFileName = if ($productCodeNameVersion)
                         {
                             if ($productCodeNameVersion.Publisher)
                             {
@@ -245,23 +245,23 @@ function Start-ADTMsiProcess
                         }
                     }
                 }
-                elseif (!$LogName)
+                elseif (!$LogFileName)
                 {
                     # Get the log file name without file extension.
-                    $LogName = ([System.IO.FileInfo]$Path).BaseName
+                    $LogFileName = ([System.IO.FileInfo]$Path).BaseName
                 }
                 else
                 {
-                    while ('.log', '.txt' -contains [System.IO.Path]::GetExtension($LogName))
+                    while ('.log', '.txt' -contains [System.IO.Path]::GetExtension($LogFileName))
                     {
-                        $LogName = [System.IO.Path]::GetFileNameWithoutExtension($LogName)
+                        $LogFileName = [System.IO.Path]::GetFileNameWithoutExtension($LogFileName)
                     }
                 }
 
                 # Build the log file path.
                 $logPath = if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
                 {
-                    & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogName
+                    & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogFileName
                 }
                 else
                 {
@@ -272,7 +272,7 @@ function Start-ADTMsiProcess
                     }
 
                     # Build the log file path.
-                    & $Script:CommandTable.'Join-Path' -Path $adtConfig.MSI.LogPath -ChildPath $LogName
+                    & $Script:CommandTable.'Join-Path' -Path $adtConfig.MSI.LogPath -ChildPath $LogFileName
                 }
 
                 # Set the installation parameters.
