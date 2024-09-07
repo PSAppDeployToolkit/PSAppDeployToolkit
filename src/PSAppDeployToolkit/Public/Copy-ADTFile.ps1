@@ -31,12 +31,6 @@ function Copy-ADTFile
     .PARAMETER FileCopyMode
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
-    .PARAMETER RobocopyParams
-        Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
-
-    .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters when FileCopyMode = Robocopy.
-
     .INPUTS
         None
 
@@ -75,7 +69,8 @@ function Copy-ADTFile
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
@@ -108,12 +103,18 @@ function Copy-ADTFile
         {
             # Define the RobocopyParams parameter
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default value is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
+                    'RobocopyParams', [System.String], $(
+                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default value is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
+                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
+                    )
                 ))
 
             # Define the RobocopyAdditionalParams parameter
             $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
+                    'RobocopyAdditionalParams', [System.String], $(
+                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
+                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
+                    )
                 ))
         }
 
@@ -143,10 +144,6 @@ function Copy-ADTFile
                 $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
                 {
                     $PSBoundParameters.RobocopyAdditionalParams
-                }
-                else
-                {
-                    $null
                 }
             }
             else
