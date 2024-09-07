@@ -168,6 +168,7 @@
         'Start-ADTMsiProcess'
         'Start-ADTMspProcess'
         'Start-ADTProcess'
+        'Start-ADTProcessAsUser'
         'Start-ADTServiceAndDependencies'
         'Stop-ADTServiceAndDependencies'
         'Test-ADTBattery'
